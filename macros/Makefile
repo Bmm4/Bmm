@@ -29,7 +29,7 @@ SOFLAGS       = -shared
 CXXFLAGS     += $(ROOTCFLAGS)
 LIBS          = $(ROOTLIBS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
-EXTHEADERS    = -I../..
+EXTHEADERS    = -I..
 
 
 # -- Files
@@ -71,8 +71,8 @@ bin: lib obj/runBmm.o
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
-	cd lib && ln -f -s ../../../HeavyFlavorObjects/lib/libAna00.so && cd - 
-	cd lib && ln -f -s ../../../HeavyFlavorObjects/lib/libUtil.so && cd - 
+	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
+	cd lib && ln -f -s ../../rootio/lib/libUtil.so && cd - 
 
 # -- clean up
 clean:
