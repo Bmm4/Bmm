@@ -17,14 +17,14 @@
 #include <TH2.h>
 #include <TTree.h>
 
-#include "HeavyFlavorObjects/rootio/TAna01Event.hh"
-#include "HeavyFlavorObjects/rootio/TGenCand.hh"
-#include "HeavyFlavorObjects/rootio/TAnaCand.hh"
-#include "HeavyFlavorObjects/rootio/TAnaTrack.hh"
-#include "HeavyFlavorObjects/rootio/TAnaJet.hh"
-#include "HeavyFlavorObjects/rootio/TAnaVertex.hh"
+#include "rootio/TAna01Event.hh"
+#include "rootio/TGenCand.hh"
+#include "rootio/TAnaCand.hh"
+#include "rootio/TAnaTrack.hh"
+#include "rootio/TAnaJet.hh"
+#include "rootio/TAnaVertex.hh"
 
-#include "HeavyFlavorObjects/rootio/JSON.hh"
+#include "rootio/JSON.hh"
 
 #include "treeReader01.hh"
 

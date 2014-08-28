@@ -2,7 +2,7 @@
 #include <cmath>
 #include <string>
 
-#include "HeavyFlavorObjects/rootio/PidTable.hh"
+#include "rootio/PidTable.hh"
 #include "HFMasses.hh"
 
 #include "candAna.hh"

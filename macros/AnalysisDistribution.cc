@@ -3,9 +3,9 @@
 #include <iostream>
 #include <iomanip>
 
-#include "HeavyFlavorObjects/rootio/util.hh"
-#include "HeavyFlavorObjects/rootio/functions.hh"
-#include "HeavyFlavorObjects/rootio/PidTable.hh"
+#include "rootio/util.hh"
+#include "rootio/functions.hh"
+#include "rootio/PidTable.hh"
 #include "initFunc.hh"
 
 #include "TMath.h"
