@@ -73,20 +73,18 @@ lib/libUtil.so: $(addprefix obj/,$(UTIL) $(UTILDICT))
 
 # ================================================================================
 links:
-	mkdir -p ../../../lib/$(SCRAM_ARCH)
-	cd ../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && ln -s ../../src/AnalysisDataFormats/HeavyFlavorObjects/lib/libAna00.so && cd -
-	cd ../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && ln -s ../../src/AnalysisDataFormats/HeavyFlavorObjects/lib/libUtil.so && cd -
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so && cd -
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so && cd -
 
 copy:
-	cd ../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && cp ../../src/AnalysisDataFormats/HeavyFlavorObjects/lib/libAna00.so . && cd -
-	cd ../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && cp ../../src/AnalysisDataFormats/HeavyFlavorObjects/lib/libUtil.so . && cd -
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so . && cd -
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so . && cd -
 
 
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
-	cd lib && ln -f -s ../../util/lib/libutil.so && cd - 
-	cd lib && ln -f -s $(DELPHES)/libDelphes.so && cd - 
 
 # -- clean up
 clean:
