@@ -198,12 +198,12 @@ private:
   long fMinRun, fMaxRun;  
   int fVerbose, fMode;
   
-  static const double Tmax = 2.4;  
-  static const double Tmin = -2.4;
-  static const int Tbin = 48;
-  static const double Pmax = 20.;
-  static const double Pmin = 0.;
-  static const int Pbin = 40;
+  double Tmax;  
+  double Tmin;
+  int Tbin;
+  double Pmax;
+  double Pmin;
+  int Pbin;
  
   TF1 *fRandom;
   TF1 *fFlat;

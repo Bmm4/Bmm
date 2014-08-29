@@ -31,6 +31,14 @@ PidTable::PidTable(int mode) {
   fDataVector = new TList();
   fMode = mode; 
 
+ Tmax = 2.4;  
+ Tmin = -2.4;
+ Tbin = 48;
+ Pmax = 20.;
+ Pmin = 0.;
+ Pbin = 40;
+
+
   fRandom = new TF1("f1", "gaus", -10., 10.);
   fRandom->SetParameters(1., 0., 1.);
   fFlat = new TF1("fPIDTable", "pol0", 0., 1.);
