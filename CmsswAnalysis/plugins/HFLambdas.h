@@ -27,7 +27,6 @@ private:
     edm::InputTag       fMuonType;
 
     double fMuonPt,fPionPt,fProtonPt;
-    muon::SelectionType fMuonSelType;
     double fTrackNormChi2;
     int fPsiMuons;
     double fPsiWindow,fksWindow,fL0Window,fLbWindow,fB0Window; // mass windows for event selection
@@ -49,6 +48,7 @@ private:
 
     reco::Vertex	fPV;
     edm::ESHandle<TransientTrackBuilder> fTTB;
+    muon::SelectionType fMuonSelType;
 };
 
 #endif
