@@ -12,7 +12,7 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
-#include "Bmm/CmsswAnalysis/interface/HFMasses.hh"
+#include "Bmm/RootAnalysis/macros/HFMasses.hh"
 
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
 #include "RecoVertex/VertexTools/interface/VertexDistance3D.h"

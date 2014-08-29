@@ -16,7 +16,7 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include <TrackingTools/TransientTrack/interface/TrackTransientTrack.h>
 
-#include "Bmm/CmsswAnalysis/interface/HFMasses.hh"
+#include "Bmm/RootAnalysis/macros/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTwoParticleCombinatorics.hh"
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
 #include "DataFormats/Candidate/interface/VertexCompositeCandidate.h"

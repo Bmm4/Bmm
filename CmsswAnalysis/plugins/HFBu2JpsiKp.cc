@@ -11,7 +11,7 @@
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTwoParticleCombinatoricsNew.hh"
-#include "Bmm/CmsswAnalysis/interface/HFMasses.hh"
+#include "Bmm/RootAnalysis/macros/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFDecayTree.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTrackListBuilder.hh"
 
