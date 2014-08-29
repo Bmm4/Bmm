@@ -1,0 +1,12 @@
+# root files do not belong into the repository
+__init__.py
+*.root
+*.o
+*Dict.h
+*Dict.cc
+*.pyc
+
+# ignore backup files of any sort of editor:
+~*
+*~
+\#*
