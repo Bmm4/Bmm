@@ -20,8 +20,9 @@ process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-process.GlobalTag.globaltag = "START53_V7G::All"
-
+#CMSSW_5_3_12_patch3: process.GlobalTag.globaltag = "START53_V7G::All"
+#CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
+process.GlobalTag.globaltag = "START70_V7A::All"
 # ----------------------------------------------------------------------
 process.source = cms.Source(
  "PoolSource",
@@ -29,18 +30,18 @@ process.source = cms.Source(
          "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
  )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 # ----------------------------------------------------------------------
-rootFileName = "bmm-mc-BuToJPsiK_K2MuPtEtaEtaFilter.root"
+rootFileName = "test.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(1),
-    printFrequency = cms.untracked.int32(1000),
+    printFrequency = cms.untracked.int32(100),
     requireCand    =  cms.untracked.bool(True),
     fileName       = cms.untracked.string(rootFileName)
     )
