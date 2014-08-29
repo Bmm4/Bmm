@@ -20,9 +20,20 @@ process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-#CMSSW_5_3_12_patch3: process.GlobalTag.globaltag = "START53_V7G::All"
+
+#CMSSW_5_3_12_patch3: 
 #CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
-process.GlobalTag.globaltag = "START70_V7A::All"
+
+version = os.environ.get('CMSSW_VERSION')
+if version.find('CMSSW_5_3') != -1:
+    globaltag = "START53_V7G::All"
+else:
+    globaltag = "START70_V7A::All"
+
+#globaltag = "START70_V7A::All"
+print(globaltag)
+process.GlobalTag.globaltag = globaltag
+
 # ----------------------------------------------------------------------
 process.source = cms.Source(
  "PoolSource",
