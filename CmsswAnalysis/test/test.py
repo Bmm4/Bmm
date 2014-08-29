@@ -31,7 +31,7 @@ else:
     globaltag = "START70_V7A::All"
 
 #globaltag = "START70_V7A::All"
-print(globaltag)
+print('==> GT = %s ' % globaltag)
 process.GlobalTag.globaltag = globaltag
 
 # ----------------------------------------------------------------------
