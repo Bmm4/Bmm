@@ -208,15 +208,15 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (fVerbose > 0) cout << "The best pV is at position: " << bestPV  << " and has " << bestN << " tracks" << endl;
 
 
-  // -- pthat 
-  gHFEvent->fPtHat = -1.; 
-  try { 
-    edm::Handle<GenEventInfoProduct> evt_info; 
-    iEvent.getByType(evt_info); 
-    gHFEvent->fPtHat     = evt_info->qScale(); 
-  } catch (cms::Exception &ex) { 
-    if (fVerbose > 0) cout << "GenEventInfoProduct not found." << endl; 
-  } 
+//   // -- pthat 
+//   gHFEvent->fPtHat = -1.; 
+//   try { 
+//     edm::Handle<GenEventInfoProduct> evt_info; 
+//     iEvent.getByType(evt_info); 
+//     gHFEvent->fPtHat     = evt_info->qScale(); 
+//   } catch (cms::Exception &ex) { 
+//     if (fVerbose > 0) cout << "GenEventInfoProduct not found." << endl; 
+//   } 
 
 
 }
