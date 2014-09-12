@@ -7,7 +7,6 @@
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
-ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --libs)
 ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
 ifdef SCRAM_ARCH
@@ -27,17 +26,18 @@ LDFLAGS       = -g
 SOFLAGS       = -shared
 
 CXXFLAGS     += $(ROOTCFLAGS)
-LIBS          = $(ROOTLIBS)
-GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
+GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA
 EXTHEADERS    = -I..
 
 
 # -- Files
+CSTUFF = preselection.o 
 READER = treeReader01.o bmmReader.o \
          AnalysisCuts.o AnalysisDistribution.o initFunc.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
+DICTSOURCES = ${READER:.o=Dict.cc}
 
 
 # -- Default rules
@@ -61,7 +61,7 @@ $(addprefix obj/,%.o) : %.cc
 all: vars prep lib bin
 
 lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/, $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
 
 
 bin: lib obj/runBmm.o
@@ -77,7 +77,7 @@ prep:
 # -- clean up
 clean:
 	rm -f $(addprefix obj/,$(READER) $(DICT) runBmm.o) 
-	rm -f $(DICTHEADERS) 
+	rm -f $(DICTHEADERS)  $(DICTSOURCES) 
 	rm -f bin/*
 	rm -f lib/*
 
