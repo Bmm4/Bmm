@@ -36,7 +36,7 @@ TRIGRANGE    HLT_DoubleMu3_4_Dimuon5_Bs_Central_v5(1:99999999)
 TRIGRANGE    HLT_DoubleMu3p5_4_Dimuon5_Bs_Central_v5(1:99999999) 
 TRIGRANGE    HLT_DoubleMu4_Dimuon7_Bs_Forward_v5(1:99999999)
 # -- boxes
-+input cuts/boxes.cuts
++input cuts/boxes.Bs2MuMu.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
