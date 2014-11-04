@@ -24,13 +24,11 @@ HFBd2DstarPi::HFBd2DstarPi(const edm::ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
   fSlowPionPt(iConfig.getUntrackedParameter<double>("slowPionPt", 0.4)),
   fD0Window(iConfig.getUntrackedParameter<double>("D0Window", 0.1)),
-  fDeltaM(iConfig.getUntrackedParameter<double>("deltaM", 0.03))
-{
+  fDeltaM(iConfig.getUntrackedParameter<double>("deltaM", 0.03)) {
   dumpConfiguration();
 }
 
-void HFBd2DstarPi::dumpConfiguration()
-{
+void HFBd2DstarPi::dumpConfiguration() {
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFBd2DstarPi configuration" << endl;
   HFVirtualDecay::dumpConfiguration();
@@ -41,8 +39,7 @@ void HFBd2DstarPi::dumpConfiguration()
 } // dumpConfiguration()
 
 // ----------------------------------------------------------------------
-void HFBd2DstarPi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void HFBd2DstarPi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
   try {

@@ -23,8 +23,9 @@ HFDstar::HFDstar(const edm::ParameterSet& iConfig) :
   dumpConfiguration();
 } // HFDstar()
 
-void HFDstar::dumpConfiguration()
-{
+
+// ----------------------------------------------------------------------
+void HFDstar::dumpConfiguration() {
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFDstar constructor" << endl;
   HFVirtualDecay::dumpConfiguration();
@@ -35,8 +36,7 @@ void HFDstar::dumpConfiguration()
 } // dumpConfiguration()
 
 // ----------------------------------------------------------------------
-void HFDstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup)
-{
+void HFDstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
   try {
