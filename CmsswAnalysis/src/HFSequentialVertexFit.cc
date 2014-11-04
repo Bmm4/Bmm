@@ -660,9 +660,9 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	const double flightlength2d = sinTheta != 0 ? anaVtx.fDxy / sinTheta : 0;
 	pCand->fTauxy = flightlength2d / pCand->fPlab.Mag() * vtxDistanceCosAlphaPlab * massOverC;
 	pCand->fTauxyE = TMath::Sqrt(ROOT::Math::Similarity(vtxDistanceCov, vtxDistanceJac2d)) * massOverC;
-	cout << "Tau3d = " << pCand->fTau3d << " +/- " << pCand->fTau3dE
-	     << " Tauxy = " << pCand->fTauxy << " +/- " << pCand->fTauxyE
-	     << endl;
+	// 	cout << "Tau3d = " << pCand->fTau3d << " +/- " << pCand->fTau3dE
+	// 	     << " Tauxy = " << pCand->fTauxy << " +/- " << pCand->fTauxyE
+	// 	     << endl;
       }
     else
       {
