@@ -134,7 +134,7 @@ public:
   bool              fL1TDecision, fHLTDecision;
   #define NL1T 128
   #define NLTT 64
-  #define NHLT 512
+  #define NHLT 1024 // change from 512 for 71X d.k. 11/14
   // -- L1 trigger
   TString           fL1TNames[NL1T];
   int               fL1TPrescale[NL1T];
