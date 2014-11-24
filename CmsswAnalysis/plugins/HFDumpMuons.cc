@@ -209,13 +209,18 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   // -- variables for MVA muon ID
   if (gTrack.isNonnull() && iTrack.isNonnull()) {
     const HitPattern track_hp  = iTrack->hitPattern();
-    const HitPattern exp_track_out_hp = iTrack->trackerExpectedHitsOuter();
+    //  changes in 72X
+    //const HitPattern exp_track_out_hp = iTrack->trackerExpectedHitsOuter();
     reco::MuonQuality muQuality = rm.combinedQuality();
     
     pM->fItrkValidFraction       = iTrack->validFraction(); //1
     pM->fGtrkNormChi2            = gTrack->normalizedChi2(); //2
     pM->fChi2LocalPosition       = muQuality.chi2LocalPosition; //3
-    pM->fNumberOfLostTrkHits     = exp_track_out_hp.numberOfLostTrackerHits(); //4
+    //pM->fNumberOfLostTrkHits     = exp_track_out_hp.numberOfLostTrackerHits(); //4 change for 72X
+    // should I use this 
+    //pM->fNumberOfLostTrkHits     = track_hp.numberOfLostTrackerHits(HitPattern::TRACK_HITS); //4
+    // OR this 
+    pM->fNumberOfLostTrkHits     = track_hp.numberOfLostTrackerHits(HitPattern::MISSING_OUTER_HITS); //4
     pM->fSegmentComp             = muon::segmentCompatibility(rm); //5
     pM->fGtrkProb                = muQuality.glbTrackProbability; //6
     pM->fChi2LocalMomentum       = muQuality.chi2LocalMomentum; //6
