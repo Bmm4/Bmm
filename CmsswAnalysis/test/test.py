@@ -28,7 +28,7 @@ version = os.environ.get('CMSSW_VERSION')
 if version.find('CMSSW_5_3') != -1:
     globaltag = "START53_V7G::All"
 else:
-    globaltag = "START70_V7A::All"
+    globaltag = "START72_V1::All"
 
 #globaltag = "START70_V7A::All"
 print('==> GT = %s ' % globaltag)
