@@ -1,6 +1,9 @@
 TYPE          1000080
 TRUTHCAND         531
 # -- the following should be a copy-paste from triggerBs.cuts
+TRIGRANGE    HLT_DoubleMu4_3_Bs_v1(1:99999999)
+
+#
 TRIGRANGE    HLT_DoubleMu3_Bs_v1(1:99999999)
 TRIGRANGE    HLT_DoubleMu2_Bs_v1(1:99999999)
 TRIGRANGE    HLT_DoubleMu2_Bs_v2(1:99999999)
