@@ -34,7 +34,8 @@ EXTHEADERS    = -I..
 CSTUFF = preselection.o 
 READER = treeReader01.o bmmReader.o \
          AnalysisCuts.o AnalysisDistribution.o initFunc.o \
-         candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o
+         candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
+         util.o selpoint.o dataset.o plotClass.o plotWork.o
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
