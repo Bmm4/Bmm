@@ -1,6 +1,7 @@
 TYPE          3000068
 TRUTHCAND         521
 #
+TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v1(1:99999999)
 TRIGRANGE    HLT_DoubleMu3_Jpsi_v1(1:99999999)
 TRIGRANGE    HLT_DoubleMu3_Jpsi_v2(1:99999999)
 TRIGRANGE    HLT_Dimuon6p5_Jpsi_Displaced_v1(1:99999999)
