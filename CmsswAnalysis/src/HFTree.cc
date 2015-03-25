@@ -101,7 +101,7 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	     << " event: "  << gHFEvent->fEventNumber ;
 
 	if (fVerbose > 2) {
-	  cout << " Cand: ";
+	  cout << " Cand: " << gHFEvent->nCands() << endl;
 	
 	  for (int i = 0; i < gHFEvent->nCands(); ++i) {
 	    cout << gHFEvent->getCand(i)->fType << " ";
@@ -112,6 +112,24 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       fTree->Fill();
     } 
   } else {
+    if (fVerbose > 1) {
+      cout << "HFTree> filling tree for run: " << gHFEvent->fRunNumber
+	   << " event: "  << gHFEvent->fEventNumber ;
+      
+      if (fVerbose > 2) {
+	cout << " GENT Cand: " << gHFEvent->nGenT() << endl;
+	for (int i = 0; i < gHFEvent->nGenT(); ++i) {
+	  cout << gHFEvent->getGenCand(i)->fID << " ";
+	}
+	cout << endl;
+
+	cout << " GEN Cand: " << gHFEvent->nGenCands() << endl;
+	for (int i = 0; i < gHFEvent->nGenCands(); ++i) {
+	  cout << gHFEvent->getGenCand(i)->fID << " ";
+	}
+	cout << endl;
+      }
+    }
     fTree->Fill();
   }
 
