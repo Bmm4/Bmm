@@ -30,6 +30,9 @@ HFDumpGenerator::HFDumpGenerator(const ParameterSet& iConfig):
   using namespace std;
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFDumpGenerator constructor: " << fGenCandidatesLabel << "  " << fGenEventLabel << endl;
+  cout << "---  verbose:                         " << fVerbose << endl;
+  cout << "---  candidates label:                " << fGenCandidatesLabel << endl;
+  cout << "---  event label:                     " << fGenEventLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
 }
 
@@ -76,7 +79,6 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
   edm::Handle<GenParticleCollection> genParticlesH;
   genParticlesH.clear();
   try {
-    // iEvent.getByLabel ("genParticles", genParticlesH);
     iEvent.getByLabel (fGenCandidatesLabel.c_str(), genParticlesH);
   } catch(cms::Exception ce) {
     cout << "==> HFDumpGenerator caught std::exception " << ce.what() << endl;
