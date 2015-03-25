@@ -41,7 +41,7 @@ public:
   int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, const TVector3 &vtx, 
 					    double charge, double dRthrsh = 99999.9, double dVtxRatioThrsh = 1.3);
 
-  // -- reduced/truncated generator block
+  // -- reduced/truncated generator block, filled by plugins/HFTruthCandidate.cc
   int                 nGenT() {return fnGenT;}
   TGenCand*           getGenTWithIndex(int n); // return TGenCand with fNumber = n
   TGenCand*           getGenT(int n);          // return TGenCand at position n
@@ -109,7 +109,7 @@ public:
 
   // ----------------------------------------------------------------------
   // -- Basic event and detector information
-  Long64_t			fRunNumber, fEventNumber;
+  Long64_t          fRunNumber, fEventNumber;
   int               fEventBits;
   int               fDetectorStatus; 
   int               fEventTag;
