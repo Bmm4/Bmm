@@ -19,7 +19,8 @@ genParticles = cms.EDProducer(
 genDump = cms.EDAnalyzer(
     "HFDumpGenerator",
     generatorCandidates = cms.untracked.string('genParticles'),
-    generatorEvent = cms.untracked.string('generator')
+    generatorEvent      = cms.untracked.string('generator'),
+    verbose             = cms.untracked.int32(0)
     )
 
 # ######################################################################

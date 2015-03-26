@@ -32,7 +32,7 @@ EXTHEADERS    = -I..
 
 # -- Files
 CSTUFF = preselection.o 
-READER = treeReader01.o bmmReader.o \
+READER = treeReader01.o bmmReader.o genAnalysis.o \
          AnalysisCuts.o AnalysisDistribution.o initFunc.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
          util.o selpoint.o dataset.o plotClass.o plotWork.o

@@ -14,13 +14,17 @@
 #include "TUnixSystem.h"
 
 #include "bmmReader.hh"
+#include "genAnalysis.hh"
+
+#include "util.hh"
+
 
 using namespace std;
 
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-// %% Usage: ./runBmm2Reader -f test.root
-// %%        ./runBmm2Reader -c chains/bg-test -D root
+// %% Usage: bin/runBmm [-r genAnalysis] -f test.root
+// %%        bin/runBmm -c chains/bg-test -D root
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 int main(int argc, char *argv[]) {
@@ -148,7 +152,9 @@ int main(int argc, char *argv[]) {
       }
     }
   }
-
+  string shistfile = histfile.Data();
+  replaceAll(shistfile, "..", ".");
+  histfile = shistfile.c_str(); 
   cout << "Opening " << histfile.Data() << " for output histograms" << endl;
   cout << "Opening " << fileName.c_str() << " for input" << endl;
 
@@ -184,10 +190,12 @@ int main(int argc, char *argv[]) {
   // -- Now instantiate the tree-analysis class object, initialize, and run it ...
   //treeReader01 *a = new bmm2Reader(chain, TString(evtClassName));  
   treeReader01 *a = NULL;
-  if (readerName == "bmmReader") a = new bmmReader(chain, TString(evtClassName));
-  else {
-    cout << "default class: bmmReader" << endl;
+  if ("bmmReader" == readerName) {
+    cout << "instantiating bmmReader" << endl;
     a = new bmmReader(chain, TString(evtClassName));
+  } else if ("genAnalysis" == readerName) {
+    cout << "instantiating genAnalysis" << endl;
+    a = new genAnalysis(chain, TString(evtClassName));
   }
   
   
@@ -218,8 +226,7 @@ int main(int argc, char *argv[]) {
     a->loop(nevents, start);
     a->endAnalysis();
     a->closeHistFile(); 
-  } else
-    cerr << "Readerclass '" << readerName << "' not found" << endl;
+  } 
 
   delete a; // so we can dump some information in the destructor
   
