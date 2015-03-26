@@ -34,8 +34,8 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
 
                          PythiaParameters = cms.PSet(pythia8CommonSettingsBlock,
                                                      pythia8CUEP8M1SettingsBlock,
-                                                     processParameters = cms.vstring('HardQCD:all = on'),
-#                                                     processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
+#                                                     processParameters = cms.vstring('HardQCD:all = on'),
+                                                     processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
 #                                                     processParameters = cms.vstring(            
 #                                                                                     'HardQCD:gg2bbbar = on ',
 #                                                                                     'HardQCD:qqbar2bbbar = on ',
