@@ -10,9 +10,7 @@
 #include <iomanip>
 #include <cmath>
 
-using std::cout;
-using std::endl;
-using std::set;
+using namespace std;
 
 ClassImp(PidTable)
 

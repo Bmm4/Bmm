@@ -2,8 +2,7 @@
 
 #include "TMath.h"
 
-using std::cout;
-using std::endl;
+using namespace std;
 
 ClassImp(PidData)
 
