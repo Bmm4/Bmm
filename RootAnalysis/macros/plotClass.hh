@@ -81,7 +81,7 @@ public :
 protected:
 
   std::string fTexFileName; 
-  ofstream fTEX; 
+  std::ofstream fTEX; 
 
   std::string fHistFileName; 
   TFile      *fHistFile; 

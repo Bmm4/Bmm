@@ -2,9 +2,8 @@
 
 #include "TRandom.h"
 
-using std::string;
-using std::cout;
-using std::endl;
+using namespace std;
+
 #include "treeReader01.icc"
 
 

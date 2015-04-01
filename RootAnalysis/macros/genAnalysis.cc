@@ -5,10 +5,7 @@
 #include <cmath>
 #include <map>
 
-using std::cout;
-using std::endl;
-using std::string;
-using std::map;
+using namespace std;
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %% Usage: bin/runBmm -r genAnalysis -f test.root
