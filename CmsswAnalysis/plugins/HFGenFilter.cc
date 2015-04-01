@@ -4,6 +4,7 @@
 #include "DataFormats/Common/interface/Handle.h"
 #include "FWCore/Framework/interface/ESHandle.h"
 
+#include <iostream>
 
 #include <TROOT.h>
 #include <TFile.h>
