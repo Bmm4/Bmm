@@ -20,7 +20,7 @@ public:
 
   // ----------------------------------------------------------------------
   void dump(int printPt = 1);
-  void dump(ofstream &);
+  void dump(std::ofstream &);
 
   // ----------------------------------------------------------------------
   int            fID, fNumber, fStatus;

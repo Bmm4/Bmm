@@ -62,7 +62,7 @@ public:
   // -- Utilities
   void     setVerbosity(int t) {fVerbose = t;}
   void     printAll(int i = 0);
-  void     print(ostream &OUT = std::cout);
+  void     print(std::ostream &OUT = std::cout);
   void     setPidTablesDir(const char *s = "/u/ec/ursl/epidtables");
   void     setHistName(const char *s = "e6003") {fHistName = s;}
   void     setHistMinMax(double min, double max) {fHistMin = min; fHistMax = max;}
