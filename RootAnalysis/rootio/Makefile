@@ -52,12 +52,16 @@ $(addprefix obj/,%.o) : %.cc
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c  $^ 
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && cd -; 
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	cd -; 
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c  $< 
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && cd -; 
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	cd -; 
 
 .PHONY: prep all clean vars
 
