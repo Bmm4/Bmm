@@ -30,15 +30,13 @@ LIBS          = $(ROOTLIBS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 
 # -- Files
-ANA00 = TAna01Event.o TGenCand.o TAnaTrack.o TSimpleTrack.o TAnaMuon.o TTrgObj.o TAnaCand.o TAnaVertex.o TAnaJet.o
-ANA00DICT = ${ANA00:.o=Dict.o}
-ANA00PCM = ${ANA00DICT:.o=_rdict.pcm}
+ANA00 := TAna01Event.o TGenCand.o TAnaTrack.o TSimpleTrack.o TAnaMuon.o TTrgObj.o TAnaCand.o TAnaVertex.o TAnaJet.o
+ANA00DICT := ${ANA00:.o=Dict.o}
 
-UTIL = PidTable.o PidData.o functions.o util.o hpl.o JSON.o
-UTILDICT = ${UTIL:.o=Dict.o}
-UTILPCM = ${UTILDICT:.o=_rdict.pcm}
+UTIL := PidTable.o PidData.o functions.o util.o hpl.o JSON.o
+UTILDICT := ${UTIL:.o=Dict.o}
 
-DICTHEADERS = ${ANA00:.o=Dict.h} ${UTIL:.o=Dict.h}
+DICTHEADERS := ${ANA00:.o=Dict.h} ${UTIL:.o=Dict.h}
 
 
 # -- Default rules
@@ -53,28 +51,26 @@ $(addprefix obj/,%.o) : %.cc
 
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c  $^ 
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && cd -; 
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c  $< 
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && cd -; 
 
 .PHONY: prep all clean vars
 
 # ----------------------------------------------------------------------
 all: vars prep lib 
 
-lib: lib/libAna00.so lib/libUtil.so
-	@echo ">>> copy PCM files to lib <<<"
-	$(foreach f, $(ANA00PCM) $(UTILPCM), if [ -a $f ]; then cp $f lib; fi;)
-	@echo ">>> sym-link PCM files from CMSSW lib dir to lib <<<"
-	$(foreach f, $(ANA00PCM) $(UTILPCM), if [ -a $f ]; then cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $f && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$f && cd -; fi;)
+lib: lib/libAna00.so lib/libUtil.so 
 
-lib/libAna00.so: $(addprefix obj/, $(ANA00) $(ANA00DICT))
+lib/libAna00.so: $(addprefix obj/, $(ANA00DICT) $(ANA00))
 	$(CXX) $(SOFLAGS) $(GLIBS) $(addprefix obj/,$(ANA00) $(ANA00DICT)) -o lib/libAna00.so
 
-lib/libUtil.so: $(addprefix obj/,$(UTIL) $(UTILDICT))
+lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
-
-
 
 # ================================================================================
 links:
@@ -95,8 +91,9 @@ prep:
 # -- clean up
 clean:
 	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT) $(UTIL) $(UTILDICT)) 
-	rm -f $(DICTHEADERS) 
-	rm -f bin/runBmma
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so libUtil.so *_rdict.pcm && cd - 
+#	rm -f $(DICTHEADERS) 
+	rm -f bin/runBmm
 	rm -f lib/*
 
 # -- ensure that cmsenv has been run
