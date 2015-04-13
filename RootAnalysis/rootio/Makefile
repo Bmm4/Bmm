@@ -10,6 +10,13 @@ ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
 ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --libs)
 ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
+ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
+ifneq ($(findstring 6.,$(ROOT6)),)
+ROOT6         = "yes"
+else 
+ROOT6         = "no"
+endif
+
 ifdef SCRAM_ARCH
   CXX         := $(shell scramv1 tool info gcc-cxxcompiler | grep CXX= | sed s/CXX=//)
 else 
@@ -51,17 +58,22 @@ $(addprefix obj/,%.o) : %.cc
 
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c  $^ 
+#ifneq ($(findstring root/6,$(ROOTSYS)),)
+ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	cd -; 
+endif
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c  $< 
+ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	cd -; 
+endif
 
 .PHONY: prep all clean vars
 
