@@ -14,25 +14,20 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 # -- Database configuration
 process.load("CondCore.DBCommon.CondDBCommon_cfi")
 process.load("CondCore.DBCommon.CondDBSetup_cfi")
-
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
-process.load("Configuration.StandardSequences.Geometry_cff")
+#process.load("Configuration.StandardSequences.Geometry_cff")
+process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 #CMSSW_5_3_12_patch3: 
 #CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
 
-version = os.environ.get('CMSSW_VERSION')
-if version.find('CMSSW_5_3') != -1:
-    globaltag = "START53_V7G::All"
-else:
-    globaltag = "START72_V1::All"
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 
-#globaltag = "START70_V7A::All"
-print('==> GT = %s ' % globaltag)
-process.GlobalTag.globaltag = globaltag
 
 # ----------------------------------------------------------------------
 process.source = cms.Source(
