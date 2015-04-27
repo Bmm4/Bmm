@@ -84,17 +84,6 @@ lib: lib/libUtil.so
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
 
-# ================================================================================
-links:
-	mkdir -p ../../../../lib/$(SCRAM_ARCH)
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && ln -s ../../src/Bmm/RootAnalysis/common/lib/libUtil.so && cd -
-
-
-copy:
-	mkdir -p ../../../../lib/$(SCRAM_ARCH)
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && cp ../../src/Bmm/RootAnalysis/common/lib/libUtil.so . && cd -
-
-
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
