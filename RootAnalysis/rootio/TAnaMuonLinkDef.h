@@ -4,7 +4,7 @@
 #pragma link off all classes;
 #pragma link off all functions;
 
-#pragma link C++ class xpTrack;
-#pragma link C++ class TAnaMuon;
+#pragma link C++ class xpTrack+;
+#pragma link C++ class TAnaMuon+;
 
 #endif

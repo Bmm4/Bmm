@@ -5,6 +5,6 @@
 #pragma link off all functions;
 
 #pragma link C++ class pair<int,pair<float,float> >;
-#pragma link C++ class TAnaCand;
+#pragma link C++ class TAnaCand+;
 
 #endif
