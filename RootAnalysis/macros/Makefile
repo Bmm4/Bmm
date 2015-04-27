@@ -52,9 +52,17 @@ $(addprefix obj/,%.o) : %.cc
 
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^ 
+ifeq ($(ROOT6),"yes")
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd -; 
+endif
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $< 
+ifeq ($(ROOT6),"yes")
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd -; 
+endif
 
 
 # -- Targets
