@@ -36,7 +36,7 @@ process.source = cms.Source(
          "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
  )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(1000) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -46,9 +46,10 @@ rootFileName = "test.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
-    verbose        = cms.untracked.int32(1),
+    verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
-    requireCand    =  cms.untracked.bool(True),
+    requireCand    =  cms.untracked.bool(False),
+    fullGenBlock   = cms.untracked.bool(True),
     fileName       = cms.untracked.string(rootFileName)
     )
 
