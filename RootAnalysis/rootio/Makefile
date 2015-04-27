@@ -103,10 +103,12 @@ copy:
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 
 # -- clean up
 clean:
 	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT) $(UTIL) $(UTILDICT)) 
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so libUtil.so *_rdict.pcm && cd - 
 #	rm -f $(DICTHEADERS) 
 	rm -f bin/runBmm
