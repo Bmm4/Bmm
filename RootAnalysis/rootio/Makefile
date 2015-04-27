@@ -40,10 +40,7 @@ GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 ANA00 := TAna01Event.o TGenCand.o TAnaTrack.o TSimpleTrack.o TAnaMuon.o TTrgObj.o TAnaCand.o TAnaVertex.o TAnaJet.o
 ANA00DICT := ${ANA00:.o=Dict.o}
 
-UTIL := PidTable.o PidData.o functions.o util.o hpl.o JSON.o
-UTILDICT := ${UTIL:.o=Dict.o}
-
-DICTHEADERS := ${ANA00:.o=Dict.h} ${UTIL:.o=Dict.h}
+DICTHEADERS := ${ANA00:.o=Dict.h}
 
 
 # -- Default rules
@@ -80,24 +77,20 @@ endif
 # ----------------------------------------------------------------------
 all: vars prep lib 
 
-lib: lib/libAna00.so lib/libUtil.so 
+lib: lib/libAna00.so 
 
 lib/libAna00.so: $(addprefix obj/, $(ANA00DICT) $(ANA00))
 	$(CXX) $(SOFLAGS) $(GLIBS) $(addprefix obj/,$(ANA00) $(ANA00DICT)) -o lib/libAna00.so
-
-lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
 
 # ================================================================================
 links:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so && cd -
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so && cd -
 
 
 copy:
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so . && cd -
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so . && cd -
 
 
 # -- preparatory setup
@@ -107,11 +100,9 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT) $(UTIL) $(UTILDICT)) 
+	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT)) 
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so libUtil.so *_rdict.pcm && cd - 
-#	rm -f $(DICTHEADERS) 
-	rm -f bin/runBmm
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so  *_rdict.pcm && cd - 
 	rm -f lib/*
 
 # -- ensure that cmsenv has been run
