@@ -84,7 +84,7 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(READER) $(DICT) runBmm.o) 
+	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runBmm.o) 
 	rm -f $(DICTHEADERS)  $(DICTSOURCES) 
 	rm -f bin/*
 	rm -f lib/*
