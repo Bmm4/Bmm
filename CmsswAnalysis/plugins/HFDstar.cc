@@ -4,7 +4,7 @@
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 
-#include "Bmm/RootAnalysis/macros/HFMasses.hh"
+#include "Bmm/RootAnalysis/common/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTwoParticleCombinatoricsNew.hh"
 
 using std::cout;

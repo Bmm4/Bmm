@@ -5,7 +5,7 @@
  */
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
-#include "Bmm/RootAnalysis/macros/HFMasses.hh"
+#include "Bmm/RootAnalysis/common/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
