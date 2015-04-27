@@ -26,6 +26,7 @@ void babar(double x, double y, double scale = 1.0, int prel = 0);
 void zone(int x = 1, int y = 1, TCanvas *c = 0);
 int  wait();
 void colors(int choice = 0);
+void replaceAll(std::string &s, const std::string &from, const std::string &to);
 
 // ======================================================================
 // Utitilities for displays and typing shortcuts
