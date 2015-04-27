@@ -2,8 +2,8 @@
 #include <cmath>
 #include <string>
 
-#include "rootio/PidTable.hh"
-#include "HFMasses.hh"
+#include "common/PidTable.hh"
+#include "common/HFMasses.hh"
 
 #include "candAna.hh"
 #include "candAnaMuMu.hh"

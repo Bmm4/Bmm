@@ -13,7 +13,7 @@
 #include "TPad.h"
 #include "TF1.h"
 
-#include "util.hh"
+#include "common/util.hh"
 
 ClassImp(plotClass)
 

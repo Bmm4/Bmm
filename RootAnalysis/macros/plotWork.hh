@@ -2,7 +2,7 @@
 #define PLOTWORK_h
 
 #include "plotClass.hh"
-#include "dataset.hh"
+#include "common/dataset.hh"
 #include "redTreeData.hh"
 
 // ----------------------------------------------------------------------

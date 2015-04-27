@@ -2,7 +2,7 @@
 #include <cmath>
 #include <string>
 
-#include "HFMasses.hh"
+#include "common/HFMasses.hh"
 #include "danekUtils.h"
 
 using namespace std;

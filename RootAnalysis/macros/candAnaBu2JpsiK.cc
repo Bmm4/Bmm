@@ -2,9 +2,9 @@
 #include <cmath>
 #include <string>
 
-#include "HFMasses.hh"
+#include "common/HFMasses.hh"
 
-#include "../macros/AnalysisDistribution.hh"
+#include "common/AnalysisDistribution.hh"
 
 using namespace std;
 

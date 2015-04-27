@@ -28,8 +28,8 @@
 #include <vector>
 #include <map>
 
-#include "dataset.hh"
-#include "selpoint.hh"
+#include "common/dataset.hh"
+#include "common/selpoint.hh"
 
 // ----------------------------------------------------------------------
 class plotClass: public TObject {

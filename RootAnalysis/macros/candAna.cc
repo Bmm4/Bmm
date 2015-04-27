@@ -1,7 +1,7 @@
 #include "candAna.hh"
 
-#include "HFMasses.hh"
-#include "AnalysisDistribution.hh"
+#include "common/HFMasses.hh"
+#include "common/AnalysisDistribution.hh"
 
 
 using namespace std;

@@ -15,8 +15,8 @@
 #include "TF1.h"
 #include "TFitResult.h"
 
-#include "dataset.hh"
-#include "util.hh"
+#include "common/dataset.hh"
+#include "common/util.hh"
 
 ClassImp(plotWork)
 
@@ -73,7 +73,7 @@ void plotWork::triggerEff(string ds, string dir) {
   } else {
     fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
     fHists[hist]->Sumw2();
-    setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
+    //    setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
   }
   
   sprintf(hist, "ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
@@ -82,7 +82,7 @@ void plotWork::triggerEff(string ds, string dir) {
   } else {
     fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
     fHists[hist]->Sumw2();
-    setHistTitles(fHists[hist], fDS[fCds], ahist, "Efficeincy");
+    //    setHistTitles(fHists[hist], fDS[fCds], ahist, "Efficeincy");
   }
   
   sprintf(hist, "NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
@@ -146,7 +146,7 @@ void plotWork::bookHist(int mode) {
       fHists[hist]->Reset();
     } else {
       fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
+      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
     }
 
     sprintf(hist, "ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
@@ -155,7 +155,7 @@ void plotWork::bookHist(int mode) {
       fHists[hist]->Reset();
     } else {
       fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
+      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
     }
 
     sprintf(hist, "NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
@@ -164,7 +164,7 @@ void plotWork::bookHist(int mode) {
       fHists[hist]->Reset();
     } else {
       fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
+      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
     }
 
   }    

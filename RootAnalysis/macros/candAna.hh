@@ -11,7 +11,7 @@
 #include "bmmReader.hh"
 #include "RedTreeData.hh"
 #include "preselection.hh"
-#include "../macros/AnalysisCuts.hh"
+#include "common/AnalysisCuts.hh"
 
 
 struct isoNumbers {

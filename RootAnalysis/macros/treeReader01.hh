@@ -20,7 +20,7 @@
 #include "rootio/TAnaCand.hh"
 #include "rootio/TAnaTrack.hh"
 #include "rootio/TAnaVertex.hh"
-#include "rootio/JSON.hh"
+#include "common/JSON.hh"
 
 #define DR      57.29577951
 #define PIPMASS 0.13957

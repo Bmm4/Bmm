@@ -24,7 +24,7 @@
 #include "rootio/TAnaJet.hh"
 #include "rootio/TAnaVertex.hh"
 
-#include "rootio/JSON.hh"
+#include "common/JSON.hh"
 
 #include "treeReader01.hh"
 

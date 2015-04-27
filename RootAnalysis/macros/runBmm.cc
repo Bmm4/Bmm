@@ -16,7 +16,7 @@
 #include "bmmReader.hh"
 #include "genAnalysis.hh"
 
-#include "util.hh"
+#include "common/util.hh"
 
 
 using namespace std;
