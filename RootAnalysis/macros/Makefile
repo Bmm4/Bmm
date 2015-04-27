@@ -33,9 +33,8 @@ EXTHEADERS    = -I..
 # -- Files
 CSTUFF = preselection.o 
 READER = treeReader01.o bmmReader.o genAnalysis.o \
-         AnalysisCuts.o AnalysisDistribution.o initFunc.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
-         util.o selpoint.o dataset.o plotClass.o plotWork.o
+         plotClass.o plotWork.o
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
@@ -73,7 +72,7 @@ bin: lib obj/runBmm.o
 prep:
 	mkdir -p obj bin lib
 	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
-	cd lib && ln -f -s ../../rootio/lib/libUtil.so && cd - 
+	cd lib && ln -f -s ../../common/lib/libUtil.so && cd - 
 
 # -- clean up
 clean:
