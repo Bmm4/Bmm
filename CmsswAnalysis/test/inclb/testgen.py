@@ -27,19 +27,19 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 
 # ----------------------------------------------------------------------
+FILE = os.getenv('FILE', "PYTHIA8_InclB2Mu_CUEP8M1_13TeV_GEN.root")
+cmsFileName = "file:./%s" % FILE
+rootFileName = "t1-%s" % FILE
 process.source = cms.Source(
- "PoolSource",
-  fileNames = cms.untracked.vstring(
-         "file:./PYTHIA8_InclB2Mu_CUEP8M1_13TeV_GEN.root"
- )
-)
+    "PoolSource",
+    fileNames = cms.untracked.vstring(cmsFileName)
+    )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 # ----------------------------------------------------------------------
-rootFileName = "gen.root"
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(0),
