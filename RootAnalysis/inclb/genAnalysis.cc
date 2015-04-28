@@ -1,5 +1,5 @@
 #include "genAnalysis.hh"
-#include "HFMasses.hh"
+#include "common/HFMasses.hh"
 
 #include "TRandom.h"
 #include <cmath>

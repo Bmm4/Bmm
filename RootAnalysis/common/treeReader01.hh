@@ -23,10 +23,6 @@
 #include "common/JSON.hh"
 
 #define DR      57.29577951
-#define PIPMASS 0.13957
-#define ELMASS  0.000511
-#define MUMASS  0.10567
-
 
 class treeReader01 {
 public:
