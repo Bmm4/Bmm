@@ -117,7 +117,11 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (beamSpotHandle.isValid())    {
     beamSpot = *beamSpotHandle;
   } else {
-    cout << "==>HFDumpStuff> No beam spot available from EventSetup" << endl;
+    static int firstPrint(0); 
+    if (0 == firstPrint) {
+      cout << "==>HFDumpStuff> No beam spot available from EventSetup" << endl;
+      ++firstPrint;
+    } 
   }
   
   double x0 = beamSpot.x0();
