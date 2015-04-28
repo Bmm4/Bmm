@@ -37,7 +37,7 @@ EXTHEADERS    = -I..
 
 
 # -- Files
-READER = treeReader01.o genAnalysis.o 
+READER = genAnalysis.o 
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
@@ -80,15 +80,17 @@ bin: lib obj/runInclB.o
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
-	cd lib && cp ../../rootio/lib/libAna00.so . && cd - 
-	cd lib && cp ../../common/lib/libUtil.so . && cd - 
+	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
+	cd lib && /bin/ls -1 ../../rootio/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
+	cd lib && ln -f -s ../../common/lib/libUtil.so && cd - 
+	cd lib && /bin/ls -1 ../../common/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
+
 
 # -- clean up
 clean:
 	rm -f $(addprefix obj/,$(READER) $(DICT) runInclB.o) 
 	rm -f $(DICTHEADERS)  $(DICTSOURCES) 
-	rm -f bin/*
-	rm -f lib/*
+	rm -f lib/* obj/* bin/*
 
 # -- ensure that the environment variable DELPHES is set
 vars:
