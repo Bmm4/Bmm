@@ -40,6 +40,7 @@ public:
   int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, double charge, double dRthrsh = 99999.9);
   int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, const TVector3 &vtx, 
 					    double charge, double dRthrsh = 99999.9, double dVtxRatioThrsh = 1.3);
+  bool                isAncestor(TGenCand *pMother, TGenCand *pParticle); 
 
   // -- reduced/truncated generator block, filled by plugins/HFTruthCandidate.cc
   int                 nGenT() {return fnGenT;}

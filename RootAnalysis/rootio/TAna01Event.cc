@@ -719,3 +719,18 @@ void TAna01Event::dump() {
 }
 
 
+// ----------------------------------------------------------------------
+bool TAna01Event::isAncestor(TGenCand *pMother, TGenCand *pParticle) {
+  if (pParticle == pMother) return true;
+  
+  TGenCand *pGen = pParticle; 
+  if (pGen->fMom1 < 0) return false; 
+  if (pGen->fMom1 > nGenCands()) return false; 
+
+  while ((pGen = getGenCand(pParticle->fMom1))) {
+    if (pGen == pMother) return true;
+    if (pGen->fMom1 < 0) break;
+    if (pGen->fMom1 > nGenCands()) break;
+  }
+  return false; 
+}
