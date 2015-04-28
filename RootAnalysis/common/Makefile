@@ -60,18 +60,12 @@ $(addprefix obj/,%.o) : %.cc
 #ifneq ($(findstring root/6,$(ROOTSYS)),)
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	ln -s ../../src/Bmm/RootAnalysis/common/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	cd -; 
 endif
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c  $< 
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	ln -s ../../src/Bmm/RootAnalysis/common/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	cd -; 
 endif
 
 .PHONY: prep all clean vars

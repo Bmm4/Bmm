@@ -27,7 +27,6 @@ ROOT6         = "no"
 endif
 
 CXXFLAGS      = -g -O0 -Wall -fPIC -pipe
-#CXXFLAGS      = -g -O3 -Wall -fPIC -pipe
 LD            = $(CXX)
 LDFLAGS       = -g
 SOFLAGS       = -shared
@@ -57,13 +56,13 @@ $(addprefix obj/,%.o) : %.cc
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^ 
 ifeq ($(ROOT6),"yes")
-	cp $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 endif
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $< 
 ifeq ($(ROOT6),"yes")
-	cp $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 endif
 
 
@@ -81,11 +80,8 @@ bin: lib obj/runInclB.o
 # -- preparatory setup
 prep:
 	mkdir -p obj bin lib
-#	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
-#	cd lib && ln -f -s ../../rootio/lib/libUtil.so && cd - 
 	cd lib && cp ../../rootio/lib/libAna00.so . && cd - 
-	cd lib && cp ../../rootio/lib/libUtil.so . && cd - 
-	cd lib && cp ../../rootio/lib/*Dict_rdict.pcm . && cd - 
+	cd lib && cp ../../common/lib/libUtil.so . && cd - 
 
 # -- clean up
 clean:

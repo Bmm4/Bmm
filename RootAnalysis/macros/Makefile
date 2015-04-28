@@ -54,14 +54,12 @@ $(addprefix obj/,%.o) : %.cc
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^ 
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd -; 
 endif
 
 %Dict.cc : %.hh
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $< 
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
-	cd -; 
 endif
 
 
