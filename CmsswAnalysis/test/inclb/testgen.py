@@ -58,7 +58,7 @@ process.stuffDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------
-process.load("InclB.CmsswAnalysis.HFMCTruth_cff")
+process.load("Bmm.CmsswAnalysis.HFMCTruth_cff")
 process.genDump.verbose = cms.untracked.int32(0)
 
 # ----------------------------------------------------------------------
