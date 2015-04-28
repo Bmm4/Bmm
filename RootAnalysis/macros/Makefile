@@ -19,8 +19,15 @@ else
   endif
 endif
 
+ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
+ifneq ($(findstring 6.,$(ROOT6)),)
+ROOT6         = "yes"
+else 
+ROOT6         = "no"
+endif
+
+
 CXXFLAGS      = -g -O0 -Wall -fPIC -pipe
-#CXXFLAGS      = -g -O3 -Wall -fPIC -pipe
 LD            = $(CXX)
 LDFLAGS       = -g
 SOFLAGS       = -shared

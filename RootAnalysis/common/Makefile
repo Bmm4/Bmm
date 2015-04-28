@@ -10,13 +10,6 @@ ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
 ROOTLIBS      = $(shell $(ROOTSYS)/bin/root-config --libs)
 ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
-ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
-ifneq ($(findstring 6.,$(ROOT6)),)
-ROOT6         = "yes"
-else 
-ROOT6         = "no"
-endif
-
 ifdef SCRAM_ARCH
   CXX         := $(shell scramv1 tool info gcc-cxxcompiler | grep CXX= | sed s/CXX=//)
 else 
@@ -26,6 +19,15 @@ else
     CXX         := c++
   endif
 endif
+
+ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
+ifneq ($(findstring 6.,$(ROOT6)),)
+ROOT6         = "yes"
+else 
+ROOT6         = "no"
+endif
+
+
 
 CXXFLAGS      = -g -Os -Wall -fPIC -pipe
 LD            = $(CXX)
