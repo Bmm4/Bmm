@@ -107,6 +107,11 @@ public:
   TAnaJet*            getTrackJet(int n);
   virtual TAnaJet*    addTrackJet();
 
+  // -- PFJets
+  int                 nPFJets() {return fnPFJets;}
+  TAnaJet*            getPFJet(int n);
+  virtual TAnaJet*    addPFJet();
+
 
   // ----------------------------------------------------------------------
   // -- Basic event and detector information
@@ -195,6 +200,9 @@ private:
 
   int               fnTrackJets;
   TClonesArray      *fTrackJets;
+
+  int               fnPFJets;
+  TClonesArray      *fPFJets;
 
   int               fnCandidates;
   TClonesArray      *fCandidates;

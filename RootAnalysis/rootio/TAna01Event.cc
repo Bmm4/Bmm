@@ -14,6 +14,7 @@ using namespace std;
 #define NTRGOBJ 1000
 #define NSIGTRACK 500000
 #define NCALOJET 1000
+#define NPFJET 1000
 #define NGENJET 1000
 #define NTRACKJET 1000
 #define NCANDIDATES 200000
@@ -50,6 +51,9 @@ TAna01Event::TAna01Event(Int_t Option) {
 
   fTrackJets       = new TClonesArray("TAnaJet", NTRACKJET);
   fnTrackJets      = 0;
+
+  fPFJets          = new TClonesArray("TAnaJet", NPFJET);
+  fnPFJets         = 0;
 
   fCandidates      = new TClonesArray("TAnaCand", NCANDIDATES);
   fnCandidates     = 0;
@@ -159,6 +163,14 @@ void TAna01Event::Clear(Option_t *option) {
   }
   fTrackJets->Clear(option);
   fnTrackJets = 0;
+
+  TAnaJet *pPFJet;
+  for (int i = 0; i < fnPFJets; i++) {
+    pPFJet = getPFJet(i);
+    pPFJet->clear();
+  }
+  fPFJets->Clear(option);
+  fnPFJets = 0;
 
   TAnaCand *pCand;
   for (int i = 0; i < fnCandidates; i++) {
@@ -592,10 +604,23 @@ TAnaJet* TAna01Event::getTrackJet(Int_t n) {
 }
 
 // ----------------------------------------------------------------------
+TAnaJet* TAna01Event::getPFJet(Int_t n) {
+  return (TAnaJet*)fPFJets->UncheckedAt(n);
+}
+
+// ----------------------------------------------------------------------
 TAnaJet* TAna01Event::addTrackJet() {
  TClonesArray& d = *fTrackJets;
  new(d[d.GetLast()+1]) TAnaJet(fnTrackJets);
  ++fnTrackJets;
+ return (TAnaJet*)d[d.GetLast()];
+}
+
+// ----------------------------------------------------------------------
+TAnaJet* TAna01Event::addPFJet() {
+ TClonesArray& d = *fPFJets;
+ new(d[d.GetLast()+1]) TAnaJet(fnPFJets);
+ ++fnPFJets;
  return (TAnaJet*)d[d.GetLast()];
 }
 

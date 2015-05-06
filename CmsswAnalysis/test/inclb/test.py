@@ -45,16 +45,16 @@ rootFileName = "test.root"
 
 # load all processes
 process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.load("InclB.CmsswAnalysis.HFRecoStuff_cff")
-process.load("InclB.CmsswAnalysis.HFMCTruth_cff")
+process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
+process.load("Bmm.CmsswAnalysis.HFMCTruth_cff")
 
-process.load("InclB.CmsswAnalysis.HFSignal_cff")
-process.load("InclB.CmsswAnalysis.HFGenJets_cff")
-process.load("InclB.CmsswAnalysis.HFPFJets_cff")
-process.load("InclB.CmsswAnalysis.HFCaloJets_cff")
-process.load("InclB.CmsswAnalysis.HFTrackJets_cff")
-process.load("InclB.CmsswAnalysis.HFCandidate_cff")
-process.load("InclB.CmsswAnalysis.HFCandidateNew_cff")
+process.load("Bmm.CmsswAnalysis.HFSignal_cff")
+process.load("Bmm.CmsswAnalysis.HFGenJets_cff")
+process.load("Bmm.CmsswAnalysis.HFPFJets_cff")
+process.load("Bmm.CmsswAnalysis.HFCaloJets_cff")
+process.load("Bmm.CmsswAnalysis.HFTrackJets_cff")
+process.load("Bmm.CmsswAnalysis.HFCandidate_cff")
+process.load("Bmm.CmsswAnalysis.HFCandidateNew_cff")
 
 
 # ----------------------------------------------------------------------
