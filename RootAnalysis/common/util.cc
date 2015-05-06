@@ -73,6 +73,7 @@ void colors(int i) {
     a = new TColor(638, 0.99, 0.00, 0.00, "lightred");
     a = new TColor(639, 0.99, 0.00, 0.00, "darkred");
   }
+  if (0) cout << a << endl;
 }
 
 
@@ -369,3 +370,45 @@ void replaceAll(string &str, const string &from, const string &to) {
     start_pos += to.length(); // In case 'to' contains 'from', like replacing 'x' with 'yx'
   }
 }
+
+// ----------------------------------------------------------------------
+bool isBeautyMesonWeak(int i) {
+  return (5 == TMath::Abs(i)/100);
+} 
+
+// ----------------------------------------------------------------------
+bool isCharmMesonWeak(int i) {
+  return (4 == TMath::Abs(i)/100);
+} 
+
+
+// ----------------------------------------------------------------------
+bool isBeautyMeson(int i) {
+  int rest = (TMath::Abs(i)%1000);
+  return (rest > 499 && rest < 600);  
+} 
+
+// ----------------------------------------------------------------------
+bool isBeautyBaryon(int i) {
+  int rest = (TMath::Abs(i)%1000);
+  return (rest > 4999 && rest < 6000);  
+} 
+
+// ----------------------------------------------------------------------
+bool isCharmMeson(int i) {
+  int rest = (TMath::Abs(i)%1000);
+  return (rest > 399 && rest < 500);  
+} 
+
+// ----------------------------------------------------------------------
+bool isCharmBaryon(int i) {
+  int rest = (TMath::Abs(i)%1000);
+  return (rest > 3999 && rest < 5000);  
+} 
+
+// ----------------------------------------------------------------------
+bool isLightMeson(int i) {
+  int rest = (TMath::Abs(i)%1000);
+  return (rest > 99 && rest < 400);  
+} 
+

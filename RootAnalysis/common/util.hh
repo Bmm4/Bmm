@@ -83,6 +83,15 @@ double dBF(double, double, double, double, double, double);
 double getError(TH1*);
 double getErrorRange(TH1*, int = -1, int = -1);
 
-
+// ======================================================================
+// -- gen utilities
+// ======================================================================
+bool isBeautyMeson(int i); 
+bool isBeautyMesonWeak(int i); 
+bool isBeautyBaryon(int i); 
+bool isCharmMeson(int i); 
+bool isCharmMesonWeak(int i); 
+bool isCharmBaryon(int i); 
+bool isLightMeson(int i); 
 
 #endif
