@@ -27,9 +27,12 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 
 # ----------------------------------------------------------------------
-FILE = os.getenv('FILE', "PYTHIA8_InclB2Mu_CUEP8M1_13TeV_GEN.root")
+FILE = os.getenv('FILE', "../../inclb-mc/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_GEN.root")
+fileNames = os.path.split(os.path.abspath(FILE))
 cmsFileName = "file:./%s" % FILE
-rootFileName = "t1-%s" % FILE
+rootFileName = "t1-%s" % fileNames[1]
+print "cmsFileName  = ", cmsFileName
+print "rootFileName = ", rootFileName
 process.source = cms.Source(
     "PoolSource",
     fileNames = cms.untracked.vstring(cmsFileName)
