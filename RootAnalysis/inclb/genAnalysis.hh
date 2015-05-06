@@ -37,9 +37,10 @@ public:
   void         fillHist();
   void         readCuts(TString filename, int dump = 1);
   void         initVariables();
-  int          muonType(TGenCand *pCand);
   void         bbbarCrossSection();
-  void         printBdecays(); 
+  void         printMuons(); 
+  int          muonType(TGenCand *pCand);
+  void         muonBinHist(int id, TH1D* h);
 
   int          NTOTAL; 
   double       XSECTION;
