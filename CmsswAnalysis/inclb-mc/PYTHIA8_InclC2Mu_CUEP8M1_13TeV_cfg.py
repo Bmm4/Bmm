@@ -22,7 +22,7 @@ process.load('Configuration.StandardSequences.EndOfProcess_cff')
 process.load('Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff')
 
 process.maxEvents = cms.untracked.PSet(
-    input = cms.untracked.int32(50000)
+    input = cms.untracked.int32(200000)
 )
 
 # Input source
@@ -34,7 +34,7 @@ process.options = cms.untracked.PSet(
 
 # Production Info
 process.configurationMetadata = cms.untracked.PSet(
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of c -> mu, 13TeV, Tune CUETP8M1'),
+    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation enriched with c -> mu, 13TeV, Tune CUETP8M1'),
     name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_InclC2Mu_CUEP8M1_13TeV_cff.py $'),
     version = cms.untracked.string('$Revision: 1.1 $')
 )
@@ -50,7 +50,7 @@ process.RAWSIMoutput = cms.OutputModule("PoolOutputModule",
         filterName = cms.untracked.string('')
     ),
     eventAutoFlushCompressedSize = cms.untracked.int32(5242880),
-    fileName = cms.untracked.string('PYTHIA8_InclC2Mu_CUEP8M1_13TeV_cff_py_GEN.root'),
+    fileName = cms.untracked.string('PYTHIA8_InclC2Mu_CUEP8M1_13TeV_GEN.root'),
     outputCommands = process.RAWSIMEventContent.outputCommands,
     splitLevel = cms.untracked.int32(0)
 )
@@ -70,8 +70,10 @@ process.cFilter = cms.EDFilter("PythiaFilter",
 
 
 process.muFilter = cms.EDFilter("PythiaFilter",
-    MaxEta = cms.untracked.double(9999.0),
-    MinEta = cms.untracked.double(-9999.0),
+    MaxEta = cms.untracked.double(3.0),
+    MaxPt = cms.untracked.double(9999.0),
+    MinEta = cms.untracked.double(-3.0),
+    MinPt = cms.untracked.double(2.5),
     ParticleID = cms.untracked.int32(13)
 )
 
@@ -160,9 +162,6 @@ process.generator = cms.EDFilter("Pythia8GeneratorFilter",
     pythiaPylistVerbosity = cms.untracked.int32(0)
 )
 
-process.load("FWCore.MessageLogger.MessageLogger_cfi")
-process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 
 process.ProductionFilterSequence = cms.Sequence(process.generator+process.cFilter+process.muFilter)
 
