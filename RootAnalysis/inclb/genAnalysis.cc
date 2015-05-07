@@ -31,7 +31,7 @@ void genAnalysis::startAnalysis() {
 // ----------------------------------------------------------------------
 void genAnalysis::eventProcessing() {
 
-  printMuons();
+  genMuons();
   //  bbbarCrossSection();
   // -- initialize all variables
   //  initVariables(); 
@@ -66,11 +66,17 @@ void genAnalysis::endAnalysis() {
 }
 
 // ----------------------------------------------------------------------
-void genAnalysis::printMuons() {
+void genAnalysis::genMuons() {
 
   static int first(1); 
   if (1 == first) {
     first = 0; 
+    TH1D *h = new TH1D("muPt", "muon pt", 50, 0., 100.); 
+    h = new TH1D("mu0Pt", "muon pt from B -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("mu1Pt", "muon pt from B -> C -> mu cascade decays", 50, 0., 100.); 
+    h = new TH1D("mu2Pt", "muon pt from C -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("mu3Pt", "muon pt from H -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("muEta", "muon eta", 50, -2.5, 2.5); 
     TH1D *h0 = new TH1D("muMom", "muon direct mother", 30, -1., 1.); 
     h0->SetLabelSize(0.03, "X");
     TH1D *h1 = new TH1D("muAnc", "muon ancestor", 64, 0., 64.); 
@@ -138,6 +144,10 @@ void genAnalysis::printMuons() {
 	   << " or from bBarMeson: " << fpEvt->isAncestor(bBarMeson, pCand) 
 	   << " muon type = " << muType
 	   << endl;
+      if (1  == muType) ((TH1D*)(fpHistFile->Get("mu0Pt")))->Fill(pCand->fP.Perp()); 
+      if (3  == muType) ((TH1D*)(fpHistFile->Get("mu1Pt")))->Fill(pCand->fP.Perp()); 
+      if (2  == muType) ((TH1D*)(fpHistFile->Get("mu2Pt")))->Fill(pCand->fP.Perp()); 
+      if (8 & muType) ((TH1D*)(fpHistFile->Get("mu3Pt")))->Fill(pCand->fP.Perp()); 
     }  
   }    
 
@@ -147,13 +157,6 @@ void genAnalysis::printMuons() {
     for (int iC = bMeson->fDau1; iC <= bMeson->fDau2; ++iC) {
       pCand = fpEvt->getGenCand(iC);
       pCand->dump(); 
-//       if (isBeautyMesonWeak(pCand->fID)) {
-// 	TGenCand *pC; 
-// 	for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
-// 	  pC = fpEvt->getGenCand(iD);
-// 	  cout << " "; pC->dump(); 
-// 	}
-//       }
     }
   }
 
@@ -163,13 +166,6 @@ void genAnalysis::printMuons() {
     for (int iC = bBarMeson->fDau1; iC <= bBarMeson->fDau2; ++iC) {
       pCand = fpEvt->getGenCand(iC);
       pCand->dump(); 
-//       if (isBeautyMesonWeak(pCand->fID)) {
-// 	TGenCand *pC; 
-// 	for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
-// 	  pC = fpEvt->getGenCand(iD);
-// 	  cout << " "; pC->dump(); 
-// 	}
-//       }
     }
   }
 
@@ -390,12 +386,6 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
 // ---------------------------------------------------------------------------------------
 void genAnalysis::muonBinHist(int id, TH1D *h) {
-  //  double bin(0); 
-  //   h->Fill(Form("%d", id), 1.); 
-  //   if (id == -130) {
-  //     cout << "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX -130" << endl;
-  //   }
-  //   return;
   for (int i = 1; i < h->GetNbinsX(); ++i) {
     if (id == atoi(h->GetXaxis()->GetBinLabel(i))) {
       h->AddBinContent(i); 
