@@ -22,12 +22,7 @@
 #include "rootio/TAnaJet.hh"
 #include "rootio/TAnaVertex.hh"
 
-#include "treeReader01.hh"
-
-#define PIPMASS 0.13957
-#define ELMASS  0.000511
-#define MUMASS  0.10567
-
+#include "common/treeReader01.hh"
 
 class genAnalysis : public treeReader01 {
 
@@ -42,9 +37,10 @@ public:
   void         fillHist();
   void         readCuts(TString filename, int dump = 1);
   void         initVariables();
-  int          muonType(TGenCand *pCand);
   void         bbbarCrossSection();
-  void         printBdecays(); 
+  void         genMuons(); 
+  int          muonType(TGenCand *pCand);
+  void         muonBinHist(int id, TH1D* h);
 
   int          NTOTAL; 
   double       XSECTION;

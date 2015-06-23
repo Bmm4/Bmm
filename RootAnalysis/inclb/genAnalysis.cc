@@ -1,5 +1,6 @@
 #include "genAnalysis.hh"
-#include "HFMasses.hh"
+#include "common/HFMasses.hh"
+#include "common/util.hh"
 
 #include "TRandom.h"
 #include <cmath>
@@ -30,7 +31,7 @@ void genAnalysis::startAnalysis() {
 // ----------------------------------------------------------------------
 void genAnalysis::eventProcessing() {
 
-  printBdecays();
+  genMuons();
   //  bbbarCrossSection();
   // -- initialize all variables
   //  initVariables(); 
@@ -65,65 +66,108 @@ void genAnalysis::endAnalysis() {
 }
 
 // ----------------------------------------------------------------------
-void genAnalysis::printBdecays() {
+void genAnalysis::genMuons() {
+
+  static int first(1); 
+  if (1 == first) {
+    first = 0; 
+    TH1D *h = new TH1D("muPt", "muon pt", 50, 0., 100.); 
+    h = new TH1D("mu0Pt", "muon pt from B -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("mu1Pt", "muon pt from B -> C -> mu cascade decays", 50, 0., 100.); 
+    h = new TH1D("mu2Pt", "muon pt from C -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("mu3Pt", "muon pt from H -> mu direct decays", 50, 0., 100.); 
+    h = new TH1D("muEta", "muon eta", 50, -2.5, 2.5); 
+    TH1D *h0 = new TH1D("muMom", "muon direct mother", 30, -1., 1.); 
+    h0->SetLabelSize(0.03, "X");
+    TH1D *h1 = new TH1D("muAnc", "muon ancestor", 64, 0., 64.); 
+    vector<int> mid; 
+    static const int arr[] = {511, 521, 531, 5122, 411, 421, 431, 4122, 130};
+    vector<int> mId (arr, arr + sizeof(arr) / sizeof(arr[0]) );
+    int center = h0->FindBin(0.); 
+    for (unsigned int i = 0; i < mId.size(); ++i) {
+      h0->GetXaxis()->SetBinLabel(center+1+i, Form("%d", mId[i]));
+      h0->GetXaxis()->SetBinLabel(center-1-i, Form("%d", -mId[i]));
+    }
+    h0->SetLabelSize(0.03, "X");
+    if (0) cout << h1 << endl;
+
+    for (int i = 1; i < h0->GetNbinsX(); ++i) {
+      cout << Form("%3d  ", i) 
+	   << h0->GetXaxis()->GetBinLabel(i) << " -> " << atoi(h0->GetXaxis()->GetBinLabel(i))
+	   << endl;
+    }
+  }    
   
-  TGenCand *pCand, *pD; 
-  int muType(0), evtType(0), nevt(0), bevt(0), bacc(0); 
-  bool acc(false);
-  double pt(0.), eta(0.); 
+  TGenCand *pCand; 
+  cout << "======================================================================" << endl;
   cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
-  int b(-1), bBar(-1); 
+  fpEvt->dumpGenBlock(); 
+  cout << "======================================================================" << endl;
+  cout << "Check for b and bBar" << endl;
+  TGenCand *bMeson(0), *bBarMeson(0); 
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
-
-    if (pCand->fID == 5) {
-      b = iC; 
-    } 
-
-    if (pCand->fID == -5) {
-      bBar = iC; 
-    } 
-
+    if (TMath::Abs(pCand->fID) == 5 && (pCand->fDau1 != pCand->fDau2)) {
+      pCand->dump();
+      TGenCand *pC; 
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pC = fpEvt->getGenCand(iD);
+	if (isBeautyMeson(pC->fID) || isBeautyBaryon(pC->fID)) {
+	  if (pC->fID > 0) {
+	    bMeson = pC; 
+	    cout << "bMeson    "; 
+	  } else {
+	    bBarMeson = pC; 
+	    cout << "bBarMeson "; 
+	  }
+	} else {
+	    cout << "          "; 
+	}
+	pC->dump();
+      }
+    }
+    if (bMeson && bBarMeson) break;
   }
 
-
+  TH1D *h0 = (TH1D*)fpHistFile->Get("muMom"); 
+  TH1D *h1 = (TH1D*)fpHistFile->Get("muAnc"); 
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
+    if (13 == TMath::Abs(pCand->fID)) {
+      int muMom(-1), muType(0); 
+      muType = muonType(pCand); 
+      h1->Fill(muType);
+      muMom = (pCand->fMom1 > -1 && pCand->fMom1 < fpEvt->nGenCands() ? fpEvt->getGenCand(pCand->fMom1)->fID: -1);
+      muonBinHist(muMom, h0);
+      pCand->dump();
+      cout << "MUON from bMeson: " << fpEvt->isAncestor(bMeson, pCand) 
+	   << " or from bBarMeson: " << fpEvt->isAncestor(bBarMeson, pCand) 
+	   << " muon type = " << muType
+	   << endl;
+      if (1  == muType) ((TH1D*)(fpHistFile->Get("mu0Pt")))->Fill(pCand->fP.Perp()); 
+      if (3  == muType) ((TH1D*)(fpHistFile->Get("mu1Pt")))->Fill(pCand->fP.Perp()); 
+      if (2  == muType) ((TH1D*)(fpHistFile->Get("mu2Pt")))->Fill(pCand->fP.Perp()); 
+      if (8 & muType) ((TH1D*)(fpHistFile->Get("mu3Pt")))->Fill(pCand->fP.Perp()); 
+    }  
   }    
 
-
-  TAnaCand *pC; 
-  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    pC = fpEvt->getCand(iC);
-    cout << "typ " << pC->fType << endl;
-  }
-
-  if (fpEvt->nRecTracks() > 0) {
-    TAnaTrack *pT;       
-    cout << "rec tracks: " << fpEvt->nRecTracks() << endl;
-    for (int it = 0; it < fpEvt->nRecTracks(); ++it) {
-      pT = fpEvt->getRecTrack(it); 
-      pT->dump();
+  if (bMeson) {
+    cout << "bMeson daughters" << endl;
+    bMeson->dump(); 
+    for (int iC = bMeson->fDau1; iC <= bMeson->fDau2; ++iC) {
+      pCand = fpEvt->getGenCand(iC);
+      pCand->dump(); 
     }
   }
 
-  TString a; 
-  int ps(0); 
-  bool result(false), wasRun(false), error(false); 
-
-  for (int i = 0; i < NHLT; ++i) {
-    result = wasRun = error = false;
-    a = fpEvt->fHLTNames[i]; 
-    ps = fpEvt->fHLTPrescale[i]; 
-    wasRun = fpEvt->fHLTWasRun[i]; 
-    result = fpEvt->fHLTResult[i]; 
-    error  = fpEvt->fHLTError[i]; 
-
-    if (wasRun && result) {
-      cout << a << endl;
-    }      
+  if (bBarMeson) {
+    cout << "bBarMeson daughters" << endl;
+    bBarMeson->dump(); 
+    for (int iC = bBarMeson->fDau1; iC <= bBarMeson->fDau2; ++iC) {
+      pCand = fpEvt->getGenCand(iC);
+      pCand->dump(); 
+    }
   }
-
 
 }
 
@@ -180,7 +224,7 @@ int genAnalysis::muonType(TGenCand *pCand) {
   int rest(0), ganz(0); 
   int momI = pCand->fMom1;
   TGenCand *pMom;
-  bool foundT(false), foundC(false), foundB(false), light(false); 
+  bool foundT(false), foundC(false), foundB(false), light(false), foundX(false); 
 
   int result(1024); 
 
@@ -207,21 +251,23 @@ int genAnalysis::muonType(TGenCand *pCand) {
       break;
     }
 
+    // -- hit a b baryon
     if (ganz == 5) {
       foundB = 1; 
       break;
     }
  
+    // -- hit a c baryon
     if (ganz == 4) {
       foundC = 1; 
-      break;
     }
     
+    // -- muon from tau decay
     if (rest == 15) {
       foundT = 1; 
     }
 
-    if (15 < rest && rest < 300) {
+    if (15 < rest && rest < 400) {
       light = 1; 
     }
 
@@ -233,14 +279,20 @@ int genAnalysis::muonType(TGenCand *pCand) {
       foundB = 1; 
       break;
     }
+
+    if (rest > 1999 && rest < 5999) {
+      foundX = 1; 
+      //      break;
+    }
   }
 
   result = 0; 
 
-  if (foundB) result += 1; 
-  if (foundC) result += 2; 
-  if (foundT) result += 4; 
-  if (light)  result += 8; 
+  if (foundB) result +=  1; 
+  if (foundC) result +=  2; 
+  if (foundT) result +=  4; 
+  if (light)  result +=  8; 
+  if (foundX) result += 16; 
 
 //   if (result > -1) {
 //     cout << fEvent << " " << str << " --> " << result << endl;
@@ -278,6 +330,8 @@ void genAnalysis::bookHist() {
   h = new TH1D("e110", "evt pt ==1", 100, 0., 20.);
   h = new TH1D("e111", "evt pt ==1", 100, 0., 20.);
   h = new TH1D("e112", "evt acc ==1", 100, 0., 20.);
+
+  if (0) cout << h << endl;
 
   // -- Reduced Tree
   fTree = new TTree("events", "events");
@@ -327,4 +381,15 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
   if (dump)  cout << "------------------------------------" << endl;
 
+}
+
+
+// ---------------------------------------------------------------------------------------
+void genAnalysis::muonBinHist(int id, TH1D *h) {
+  for (int i = 1; i < h->GetNbinsX(); ++i) {
+    if (id == atoi(h->GetXaxis()->GetBinLabel(i))) {
+      h->AddBinContent(i); 
+      break;
+    }
+  }
 }

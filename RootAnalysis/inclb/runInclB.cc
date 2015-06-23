@@ -15,7 +15,7 @@
 
 #include "genAnalysis.hh"
 
-#include "rootio/util.hh"
+#include "common/util.hh"
 
 
 using namespace std;

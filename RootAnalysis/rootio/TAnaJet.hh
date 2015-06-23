@@ -50,8 +50,11 @@ public:
   int            getTrack(int n) {return fTracksIndex[n];}
   
   // -- Vertex
-  TAnaVertex  fVtx;
+  TAnaVertex     fVtx;
+  int            ftrjpvindx;
 
+  // -- b tag
+  double         fbtag;
 
 private: 
 

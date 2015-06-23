@@ -19,8 +19,14 @@ else
   endif
 endif
 
+ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
+ifneq ($(findstring 6.,$(ROOT6)),)
+ROOT6         = "yes"
+else 
+ROOT6         = "no"
+endif
+
 CXXFLAGS      = -g -O0 -Wall -fPIC -pipe
-#CXXFLAGS      = -g -O3 -Wall -fPIC -pipe
 LD            = $(CXX)
 LDFLAGS       = -g
 SOFLAGS       = -shared
@@ -32,12 +38,14 @@ EXTHEADERS    = -I..
 
 # -- Files
 CSTUFF = preselection.o 
-READER = treeReader01.o bmmReader.o genAnalysis.o \
+READER = bmmReader.o genAnalysis.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
          plotClass.o plotWork.o
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
+
+#OTHERPCM = $(shell find ../rootio/lib/*.pcm ../common/lib/*.pcm) 
 
 
 # -- Default rules
@@ -62,6 +70,9 @@ ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 endif
 
+$(addprefix lib/,%.pcm) :  
+	cd lib && ln -s $< && cd - 
+
 
 # -- Targets
 all: vars prep lib bin
@@ -75,10 +86,12 @@ bin: lib obj/runBmm.o
 
 
 # -- preparatory setup
-prep:
+prep: 
 	mkdir -p obj bin lib
 	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
+	cd lib && /bin/ls -1 ../../rootio/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
 	cd lib && ln -f -s ../../common/lib/libUtil.so && cd - 
+	cd lib && /bin/ls -1 ../../common/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
 
 # -- clean up
 clean:
