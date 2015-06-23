@@ -33,7 +33,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
-         "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
+         "/store/user/ursl/files/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen-0000.root"
  )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
