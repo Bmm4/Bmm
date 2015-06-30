@@ -26,7 +26,7 @@
 
 #include "common/JSON.hh"
 
-#include "common/treeReader01.hh"
+#include "treeReader01.hh"
 
 #define DR      57.29577951
 

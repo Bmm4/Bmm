@@ -40,8 +40,7 @@ GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 EXTHEADERS    = -I..
 
 # -- Files
-UTIL     := treeReader01.o \
-            PidTable.o PidData.o \
+UTIL     := PidTable.o PidData.o \
             AnalysisCuts.o AnalysisDistribution.o selpoint.o dataset.o \
             util.o initFunc.o hpl.o JSON.o
 UTILDICT := ${UTIL:.o=Dict.o}
