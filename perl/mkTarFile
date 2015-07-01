@@ -34,6 +34,7 @@ if ($opt_i) {
 
 $exclude .= " --exclude .git";
 $exclude .= " --exclude obj/\\*.o";
+$exclude .= " --exclude chains";
 $exclude .= " --exclude Bmm/CmsswAnalysis/test";
 $exclude .= " --exclude \\*.root";
 $exclude .= " --exclude \\*.pdf";
