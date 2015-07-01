@@ -9,6 +9,7 @@
 # History   
 # -------   
 #           TODO:     allow more than 256 filenames!
+#           15/07/01  add file catalog barename automatically as name
 #           11/11/10  Bug fix to produce py files with last batch of files even if not > $opt_e (!)
 #           11/05/24  Will this odyssee ever end? bug fix when searching for /store in @files instead of @afiles
 #           11/05/17  Added -l to split a file with input lines only (and no event numbers)
@@ -35,6 +36,8 @@ $directory = `pwd`;     chop($directory);
 @args = @ARGV; 
 use Getopt::Std;
 getopts('c:e:d:f:ln:rs:t:vx:');
+
+my $catalogName = ""; 
 
 # -- this is just for convenience in here
 if ($opt_c) {
@@ -71,6 +74,9 @@ if (!$opt_n && !$opt_e) {
 }
 
 if ($opt_f) {
+    @tmp = split(/\//, $opt_f); 
+    $catalogName = pop(@tmp); 
+
     open(IN, "$opt_f") || die "cannot open $opt_f\n";
     @afiles = <IN>;
     close IN; 
@@ -256,8 +262,10 @@ sub createPyFilesPerRun() {
 	}
 	for ($iJob = 0; $iJob < $njobs; $iJob++) {
 
+	    $blockName = sprintf("-%s", $catalogName);
+
 	    if ($opt_s) {
-		$blockName = sprintf("-%s", $opt_s);
+		$blockName .= sprintf("-%s", $opt_s);
 	    }
 
 	    if ($opt_r) {
@@ -374,7 +382,8 @@ sub createPyFilesPerBlock() {
     
     for ($iFile = 0; $iFile <= $#fileList; $iFile++) {
 
-	$blockName = sprintf("-%s", $opt_s);
+	$blockName = sprintf("-%s", $catalogName);
+	$blockName .= sprintf("-%s", $opt_s);
 
 	push(@fList, $fileList[$iFile]->{FILELIST}); 
 	
@@ -456,7 +465,8 @@ sub createPyFilesWithoutEvents() {
     for ($iFile = 0; $iFile <= $#fileList; $iFile++) {
 	print "$fileList[$iFile]->{FILELIST}\n";
 
-	$blockName = sprintf("-%s", $opt_s);
+	$blockName = sprintf("-%s", $catalogName);
+	$blockName .= sprintf("-%s", $opt_s);
 	push(@fList, $fileList[$iFile]->{FILELIST}); 
 	$n++; 
 	
