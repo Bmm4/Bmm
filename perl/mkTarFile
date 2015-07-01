@@ -1,5 +1,14 @@
 #!/usr/bin/env perl
 
+# ----------------------------------------------------------------------
+#
+# Usage: cd $BMMBASE/..; $BMMBASE/perl/mkTarFile 150701.tar.gz
+# -----  cd $BMMBASE/../..; src/$BMMBASE/perl/mkTarFile -c 150701nc.tar.gz
+#
+#          -c  complete (for jobs without compilation)
+#          -s  slim format (not supported at the moment)
+# ----------------------------------------------------------------------
+
 # -s slim
 # -c complete (to be invoked from CMSSW_X_Y_Z, allows to be used w/o compilation)
 
@@ -23,6 +32,7 @@ if ($opt_i) {
     $include .= " $opt_i";
 }
 
+$exclude .= " --exclude .git";
 $exclude .= " --exclude obj/\\*.o";
 $exclude .= " --exclude Bmm/CmsswAnalysis/test";
 $exclude .= " --exclude \\*.root";
