@@ -40,7 +40,7 @@ sub dumpCheckChain() {
     open(FH, ">checkChain.C") || die "Cannot open checkChain.C\n";
     print FH <<"EOF";
 
-#include <iostream.h>
+#include <iostream>
 #include <TString.h>
 
 void checkChain(const char *chain, const char *tree) {
