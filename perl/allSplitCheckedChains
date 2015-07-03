@@ -1,0 +1,164 @@
+#!/usr/bin/env perl
+
+# ----------------------------------------------------------------------
+# usage: 
+#         cd chains/jobs
+#         allSplitCheckedChains
+#
+#
+# ----------------------------------------------------------------------
+
+use lib '/shome/ursl/perl/modules/Tie-IxHash-1.23/lib';
+use Tie::IxHash;
+
+use Getopt::Std;
+getopts('y:n:m:v:x:');
+
+# -- data chain size
+if (!$opt_n) {
+    $opt_n = "350000";
+}
+
+# -- MC chain size
+if (!$opt_m) {
+    $opt_m = "700000";
+}
+
+if (!$opt_v) {
+    $opt_v = "v16";
+}
+
+tie %catalog, "Tie::IxHash";
+
+if ($opt_y eq "2011") {
+    %catalog = (
+	"cbmm-2011-$opt_v-mix-Bs2MuMu" => "signal MC",
+	"cbmm-2011-$opt_v-mix-Bd2MuMu" => "signal MC",
+	"cbmm-2011-$opt_v-mix-Bu2JpsiK" => "signal MC",
+	"cbmm-2011-$opt_v-2e33-accBu2JpsiK"  => "signal MC",
+	"cbmm-2011-$opt_v-2e33-accBs2JpsiPhi"  => "signal MC",
+	"cbmm-2011-$opt_v-mix-Bs2JpsiPhi" => "signal MC",
+	# 
+	"cbmm-2011-$opt_v-2e33-Bd2PiPi" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bd2KPi" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bd2KK" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bd2PiMuNu" => "bg MC",
+	# 
+	"cbmm-2011-$opt_v-2e33-Bd2DstarPi" => "other MC",
+	"cbmm-2011-$opt_v-2e33-Bd2RhoPi" => "other MC",
+	"cbmm-2011-$opt_v-2e33-Bu2JpsiPi" => "other MC",
+	# 
+	"cbmm-2011-$opt_v-2e33-Bs2KPi" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bs2KK" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bs2PiPi" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bs2KMuNu" => "bg MC",
+	# 
+	"cbmm-2011-$opt_v-2e33-Lb2PMuNu" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Lb2PiP" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Lb2KP" => "bg MC",
+	# 
+	"cbmm-2011-$opt_v-2e33-Bu2KMuMu" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bu2PiMuMu" => "bg MC",
+	"cbmm-2011-$opt_v-2e33-Bs2PhiMuMu" => "bg MC",
+	# 
+	"cbmm-2011-$opt_v-MuOnia__Run2011A-08Nov2011-v1" => "data",
+	"cbmm-2011-$opt_v-MuOnia__Run2011B-19Nov2011-v1" => "data"
+	); 
+}
+
+
+if ($opt_y eq "2012") {
+    %catalog = (
+
+	"cbmm-2012-v16-BsToKK_2KPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BsToKPi_KPiPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BsToKPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BsToPiPi_2PiPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BsToPiPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BsToKK_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BsToKMuNu_KMuNuEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BsToKMuNu_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BsToMuMuGamma_MuMuEtaPtGammaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BsToMuMuGamma_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+
+	"cbmm-2012-v16-BdToKPi_KPiPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToKPi_EtaPtFilter_8TeV_ext-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToKK_2KPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToKK_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToKPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToPiPi_2PiPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v2" => "bg MC",
+	"cbmm-2012-v16-BdToPiPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToPiPi_EtaPtFilter_8TeV_ext-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToPiMuNu_PiMuNuPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToPiMuNu_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToMuMuPi0_MuMuPi0EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToMuMuPi0_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BuToMuMuK0_MuMuK0EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToMuMuK0_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToMuMuGamma_MuMuEtaPtGammaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BdToMuMuGamma_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+
+	"cbmm-2012-v16-BuToMuMuPi_MuMuPiEtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BuToMuMuPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BuToMuMuK_MuMuKEtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-BuToMuMuK_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BuToMuMuK_EtaPtFilter_8TeV_ext-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+
+	"cbmm-2012-v16-LambdaBToPK_PKPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v2" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPK_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPPi_PPiPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPPi_EtaPtFilter_8TeV_ext-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPMuNu_PMuNuPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "bg MC",
+	"cbmm-2012-v16-LambdaBToPMuNu_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+
+	"cbmm-2012-v16-BdToRohPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BuToJpsiPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+	"cbmm-2012-v16-BdToD0starPi_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "bg MC",
+
+	"cbmm-2012-v16-BdToMuMu_BdFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "signal MC",
+	"cbmm-2012-v16-BdToMuMu_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+
+	"cbmm-2012-v16-BsToMuMu_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_EtaPtFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_M-51_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v2" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_M-57_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v2" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_8TeV-pythia6-evtgen__Summer12_DR53X-HLT5E33_PU_S10_START53_V19A-v1" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_8TeV-pythia6-evtgen__Summer12_DR53X-HLT7E33_PU_S10_START53_V19C-v1" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_8TeV-pythia6-evtgen__Summer12_DR53X-HLT7E33_PU_S10_START53_V19B-v1" => "signal MC",
+	"cbmm-2012-v16-BsToMuMu_8TeV-pythia6-evtgen__Summer12_DR53X-HLT8E33_PU_S10_START53_V19D-v1" => "signal MC",
+
+	"cbmm-2012-v16-BsToJPsiPhi_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+	"cbmm-2012-v16-BsToJPsiPhi_2K2MuPtEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "signal MC",
+	"cbmm-2012-v16-BsToJPsiPhi_2K2MuFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_K2MuFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7A-v2" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V7C-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V19A-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V19B-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V19C-v1" => "signal MC",
+	"cbmm-2012-v16-BuToJPsiK_8TeV-pythia6-evtgen__Summer12_DR53X-PU_S10_START53_V19D-v1" => "signal MC",
+
+	"cbmm-2012-v16-MuOnia__Run2012A-13Jul2012-v1" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012A-recover-06Aug2012-v1" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012B-13Jul2012-v1" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012C-24August2012-v1" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012C-PromptReco-v2" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012D-PromptReco-v1" => "data",
+	"cbmm-2012-v16-MuOnia__Run2012D-16Jan2013-v1" => "data",
+
+	); 
+}
+
+	
+
+
+foreach $chain (keys %catalog) {
+    $chunk = $opt_m; 
+    if ($catalog{$chain} =~ /data/) {
+	$chunk = $opt_n;
+    }
+    print "splitCheckedChain -n $chunk $chain\n";
+    system("splitCheckedChain -n $chunk ../$chain"); 
+}
