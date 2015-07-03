@@ -29,8 +29,8 @@ void genAnalysis::startAnalysis() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::eventProcessing() {
-
-  printBdecays();
+  genB();
+  //  printBdecays();
   //  bbbarCrossSection();
   // -- initialize all variables
   //  initVariables(); 
@@ -63,6 +63,39 @@ void genAnalysis::endAnalysis() {
     cout << "b-mu in acc xsection: " << n1/(NTOTAL)*XSECTION << endl;
   }
 }
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::genB() {
+
+  static int first(1); 
+  if (1 == first) {
+    first = 0; 
+    static const double aparticles[] = {511, 521, 531, 5122};
+    vector<int> particles(aparticles, aparticles + sizeof(aparticles)/sizeof(aparticles[0]));
+    for (unsigned int i = 0; i < particles.size(); ++i) {
+      new TH1D(Form("pt%d", particles[i]), Form("pt%d", particles[i]), 40, 0., 20.); 
+      new TH1D(Form("eta%d", particles[i]), Form("eta%d", particles[i]), 50, -10., 10.); 
+    }
+  }
+  
+  TGenCand *pCand, *pD; 
+  int muType(0), evtType(0), nevt(0), bevt(0), bacc(0); 
+  bool acc(false);
+  double pt(0.), eta(0.); 
+  //  cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    int aid = TMath::Abs(pCand->fID); 
+
+    if (531 == aid || 521 == aid || 511 == aid || 5122 == aid) {
+      ((TH1D*)fpHistFile->Get(Form("pt%d", aid)))->Fill(pCand->fP.Perp()); 
+      ((TH1D*)fpHistFile->Get(Form("eta%d", aid)))->Fill(pCand->fP.Eta()); 
+    }
+  }
+
+}
+
 
 // ----------------------------------------------------------------------
 void genAnalysis::printBdecays() {
