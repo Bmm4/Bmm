@@ -37,9 +37,9 @@ void plotClass::loadFiles(string afiles) {
         sname = "pythia6"; 
         sdecay = "PYTHIA6"; 
 	
-	ds->fColor = kBlue; 
-	ds->fLcolor = kBlue; 
-	ds->fFcolor = kBlue; 
+	ds->fColor = kRed-3; 
+	ds->fLcolor = kRed-3; 
+	ds->fFcolor = kRed-3; 
 	ds->fSymbol = 20; 
 	
 	ds->fF      = pF; 
@@ -52,13 +52,31 @@ void plotClass::loadFiles(string afiles) {
       }
       
 
-      if (string::npos != stype.find("pythia8")) {
-        sname = "pythia8"; 
-        sdecay = "PYTHIA8"; 
+      if (string::npos != stype.find("pythia8soft")) {
+        sname = "pythia8soft"; 
+        sdecay = "PYTHIA8 SoftQCD"; 
 	
 	ds->fColor = kBlue+2; 
 	ds->fLcolor = kBlue+2; 
 	ds->fFcolor = kBlue+2; 
+	ds->fSymbol = 21; 
+	
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fName   = sdecay; 
+	ds->fFillStyle = 3356; 
+	fDS.insert(make_pair(sname, ds)); 
+	cout << "inserted " << sname << " with ... into fDS" << endl;
+      }
+
+      if (string::npos != stype.find("pythia8hard")) {
+        sname = "pythia8hard"; 
+        sdecay = "PYTHIA8 HardQCD"; 
+	
+	ds->fColor = kGreen+2; 
+	ds->fLcolor = kGreen+2; 
+	ds->fFcolor = kGreen+2; 
 	ds->fSymbol = 21; 
 	
 	ds->fF      = pF; 

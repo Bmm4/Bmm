@@ -19,7 +19,7 @@ public :
   void   bookHist(int mode);
 
   // -- validate gen production
-  void   genValidation(std::string hist = "eta511", std::string ds1 = "pythia8", std::string ds2 = "pythia6"); 
+  void   genValidation(std::string hist = "eta511", std::string ds1 = "pythia8soft", std::string ds2 = "pythia8hard", std::string ds3 = "pythia6"); 
   void   loopFunction1(); 
 
 
