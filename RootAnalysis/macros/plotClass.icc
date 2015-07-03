@@ -27,13 +27,49 @@ void plotClass::loadFiles(string afiles) {
     } else {
       // -- MC
       pF = loadFile(sfile); 
-      //       TTree *t = (TTree*)pF->Get("events"); 
-      //       int nevt = t->GetEntries();
       cout << "stype: " << stype << endl;
       
       dataset *ds = new dataset(); 
       ds->fSize = 1; 
       ds->fWidth = 2; 
+
+      if (string::npos != stype.find("pythia6")) {
+        sname = "pythia6"; 
+        sdecay = "PYTHIA6"; 
+	
+	ds->fColor = kBlue; 
+	ds->fLcolor = kBlue; 
+	ds->fFcolor = kBlue; 
+	ds->fSymbol = 20; 
+	
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fName   = sdecay; 
+	ds->fFillStyle = 3365; 
+	fDS.insert(make_pair(sname, ds)); 
+	cout << "inserted " << sname << " with ... into fDS" << endl;
+      }
+      
+
+      if (string::npos != stype.find("pythia8")) {
+        sname = "pythia8"; 
+        sdecay = "PYTHIA8"; 
+	
+	ds->fColor = kBlue+2; 
+	ds->fLcolor = kBlue+2; 
+	ds->fFcolor = kBlue+2; 
+	ds->fSymbol = 21; 
+	
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fName   = sdecay; 
+	ds->fFillStyle = 3356; 
+	fDS.insert(make_pair(sname, ds)); 
+	cout << "inserted " << sname << " with ... into fDS" << endl;
+      }
+
 
       if (string::npos != stype.find("bssg")) {
         sname = "bssg"; 
@@ -50,6 +86,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
+	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
       if (string::npos != stype.find("nosg")) {
@@ -67,9 +104,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fName   = sdecay; 
 	ds->fFillStyle = 3356; 
 	fDS.insert(make_pair(sname, ds)); 
+	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-      cout << "inserted " << sname << " with ... into fDS" << endl;
 
 
     } 
