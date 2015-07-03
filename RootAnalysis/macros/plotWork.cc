@@ -53,123 +53,54 @@ void plotWork::makeAll(int bitmask) {
 
 
 // ----------------------------------------------------------------------
-void plotWork::triggerEff(string ds, string dir) {
+void plotWork::genValidation(string hist, string ds1, string ds2) {
+  cout << ds1 << " vs. " << ds2 << endl;  
 
-  //  TFile *f = TFile::Open(fHistFileName.c_str(), "UPDATE");
-  //  cout << "file: " << f << endl;
- 
-  fCds = ds; 
-  fSetup = dir; 
-  fHists.clear();
+  if (hist == "all") {
+    zone(2,2, c0); 
 
-  char hist[200], thist[200], ahist[200];
+    genValidation("pt511", ds1, ds2);     
+    c0->cd(2);
+    genValidation("pt521", ds1, ds2); 
+    c0->cd(3);
+    genValidation("pt531", ds1, ds2); 
+    c0->cd(4);
+    genValidation("pt5122", ds1, ds2); 
+    c0->SaveAs(Form("%s/genValidation-pt-%s-%s.pdf", fDirectory.c_str(), ds1.c_str(), ds2.c_str())); 
 
-  // -- book histograms
-  sprintf(hist, "triggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-  sprintf(thist, "%s", fDS[fCds]->fName.c_str()); 
-  sprintf(ahist, "p_{T} [GeV]"); 
-  if (fHists.count(hist) > 0) {
-    fHists[hist]->Reset();
-  } else {
-    fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-    fHists[hist]->Sumw2();
-    //    setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
+    zone(2,2, c0); 
+
+    genValidation("eta511", ds1, ds2);     
+    c0->cd(2);
+    genValidation("eta521", ds1, ds2); 
+    c0->cd(3);
+    genValidation("eta531", ds1, ds2); 
+    c0->cd(4);
+    genValidation("eta5122", ds1, ds2); 
+    c0->SaveAs(Form("%s/genValidation-eta-%s-%s.pdf", fDirectory.c_str(), ds1.c_str(), ds2.c_str())); 
+    return;
   }
   
-  sprintf(hist, "ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-  if (fHists.count(hist) > 0) {
-    fHists[hist]->Reset();
-  } else {
-    fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-    fHists[hist]->Sumw2();
-    //    setHistTitles(fHists[hist], fDS[fCds], ahist, "Efficeincy");
-  }
+  overlay(Form("%s", hist.c_str()), ds1, 
+	  Form("%s", hist.c_str()), ds2, 
+	  UNITY); 
+
+  tl->SetTextColor(fDS[ds1]->fColor); 
+  tl->DrawLatex(0.18, 0.85, Form("%s mean: %4.3f #pm %4.3f", ds1.c_str(), fDS[ds1]->getHist(hist)->GetMean(), fDS[ds1]->getHist(hist)->GetMeanError())); 
+  tl->SetTextColor(fDS[ds2]->fColor); 
+  tl->DrawLatex(0.18, 0.80, Form("%s mean: %4.3f #pm %4.3f", ds2.c_str(), fDS[ds2]->getHist(hist)->GetMean(), fDS[ds2]->getHist(hist)->GetMeanError())); 
   
-  sprintf(hist, "NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-  if (fHists.count(hist) > 0) {
-    fHists[hist]->Reset();
-  } else {
-    fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-    fHists[hist]->Sumw2();
-  }
-  
-
-
-  TTree *t = getTree(ds, dir); 
-  cout << "tree: " << t << endl;
-  setupTree(t); 
-  loopOverTree(t, 1); 
-
-  string nname = Form("ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str());
-  fHists[nname]->Draw();
-  string Nname = Form("NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str());
-  fHists[Nname]->Draw("same");
-  
-  string ename = Form("triggerEff_%s_%s", fCds.c_str(), fSetup.c_str());
-  fHists[ename]->Divide(fHists[nname], fHists[Nname], 1., 1., "B");
-  fHists[ename]->Draw();
-
-//   f->Write();
-//   f->Close();
 }
 
 
 // ----------------------------------------------------------------------
 void plotWork::loopFunction1() {
-  if (fb.m1pt < 3.5) return;
-  if (TMath::Abs(fb.m1eta) > 2.1) return;
-      
-  if (fb.m2pt < 3.5) return;
-  if (TMath::Abs(fb.m2eta) > 2.1) return;
-
-  if (!fb.gmuid) return;
-
-  string hname = Form("NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str());
-  fHists[hname]->Fill(fb.pt);
-  hname = Form("ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str());
-  if (fb.hlt) {
-    fHists[hname]->Fill(fb.pt);
-  }
 
 }
 
 // ----------------------------------------------------------------------
 void plotWork::bookHist(int mode) {
-  char hist[200], thist[200], ahist[200];
 
-  // -- triggerEff and loopfunction1
-  if (1 == mode) {
-    sprintf(hist, "triggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-    sprintf(thist, "triggerEff %s %s", fCds.c_str(), fSetup.c_str()); 
-    sprintf(ahist, "pT [GeV]"); 
-    if (fHists.count(hist) > 0) {
-      fHists[hist]->Reset();
-    } else {
-      fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
-    }
-
-    sprintf(hist, "ntriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-    sprintf(thist, "ntriggerEff %s %s", fCds.c_str(), fSetup.c_str()); 
-    if (fHists.count(hist) > 0) {
-      fHists[hist]->Reset();
-    } else {
-      fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
-    }
-
-    sprintf(hist, "NtriggerEff_%s_%s", fCds.c_str(), fSetup.c_str()); 
-    sprintf(thist, "NtriggerEff %s %s", fCds.c_str(), fSetup.c_str()); 
-    if (fHists.count(hist) > 0) {
-      fHists[hist]->Reset();
-    } else {
-      fHists.insert(make_pair(hist, new TH1D(hist, thist, 50, 0, 25.))); 
-      //      setHistTitles(fHists[hist], fDS[fCds], ahist, "Entries/bin");
-    }
-
-  }    
-
-  cout << "booked all hists" << endl;
 }
 
 

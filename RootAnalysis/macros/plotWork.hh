@@ -9,7 +9,7 @@
 class plotWork: public plotClass {
 
 public :
-  plotWork(std::string dir = "hpt0", std::string files = "plotWork.files", std::string setup = "default");
+  plotWork(std::string dir = "results", std::string files = "plotWork.files", std::string setup = "default");
   virtual        ~plotWork();
 
   void   setCuts(std::string cuts);
@@ -18,8 +18,8 @@ public :
   void   makeAll(int bitmask = 0);
   void   bookHist(int mode);
 
-  // -- trigger efficiency vs various variables
-  void   triggerEff(std::string ds = "bssg", std::string dir = "candAnaMuMu"); 
+  // -- validate gen production
+  void   genValidation(std::string hist = "eta511", std::string ds1 = "pythia8", std::string ds2 = "pythia6"); 
   void   loopFunction1(); 
 
 
