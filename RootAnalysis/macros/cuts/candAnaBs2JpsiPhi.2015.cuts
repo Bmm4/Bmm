@@ -1,5 +1,6 @@
-TYPE          3000067
+TYPE           300531
 TRUTHCAND         531
+NOPRESELECTION      1
 #
 TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v1(251168:99999999)
 # -- boxes
