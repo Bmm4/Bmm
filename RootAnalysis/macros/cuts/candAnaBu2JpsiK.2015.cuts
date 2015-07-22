@@ -1,0 +1,17 @@
+TYPE           300521
+TRUTHCAND         521
+NOPRESELECTION      1
+#
+TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v1(251168:99999999)
+# -- boxes
++input cuts/boxes.Bu2JpsiK.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.cuts
+# -- candidate
++input cuts/candidate.cuts
+# -- bdt input
++input cuts/bdt.2012.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
