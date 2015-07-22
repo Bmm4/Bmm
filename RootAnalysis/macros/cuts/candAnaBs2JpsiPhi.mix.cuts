@@ -15,6 +15,7 @@ TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v9(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v10(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v11(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
+TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
 # -- boxes
 +input cuts/boxes.Bs2JpsiPhi.cuts
 # -- tracks
@@ -24,7 +25,7 @@ TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-+input cuts/bdt.2011.cuts
++input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
 # -- phi cuts
