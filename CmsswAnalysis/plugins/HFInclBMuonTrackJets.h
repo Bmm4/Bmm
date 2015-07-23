@@ -1,5 +1,5 @@
-#ifndef  HFDumpSignalH
-#define  HFDumpSignalH
+#ifndef  HFInclBMuonTrackJetsH
+#define  HFInclBMuonTrackJetsH
 
 // system include files
 #include <memory>
@@ -20,10 +20,10 @@ class TAna01Event;
 const double mmuon = 0.10565837;
 
 // ----------------------------------------------------------------------
-class HFDumpSignal : public edm::EDAnalyzer {
+class HFInclBMuonTrackJets : public edm::EDAnalyzer {
  public:
-  explicit HFDumpSignal(const edm::ParameterSet&);
-  ~HFDumpSignal();
+  explicit HFInclBMuonTrackJets(const edm::ParameterSet&);
+  ~HFInclBMuonTrackJets();
   
  private:
   virtual void beginJob() ;
@@ -34,14 +34,14 @@ class HFDumpSignal : public edm::EDAnalyzer {
   double      fJetMatch;
   double      fJetEtMin; 
   std::string fMuonLabel; 
-  std::string   fJetsLabel;
-  std::string   fTracksLabel;
-  std::string   fVertexLabel;
-  std::string   fSimVertexLabel;
-  double               fVertexMinNdof;
-  bool fAllowGlobalOnly; 
+  std::string fJetsLabel;
+  std::string fTracksLabel;
+  std::string fVertexLabel;
+  std::string fSimVertexLabel;
+  double      fVertexMinNdof;
+  bool        fAllowGlobalOnly; 
   
-  int nevt;
+  int         fNevt;
 
 };
 

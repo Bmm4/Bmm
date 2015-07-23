@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "HFDumpSignal.h"
+#include "HFInclBMuonTrackJets.h"
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
@@ -17,6 +17,8 @@
 
 
 #include "DataFormats/JetReco/interface/BasicJetCollection.h"
+#include "DataFormats/JetReco/interface/TrackJet.h"
+#include "DataFormats/JetReco/interface/TrackJetCollection.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 #include "DataFormats/VertexReco/interface/VertexFwd.h"
@@ -47,7 +49,7 @@ using namespace edm;
 
 
 // ----------------------------------------------------------------------
-HFDumpSignal::HFDumpSignal(const edm::ParameterSet& iConfig) :
+HFInclBMuonTrackJets::HFInclBMuonTrackJets(const edm::ParameterSet& iConfig) :
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
   fJetMatch(iConfig.getUntrackedParameter<double>("jetmatch", 0.5)),
   fJetEtMin(iConfig.getUntrackedParameter<double>("jetetmin", 1)),
@@ -61,7 +63,7 @@ HFDumpSignal::HFDumpSignal(const edm::ParameterSet& iConfig) :
   using namespace std;
   fAllowGlobalOnly=iConfig.getUntrackedParameter<bool>("allowGlobalOnly", false);
   cout << "----------------------------------------------------------------------" << endl;
-  cout << "--- HFDumpSignal constructor" << endl;
+  cout << "--- HFInclBMuonTrackJets constructor" << endl;
   cout << "--- " << fMuonLabel.c_str() << endl;
   if (fAllowGlobalOnly){
     cout << "!!! global-only muons allowed,  not required to be tracker muons !!!!!" << endl;
@@ -74,17 +76,17 @@ HFDumpSignal::HFDumpSignal(const edm::ParameterSet& iConfig) :
 
 
 // ----------------------------------------------------------------------
-HFDumpSignal::~HFDumpSignal() {
+HFInclBMuonTrackJets::~HFInclBMuonTrackJets() {
   
 }
 
 
 // ----------------------------------------------------------------------
-void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   int RunNumber=iEvent.id().run();
   int nn=iEvent.id().event();
   bool inspect=(RunNumber==133874)&&((nn==32751514)||(nn==20949710)||(nn==11880401));
-  nevt++;
+  fNevt++;
   
 
   //muon collection
@@ -119,15 +121,16 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
 
  // TrackJets 
- Handle<BasicJetCollection> jetsH;
+ //ul Handle<BasicJetCollection> jetsH;
+ Handle<TrackJetCollection> jetsH;
  iEvent.getByLabel(fJetsLabel.c_str(),jetsH);
  // bool jetvalid=true;
- if( !jetsH.isValid()) { cout<<"****** no "<<fJetsLabel<<endl;  }
+ if( !jetsH.isValid()) { cout<<"****** HFInclBMuonTrackJets> no "<<fJetsLabel<<endl;  }
 
  //tracks (jet constituents)
  Handle<reco::CandidateView> candidates1Handle;
  iEvent.getByLabel(fTracksLabel.c_str(), candidates1Handle); 
- if( !candidates1Handle.isValid()) { cout<<"****** no "<<fTracksLabel<<endl;  }
+ if( !candidates1Handle.isValid()) { cout<<"****** HFInclBMuonTrackJets> no "<<fTracksLabel<<endl;  }
  
 
  //transient track builder
@@ -148,7 +151,7 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     hasRefittedTracks && hasTracks
     &&(generalTracksH->size() == refittedTracksH->size())
     ){
-   //std::cout << "HFDumpSignal: found refitted tracks " << generalTracksH->size() << " = " << refittedTracksH->size() << std::endl;
+   //std::cout << "HFInclBMuonTrackJets: found refitted tracks " << generalTracksH->size() << " = " << refittedTracksH->size() << std::endl;
    for(unsigned int i=0; i<generalTracksH->size(); i++){
      g2r[generalTracksH->at(i).pt()] = &(refittedTracksH->at(i));
    }
@@ -158,20 +161,20 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
      g2r[generalTracksH->at(i).pt()] = &(generalTracksH->at(i));  // map to itself if no refitted tracks available
    }
  }else{
-   cout << "HFDumpSignal: no tracks, what are we doing here? " << endl;
+   cout << "HFInclBMuonTrackJets: no tracks, what are we doing here? " << endl;
  }
  /////////////////////   refitted track stuff   ///////////////////////
 
   TAnaTrack *pTrack; 
   int index = 0;
-  if (fVerbose > 0) cout << "==>HFDumpSignal> nMuons =" << muons->size() << endl;
+  if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> nMuons =" << muons->size() << endl;
 
 
 
 
   if(inspect){
   int muindex=0;
-  cout << "==>HFDumpSignal> nMuons =" << muons->size() << endl;
+  cout << "==>HFInclBMuonTrackJets> nMuons =" << muons->size() << endl;
   for (  reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++ muon ) { 
     cout << muindex << ")  g=" << muon->isGlobalMuon() << " t=" << muon->isTrackerMuon() << ":";
     muindex++;
@@ -199,152 +202,23 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       
       //      reco::TrackRef gt=muon->innerTrack();
 
-      if (fVerbose > 0) cout << "==>HFDumpSignal> found global muon " << endl;
+      if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> found global muon " << endl;
       pTrack            = gHFEvent->addSigTrack();
 
-      /* this goes/went into HFDUmpMuons!
-
-      if (muon->isTrackerMuon()){  pTrack->fKaID   = 1; pTrack->fMuType   = 0;}else{ pTrack->fKaID   = 0; pTrack->fMuType   = 5;}
-      if (muon->isGlobalMuon()){ pTrack->fMCID   = 1;}else{pTrack->fMCID=0;}
-
-      pTrack->fMuType   = 0;                            //0=RECO, 1=L1, 2=HLTL2, 3=HLTL3 
-      pTrack->fMuID     = (muon->track()).index();      //index of muon track in RECO track block
-      pTrack->fIndex    = index;                        //index in muon block
-      pTrack->fGenIndex = -1;                           //not used here
-      pTrack->fQ        = muon->charge();               //charge
-      pTrack->fPlab.SetPtEtaPhi(muon->pt(),
-				muon->eta(),
-				muon->phi()
-				);
-
-      
-      pTrack->fChi2        = (muon->globalTrack())->chi2();
-      pTrack->fDof         = int((muon->globalTrack())->ndof());
-      pTrack->fHits        = (muon->globalTrack())->numberOfValidHits();  
-
-      pTrack->fMuonSelector = 0;
-      bool laststation = muon::isGoodMuon(*muon, muon::TMLastStationAngTight);
-      bool tightmuon = muon::isGoodMuon(*muon, muon::GlobalMuonPromptTight);
-      bool matched = muon->numberOfMatches()>1;
-      if (laststation) pTrack->fMuonSelector +=1;
-      if (tightmuon)  pTrack->fMuonSelector  +=2;
-      if (matched)  pTrack->fMuonSelector  +=4;
-      if (muon->isTrackerMuon()) pTrack->fMuonSelector +=8;
-      
-      pTrack->fMuonCSCHits = (muon->globalTrack())->hitPattern().numberOfValidMuonCSCHits();
-      pTrack->fMuonDTHits  = (muon->globalTrack())->hitPattern().numberOfValidMuonDTHits();
-      pTrack->fMuonRPCHits = (muon->globalTrack())->hitPattern().numberOfValidMuonRPCHits();
-      pTrack->fMuonHits    = (muon->globalTrack())->hitPattern().numberOfValidMuonHits();
-      
-      pTrack->fBPIXHits    = (muon->globalTrack())->hitPattern().numberOfValidPixelBarrelHits(); 
-      pTrack->fFPIXHits    = (muon->globalTrack())->hitPattern().numberOfValidPixelEndcapHits();
-      pTrack->fPixelHits   = (muon->globalTrack())->hitPattern().numberOfValidPixelHits();
-      
-      pTrack->fStripHits   = (muon->globalTrack())->hitPattern().numberOfValidStripHits(); 
-      pTrack->fTECHits     = (muon->globalTrack())->hitPattern().numberOfValidStripTECHits(); 
-      pTrack->fTIBHits     = (muon->globalTrack())->hitPattern().numberOfValidStripTIBHits();
-      pTrack->fTIDHits     = (muon->globalTrack())->hitPattern().numberOfValidStripTIDHits();
-      pTrack->fTOBHits     = (muon->globalTrack())->hitPattern().numberOfValidStripTOBHits(); 
-      
-      pTrack->fBPIXLayers  = (muon->globalTrack())->hitPattern().pixelBarrelLayersWithMeasurement();  
-      pTrack->fFPIXLayers  = (muon->globalTrack())->hitPattern().pixelEndcapLayersWithMeasurement();  
-      pTrack->fPixelLayers = (muon->globalTrack())->hitPattern().pixelLayersWithMeasurement();  
-      pTrack->fStripLayers = (muon->globalTrack())->hitPattern().stripLayersWithMeasurement(); 
-      pTrack->fTECLayers   = (muon->globalTrack())->hitPattern().stripTECLayersWithMeasurement();
-      pTrack->fTIBLayers   = (muon->globalTrack())->hitPattern().stripTIBLayersWithMeasurement(); 
-      pTrack->fTIDLayers   = (muon->globalTrack())->hitPattern().stripTIDLayersWithMeasurement();
-      pTrack->fTOBLayers   = (muon->globalTrack())->hitPattern().stripTOBLayersWithMeasurement();
-     
-      pTrack->fTrChi2norm  = muon->innerTrack()->normalizedChi2(); // chi2 of the tracker track
-      pTrack->fExpectedHitsInner = (muon->innerTrack())->trackerExpectedHitsInner().numberOfHits();
-      pTrack->fExpectedHitsOuter = (muon->innerTrack())->trackerExpectedHitsOuter().numberOfHits();
-      pTrack->fLostHits    = (muon->innerTrack())->hitPattern().numberOfLostTrackerHits();
-      pTrack->fValidHitInFirstPixelBarrel=(muon->innerTrack())->hitPattern().hasValidHitInFirstPixelBarrel();
- 
-      pTrack->fDxybs       = muon->innerTrack()->dxy(bs);          // Dxy relative to the beam spot
-      pTrack->fDzbs          = muon->innerTrack()->dz(bs);        // dz relative to bs or o if not available
-
-
-      // find the nearest primary vertex
-      double dmin=9999.;
-      double ztrack=muon->vertex().Z();
-      const reco::Vertex* pVertex =&(*primaryVertex->begin()); // if selection below fails, take the first one
-      for (reco::VertexCollection::const_iterator iv = primaryVertex->begin(); iv != primaryVertex->end(); ++iv) {
-	if (iv->ndof()>fVertexMinNdof){
-	  if (fabs(ztrack-iv->z()) < dmin){
-	    dmin=fabs(ztrack-iv->z());
-	    pVertex=&(*iv);
-	  }
-	}
-      }
-
-      // impact parameter of the tracker track relative  to the PV  
-      pTrack->fDxypv        = muon->innerTrack()->dxy(pVertex->position()); 
-      pTrack->fDzpv         = muon->innerTrack()->dz(pVertex->position());       
- 
-      pTrack->fDxyE        = muon->innerTrack()->dxyError();  // error on Dxy
-      pTrack->fDzE          = muon->innerTrack()->dzError();
-
-      pTrack->fMuonIsosumPT    = muon->isolationR03().sumPt;  // muon isolations
-      pTrack->fMuonIsoEcal     = muon->isolationR03().emEt;
-      pTrack->fMuonIsoHcal     = muon->isolationR03().hadEt;
-      pTrack->fMuonCalocomp     = muon->caloCompatibility();
-      pTrack->fMuonCalocomp     = muon->caloCompatibility();
-      pTrack->fVertex.SetXYZ(muon->vertex().X(),
-				muon->vertex().Y(),
-				muon->vertex().Z()
-				);
-      pTrack->fMuonVertexChi2=muon->vertexChi2();
- 
-      pTrack->fDxysimv = -9999;  // first  sim vertex 
-      pTrack->fDzsimv = -9999;  
-      if(simvFound) {
-	pTrack->fDxysimv =   muon->innerTrack()->dxy(simv0); 
- 	pTrack->fDzsimv =  muon->innerTrack()->dz(simv0); 
-      }
-
-      if(hasRefittedTracks){
-	if(useRefittedTracks){
-	  //const reco::Track* refitted = g2r[muon->innerTrack()->pt()];
-	  const reco::Track refitted = generalTracksH->at((muon->innerTrack()).index());
-	  pTrack->fDxypv        = refitted.dxy(bs);
-	  pTrack->fDxysimv      = refitted.dxy(simv0);
-	}else{
-	  pTrack->fDxypv        = -99999.;
-	  pTrack->fDxysimv      = -99999.;
-	}
-      }
-
-     //
-      pTrack->fLip      = -9999;
-      pTrack->fLipE     = -9999;
-      pTrack->fTip      = -9999;
-      pTrack->fTipE     = -9999;   // 3d and transverse impact parameters
-      pTrack->fTip3d    = -9999;
-      pTrack->fTip3dE   = -9999;   // 3d and transverse impact parameters 
-      pTrack->fIndxj    = -9999;   //   index of the closest jets after selection
-      pTrack->fMuonPtrel    = -9999;   //  ptrel to this jet, can be racalculated latter
-      pTrack->fDxypvnm = -9999;  // dx pTrack->fDxypvnm = muon->innerTrack()->dxy(vpnm);y relative to vertex without the muon
- 
-  */
-
- 
-      //calculate signed transverse ip
-      //get closest jet, use it to calculate 3dIP 
 
       if(jetsH.isValid()) {
-	const BasicJetCollection *jets   = jetsH.product();  
+	const TrackJetCollection *jets   = jetsH.product();  
 	if(candidates1Handle.isValid() ){
 	//%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 	if ( (muon->track()).index() <= candidates1Handle->size() ) {
 	  
 	  double rmin = fJetMatch; 
-	  BasicJet* matchedjet=0;
+	  TrackJet* matchedjet=0;
 	  bool found = false;
           int indj=0;
 	  if (fVerbose > 0) cout<<" trackjets "<<jets->size()<<endl;
-	  for ( BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
+	  for ( TrackJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
             
 	    TVector3 jetcand;
 	    jetcand.SetPtEtaPhi(it->pt(), it->eta(), it->phi());
@@ -360,7 +234,7 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	  } 
 	  if (found) {//found a track jet
 	    
-	    if (fVerbose > 0) cout << "==>HFDumpSignal> found a trackjet close to muon " << endl;
+	    if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> found a trackjet close to muon " << endl;
 	    //subtract muon 
 	    TLorentzVector vect;
 	    vect.SetPtEtaPhiE(matchedjet->pt(), matchedjet->eta(), matchedjet->phi(), matchedjet->energy());
@@ -519,20 +393,20 @@ void HFDumpSignal::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     
   } //muon
   
-  if (fVerbose > 0) cout<<" --->HFDumpSignal "<< index << endl;
+  if (fVerbose > 0) cout<<" --->HFInclBMuonTrackJets "<< index << endl;
 }
 
 // ------------ method called once each job just before starting event loop  ------------
-//void  HFDumpSignal::beginJob(const edm::EventSetup& setup) {
-void  HFDumpSignal::beginJob() {
-  nevt=0;
+//void  HFInclBMuonTrackJets::beginJob(const edm::EventSetup& setup) {
+void  HFInclBMuonTrackJets::beginJob() {
+  fNevt=0;
 }
 
 // ------------ method called once each job just after ending the event loop  ------------
-void  HFDumpSignal::endJob() { 
-  cout << "HFDumpSignal>     Summary: Events processed: " << nevt << endl;
+void  HFInclBMuonTrackJets::endJob() { 
+  cout << "HFInclBMuonTrackJets>     Summary: Events processed: " << fNevt << endl;
  
 }
 
 //define this as a plug-in
-DEFINE_FWK_MODULE(HFDumpSignal);
+DEFINE_FWK_MODULE(HFInclBMuonTrackJets);
