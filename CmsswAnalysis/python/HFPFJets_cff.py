@@ -1,16 +1,13 @@
 import FWCore.ParameterSet.Config as cms
 
-
-
-
 pfjflavourByRef = cms.EDProducer("JetPartonMatcher",
-    jets = cms.InputTag("ak5PFJets"),
+    jets = cms.InputTag("ak4PFJets"),
     coneSizeToAssociate = cms.double(0.5),
     partons = cms.InputTag("myPartons")
 )
 
 pfjetDump = cms.EDAnalyzer("HFDumpPFJets",
-    jetsLabel = cms.untracked.string('ak5PFJets'),
+    jetsLabel = cms.untracked.string('ak4PFJets'),
 #    jetsTagLabel  = cms.untracked.string('simpleSecondaryVertexBJetTags'),
 #    jetsTagLabel  = cms.untracked.string('trackProbabilityJetTags'),
     jetsTagLabel  = cms.untracked.string('simpleSecondaryVertexHighPurBJetTags'),
