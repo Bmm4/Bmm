@@ -24,18 +24,16 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
+process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
 
 # ----------------------------------------------------------------------
 process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
-         "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
-#        "file:./7CA64471-C16B-E411-BB89-02163E00F463.root"
-#        "file:./F49EE52E-8D6C-E411-A720-02163E010DC8.root"
+         "/store/user/ursl/files/251721/0AE391DA-652C-E511-9C17-02163E012AA4.root"
  )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(10) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -48,10 +46,9 @@ process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
 process.load("Bmm.CmsswAnalysis.HFMCTruth_cff")
 
-process.load("Bmm.CmsswAnalysis.HFSignal_cff")
+process.load("Bmm.CmsswAnalysis.HFInclBSignal_cff")
 process.load("Bmm.CmsswAnalysis.HFGenJets_cff")
-process.load("Bmm.CmsswAnalysis.HFPFJets_cff")
-process.load("Bmm.CmsswAnalysis.HFCaloJets_cff")
+#process.load("Bmm.CmsswAnalysis.HFPFJets_cff")
 process.load("Bmm.CmsswAnalysis.HFTrackJets_cff")
 process.load("Bmm.CmsswAnalysis.HFCandidate_cff")
 process.load("Bmm.CmsswAnalysis.HFCandidateNew_cff")
@@ -69,12 +66,14 @@ process.tree = cms.EDAnalyzer(
     )
 
 
+process.HFInclBMuonTrackJets.verbose = cms.untracked.int32(10)
+
 # ----------------------------------------------------------------------
 process.p = cms.Path(
-    process.genDump
-    *process.recoStuffSequence
-    *process.PFJetDumpAOD
-    *process.CaloJetDumpAOD
-    *process.SignalDump
+#    process.genDump
+    process.recoStuffSequence
+#    *process.PFJetDumpAOD
+    *process.TrackJetDumpAOD
+    *process.HFInclBSignalSequence
     *process.tree
     )
