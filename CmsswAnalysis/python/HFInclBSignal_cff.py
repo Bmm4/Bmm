@@ -2,10 +2,11 @@ import FWCore.ParameterSet.Config as cms
 
 
 
-signalDump = cms.EDAnalyzer("HFDumpSignal",
+HFInclBMuonTrackJets = cms.EDAnalyzer("HFInclBMuonTrackJets",
     usejetforip = cms.untracked.int32(1),
     muonLabel = cms.untracked.string('muons'),
-    jetsLabel = cms.untracked.string('myak5TrackJets'),
+#    jetsLabel = cms.untracked.string('ak4TrackJets'),
+    jetsLabel = cms.untracked.string('myak4TrackJets'),
     tracksLabel = cms.untracked.string('alltrackCandidates'),
     vertexLabel = cms.untracked.string('offlinePrimaryVerticesWithBS'),
     simvertexLabel = cms.untracked.string('simG4'),
@@ -14,6 +15,6 @@ signalDump = cms.EDAnalyzer("HFDumpSignal",
     verbose = cms.untracked.int32(0)
 )
 
-SignalDump = cms.Sequence(signalDump)
+HFInclBSignalSequence = cms.Sequence(HFInclBMuonTrackJets)
 
  

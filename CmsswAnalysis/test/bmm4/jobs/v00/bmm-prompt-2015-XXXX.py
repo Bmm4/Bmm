@@ -14,7 +14,6 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 # -- Database configuration
 process.load("CondCore.DBCommon.CondDBCommon_cfi")
 process.load("CondCore.DBCommon.CondDBSetup_cfi")
-
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 #process.load("Configuration.StandardSequences.Geometry_cff")
@@ -27,53 +26,32 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
 
 # ----------------------------------------------------------------------
-process.source = cms.Source(
- "PoolSource",
-  fileNames = cms.untracked.vstring(
-         "/store/user/ursl/files/251721/0AE391DA-652C-E511-9C17-02163E012AA4.root"
- )
-)
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+# POOLSOURCE
 
-
-process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
-
-# ----------------------------------------------------------------------
-rootFileName = "test.root"
-
-# load all processes
-process.load("Configuration.StandardSequences.Reconstruction_cff")
-process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
-process.load("Bmm.CmsswAnalysis.HFMCTruth_cff")
-
-process.load("Bmm.CmsswAnalysis.HFInclBSignal_cff")
-process.load("Bmm.CmsswAnalysis.HFGenJets_cff")
-#process.load("Bmm.CmsswAnalysis.HFPFJets_cff")
-process.load("Bmm.CmsswAnalysis.HFTrackJets_cff")
-process.load("Bmm.CmsswAnalysis.HFCandidate_cff")
-process.load("Bmm.CmsswAnalysis.HFCandidateNew_cff")
 
 
 # ----------------------------------------------------------------------
-rootFileName = "test.root"
+rootFileName = "bmm-prompt-2015-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
-    verbose        = cms.untracked.int32(1),
+    verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
     requireCand    =  cms.untracked.bool(False),
+    fullGenBlock   = cms.untracked.bool(False),
     fileName       = cms.untracked.string(rootFileName)
     )
 
 
-process.HFInclBMuonTrackJets.verbose = cms.untracked.int32(10)
+# ----------------------------------------------------------------------
+process.load("Configuration.StandardSequences.Reconstruction_cff")
+process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
+process.load("Bmm.CmsswAnalysis.HFBmm_cff")
+process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
-#    process.genDump
-    process.recoStuffSequence
-#    *process.PFJetDumpAOD
-    *process.TrackJetDumpAOD
-    *process.HFInclBSignalSequence
-    *process.tree
-    )
+    process.recoStuffSequence*
+    process.bmmSequence*
+    process.tree
+)

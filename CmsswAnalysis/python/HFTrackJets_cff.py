@@ -3,12 +3,12 @@ import FWCore.ParameterSet.Config as cms
 
 #from RecoJets.JetProducers.TrackJetParameters_cfi import *
 from RecoJets.JetProducers.AnomalousCellParameters_cfi import *
-
+from  SimGeneral.HepPDTESSource.pythiapdt_cfi import *
 
 
 trkjetflavourByRef = cms.EDProducer("JetPartonMatcher",
-    #jets = cms.InputTag("sis5TrackJets"),
-    jets = cms.InputTag("myak5TrackJets"),
+    #jets = cms.InputTag("sis4TrackJets"),
+    jets = cms.InputTag("myak4TrackJets"),
     coneSizeToAssociate = cms.double(0.5),
     partons = cms.InputTag("myPartons") #myPartons defined in HFJets_cff.py
 )
@@ -32,8 +32,7 @@ alltrackCandidates = cms.EDProducer("ConcreteChargedCandidateProducer",
 trackjetDump = cms.EDAnalyzer("HFDumpTrackJets",
     doflavortagging = cms.untracked.int32(0),
     verbose = cms.untracked.int32(0),
-    #jetsLabel = cms.untracked.string('sis5TrackJets'),
-    jetsLabel = cms.untracked.string('myak5TrackJets'),
+    jetsLabel = cms.untracked.string('myak4TrackJets'),
     jetsTagLabel  = cms.untracked.string('simpleSecondaryVertexHighPurBJetTags'),
     tracksLabel = cms.untracked.string('alltrackCandidates'),#for indices (need all tracks in the event, not only the ones used in the jet algorithm
     sourceByRefer = cms.InputTag("trkjetflavourByRef"),
@@ -76,29 +75,17 @@ TrackJetParameters = cms.PSet(
     MaxVtxZ=cms.double(15.)   # default is 15
 )
 
-
-## sis5TrackJets = cms.EDProducer(
-##     "FastjetJetProducer",
-##     TrackJetParameters,
-##     AnomalousCellParameters,
-##     jetAlgorithm = cms.string("SISCone"),
-##     rParam       = cms.double(0.5)
-##     )
-
-myak5TrackJets = cms.EDProducer(
+myak4TrackJets = cms.EDProducer(
     "FastjetJetProducer",
     TrackJetParameters,
     AnomalousCellParameters,
     jetAlgorithm = cms.string("AntiKt"),
-    rParam       = cms.double(0.5)
+    rParam       = cms.double(0.4)
 )
 
 
 
 
-TrackJetDump    = cms.Sequence(selectTracks*trackCandidates*alltrackCandidates*myak5TrackJets*trkjetflavourByRef*trackjetDump)
-
-
-TrackJetDumpAOD = cms.Sequence(selectTracks*trackCandidates*alltrackCandidates*myak5TrackJets*trackjetDump)
+TrackJetDumpAOD = cms.Sequence(selectTracks*trackCandidates*alltrackCandidates*myak4TrackJets*trackjetDump)
 
 

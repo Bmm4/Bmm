@@ -155,7 +155,10 @@ sub createRunList() {
         # -- get runnumber
 	if ($opt_r) {
 	    @bblocks =  split(/\//, $filename); 
+	    # FIXME: This is correct for 2011 and 2012: 
 	    $run = $bblocks[$#bblocks-2]*1000 + $bblocks[$#bblocks-1];
+	    # FIXME: This is correct for 2015
+	    $run = $bblocks[$#bblocks-3]*1000 + $bblocks[$#bblocks-2];
 	} else {
 	    $run = 1; 
 	}

@@ -238,8 +238,9 @@ int  treeReader01::numberOfTrackerLayers(TAnaTrack *pTrack) {
   detmask = 0x7 << detpos;
   layermask = 0xf << layerpos;
   //  cout << "detmask = " << std::hex << detmask << " laymask = " << layermask << std::dec << endl;
-  for(int i =0; i<hits; ++i){
-    cout << " ihit = " i << " " << endl; 
+
+  for( int i =0; i<hits; ++i){
+    cout << " ihit = " << i << " " << endl; 
     unsigned int pat = pTrack->fHitPattern[i];
     
     hit = (pat & hitmask);

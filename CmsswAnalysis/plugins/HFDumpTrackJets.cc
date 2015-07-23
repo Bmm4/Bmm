@@ -67,7 +67,7 @@ HFDumpTrackJets::HFDumpTrackJets(const edm::ParameterSet& iConfig):
   fDoFlavorTagging(iConfig.getUntrackedParameter<int>("doflavortagging", 0)),
   fJetsLabel(iConfig.getUntrackedParameter<string>("jetsLabel", string("ic5TrackJets"))),
   fJetsTagLabel(iConfig.getUntrackedParameter<string>("jetsTagLabel", string("simpleSecondaryVertexBJetTags"))),
- fTracksLabel(iConfig.getUntrackedParameter<string>("tracksLabel", string("trackCandidates"))),
+  fTracksLabel(iConfig.getUntrackedParameter<string>("tracksLabel", string("trackCandidates"))),
   fGenCandidatesLabel(iConfig.getUntrackedParameter<string>("genparticlesLabel", string("genParticles"))), 
   fsourceByRefer(iConfig.getParameter<edm::InputTag>("sourceByRefer"))
   
@@ -98,7 +98,7 @@ void HFDumpTrackJets::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   iEvent.getByLabel(fJetsLabel.c_str(),jetsH);
   const BasicJetCollection *jets   = jetsH.product(); 
    if( !jetsH.isValid()) {
-     if (fVerbose > 0) cout << "****no " << fJetsLabel << endl; return;}
+     if (fVerbose > 0) cout << "**** HFDumpTrackJets>  no " << fJetsLabel << endl; return;}
 
 // get btag
 // Get b tag information

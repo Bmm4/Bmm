@@ -1,5 +1,5 @@
-TYPE          1000080
-TRUTHCAND         531
+TYPE          1000090
+TRUTHCAND         511
 NOPRESELECTION      1
 # -- trigger
 TRIGRANGE    HLT_DoubleMu3_Bs_v1(1:99999999)
