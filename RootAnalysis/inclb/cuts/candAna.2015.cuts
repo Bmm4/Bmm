@@ -1,0 +1,7 @@
+TYPE           100100
+MUPTLO         3.0
+MUPTHI         9999.0
+MUETALO        -2.1
+MUETAHI        2.1
+IGNORETRIGGER  0 
+NOPRESELECTION 1
