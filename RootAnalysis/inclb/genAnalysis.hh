@@ -22,7 +22,7 @@
 #include "rootio/TAnaJet.hh"
 #include "rootio/TAnaVertex.hh"
 
-#include "common/treeReader01.hh"
+#include "treeReader01.hh"
 
 class genAnalysis : public treeReader01 {
 
