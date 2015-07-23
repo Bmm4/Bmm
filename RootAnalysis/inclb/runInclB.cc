@@ -14,6 +14,7 @@
 #include "TUnixSystem.h"
 
 #include "genAnalysis.hh"
+#include "inclbReader.hh"
 
 #include "common/util.hh"
 
@@ -184,11 +185,10 @@ int main(int argc, char *argv[]) {
   }
 
   // -- Now instantiate the tree-analysis class object, initialize, and run it ...
-  //treeReader01 *a = new bmm2Reader(chain, TString(evtClassName));  
   treeReader01 *a = NULL;
   if ("inclbReader" == readerName) {
     cout << "instantiating inclbReader" << endl;
-    //    a = new bmmReader(chain, TString(evtClassName));
+    a = new inclbReader(chain, TString(evtClassName));
   } else if ("genAnalysis" == readerName) {
     cout << "instantiating genAnalysis" << endl;
     a = new genAnalysis(chain, TString(evtClassName));
