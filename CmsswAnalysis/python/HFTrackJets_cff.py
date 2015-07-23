@@ -86,7 +86,6 @@ myak4TrackJets = cms.EDProducer(
 
 
 
-TrackJetDump    = cms.Sequence(selectTracks*trackCandidates*alltrackCandidates*myak4TrackJets*trkjetflavourByRef*trackjetDump)
 TrackJetDumpAOD = cms.Sequence(selectTracks*trackCandidates*alltrackCandidates*myak4TrackJets*trackjetDump)
 
 
