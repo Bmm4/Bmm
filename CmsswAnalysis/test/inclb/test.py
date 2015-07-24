@@ -33,7 +33,7 @@ process.source = cms.Source(
          "/store/user/ursl/files/251721/0AE391DA-652C-E511-9C17-02163E012AA4.root"
  )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(500) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -60,13 +60,13 @@ rootFileName = "test.root"
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(1),
-    printFrequency = cms.untracked.int32(100),
+    printFrequency = cms.untracked.int32(1000),
     requireCand    =  cms.untracked.bool(False),
     fileName       = cms.untracked.string(rootFileName)
     )
 
 
-process.HFInclBMuonTrackJets.verbose = cms.untracked.int32(10)
+#process.HFInclBMuonTrackJets.verbose = cms.untracked.int32(10)
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
