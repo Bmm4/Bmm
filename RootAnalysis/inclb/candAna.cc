@@ -68,11 +68,15 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpSigJet   = fpEvt->getTrackJet(pSigTrack->fInt2);
 
     if (fVerbose > 99) {
-      cout << "Analyzing sig track at " << iC << " which is of type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
-	   << " ptrel = " << fpSigTrack->fDouble1
-	   << " and jet index: " << pSigTrack->fInt2
-	   << " jet pt/eta = " << fpSigJet->fPlab.Perp() 
-	   << "/" <<  fpSigJet->fPlab.Eta() 
+      TVector3 vj = fpSigJet->fPlab - fpSigTrack->fPlab; 
+      vj.SetMag(1.); 
+      TVector3 vm = fpSigTrack->fPlab; 
+      double ptrel = vj.Cross(vm).Mag();
+      cout << "Analyze sigTrack " << iC << " type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
+	   << " jet idx: " << pSigTrack->fInt2
+	   << " jet pt/eta/phi = " << fpSigJet->fPlab.Perp() << "/" << fpSigJet->fPlab.Eta() << "/" << fpSigJet->fPlab.Phi() 
+	   << " ntrk = " << fpSigJet->getNtracks()
+	   << " ptrel = " << fpSigTrack->fDouble1 << " == " << ptrel
 	   << endl;
     }
 
