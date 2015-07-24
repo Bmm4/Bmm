@@ -732,14 +732,13 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 		  
       tsos = extrapolator.extrapolate(transTrack.initialFreeState(),kinVertex->position());
 		  
-      if (tsos.isValid())
-      {
-          // measure the distance...
-          Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),kinVertex->vertexState());
-		  
-          // add it to the candidate...
-          pCand->fNstTracks.push_back(make_pair(j,make_pair(doca.value(),doca.error())));
-      }
+      if (!tsos.isValid()) continue; // tsos invalid, protect from segfault
+      
+      // measure the distance...
+      Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),kinVertex->vertexState());
+      
+      // add it to the candidate...
+      pCand->fNstTracks.push_back(make_pair(j,make_pair(doca.value(),doca.error())));
     }
 	  
     // sort the vector & keep only the first ten
