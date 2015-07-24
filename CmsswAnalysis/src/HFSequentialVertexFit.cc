@@ -732,7 +732,10 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 		  
       tsos = extrapolator.extrapolate(transTrack.initialFreeState(),kinVertex->position());
 		  
-      if (!tsos.isValid()) continue; // tsos invalid, protect from segfault
+      if (!tsos.isValid()) {
+	if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
+	continue; // tsos invalid, protect from segfault
+      }
       
       // measure the distance...
       Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),kinVertex->vertexState());
