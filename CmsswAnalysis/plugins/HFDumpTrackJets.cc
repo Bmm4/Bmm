@@ -97,19 +97,19 @@ void HFDumpTrackJets::analyze(const edm::Event& iEvent, const edm::EventSetup& i
   edm::Handle<BasicJetCollection> jetsH;
   iEvent.getByLabel(fJetsLabel.c_str(),jetsH);
   const BasicJetCollection *jets   = jetsH.product(); 
-   if( !jetsH.isValid()) {
-     if (fVerbose > 0) cout << "**** HFDumpTrackJets>  no " << fJetsLabel << endl; return;}
+  if( !jetsH.isValid()) {
+    if (fVerbose > 0) cout << "**** HFDumpTrackJets>  no " << fJetsLabel << endl; return;}
 
-// get btag
-// Get b tag information
-edm::Handle<reco::JetTagCollection> bTagH;
-iEvent.getByLabel(fJetsTagLabel.c_str(), bTagH);
- bool btaginfo=false;
- if( bTagH.isValid()) {
-if (fVerbose > 0) cout << "==>HFDumpTrackJets> bjetstag =" <<  bTagH->size() << endl;
- btaginfo=true;
- }else{ if(fVerbose > 0) cout << "**** not found " <<fJetsTagLabel.c_str()<< endl;
- }
+  // get btag
+  // Get b tag information
+  edm::Handle<reco::JetTagCollection> bTagH;
+  iEvent.getByLabel(fJetsTagLabel.c_str(), bTagH);
+  bool btaginfo=false;
+  if( bTagH.isValid()) {
+    if (fVerbose > 0) cout << "==>HFDumpTrackJets> bjetstag =" <<  bTagH->size() << endl;
+    btaginfo=true;
+  }else{ if(fVerbose > 0) cout << "**** not found " <<fJetsTagLabel.c_str()<< endl;
+  }
 
   if (fVerbose > 0) cout << "==>HFDumpTrackJets> nTrackJets =" << jetsH->size() << endl;
 
@@ -121,10 +121,10 @@ if (fVerbose > 0) cout << "==>HFDumpTrackJets> bjetstag =" <<  bTagH->size() << 
   bool first = true;
   TAnaJet *pTrackJet; 
 
-   JetMatchedPartonsCollection::const_iterator j;
-   for ( BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
+  JetMatchedPartonsCollection::const_iterator j;
+  for ( BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
  
-//for(pat::JetCollection::const_iterator it = jetsH->begin(); it != jetsH->end(); ++it) {
+    //for(pat::JetCollection::const_iterator it = jetsH->begin(); it != jetsH->end(); ++it) {
 
 
    
@@ -132,9 +132,9 @@ if (fVerbose > 0) cout << "==>HFDumpTrackJets> bjetstag =" <<  bTagH->size() << 
     pTrackJet->fIndex            = jetIndex;  
 
     pTrackJet->fPlab.SetPtEtaPhi(it->pt(),
-				it->eta(),
-				it->phi()
-				);
+				 it->eta(),
+				 it->phi()
+				 );
  
     pTrackJet->fQ                = it->charge();
     pTrackJet->fE                = it->energy();
@@ -166,25 +166,25 @@ if (fVerbose > 0) cout << "==>HFDumpTrackJets> bjetstag =" <<  bTagH->size() << 
     pTrackJet->fbtag         = -9999; // btag SSV output
    
 
-//    pTrackJet->fVtx.fPoint.SetX(it->primaryVertex().x());
-//    pTrackJet->fVtx.fPoint.SetY(it->primaryVertex().y());
-//    pTrackJet->fVtx.fPoint.SetZ(it->primaryVertex().z());
+    //    pTrackJet->fVtx.fPoint.SetX(it->primaryVertex().x());
+    //    pTrackJet->fVtx.fPoint.SetY(it->primaryVertex().y());
+    //    pTrackJet->fVtx.fPoint.SetZ(it->primaryVertex().z());
 
     if (fVerbose > 0) pTrackJet->dump();
 
- // btag info
+    // btag info
     if(btaginfo) {
- const reco::JetTagCollection & tagColl = *(bTagH.product());
- double rmin = 0.1; // jets match cone
- for (JetTagCollection::const_iterator ijt = tagColl.begin();
-        ijt != tagColl.end(); ++ijt) {
-   // match with actual jet
-   TVector3 jetbcand;
-   jetbcand.SetPtEtaPhi(ijt->first->pt(), ijt->first->eta(), ijt->first->phi());  
-  double r = (pTrackJet->fPlab).DeltaR(jetbcand);
-  if (fVerbose > 1) cout<<" btag match "<<r<<endl;
-  if(r<rmin) pTrackJet->fbtag= ijt->second;
- }
+      const reco::JetTagCollection & tagColl = *(bTagH.product());
+      double rmin = 0.1; // jets match cone
+      for (JetTagCollection::const_iterator ijt = tagColl.begin();
+	   ijt != tagColl.end(); ++ijt) {
+	// match with actual jet
+	TVector3 jetbcand;
+	jetbcand.SetPtEtaPhi(ijt->first->pt(), ijt->first->eta(), ijt->first->phi());  
+	double r = (pTrackJet->fPlab).DeltaR(jetbcand);
+	if (fVerbose > 1) cout<<" btag match "<<r<<endl;
+	if(r<rmin) pTrackJet->fbtag= ijt->second;
+      }
     }//btaginfo
 
     //jet constituents
