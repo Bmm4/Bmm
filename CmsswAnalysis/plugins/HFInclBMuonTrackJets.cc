@@ -90,7 +90,7 @@ HFInclBMuonTrackJets::~HFInclBMuonTrackJets() {
 void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   fNevt++;
   
-  if (fVerbose > -1) cout << "----------------------------------------------------------------------" << endl;
+  if (fVerbose) cout << "----------------------------------------------------------------------" << endl;
 
   //muon collection
   edm::Handle<reco::MuonCollection> muons;
@@ -158,7 +158,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 
       
 
-      cout << "MUON pt/eta = " << muon->track()->pt() << "/" <<  muon->track()->eta() << endl;
+      if (fVerbose) cout << "MUON pt/eta/phi = " << muon->track()->pt() << "/" <<  muon->track()->eta()  << "/" <<  muon->track()->phi() << endl;
 
 
       if(jetsH.isValid()) {
@@ -174,52 +174,59 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	    BasicJet* matchedjet=0;
 	    bool found = false;
 	    int indj=0;
-	    if (fVerbose > 0) cout<<" trackjets "<<jets->size()<<endl;
-	    //	    for ( TrackJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
+	    if (fVerbose > 0) cout << " number of trackjets " << jets->size() << endl;
+
 	    for ( BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
-            
 	      TVector3 jetcand;
 	      jetcand.SetPtEtaPhi(it->pt(), it->eta(), it->phi());
 	      double r = (pTrack->fPlab).DeltaR(jetcand);
-	    
-	      if (r<rmin && it->et() > fJetEtMin) {
+	      if (fVerbose) cout << "   " << indj << " pt/eta/phi: " << it->pt() << "/" << it->eta() << "/" << it->phi() 
+				 << " ntrk = " << it->nConstituents()
+				 << " r = " << r; 
+	      bool muonOnlyJet = (r < 1.e-6) && (it->nConstituents() == 1); 
+	      if (!muonOnlyJet && r<rmin && it->et() > fJetEtMin) {
 		rmin    = r;
 		matchedjet   = (*it).clone();
 		found = true;
 		pTrack->fInt2 = indj;
+		if (fVerbose) cout << " matched!";
 	      }
+	      if (muonOnlyJet) {
+		if (fVerbose) cout << " this is a muon-only jet, do not match"; 
+	      }
+	      if (fVerbose) cout << endl;
 	      indj++;
 	    } 
-	    if (found) {//found a track jet
-	    
-	      if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> found a trackjet close to muon, jet pt/eta = " 
-				     << matchedjet->pt() << "/" << matchedjet->eta()
+
+	    // -- found a nearby track jet: remove the muon
+	    if (found) {
+	      if (fVerbose > 0) cout << "  found a trackjet close to muon, jet pt/eta/phi = " 
+				     << matchedjet->pt() << "/" << matchedjet->eta() << "/" << matchedjet->phi()
 				     << endl;
-	      //subtract muon 
 	      TLorentzVector vect;
 	      vect.SetPtEtaPhiE(matchedjet->pt(), matchedjet->eta(), matchedjet->phi(), matchedjet->energy());
-	    
+	      
 	      bool foundmuon = false;
+	      
 	      std::vector< const reco::Candidate * > Constituent = matchedjet->getJetConstituentsQuick();
-	      if (fVerbose > 0) cout<<" matchedjet tracks "<<Constituent.size()<<endl;
-	      //jet constituents
+	      if (fVerbose > 0) cout << "   matched-jet number of tracks " << Constituent.size() << endl;
+
 	      for (unsigned int i=0; i< Constituent.size(); i++) {
 	      
 		unsigned int idx  = 99999;
 		const reco::Candidate * consti = Constituent[i];
 		if (consti) {
-		
-		  //get index of consti in all tracks
+		  if (fVerbose) cout << "    " << i << " trk pt/eta/phi: " << consti->pt() << "/" << consti->eta() << "/" << consti->phi() << endl;
+
 		  for (unsigned int j = 0; j < candidates1Handle->size(); ++ j ) {
 		    const Candidate &p2 = (*candidates1Handle)[j];
 		    const Candidate *  p1 = &p2;
 		    if ((TMath::Abs(1. - consti->pt()/p1->pt()) < 0.001) && (TMath::Abs(1. - consti->eta()/p1->eta()) < 0.001)) {
 		      idx = j;
+		      break;
 		    }
-
-
 		  }
-		  //check whether the index of consti in tracks is the same as the index of the muon track
+
 		  if (idx == (muon->track()).index()) {
 		    foundmuon = true;
 		  }
@@ -232,10 +239,29 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 		muvect.SetPtEtaPhiM(muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), mmuon);
 		vect = vect - muvect;
 		pTrack->fDouble1 = muvect.Perp(vect.Vect()); //Ptrel in respct to the corrected jets direction
-		if (fVerbose) cout << "matched muon " 
-				   << " pt " << muon->pt()  << " eta " << muon->eta() << " phi " << muon->phi()
-				   << " ptrel = " << muvect.Perp(vect.Vect())
-				   << endl;
+		if (fVerbose) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
+	      } else {
+		// -- check whether muon is part of any other jet
+		int indj = 0;
+		bool foundMuon(false); 
+		for (BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it++) {
+		  std::vector< const reco::Candidate * > Constituent = it->getJetConstituentsQuick();
+		  for (unsigned int i = 0; i < Constituent.size(); i++) {
+		    const reco::Candidate * consti = Constituent[i];
+		    if (consti) {
+		      if ((TMath::Abs(1. - consti->pt()/pTrack->fPlab.Perp()) < 0.001) && (TMath::Abs(1. - consti->eta()/pTrack->fPlab.Eta()) < 0.001)) {
+			if (fVerbose) cout << "  NOTE: muon is part of jet " << indj << endl;
+			foundMuon = true; 
+			break;
+		      }
+		    }
+		  }
+		  if (foundMuon) break;
+		  indj++;
+		}
+		if (!foundMuon) {
+		  if (fVerbose) cout << "  NOTE: muon is NOT part of any jet!" << endl;
+		}
 	      }
 	      //define direction
 	      GlobalVector direction(vect.X(),vect.Y(),vect.Z());
@@ -247,7 +273,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 		pTrack->fTip      = IPTools::signedTransverseImpactParameter(transientTrack, direction, *pVertex).second.value();
 		pTrack->fTipE     = IPTools::signedTransverseImpactParameter(transientTrack, direction, *pVertex).second.error();	     
 		FIXME*/
-	    }  //found trackjet in dR	  
+	    } //found trackjet in dR	  
 	  } // tracks=muon check
 	} // tracks valid
       } // trackjets valid
