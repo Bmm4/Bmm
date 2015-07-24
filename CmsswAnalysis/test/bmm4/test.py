@@ -33,7 +33,8 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
-         "/store/user/ursl/files/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen-0000.root"
+#         "/store/user/ursl/files/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen-0000.root"
+     "/store/data/Run2015B/MuOnia/AOD/PromptReco-v1/000/251/168/00000/04916A37-CF26-E511-8DCD-02163E013406.root"
  )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
@@ -73,7 +74,7 @@ process.genDump = cms.EDAnalyzer(
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
-    process.genDump*
+#    process.genDump*
     process.recoStuffSequence*
     process.bmmSequence*
     process.truthBmmSequence*

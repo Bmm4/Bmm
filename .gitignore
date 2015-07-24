@@ -11,3 +11,8 @@ __init__.py
 ~*
 *~
 \#*
+*.swp
+
+# ignore some directories
+lib
+bin
