@@ -72,12 +72,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       vj.SetMag(1.); 
       TVector3 vm = fpSigTrack->fPlab; 
       double ptrel = vj.Cross(vm).Mag();
-      cout << "Analyze sigTrack " << iC << " type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
-	   << " jet idx: " << pSigTrack->fInt2
-	   << " jet pt/eta/phi = " << fpSigJet->fPlab.Perp() << "/" << fpSigJet->fPlab.Eta() << "/" << fpSigJet->fPlab.Phi() 
-	   << " ntrk = " << fpSigJet->getNtracks()
-	   << " ptrel = " << fpSigTrack->fDouble1 << " == " << ptrel
-	   << endl;
+      if (0) cout << "Analyze sigTrack " << iC << " type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
+		  << " jet idx: " << pSigTrack->fInt2
+		  << " jet pt/eta/phi = " << fpSigJet->fPlab.Perp() << "/" << fpSigJet->fPlab.Eta() << "/" << fpSigJet->fPlab.Phi() 
+		  << " ntrk = " << fpSigJet->getNtracks()
+		  << " ptrel = " << fpSigTrack->fDouble1 << " == " << ptrel
+		  << endl;
     }
 
     candAnalysis();
