@@ -55,7 +55,7 @@ HFInclBMuonTrackJets::HFInclBMuonTrackJets(const edm::ParameterSet& iConfig) :
   fJetMatch(iConfig.getUntrackedParameter<double>("jetmatch", 0.5)),
   fJetEtMin(iConfig.getUntrackedParameter<double>("jetetmin", 1)),
   fMuonLabel(iConfig.getUntrackedParameter<string>("muonLabel", string("globalMuons"))),
-  fJetsLabel(iConfig.getUntrackedParameter<string>("jetsLabel", string("myak4TrackJets"))),
+  fJetsLabel(iConfig.getUntrackedParameter<string>("jetsLabel", string("myak5TrackJets"))),
   fTracksLabel(iConfig.getUntrackedParameter<string>("tracksLabel", string("trackCandidates"))),
   fVertexLabel(iConfig.getUntrackedParameter<string>("vertexLabel", string("offlinePrimaryVerticesWithBS"))),
   fSimVertexLabel(iConfig.getUntrackedParameter<string>("simvertexLabel", string("g4SimHits"))),
