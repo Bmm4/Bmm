@@ -478,7 +478,15 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
     // now, compute the tip w.r.t. PV
     // this code might be obsolete but certainly does not do anything wrong
     tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),RecoVertex::convertPos((*fPVCollection)[pvIx].position()));
-    pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),VertexState(RecoVertex::convertPos((*fPVCollection)[pvIx].position()),RecoVertex::convertError((*fPVCollection)[pvIx].error())));
+
+    if (!tsos.isValid()) {
+      if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
+      pvImpParams.tip = (Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.));
+    } else {
+      pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),
+				     VertexState(RecoVertex::convertPos((*fPVCollection)[pvIx].position()),
+						 RecoVertex::convertError((*fPVCollection)[pvIx].error())));
+    }
     if (fVerbose > 2) cout<<"==> HFSequentialVertexFit: Selected best PVs "<<pvIx<<" "<<pvIx2<<endl;
   }
   
