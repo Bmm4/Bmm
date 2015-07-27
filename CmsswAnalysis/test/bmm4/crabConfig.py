@@ -18,7 +18,7 @@ config.Data.unitsPerJob = 20
 #config.Data.runRange = '193093-193999' # '193093-194075'
 config.Data.outLFNDirBase = '/store/user/%s/' % (getUsernameFromSiteDB())
 config.Data.publication = False
-#config.Data.publishDataName = 'CRAB3_tutorial_May2015_Data_analysis'
+#config.Data.publishDataName = 'CRAB3_BMM4_crabtest_Charmonium_Run2015B'
 
 config.Site.storageSite = 'T2_US_Nebraska'
 
