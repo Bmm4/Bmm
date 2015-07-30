@@ -21,13 +21,13 @@ echo "--> Running grid job wrapper"
 echo "--> Environment:"
 date
 hostname
-cat /proc/cpuinfo
+#cat /proc/cpuinfo
 uname -a
 echo "--> df -kl:"
 df -kl
 
 echo $VO_CMS_SW_DIR
-ls -l $VO_CMS_SW_DIR
+#ls -l $VO_CMS_SW_DIR
 source $VO_CMS_SW_DIR/cmsset_default.csh
 echo "-> which edg-gridftp-ls"
 which edg-gridftp-ls
