@@ -236,6 +236,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	   	    
 	      if (foundmuon) {
 		TLorentzVector muvect;
+		pTrack->fIndex = muon->track().index();
 		muvect.SetPtEtaPhiM(muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), mmuon);
 		vect = vect - muvect;
 		pTrack->fDouble1 = muvect.Perp(vect.Vect()); //Ptrel in respct to the corrected jets direction
