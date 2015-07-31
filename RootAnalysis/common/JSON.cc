@@ -17,6 +17,10 @@ JSON::JSON(const char *fname, int verbose) {
   vector<string> jsonFile; 
   string line; 
   ifstream file(fname);  
+  if (!file.is_open()) {
+    cout << "ERROR: could not open " << fname << endl;
+    return;
+  }
   while (getline(file, line)) { 
     jsonFile.push_back(line); 
     //    cout<<line<<endl;
