@@ -1,7 +1,7 @@
 #ifndef REDTREEDATA
 #define REDTREEDATA
 
-struct RedTreeData {
+struct redTreeData {
   Long64_t run, evt; 
   int ls, tm, pr, procid, pvn, rr;
   bool json, hlt, hltm, hltm2, cb;
