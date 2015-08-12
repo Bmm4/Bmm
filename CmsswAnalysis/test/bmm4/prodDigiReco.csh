@@ -4,7 +4,7 @@
 # ----------------------------------------------------------------------
 # example submission: 
 # -------------------
-# run -t $BMMBASE/../150701.tar.gz -m batch -c ../../prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2JpsiPhi_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2JpsiPhi_EtaPtFilter%SITE T3_CH_PSI'  PYTHIA8_Bs2JpsiPhi_EtaPtFilter_CUEP8M1_13TeV_step1-70000
+# $BMMBASE/perl/run -t ../../../digireco.tar.gz -m batch -c ../../prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2JpsiPhi_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2JpsiPhi_EtaPtFilter%SITE T3_CH_PSI'  PYTHIA8_Bs2JpsiPhi_EtaPtFilter_CUEP8M1_13TeV_step1-70000
 # ----------------------------------------------------------------------
 
 setenv CMSSW       
@@ -12,11 +12,11 @@ setenv SCRAM_ARCH
 setenv SRMCP       
 
 setenv JOB      
-setenv FILE1    $STORAGE1/$JOB.root
-setenv FILE2    $JOB.root:s/step1/step2/
-setenv FILE3    $JOB.root:s/step1/step3/
 setenv STORAGE1 
 setenv STORAGE2 
+setenv FILE1    $STORAGE1/$JOB.root
+setenv FILE2    $JOB:s/step1/step2/.root
+setenv FILE3    $JOB:s/step1/step3/.root
 setenv PFNS     
 setenv SITE     
 
@@ -25,14 +25,18 @@ echo "====> SGE  wrapper <===="
 echo "========================"
 
 echo "--> Running SGE digi-reco job wrapper"
-
+echo $JOB
+echo $FILE1 
+echo $FILE2
+echo $FILE3 
+echo $STORAGE1
+echo $STORAGE2
 # ----------------------------------------------------------------------
 # -- The Basics
 # ----------------------------------------------------------------------
 echo "--> Environment"
 date
 hostname
-cat /proc/cpuinfo
 uname -a
 df -kl 
 
@@ -64,10 +68,10 @@ pwd
 
 #echo "--> Extract tar file"
 #date
-#tar zxf ../$JOB.tar.gz
+tar zxf ../$JOB.tar.gz
 cd src
-mv ../../step2.py .
-mv ../../step3.py .
+mv ../step2.py .
+mv ../step3.py .
 
 
 # ----------------------------------------------------------------------
@@ -87,6 +91,8 @@ cmsRun step3.py |& tee step3.log
 date
 pwd
 ls -rtl 
+
+exit(0)
 
 #setenv ROOTFILE `ls *.root | /bin/grep step3`
 setenv ROOTFILE FILE3
