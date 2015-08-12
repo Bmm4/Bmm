@@ -316,7 +316,7 @@ sub makeCshFile {
 	    print OUT "# BATCH START\n";
 	    print OUT "mkdir -p /scratch/$user\n";
 	    print OUT "cd /scratch/$user\n";
-	    print OUT "rm -rf \$JOB\n";
+	    print OUT "/bin/rm -rf \$JOB\n";
 	    print OUT "mkdir \$JOB\n";
 	    print OUT "cd \$JOB\n";
 	    print OUT "/bin/cp $pwd/$tdir/$ljob.tar.gz .\n";
@@ -329,7 +329,7 @@ sub makeCshFile {
 	    print OUT "pwd \n";
 	    print OUT "ls -l \n";
 	    print OUT "cd /scratch/$user\n";
-	    print OUT "rm -rf \$JOB\n";
+	    print OUT "/bin/rm -rf \$JOB\n";
 	    print OUT "pwd \n";
 	    print OUT "ls -l \n";
 	}
