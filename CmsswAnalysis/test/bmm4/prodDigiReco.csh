@@ -4,7 +4,10 @@
 # ----------------------------------------------------------------------
 # example submission: 
 # -------------------
-# $BMMBASE/perl/run -t ../../../digireco.tar.gz -m batch -c ../../prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2JpsiPhi_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2JpsiPhi_EtaPtFilter%SITE T3_CH_PSI'  PYTHIA8_Bs2JpsiPhi_EtaPtFilter_CUEP8M1_13TeV_step1-70000
+# $BMMBASE/perl/run -t ../../../digireco.tar.gz -m local -c $BMMBASE/CmsswAnalysis/test/bmm4/prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2MuMu_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2MuMu_EtaPtFilter%SITE T3_CH_PSI' PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_step1-40000
+#
+# Note: this script does NOT use the (py) file with which it is submitted, 
+#       it uses step2.py and step3.py which should be in the digireco.tar.gz file.
 # ----------------------------------------------------------------------
 
 setenv CMSSW       
@@ -15,7 +18,7 @@ setenv JOB
 setenv STORAGE1 
 setenv STORAGE2 
 setenv FILE1    $STORAGE1/$JOB.root
-setenv FILE2    $JOB:s/step1/step2/.root
+setenv FILE2    file:./$JOB:s/step1/step2/.root
 setenv FILE3    $JOB:s/step1/step3/.root
 setenv PFNS     
 setenv SITE     
@@ -31,6 +34,7 @@ echo $FILE2
 echo $FILE3 
 echo $STORAGE1
 echo $STORAGE2
+
 # ----------------------------------------------------------------------
 # -- The Basics
 # ----------------------------------------------------------------------
@@ -92,17 +96,10 @@ date
 pwd
 ls -rtl 
 
-exit(0)
-
-#setenv ROOTFILE `ls *.root | /bin/grep step3`
-setenv ROOTFILE FILE3
-
-
 # ----------------------------------------------------------------------
 # -- Save Output to SE
 # ----------------------------------------------------------------------
 echo "--> Save output to SE: $PFNS/$STORAGE2/$FILE3"
-echo " local rootfile: $ROOTFILE"
 echo " job   rootfiles: $FILE1, $FILE2, $FILE3"
 
 echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
