@@ -1,0 +1,70 @@
+#!/usr/bin/env perl
+
+# Usage:       filterEff dir*
+# ------
+#              determine filter efficiency from all directories and *.sge.log files in there
+
+my $fileglob = "sge.log"; 
+my $pattern = "Filter efficiency (event-level)= ";
+
+my $sel = 0; 
+my $all = 0; 
+my $tim = 0; 
+my $siz = 0; 
+foreach $dir (@ARGV) {
+    $line = `/bin/grep '$pattern' $dir/*$fileglob`;
+    chop($line);
+    if ($line eq "") {next;}
+
+    ($rest, $numbers, $rest2) = split(/=/, $line, 3);
+    $numbers =~ /\(([0-9]*)\)\s*\/\s*\(([0-9]*)\)/;
+    $sel += $1; 
+    $all += $2; 
+
+    @times = `/bin/grep 'Begin processing the' $dir/*$fileglob`;
+    ($rest, $start) = split(/LumiSection 1 at/, $times[0], 2);
+    ($rest, $stop) = split(/LumiSection 1 at/, $times[$#times], 2);
+    chop($start); 
+    chop($stop); 
+
+    $runtime = &duration($start, $stop); 
+    $tim += $runtime;     
+
+    $fsize = `grep 'Size:' $dir/*$fileglob`;
+    $fsize =~ /\s* Size: ([0-9]*) bytes .*/;
+    $fsize = $1; 
+    $siz += $fsize;
+
+    printf("%s eff: %f (%s) time=%d size=%d\n", $dir, $sel/$all, $line, $runtime, $fsize);
+
+
+
+}
+
+printf("filter efficiency: %f = %d/%d (=%e)\n", $sel/$all, $sel, $all, $sel/$all);
+printf("time/event %f = %d/%d \n", $tim/$sel, $tim, $sel);
+printf("event size %f MB = %d/%d \n", $siz/$sel/1000000, $siz, $sel);
+
+
+# ----------------------------------------------------------------------
+sub duration {
+    ($lstart, $lstop) = @_;
+    $lstart =~ s/^\s//g;
+    $lstop =~ s/^\s//g;
+    ($bla, $tstart, $bla) = split(/\ /, $lstart, 3); 
+    ($bla, $tstop, $bla) = split(/\ /, $lstop, 3); 
+    
+    ($hour, $min, $sec) = split(/:/, $tstart, 3); 
+    $sstart = $hour*3600 + $min*60 +$sec;
+
+    ($hour, $min, $sec) = split(/:/, $tstop, 3); 
+    $sstop = $hour*3600 + $min*60 +$sec;
+    
+    if ($sstart > $sstop) { 
+	$deltaT = 86400  + $sstop - $sstart; 
+    } else {
+	$deltaT = $sstop - $sstart; 
+    }
+    #print "hallo $tstart .. $tstop -> $sstart .. $sstop -> $deltaT \n";
+    return $deltaT; 
+}
