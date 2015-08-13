@@ -172,43 +172,43 @@ public:
 private:
 
   int               fnGenCands;
-  TClonesArray      *fGenCands;
+  TClonesArray      *fGenCands;         //->
 
   int               fnGenT;
-  TClonesArray      *fGenT;
+  TClonesArray      *fGenT;             //->
 
   int               fnSimpleTracks;
-  TClonesArray      *fSimpleTracks;
+  TClonesArray      *fSimpleTracks;     //->
 
   int               fnRecTracks;
-  TClonesArray      *fRecTracks;
+  TClonesArray      *fRecTracks;        //->
 
   int               fnMuons;
-  TClonesArray      *fMuons;
+  TClonesArray      *fMuons;            //->
 
   int               fnTrgObj;
-  TClonesArray      *fTrgObj;
+  TClonesArray      *fTrgObj;           //->
 
   int               fnSigTracks;
-  TClonesArray      *fSigTracks;
+  TClonesArray      *fSigTracks;        //->
 
   int               fnCaloJets;
-  TClonesArray      *fCaloJets;
+  TClonesArray      *fCaloJets;         //->
 
   int               fnGenJets;
-  TClonesArray      *fGenJets;
+  TClonesArray      *fGenJets;          //->
 
   int               fnTrackJets;
-  TClonesArray      *fTrackJets;
+  TClonesArray      *fTrackJets;        //->
 
   int               fnPFJets;
-  TClonesArray      *fPFJets;
+  TClonesArray      *fPFJets;           //->
 
   int               fnCandidates;
-  TClonesArray      *fCandidates;
+  TClonesArray      *fCandidates;       //->
 
   int               fnPV;
-  TClonesArray      *fPV;
+  TClonesArray      *fPV;               //->
 
   ClassDef(TAna01Event,1)
 
