@@ -13,43 +13,27 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
                          comEnergy = cms.double(13000.0),
 
                          ExternalDecays = cms.PSet(
-                         EvtGen130 = cms.untracked.PSet(
-#                         EvtGen = cms.untracked.PSet(
-                         operates_on_particles = cms.vint32( 0 ), # 0 (zero) means default list (hardcoded)
-                                                                  # you can put here the list of particles (PDG IDs)
-                                                                  # that you want decayed by EvtGen
-#                         use_default_decay = cms.untracked.bool(False),
-#                         decay_table = cms.FileInPath('GeneratorInterface/ExternalDecays/data/DECAY_NOLONGLIFE.DEC'),
-                         decay_table = cms.string('GeneratorInterface/EvtGenInterface/data/DECAY_2010.DEC'),
-                         particle_property_file = cms.FileInPath('GeneratorInterface/EvtGenInterface/data/evt.pdl'),
-#                         particle_property_file = cms.FileInPath('GeneratorInterface/ExternalDecays/data/evt.pdl'),
-                         user_decay_file = cms.vstring('GeneratorInterface/EvtGenInterface/data/Bs_mumu.dec'),
-#                         user_decay_file = cms.FileInPath('GeneratorInterface/ExternalDecays/data/Bs_mumu.dec'),
-                         list_forced_decays = cms.vstring('MyB_s0',
-                                                          'Myanti-B_s0'),
-                         ),
-#                         parameterSets = cms.vstring('EvtGen')
-                         parameterSets = cms.vstring('EvtGen130')
-                         ),
+        EvtGen130 = cms.untracked.PSet(
+            decay_table = cms.string('GeneratorInterface/EvtGenInterface/data/DECAY_2010.DEC'),
+            particle_property_file = cms.FileInPath('GeneratorInterface/EvtGenInterface/data/evt.pdl'),
+            user_decay_file = cms.vstring('GeneratorInterface/ExternalDecays/data/Bs_mumu.dec'),
+            list_forced_decays = cms.vstring('MyB_s0',
+                                             'Myanti-B_s0'),
+            operates_on_particles = cms.vint32(),
+            ),
+        parameterSets = cms.vstring('EvtGen130')
+        ),
 
                          PythiaParameters = cms.PSet(pythia8CommonSettingsBlock,
                                                      pythia8CUEP8M1SettingsBlock,
-#                                                     processParameters = cms.vstring('HardQCD:all = on'),
                                                      processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
-#                                                     processParameters = cms.vstring(            
-#                                                                                     'HardQCD:gg2bbbar = on ',
-#                                                                                     'HardQCD:qqbar2bbbar = on ',
-#                                                                                     'HardQCD:hardbbbar = on',
-#                                                                                     'PhaseSpace:pTHatMin = 1.5',
-#                                                                                     ),
                                                      parameterSets = cms.vstring('pythia8CommonSettings',
                                                                                  'pythia8CUEP8M1Settings',
                                                                                  'processParameters',
-                                                                             )
-                                                 )
-                    )
+                                                                                 )
+                                                     )
+                         )
 
-#new line
 generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 
 configurationMetadata = cms.untracked.PSet(
@@ -58,29 +42,22 @@ configurationMetadata = cms.untracked.PSet(
     annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
     )
 
-
-# Filters
-
 bfilter = cms.EDFilter(
-        "PythiaFilter",
-        MaxEta = cms.untracked.double(9999.),
-        MinEta = cms.untracked.double(-9999.),
-        ParticleID = cms.untracked.int32(531)
-        )
+    "PythiaFilter",
+    MaxEta = cms.untracked.double(9999.),
+    MinEta = cms.untracked.double(-9999.),
+    ParticleID = cms.untracked.int32(531)
+    )
 
 decayfilter = cms.EDFilter(
-        "PythiaDauVFilter",
-	verbose         = cms.untracked.int32(1), 
-	NumberDaughters = cms.untracked.int32(2), 
-	ParticleID      = cms.untracked.int32(531),  
-        DaughterIDs     = cms.untracked.vint32(13, -13)
-#	MinPt           = cms.untracked.vdouble(2.5, 2.5), 
-#	MinEta          = cms.untracked.vdouble(-2.5, -2.5), 
-#	MaxEta          = cms.untracked.vdouble( 2.5,  2.5)
-        )
-
+    "PythiaDauVFilter",
+    verbose         = cms.untracked.int32(1), 
+    NumberDaughters = cms.untracked.int32(2), 
+    ParticleID      = cms.untracked.int32(531),  
+    DaughterIDs     = cms.untracked.vint32(13, -13),
+    MinPt           = cms.untracked.vdouble(-99., -99.), 
+    MinEta          = cms.untracked.vdouble(-9999., -9999.), 
+    MaxEta          = cms.untracked.vdouble( 9999.,  9999.)
+    )
 
 ProductionFilterSequence = cms.Sequence(generator*bfilter*decayfilter)
-   
-
-

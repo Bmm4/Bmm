@@ -42,7 +42,6 @@ configurationMetadata = cms.untracked.PSet(
     annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of B+ --> J/psi K+, 13TeV, Tune CUETP8M1')
     )
 
-
 bfilter = cms.EDFilter(
     "PythiaFilter",
     MaxEta = cms.untracked.double(9999.),
@@ -69,10 +68,9 @@ kfilter = cms.EDFilter(
     MotherID        = cms.untracked.int32(0),  
     ParticleID      = cms.untracked.int32(521),  
     DaughterIDs     = cms.untracked.vint32(443, 321),
-    MinPt           = cms.untracked.vdouble(0., 0.4), 
-    MinEta          = cms.untracked.vdouble(-99., -2.5), 
-    MaxEta          = cms.untracked.vdouble(99.,   2.5)
+    MinPt           = cms.untracked.vdouble(-99., 0.4), 
+    MinEta          = cms.untracked.vdouble(-9999., -2.5), 
+    MaxEta          = cms.untracked.vdouble(9999.,   2.5)
     )
-
 
 ProductionFilterSequence = cms.Sequence(generator*bfilter*jpsifilter*kfilter)

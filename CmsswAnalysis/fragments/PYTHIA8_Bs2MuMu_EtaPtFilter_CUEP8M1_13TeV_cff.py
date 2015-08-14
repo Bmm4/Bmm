@@ -42,7 +42,6 @@ configurationMetadata = cms.untracked.PSet(
     annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
     )
 
-
 bfilter = cms.EDFilter(
     "PythiaFilter",
     MaxEta = cms.untracked.double(9999.),
@@ -61,8 +60,4 @@ decayfilter = cms.EDFilter(
     MaxEta          = cms.untracked.vdouble( 2.5,  2.5)
     )
 
-
 ProductionFilterSequence = cms.Sequence(generator*bfilter*decayfilter)
-
-
-
