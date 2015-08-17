@@ -17,8 +17,8 @@ HFBd2JpsiKstar::HFBd2JpsiKstar(const edm::ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
   fPsiMuons(iConfig.getUntrackedParameter<int>("psiMuons", 2)),
   fPsiWindow(iConfig.getUntrackedParameter<double>("psiWindow", 0.3)),
-  fK0Window(iConfig.getUntrackedParameter<double>("k0Window", 0.2)),
-  fB0Window(iConfig.getUntrackedParameter<double>("B0Window", 0.8)) {
+  fBdWindow(iConfig.getUntrackedParameter<double>("BdWindow", 0.8)), 
+  fKstarWindow(iConfig.getUntrackedParameter<double>("kstarWindow", 0.2)){
   dumpConfiguration();
 } // HFBd2JpsiKstar()
 
@@ -30,8 +30,8 @@ void HFBd2JpsiKstar::dumpConfiguration() {
   HFVirtualDecay::dumpConfiguration();
   cout << "---  psiMuons:                 " << fPsiMuons << endl;
   cout << "---  psiWindow:                " << fPsiWindow << endl;
-  cout << "---  k0Window:                 " << fK0Window << endl;
-  cout << "---  BdWindow:                 " << fB0Window << endl;
+  cout << "---  kstarWindow:                 " << fKstarWindow << endl;
+  cout << "---  BdWindow:                 " << fBdWindow << endl;
   cout << "----------------------------------------------------------------------" << endl;
 } // dumpConfiguration()
 
@@ -64,10 +64,10 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   
   //////adapted  by jmonroy 8-7-2015 
 
-  HFTwoParticleCombinatoricsSet kstarList = a.combine(trkList,MKAON,trkList,MPION,MKSTAR-fK0Window,MKSTAR+fK0Window, 0);
+  HFTwoParticleCombinatoricsSet kstarList = a.combine(trkList,MKAON,trkList,MPION,MKSTAR-fKstarWindow,MKSTAR+fKstarWindow, 0);
 
   if (fVerbose > 0) cout << "==>HFBs2JpsiKstar> J/psi list size: " << psiList.size() << endl;
-  if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> kstar list size: " << kstarlist.size() << endl;
+  if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> kstar list size: " << kstarList.size() << endl;
 	
   // -- Build J/psi + kstar
   TLorentzVector psi, m1, m2, kstar, ka, pi, b0;
@@ -113,10 +113,10 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (psi.DeltaR(pi) > fDeltaR) continue;
 
       kstar = ka + pi;
-      if ((TMath::Abs(kstar.M() - MKSTAR) > fK0Window)) continue;
+      if ((TMath::Abs(kstar.M() - MKSTAR) > fKstarWindow)) continue;
 
       b0 = psi + kstar; 
-      if (TMath::Abs(b0.M() - MB_0) > fB0Window) continue;
+      if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
 
       // -- sequential fit: J/Psi kaon + pion
       HFDecayTree theTree(310511, true, MB_0, false, -1.0, true);

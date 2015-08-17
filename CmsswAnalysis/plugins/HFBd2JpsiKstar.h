@@ -13,15 +13,8 @@ class HFBd2JpsiKstar : public HFVirtualDecay {
 		virtual void dumpConfiguration();
 		
 		int           fPsiMuons;
-		double        fPsiWindow, fPhiWindow, fB0Window;
+		double        fPsiWindow, fPhiWindow, fBdWindow, fKstarWindow;
 
-
-		// insert by jmonroy 8-7-2015
-		// additional variables
-
-		double fK0Window
-
-		////////////////////////////////////////////////////
 };
 
 #endif

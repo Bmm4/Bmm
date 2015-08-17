@@ -38,8 +38,9 @@ process.source = cms.Source(
 #	 "/store/relval/CMSSW_7_3_0_pre2/RelValBsToMuMu_13/GEN-SIM-RECO/MCRUN2_73_V1-v1/00000/7CA64471-C16B-E411-BB89-02163E00F463.root"
 #	"/store/data/Run2012A/MuOnia/AOD/22Jan2013-v1/30000/000D2FF5-EE82-E211-BEBA-0026189438A5.root"
 #    "/store/data/Run2012A/MuOnia/RECO/22Jan2013-v1/30000/0002CEE5-4183-E211-84FB-00304867915A.root"
-        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/066732D9-752A-E511-B293-02163E0121CC.root",
-        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root"
+#        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/066732D9-752A-E511-B293-02163E0121CC.root",
+        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root",
+        "root://cms-xrd-global.cern.ch///store/mc/HC/GenericTTbar/GEN-SIM-RECO/CMSSW_5_3_1_START53_V5-v1/0010/00CE4E7C-DAAD-E111-BA36-0025B32034EA.root"
  ),
  skipEvents = cms.untracked.uint32(704)
 )
