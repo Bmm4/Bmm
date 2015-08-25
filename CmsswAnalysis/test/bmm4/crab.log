@@ -1,0 +1,36 @@
+DEBUG 2015-08-17 00:26:10,844: 	 Executing command: 'status'
+DEBUG 2015-08-17 00:26:10,845: 	 Found CRAB cache file /home/hep/jmonroym/.crab3
+ERROR 2015-08-17 00:26:10,848: 	 Error: crab_BMM4_crabtest_Charmonium_Run2015B/ is not a valid CRAB project directory.
+ERROR 2015-08-17 00:26:10,848: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/bin/crab", line 133, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/bin/crab", line 119, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 253, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/status.py", line 731, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 563, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_BMM4_crabtest_Charmonium_Run2015B/ is not a valid CRAB project directory.
+DEBUG 2015-08-17 10:07:49,707: 	 Executing command: 'status'
+DEBUG 2015-08-17 10:07:49,709: 	 Found CRAB cache file /home/hep/jmonroym/.crab3
+ERROR 2015-08-17 10:07:49,712: 	 Error: crab_BMM4_BdToJpsiKstar_MC_13Tev/ is not a valid CRAB project directory.
+ERROR 2015-08-17 10:07:49,712: 	 Caught exception
+Traceback (most recent call last):
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/bin/crab", line 133, in <module>
+    client()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/bin/crab", line 119, in __call__
+    self.cmd = sub_cmd(self.logger, args[1:])
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 253, in __init__
+    self.validateOptions()
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/status.py", line 731, in validateOptions
+    SubCommand.validateOptions(self)
+  File "/cvmfs/cms.cern.ch/crab3/slc6_amd64_gcc481/cms/crabclient/3.3.1507-comp/lib/python2.6/site-packages/CRABClient/Commands/SubCommand.py", line 563, in validateOptions
+    raise ConfigurationException(msg)
+ConfigurationException: [91mError[0m: crab_BMM4_BdToJpsiKstar_MC_13Tev/ is not a valid CRAB project directory.
+DEBUG 2015-08-17 15:22:59,544: 	 Executing command: 'status'
+DEBUG 2015-08-17 15:22:59,545: 	 Found CRAB cache file /home/hep/jmonroym/.crab3
+DEBUG 2015-08-18 09:41:14,150: 	 Executing command: 'status'
+DEBUG 2015-08-18 09:41:14,151: 	 Found CRAB cache file /home/hep/jmonroym/.crab3

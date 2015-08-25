@@ -26,7 +26,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #CMSSW_5_3_12_patch3: 
 #CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
 
 
 # ----------------------------------------------------------------------
@@ -40,8 +40,7 @@ process.source = cms.Source(
 #    "/store/data/Run2012A/MuOnia/RECO/22Jan2013-v1/30000/0002CEE5-4183-E211-84FB-00304867915A.root"
 #        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/066732D9-752A-E511-B293-02163E0121CC.root",
         "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root"
-
-        ),
+ ),
  skipEvents = cms.untracked.uint32(704)
 )
 
@@ -86,6 +85,6 @@ process.p = cms.Path(
     process.recoStuffSequence*
     process.bmmSequence*
 #    process.HFLambdasSequence*
-#    process.truthBmmSequence*
+    process.truthBmmSequence*
     process.tree
 )
