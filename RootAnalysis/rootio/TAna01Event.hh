@@ -12,6 +12,7 @@
 #include "TAnaTrack.hh"
 #include "TAnaMuon.hh"
 #include "TTrgObj.hh"
+#include "TTrgObjv2.hh"
 #include "TAnaCand.hh"
 #include "TAnaVertex.hh"
 #include "TAnaJet.hh"
@@ -82,6 +83,10 @@ public:
   int                 nTrgObj() {return fnTrgObj;}
   TTrgObj*            getTrgObj(int n);
   virtual TTrgObj*    addTrgObj();
+
+  int                 nTrgObjv2() {return fnTrgObjv2;}
+  TTrgObjv2*          getTrgObjv2(int n);
+  virtual TTrgObjv2*  addTrgObjv2();
 
   // -- Primary vertices
   int                 nPV()    {return fnPV;}
@@ -188,6 +193,9 @@ private:
 
   int               fnTrgObj;
   TClonesArray      *fTrgObj;           //->
+
+  int               fnTrgObjv2;
+  TClonesArray      *fTrgObjv2;         //->
 
   int               fnSigTracks;
   TClonesArray      *fSigTracks;        //->
