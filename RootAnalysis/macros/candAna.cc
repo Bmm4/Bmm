@@ -248,8 +248,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
       if (!fGoodMuonsID) fAmsTree->Fill();
 
-      //if (fVerbose > 10) cout<<" write "<<fpCand->fType<<" "<<fEvt<<" "<<fGoodHLT<<" "<<fHLTmatch<<endl;
-
       ((TH1D*)fHistDir->Get("test3"))->Fill(6.); 
       if(fJSON)       ((TH1D*)fHistDir->Get("test3"))->Fill(7.); 
       if(fJSON&&fGoodHLT)       ((TH1D*)fHistDir->Get("test3"))->Fill(8.); 
@@ -265,15 +263,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX) {
 	if (fPreselection && !fGoodMuonsID) fAmsTree->Fill();
 	// do nothing
-	//cout<<" blinded "<<BLIND<<" "<<fpCand->fMass<<" "<<fCandM<<" "<<SIGBOXMIN<<" "<<SIGBOXMAX<<" "<<fCandIso<<" "<<fPreselection<<endl;;
-
       } else {
-
-	//if (fVerbose > 1)
-	//if (fpCand->fType == 300531 && fPreselection==true)
-	//cout<<fPreselection<<" "<<fRun<<" "<<fEvt<<" "<<fJSON<<" "<<fGoodHLT<<" "<<fpCand->fType<<" "
-	//    <<NOPRESELECTION<<" "<<fHLTmatch<<endl;
-
 	if (fPreselection) { 
 	  ((TH1D*)fHistDir->Get("test3"))->Fill(6.); 
 	  if (fVerbose > 5) cout << " filling this cand into the tree" << endl;	  

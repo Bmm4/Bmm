@@ -26,7 +26,9 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
 
                          PythiaParameters = cms.PSet(pythia8CommonSettingsBlock,
                                                      pythia8CUEP8M1SettingsBlock,
-                                                     processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
+                                                     processParameters = cms.vstring("HardQCD:all = on", 
+                                                                                     "PhaseSpace:pTHatMin = 10.",
+                                                                                     ),
                                                      parameterSets = cms.vstring('pythia8CommonSettings',
                                                                                  'pythia8CUEP8M1Settings',
                                                                                  'processParameters',
@@ -38,9 +40,10 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
-    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
+    name = cms.untracked.string('$Source: Configuration/Generator/python/HARDQCD0_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
+    annotation = cms.untracked.string('Spring 2015: hard (pthat = 10) Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
     )
+
 
 bfilter = cms.EDFilter(
     "PythiaFilter",
@@ -60,4 +63,8 @@ decayfilter = cms.EDFilter(
     MaxEta          = cms.untracked.vdouble( 2.5,  2.5)
     )
 
+
 ProductionFilterSequence = cms.Sequence(generator*bfilter*decayfilter)
+
+
+

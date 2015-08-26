@@ -37,7 +37,7 @@ LIBS          = $(ROOTLIBS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 
 # -- Files
-ANA00 := TAna01Event.o TGenCand.o TAnaTrack.o TSimpleTrack.o TAnaMuon.o TTrgObj.o TAnaCand.o TAnaVertex.o TAnaJet.o
+ANA00 := TAna01Event.o TGenCand.o TAnaTrack.o TSimpleTrack.o TAnaMuon.o TTrgObj.o TTrgObjv2.o TAnaCand.o TAnaVertex.o TAnaJet.o
 ANA00DICT := ${ANA00:.o=Dict.o}
 
 DICTHEADERS := ${ANA00:.o=Dict.h}

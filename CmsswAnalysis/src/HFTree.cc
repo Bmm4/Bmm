@@ -49,7 +49,10 @@ HFTree::HFTree(const edm::ParameterSet& iConfig) :
   fFile = TFile::Open(fFileName.c_str(), "RECREATE");
   fTree = new TTree(fTreeName.c_str(), "CMSSW HF tree");
   fEvent = new TAna01Event(0);
-  fTree->Branch("TAna01Event", "TAna01Event", &fEvent);
+  TAna01Event::Class()->SetCanSplit(1);
+  fTree->Branch("TAna01Event", "TAna01Event", &fEvent, 64000, 99);
+
+  //   fTree->Branch("TAna01Event", "TAna01Event", &fEvent, 64000, 1);
   //  fTree->Branch("TAna01Event", "TAna01Event", &fEvent, 256000/8, 0);
   //  fTree->Bronch("TAna01Event", "TAna01Event", &fEvent, 256000/8, 1);
 

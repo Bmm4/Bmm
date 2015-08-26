@@ -11,22 +11,10 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
                          filterEfficiency = cms.untracked.double(1.38e-3),
                          crossSection = cms.untracked.double(540000000.),
                          comEnergy = cms.double(13000.0),
-
-                         ExternalDecays = cms.PSet(
-        EvtGen130 = cms.untracked.PSet(
-            decay_table = cms.string('GeneratorInterface/EvtGenInterface/data/DECAY_2010.DEC'),
-            particle_property_file = cms.FileInPath('GeneratorInterface/EvtGenInterface/data/evt.pdl'),
-            user_decay_file = cms.vstring('GeneratorInterface/ExternalDecays/data/Bs_mumu.dec'),
-            list_forced_decays = cms.vstring('MyB_s0',
-                                             'Myanti-B_s0'),
-            operates_on_particles = cms.vint32(),
-            ),
-        parameterSets = cms.vstring('EvtGen130')
-        ),
-
                          PythiaParameters = cms.PSet(pythia8CommonSettingsBlock,
                                                      pythia8CUEP8M1SettingsBlock,
-                                                     processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
+                                                     processParameters = cms.vstring("SoftQCD:nonDiffractive = on", 
+                                                                                     "531:oneChannel = 1 1.0 0 13 -13"),
                                                      parameterSets = cms.vstring('pythia8CommonSettings',
                                                                                  'pythia8CUEP8M1Settings',
                                                                                  'processParameters',
@@ -38,9 +26,10 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
-    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
+    name = cms.untracked.string('$Source: Configuration/Generator/python/NOEVTGEN_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
+    annotation = cms.untracked.string('Spring 2015: Pythia8-ONLY generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
     )
+
 
 bfilter = cms.EDFilter(
     "PythiaFilter",
@@ -60,4 +49,8 @@ decayfilter = cms.EDFilter(
     MaxEta          = cms.untracked.vdouble( 2.5,  2.5)
     )
 
+
 ProductionFilterSequence = cms.Sequence(generator*bfilter*decayfilter)
+
+
+

@@ -31,7 +31,8 @@ bmmReader::~bmmReader() {
 // ----------------------------------------------------------------------
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
-  fpJSON = new JSON(JSONFILE.c_str(), (fVerbose!=0?1:0)); 
+  //  fpJSON = new JSON(JSONFILE.c_str(), (fVerbose!=0?1:0)); 
+  fpJSON = new JSON(JSONFILE.c_str(), 1); 
 }
 
 // ----------------------------------------------------------------------

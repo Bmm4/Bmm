@@ -16,14 +16,14 @@ generator = cms.EDFilter("Pythia8GeneratorFilter",
         EvtGen130 = cms.untracked.PSet(
             decay_table = cms.string('GeneratorInterface/EvtGenInterface/data/DECAY_2010.DEC'),
             particle_property_file = cms.FileInPath('GeneratorInterface/EvtGenInterface/data/evt.pdl'),
-            user_decay_file = cms.vstring('GeneratorInterface/ExternalDecays/data/Bs_mumu.dec'),
+            user_decay_file = cms.vstring('GeneratorInterface/ExternalDecays/data/Bs_Jpsiphi_mumuKK.dec'),
             list_forced_decays = cms.vstring('MyB_s0',
                                              'Myanti-B_s0'),
-            operates_on_particles = cms.vint32(),
             ),
+        operates_on_particles = cms.vint32(),
         parameterSets = cms.vstring('EvtGen130')
         ),
-
+                         
                          PythiaParameters = cms.PSet(pythia8CommonSettingsBlock,
                                                      pythia8CUEP8M1SettingsBlock,
                                                      processParameters = cms.vstring("SoftQCD:nonDiffractive = on"),
@@ -38,8 +38,8 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
-    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> Mu+Mu-, 13TeV, Tune CUETP8M1')
+    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_BsJpsiPhi_EtaPtFilter_CUEP8M1_13TeV_cff.py $'),
+    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation of Bs --> J/psi phi, 13TeV, Tune CUETP8M1')
     )
 
 bfilter = cms.EDFilter(
@@ -49,15 +49,28 @@ bfilter = cms.EDFilter(
     ParticleID = cms.untracked.int32(531)
     )
 
-decayfilter = cms.EDFilter(
+jpsifilter = cms.EDFilter(
     "PythiaDauVFilter",
     verbose         = cms.untracked.int32(1), 
     NumberDaughters = cms.untracked.int32(2), 
-    ParticleID      = cms.untracked.int32(531),  
+    MotherID        = cms.untracked.int32(531),  
+    ParticleID      = cms.untracked.int32(443),  
     DaughterIDs     = cms.untracked.vint32(13, -13),
-    MinPt           = cms.untracked.vdouble(2.5, 2.5), 
-    MinEta          = cms.untracked.vdouble(-2.5, -2.5), 
-    MaxEta          = cms.untracked.vdouble( 2.5,  2.5)
+    MinPt           = cms.untracked.vdouble(-99., -99.), 
+    MinEta          = cms.untracked.vdouble(-9999., -9999.), 
+    MaxEta          = cms.untracked.vdouble( 9999.,  9999.)
     )
 
-ProductionFilterSequence = cms.Sequence(generator*bfilter*decayfilter)
+phifilter = cms.EDFilter(
+    "PythiaDauVFilter",
+    verbose         = cms.untracked.int32(1), 
+    NumberDaughters = cms.untracked.int32(2), 
+    MotherID        = cms.untracked.int32(531),  
+    ParticleID      = cms.untracked.int32(333),  
+    DaughterIDs     = cms.untracked.vint32(321, -321),
+    MinPt           = cms.untracked.vdouble(-99., -99.), 
+    MinEta          = cms.untracked.vdouble(-9999., -9999.), 
+    MaxEta          = cms.untracked.vdouble( 9999.,  9999.)
+    )
+
+ProductionFilterSequence = cms.Sequence(generator*bfilter*jpsifilter*phifilter)

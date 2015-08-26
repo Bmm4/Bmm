@@ -26,6 +26,7 @@ public:
   virtual void        endAnalysis();
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
+  void                triggerSelection();
   
   virtual void        bookHist();
 
@@ -42,6 +43,8 @@ public:
   TTree *fTree, *fAmsTree; 
   TAna01Event *fpEvt;
   TAnaTrack *fpSigTrack;
+  TSimpleTrack *fpTrack;
+  TAnaMuon *fpMuon;
   TAnaJet *fpSigJet;
 
   int fVerbose;
@@ -65,7 +68,7 @@ public:
 
   // -- variables for reduced tree, they are from fpCand
   bool    fJSON;
-  bool    fMuId, fHLT, fHLTmatch;
+  bool    fMuId, fGoodHLT, fHLTmatch;
 
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 

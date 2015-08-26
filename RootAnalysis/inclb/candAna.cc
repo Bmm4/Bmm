@@ -2,6 +2,7 @@
 
 #include "common/HFMasses.hh"
 
+#include "common/ana.hh"
 
 using namespace std;
 
@@ -67,12 +68,45 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpSigTrack = pSigTrack; 
     fpSigJet   = fpEvt->getTrackJet(pSigTrack->fInt2);
 
+    // -- FIXME should be via index'ed track
+    TAnaMuon *pM(0); 
+    for (int imuon = 0; imuon < fpEvt->nMuons(); ++imuon) {
+      pM = fpEvt->getMuon(imuon); 
+      if ((TMath::Abs(1. - fpSigTrack->fPlab.Perp()/pM->fPlab.Perp()) < 0.001) 
+	  && (TMath::Abs(1. - fpSigTrack->fPlab.Eta()/pM->fPlab.Eta()) < 0.001)) {
+	break;
+      }
+      pM = 0; 
+    }
+    if (pM) {
+      fpMuon = pM; 
+    } else {
+      fpMuon = 0; 
+    }
+
+
+    TSimpleTrack *pT(0); 
+    for (int it = 0; it < fpEvt->nSimpleTracks(); ++it) {
+      pT = fpEvt->getSimpleTrack(it); 
+      if ((TMath::Abs(1. - fpSigTrack->fPlab.Perp()/pT->getP().Perp()) < 0.001) 
+	  && (TMath::Abs(1. - fpSigTrack->fPlab.Eta()/pT->getP().Eta()) < 0.001)) {
+	break;
+      }
+      pT = 0; 
+    }
+    if (pT) {
+      fpTrack = pT; 
+    } else {
+      fpTrack = 0; 
+    }
+
+
     if (fVerbose > 99) {
       TVector3 vj = fpSigJet->fPlab - fpSigTrack->fPlab; 
       vj.SetMag(1.); 
       TVector3 vm = fpSigTrack->fPlab; 
       double ptrel = vj.Cross(vm).Mag();
-      if (0) cout << "Analyze sigTrack " << iC << " type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
+      if (1) cout << "LS " << fLS << " sigTrack " << iC << " type " << fpSigTrack->fInt1 << " pt " << fpSigTrack->fPlab.Perp()
 		  << " jet idx: " << pSigTrack->fInt2
 		  << " jet pt/eta/phi = " << fpSigJet->fPlab.Perp() << "/" << fpSigJet->fPlab.Eta() << "/" << fpSigJet->fPlab.Phi() 
 		  << " ntrk = " << fpSigJet->getNtracks()
@@ -81,6 +115,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     }
 
     candAnalysis();
+    triggerSelection();
 
     fTree->Fill(); 
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
@@ -93,9 +128,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 void candAna::candAnalysis() {
 
   if (!fpSigTrack) return;
+  if (!fpTrack) return;
+  if (!fpMuon) return;
   if (!fpSigJet) return;
 
-  //((TH1D*)fHistDir->Get("../monEvents"))->Fill(1); 
+
+  fMuId    = tightMuon(fpMuon); 
 
   fType = fpSigTrack->fInt1; 
 
@@ -108,6 +146,7 @@ void candAna::candAnalysis() {
   fJetPt   = fpSigJet->fPlab.Perp(); 
   fJetEta  = fpSigJet->fPlab.Eta(); 
   fJetPhi  = fpSigJet->fPlab.Phi(); 
+
 
   fillRedTreeData();
 
@@ -331,7 +370,7 @@ void candAna::fillRedTreeData() {
   fRTD.ls        = fLS;
 
   fRTD.muid      = fMuId;
-  fRTD.hlt       = fHLT;
+  fRTD.hlt       = fGoodHLT;
   fRTD.hltmatch  = fHLTmatch;
   fRTD.json      = fJSON;
 
@@ -361,5 +400,92 @@ string candAna::splitTrigRange(string tl, int &r1, int &r2) {
   //cout << "2nd a: " << a << " -> r2 = " << r2 << endl;
 
   return hlt; 
+
+}
+
+
+// ----------------------------------------------------------------------
+void candAna::triggerSelection() {
+
+  fGoodHLT = false; 
+
+  TString a; 
+  int ps(0); 
+  bool result(false), wasRun(false), error(false); 
+
+  if (0 && HLTRANGE.begin()->first == "NOTRIGGER" ) { 
+    //    cout << "NOTRIGGER requested... " << endl;
+    fGoodHLT = true; 
+    return;
+  }
+
+  if (fVerbose == -31) {
+    cout << "--------------------  L1" << endl;
+    for (int i = 0; i < NL1T; ++i) {
+      result = wasRun = error = false;
+      a = fpEvt->fL1TNames[i]; 
+      ps = fpEvt->fL1TPrescale[i]; 
+      result = fpEvt->fL1TResult[i]; 
+      error  = fpEvt->fL1TMask[i]; 
+      //if (a.Contains("Mu")) {
+      if (result ) {
+	cout << a <<  " mask: " << error << " result: " << result << " ps: " << ps << endl;
+      }
+    }
+  }
+  
+  if(fVerbose==-32) cout<<" event "<<fEvt<<endl;
+
+  for (int i = 0; i < NHLT; ++i) {
+    result = wasRun = error = false;
+    a = fpEvt->fHLTNames[i]; 
+    ps = fpEvt->fHLTPrescale[i]; 
+    wasRun = fpEvt->fHLTWasRun[i]; 
+    result = fpEvt->fHLTResult[i]; 
+    error  = fpEvt->fHLTError[i]; 
+
+    if (-31 == fVerbose) cout << a << endl;
+
+    string spath; 
+    int rmin, rmax; 
+    for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {  
+      spath = imap->first; 
+      rmin = imap->second.first; 
+      rmax = imap->second.second; 
+      if (!a.CompareTo(imap->first.c_str())) {
+	fGoodHLT = true; 
+	if (fVerbose > 1 || -32 == fVerbose  ) cout << "exact match: " << imap->first.c_str() << " HLT: " << a << " result: " << result << endl;
+      }
+      
+      if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
+	fGoodHLT = true; 
+	if (fVerbose > 1 || -32 == fVerbose) cout << "close match: " << imap->first.c_str() << " HLT: " << a 
+						  << " result: " << result 
+						  << " in run " << fRun 
+						  << endl;
+      }
+    }
+  }      
+  
+  // Print trigger object for trigger matching TESTING ONLY
+  if (true) { //  && fGoodHLT) {  
+    
+    if (-32 == fVerbose ) {
+      TTrgObj *p;     
+      for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+	p = fpEvt->getTrgObj(i); 
+	
+	// First check the selective matching
+	if (p->fNumber > -1)  {
+	  cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = " << p->fID << " pT = " << p->fP.Perp() 
+	      << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "<<p->fID << endl;
+	} // number
+      } // for
+    } // verbose
+  } // true
+
+  if (false == fGoodHLT) {
+    if (fVerbose > 1) cout << "------->  event NOT triggered!" << endl;
+  }
 
 }

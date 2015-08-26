@@ -21,13 +21,13 @@ echo "--> Running grid job wrapper"
 echo "--> Environment:"
 date
 hostname
-#cat /proc/cpuinfo
+cat /proc/cpuinfo
 uname -a
 echo "--> df -kl:"
 df -kl
 
 echo $VO_CMS_SW_DIR
-#ls -l $VO_CMS_SW_DIR
+ls -l $VO_CMS_SW_DIR
 source $VO_CMS_SW_DIR/cmsset_default.csh
 echo "-> which edg-gridftp-ls"
 which edg-gridftp-ls
@@ -66,7 +66,7 @@ pwd
 echo "--> Extract tar file"
 date
 tar zxf ../$JOB.tar.gz
-mv ../$JOB src/Bmm/RootAnalysis/macros
+mv ../$JOB src/Bmm/RootAnalysis/inclb
 
 # ----------------------------------------------------------------------
 # -- Run Treereader
@@ -74,7 +74,7 @@ mv ../$JOB src/Bmm/RootAnalysis/macros
 
 echo "--> Run Treereader"
 date
-cd src/Bmm/RootAnalysis/macros/
+cd src/Bmm/RootAnalysis/inclb
 pwd
 
 echo "$EXECUTABLE -c $JOB  -o $FILE1 |& tee $JOB.log"
@@ -114,6 +114,5 @@ date
 
 
 # -- cleanup
-#/bin/rm -rf /scratch/ursl/dana*
 
 echo "run: This is the end, my friend"

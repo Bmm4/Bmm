@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+
+# ----------------------------------------------------------------------
+# Usage:       mergeAll 
+# -----
+# ----------------------------------------------------------------------
+use lib '/shome/ursl/perl/modules/Tie-IxHash-1.23/lib';
+use Tie::IxHash;
+
+use Getopt::Std;
+getopts('d');
+
+my $BMMBASE = $ENV{'BMMBASE'};
+print "BMMBASE = $BMMBASE\n";
+if ($BMMBASE eq "") {
+    die "BMMBASE not defined, but required ...\n";
+}
+
+my $PSI = $ENV{'PSI'};
+print "PSI = $PSI\n";
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+
+my $SCRATCH = "/scratch/$ENV{'USER'}/inclb";
+
+
+tie %jobs, "Tie::IxHash";
+%jobs = (
+    "data HINMuon" => "-x $PSI/store/user/ursl/inclb/runInclB -p HIN -o $SCRATCH/cv00-HINMuon__Run2015B-PromptReco-v1__run251721.root",
+    "data SingleMuon" => "-x $PSI/store/user/ursl/inclb/runInclB -p SingleMuon -o $SCRATCH/cv00-SingleMuon__Run2015B-PromptReco-v1__run251721.root",
+    "data DoubleMuon" => "-x $PSI/store/user/ursl/inclb/runInclB -p Double -o $SCRATCH/cv00-DoubleMuon__Run2015B-PromptReco-v1__run251721.root"
+    );
+
+
+foreach $j (keys %jobs) {
+    print "$BMMBASE/perl/srmHadd $jobs{$j} \n";
+    system("$BMMBASE/perl/srmHadd $jobs{$j}");
+}

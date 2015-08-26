@@ -40,6 +40,9 @@ TAna01Event::TAna01Event(Int_t Option) {
   fTrgObj          = new TClonesArray("TTrgObj", NTRGOBJ);
   fnTrgObj         = 0;
 
+  fTrgObjv2        = new TClonesArray("TTrgObjv2", NTRGOBJ);
+  fnTrgObjv2       = 0;
+
   fSigTracks       = new TClonesArray("TAnaTrack", NSIGTRACK);
   fnSigTracks      = 0;
 
@@ -115,6 +118,14 @@ void TAna01Event::Clear(Option_t *option) {
   }
   fTrgObj->Clear(option);
   fnTrgObj = 0;
+
+  TTrgObjv2 *pTrgObjv2;
+  for (int i = 0; i < fnTrgObjv2; i++) {
+    pTrgObjv2 = getTrgObjv2(i);
+    pTrgObjv2->clear();
+  }
+  fTrgObjv2->Clear(option);
+  fnTrgObjv2 = 0;
 
   for (int i = 0; i < NL1T; ++i) {
     fL1TPrescale[i] = 0; 
@@ -563,6 +574,10 @@ TTrgObj* TAna01Event::getTrgObj(Int_t n) {
   return (TTrgObj*)fTrgObj->UncheckedAt(n); 
 }
 
+TTrgObjv2* TAna01Event::getTrgObjv2(Int_t n) { 
+  return (TTrgObjv2*)fTrgObjv2->UncheckedAt(n); 
+}
+
 // ----------------------------------------------------------------------
 TTrgObj* TAna01Event::addTrgObj() {
   TClonesArray& d = *fTrgObj; 
@@ -571,6 +586,12 @@ TTrgObj* TAna01Event::addTrgObj() {
   return (TTrgObj*)d[d.GetLast()];
 }
 
+TTrgObjv2* TAna01Event::addTrgObjv2() {
+  TClonesArray& d = *fTrgObjv2; 
+  new(d[d.GetLast()+1]) TTrgObjv2(fnTrgObjv2);
+  ++fnTrgObjv2;
+  return (TTrgObjv2*)d[d.GetLast()];
+}
 
 // ----------------------------------------------------------------------
 TAnaTrack* TAna01Event::getSigTrack(Int_t n) { 
@@ -726,6 +747,13 @@ void TAna01Event::dump() {
     pTrgObj = getTrgObj(i);
     cout << "trgObj: ";
     pTrgObj->dump();
+  }
+  
+  TTrgObjv2  *pTrgObjv2;
+  for (int i = 0; i < fnTrgObjv2; ++i) {
+    pTrgObjv2 = getTrgObjv2(i);
+    cout << "trgObjv2: ";
+    pTrgObjv2->dump();
   }
   
   for (int i = 0; i < fnSigTracks; ++i) {

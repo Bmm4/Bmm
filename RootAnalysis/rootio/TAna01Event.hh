@@ -12,6 +12,7 @@
 #include "TAnaTrack.hh"
 #include "TAnaMuon.hh"
 #include "TTrgObj.hh"
+#include "TTrgObjv2.hh"
 #include "TAnaCand.hh"
 #include "TAnaVertex.hh"
 #include "TAnaJet.hh"
@@ -82,6 +83,10 @@ public:
   int                 nTrgObj() {return fnTrgObj;}
   TTrgObj*            getTrgObj(int n);
   virtual TTrgObj*    addTrgObj();
+
+  int                 nTrgObjv2() {return fnTrgObjv2;}
+  TTrgObjv2*          getTrgObjv2(int n);
+  virtual TTrgObjv2*  addTrgObjv2();
 
   // -- Primary vertices
   int                 nPV()    {return fnPV;}
@@ -172,43 +177,46 @@ public:
 private:
 
   int               fnGenCands;
-  TClonesArray      *fGenCands;
+  TClonesArray      *fGenCands;         //->
 
   int               fnGenT;
-  TClonesArray      *fGenT;
+  TClonesArray      *fGenT;             //->
 
   int               fnSimpleTracks;
-  TClonesArray      *fSimpleTracks;
+  TClonesArray      *fSimpleTracks;     //->
 
   int               fnRecTracks;
-  TClonesArray      *fRecTracks;
+  TClonesArray      *fRecTracks;        //->
 
   int               fnMuons;
-  TClonesArray      *fMuons;
+  TClonesArray      *fMuons;            //->
 
   int               fnTrgObj;
-  TClonesArray      *fTrgObj;
+  TClonesArray      *fTrgObj;           //->
+
+  int               fnTrgObjv2;
+  TClonesArray      *fTrgObjv2;         //->
 
   int               fnSigTracks;
-  TClonesArray      *fSigTracks;
+  TClonesArray      *fSigTracks;        //->
 
   int               fnCaloJets;
-  TClonesArray      *fCaloJets;
+  TClonesArray      *fCaloJets;         //->
 
   int               fnGenJets;
-  TClonesArray      *fGenJets;
+  TClonesArray      *fGenJets;          //->
 
   int               fnTrackJets;
-  TClonesArray      *fTrackJets;
+  TClonesArray      *fTrackJets;        //->
 
   int               fnPFJets;
-  TClonesArray      *fPFJets;
+  TClonesArray      *fPFJets;           //->
 
   int               fnCandidates;
-  TClonesArray      *fCandidates;
+  TClonesArray      *fCandidates;       //->
 
   int               fnPV;
-  TClonesArray      *fPV;
+  TClonesArray      *fPV;               //->
 
   ClassDef(TAna01Event,1)
 
