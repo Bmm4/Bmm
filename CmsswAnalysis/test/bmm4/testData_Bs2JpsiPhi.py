@@ -81,7 +81,7 @@ process.genDump = cms.EDAnalyzer(
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
-#    process.genDump*
+    process.genDump*
     process.recoStuffSequence*
     process.bmmSequence*
 #    process.HFLambdasSequence*
