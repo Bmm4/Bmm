@@ -26,7 +26,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #CMSSW_5_3_12_patch3: 
 #CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_data', '')
 
 
 # ----------------------------------------------------------------------
@@ -81,10 +81,10 @@ process.genDump = cms.EDAnalyzer(
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
-    process.genDump*
+#    process.genDump*
     process.recoStuffSequence*
     process.bmmSequence*
 #    process.HFLambdasSequence*
-    process.truthBmmSequence*
+#    process.truthBmmSequence*
     process.tree
 )
