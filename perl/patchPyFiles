@@ -1,7 +1,25 @@
 #!/usr/bin/env perl
 
+#
+# $BMMBASE/perl/patchPyFiles -s 40000 *.py
+#
 # script for patching py files created by cmsDriver.py
+#
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the 
+#
+# Author    Urs Langenegger <urs.langenegger@psi.ch>
+# ----------------------------------------------------------------------
 
+
+use Getopt::Std;
+getopts('s:');
+
+
+my $seed = 40000; 
+if ($opt_s) {
+    $seed = $opt_s; 
+}
 
 @insert = ("# -- Reduced verbosity\n",
 	   "process.load(\"FWCore.MessageLogger.MessageLogger_cfi\")\n",
@@ -9,9 +27,9 @@
 	   "process.MessageLogger.cerr.FwkReport.reportEvery = 1000\n",
            "# Random number\n",
 	   "process.RandomNumberGeneratorService = cms.Service(\"RandomNumberGeneratorService\",\n",
-	   "                                                   generator = cms.PSet(initialSeed = cms.untracked.uint32(40000)),\n",
-	   "                                                   VtxSmeared = cms.PSet(initialSeed = cms.untracked.uint32(40000)),\n",
-	   "                                                   g4SimHits =  cms.PSet(initialSeed = cms.untracked.uint32(40000))\n",
+	   "                                                   generator = cms.PSet(initialSeed = cms.untracked.uint32($seed)),\n",
+	   "                                                   VtxSmeared = cms.PSet(initialSeed = cms.untracked.uint32($seed)),\n",
+	   "                                                   g4SimHits =  cms.PSet(initialSeed = cms.untracked.uint32($seed))\n",
            "                                                   )\n"
     );
 
