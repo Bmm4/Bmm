@@ -123,13 +123,14 @@ public:
   virtual TAnaCand*   osCand(TAnaCand *pC);
   virtual double      osIsolation(TAnaCand *pC, double r = 1.0, double ptmin = 0.9); 
   virtual int         osMuon(TAnaCand *pC, double r = 1.0); 
-  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching(bool anyTrig); // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual void        play(); 
   virtual void        play2(); 
+  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
+  virtual bool        doTriggerMatching_OLD(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
+  //virtual bool        doTriggerMatching(bool anyTrig); // match the 2 muons from the dimuon to HLT
+  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
   // To return the full deltaR not just a bool
   virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
   virtual double      doTriggerMatchingR_OLD(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT

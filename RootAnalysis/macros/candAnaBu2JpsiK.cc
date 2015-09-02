@@ -62,27 +62,19 @@ void candAnaBu2JpsiK::candAnalysis() {
   
   //cout<<" match kaon "<<fKaonPt<<endl;
   fKa1Missid = tightMuon(pk);  // true for tight  muons 
-  fKa1MuMatch = doTriggerMatching(pk, true); // see if it matches HLT muon 
+  fKa1MuMatch = doTriggerMatching(pk, false); // see if it matches HLT muon 
 
-  if(0) { // for testing d.k.
-
-    double mva=0;
-    fKa1Missid2 = mvaMuon(pk,mva);  // true for tight  muons 
-    
-    fKa1MuMatch2 = doTriggerMatching(pk,false); // see if it matches HLT muon 
-
-    fKa1MuMatchR = doTriggerMatchingR(pk,false); // matches to Bs/Jpsi-disp HLT muon 
-    fKa1MuMatchR2 = doTriggerMatchingR(pk,true); // matches to fired HLT muon 
-
-    fKa1MuMatchR5 = doTriggerMatchingR_OLD(pk,true); // matches to any "mu" HLT muon 
-    //fKa1MuMatchR7 = doTriggerMatchingR_OLD(pk,false); // same as R
-    
-    fKa1MuMatchR3 = matchToMuon(pk,true); // matches muon, ignore self muon 
-    //if(fKa1Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa1MuMatch<<endl;
-  } // end testing 
-
-
-
+  //  if(0) { // for testing d.k.
+  //   double mva=0;
+  //   fKa1Missid2 = mvaMuon(pk,mva);  // true for tight  muons 
+  //   fKa1MuMatch2 = doTriggerMatching(pk,false); // see if it matches HLT muon 
+  //   fKa1MuMatchR = doTriggerMatchingR(pk,false); // matches to Bs/Jpsi-disp HLT muon 
+  //   fKa1MuMatchR2 = doTriggerMatchingR(pk,true); // matches to fired HLT muon 
+  //   fKa1MuMatchR5 = doTriggerMatchingR_OLD(pk,true); // matches to any "mu" HLT muon 
+  //   //fKa1MuMatchR7 = doTriggerMatchingR_OLD(pk,false); // same as R
+  //   fKa1MuMatchR3 = matchToMuon(pk,true); // matches muon, ignore self muon 
+  //   //if(fKa1Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa1MuMatch<<endl;
+  // } // end testing 
 
   // -- Check for J/psi mass
   //cout<<" check jpsi "<<endl;
