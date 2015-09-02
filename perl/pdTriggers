@@ -1,22 +1,30 @@
 #!/usr/bin/env perl
 
 #
-# $BMMBASE/perl/pdTriggers -s /frozen/... 
+# $BMMBASE/perl/pdTriggers -a -s /frozen/... 
+# $BMMBASE/perl/pdTriggers -b -s /frozen/... -p Charmonium
 #
 # works only at CERN!?
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the 
 #
-# Author    Urs Langenegger <urs.langenegger@psi.ch>
+# Author    Urs Langenegger <urs.langenegger@gmail.com>
 # ----------------------------------------------------------------------
 
 
 
 use Getopt::Std;
-getopts('s:');
+getopts('abdp:s:');
 
 my $command = "hltConfigFromDB --offline --configName "; 
+
+# -- allow either /frozen/... or menu__frozen__... version
+if ($opt_s =~ /__/) {
+    $opt_s =~ s%__%/%g;
+    $opt_s =~ s%menu%%g;
+    print "==> $opt_s\n";
+}
 
 # -- from https://twiki.cern.ch/twiki/bin/view/CMS/ConfDB740#Frozen_menus
 my @menus = ( 
@@ -37,7 +45,7 @@ my @menus = (
     "/frozen/2015/25ns14e33/v1.0/HLT/V1",
 
     "/frozen/2015/50ns_5e33/v3.4/HLT/V1",
-    "/frozen/2015/50ns_5e33/v3.0/HLT/V2",
+#    "/frozen/2015/50ns_5e33/v3.0/HLT/V2",
     "/frozen/2015/50ns_5e33/v2.2/HLT/V2",
     "/frozen/2015/50ns_5e33/v2.2/HLT/V1",
     "/frozen/2015/50ns_5e33/v2.1/HLT/V5",
@@ -50,9 +58,91 @@ my @menus = (
     "/frozen/2015/50ns_5e33/v1.0/HLT/V1"
     ); 
 
-
-my $file = ""; 
-foreach $menu (@menus) {
-    ($file = "menu".$menu) =~ s%/%__%g;
-    print "$menu -> $file\n";
+# -- cmsRun part
+if ($opt_a) {
+    my $file = ""; 
+    foreach $menu (@menus) {
+	if ($opt_s && ($menu ne $opt_s)) {
+	    next;
+	}
+	($file = "menu".$menu) =~ s%/%__%g;
+	print "$command $menu > $file\n";
+	if (!$opt_d) {
+	    system("$command $menu > $file");
+	}
+    }
 }
+
+# -- create input files for candAna/runBmm
+my %datasets = ();
+if ($opt_b) {
+    my $file = ""; 
+    foreach $menu (@menus) {
+	if ($opt_s && ($menu ne $opt_s)) {
+	    next;
+	}
+	($file = "menu".$menu) =~ s%/%__%g;
+	print "parse $file\n";
+	open(IN, "$file") || die "cannot open $file\n";
+	while (<IN>) {
+	    if (/process.datasets/) {
+		last;
+	    }
+	}	    
+	readPD(IN);
+
+	foreach $key (keys %datasets) {
+	    ($line = $datasets{$key}) =~ s/,/\n/g;
+	    print "\n";
+	    print "$key: \n";
+	    print "$line\n";
+	}
+    
+    }
+}
+
+
+
+exit(0); 
+
+# ----------------------------------------------------------------------
+sub readPD() {
+    ($in) = @_;
+    my $hlts = ""; 
+    my $name = ""; 
+    while (42) {
+	$line = <$in>; 
+	if ($line =~ /^\)/) {
+	    last;
+	}
+	if ($line =~ /=/) {
+	    ($name, $rest) = split(/=/, $line); 
+	    $name =~ s/\s*//g;
+	    $rest =~ /'(.*)'/; 
+	    $hlt = $1; 
+	} else {
+	    $line =~ /'(.*)'/; 
+	    $hlt = $1; 
+	}
+	$hlts = $hlts . $hlt . ","; 
+	if ($line =~ /\),/) {
+	    $hlts =~ s/,$//g;
+	    if (($name eq "HLTMonitor")
+		|| ($name eq "LookAreaPD")
+		|| ($name eq "OnlineMonitor")
+		) {
+	    } else {
+		if ($opt_p) {
+		    if ($name eq $opt_p) {
+			$datasets{$name} = $hlts;
+		    }
+		} else {
+		    $datasets{$name} = $hlts;
+		}
+	    }
+	    $hlts = ""; 
+	    $name = ""; 
+	}
+    }
+}
+
