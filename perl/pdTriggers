@@ -4,7 +4,8 @@
 # $BMMBASE/perl/pdTriggers -a -s /frozen/... 
 # $BMMBASE/perl/pdTriggers -b -s /frozen/... -p Charmonium
 #
-# works only at CERN!?
+# -a works only at CERN!?
+# -b works everywhere if you have the ascii files 
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the 
@@ -28,6 +29,7 @@ if ($opt_s =~ /__/) {
 
 # -- from https://twiki.cern.ch/twiki/bin/view/CMS/ConfDB740#Frozen_menus
 my @menus = ( 
+    "/frozen/2015/25ns14e33/v4.0/HLT/V4",
     "/frozen/2015/25ns14e33/v4.0/HLT/V1",
     "/frozen/2015/25ns14e33/v3.3/HLT/V2",
     "/frozen/2015/25ns14e33/v3.3/HLT/V1",
