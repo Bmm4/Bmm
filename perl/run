@@ -332,6 +332,11 @@ sub makeCshFile {
 	    print OUT "/bin/rm -rf \$JOB\n";
 	    print OUT "pwd \n";
 	    print OUT "ls -l \n";
+	    print OUT "echo \"cleanup data_replica.py logfiles in /tmp\" \n";
+	    print OUT "/bin/rm -f /tmp/data_replica-admin-* \n";
+	    print OUT "echo \"check it\" \n";
+	    print OUT "/bin/ls /tmp | /bin/grep -i $user \n"
+
 	}
 
 	foreach $repl (@replaces) {

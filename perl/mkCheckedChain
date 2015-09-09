@@ -60,9 +60,8 @@ void checkChain(const char *chain, const char *tree) {
     sscanf(buffer, "%s", meta); 
     f = 0;
     f = TFile::Open(meta); 
-    if (f) {
+    if (f && !(f->TestBit(TFile::kRecovered))) {
       t = 0; 
-      //      t = (TTree*)f->Get("h1");
       t = (TTree*)f->Get(tree);
       if (t) {
         nentries = t->GetEntries(); 
@@ -76,9 +75,15 @@ void checkChain(const char *chain, const char *tree) {
       } else {
         cout << "no tree found" << endl;
       }
-      delete f; 
     } else {
-      cout << "Cannot open file " << meta << endl;
+      if (f->TestBit(TFile::kRecovered) {
+        cout << "Skipping recovered file " << meta << endl;
+      } else {
+        cout << "Cannot open file " << meta << endl;
+      }
+    }
+    if (f) {
+	f->Close(); 
     }
   }
   CHK.close(); 
