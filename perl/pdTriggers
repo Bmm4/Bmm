@@ -1,22 +1,23 @@
 #!/usr/bin/env perl
 
-#
+# -- first create the ASCII files by running cmsRun **at CERN**
 # $BMMBASE/perl/pdTriggers -a -s /frozen/... 
 #
-# -- dump all specific trigger in all trigger menus
-# $BMMBASE/perl/pdTriggers -b -s /frozen/... -p Charmonium -t DoubleMu4_3_Bs
+# -- dump all triggers ever in a version of the PDs interesting for us
+# $BMMBASE/perl/pdTriggers -B
 #
-# -- dump triggers with pattern $opt_t in name:
-# $BMMBASE/perl/pdTriggers -b -s /frozen/2015/25ns14e33/v4.0/HLT/V4 -t Displaced
-#
-# -- dump all datasets in all trigger menus
+# -- dump all trigger menus present in ASCII files
 # $BMMBASE/perl/pdTriggers -c
 #
-# -- dump contents of PD vs version
-# $BMMBASE/perl/pdTriggers -b -p SingleMuon
+# -- dump all (relevant) PDs
+# $BMMBASE/perl/pdTriggers -b
 #
-# -a works only at CERN!?
-# -b works everywhere if you have the ascii files 
+# -- dump all triggers in specific PD
+# $BMMBASE/perl/pdTriggers -p Charmonium
+#
+# -- dump all triggers in specific PD for a specific trigger menu
+# $BMMBASE/perl/pdTriggers -p Charmonium -s /frozen/2015/50ns_5e33/v2.2/HLT/V1
+#
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the 
