@@ -55,6 +55,7 @@ public:
   virtual int  numberOfTrackerLayers(TAnaTrack *t);
   virtual void setJSONFile(const char *name) {JSONFILE = name;}
   virtual void forceJSON() {fForceJson = true;}
+  virtual PdTrigger* pdTrigger() {return fpPdTrigger;}
 
   int fVerbose;
   int fYear;
