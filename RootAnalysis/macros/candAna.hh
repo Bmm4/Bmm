@@ -127,12 +127,14 @@ public:
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual void        play(); 
   virtual void        play2(); 
-  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching_OLD(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
-  //virtual bool        doTriggerMatching(bool anyTrig); // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
+  // match the 2 muons from the dimuon to HLT
+  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); 
+  // match a single track to HLT
+  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false, bool muonsOnly=true); 
   // To return the full deltaR not just a bool
-  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
+  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false, bool muonsOnly=true); 
+
+  virtual bool        doTriggerMatching_OLD(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
   virtual double      doTriggerMatchingR_OLD(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
 
   std::string fName; 
@@ -272,14 +274,9 @@ public:
   bool    fGoodDocaTrk, fGoodLastCut; 
 
   bool    fPreselection; 
-
   bool    fBadEvent;
   int     fhltType; // to hold the HLT information d.k.
-  bool    fHLTmatch2, fHLTmatch3; // test anothe matching method, for tesing only 
   double  fTrigMatchDeltaPt;
-
-  // test 
-  int ftmp1, ftmp2, ftmp3, ftmp4, ftmp5, ftmp6;
 
   struct RedTreeData fRTD;
 

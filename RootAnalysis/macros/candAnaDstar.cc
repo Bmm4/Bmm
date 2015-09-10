@@ -906,7 +906,7 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
     }
 
     // Not do the rigger matching
-    double dR = doTriggerMatchingR(muon,true); // see if it matches HLT muon
+    double dR = doTriggerMatchingR(muon,false,false); // see if it matches HLT muon
     ((TH1D*)fHistDir->Get("dr3"))->Fill(dR);
     if(muid) ((TH1D*)fHistDir->Get("dr4"))->Fill(dR);
 
