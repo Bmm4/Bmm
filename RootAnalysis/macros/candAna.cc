@@ -144,6 +144,14 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   // Skip data events where there was no valid trigger
   // NO!  if(!fIsMC && !fGoodHLT) {return;}  
 
+//  test cases for triggerInPd(...)
+//   cout << "HLT_PFHT650:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650") << endl;
+//   cout << "HLT_PFHT650_v3:       " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650_v3") << endl;
+//   cout << "HLT_QuadPFJet_VBF_v1: " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_QuadPFJet_VBF_v1") << endl;
+//   cout << "HLT_PFHT649:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT649") << endl;
+//   cout << "wrong PD:             " << fpReader->pdTrigger()->triggerInPd("JetHE", "HLT_PFHT650") << endl;
+
+
   ftmp3=0; 
   TAnaCand *pCand(0);
   if (fVerbose == -66) { cout << "----------------------------------------------------------------------" << endl;}
@@ -1088,7 +1096,7 @@ void candAna::triggerSelection() {
 	  || (a == "raw2digi_step") 
 	  || (a == "reconstruction_step") 
 	  ) { 
-	cout<<" does this ever happen? " <<a<<endl;
+	//	cout<<" does this ever happen? " <<a<<endl;
 	continue; // skip, go to the next triggr
       }
 
@@ -1746,7 +1754,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->SetBinContent(ibin, 1);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, triggerlist));
     }
-
 
     if (!strcmp(CutName, "TRUTHCAND")) {
       TRUTHCAND = int(CutValue); 
@@ -4489,3 +4496,5 @@ void candAna::fillMuonData(muonData &a, TAnaMuon *pt) {
 
   }
 }
+
+
