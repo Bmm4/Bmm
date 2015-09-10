@@ -22,7 +22,7 @@
 #
 # ----------------------------------------------------------------------
 
-use lib '/shome/ursl/perl/modules/Tie-IxHash-1.23/lib'; # this is not nice ...
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
 use Tie::IxHash;
 
 use Getopt::Std;
