@@ -24,8 +24,6 @@
 #include "rootio/TAnaJet.hh"
 #include "rootio/TAnaVertex.hh"
 
-#include "common/JSON.hh"
-
 #include "treeReader01.hh"
 
 #define DR      57.29577951

@@ -20,7 +20,9 @@
 #include "rootio/TAnaCand.hh"
 #include "rootio/TAnaTrack.hh"
 #include "rootio/TAnaVertex.hh"
+
 #include "common/JSON.hh"
+#include "common/PdTrigger.hh"
 
 #define DR      57.29577951
 
@@ -80,6 +82,9 @@ protected:
   // -- Pointer to JSON class
   JSON *fpJSON; 
 
+  // -- Pointer to JSON class
+  PdTrigger *fpPdTrigger; 
+
   // -- Cut values
   double 
       PTLO
@@ -89,7 +94,7 @@ protected:
     ;
   int TYPE;
   int BLIND; 
-  std::string JSONFILE;
+  std::string JSONFILE, PDTRIGGER;
   bool fForceJson;
 
   int fIsMC;

@@ -31,8 +31,12 @@ bmmReader::~bmmReader() {
 // ----------------------------------------------------------------------
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
-  //  fpJSON = new JSON(JSONFILE.c_str(), (fVerbose!=0?1:0)); 
   fpJSON = new JSON(JSONFILE.c_str(), 1); 
+  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 1); 
+
+//   cout << "HLT_PFHT650: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT650") << endl;
+//   cout << "HLT_PFHT649: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT649") << endl;
+//   cout << "wrong PD:    " << fpPdTrigger->triggerInPd("JetHE", "HLT_PFHT650") << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -180,6 +184,13 @@ void bmmReader::readCuts(TString filename, int dump) {
       sscanf(buffer, "%s %s", className, json);
       JSONFILE = string(json);
       if (dump) cout << "JSON FILE:           " << JSONFILE << endl;
+    }
+
+    if (!strcmp(className, "PDTRIGGER")) {
+      char basedir[1000];
+      sscanf(buffer, "%s %s", className, basedir);
+      PDTRIGGER = string(basedir);
+      if (dump) cout << "PDTRIGGER DIR:           " << PDTRIGGER << endl;
     }
   }
 
