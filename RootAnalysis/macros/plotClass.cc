@@ -138,6 +138,9 @@ void plotClass::overlayAll() {
 // ----------------------------------------------------------------------
 void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, int method, bool log, bool legend, double xleg, double yleg) {
 
+  showOverflow(h1);
+  showOverflow(h2);
+
   normHist(h1, f1, method); 
   normHist(h2, f2, method); 
 
@@ -146,9 +149,9 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, int method, bool
   if (log) {
     gPad->SetLogy(1); 
     hmax *= 2.;
-    h1->SetMinimum(0.1*h1->GetMinimum(1.e-6));
+    h1->SetMinimum(1.e-4*h1->GetMaximum());
   } else {
-    h1->SetMinimum(0.); 
+    h1->SetMinimum(0.001); 
   }
   h1->SetMaximum(hmax); 
 
@@ -185,6 +188,10 @@ void plotClass::overlay(string h1name, string f1, string h2name, string f2, int 
 
 // ----------------------------------------------------------------------
 void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool log, bool legend, double xleg, double yleg) {
+
+  showOverflow(h1);
+  showOverflow(h2);
+  showOverflow(h3);
 
   normHist(h1, f1, method); 
   normHist(h2, f2, method); 
@@ -225,21 +232,27 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
   if (legend) {
     newLegend(xleg, yleg, xleg+0.25, yleg+0.15); 
     legg->SetTextSize(0.03);
-    legg->AddEntry(h1, fDS[f1]->fName.c_str(), "f"); 
-    legg->AddEntry(h2, fDS[f2]->fName.c_str(), "f"); 
-    legg->AddEntry(h3, fDS[f3]->fName.c_str(), "f"); 
+    string text; 
+    text = fDS[f1]->fName.c_str(); 
+    if (fDBX) {
+      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f1]->fName.c_str(), h1->GetMean(), h1->GetMeanError(), h1->GetRMS()); 
+    }
+    legg->AddEntry(h1, text.c_str(), "f"); 
+
+    text = fDS[f2]->fName.c_str(); 
+    if (fDBX) {
+      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f2]->fName.c_str(), h2->GetMean(), h2->GetMeanError(), h2->GetRMS()); 
+    }
+    legg->AddEntry(h2, text.c_str(), "f"); 
+
+    text = fDS[f3]->fName.c_str(); 
+    if (fDBX) {
+      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f3]->fName.c_str(), h3->GetMean(), h3->GetMeanError(), h3->GetRMS()); 
+    }
+    legg->AddEntry(h3, text.c_str(), "f"); 
     legg->Draw();
   }
-  if (fDBX) {
-    tl->SetNDC(kTRUE);
-    tl->SetTextSize(0.05);
-    tl->SetTextColor(fDS[f1]->fColor); 
-    tl->DrawLatex(0.15, 0.92, Form("%.2e", h1->Integral())); 
-    tl->SetTextColor(fDS[f2]->fColor); 
-    tl->DrawLatex(0.40, 0.92, Form("%.2e", h2->Integral())); 
-    tl->SetTextColor(fDS[f3]->fColor); 
-    tl->DrawLatex(0.65, 0.92, Form("%.2e", h3->Integral())); 
-  }
+
 }
 
 // ----------------------------------------------------------------------
@@ -379,4 +392,8 @@ void plotClass::makeCanvas(int i) {
   }
 }
 
+
+
 #include "plotClass.icc"
+
+
