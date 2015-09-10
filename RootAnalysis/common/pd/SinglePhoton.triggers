@@ -1,0 +1,57 @@
+# ***************************************************************
+# SinglePhoton cumulative trigger list from trigger menus:
+# /frozen/2015/50ns_5e33/v2.1/HLT/V3
+# /frozen/2015/50ns_5e33/v2.1/HLT/V5
+# /frozen/2015/50ns_5e33/v2.2/HLT/V1
+# /frozen/2015/50ns_5e33/v2.2/HLT/V2
+# /frozen/2015/50ns_5e33/v3.4/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V2
+# /frozen/2015/25ns14e33/v3.0/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V2
+# /frozen/2015/25ns14e33/v3.1/HLT/V3
+# /frozen/2015/25ns14e33/v3.3/HLT/V1
+# /frozen/2015/25ns14e33/v3.3/HLT/V2
+# /frozen/2015/25ns14e33/v4.0/HLT/V1
+# /frozen/2015/25ns14e33/v4.0/HLT/V4
+# ***************************************************************
+HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon30
+HLT_Photon90_CaloIdL_PFHT600
+HLT_Photon50_R9Id90_HE10_IsoM
+HLT_Photon50
+HLT_Photon600
+HLT_Photon250_NoHE
+HLT_Photon90_CaloIdL_PFHT500
+HLT_Photon42_R9Id85_OR_CaloId24b40e_Iso50T80L_Photon25_AND_HE10_R9Id65_Eta2_Mass15
+HLT_Photon75
+HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon75_R9Id90_HE10_IsoM
+HLT_Photon135_PFMET100_NoiseCleaned
+HLT_Photon36
+HLT_Photon165_R9Id90_HE10_IsoM
+HLT_Photon90_R9Id90_HE10_IsoM
+HLT_Photon36_R9Id90_HE10_IsoM
+HLT_Photon22_R9Id90_HE10_IsoM
+HLT_Photon175
+HLT_Photon30_R9Id90_HE10_IsoM
+HLT_Photon165_HE10
+HLT_Photon300_NoHE
+HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon120_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon50_R9Id90_HE10_Iso40_EBOnly_PFMET40
+HLT_Photon36_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon90
+HLT_Photon90_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon500
+HLT_Photon120
+HLT_Photon120_R9Id90_HE10_IsoM
+HLT_Photon22
+HLT_Photon75_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon22_R9Id90_HE10_Iso40_EBOnly_VBF
+HLT_Photon90_CaloIdL_PFHT600
+HLT_Photon135_PFMET100_JetIdCleaned

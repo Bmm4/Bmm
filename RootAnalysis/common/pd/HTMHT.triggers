@@ -1,0 +1,42 @@
+# ***************************************************************
+# HTMHT cumulative trigger list from trigger menus:
+# /frozen/2015/50ns_5e33/v2.1/HLT/V3
+# /frozen/2015/50ns_5e33/v2.1/HLT/V5
+# /frozen/2015/50ns_5e33/v2.2/HLT/V1
+# /frozen/2015/50ns_5e33/v2.2/HLT/V2
+# /frozen/2015/50ns_5e33/v3.4/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V2
+# /frozen/2015/25ns14e33/v3.0/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V2
+# /frozen/2015/25ns14e33/v3.1/HLT/V3
+# /frozen/2015/25ns14e33/v3.3/HLT/V1
+# /frozen/2015/25ns14e33/v3.3/HLT/V2
+# /frozen/2015/25ns14e33/v4.0/HLT/V1
+# /frozen/2015/25ns14e33/v4.0/HLT/V4
+# ***************************************************************
+HLT_RsqMR270_Rsq0p09_MR200_4jet
+HLT_PFHT400_DiPFJetAve90_PFAlphaT0p52
+HLT_DiPFJet40_DEta3p5_MJJ600_PFMETNoMu80
+HLT_PFHT350_DiPFJetAve90_PFAlphaT0p52
+HLT_DiCentralPFJet55_PFMET110_NoiseCleaned
+HLT_PFHT200_DiPFJetAve90_PFAlphaT0p63
+HLT_Rsq0p30
+HLT_RsqMR240_Rsq0p09_MR200_4jet
+HLT_RsqMR240_Rsq0p09_MR200
+HLT_RsqMR270_Rsq0p09_MR200
+HLT_PFHT400_DiPFJetAve90_PFAlphaT0p51
+HLT_PFHT300_DiPFJetAve90_PFAlphaT0p53
+HLT_Rsq0p25
+HLT_PFHT350_DiPFJetAve90_PFAlphaT0p53
+HLT_PFHT300_DiPFJetAve90_PFAlphaT0p54
+HLT_DiPFJet40_DEta3p5_MJJ600_PFMETNoMu140
+HLT_PFHT350_PFMET100_NoiseCleaned
+HLT_PFHT250_DiPFJetAve90_PFAlphaT0p55
+HLT_PFHT200_DiPFJetAve90_PFAlphaT0p57
+HLT_PFHT250_DiPFJetAve90_PFAlphaT0p58
+HLT_PFHT350_PFMET100_JetIdCleaned
+HLT_DiCentralPFJet55_PFMET110_JetIdCleaned
+HLT_DiPFJet40_DEta3p5_MJJ600_PFMETNoMu140_JetIdCleaned
+HLT_DiPFJet40_DEta3p5_MJJ600_PFMETNoMu80_JetIdCleaned
