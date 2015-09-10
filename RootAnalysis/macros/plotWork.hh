@@ -15,11 +15,14 @@ public :
   void   setCuts(std::string cuts);
 
   // -- Main analysis methods 
+  void   loadFiles(std::string afiles);
   void   makeAll(int bitmask = 0);
   void   bookHist(int mode);
 
   // -- validate gen production
-  void   genValidation(std::string hist = "eta511", std::string ds1 = "pythia8soft", std::string ds2 = "pythia8hard", std::string ds3 = "pythia6"); 
+  void   genValidation(std::string hist = "eta511", 
+		       std::string ds1 = "pythia8soft", std::string ds2 = "pythia8hard", std::string ds3 = "pythia6", 
+		       bool log = false, bool legend = false); 
   void   loopFunction1(); 
 
 
