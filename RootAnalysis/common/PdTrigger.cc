@@ -49,6 +49,12 @@ void PdTrigger::print() {
 
 // ----------------------------------------------------------------------
 bool PdTrigger::triggerInPd(std::string pdname, std::string triggername) {
+  size_t pos = triggername.rfind("_v");
+  if (pos != std::string::npos) {
+    triggername = triggername.substr(0, pos);
+    cout << "using truncated triggername: " << triggername << endl;
+  }
+
   vector<string> triggers = fPdTrigger[pdname];
   for (unsigned int i = 0; i < triggers.size(); ++i) {
     if (triggername == triggers[i]) return true;
