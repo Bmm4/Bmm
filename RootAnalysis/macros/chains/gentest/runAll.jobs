@@ -1,0 +1,72 @@
+my $version = "gentest";
+
+my $dataset = "bla";
+my $mode    = "bla";
+my $pattern = "bla"; 
+
+# -- output directory
+my $SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+# -- grid SE prefix
+my $PSI = $ENV{'PSI'};
+print "PSI = $PSI\n";
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+my $SEDIR = "$PSI/store/user/ursl/bmm4/runBmm/$VERSION";
+
+# ######################
+# -- define all the jobs
+# ######################
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+# bin/runBmm -m -C cuts/bmmReader.mix-Bs2MuMu
+
+# -----------------------------------------------
+$dataset = "gentest"; 
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_doubleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_doubleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_singleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_singleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_nsdDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_nsdDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_nondiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_nondiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD8"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD8"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD10"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD10"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+# -----------------------------------------------
+$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD12"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD12"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
+
+
+# -- did not manage to do this with refs, so do it with functions: 
+sub runCommand() {
+    $runCmd  = "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/RootAnalysis/macros/runBmmNoComp.csh ";
+    $runCmd .= "-r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/runBmm/$version/%SITE T3_CH_PSI' ";
+    return $runCmd;
+}   
+
+sub mCC() {
+    return " && $BMMBASE/perl/mkCheckedChain $mode && rm  $mode; ";
+}
+
+sub srmHadd() {
+    ($lmode) = @_;
+    return "$BMMBASE/perl/srmHadd -x $SEDIR/$dataset -p $lmode -o $SCRATCH/$lmode.root";
+}
+

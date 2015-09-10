@@ -1,24 +1,32 @@
 #!/usr/bin/perl
 
 # ----------------------------------------------------------------------
-# Examples:
+# Usage examples
+# ==============
+#
+# -- generate python files
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p -s Summer15_private
+#
+# -- submit cmsRun jobs 
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -t $BMMBASE../../150826bmm4.tar.gz -s Summer15_private
 #
+# -- generate checked chains and split them
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p 
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p -s bmm-v01-Run2015B__Charmonium__PromptReco-v1
 #
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t 
+# -- submit runBmm jobs 
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -h 
 #
 #
 # ----------------------------------------------------------------------
 
-use lib '/shome/ursl/perl/modules/Tie-IxHash-1.23/lib'; # this is not nice ...
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('cdlo:ps:t:x:');
+getopts('cdhlo:ps:t:x:');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -38,6 +46,18 @@ while (<IN>) {
     $gProgram .= "  ".$_; 
 }
 eval $gProgram;
+
+
+if ($opt_h) {
+    foreach $j (keys %jobs) {
+	$command = &srmHadd($j); 
+	print "$command\n";
+	if (!$opt_d) {
+	    system("$command");
+	}
+    }
+    exit(0);
+}
 
 
 # -- create (split) files

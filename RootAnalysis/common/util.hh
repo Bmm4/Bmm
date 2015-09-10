@@ -11,6 +11,8 @@
 #include "TDirectory.h"
 #include "TColor.h"
 
+#include <vector>
+
 // extern TROOT  *gROOT;
 // extern TStyle *gStyle;
 // extern TFile  *gFile;
@@ -27,6 +29,7 @@ void zone(int x = 1, int y = 1, TCanvas *c = 0);
 int  wait();
 void colors(int choice = 0);
 void replaceAll(std::string &s, const std::string &from, const std::string &to);
+std::vector<int> defVector(int n, ...);
 
 // ======================================================================
 // Utitilities for displays and typing shortcuts
@@ -38,6 +41,7 @@ void setHist(TH1 *h, int color = kBlack, int symbol = 20, double size = 1., doub
 void setGraph(TGraph *g, int color = kBlack, int symbol = 20, double size = 1., double width = 2.);
 void setFilledHist(TH1 *h, int lcol = kBlack, int fcol = kYellow, int fstyle = 1000, int width = 1);
 void setMaximum(double scale = 1.2, TH1 *h1 = 0, TH1 *h2 = 0);
+void showOverflow(TH1 *h);
 
 TH1D *unmix(TH1D *rightSign, TH1D *wrongSign, double chid = 0.181); 
 
@@ -93,5 +97,7 @@ bool isCharmMeson(int i);
 bool isCharmMesonWeak(int i); 
 bool isCharmBaryon(int i); 
 bool isLightMeson(int i); 
+
+
 
 #endif

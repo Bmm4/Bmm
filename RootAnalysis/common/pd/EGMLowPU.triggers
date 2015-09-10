@@ -1,0 +1,8 @@
+# ***************************************************************
+# EGMLowPU cumulative trigger list from trigger menus:
+# /frozen/2015/50ns_5e33/v2.1/HLT/V3
+# /frozen/2015/50ns_5e33/v2.2/HLT/V1
+# /frozen/2015/50ns_5e33/v2.2/HLT/V2
+# /frozen/2015/50ns_5e33/v3.4/HLT/V1
+# ***************************************************************
+HLT_Activity_Ecal_SC7

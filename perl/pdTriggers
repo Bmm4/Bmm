@@ -1,10 +1,23 @@
 #!/usr/bin/env perl
 
-#
+# -- first create the ASCII files by running cmsRun **at CERN**
 # $BMMBASE/perl/pdTriggers -a -s /frozen/... 
-# $BMMBASE/perl/pdTriggers -b -s /frozen/... -p Charmonium
 #
-# works only at CERN!?
+# -- dump all triggers ever in a version of the PDs interesting for us
+# $BMMBASE/perl/pdTriggers -B
+#
+# -- dump all trigger menus present in ASCII files
+# $BMMBASE/perl/pdTriggers -c
+#
+# -- dump all (relevant) PDs
+# $BMMBASE/perl/pdTriggers -b
+#
+# -- dump all triggers in specific PD
+# $BMMBASE/perl/pdTriggers -p Charmonium
+#
+# -- dump all triggers in specific PD for a specific trigger menu
+# $BMMBASE/perl/pdTriggers -p Charmonium -s /frozen/2015/50ns_5e33/v2.2/HLT/V1
+#
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the 
@@ -12,10 +25,11 @@
 # Author    Urs Langenegger <urs.langenegger@gmail.com>
 # ----------------------------------------------------------------------
 
-
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+use Tie::IxHash;
 
 use Getopt::Std;
-getopts('abdp:s:');
+getopts('abBcDp:s:t:v');
 
 my $command = "hltConfigFromDB --offline --configName "; 
 
@@ -23,11 +37,32 @@ my $command = "hltConfigFromDB --offline --configName ";
 if ($opt_s =~ /__/) {
     $opt_s =~ s%__%/%g;
     $opt_s =~ s%menu%%g;
-    print "==> $opt_s\n";
+    #print "==> $opt_s\n";
 }
 
+my @skipPD = (
+    "Commissioning", 
+    "HLTPhysics", "HLTMonitor", "LookAreaPD", "OnlineMonitor", "InitialPD", "L1Accept",
+    "RPCMonitor",
+    "FullTrack", "Templates", 
+    "HighMultiplicity85", "HighMultplicity85",
+    "MonteCarlo", 
+    "ParkingHT1", "ParkingHT2", "ParkingHT3", "ParkingHT4", "ParkingHT5", "ParkingMonitor", 
+    "AlCaP0", "AlCaPhiSym", "AlCaLumiPixels", "AlCaElectron", 
+    "DQMOfflinePD", "TestEnablesEcalHcalDQM", 
+    "HINCaloJetsOther", "HINCaloJets", "HINPFJets", "HINPFJetsOther", "HINPhoton", "HINMuon", 
+    "Test", "ElectronStream", 
+    "HcalHPDNoise", "HCalNZS", "HcalNZS", "TestEnablesEcalHcal", "TestEnablesEcalHcalDQM", "HcalHPDNoise", 
+    "EcalLaser", "NoBPTX", 
+    "ToTOTEM",
+    "Express", "ExpressPhysics", "EventDisplay"
+    );
+    
+
+
 # -- from https://twiki.cern.ch/twiki/bin/view/CMS/ConfDB740#Frozen_menus
-my @menus = ( 
+my @twikiMenus = ( 
+    "/frozen/2015/25ns14e33/v4.0/HLT/V4",
     "/frozen/2015/25ns14e33/v4.0/HLT/V1",
     "/frozen/2015/25ns14e33/v3.3/HLT/V2",
     "/frozen/2015/25ns14e33/v3.3/HLT/V1",
@@ -58,7 +93,12 @@ my @menus = (
     "/frozen/2015/50ns_5e33/v1.0/HLT/V1"
     ); 
 
+my @menus = reverse @twikiMenus;
+
+
+# %%%%%%%%%%%%%%
 # -- cmsRun part
+# %%%%%%%%%%%%%%
 if ($opt_a) {
     my $file = ""; 
     foreach $menu (@menus) {
@@ -67,49 +107,140 @@ if ($opt_a) {
 	}
 	($file = "menu".$menu) =~ s%/%__%g;
 	print "$command $menu > $file\n";
-	if (!$opt_d) {
-	    system("$command $menu > $file");
-	}
+	system("$command $menu > $file");
     }
+    exit(0); 
 }
 
-# -- create input files for candAna/runBmm
-my %datasets = ();
-if ($opt_b) {
-    my $file = ""; 
-    foreach $menu (@menus) {
-	if ($opt_s && ($menu ne $opt_s)) {
-	    next;
-	}
-	($file = "menu".$menu) =~ s%/%__%g;
-	print "parse $file\n";
-	open(IN, "$file") || die "cannot open $file\n";
-	while (<IN>) {
-	    if (/process.datasets/) {
-		last;
-	    }
-	}	    
-	readPD(IN);
 
-	foreach $key (keys %datasets) {
-	    ($line = $datasets{$key}) =~ s/,/\n/g;
-	    print "\n";
-	    print "$key: \n";
-	    print "$line\n";
-	}
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+# -- call this for a selection of PD
+# %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+if ($opt_B) {
+    $pdlist = `$ENV{BMMBASE}/perl/pdTriggers -b`;
+    @pd = split(/\n/, $pdlist); 
+    foreach (@pd) {
+	system("$ENV{BMMBASE}/perl/pdTriggers -p $_");
+    }
     
+    print "\n";
+    exit(0); 
+}
+
+
+# %%%%%%%%%%%%%%%%%%%%%%%%%%
+# -- Analysis of ASCII files
+# %%%%%%%%%%%%%%%%%%%%%%%%%%
+my  %pdmenu = ();
+tie %pdmenu, "Tie::IxHash";
+
+my  %pdTrigger = (); 
+tie %pdTrigger, "Tie::IxHash";
+
+
+my  %cumulativeTriggers = (); 
+tie %cumulativeTriggers, "Tie::IxHash";
+
+# -- set up %pdmenu that contains all PD and trigger menus
+my $file = ""; 
+foreach $menu (@menus) {
+    if ($opt_s && ($menu ne $opt_s)) {
+	next;
+    }
+    ($file = "menu".$menu) =~ s%/%__%g;
+    open(IN, "$file") || die "cannot open $file\n";
+    # -- go to pdmenu definition:
+    while (<IN>) {
+	if (/process.datasets/) {
+	    last;
+	}
+    }	    
+    readPD(IN, $menu);
+    close(IN);
+}
+
+
+my  %menus = (); 
+tie %menus, "Tie::IxHash";
+foreach $key (keys %pdmenu) {
+    ($pd, $menu) = split(/:/, $key); 
+    $menus{$menu} = 1; 
+    $pds{$pd} = 1; 
+}
+
+
+if ($opt_b) {
+    foreach (keys %pds) {
+	print "$_\n";
+    }
+    exit(0);
+}
+
+
+if ($opt_c) {
+    foreach (keys %menus) {
+	print "$_\n";
+    }
+    exit(0);
+}
+
+# -- print all triggers in PD $opt_p
+if ($opt_p) {
+    my $oldmenu = ""; 
+    my $old     = ""; 
+    foreach $key (keys %pdmenu) {
+	($pd, $menu) = split(/:/, $key); 
+	#print "$key -> pd = $pd, menu = $menu\n** $pdmenu{$key}\n** $old\n\n";
+	if ($pd ne $opt_p) {next;}
+	if ($menu ne $oldmenu) {
+	    @vMenu = split(/,/, $pdmenu{$key}); 
+	    @vOld = split(/,/, $old); 
+	    %adiff = newVsOld(\@vMenu, \@vOld);
+	    $old = $pdmenu{$key};
+	    
+	    ($line = $pdmenu{$key}) =~ s/,/\n/g;
+	    ($pd = $key) =~ s/:.*$//g;
+	    print "******** $key ********\n";
+	    foreach $dkey (keys %adiff) {
+		#print "adiff: $dkey = $adiff{$dkey}\n";
+		if ($adiff{$dkey} == 1) {
+		    print "added $dkey \n";
+		    $cumulativeTriggers{$pd} .= "$dkey\n";
+		} elsif ($adiff{$dkey} == 2) {
+		    print "removed $dkey \n";
+		}
+	    }
+
+	    $oldmenu = $menu; 
+	}
+    }
+
+    foreach $key (keys %cumulativeTriggers) {
+	open(OUT, ">$key.triggers") || die "cannot open $key.triggers\n";
+	print OUT "# ***************************************************************\n";
+	print OUT "# $key cumulative trigger list from trigger menus:\n";
+	foreach (keys %menus) {
+	    print OUT "# $_\n";
+	}
+	
+	print OUT "# ***************************************************************\n";
+	print OUT "$cumulativeTriggers{$key}";
+	close OUT;
     }
 }
 
 
 
-exit(0); 
+
+exit(0);
 
 # ----------------------------------------------------------------------
 sub readPD() {
-    ($in) = @_;
+    ($in, $lmenu) = @_;
     my $hlts = ""; 
     my $name = ""; 
+    my $fullName = ""; 
     while (42) {
 	$line = <$in>; 
 	if ($line =~ /^\)/) {
@@ -124,20 +255,27 @@ sub readPD() {
 	    $line =~ /'(.*)'/; 
 	    $hlt = $1; 
 	}
-	$hlts = $hlts . $hlt . ","; 
+	$hlt =~ s/_v[0-9]*$//g;
+	if ($opt_t) {
+	    if ($hlt =~ $opt_t) {
+		$hlts = $hlts . $hlt . ","; 
+	    } 
+	} else {
+	    $hlts = $hlts . $hlt . ","; 
+	} 
+
 	if ($line =~ /\),/) {
 	    $hlts =~ s/,$//g;
-	    if (($name eq "HLTMonitor")
-		|| ($name eq "LookAreaPD")
-		|| ($name eq "OnlineMonitor")
-		) {
+	    if (grep /$name/, @skipPD) {
+		#print "found $name in skipPD, skipping\n";
 	    } else {
+		$fullName = $name . ":" . $menu;
 		if ($opt_p) {
 		    if ($name eq $opt_p) {
-			$datasets{$name} = $hlts;
+			$pdmenu{$fullName} = $hlts;
 		    }
 		} else {
-		    $datasets{$name} = $hlts;
+		    $pdmenu{$fullName} = $hlts;
 		}
 	    }
 	    $hlts = ""; 
@@ -146,3 +284,35 @@ sub readPD() {
     }
 }
 
+
+# ----------------------------------------------------------------------
+sub splitIntoArray() {
+    ($in) = @_;
+    return
+}
+
+# ----------------------------------------------------------------------
+sub newVsOld {
+    my ($array1, $array2) = @_;
+
+    my @array1 = @{$array1};
+    my @array2 = @{$array2};
+
+    #print "size array1: $#array1\n";
+    #print "size array2: $#array2\n";
+
+    my %count = (); 
+    foreach (@array1) {
+	$count{$_} = 1;
+    };
+    foreach (@array2) {
+	if ($count{$_} == 1) {
+	    #print "$_ already in array1\n";
+	    $count{$_} = 3; 
+	} else {
+	    #print "** $_ not in array1\n";
+	    $count{$_} = 2;
+	}
+    }
+    return %count; 
+}
