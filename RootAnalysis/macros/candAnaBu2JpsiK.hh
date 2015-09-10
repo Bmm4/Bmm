@@ -51,9 +51,8 @@ public:
 
   bool         fGoodJpsiMass;
   bool         fKa1Missid, fKa1MuMatch;
-  bool         fKa1Missid2, fKa1MuMatch2; 
-  float        fKa1MuMatchR, fKa1MuMatchR2, fKa1MuMatchR3, fKa1MuMatchR4, fKa1MuMatchR5, fKa1MuMatchR6;
-
+  //bool         fKa1Missid2, fKa1MuMatch2; 
+  float        fKa1MuMatchR, fKa1MuMatchR2;
 
 
   // -- TM

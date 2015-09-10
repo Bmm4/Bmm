@@ -7,6 +7,7 @@
 #include "common/AnalysisDistribution.hh"
 
 using namespace std;
+#define NEW_MATCHING
 
 // ----------------------------------------------------------------------
 candAnaBu2JpsiK::candAnaBu2JpsiK(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
@@ -60,21 +61,23 @@ void candAnaBu2JpsiK::candAnalysis() {
     fKEtaGen    = -99.;
   }
   
-  //cout<<" match kaon "<<fKaonPt<<endl;
   fKa1Missid = tightMuon(pk);  // true for tight  muons 
-  fKa1MuMatch = doTriggerMatching(pk, false); // see if it matches HLT muon 
+  fKa1MuMatch = doTriggerMatching(pk, false,false); // see if it matches HLT muon 
 
-  //  if(0) { // for testing d.k.
-  //   double mva=0;
-  //   fKa1Missid2 = mvaMuon(pk,mva);  // true for tight  muons 
-  //   fKa1MuMatch2 = doTriggerMatching(pk,false); // see if it matches HLT muon 
-  //   fKa1MuMatchR = doTriggerMatchingR(pk,false); // matches to Bs/Jpsi-disp HLT muon 
-  //   fKa1MuMatchR2 = doTriggerMatchingR(pk,true); // matches to fired HLT muon 
-  //   fKa1MuMatchR5 = doTriggerMatchingR_OLD(pk,true); // matches to any "mu" HLT muon 
-  //   //fKa1MuMatchR7 = doTriggerMatchingR_OLD(pk,false); // same as R
-  //   fKa1MuMatchR3 = matchToMuon(pk,true); // matches muon, ignore self muon 
-  //   //if(fKa1Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa1MuMatch<<endl;
-  // } // end testing 
+#ifdef NEW_MATCHING
+  // match to all trigger particles (use this to select trigger bias)
+  fKa1MuMatchR = doTriggerMatchingR(pk, false, false); // matches only selected HLT path 
+  fKa1MuMatchR2 = doTriggerMatchingR(pk, true, false); // matches any passed HLT path
+
+  // match to muon trigger particles  only, testing  
+  //fKa1MuMatchR = doTriggerMatchingR(pk, false, true); // matches only selected HLT path 
+  //fKa1MuMatchR2 = doTriggerMatchingR(pk, true, true); // matches any passed HLT path
+
+  //cout<<" match kaon "<<fKaonPt<<" "<<fKa1Missid<<" "<<fKa1MuMatch
+  //  <<" "<<fKa1MuMatchR<<" "<<fKa1MuMatchR2<<endl;
+#else
+  fKa1MuMatchR = doTriggerMatchingR_OLD(pk, false); // see if it matches HLT muon 
+#endif
 
   // -- Check for J/psi mass
   //cout<<" check jpsi "<<endl;
@@ -114,8 +117,6 @@ void candAnaBu2JpsiK::candAnalysis() {
   fPreselection = fPreselection && fWideMass;
 
   if(0) { // special misid tests d.k.
-    if( (pk->fIndex == fpMuon1->fIndex) || (pk->fIndex ==fpMuon2->fIndex) ) 
-      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<pk->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<endl;
 
     TVector3 trackMom = pk->fPlab;  // test track momentum
     TVector3 muonMom;
@@ -124,8 +125,12 @@ void candAnaBu2JpsiK::candAnalysis() {
     muonMom = fpMuon2->fPlab;
     double dR2 = muonMom.DeltaR(trackMom);
 
-    if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR6 = dR2;}
-    else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR6 = dR1;}
+    if( (pk->fIndex == fpMuon1->fIndex) || (pk->fIndex ==fpMuon2->fIndex) ) 
+      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<pk->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
+
+    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR6 = dR2;}
+    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR6 = dR1;}
+
   } // end testing 
 
 
@@ -384,19 +389,8 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("g3id", &fKGenID,    "g3id/I"); 
   t->Branch("k1missid",  &fKa1Missid,    "k1missid/O");
   t->Branch("k1mumatch", &fKa1MuMatch,    "k1mumatch/O");
-
-  if(0) { // testing d.k.
-    t->Branch("k1missid2",  &fKa1Missid2,    "k1missid2/O");
-    t->Branch("k1mumatch2", &fKa1MuMatch2,    "k1mumatch2/O");
-
-    t->Branch("k1mumatchr", &fKa1MuMatchR,    "k1mumatchr/F");
-    t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
-    t->Branch("k1mumatchr3", &fKa1MuMatchR3,    "k1mumatchr3/F");
-    t->Branch("k1mumatchr4", &fKa1MuMatchR4,    "k1mumatchr4/F");
-    t->Branch("k1mumatchr5", &fKa1MuMatchR5,    "k1mumatchr5/F");
-    t->Branch("k1mumatchr6", &fKa1MuMatchR6,    "k1mumatchr6/F");
-    //t->Branch("k1mumatchr7", &fKa1MuMatchR7,    "k1mumatchr7/F");
-  }
+  t->Branch("k1mumatchr",  &fKa1MuMatchR,    "k1mumatchr/F");
+  t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
 
 }
 
