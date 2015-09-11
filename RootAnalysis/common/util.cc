@@ -10,6 +10,8 @@
 #include "TString.h"
 #include "TH2.h"
 
+#include<stdarg.h>
+
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -412,3 +414,25 @@ bool isLightMeson(int i) {
   return (rest > 99 && rest < 400);  
 } 
 
+// ----------------------------------------------------------------------
+void showOverflow(TH1 *h) {
+  h->SetBinContent(h->GetNbinsX(), h->GetBinContent(h->GetNbinsX()) + h->GetBinContent(h->GetNbinsX()+1));
+  h->SetBinContent(1, h->GetBinContent(1) + h->GetBinContent(0));
+}
+
+
+// ----------------------------------------------------------------------
+vector<int> defVector(int n, ...) {
+  
+  va_list vl;
+  va_start(vl, n);
+  vector<int> vect; 
+  int a(0);
+  for (int i = 0; i < n; ++i) {
+    a = va_arg(vl, int);
+    vect.push_back(a); 
+  }
+  
+  va_end(vl);
+  return vect;
+}

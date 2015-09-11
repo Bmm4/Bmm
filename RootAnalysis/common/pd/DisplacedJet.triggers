@@ -1,0 +1,37 @@
+# ***************************************************************
+# DisplacedJet cumulative trigger list from trigger menus:
+# /frozen/2015/50ns_5e33/v2.1/HLT/V3
+# /frozen/2015/50ns_5e33/v2.1/HLT/V5
+# /frozen/2015/50ns_5e33/v2.2/HLT/V1
+# /frozen/2015/50ns_5e33/v2.2/HLT/V2
+# /frozen/2015/50ns_5e33/v3.4/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V2
+# /frozen/2015/25ns14e33/v3.0/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V2
+# /frozen/2015/25ns14e33/v3.1/HLT/V3
+# /frozen/2015/25ns14e33/v3.3/HLT/V1
+# /frozen/2015/25ns14e33/v3.3/HLT/V2
+# /frozen/2015/25ns14e33/v4.0/HLT/V1
+# /frozen/2015/25ns14e33/v4.0/HLT/V4
+# ***************************************************************
+HLT_HT500_DisplacedDijet40_Inclusive
+HLT_HT350_DisplacedDijet80_Tight_DisplacedTrack
+HLT_VBF_DisplacedJet40_TightID_DisplacedTrack
+HLT_VBF_DisplacedJet40_VTightID_DisplacedTrack
+HLT_VBF_DisplacedJet40_Hadronic
+HLT_HT550_DisplacedDijet40_Inclusive
+HLT_HT750_DisplacedDijet80_Inclusive
+HLT_HT650_DisplacedDijet80_Inclusive
+HLT_VBF_DisplacedJet40_VVTightID_Hadronic
+HLT_VBF_DisplacedJet40_VTightID_Hadronic
+HLT_HT350_DisplacedDijet40_DisplacedTrack
+HLT_HT350_DisplacedDijet80_DisplacedTrack
+HLT_VBF_DisplacedJet40_TightID_Hadronic
+HLT_VBF_DisplacedJet40_VVTightID_DisplacedTrack
+HLT_VBF_DisplacedJet40_DisplacedTrack
+HLT_VBF_DisplacedJet40_DisplacedTrack_2TrackIP2DSig5
+HLT_VBF_DisplacedJet40_Hadronic_2PromptTrack
+HLT_HT250_DisplacedDijet40_DisplacedTrack
+HLT_HT400_DisplacedDijet40_Inclusive

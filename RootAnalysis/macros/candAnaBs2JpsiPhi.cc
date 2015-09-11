@@ -96,29 +96,22 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   fKa1Missid = tightMuon(p1);  // true for tight  muons 
   fKa2Missid = tightMuon(p2);
-  fKa1MuMatch = doTriggerMatching(p1); // see if it matches HLT muon 
-  fKa2MuMatch = doTriggerMatching(p2); // see if it matches HLT muon 
+  //fKa1Missid2 = mvaMuon(p1,mva);  // true for tight  muons 
+  //fKa2Missid2 = mvaMuon(p2,mva);  // true for tight  muons 
 
-  if(0) { // special tests d.k.
-    double mva=0;
+  fKa1MuMatch = doTriggerMatching(p1,false,false); // see if it matches HLT muon 
+  fKa2MuMatch = doTriggerMatching(p2,false,false); // see if it matches HLT muon 
 
-    fKa1Missid2 = mvaMuon(p1,mva);  // true for tight  muons 
-    fKa1MuMatch = doTriggerMatching(p1,false); // see if it matches HLT muon 
-    fKa1MuMatch2 = doTriggerMatching(p1,true); // see if it matches HLT muon 
-    fKa1MuMatchR = doTriggerMatchingR(p1,false); // see if it matches HLT muon 
-    fKa1MuMatchR2 = doTriggerMatchingR(p1,true); // see if it matches HLT muon 
-    fKa1MuMatchR3 = matchToMuon(p1,true); // see if it matches HLT muon 
-    
-    // 2nd Kaon
-    fKa2Missid2 = mvaMuon(p2,mva);  // true for tight  muons 
-    fKa2MuMatch = doTriggerMatching(p2,false); // see if it matches HLT muon 
-    fKa2MuMatch2 = doTriggerMatching(p2,true); // see if it matches HLT muon 
-    fKa2MuMatchR = doTriggerMatchingR(p2,false); // see if it matches HLT muon 
-    fKa2MuMatchR2 = doTriggerMatchingR(p2,true); // see if it matches HLT muon 
-    fKa2MuMatchR3 = matchToMuon(p2,true); // see if it matches HLT muon 
-
-    //if(fKa1Missid || fKa2Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa2Missid<<" "<<fKa1MuMatch<<" "<<fKa2MuMatch<<endl;
-  }
+  // use this for trigger bias, non-muon can also participate in an trigger 
+  fKa1MuMatchR = doTriggerMatchingR(p1,false,false); // see if it matches HLT muon 
+  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,false); // see if it matches HLT muon 
+  fKa2MuMatchR = doTriggerMatchingR(p2,false,false); // see if it matches HLT muon 
+  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,false); // see if it matches HLT muon 
+  // use this for testing, to match only to muons
+  fKa1MuMatchR = doTriggerMatchingR(p1,false,true); // see if it matches HLT muon 
+  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,true); // see if it matches HLT muon 
+  fKa2MuMatchR = doTriggerMatchingR(p2,false,true); // see if it matches HLT muon 
+  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,true); // see if it matches HLT muon 
 
   if (fCandTmi > -1) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
@@ -162,10 +155,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   
   
   if(0) { // misid test d.k.
-    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) ) 
-      cout<<" Kaon1 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p1->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<endl;
-    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) ) 
-      cout<<" Kaon2 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p2->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<endl;
 
     TVector3 muonMom1 = fpMuon1->fPlab;
     TVector3 muonMom2 = fpMuon2->fPlab;
@@ -174,15 +163,22 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     double dR1 = muonMom1.DeltaR(trackMom);
     double dR2 = muonMom2.DeltaR(trackMom);
 
-    if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR5 = dR2;}
-    else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR5 = dR1;}
+    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR5 = dR2;}
+    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR5 = dR1;}
+
+    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) ) 
+      cout<<" Kaon1 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p1->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
 
     trackMom = p2->fPlab;  // test track momentum
     dR1 = muonMom1.DeltaR(trackMom);
     dR2 = muonMom2.DeltaR(trackMom);
 
-    if(dR1<dR2) { fKa2MuMatchR4 = dR1; fKa2MuMatchR5 = dR2;}
-    else        { fKa2MuMatchR4 = dR2; fKa2MuMatchR5 = dR1;}
+    //if(dR1<dR2) { fKa2MuMatchR4 = dR1; fKa2MuMatchR5 = dR2;}
+    //else        { fKa2MuMatchR4 = dR2; fKa2MuMatchR5 = dR1;}
+
+    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) ) 
+      cout<<" Kaon2 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p2->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
+
   } // end special test 
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
@@ -480,29 +476,14 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
 
   t->Branch("k1missid",  &fKa1Missid,    "k1missid/O");
   t->Branch("k2missid",  &fKa2Missid,    "k2missid/O");
+
   t->Branch("k1mumatch", &fKa1MuMatch,  "k1mumatch/O");
   t->Branch("k2mumatch", &fKa2MuMatch,  "k2mumatch/O");
+  t->Branch("k1mumatchr", &fKa1MuMatchR,    "k1mumatchr/F");
+  t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
+  t->Branch("k2mumatchr",  &fKa2MuMatchR,   "k2mumatchr/F");
+  t->Branch("k2mumatchr2", &fKa2MuMatchR2,  "k2mumatchr2/F");
 
-  if(0) { // for testing d.k.
-
-    t->Branch("k1missid2",  &fKa1Missid2,    "k1missid2/O");
-    t->Branch("k1mumatch2", &fKa1MuMatch2,    "k1mumatch2/O");
-    
-    t->Branch("k1mumatchr", &fKa1MuMatchR,    "k1mumatchr/F");
-    t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
-    t->Branch("k1mumatchr3", &fKa1MuMatchR3,    "k1mumatchr3/F");
-    t->Branch("k1mumatchr4", &fKa1MuMatchR4,    "k1mumatchr4/F");
-    t->Branch("k1mumatchr5", &fKa1MuMatchR5,    "k1mumatchr5/F");
-    
-    t->Branch("k2missid2",  &fKa2Missid2,    "k2missid2/O");
-    t->Branch("k2mumatch2", &fKa2MuMatch2,   "k2mumatch2/O");
-    
-    t->Branch("k2mumatchr",  &fKa2MuMatchR,   "k2mumatchr/F");
-    t->Branch("k2mumatchr2", &fKa2MuMatchR2,  "k2mumatchr2/F");
-    t->Branch("k2mumatchr3", &fKa2MuMatchR3,  "k2mumatchr3/F");
-    t->Branch("k2mumatchr4", &fKa2MuMatchR4,  "k2mumatchr4/F");
-    t->Branch("k2mumatchr5", &fKa2MuMatchR5,  "k2mumatchr5/F");
-  } // end testing 
 
 }
 

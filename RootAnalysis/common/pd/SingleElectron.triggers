@@ -1,0 +1,52 @@
+# ***************************************************************
+# SingleElectron cumulative trigger list from trigger menus:
+# /frozen/2015/50ns_5e33/v2.1/HLT/V3
+# /frozen/2015/50ns_5e33/v2.1/HLT/V5
+# /frozen/2015/50ns_5e33/v2.2/HLT/V1
+# /frozen/2015/50ns_5e33/v2.2/HLT/V2
+# /frozen/2015/50ns_5e33/v3.4/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V1
+# /frozen/2015/25ns14e33/v2.2/HLT/V2
+# /frozen/2015/25ns14e33/v3.0/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V1
+# /frozen/2015/25ns14e33/v3.1/HLT/V2
+# /frozen/2015/25ns14e33/v3.1/HLT/V3
+# /frozen/2015/25ns14e33/v3.3/HLT/V1
+# /frozen/2015/25ns14e33/v3.3/HLT/V2
+# /frozen/2015/25ns14e33/v4.0/HLT/V1
+# /frozen/2015/25ns14e33/v4.0/HLT/V4
+# ***************************************************************
+HLT_Ele15_PFHT300
+HLT_Ele32_eta2p1_WPLoose_Gsf_CentralPFJet30_BTagCSV07
+HLT_Ele32_eta2p1_WPLoose_Gsf
+HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50
+HLT_Ele23_WPLoose_Gsf
+HLT_Ele27_WPLoose_Gsf_WHbbBoost
+HLT_Ele15_IsoVVVL_BTagCSV0p72_PFHT400
+HLT_Ele27_eta2p1_WPLoose_Gsf_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg
+HLT_Ele32_eta2p1_WPLoose_Gsf_TriCentralPFJet50_40_30
+HLT_Ele15_IsoVVVL_PFHT600
+HLT_Ele27_eta2p1_WPTight_Gsf
+HLT_Ele15_IsoVVVL_PFHT350_PFMET70
+HLT_Ele22_eta2p1_WPLoose_Gsf_LooseIsoPFTau20
+HLT_Ele27_eta2p1_WPLoose_Gsf_CentralPFJet30_BTagCSV07
+HLT_Ele115_CaloIdVT_GsfTrkIdT
+HLT_Ele22_eta2p1_WPLoose_Gsf
+HLT_Ele27_eta2p1_WPLoose_Gsf_HT200
+HLT_Ele22_eta2p1_WPTight_Gsf
+HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet50_40_30
+HLT_Ele27_eta2p1_WPLoose_Gsf_LooseIsoPFTau20
+HLT_Ele32_eta2p1_WPTight_Gsf
+HLT_Ele105_CaloIdVT_GsfTrkIdT
+HLT_Ele32_eta2p1_WPLoose_Gsf_LooseIsoPFTau20
+HLT_Ele32_eta2p1_WPLoose_Gsf_DoubleMediumIsoPFTau40_Trk1_eta2p1_Reg
+HLT_Ele32_eta2p1_WPLoose_Gsf_TriCentralPFJet30
+HLT_Ele27_eta2p1_WPLoose_Gsf
+HLT_Ele27_eta2p1_WPLoose_Gsf_TriCentralPFJet30
+HLT_Ele45_CaloIdVT_GsfTrkIdT_PFJet200_PFJet50
+HLT_Ele115_CaloIdVT_GsfTrkIdT
+HLT_Ele15_IsoVVVL_PFHT350_PFMET50
+HLT_Ele15_IsoVVVL_PFHT350
+HLT_Ele23_WPLoose_Gsf
+HLT_Ele22_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1
+HLT_Ele27_eta2p1_WPLoose_Gsf_DoubleMediumIsoPFTau35_Trk1_eta2p1_Reg

@@ -1,0 +1,4 @@
+candAnaHh     cuts/candAnaHh.2015.cuts
+#
+JSON          ../common/json/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_MuonPhys_v2.txt
+PDTRIGGER     ../common/pd
