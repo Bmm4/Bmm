@@ -26,7 +26,7 @@ PdTrigger::PdTrigger(string basedir, int verbose) {
   }
 
   if (verbose) print();
-
+  fVerbose = verbose;
 }
 
 
@@ -52,7 +52,7 @@ bool PdTrigger::triggerInPd(std::string pdname, std::string triggername) {
   size_t pos = triggername.rfind("_v");
   if (pos != std::string::npos) {
     triggername = triggername.substr(0, pos);
-    cout << "using truncated triggername: " << triggername << endl;
+    if(fVerbose>1) cout << "using truncated triggername: " << triggername << endl;
   }
 
   vector<string> triggers = fPdTrigger[pdname];

@@ -147,12 +147,13 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   // Skip data events where there was no valid trigger
   // NO!  if(!fIsMC && !fGoodHLT) {return;}  
 
-//  test cases for triggerInPd(...)
-//   cout << "HLT_PFHT650:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650") << endl;
-//   cout << "HLT_PFHT650_v3:       " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650_v3") << endl;
-//   cout << "HLT_QuadPFJet_VBF_v1: " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_QuadPFJet_VBF_v1") << endl;
-//   cout << "HLT_PFHT649:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT649") << endl;
-//   cout << "wrong PD:             " << fpReader->pdTrigger()->triggerInPd("JetHE", "HLT_PFHT650") << endl;
+  //  test cases for triggerInPd(...)
+  //cout << "HLT_PFHT650:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650") << endl;
+  //cout << "HLT_PFHT650:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650") << endl;
+  //   cout << "HLT_PFHT650_v3:       " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650_v3") << endl;
+  //   cout << "HLT_QuadPFJet_VBF_v1: " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_QuadPFJet_VBF_v1") << endl;
+  //   cout << "HLT_PFHT649:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT649") << endl;
+  //   cout << "wrong PD:             " << fpReader->pdTrigger()->triggerInPd("JetHE", "HLT_PFHT650") << endl;
 
 
   TAnaCand *pCand(0);
@@ -1070,6 +1071,8 @@ void candAna::triggerSelection() {
   }
   
 
+  //cout << "HLT: " << fpReader->pdTrigger()->triggerInPd("Charmonium", "HLT_DoubleMu4_3_Jpsi_Displaced") << endl;
+
   // Check HLT
   // For every passed HLT look for a matching tigger from our list.
   // If if it confirmed by our list than match it with an object in the TrgObjv2 list
@@ -1087,6 +1090,17 @@ void candAna::triggerSelection() {
     error  = fpEvt->fHLTError[i]; 
     
     if (wasRun && result) { // passed
+
+      // check that this trigger belongs to our DS
+      
+      //bool rightDS = fpReader->pdTrigger()->triggerInPd("Charmonium", a.Data());
+      bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
+      if(fVerbose>9) cout<<" check hlt-path "<<a.Data()<<" DS name "<<DSNAME<<" included? "<<rightDS<<endl;
+      if(!rightDS) { // hlt_path not in this DS 
+	if(fVerbose>1) 
+	  cout<<" HIT-path not in this DS, skip it: "<<a.Data()<<" "<<rightDS<<" DS name: "<<DSNAME<<endl;
+	continue;
+      }
 
       if (fVerbose>1  || (-32 == fVerbose) ) cout << "passed: " << a << endl;
       if ((a == "digitisation_step") 
@@ -1672,6 +1686,7 @@ void candAna::readCuts(string fileName, int dump) {
   // -- define default values for some cuts
   NOPRESELECTION = 0; 
   IGNORETRIGGER  = 0; 
+  DSNAME = "Charmonium";
 
   // -- set up cut sequence for analysis
   basicCuts(); 
@@ -1760,6 +1775,16 @@ void candAna::readCuts(string fileName, int dump) {
       ibin = 6;
       hcuts->SetBinContent(ibin, NOPRESELECTION);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: Ignore preselection :: %i", CutName, NOPRESELECTION));
+    }
+
+    if (!strcmp(CutName, "DSNAME")) {
+      char dsname[100]; 
+      sscanf(buffer, "%s %s", CutName, dsname);
+      DSNAME = string(dsname); 
+      if (dump) cout << "DSNAME    " << DSNAME << endl;
+      ibin = 7;
+      hcuts->SetBinContent(ibin, 1.);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: DS name :: %s", CutName, dsname));
     }
 
     if (!strcmp(CutName, "CANDPTLO")) {

@@ -177,7 +177,7 @@ public:
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, IGNORETRIGGER, NOPRESELECTION;
 
   std::map<std::string, pair<int, int> > HLTRANGE;
-
+  string DSNAME; // data set name
 
   bool fBarrel, fWideMass; 
   AnalysisCuts fAnaCuts; 
