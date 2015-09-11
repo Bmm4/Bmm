@@ -4,12 +4,14 @@ config = config()
 #config.General.requestName = 'BMM4_crabtest_Charmonium_Run2015B'
 #config.General.requestName = 'BMM4_BsToJpsiPhi_MC_8Tev'
 config.General.requestName = 'BMM4_BdToJpsiKstar_MC_13Tev'
+
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
 config.General.transferLogs = False
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'testData_Bd2JpsiKstar.py'         # change it to your preferred BMM4 config file
+#config.JobType.psetName = 'testData_Bd2JpsiKstar.py'         # change it to your preferred BMM4 config file
+config.JobType.psetName = 'testMc_Bd2JpsiKstar.py'         # change it to your preferred BMM4 config file
 config.JobType.outputFiles = ['output.root']    # Must match the output file name in your config, those files get transferred to your output destination
 
 #config.Data.inputDataset = '/Charmonium/Run2015B-PromptReco-v1/AOD' # Datatset name you want to run on

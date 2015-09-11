@@ -9,7 +9,8 @@ config.General.transferOutputs = True
 config.General.transferLogs = False
 
 config.JobType.pluginName = 'Analysis'
-config.JobType.psetName = 'testData_Bs2JpsiPhi.py'         # change it to your preferred BMM4 config file
+#config.JobType.psetName = 'testData_Bs2JpsiPhi.py'         # change it to your preferred BMM4 config file
+config.JobType.psetName = 'testMc_Bs2JpsiPhi.py' 
 config.JobType.outputFiles = ['output.root']    # Must match the output file name in your config, those files get transferred to your output destination
 
 #config.Data.inputDataset = '/Charmonium/Run2015B-PromptReco-v1/AOD' # Datatset name you want to run on
