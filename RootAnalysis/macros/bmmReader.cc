@@ -12,6 +12,7 @@
 #include "candAnaDstar.hh"
 #include "candAnaHh.hh"
 #include "candAnaBd2DstarPi.hh"
+#include "candAnaBd2JpsiKstar.hh"
 
 using namespace std;
 

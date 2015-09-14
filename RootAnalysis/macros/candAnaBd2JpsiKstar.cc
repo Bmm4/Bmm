@@ -10,8 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBd2JpsiKstar::candAnaBd2JpsiKstar(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
-  fGenK1Tmi = fGenK2Tmi = fRecK1Tmi = fRecK2Tmi = -1; 
-  // fGenKTmi = fGenPiTmi = fRecKTmi = fRecPiTmi = -1; 
+  fGenKTmi = fGenPiTmi = fRecKTmi = fRecPiTmi = -1; 
   BLIND = 0; 
   cout << "==> candAnaBd2JpsiKstar: name = " << name << ", reading cutsfile " << cutsFile << endl;
   readCuts(cutsFile, 1); 
@@ -49,7 +48,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
     }
 
     ///////added by jmonroy //////////////////////////////
-    /*
+    
     if (pD->fType == KSTARTYPE ) {                                            //is there a KSTARTYPE ???? I defined it in the .hh
       if ((MKPILO < pD->fMass) && (pD->fMass < MKPIHI)) fGoodMKPI = true; 
       fMKPI     = pD->fMass;
@@ -57,16 +56,16 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       fKstarEta  = pD->fPlab.Eta();
       fKstarPhi  = pD->fPlab.Phi(); 
       }
-    */
+    
     ///////////////////////////////////////
-   
+    /*  
     if (pD->fType == PHITYPE) {
       if ((MKKLO < pD->fMass) && (pD->fMass < MKKHI)) fGoodMKK = true;
       fMKK     = pD->fMass;
       fPhiPt   = pD->fPlab.Perp();
       fPhiEta  = pD->fPlab.Eta();
       fPhiPhi  = pD->fPlab.Phi(); 
-    }
+    }*/
   }
 
 
@@ -215,10 +214,10 @@ void candAnaBd2JpsiKstar::moreBasicCuts() {
 // ----------------------------------------------------------------------
 void candAnaBd2JpsiKstar::genMatch() {
   
-  fGenM1Tmi = fGenM2Tmi = fGenK1Tmi = -1; 
+  fGenM1Tmi = fGenM2Tmi = fGenKTmi = -1; 
   fNGenPhotons = 0; 
 
-  TGenCand *pC(0), *pB(0), *pPsi(0), *pKstar(0), *pM1(0), *pM2(0), *pK(0), *pPI(0); 
+  TGenCand *pC(0), *pB(0), *pPsi(0), *pKstar(0), *pM1(0), *pM2(0), *pK(0), *pPi(0); 
   int nb(0), ngamma(0); 
   bool goodMatch(false); 
   for (int i = 0; i < fpEvt->nGenT(); ++i) {
@@ -247,15 +246,15 @@ void candAnaBd2JpsiKstar::genMatch() {
 	  }
 	} else if (313 == TMath::Abs(pC->fID)) {
 	  pKstar = fpEvt->getGenTWithIndex(id); 
-	  pK = pPI = 0;
-	  for (int idd = pPhi->fDau1; idd <= pPhi->fDau2; ++idd) {
+	  pK = pPi = 0;
+	  for (int idd = pKstar->fDau1; idd <= pKstar->fDau2; ++idd) {
 	    pC = fpEvt->getGenTWithIndex(idd); 
 	    if (22 == TMath::Abs(pC->fID)) ++ngamma;
 	    if (321 == TMath::Abs(pC->fID)) {
 	      if (0 == pK) {
 		pK = fpEvt->getGenTWithIndex(idd); 
 	      } else {
-		pPI = fpEvt->getGenTWithIndex(idd); 
+		pPi = fpEvt->getGenTWithIndex(idd); 
 	      }
 	    }
 	  }
@@ -509,8 +508,8 @@ void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
     t->Branch("kmumatchr4", &fKaMuMatchR4,    "kmumatchr4/F");
     t->Branch("kmumatchr5", &fKaMuMatchR5,    "kmumatchr5/F");
     
-    t->Branch("pimissid2",  &fKa2Missid2,    "pimissid2/O");
-    t->Branch("pimumatch2", &fKa2MuMatch2,   "pimumatch2/O");
+    t->Branch("pimissid2",  &fPiMissid2,    "pimissid2/O");
+    t->Branch("pimumatch2", &fPiMuMatch2,   "pimumatch2/O");
     
     t->Branch("pimumatchr",  &fPiMuMatchR,   "pimumatchr/F");
     t->Branch("pimumatchr2", &fPiMuMatchR2,  "pimumatchr2/F");
@@ -549,7 +548,7 @@ void candAnaBd2JpsiKstar::efficiencyCalculation() {
   TSimpleTrack *prM1(0), *prM2(0), *prK(0), *prPi(0); 
   double bla(0); 
   int m1Matched(0), m2Matched(0), kMatched(0), piMatched(0), m1ID(0), m1tmID(0), m1mvaID(0), m2ID(0), m2tmID(0), m2mvaID(0), 
-    m1GT(0), m2GT(0), k1GT(0), k2GT(0);
+    m1GT(0), m2GT(0), kGT(0), piGT(0);
   if (fRecM1Tmi > -1) {
     m1Matched = 1; 
     prM1 = fpEvt->getSimpleTrack(fRecM1Tmi); 
@@ -574,7 +573,7 @@ void candAnaBd2JpsiKstar::efficiencyCalculation() {
     }
   } 
 
-  if (fRecK1Tmi > -1) {
+  if (fRecKTmi > -1) {
     kMatched = 1; 
     prK = fpEvt->getSimpleTrack(fRecKTmi); 
     if (prK->getHighPurity()) {
