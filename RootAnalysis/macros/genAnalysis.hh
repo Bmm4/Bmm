@@ -42,9 +42,13 @@ public:
 
   void         printBdecays(); 
   void         genB(); 
+  void         compare2PDG(TGenCand *pCand, int year = 2014, bool finalize = false); 
+
 
   int          NTOTAL; 
   double       XSECTION;
+  
+  double       f511Mass, f521Mass, f531Mass, f5122Mass, f541Mass; 
 
 };
 

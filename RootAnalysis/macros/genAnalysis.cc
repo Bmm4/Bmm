@@ -1,5 +1,6 @@
 #include "genAnalysis.hh"
 #include "common/HFMasses.hh"
+#include "common/util.hh"
 
 #include "TRandom.h"
 #include <cmath>
@@ -14,11 +15,14 @@ using namespace std;
 // ----------------------------------------------------------------------
 genAnalysis::genAnalysis(TChain *tree, TString evtClassName): treeReader01(tree, evtClassName) {
   cout << "==> genAnalysis: constructor..." << endl;
+
+  f511Mass = f521Mass = f531Mass = f5122Mass = f541Mass = 0; 
 }
 
 // ----------------------------------------------------------------------
 genAnalysis::~genAnalysis() {
   cout << "==> genAnalysis: destructor..." << endl;
+
 }
 
 // ----------------------------------------------------------------------
@@ -41,27 +45,12 @@ void genAnalysis::eventProcessing() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::endAnalysis() {
-
-  double ftilde(0.11); 
-  double f = 2.*ftilde*(1-ftilde) + ftilde*ftilde; 
-  double n0 = ((TH1D*)fpHistFile->Get("e111"))->GetSumOfWeights(); 
-  double n1 = ((TH1D*)fpHistFile->Get("e112"))->GetSumOfWeights();
-  double c0 = ((TH1D*)fpHistFile->Get("h110"))->GetSumOfWeights(); 
-  double c1 = ((TH1D*)fpHistFile->Get("h112"))->GetSumOfWeights();
-
-  if (NTOTAL > 0) {
-    cout << "XSECTION:            " << XSECTION << endl;
-    cout << "NTOTAL:              " << NTOTAL << endl;
-    cout << "b->mu events:        " << n0 << endl;
-    cout << "b->mu decays:        " << c0 << endl;
-    cout << "b->mu events in acc: " << n1 << endl;
-    cout << "b->mu decays in acc: " << c1 << endl;
-    
-    cout << "bbbar xsection:       " << n0/(f*NTOTAL)*XSECTION << endl;
-    cout << "bbbar xsection:       " << c0/(2.*ftilde*NTOTAL)*XSECTION << endl;
-    cout << "b-mu  xsection:       " << n0/(NTOTAL)*XSECTION << endl;
-    cout << "b-mu in acc xsection: " << n1/(NTOTAL)*XSECTION << endl;
-  }
+  cout << "==> B+ mass: " << f521Mass << endl;
+  cout << "==> B0 mass: " << f511Mass << endl;
+  cout << "==> Bs mass: " << f531Mass << endl;
+  cout << "==> Bc mass: " << f541Mass << endl;
+  cout << "==> Lb mass: " << f5122Mass << endl;
+  compare2PDG(0, 2014, true);
 }
 
 
@@ -92,6 +81,7 @@ void genAnalysis::genB() {
     int aid = TMath::Abs(pCand->fID); 
 
     if (531 == aid || 521 == aid || 511 == aid || 5122 == aid) {
+      compare2PDG(pCand, 2014, false);
       pD = fpEvt->getGenCand(pCand->fMom1); 
       mom = TMath::Abs(pD->fID);
       ((TH1D*)fpHistFile->Get(Form("pt%d", aid)))->Fill(pCand->fP.Perp()); 
@@ -99,6 +89,13 @@ void genAnalysis::genB() {
       ((TH1D*)fpHistFile->Get(Form("eta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("ceta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("mom%d", aid)))->Fill(mom); 
+      
+      if (511 == aid) f511Mass = pCand->fP.M();
+      if (521 == aid) f521Mass = pCand->fP.M();
+      if (531 == aid) f531Mass = pCand->fP.M();
+      if (541 == aid) f541Mass = pCand->fP.M();
+      if (5122 == aid) f5122Mass = pCand->fP.M();
+
     }
   }
 
@@ -365,4 +362,98 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
   if (dump)  cout << "------------------------------------" << endl;
 
+}
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
+
+  static double M511(0.), M521(0.), M531(0.), M541(0.), M5122(0.); 
+  static double L511(0.), L521(0.), L531(0.), L541(0.), L5122(0.); 
+
+  if (2014 == year) {
+    M511 = 5.27958;
+    M521 = 5.27926;
+    M531 = 5.36677;
+    M541 = 6.2756;
+    M5122= 5.6195;
+
+    L511 = 455.4;
+    L521 = 491.1;
+    L531 = 453.3;
+    L541 = 135.5;
+    L5122= 435;
+  }
+
+  static int first(1); 
+  if (1 == first) {
+    first = 0; 
+    vector<int> particles = defVector(5, 511, 521, 531, 541, 5122); 
+    for (unsigned int i = 0; i < particles.size(); ++i) {
+      new TH1D(Form("t%d", particles[i]), Form("pt%d", particles[i]), 50, 0., 1000.); 
+    }
+    
+    new TH1D("m511",  "m511",  100, 5.279, 5.280); 
+    new TH1D("m521",  "m521",  100, 5.279, 5.280); 
+    new TH1D("m531",  "m531",  100, 5.360, 5.370); 
+    new TH1D("m541",  "m541",  100, 6.270, 6.280); 
+    new TH1D("m5122", "m5122", 100, 5.610, 5.630); 
+  }
+
+
+  if (finalize) {
+    cout << "Masses" << endl;
+    cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m511"))->GetMean(), 
+		 M511, 
+		 ((TH1D*)fpHistFile->Get("m511"))->GetMean() - M511
+		 ) 
+	 << endl;
+
+    cout << Form("B+: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m521"))->GetMean(), 
+		 M521, 
+		 ((TH1D*)fpHistFile->Get("m521"))->GetMean() - M521
+		 ) 
+	 << endl;
+
+    cout << Form("Bs: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m531"))->GetMean(), 
+		 M531, 
+		 ((TH1D*)fpHistFile->Get("m531"))->GetMean() - M531
+		 ) 
+	 << endl;
+
+    cout << Form("Lb: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean(), 
+		 M5122, 
+		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean() - M5122
+		 ) 
+	 << endl;
+
+    if (((TH1D*)fpHistFile->Get("m541"))->GetEntries() > 1) 
+      cout << Form("Bc: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		   ((TH1D*)fpHistFile->Get("m541"))->GetMean(), 
+		   M541, 
+		   ((TH1D*)fpHistFile->Get("m541"))->GetMean() - M541
+		   ) 
+	   << endl;
+
+    return;
+  }
+  
+  int aid = TMath::Abs(pCand->fID); 
+
+  if (511 == aid || 521 == aid || 531 == aid || 541 == aid || 5122 == aid) {
+  } else {
+    cout << "wrong aid for compare2PDG, returning ... " << endl;
+    return;
+  }
+
+
+  ((TH1D*)fpHistFile->Get(Form("m%d", aid)))->Fill(pCand->fP.M()); 
+
+  double lifetime = 0.;
+  ((TH1D*)fpHistFile->Get(Form("t%d", aid)))->Fill(lifetime); 
+  
 }
