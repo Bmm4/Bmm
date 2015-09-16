@@ -12,6 +12,7 @@ using namespace std;
 namespace {
   TVector3 BdVertexGen(0,0,0), PVGen(0,0,0);  
   TVector3 BdMomGen(0,0,0), Pi1MomGen(0,0,0), Pi2MomGen(0,0,0);  
+  const bool MYDEBUG = true;
 }
 
 // ----------------------------------------------------------------------
@@ -141,7 +142,7 @@ bool candAnaHh::anaMC(TAna01Event *evt) {
 //------------------------------------------------------------------------------------------
 void candAnaHh::evtAnalysis(TAna01Event *evt) {
 
-  //cout<<" candAnaHh::evtAnalysis() "<<endl;
+  //if(MYDEBUG) cout<<" candAnaHh::evtAnalysis() "<<endl;
 
 #ifdef MY
 
@@ -160,57 +161,217 @@ void candAnaHh::evtAnalysis(TAna01Event *evt) {
 // ----------------------------------------------------------------------
 void candAnaHh::candAnalysis() {
 
-  //cout<<" candAnaHh::candAnalysis() "<<endl;
+  //if(MYDEBUG) cout<<" candAnaHh::candAnalysis() "<<endl;
   if (0 == fpCand) return;
-  //cout<<fpEvt<<" "<<fpCand<<endl;
+
+  //if(MYDEBUG) cout<<" Call candAna::candAnalysis: "<<fpEvt<<" "<<fpCand<<endl;
 
   candAna::candAnalysis();
-  //return;
   
   TAnaTrack *p1 = fpEvt->getSigTrack(fpCand->fSig1); 
   TAnaTrack *p2 = fpEvt->getSigTrack(fpCand->fSig2); 
-  //cout<< p1 <<" "<<p2<<endl;
   
-  TAnaTrack *pPi1 = fpEvt->getRecTrack(p1->fIndex);
-  TAnaTrack *pPi2 = fpEvt->getRecTrack(p2->fIndex);
-  //cout<<pPi1<<" "<<pPi2<<endl;
-  
-  int mid1 = 0, mid2= 0;
-  //cout<< pPi1->fMuIndex <<" "<<pPi2->fMuIndex <<endl;
+  if(MYDEBUG) {
+    cout<< "IN Hh =================================== "<<endl;
+    cout<< " signal track pointers "<<p1 <<" "<<p2<<" "<<p1->fIndex<<" "<<p2->fIndex<<endl;
+    p1->dump();
+    p2->dump();
+  }
 
-  if (pPi1->fMuIndex > -1) mid1 = fpEvt->getMuon(pPi1->fMuIndex)->fMuID;
-  if (pPi2->fMuIndex > -1) mid2 = fpEvt->getMuon(pPi2->fMuIndex)->fMuID;
+  //TAnaTrack *pPi1 = fpEvt->getRecTrack(p1->fIndex);
+  //TAnaTrack *pPi2 = fpEvt->getRecTrack(p2->fIndex);  
+  //if(MYDEBUG) cout<<" rec track pointers "<<pPi1<<" "<<pPi2<<endl;
   
+  TSimpleTrack *ps1 = fpEvt->getSimpleTrack(p1->fIndex); // get simple track with index i
+  TSimpleTrack *ps2 = fpEvt->getSimpleTrack(p2->fIndex); // get simple track with index i
+  if(MYDEBUG) {
+    cout<<" simple track pointers "<<ps1<<" "<<ps2
+	<< " index "<< ps1->getIndex() << " " << ps2->getIndex() << endl;
+    //<< " with ID = " << fpEvt->getSimpleTrackMCID(ps->getIndex()) 
+    //      <<" "<<cIdx[i]<<" "<<(ps->getP()).Perp()
+    //      <<  endl;      
+    
+    ps1->dump();
+    ps2->dump();
+  }
+
+  int mid1 = 0, mid2= 0;  
+  if(MYDEBUG) cout<< " mu-index "<<p1->fMuIndex <<" "<<p2->fMuIndex <<endl;
+
+  if (p1->fMuIndex > -1) mid1 = fpEvt->getMuon(p1->fMuIndex)->fMuID;
+  if (p2->fMuIndex > -1) mid2 = fpEvt->getMuon(p2->fMuIndex)->fMuID;
+  
+
+  // veto global and tracker muons
+  bool antimuon_veto = ( (mid1&0x6) == 0) && ( (mid2&0x6) == 0); // 1- means no muon, passed, 0 - muon, ignore
+  if(MYDEBUG) cout<< " mu id "<< mid1 <<" "<< mid2 <<" anti mu veto "<<antimuon_veto<<endl;
 
   //bool muon_veto =  true; // 1- means no muon, passed, 0 - muon, ignore
   // veto muons with any bit 
-  //bool muon_veto1 = (mid1==0) && (mid2==0); // 1- means no muon, passed, 0 - muon, ignore
+  //bool muon_veto = (mid1==0) && (mid2==0); // 1- means no muon, passed, 0 - muon, ignore
   // veto all bits except ecal (CAL BITS ARE NEVER SET?)
-  //bool muon_veto11 = ( (mid1&0x7FFF) == 0) && ( (mid2&0x7FFF) == 0); // 1- means no muon, passed, 0 - muon, ignore
-  // veto global and tracker muons
-  bool muon_veto12 = ( (mid1&0x6) == 0) && ( (mid2&0x6) == 0); // 1- means no muon, passed, 0 - muon, ignore
+  //bool muon_veto = ( (mid1&0x7FFF) == 0) && ( (mid2&0x7FFF) == 0); // 1- means no muon, passed, 0 - muon, ignore
   // veto global and tracker muons and standalone muons
-  //bool muon_veto13 = ( (mid1&0x7) == 0) && ( (mid2&0x7) == 0); // 1- means no muon, passed, 0 - muon, ignore
-
-  //bool muon_veto2 = !tightMuon(pPi1) && !tightMuon(pPi2); // 1- means no muon, passed, 0 - muon, ignore
-  //bool muon_veto3 = !goodMuon(pPi1) && !goodMuon(pPi2); // 1- means no muon, passed, 0 - muon, ignore
-
+  //bool muon_veto = ( (mid1&0x7) == 0) && ( (mid2&0x7) == 0); // 1- means no muon, passed, 0 - muon, ignore
+  //bool muon_veto = !tightMuon(pPi1) && !tightMuon(pPi2); // 1- means no muon, passed, 0 - muon, ignore
+  //bool muon_veto = !goodMuon(pPi1) && !goodMuon(pPi2); // 1- means no muon, passed, 0 - muon, ignore
 //   if( ((mid1&0x8000) != 0) || ((mid2&0x8000) != 0) ) cout<<hex<<mid1<<" "<<mid2<<dec<<endl;
 //    if( muon_veto1 != muon_veto12 ) {
 //       cout<<fPreselection<<" "<<muon_veto1<<" "<<muon_veto11<<" "<<muon_veto12<<" "<<muon_veto2<<" "<<muon_veto3 
 //  	 << " muid "<<hex<<mid1 << " .. "<<mid2<<dec<<" ";
 //       cout<<goodMuon(pPi1)<<" "<<tightMuon(pPi1)<<" "<<goodMuon(pPi2)<<" "<<tightMuon(pPi2)<<endl;
 //    }
-  //fPreselection = fPreselection && muon_veto12;
 
+  // checkmatching 
+  //                         track allTrig useMuonOnly   
+  float dr1 = doTriggerMatchingR(p1, false, true); 
+  float dr2 = doTriggerMatchingR(p2, false, true); 
+  if(MYDEBUG) cout<< " DR "<< dr1 <<" "<< dr2 <<endl;
+
+  bool match = doTriggerVeto(p1,p2);
+  if(MYDEBUG) cout<< " triger veto "<< match <<endl;
+
+
+  candAna::play2();
 
   if( fpCand->fMass<HH_MLO || fpCand->fMass>HH_MHI ) fPreselection = 0; 
-
-  if( MUON_VETO==1 ) fPreselection = fPreselection && muon_veto12;
+  if( MUON_VETO==1 ) fPreselection = fPreselection && antimuon_veto;
 
   return;
 
 }
+// ----------------------------------------------------------------------
+
+bool candAnaHh::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2) { // call the normal version with (true)
+  int indx1=-1, indx2=-1;
+  const double deltaRthr(0.02); // final cut, Frank had 0.5, change 0.020
+  const double deltaPtMatch(0.15); // the pt matching cut 
+  const int verboseThr = 30;
+  //const bool localPrint = false;
+  bool localPrint = (fVerbose==-32) || (fVerbose > verboseThr);
+  int mu1match(-1), mu2match(-1);
+  string hlt1, hlt2;
+  double deltaRmin1(100),deltaRmin2(100);
+  double trigMatchDeltaPt1 = 99., trigMatchDeltaPt2 = 99.;
+
+  TTrgObjv2 *pTO;
+  TLorentzVector tlvMu1, tlvMu2;
+   
+  if (localPrint) {
+    cout << "1: pt,eta,phi: " << fp1->fPlab.Perp() << " " << fp1->fPlab.Eta() << " " << fp1->fPlab.Phi()<< endl;
+    cout << "2: pt,eta,phi: " << fp2->fPlab.Perp() << " " << fp2->fPlab.Eta() << " " << fp2->fPlab.Phi()<< endl;
+  }
+  
+  tlvMu1.SetPtEtaPhiM(fp1->fPlab.Perp(),fp1->fPlab.Eta(),fp1->fPlab.Phi(),MMUON); // assume a muon
+  tlvMu2.SetPtEtaPhiM(fp2->fPlab.Perp(),fp2->fPlab.Eta(),fp2->fPlab.Phi(),MMUON); // assume a muon
+
+  for(int i=0; i!=fpEvt->nTrgObjv2(); i++) { // loop over all objects
+    pTO = fpEvt->getTrgObjv2(i);
+    //pTO->dump();
+    int hltIndex = pTO->fHltIndex;
+    if(hltIndex>1000) { // this object was selected, matches our trigger list
+      if(localPrint) cout<<i<<" selected hlt "<<pTO->fHltPath<<" hlt-index "<<hltIndex<<" module label "
+			 <<pTO->fLabel<<" type "<<pTO->fType<<" number "<<pTO->fNumber<<endl;
+      
+      vector<int> muonIndex = pTO->fIndex;
+      vector<int> muonID = pTO->fID;
+      vector<TLorentzVector> muonP = pTO->fP;
+      int num = muonIndex.size();
+      for(int n=0;n<num;++n) {  // loop over particles in this module, usually 2
+	int index = muonIndex[n];  
+	int id = muonID[n];  
+	TLorentzVector p = muonP[n];  
+
+	// Do we do it? Can be a non-muon in the trigger
+	if( abs(id) != 13 ) { // if not muon trigger skip 
+	  cout<<" matched to not an hlt-muon "
+	      <<id<<" "<<pTO->fHltPath<<" "<<pTO->fLabel<<" "<<pTO->fType<<endl;
+	  continue;  // skip checking non-muon objects 
+	}
+
+	// check direction matching
+	double deltaR1 = p.DeltaR(tlvMu1);
+	double deltaR2 = p.DeltaR(tlvMu2);
+
+	if(localPrint) {
+	  cout<<" particle"<<n<<" index "<<index<<" id "<<id
+	      <<" pt/eta/phi "<<p.Pt()<<" "<<p.Eta()<<" "<<p.Phi()<<endl;
+	  cout <<" mu1 "<< i<<" "<<pTO->fLabel << " "<<n <<" "<<deltaR1 << " "<<deltaR2<<endl;
+	}
+
+	// muon 1
+	if(deltaR1<deltaRmin1) {
+	  deltaRmin1=deltaR1;  // best match until now
+	  if (fVerbose > verboseThr || localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
+	    // check now the pt matching 
+	  double trigMatchDeltaPt=999.;
+	  if (fp1->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
+	  if( trigMatchDeltaPt < deltaPtMatch ) {  // check if it is good enough
+	    if (deltaR1<deltaRthr) {
+	      trigMatchDeltaPt1=trigMatchDeltaPt;
+	      mu1match = n;
+	      hlt1 = pTO->fLabel;
+	      indx1=i;
+	    } // if delta 
+	  } // if pt match 
+	} // if direction match 
+
+	// muon 2
+	if(deltaR2<deltaRmin2) {
+	  deltaRmin2=deltaR2;
+	  if (localPrint) {cout << " mu2 selected "<< deltaR2 <<endl;}
+	    // check now the pt matching 
+	  double trigMatchDeltaPt=999.;
+	  if (fp2->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
+	  if( trigMatchDeltaPt < deltaPtMatch ) {
+	    if (deltaR2<deltaRthr) {
+	      trigMatchDeltaPt2=trigMatchDeltaPt;
+	      mu2match = n;
+	      hlt2 = pTO->fLabel;
+	      indx2=i;
+	    } // if delta 
+	  } // if pt match 
+	} // if direction match 
+      } // end for loop n
+    } // end if valid module 
+
+  } // loop over all modules
+
+
+  if (localPrint) 
+    cout << " best match "
+	 <<indx1<<" "<< deltaRmin1 << " "<<mu1match<<" "<<hlt1<<" "<<trigMatchDeltaPt1<<" "
+	 <<indx2<<" "<< deltaRmin2 << " "<<mu2match<<" "<<hlt2<<" "<<trigMatchDeltaPt2<<endl;
+  
+  ((TH1D*)fHistDir->Get("test8"))->Fill(trigMatchDeltaPt1); 
+  ((TH1D*)fHistDir->Get("test8"))->Fill(trigMatchDeltaPt2); 
+  ((TH1D*)fHistDir->Get("test2"))->Fill(deltaRmin1); 
+  ((TH1D*)fHistDir->Get("test2"))->Fill(deltaRmin2); 
+  
+  if(mu1match>-1) {
+    double tmp=fMu1TrigM;
+    fMu1TrigM = deltaRmin1;
+    if(tmp!=fMu1TrigM) cout<<"Warning:  two methods inconsistent-mu1 "<<tmp<<" "<<fMu1TrigM<<endl;
+  }
+  if(mu2match>-1) {
+    double tmp=fMu2TrigM;
+    fMu2TrigM = deltaRmin2;
+    if(tmp!=fMu2TrigM) cout<<"Warning:  two methods inconsistent-mu2 "<<tmp<<" "<<fMu2TrigM<<endl;
+  }
+
+  bool HLTmatch = false;
+  if(mu1match>-1 && mu2match>-1) {
+    if(mu1match==mu2match) {
+      cout<<"Error:  matched to same particle "<<endl;
+    } else { // ok
+      if(localPrint) cout<<" matching OK"<<endl;
+      HLTmatch=true;
+    }
+  }
+
+  return HLTmatch;
+}
+
 // ----------------------------------------------------------------------
 void candAnaHh::hhAnalysis() {
 
