@@ -10,7 +10,7 @@ public:
   dataset();
   void   cd(std::string dir) {fF->cd(dir.c_str()); }
   TFile* getFile() {return fF;}
-  TH1D*  getHist(std::string name);
+  TH1D*  getHist(std::string name, bool clone = true);
 
   TFile *fF; 
   std::string fName;

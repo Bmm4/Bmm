@@ -17,9 +17,14 @@ dataset::dataset() {
 
 
 // ----------------------------------------------------------------------
-TH1D*  dataset::getHist(string name) {
+TH1D*  dataset::getHist(string name, bool clone) {
   if (!fF) return 0;
-  TH1D *h = (TH1D*)(fF->Get(Form("%s", name.c_str()))); 
+  TH1D *h(0); 
+  if (clone) 
+    h = (TH1D*)((TH1D*)(fF->Get(Form("%s", name.c_str()))))->Clone();
+  else 
+    h = (TH1D*)(fF->Get(Form("%s", name.c_str())));
+
   if (!h) return 0; 
   setHist(h); 
   if (fColor > -1) setHist(h, fColor, fSymbol, fSize, fWidth); 
