@@ -417,7 +417,9 @@ bool isLightMeson(int i) {
 // ----------------------------------------------------------------------
 void showOverflow(TH1 *h) {
   h->SetBinContent(h->GetNbinsX(), h->GetBinContent(h->GetNbinsX()) + h->GetBinContent(h->GetNbinsX()+1));
+  h->SetBinContent(h->GetNbinsX()+1, 0.);
   h->SetBinContent(1, h->GetBinContent(1) + h->GetBinContent(0));
+  h->SetBinContent(0, 0.);
 }
 
 
