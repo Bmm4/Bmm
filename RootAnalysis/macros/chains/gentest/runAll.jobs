@@ -14,46 +14,6 @@ if ($PSI eq "") {
 }
 my $SEDIR = "$PSI/store/user/ursl/bmm4/runBmm/$VERSION";
 
-# ######################
-# -- define all the jobs
-# ######################
-%jobs = ();
-tie %jobs, "Tie::IxHash";
-
-# bin/runBmm -m -C cuts/bmmReader.mix-Bs2MuMu
-
-# -----------------------------------------------
-$dataset = "gentest"; 
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_doubleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_doubleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_singleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_singleDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_nsdDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_nsdDiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_nondiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_nondiffractive"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD8"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD8"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD10"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD10"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-# -----------------------------------------------
-$mode = "PYTHIA8_Bs2MuMu_NoFilter_hardQCD12"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD12"; $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -r genAnalysis' $mode  && cd - ";
-
-
 # -- did not manage to do this with refs, so do it with functions: 
 sub runCommand() {
     $runCmd  = "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/RootAnalysis/macros/runBmmNoComp.csh ";
@@ -61,8 +21,9 @@ sub runCommand() {
     return $runCmd;
 }   
 
+# -- mkCheckedChain && split it
 sub mCC() {
-    return " && $BMMBASE/perl/mkCheckedChain $mode && rm  $mode; ";
+    return " && $BMMBASE/perl/mkCheckedChain $mode && rm  $mode; $BMMBASE/perl/splitCheckedChain -n 100000 c$mode && mv c$mode-* jobs";
 }
 
 sub srmHadd() {
@@ -70,3 +31,70 @@ sub srmHadd() {
     return "$BMMBASE/perl/srmHadd -x $SEDIR/$dataset -p $lmode -o $SCRATCH/$lmode.root";
 }
 
+
+# ########################################################################
+# -- define checked-chain ["catalog"] files, their splitting, and the jobs
+# ########################################################################
+%catalogs = (); 
+tie %catalogs, "Tie::IxHash";
+
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+my $runBmm = "bin/runBmm -m -C cuts/bmmReader.mix-Bs2MuMu";
+$runBmm = "bin/runBmm -r genAnalysis";
+
+# ---------------------------
+$dataset = "gentest"; 
+# ---------------------------
+# -- default
+$mode = "PYTHIA8_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-Inelastic_Bs2MuMu_NoFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "PYTHIA8_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-Inelastic_Bs2MuMu_EtaPtFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+# -- diffractive variations
+$mode = "SINGLED_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_NoFilter_singleDiffractive";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "SINGLED_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_EtaPtFilter_singleDiffractive";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "DOUBLED_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_NoFilter_doubleDiffractive";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "DOUBLED_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_EtaPtFilter_doubleDiffractive";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+
+# -- other variations
+$mode = "PYTHIA6_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA6_Bs2MuMu_NoFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "PYTHIA6_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA6_Bs2MuMu_EtaPtFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "NOEVTGEN_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_NoFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "NOEVTGEN_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_EtaPtFilter";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "HARDQCD8_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_NoFilter_hardQCD8";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
+
+$mode = "HARDQCD8_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bs2MuMu_EtaPtFilter_hardQCD8";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*  && cd - ";
