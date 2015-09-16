@@ -70,6 +70,7 @@ if ($opt_p) {
 	    chdir("$j");
 	    $goback = 1; 
 	} 
+	print "$catalogs{$j}\n";
 	system("$catalogs{$j}");
 	if ($goback == 1) {
 	    chdir("..");
