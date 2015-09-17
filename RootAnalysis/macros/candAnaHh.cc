@@ -5,18 +5,19 @@
 #include "common/HFMasses.hh"
 #include "danekUtils.h"
 
-//#define MY
+//#define MYCODE
 
 using namespace std;
 
 namespace {
   TVector3 BdVertexGen(0,0,0), PVGen(0,0,0);  
   TVector3 BdMomGen(0,0,0), Pi1MomGen(0,0,0), Pi2MomGen(0,0,0);  
-  const bool MYDEBUG = true;
+  const bool MYDEBUG = false;
 }
 
 // ----------------------------------------------------------------------
-candAnaHh::candAnaHh(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+candAnaHh::candAnaHh(bmmReader *pReader, std::string name, std::string cutsFile) : 
+  candAna(pReader, name, cutsFile) {
   cout << "==> candAnaHh: name = " << name << ", reading cutsfile " << cutsFile << endl;
   BLIND = 0;
   readCuts(cutsFile, 1); 
@@ -65,7 +66,7 @@ bool candAnaHh::anaMC(TAna01Event *evt) {
     int i1 = (pCand->fDau2)-(pCand->fDau1)+1;
     int i2=0;
     //if(i1!=2) {continue;} // fpEvt->dumpGenBlock();}
-    if(i1!=2) { if(print) cout<<" number of daughters wrong skip "<<i1<<endl; continue;} // fpEvt->dumpGenBlock();}
+    if(i1!=2) { if(print) cout<<" number of daughters wrong skip "<<i1<<" "<<pC0<<endl; continue;} // fpEvt->dumpGenBlock();}
 
     for(int id=(pCand->fDau1);id<=(pCand->fDau2);++id) {
       TGenCand * dau = fpEvt->getGenCand(id);  // check daughters
@@ -142,23 +143,23 @@ bool candAnaHh::anaMC(TAna01Event *evt) {
 //------------------------------------------------------------------------------------------
 void candAnaHh::evtAnalysis(TAna01Event *evt) {
 
-  //if(MYDEBUG) cout<<" candAnaHh::evtAnalysis() "<<endl;
+  if(MYDEBUG) cout<<" candAnaHh::evtAnalysis() event =  "<<fEvt<<endl;
+  candAna::evtAnalysis(evt);
 
-#ifdef MY
+  if(MYDEBUG) candAna::play2();
+
+#ifdef MYCODE
 
   fpEvt = evt; 
   fcands=0;
   hhAnalysis();
-
-#else
-
-  candAna::evtAnalysis(evt);
 
 #endif
 
   return;
 }
 // ----------------------------------------------------------------------
+// this runs for each candidate
 void candAnaHh::candAnalysis() {
 
   //if(MYDEBUG) cout<<" candAnaHh::candAnalysis() "<<endl;
@@ -201,10 +202,16 @@ void candAnaHh::candAnalysis() {
   if (p1->fMuIndex > -1) mid1 = fpEvt->getMuon(p1->fMuIndex)->fMuID;
   if (p2->fMuIndex > -1) mid2 = fpEvt->getMuon(p2->fMuIndex)->fMuID;
   
+  ((TH1D*)fHistDir->Get("testhh0"))->Fill(1.); 
 
   // veto global and tracker muons
-  bool antimuon_veto = ( (mid1&0x6) == 0) && ( (mid2&0x6) == 0); // 1- means no muon, passed, 0 - muon, ignore
+  bool muonid1 = ((mid1&0x6)!=0); // 1-muon, 0-not muon 
+  bool muonid2 = ((mid2&0x6)!=0); //
+  bool antimuon_veto = muonid1 || muonid2; // 1- means muon, ignore, 0 - no muon, pass
   if(MYDEBUG) cout<< " mu id "<< mid1 <<" "<< mid2 <<" anti mu veto "<<antimuon_veto<<endl;
+  if(muonid1) ((TH1D*)fHistDir->Get("testhh0"))->Fill(3.); 
+  if(muonid2) ((TH1D*)fHistDir->Get("testhh0"))->Fill(4.); 
+  if(antimuon_veto) ((TH1D*)fHistDir->Get("testhh0"))->Fill(2.); 
 
   //bool muon_veto =  true; // 1- means no muon, passed, 0 - muon, ignore
   // veto muons with any bit 
@@ -226,151 +233,224 @@ void candAnaHh::candAnalysis() {
   //                         track allTrig useMuonOnly   
   float dr1 = doTriggerMatchingR(p1, false, true); 
   float dr2 = doTriggerMatchingR(p2, false, true); 
-  if(MYDEBUG) cout<< " DR "<< dr1 <<" "<< dr2 <<endl;
+  ((TH1D*)fHistDir->Get("testhh11"))->Fill(dr1); 
+  ((TH1D*)fHistDir->Get("testhh11"))->Fill(dr2); 
+  if(MYDEBUG) cout<< " DR !All/Muons "<< dr1 <<" "<< dr2 <<endl;
 
-  bool match = doTriggerVeto(p1,p2);
-  if(MYDEBUG) cout<< " triger veto "<< match <<endl;
+  dr1 = doTriggerMatchingR(p1, false, false); 
+  dr2 = doTriggerMatchingR(p2, false, false); 
+  ((TH1D*)fHistDir->Get("testhh12"))->Fill(dr1); 
+  ((TH1D*)fHistDir->Get("testhh12"))->Fill(dr2); 
+  if(MYDEBUG) cout<< " DR !All/!Muons "<< dr1 <<" "<< dr2 <<endl;
 
+  dr1 = doTriggerMatchingR(p1, true, true); 
+  dr2 = doTriggerMatchingR(p2, true, true); 
+  ((TH1D*)fHistDir->Get("testhh13"))->Fill(dr1); 
+  ((TH1D*)fHistDir->Get("testhh13"))->Fill(dr2); 
+  if(MYDEBUG) cout<< " DR All/Muons "<< dr1 <<" "<< dr2 <<endl;
 
-  candAna::play2();
+  dr1 = doTriggerMatchingR(p1, true, false); 
+  dr2 = doTriggerMatchingR(p2, true, false); 
+  ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr1); 
+  ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr2); 
+  if(MYDEBUG) cout<< " DR All/!Muons "<< dr1 <<" "<< dr2 <<endl;
+  //                            singleMatch
+  bool veto1 = doTriggerVeto(p1,p2,false); //
+  bool veto2 = doTriggerVeto(p1,p2,true); // use this, 1 track in trigger vetos the event
+  if(!veto1) ((TH1D*)fHistDir->Get("testhh0"))->Fill(5.); // count accepeted candidates
+  if(!veto2) ((TH1D*)fHistDir->Get("testhh0"))->Fill(6.); 
+
+  if(MYDEBUG) cout<< " trigger veto (double) "<< veto1 <<" (single) "<<veto2<<endl;
 
   if( fpCand->fMass<HH_MLO || fpCand->fMass>HH_MHI ) fPreselection = 0; 
-  if( MUON_VETO==1 ) fPreselection = fPreselection && antimuon_veto;
+  //if( MUON_VETO==1 ) fPreselection = fPreselection && !antimuon_veto;
 
   return;
 
 }
 // ----------------------------------------------------------------------
+// returns
+//  1 - veto=true : the di-track pair is in the trigger, it triggered the event
+//  0 - veto=false : there is a trigger which is not associated with the di-track
+// bool candAnaHh::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) { 
+//   const double deltaRthr(0.02); // final cut, Frank had 0.5, change 0.020
+//   const double deltaPtMatch(0.15); // the pt matching cut 
+//   const int verboseThr = 20;
+//   bool localPrint = (fVerbose==-32) || (fVerbose > verboseThr);
+//   if(MYDEBUG) localPrint=true;
 
-bool candAnaHh::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2) { // call the normal version with (true)
-  int indx1=-1, indx2=-1;
-  const double deltaRthr(0.02); // final cut, Frank had 0.5, change 0.020
-  const double deltaPtMatch(0.15); // the pt matching cut 
-  const int verboseThr = 30;
-  //const bool localPrint = false;
-  bool localPrint = (fVerbose==-32) || (fVerbose > verboseThr);
-  int mu1match(-1), mu2match(-1);
-  string hlt1, hlt2;
-  double deltaRmin1(100),deltaRmin2(100);
-  double trigMatchDeltaPt1 = 99., trigMatchDeltaPt2 = 99.;
+//   double deltaRminAll1(99.),deltaRminAll2(99.);
+//   double trigMatchDeltaPtAll1 = 99., trigMatchDeltaPtAll2 = 99.;
 
-  TTrgObjv2 *pTO;
-  TLorentzVector tlvMu1, tlvMu2;
+//   int indx1=-1, indx2=-1;
+//   int mu1match(-1), mu2match(-1);
+//   string hlt1, hlt2;
+//   double deltaRmin1(99.),deltaRmin2(99.);
+//   double trigMatchDeltaPt1 = 99., trigMatchDeltaPt2 = 99.;
+
+//   int modulesSelected=0, modulesMatched=0, modulesSingleMatched=0;
+//   double drMin=99.;
+//   bool match = false, matchS=false;
+//   TTrgObjv2 *pTO;
+//   TLorentzVector tlvMu1, tlvMu2;
    
-  if (localPrint) {
-    cout << "1: pt,eta,phi: " << fp1->fPlab.Perp() << " " << fp1->fPlab.Eta() << " " << fp1->fPlab.Phi()<< endl;
-    cout << "2: pt,eta,phi: " << fp2->fPlab.Perp() << " " << fp2->fPlab.Eta() << " " << fp2->fPlab.Phi()<< endl;
-  }
+//   if (localPrint) {
+//     cout << "1: pt,eta,phi: " << fp1->fPlab.Perp() << " " << fp1->fPlab.Eta() << " " << fp1->fPlab.Phi()<< endl;
+//     cout << "2: pt,eta,phi: " << fp2->fPlab.Perp() << " " << fp2->fPlab.Eta() << " " << fp2->fPlab.Phi()<< endl;
+//   }
   
-  tlvMu1.SetPtEtaPhiM(fp1->fPlab.Perp(),fp1->fPlab.Eta(),fp1->fPlab.Phi(),MMUON); // assume a muon
-  tlvMu2.SetPtEtaPhiM(fp2->fPlab.Perp(),fp2->fPlab.Eta(),fp2->fPlab.Phi(),MMUON); // assume a muon
-
-  for(int i=0; i!=fpEvt->nTrgObjv2(); i++) { // loop over all objects
-    pTO = fpEvt->getTrgObjv2(i);
-    //pTO->dump();
-    int hltIndex = pTO->fHltIndex;
-    if(hltIndex>1000) { // this object was selected, matches our trigger list
-      if(localPrint) cout<<i<<" selected hlt "<<pTO->fHltPath<<" hlt-index "<<hltIndex<<" module label "
-			 <<pTO->fLabel<<" type "<<pTO->fType<<" number "<<pTO->fNumber<<endl;
-      
-      vector<int> muonIndex = pTO->fIndex;
-      vector<int> muonID = pTO->fID;
-      vector<TLorentzVector> muonP = pTO->fP;
-      int num = muonIndex.size();
-      for(int n=0;n<num;++n) {  // loop over particles in this module, usually 2
-	int index = muonIndex[n];  
-	int id = muonID[n];  
-	TLorentzVector p = muonP[n];  
-
-	// Do we do it? Can be a non-muon in the trigger
-	if( abs(id) != 13 ) { // if not muon trigger skip 
-	  cout<<" matched to not an hlt-muon "
-	      <<id<<" "<<pTO->fHltPath<<" "<<pTO->fLabel<<" "<<pTO->fType<<endl;
-	  continue;  // skip checking non-muon objects 
-	}
-
-	// check direction matching
-	double deltaR1 = p.DeltaR(tlvMu1);
-	double deltaR2 = p.DeltaR(tlvMu2);
-
-	if(localPrint) {
-	  cout<<" particle"<<n<<" index "<<index<<" id "<<id
-	      <<" pt/eta/phi "<<p.Pt()<<" "<<p.Eta()<<" "<<p.Phi()<<endl;
-	  cout <<" mu1 "<< i<<" "<<pTO->fLabel << " "<<n <<" "<<deltaR1 << " "<<deltaR2<<endl;
-	}
-
-	// muon 1
-	if(deltaR1<deltaRmin1) {
-	  deltaRmin1=deltaR1;  // best match until now
-	  if (fVerbose > verboseThr || localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
-	    // check now the pt matching 
-	  double trigMatchDeltaPt=999.;
-	  if (fp1->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
-	  if( trigMatchDeltaPt < deltaPtMatch ) {  // check if it is good enough
-	    if (deltaR1<deltaRthr) {
-	      trigMatchDeltaPt1=trigMatchDeltaPt;
-	      mu1match = n;
-	      hlt1 = pTO->fLabel;
-	      indx1=i;
-	    } // if delta 
-	  } // if pt match 
-	} // if direction match 
-
-	// muon 2
-	if(deltaR2<deltaRmin2) {
-	  deltaRmin2=deltaR2;
-	  if (localPrint) {cout << " mu2 selected "<< deltaR2 <<endl;}
-	    // check now the pt matching 
-	  double trigMatchDeltaPt=999.;
-	  if (fp2->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
-	  if( trigMatchDeltaPt < deltaPtMatch ) {
-	    if (deltaR2<deltaRthr) {
-	      trigMatchDeltaPt2=trigMatchDeltaPt;
-	      mu2match = n;
-	      hlt2 = pTO->fLabel;
-	      indx2=i;
-	    } // if delta 
-	  } // if pt match 
-	} // if direction match 
-      } // end for loop n
-    } // end if valid module 
-
-  } // loop over all modules
-
-
-  if (localPrint) 
-    cout << " best match "
-	 <<indx1<<" "<< deltaRmin1 << " "<<mu1match<<" "<<hlt1<<" "<<trigMatchDeltaPt1<<" "
-	 <<indx2<<" "<< deltaRmin2 << " "<<mu2match<<" "<<hlt2<<" "<<trigMatchDeltaPt2<<endl;
+//   tlvMu1.SetPtEtaPhiM(fp1->fPlab.Perp(),fp1->fPlab.Eta(),fp1->fPlab.Phi(),MMUON); // assume a muon
+//   tlvMu2.SetPtEtaPhiM(fp2->fPlab.Perp(),fp2->fPlab.Eta(),fp2->fPlab.Phi(),MMUON); // assume a muon
   
-  ((TH1D*)fHistDir->Get("test8"))->Fill(trigMatchDeltaPt1); 
-  ((TH1D*)fHistDir->Get("test8"))->Fill(trigMatchDeltaPt2); 
-  ((TH1D*)fHistDir->Get("test2"))->Fill(deltaRmin1); 
-  ((TH1D*)fHistDir->Get("test2"))->Fill(deltaRmin2); 
+//   for(int i=0; i!=fpEvt->nTrgObjv2(); i++) { // loop over all objects
+//     pTO = fpEvt->getTrgObjv2(i);
+//     //pTO->dump();
+//     int hltIndex = pTO->fHltIndex;
+//     if(hltIndex>1000) { // this object was selected, matches our trigger list
+//       if(localPrint) cout<<i<<" selected hlt "<<pTO->fHltPath<<" hlt-index "<<hltIndex<<" module label "
+// 			 <<pTO->fLabel<<" type "<<pTO->fType<<" number "<<pTO->fNumber<<endl;
+//       modulesSelected++;
+
+//       // reset the best resuts for each trigger module
+//       bool match1=false, match2=false;
+//       int m1=-1, m2=-1;
+//       deltaRmin1 = 99.; deltaRmin2=99.;
+//       trigMatchDeltaPt1 = 99.; trigMatchDeltaPt2 = 99.;
+
+//       vector<int> muonIndex = pTO->fIndex;
+//       vector<int> muonID = pTO->fID;
+//       vector<TLorentzVector> muonP = pTO->fP;
+//       int num = muonIndex.size();
+//       for(int n=0;n<num;++n) {  // loop over particles in this module, usually 2
+// 	int index = muonIndex[n];  
+// 	int id = muonID[n];  
+// 	TLorentzVector p = muonP[n];  
+
+// 	if(localPrint) 
+// 	  cout<<"trg-track: pt/eta/phi "<<p.Pt()<<"/"<<p.Eta()<<"/"<<p.Phi()<<" i/n "<<i<<"/"<<n<<endl; 
+
+// 	// Do we do it? Can be a non-muon in the trigger
+// 	if( abs(id) != 13 ) { // if not muon trigger skip 
+// 	  if(fVerbose>1) 
+// 	    cout<<" a none hlt-muon found in a trigger object "
+// 		<<n<<" id "<<id<<" "<<pTO->fHltPath<<" "<<pTO->fLabel<<" "
+// 		<<pTO->fType<<" skip it "<<endl;
+// 	  continue;  // skip checking non-muon objects 
+// 	}
+
+// 	// check direction matching
+// 	double deltaR1 = p.DeltaR(tlvMu1);
+// 	double deltaR2 = p.DeltaR(tlvMu2);
+
+// 	if(localPrint) {
+// 	  cout<<" particle "<<n<<" index "<<index<<" id "<<id
+// 	      <<" pt/eta/phi "<<p.Pt()<<"/"<<p.Eta()<<"/"<<p.Phi()<<" i/n "<<i<<"/"<<n 
+// 	      <<" dr "<<deltaR1 <<" "<<deltaR2<<endl;
+// 	}
+
+// 	// muon 1
+// 	if(deltaR1<deltaRmin1) {
+// 	  deltaRmin1=deltaR1;  // best match until now
+// 	  if (fVerbose > verboseThr || localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
+// 	    // check now the pt matching 
+// 	  double trigMatchDeltaPt=999.;
+// 	  if (fp1->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
+// 	  if( trigMatchDeltaPt < deltaPtMatch ) {  // check if it is good enough
+// 	    if (deltaR1<deltaRthr) {
+// 	      trigMatchDeltaPt1=trigMatchDeltaPt;
+// 	      match1=true;
+// 	      m1=n;
+// 	    } // if delta 
+// 	  } // if pt match 
+// 	} // if direction match 
+
+// 	// muon 2
+// 	if(deltaR2<deltaRmin2) {
+// 	  deltaRmin2=deltaR2;
+// 	  if (localPrint) {cout << " mu2 selected "<< deltaR2 <<endl;}
+// 	    // check now the pt matching 
+// 	  double trigMatchDeltaPt=999.;
+// 	  if (fp2->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
+// 	  if( trigMatchDeltaPt < deltaPtMatch ) {
+// 	    if (deltaR2<deltaRthr) {
+// 	      trigMatchDeltaPt2=trigMatchDeltaPt;
+// 	      match2=true;
+// 	      m2=n;
+// 	    } // if delta 
+// 	  } // if pt match 
+// 	} // if direction match 
+//       } // end for loop n, tracks in a trig object 
+
+//       if (localPrint) 
+// 	cout << " match for this module "
+// 	     <<m1<<" "<< deltaRmin1 <<" "<<trigMatchDeltaPt1<<" "
+// 	     <<m2<<" "<< deltaRmin2 <<" "<<trigMatchDeltaPt2<<endl;
+
+//       ((TH1D*)fHistDir->Get("testhh3"))->Fill(trigMatchDeltaPt1); 
+//       ((TH1D*)fHistDir->Get("testhh3"))->Fill(trigMatchDeltaPt2); 
+//       ((TH1D*)fHistDir->Get("testhh1"))->Fill(deltaRmin1); 
+//       ((TH1D*)fHistDir->Get("testhh1"))->Fill(deltaRmin2); 
+
+//       if(match1 || match2) {
+// 	  modulesSingleMatched++;
+// 	  matchS=true;
+//       }
+
+//       // check if this module matched 
+//       if( (match1 && match2) ) {
+// 	if(m1==m2) {
+// 	  cout<<"Error:  matched to same particle "<<endl;
+// 	} else { // ok
+// 	  match=true;
+// 	  modulesMatched++;
+// 	  if(localPrint) cout<<" matching good for module "<<i<<endl;
+// 	  // select the best batch
+// 	  double dr = deltaRmin1 + deltaRmin2; // maybe product is better 
+// 	  if(dr<drMin) { // a better match, save it
+// 	    drMin=dr;
+// 	    mu1match = m1;
+// 	    mu2match = m2;
+// 	    hlt1 = pTO->fLabel;
+// 	    indx1=i;
+// 	    hlt2 = pTO->fLabel;  // redundant 
+// 	    indx2=i; // redundant 
+// 	    deltaRminAll1 = deltaRmin1;
+// 	    deltaRminAll2 = deltaRmin2; 
+// 	    trigMatchDeltaPtAll1 = trigMatchDeltaPt1; 
+// 	    trigMatchDeltaPtAll2 = trigMatchDeltaPt2; 
+// 	  }
+// 	}
+//       }  // if match1&&match2
+
+//     } // end if a valid trigger module, i 
+
+//   } // loop over all modules
+
+//   ((TH1D*)fHistDir->Get("testhh4"))->Fill(trigMatchDeltaPtAll1); 
+//   ((TH1D*)fHistDir->Get("testhh4"))->Fill(trigMatchDeltaPtAll2); 
+//   ((TH1D*)fHistDir->Get("testhh2"))->Fill(deltaRminAll1); 
+//   ((TH1D*)fHistDir->Get("testhh2"))->Fill(deltaRminAll2); 
+
+//   bool veto = false;
+//   if(singleMatch) { // check single matched only
+//     if( matchS && ((modulesSelected-modulesSingleMatched)<=0) ) 
+//       {veto=true; if(localPrint) cout<<" single veto "<<endl;}   
+//   } else { // singleMatch=false, use double 
+//     if( match && ((modulesSelected-modulesMatched)<=0) ) 
+//       {veto=true; if(localPrint) cout<<" double veto "<<endl;}   
+//   }
+
+//   if (localPrint) {
+//     cout<<" veto = "<<veto<<" "<<match<<" "<<matchS<<endl;
+//     cout<<" modules "<<modulesSelected<<" "<<modulesMatched<<" "<<modulesSingleMatched<<endl;
+//     cout << " best match "
+// 	 <<indx1<<" "<< deltaRminAll1 << " "<<mu1match<<" "<<hlt1<<" "<<trigMatchDeltaPtAll1<<" "
+// 	 <<indx2<<" "<< deltaRminAll2 << " "<<mu2match<<" "<<hlt2<<" "<<trigMatchDeltaPtAll2<<endl;
+//   }
+
   
-  if(mu1match>-1) {
-    double tmp=fMu1TrigM;
-    fMu1TrigM = deltaRmin1;
-    if(tmp!=fMu1TrigM) cout<<"Warning:  two methods inconsistent-mu1 "<<tmp<<" "<<fMu1TrigM<<endl;
-  }
-  if(mu2match>-1) {
-    double tmp=fMu2TrigM;
-    fMu2TrigM = deltaRmin2;
-    if(tmp!=fMu2TrigM) cout<<"Warning:  two methods inconsistent-mu2 "<<tmp<<" "<<fMu2TrigM<<endl;
-  }
-
-  bool HLTmatch = false;
-  if(mu1match>-1 && mu2match>-1) {
-    if(mu1match==mu2match) {
-      cout<<"Error:  matched to same particle "<<endl;
-    } else { // ok
-      if(localPrint) cout<<" matching OK"<<endl;
-      HLTmatch=true;
-    }
-  }
-
-  return HLTmatch;
-}
+//   return veto;
+// }
 
 // ----------------------------------------------------------------------
 void candAnaHh::hhAnalysis() {
@@ -878,7 +958,7 @@ int candAnaHh::truthMatch(TAnaCand *pCand, int verbose) {
   mom = pG->fMom1;
   pG = fpEvt->getGenCand(pG->fMom1); 
   if ((0 == pG) || 511 != TMath::Abs(pG->fID)) {
-    if (verbose > 0) cout << "(0 == pG) || 511 != pG->fID, pG->fID = " << pG->fID  << endl;
+    if (verbose > 0) cout << "(0 == pG) || 511 != pG->fID, pG->fID = " << pG->fID  << " "<<mom<<endl;
     return 0;
   }
 
@@ -951,15 +1031,30 @@ int candAnaHh::truthMatch(TAnaCand *pCand, int verbose) {
 // ----------------------------------------------------------------------
 void candAnaHh::bookHist() {
   cout << "==>candAnaHh: bookHist" << endl;
+  TH1 *h=NULL;
 
-#ifndef MY
   candAna::bookHist();
-  return;
-#endif
 
-  fHistDir->cd();
+  fHistDir->cd();  
+  h = new TH1D("testhh0", "stat", 100, -1., 99.);
+  
+  h = new TH1D("testhh1", "dr", 1000, 0., 1.);
+  h = new TH1D("testhh2", "dr", 1000, 0., 1.);
+  h = new TH1D("testhh3", "dpt", 200, -1., 1.);
+  h = new TH1D("testhh4", "dpt", 200, -1., 1.);
 
-  TH1 *h = new TH1D("status", "status", 100, -0.5, 99.5);
+  h = new TH1D("testhh11", "dr", 1000, 0, 1);
+  h = new TH1D("testhh12", "dr", 1000, 0, 1);
+  h = new TH1D("testhh13", "dr", 1000, 0, 1);
+  h = new TH1D("testhh14", "dr", 1000, 0, 1);
+
+  //return;
+  //#endif
+  //fHistDir->cd();
+
+#ifdef MYCODE
+
+  h = new TH1D("status", "status", 100, -0.5, 99.5);
 //   h = new TH1D("mdz", "m(d0)", 70, 1.8, 2.5);
 //   h = new TH1D("dm", "delta(m)", 60, 0.13, 0.16);
 //   h = new TH1D("ncand", "ncand", 200, 0., 200);
@@ -1033,6 +1128,7 @@ void candAnaHh::bookHist() {
   h = new TH1D("pvW", "PV Weight", 100, 0., 2);
   h = new TH1D("eta", "cand eta", 60, -3.0, 3.0);
   h = new TH1D("pvid", "cand PVidx", 100, 0., 100);
+
 
   //h2 = new TH2D("all_h2d", "m(d0) vs dm", 60, 1.8, 1.92, 60, 0.13, 0.16);
 
@@ -1119,31 +1215,32 @@ void candAnaHh::bookHist() {
 //   h = new TH1D("h76", "dm",40,0.135,0.155);
 //   h = new TH1D("h77", "dm",40,0.135,0.155);
 
-  tree = new TTree("hh","hh");
-  tree->Branch("fcands",&fcands,"fcands/I");
-  tree->Branch("ftm",ftm,"ftm[fcands]/I");
-  tree->Branch("fm",fm,"fm[fcands]/F");
-  tree->Branch("ffls3d",ffls3d,"ffls3d[fcands]/F");
-  tree->Branch("fchi2",fchi2,"fchi2[fcands]/F");
-  tree->Branch("falpha",falpha,"falpha[fcands]/F");
-  tree->Branch("fdr",fdr,"fdr[fcands]/F");
-  tree->Branch("fpt",fpt,"fpt[fcands]/F");
-  tree->Branch("fptpi1",fptpi1,"fptpi1[fcands]/F");
-  tree->Branch("fptpi2",fptpi2,"fptpi2[fcands]/F");
-  tree->Branch("fdoca",fdoca,"fdoca[fcands]/F");
-  tree->Branch("fweight",fweight,"fweight[fcands]/F");
-  tree->Branch("fclose",fclose,"fclose[fcands]/I");
-  tree->Branch("fiso",fiso,"fiso[fcands]/F");
-  tree->Branch("fperp1",fperp1,"fperp1[fcands]/F");
-  tree->Branch("fperp2",fperp2,"fperp2[fcands]/F");
+  // tree = new TTree("hh","hh");
+  // tree->Branch("fcands",&fcands,"fcands/I");
+  // tree->Branch("ftm",ftm,"ftm[fcands]/I");
+  // tree->Branch("fm",fm,"fm[fcands]/F");
+  // tree->Branch("ffls3d",ffls3d,"ffls3d[fcands]/F");
+  // tree->Branch("fchi2",fchi2,"fchi2[fcands]/F");
+  // tree->Branch("falpha",falpha,"falpha[fcands]/F");
+  // tree->Branch("fdr",fdr,"fdr[fcands]/F");
+  // tree->Branch("fpt",fpt,"fpt[fcands]/F");
+  // tree->Branch("fptpi1",fptpi1,"fptpi1[fcands]/F");
+  // tree->Branch("fptpi2",fptpi2,"fptpi2[fcands]/F");
+  // tree->Branch("fdoca",fdoca,"fdoca[fcands]/F");
+  // tree->Branch("fweight",fweight,"fweight[fcands]/F");
+  // tree->Branch("fclose",fclose,"fclose[fcands]/I");
+  // tree->Branch("fiso",fiso,"fiso[fcands]/F");
+  // tree->Branch("fperp1",fperp1,"fperp1[fcands]/F");
+  // tree->Branch("fperp2",fperp2,"fperp2[fcands]/F");
 
-  tree->Branch("fm1",fm1,"fm1[fcands]/F");
-  tree->Branch("fm2",fm2,"fm2[fcands]/F");
-  tree->Branch("fm3",fm3,"fm3[fcands]/F");
-  tree->Branch("fm4",fm4,"fm4[fcands]/F");
+  // tree->Branch("fm1",fm1,"fm1[fcands]/F");
+  // tree->Branch("fm2",fm2,"fm2[fcands]/F");
+  // tree->Branch("fm3",fm3,"fm3[fcands]/F");
+  // tree->Branch("fm4",fm4,"fm4[fcands]/F");
+
+#endif
 
 }
-
 
 // ----------------------------------------------------------------------
 void candAnaHh::readCuts(string filename, int dump) {
@@ -1157,7 +1254,6 @@ void candAnaHh::readCuts(string filename, int dump) {
 
   char CutName[100];
   float CutValue;
-  int ok(0);
 
   char  buffer[200];
   fHistDir->cd();
@@ -1169,13 +1265,12 @@ void candAnaHh::readCuts(string filename, int dump) {
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
     sprintf(buffer, "%s", cutLines[i].c_str()); 
     
-    ok = 0;
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
     sscanf(buffer, "%s %f", CutName, &CutValue);
 
     if (!strcmp(CutName, "MUON_VETO")) {
-      MUON_VETO = int(CutValue); ok = 1;
+      MUON_VETO = int(CutValue);
       if (dump) cout << "MUON_VETO:      " << MUON_VETO << endl;
       ibin = 211;
       hcuts->SetBinContent(ibin, MUON_VETO);
@@ -1183,7 +1278,7 @@ void candAnaHh::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "HH_MLO")) {
-      HH_MLO = CutValue; ok = 1;
+      HH_MLO = CutValue; 
       if (dump) cout << "HH_MLO:      " << HH_MLO << endl;
       ibin = 212;
       hcuts->SetBinContent(ibin, HH_MLO);
@@ -1191,17 +1286,13 @@ void candAnaHh::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "HH_MHI")) {
-      HH_MHI = CutValue; ok = 1;
+      HH_MHI = CutValue;
       if (dump) cout << "HH_MHI:      " << HH_MHI << endl;
       ibin = 213;
       hcuts->SetBinContent(ibin, HH_MHI);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: hh mass-high :: %3.1f", CutName, HH_MHI));
     }
-
-
-
-   
-  }
+  } // end for 
 
 }
 
