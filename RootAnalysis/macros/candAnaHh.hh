@@ -46,6 +46,9 @@ public:
   void        dumpHFTruthCand(TAnaCand *pC); 
   void        dumpHFHhCand(TAnaCand *pC); 
 
+  // match the 2 muons from the dimuon to HLT
+  //bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=false); 
+
 private:
   TTree * tree;
   int fcands, ftm[10];
