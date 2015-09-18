@@ -138,6 +138,7 @@ void plotClass::overlayAll() {
 
 // ----------------------------------------------------------------------
 void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool loga, bool legend, double xleg, double yleg) {
+  const bool verbose(false);
 
   showOverflow(h1);
   showOverflow(h2);
@@ -147,28 +148,46 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
   normHist(h2, f2, method); 
   if (h3) normHist(h3, f3, method); 
   double ymin(0.0001);
-  double hmax(1.2*h1->GetMaximum()); 
-  if (h2->GetMaximum() > h1->GetMaximum()) hmax = 1.2*h2->GetMaximum(); 
-  if (h3 && h3->GetMaximum() > h2->GetMaximum()) hmax = 1.2*h3->GetMaximum(); 
+  double h1max(h1->GetBinContent(h1->GetMaximumBin())); 
+  double h2max(h2->GetBinContent(h2->GetMaximumBin())); 
+  double h3max(h3->GetBinContent(h3->GetMaximumBin())); 
+  double hmax(h1max);
+  int imax(1);
+  if (h2max > h1max) {
+    hmax = h2max; 
+    imax = 2;
+  }
+  if (h3max > h2max) {
+    hmax = h3max; 
+    imax = 3;
+  }
+  hmax *= 1.2; 
+  if (verbose)  {
+    cout << "hmax = " << hmax << " from imax = " << imax;
+    if (1 == imax) cout << " bin " << h1->GetMaximumBin() << " with maximum " << h1->GetBinContent(h1->GetMaximumBin()) << endl;
+    if (2 == imax) cout << " bin " << h2->GetMaximumBin() << " with maximum " << h2->GetBinContent(h2->GetMaximumBin()) << endl;
+    if (3 == imax) cout << " bin " << h3->GetMaximumBin() << " with maximum " << h3->GetBinContent(h3->GetMaximumBin()) << endl;
+  }
   if (loga) {
     gPad->SetLogy(1); 
     hmax *= 2.;
     double hmin(h1->GetMinimum(ymin)); 
-    cout << "hmin1 = " << hmin << endl;
+    if (verbose) cout << "hmin1 = " << hmin << endl;
     if (h2->GetMinimum(ymin) < hmin) {
       hmin = h2->GetMinimum(ymin);
-      cout << "hmin2 = " << hmin << endl;
+      if (verbose) cout << "hmin2 = " << hmin << endl;
     }
     if (h3 && h3->GetMinimum(ymin) < hmin) {
       hmin = h3->GetMinimum(ymin);
-      cout << "hmin3 = " << hmin << endl;
+      if (verbose) cout << "hmin3 = " << hmin << endl;
     }
     h1->SetMinimum(0.1*hmin); 
-    cout << "hmin = " << hmin << endl;
+    if (verbose) cout << "hmin = " << hmin << endl;
   } else {
     gPad->SetLogy(0); 
     h1->SetMinimum(0.); 
   }
+  
   h1->SetMaximum(hmax); 
 
   h1->DrawCopy("hist"); 
@@ -203,11 +222,11 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
   }
 
 
-  cout << "==>plotClass: overlay(" << f1 << ", " << h1->GetName() << " integral= " << h1->Integral()
-       << ", " << f2 << ", " << h2->GetName() << " integral= " << h2->Integral()
-       << (h3? Form(", %s, %s, %f", f3.c_str(), h3->GetName(), h3->Integral()) : "")
-       << ")  log: " << loga << " legend = " << legend
-       << endl;
+  if (verbose) cout << "==>plotClass: overlay(" << f1 << ", " << h1->GetName() << " integral= " << h1->Integral()
+		    << ", " << f2 << ", " << h2->GetName() << " integral= " << h2->Integral()
+		    << (h3? Form(", %s, %s, %f", f3.c_str(), h3->GetName(), h3->Integral()) : "")
+		    << ")  log: " << loga << " legend = " << legend
+		    << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -221,7 +240,10 @@ void plotClass::overlay(string h1name, string f1, string h2name, string f2, stri
   TH1D *h3(0); 
   if (h3name != "") {
     h3 = fDS[f3]->getHist(Form("%s", h3name.c_str()), true); 
+  } else {
+    h3= 0; 
   }
+
   overlay(h1, f1, h2, f2, h3, f3, method, loga, legend, xleg, yleg); 
 }
 
