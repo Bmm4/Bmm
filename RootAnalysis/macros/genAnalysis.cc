@@ -68,8 +68,8 @@ void genAnalysis::genB() {
     static const double aparticles[] = {511, 521, 531, 5122};
     vector<int> particles(aparticles, aparticles + sizeof(aparticles)/sizeof(aparticles[0]));
     for (unsigned int i = 0; i < particles.size(); ++i) {
-      new TH1D(Form("pt%d", particles[i]), Form("pt%d", particles[i]), 80, 0., 40.); 
-      new TH1D(Form("cpt%d", particles[i]), Form("pt%d", particles[i]), 40, 0., 20.); 
+      new TH1D(Form("pt%d", particles[i]), Form("pt%d", particles[i]), 100, 0., 50.); 
+      new TH1D(Form("cpt%d", particles[i]), Form("pt%d", particles[i]), 30, 0., 30.); 
       new TH1D(Form("eta%d", particles[i]), Form("eta%d", particles[i]), 50, -10., 10.); 
       new TH1D(Form("ceta%d", particles[i]), Form("ceta%d", particles[i]), 60, -3., 3.); 
       new TH1D(Form("mom%d", particles[i]), Form("mom%d", particles[i]), 500, 500., 1000.); 
