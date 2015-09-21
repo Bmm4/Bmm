@@ -415,6 +415,17 @@ bool isLightMeson(int i) {
 } 
 
 // ----------------------------------------------------------------------
+bool isStableCharged(int i) {
+  if (211 == TMath::Abs(i)) return true;
+  if (321 == TMath::Abs(i)) return true;
+  if (11 == TMath::Abs(i)) return true;
+  if (13 == TMath::Abs(i)) return true;
+  if (2122 == TMath::Abs(i)) return true;
+  return false;
+}
+
+
+// ----------------------------------------------------------------------
 void showOverflow(TH1 *h) {
   h->SetBinContent(h->GetNbinsX(), h->GetBinContent(h->GetNbinsX()) + h->GetBinContent(h->GetNbinsX()+1));
   h->SetBinContent(h->GetNbinsX()+1, 0.);

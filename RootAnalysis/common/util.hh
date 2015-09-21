@@ -97,6 +97,7 @@ bool isCharmMeson(int i);
 bool isCharmMesonWeak(int i); 
 bool isCharmBaryon(int i); 
 bool isLightMeson(int i); 
+bool isStableCharged(int i); 
 
 
 

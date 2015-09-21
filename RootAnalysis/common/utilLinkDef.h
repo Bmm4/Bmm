@@ -54,6 +54,7 @@
 #pragma link C++ function isCharmBaryon(int);
 
 #pragma link C++ function isLightMeson(int);
+#pragma link C++ function isStableCharged(int);
 
 #pragma link C++ function defVector(int, ...);
 
