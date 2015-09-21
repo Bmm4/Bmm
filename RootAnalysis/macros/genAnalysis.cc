@@ -73,6 +73,7 @@ void genAnalysis::genB() {
       new TH1D(Form("eta%d", particles[i]), Form("eta%d", particles[i]), 50, -10., 10.); 
       new TH1D(Form("ceta%d", particles[i]), Form("ceta%d", particles[i]), 60, -3., 3.); 
       new TH1D(Form("mom%d", particles[i]), Form("mom%d", particles[i]), 500, 500., 1000.); 
+      new TH1D(Form("iso%d", particles[i]), Form("iso%d", particles[i]), 51, 0., 1.02); 
     }
   }
   
@@ -92,6 +93,7 @@ void genAnalysis::genB() {
 
     if (531 == aid || 521 == aid || 511 == aid || 5122 == aid) {
       compare2PDG(pCand, 2014, false);
+      double iso = isolation(pCand);
       pD = fpEvt->getGenCand(pCand->fMom1); 
       mom = TMath::Abs(pD->fID);
       ((TH1D*)fpHistFile->Get(Form("pt%d", aid)))->Fill(pCand->fP.Perp()); 
@@ -99,6 +101,7 @@ void genAnalysis::genB() {
       ((TH1D*)fpHistFile->Get(Form("eta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("ceta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("mom%d", aid)))->Fill(mom); 
+      ((TH1D*)fpHistFile->Get(Form("iso%d", aid)))->Fill(iso); 
       
       if (511 == aid) f511Mass = pCand->fP.M();
       if (521 == aid) f521Mass = pCand->fP.M();
@@ -116,9 +119,6 @@ void genAnalysis::genB() {
 void genAnalysis::printBdecays() {
   
   TGenCand *pCand, *pD; 
-  int muType(0), evtType(0), nevt(0), bevt(0), bacc(0); 
-  bool acc(false);
-  double pt(0.), eta(0.); 
   cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
@@ -165,7 +165,7 @@ void genAnalysis::printBdecays() {
     error  = fpEvt->fHLTError[i]; 
 
     if (wasRun && result) {
-      cout << a << endl;
+      cout << a << " " << ps << endl;
     }      
   }
 
@@ -312,18 +312,17 @@ void genAnalysis::fillHist() {
 void genAnalysis::bookHist() {
   cout << "==> genAnalysis: bookHist " << endl;
   
-  TH1D *h; 
-  h = new TH1D("h1",   "mu type", 20, 0., 20.);
-  h = new TH1D("h100", "mu pt 0", 100, 0., 20.);
-  h = new TH1D("h110", "mu pt ==1", 100, 0., 20.);
-  h = new TH1D("h112", "mu pt ==1", 100, 0., 20.);
-
-  h = new TH1D("e1",  "evt type", 20, 0., 20.);
-  h = new TH1D("e100", "evt pt 0", 100, 0., 20.);
-  h = new TH1D("e110", "evt pt ==1", 100, 0., 20.);
-  h = new TH1D("e111", "evt pt ==1", 100, 0., 20.);
-  h = new TH1D("e112", "evt acc ==1", 100, 0., 20.);
-
+  new TH1D("h1",   "mu type", 20, 0., 20.);
+  new TH1D("h100", "mu pt 0", 100, 0., 20.);
+  new TH1D("h110", "mu pt ==1", 100, 0., 20.);
+  new TH1D("h112", "mu pt ==1", 100, 0., 20.);
+  
+  new TH1D("e1",  "evt type", 20, 0., 20.);
+  new TH1D("e100", "evt pt 0", 100, 0., 20.);
+  new TH1D("e110", "evt pt ==1", 100, 0., 20.);
+  new TH1D("e111", "evt pt ==1", 100, 0., 20.);
+  new TH1D("e112", "evt acc ==1", 100, 0., 20.);
+  
   // -- Reduced Tree
   fTree = new TTree("events", "events");
   fTree->Branch("run",     &fRun,     "run/I");
@@ -372,6 +371,28 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
   if (dump)  cout << "------------------------------------" << endl;
 
+}
+
+
+// ----------------------------------------------------------------------
+double genAnalysis::isolation(TGenCand *pCand) {
+
+  // -- not interested outside of acceptance
+  if (TMath::Abs(pCand->fP.Eta()) > 2.4) return -1.;
+  
+  TGenCand *pC; 
+  double iso(0.); 
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pC = fpEvt->getGenCand(iC);
+    if (isStableCharged(pC->fID)) {
+      if (fpEvt->isAncestor(pCand, pC)) continue;
+      if (pCand->fP.DeltaR(pC->fP) < 0.7 && pC->fP.Perp() > 0.9) {
+	iso += pC->fP.Perp();
+      }
+    }
+  }
+
+  return (pCand->fP.Perp()/(pCand->fP.Perp() + iso)); 
 }
 
 

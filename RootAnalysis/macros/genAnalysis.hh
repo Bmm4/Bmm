@@ -43,7 +43,7 @@ public:
   void         printBdecays(); 
   void         genB(); 
   void         compare2PDG(TGenCand *pCand, int year = 2014, bool finalize = false); 
-
+  double       isolation(TGenCand *pCand); 
 
   int          NTOTAL; 
   double       XSECTION;
