@@ -48,6 +48,7 @@ while (<IN>) {
 eval $gProgram;
 
 
+# -- merge rootfiles
 if ($opt_h) {
     foreach $j (keys %jobs) {
 	$command = &srmHadd($j); 
@@ -71,7 +72,9 @@ if ($opt_p) {
 	    $goback = 1; 
 	} 
 	print "$catalogs{$j}\n";
-	system("$catalogs{$j}");
+	if (!$opt_d) {
+	    system("$catalogs{$j}");
+	}
 	if ($goback == 1) {
 	    chdir("..");
 	}
