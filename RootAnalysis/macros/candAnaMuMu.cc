@@ -59,6 +59,10 @@ void candAnaMuMu::genMatch() {
 
   TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0); 
   bool goodMatch(false); 
+  //  cout << "Event " << fEvent << endl;
+//   if (fEvent == 1263) {
+//  fpEvt->dumpGenBlock();
+//   }
   for (int i = 0; i < fpEvt->nGenT(); ++i) {
     pC = fpEvt->getGenT(i); 
     if (TRUTHCAND == TMath::Abs(pC->fID)) {
@@ -66,6 +70,10 @@ void candAnaMuMu::genMatch() {
       pB = pC;
       for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
 	pC = fpEvt->getGenTWithIndex(id); 
+	//	cout << "dau1 = " << pB->fDau1 << " dau2 = " << pB->fDau2 << " pC: " << pC << endl;
+// 	if (fEvent == 1263) {
+// 	  exit(0); 
+// 	}
 	if (id1 == TMath::Abs(pC->fID) || id2 == TMath::Abs(pC->fID)) {
 	  if (0 == pM1) {
 	    pM1 = fpEvt->getGenTWithIndex(id); 
