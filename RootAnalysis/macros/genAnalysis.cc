@@ -101,7 +101,8 @@ void genAnalysis::genB() {
       ((TH1D*)fpHistFile->Get(Form("eta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("ceta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("mom%d", aid)))->Fill(mom); 
-      ((TH1D*)fpHistFile->Get(Form("iso%d", aid)))->Fill(iso); 
+      // -- ignore underflow!
+      if (iso > -0.5) ((TH1D*)fpHistFile->Get(Form("iso%d", aid)))->Fill(iso); 
       
       if (511 == aid) f511Mass = pCand->fP.M();
       if (521 == aid) f521Mass = pCand->fP.M();
