@@ -57,15 +57,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       fKstarPhi  = pD->fPlab.Phi(); 
       }
     
-    ///////////////////////////////////////
-    /*  
-    if (pD->fType == PHITYPE) {
-      if ((MKKLO < pD->fMass) && (pD->fMass < MKKHI)) fGoodMKK = true;
-      fMKK     = pD->fMass;
-      fPhiPt   = pD->fPlab.Perp();
-      fPhiEta  = pD->fPlab.Eta();
-      fPhiPhi  = pD->fPlab.Phi(); 
-    }*/
   }
 
 
@@ -84,7 +75,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       p2 = p0; 
     }
   }
-
   if (0 == p1) {
     cout << "candAnaBd2JpsiKstar::candAnalysis  no kaon found " << endl;
     return; 
