@@ -8,17 +8,18 @@ my $pattern = "bla";
 my $SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
 # -- grid SE prefix
 my $PSI = $ENV{'PSI'};
+$PSI =~ s/\?/\\\?/g;
 print "PSI = $PSI\n";
 if ($PSI eq "") {
     die "PSI not defined, but required ...\n";
 }
-my $LFN = "/store/user/ursl/bmm4/runBmm/$version";
+my $LFN = "/store/user/ursl/bmm4/runBmm/$version/";
 my $SEDIR = "$PSI/$LFN";
 
 # -- did not manage to do this with refs, so do it with functions: 
 sub runCommand() {
     $runCmd  = "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/RootAnalysis/macros/runBmmNoComp.csh ";
-    $runCmd .= "-r 'PFNS $PSI%STORAGE1 /$LFN".$dataset."%SITE T3_CH_PSI' ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
     return $runCmd;
 }   
 
