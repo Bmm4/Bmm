@@ -50,12 +50,11 @@ void plotWork::makeAll(int bitmask) {
 
   if (bitmask & 0x1) {
 
-    prodValidation("all", "inelastic_nofilter", "singlediffractive_nofilter", "doublediffractive_nofilter"); 
-    prodValidation("all", "inelastic_etaptfilter", "singlediffractive_etaptfilter", "doublediffractive_etaptfilter"); 
+    prodValidation("all", "default_nofilter", "inelastic_nofilter", "pythia6_nofilter"); 
 
-
-    prodValidation("all", "inelastic_nofilter", "pythia6_nofilter", "noevtgen_nofilter");
-    prodValidation("all", "inelastic_etaptfilter", "pythia6_etaptfilter", "noevtgen_etaptfilter");
+    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "pythia6_etaptfilter"); 
+    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "hardqcd8_etaptfilter");
+    prodValidation("all", "default_etaptfilter", "pythia6_etaptfilter", "noevtgen_etaptfilter");
   }
 
 }
@@ -80,6 +79,9 @@ void plotWork::prodValidation(string hist, string ds1, string ds2, string ds3, b
       prodValidation(Form("cpt%d", particles[i]), ds1, ds2, ds3, false, true, 0.4, 0.75); 
       c0->cd(3);
       prodValidation(Form("eta%d", particles[i]), ds1, ds2, ds3, false); 
+
+      c0->cd(4);
+      prodValidation(Form("iso%d", particles[i]), ds1, ds2, ds3, false); 
       
       c0->SaveAs(Form("%s/prodValidation-%d-%s-%s-%s.pdf", fDirectory.c_str(), particles[i], ds1.c_str(), ds2.c_str(), ds3.c_str())); 
 
@@ -357,6 +359,9 @@ void plotWork::loadFiles(string afiles) {
     if (buffer[0] == '/') {continue;}
     
     string sbuffer = string(buffer); 
+    replaceAll(sbuffer, " ", ""); 
+    replaceAll(sbuffer, "\t", ""); 
+    if (sbuffer.size() < 1) continue;
 
     string::size_type m1 = sbuffer.find("lumi="); 
     string stype = sbuffer.substr(5, m1-5); 
@@ -366,10 +371,48 @@ void plotWork::loadFiles(string afiles) {
     string sfile = sbuffer.substr(m2+5); 
     string sname, sdecay; 
 
+    cout << "stype: ->" << stype << "<-" << endl;
+
     TFile *pF(0); 
     if (string::npos != stype.find("data")) {
       // -- DATA
-      cout << "XXXX do not know YET what to do with data?!" << endl;
+      pF = loadFile(sfile); 
+      
+      dataset *ds = new dataset(); 
+      ds->fSize = 1; 
+      ds->fWidth = 2; 
+
+      if (string::npos != stype.find("bmm")) {
+        sname = "data_bmm"; 
+        sdecay = "bmm"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 24; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+	fDS.insert(make_pair(sname, ds)); 
+      }
+
+      if (string::npos != stype.find("bu2jpsik")) {
+        sname = "data_bu2jpsik"; 
+        sdecay = "bu2jpsik"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 24; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+	fDS.insert(make_pair(sname, ds)); 
+      }
+
+      ds->fLcolor = ds->fColor; 
+      ds->fFcolor = ds->fColor; 
+      ds->fName   = sdecay; 
+      ds->fFullName = sname; 
+      fDS.insert(make_pair(sname, ds)); 
+
+
     } else {
       // -- MC
       pF = loadFile(sfile); 
@@ -379,9 +422,12 @@ void plotWork::loadFiles(string afiles) {
       ds->fSize = 1; 
       ds->fWidth = 2; 
 
-      if (string::npos != stype.find("inelastic") && string::npos != stype.find("nofilter")) {
-        sname = "inelastic_nofilter"; 
-        sdecay = "inelastic"; 
+      string filter = "nofilter"; 
+      if (string::npos != stype.find("etaptfilter")) filter = "etaptfilter";
+
+      if (string::npos != stype.find("bu2jpsik")) {
+        sname = "bu2jpsik_" + filter; 
+        sdecay = "bu2jpsik"; 
 	ds->fColor = kBlue-7; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
@@ -391,24 +437,14 @@ void plotWork::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds)); 
       }
 
-      if (string::npos != stype.find("inelastic") && string::npos != stype.find("etaptfilter")) {
-        sname = "inelastic_etaptfilter"; 
-        sdecay = "inelastic"; 
+      // -------------------------
+      // -- genAnalyis files below
+      // -------------------------
+      if (string::npos != stype.find("default")) {
+        sname = "default_" + filter; 
+        sdecay = "default"; 
 	ds->fColor = kBlue-7; 
-	ds->fSymbol = 20; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-	fDS.insert(make_pair(sname, ds)); 
-      }
-
-
-      if (string::npos != stype.find("singlediffractive") && string::npos != stype.find("nofilter")) {
-        sname = "singlediffractive_nofilter"; 
-        sdecay = "singlediffractive"; 
-	ds->fColor = kYellow-5; 
-	ds->fSymbol = 26; 
+	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -416,22 +452,10 @@ void plotWork::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds)); 
       }
 
-      if (string::npos != stype.find("singlediffractive") && string::npos != stype.find("etaptfilter")) {
-        sname = "singlediffractive_etaptfilter"; 
-        sdecay = "singlediffractive"; 
-	ds->fColor = kYellow-5; 
-	ds->fSymbol = 22; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-	fDS.insert(make_pair(sname, ds)); 
-      }
-
-      if (string::npos != stype.find("doublediffractive") && string::npos != stype.find("nofilter")) {
-        sname = "doublediffractive_nofilter"; 
-        sdecay = "doublediffractive"; 
-	ds->fColor = kYellow-3; 
+      if (string::npos != stype.find("inelastic")) {
+        sname = "inelastic_" + filter; 
+        sdecay = "inelastic"; 
+	ds->fColor = kMagenta-1; 
 	ds->fSymbol = 25; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -440,22 +464,10 @@ void plotWork::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds)); 
       }
 
-      if (string::npos != stype.find("doublediffractive") && string::npos != stype.find("etaptfilter")) {
-        sname = "doublediffractive_etaptfilter"; 
-        sdecay = "doublediffractive"; 
-	ds->fColor = kYellow-3; 
-	ds->fSymbol = 21; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-	fDS.insert(make_pair(sname, ds)); 
-      }
-
-      if (string::npos != stype.find("hardqcd8") && string::npos != stype.find("nofilter")) {
-        sname = "hardqcd8_nofilter"; 
+      if (string::npos != stype.find("hardqcd8")) {
+        sname = "hardqcd8_" + filter; 
         sdecay = "hardqcd8"; 
-	ds->fColor = kBlue-3; 
+	ds->fColor = kRed-2; 
 	ds->fSymbol = 30; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -464,23 +476,11 @@ void plotWork::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds)); 
       }
 
-      if (string::npos != stype.find("hardqcd8") && string::npos != stype.find("etaptfilter")) {
-        sname = "hardqcd8_etaptfilter"; 
-        sdecay = "hardqcd8"; 
-	ds->fColor = kBlue-3; 
-	ds->fSymbol = 29; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-	fDS.insert(make_pair(sname, ds)); 
-      }
-
-      if (string::npos != stype.find("pythia6") && string::npos != stype.find("nofilter")) {
-        sname = "pythia6_nofilter"; 
+      if (string::npos != stype.find("pythia6")) {
+        sname = "pythia6_" + filter; 
         sdecay = "pythia6"; 
-	ds->fColor = kRed-2; 
-	ds->fSymbol = 25; 
+	ds->fColor = kGreen+3; 
+	ds->fSymbol = 26; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -488,40 +488,16 @@ void plotWork::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds)); 
       }
 
-      if (string::npos != stype.find("pythia6") && string::npos != stype.find("etaptfilter")) {
-        sname = "pythia6_etaptfilter"; 
-        sdecay = "pythia6"; 
-	ds->fColor = kRed-2; 
-	ds->fSymbol = 21; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-	fDS.insert(make_pair(sname, ds)); 
-      }
-     
-
-      if (string::npos != stype.find("noevtgen") && string::npos != stype.find("nofilter")) {
-        sname = "noevtgen_nofilter"; 
+      if (string::npos != stype.find("noevtgen")) {
+        sname = "noevtgen_" + filter; 
         sdecay = "noevtgen"; 
-	ds->fColor = kGreen+1; 
-	ds->fSymbol = 25; 
+	ds->fColor = kYellow+2; 
+	ds->fSymbol = 28; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-      }
-
-      if (string::npos != stype.find("noevtgen") && string::npos != stype.find("etaptfilter")) {
-        sname = "noevtgen_etaptfilter"; 
-        sdecay = "noevtgen"; 
-	ds->fColor = kGreen+1; 
-	ds->fSymbol = 21; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
       }
 
       ds->fLcolor = ds->fColor; 
