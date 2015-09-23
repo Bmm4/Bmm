@@ -9,7 +9,7 @@
 #include <TH2.h>
 
 #include "bmmReader.hh"
-#include "RedTreeData.hh"
+#include "redTreeData.hh"
 #include "preselection.hh"
 #include "common/AnalysisCuts.hh"
 
@@ -280,7 +280,7 @@ public:
   int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
 
-  struct RedTreeData fRTD;
+  struct redTreeData fRTD;
 
 };
 
