@@ -552,7 +552,12 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	  
     // -- recompute impact parameter: tip
     tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),RecoVertex::convertPos(currentPV.position()));
-    pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),VertexState(RecoVertex::convertPos(currentPV.position()),RecoVertex::convertError(currentPV.error())));
+    if (!tsos.isValid()) {
+      if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
+      pvImpParams.tip = (Measurement1D(-9999.,-9999.), Measurement1D(-9999.,-9999.), Measurement1D(-9999.,-9999.));
+    } else {
+      pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),VertexState(RecoVertex::convertPos(currentPV.position()),RecoVertex::convertError(currentPV.error())));
+    }
 	  
     // -- get covariance matrix for error propagation in lifetime calculation
     vtxDistanceCov = makeCovarianceMatrix(GlobalError2SMatrix_33(currentPV.error()),
