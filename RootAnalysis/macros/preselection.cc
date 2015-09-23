@@ -55,7 +55,7 @@ std::string preselection() {
 }
 
 // ----------------------------------------------------------------------
-bool preselection(RedTreeData &b, int channel) {
+bool preselection(redTreeData &b, int channel) {
   const int verbose(0); 
   
   if (b.pt < PTMIN) return false;
@@ -146,7 +146,7 @@ TH1D* getPreselectionNumbers() {
 }
 
 // ----------------------------------------------------------------------
-void printRedTreeEvt(RedTreeData &b) {
+void printRedTreeEvt(redTreeData &b) {
   std::cout << b.run << "/" << b.evt << " mu&hlt: " << b.gmuid << "/" << b.hlt << "/" << b.hltm2
 	    << " mu 1: " << b.m1rmvabdt << "/" << b.m1tmid << " mu 2: " << b.m2rmvabdt << "/" << b.m2tmid 
 	    << std::endl << "  " 
