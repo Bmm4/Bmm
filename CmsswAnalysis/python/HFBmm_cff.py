@@ -66,7 +66,7 @@ bspsiphiDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------                                                                      
-bdpsiktarDump = cms.EDAnalyzer(
+bdpsikstarDump = cms.EDAnalyzer(
     "HFBd2JpsiKstar",
     verbose            = cms.untracked.int32(0),
     muonsLabel         = cms.untracked.InputTag("muons"),
@@ -91,4 +91,4 @@ bdpsiktarDump = cms.EDAnalyzer(
 # ######################################################################
 # Sequences
 # ######################################################################
-bmmSequence     = cms.Sequence(bmmDump*bupsikpDump*bspsiphiDump*bdpsiktarDump)
+bmmSequence     = cms.Sequence(bmmDump*bupsikpDump*bspsiphiDump*bdpsikstarDump)
