@@ -1,0 +1,1000 @@
+   63  crab status -d crab_projects/crab_tutorial_2015_MC_analysis --long
+   64  clear
+   65  crab status -d crab_projects/crab_tutorial_2015_MC_analysis --long
+   66  ls
+   67  ls -a
+   68  wd
+   69  pwd
+   70  ls -a
+   71  source .bashrc
+   72  cd CMSSW_7_4_6/src/
+   73  cmsenv
+   74  exit
+   75  cd CMSSW_7_4_6/src/
+   76  cmsenv
+   77  source .bashrc
+   78  cd
+   79  source .bashrc
+   80  cdcd -
+   81  cd -
+   82  cmsenv
+   83  cd
+   84  emacs -nw .bashrc
+   85  source .bashrc
+   86  emacs 
+   87  emacs -nw .bashrc
+   88  source .bashrc
+   89  emacs 
+   90  emacss 
+   91  ls
+   92  emacss crab.log 
+   93  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/python/
+   94  ls
+   95  emacs -nw HFBmm_cff.py
+   96  ls
+   97  pwd
+   98  cd ..
+   99  ls
+  100  cd CmsswAnalysis/test/
+  101  ls
+  102  cd bmm4/
+  103  ls
+  104  pwd
+  105  ls
+  106  emacs -nw crabConfig.py
+  107  source /cvmfs/cms.cern.ch/cmsset_default.sh
+  108  source /cvmfs/cms.cern.ch/crab3/crab.sh
+  109  ls
+  110  CMSSW_7_4_6/src/
+  111  cmsenv
+  112  cd
+  113  cmsenv
+  114  cd CRAB3-tutorial/
+  115  ls
+  116  cd CMSSW_7_3_5_patch2/src/
+  117  cmsenv
+  118  cd ..
+  119  ls
+  120  cd 
+  121  ls
+  122  cd CRAB3-tutorial/CMSSW_7_3_5_patch2/src/
+  123  ls
+  124  cd crab_projects/
+  125  ls
+  126  cd crab_tutorial_2015_MC_analysis/
+  127  ls
+  128  cd inputs/
+  129  ls
+  130  cd ../results/
+  131  ls
+  132  pwd
+  133  cd ../..
+  134  ls
+  135  cd ..
+  136  ls
+  137  pwd
+  138  cd .
+  139  ls
+  140  cd
+  141  ls
+  142  rm -rf CRAB3-tutorial/
+  143  cd CMSSW_7_4_6/src/
+  144  cmsenv
+  145  voms-proxy-init --voms cms --valid 168:00
+  146  ls
+  147  cd Bmm/CmsswAnalysis/
+  148  ls
+  149  cd test/
+  150  ls
+  151  cd bmm4/
+  152  ls
+  153  less testData.py 
+  154  emacs testData.py 
+  155  emacs -nw testData.py 
+  156  emacs -nw test.py 
+  157  emacs -nw crabConfig.py 
+  158  emacs -nw testData.py 
+  159  emacs -nw crabConfig.py 
+  160  emacs -nw testData.py 
+  161  source /cvmfs/cms.cern.ch/cmsset_default.sh
+  162  source /cvmfs/cms.cern.ch/crab3/crab.sh
+  163  cd CMSSW_7_4_6/src/
+  164  cmsenv
+  165  cd Bmm/CmsswAnalysis/test/
+  166  ls
+  167  cd bmm4/
+  168  ls
+  169  ls jobs/v00/bmm-
+  170  cmsRun testData.py 
+  171  clear
+  172  crab submit -c 
+  173  pwd
+  174  ls -lrt
+  175  crab submit -c crabConfig.py 
+  176  ls
+  177  cd crab_projects/
+  178  ls
+  179  cd crab_BMM4_crabtest_Charmonium_Run2015B/
+  180  ls
+  181  cd inputs/
+  182  ls
+  183  cd ..
+  184  emacs crab status -h
+  185  crab status -h
+  186  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  187  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  188  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  189  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  190  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  191  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  192  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  193  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  194  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  195  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  196  git status
+  197  git add ../testData.py
+  198  git add ../crabConfig.py
+  199  git add ../../../python/HFBmm_cff.py
+  200  git add ../../../plugins/HFBd2JpsiKstar.*
+  201  git add ../../../plugins/HFBd2JpsiKstar.cc
+  202  git add ../../../plugins/HFBd2JpsiKstar.h
+  203  git status
+  204  git commit -m 'adjust config files to get data sets for Bd2JpsiKstar'
+  205  git push jmonroy develHFBd2JpsiKstar
+  206  git status
+  207  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  208  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  209  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  210  pwd 
+  211  cd ..
+  212  pwd
+  213  ls
+  214  cd bmm4/
+  215  ls
+  216  crab submit -c crabConfig_Bd2JpsiKstar.py 
+  217  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  218  ls
+  219  cd crab_projects/
+  220  ls 
+  221  dc crab
+  222  dc crab_BMM4_crabtest_Charmonium_Run2015B/
+  223  ls
+  224  ls -lrt
+  225  crab status -d crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  226  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  227  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  228  crab status -d crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  229  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  230  source .bashrc
+  231  cd CMSSW_7_4_6/src/
+  232  cmsenv
+  233  cd Bmm/CmsswAnalysis/test/bmm4/
+  234  ls
+  235  cd crab_projects/
+  236  ls
+  237  cd crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  238  cd ..
+  239  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  240  cd crab_BMM4_crabtest_Charmonium_Run2015B/
+  241  ls
+  242  ls res
+  243  ls results/
+  244  cd ..
+  245  crab getoutput -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  246  crab status Â¿--verboseErrors -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  247  crab
+  248  crab getlog -d crab_BMM4_crabtest_Charmonium_Run2015B/ 
+  249  ls /mnt/hadoop/user/us 
+  250  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user
+  251  pwd
+  252  cd /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user
+  253  pwd
+  254  ls
+  255  mkdir jmonroym
+  256  cd frmeier/
+  257  ls
+  258  cd Charmonium/
+  259  ls
+  260  cd crab_tutorial_May2015_Data_analysis/
+  261  ls
+  262  cd 150723_193859/
+  263  ls
+  264  cd 0000/
+  265  ls
+  266  cd ..7../../(
+  267  cd ../../../
+  268  pwd
+  269  ls
+  270  cd crab_BMM4_crabtest_Charmonium_Run2015B/
+  271  ls
+  272  pwd
+  273  cd 
+  274  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/test/bmm4/
+  275  ls
+  276  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  277  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  278  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/
+  279  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/
+  280  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/output_
+  281  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  282  pwd
+  283  ls
+  284  cd jobs/
+  285  ls
+  286  cd v00/
+  287  ls
+  288  cd ../..
+  289  ls
+  290  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  291  pwd
+  292  crab resubmit -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B --jobids 1-259
+  293  crab resubmit -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B --jobids 1-172,174-233,235-259
+  294  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  295  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ -long
+  296  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  297  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  298  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  299  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  300  ls /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  301  ls -la /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  302  ls
+  303  ls -l /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  304  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  305  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  306  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  307  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  308  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  309  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  310  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  311  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  312  cd crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  313  ls
+  314  cd results/
+  315  ls
+  316  cd ..
+  317  ls
+  318  cd inputs/
+  319  ls
+  320  cd ..
+  321  ls -lrt /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  322  ls -lrt /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/failed/
+  323  cd crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  324  cd ..
+  325  pwd
+  326  cd ..
+  327  cd crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  328  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  329  pwd
+  330  cd ..
+  331  ls
+  332  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  333  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  334  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ -long
+  335  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  336  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  337  ls -lrt /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  338  ls -l /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  339  ls -l /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/failed/
+  340  ls -lrt /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/
+  341  ls -lrt /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BdToJpsiKstar_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BdToJpsiKstar_MC_13Tev/150817_052550/0000/
+  342  ls -l /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BdToJpsiKstar_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BdToJpsiKstar_MC_13Tev/150817_052550/0000/
+  343  ls -l /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BdToJpsiKstar_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BdToJpsiKstar_MC_13Tev/150817_052550/0000/failed/
+  344  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  345  crab resubmit -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B --jobids 76,82,115,126,167 
+  346  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  347  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  348  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  349  crab resubmit -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --jobids 32,128,142,151,156,160,170,183,218,231,234,242,304,306-307,310-313,315,318-320,323-326,328-329 
+  350  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/ --long
+  351  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  352  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  353  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  354  crab resubmit -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --jobids 67,69,74,75,105,118,120,307,310,318,323,324
+  355  crab resubmit -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --jobids 67,69,74,75,105,118,120,307,310,318,323,329
+  356  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  357  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  358  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  359  crab resubmit -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --jobids 310,329
+  360  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --long
+  361  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  362  crab resubmit -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/ --jobids 310,329
+  363  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  364  crab resubmit -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B --jobids 82,126,167,115
+  365  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  366  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  367  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  368  crab status -d crab_projects/crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  369  crab resubmit -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B --jobids 82,126,167,115
+  370  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  371  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  372  cd
+  373  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  374  ls
+  375  pwd
+  376  echo &BMMBASE
+  377  echo $BMMBASE
+  378  export BMMBASE = /home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/
+  379  export BMMBASE = '/home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/Â'
+  380  export BMMBASE='/home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/Â'
+  381  echo $BMMBASE
+  382  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  383  echo $BMMBASE
+  384  cd $BMMBASE
+  385  export BMMBASE='/home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/'
+  386  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  387  pwd
+  388  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jn
+  389  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BdToJpsiKstar_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BdToJpsiKstar_MC_13Tev/150817_052550/0000/ -name "*.root" > crab_BMM4_BdToJpsiKstar_MC_13Tev.chain
+  390  pwd
+  391  ls -lrt
+  392  pwd
+  393  Ãls -lrt
+  394  ls -lrt
+  395  less crab_BMM4_BdToJpsiKstar_MC_13Tev.chain
+  396  emacs -nw crab_BMM4_BdToJpsiKstar_MC_13Tev.chain 
+  397  $BMMBASE/perl/mkCheckedChain crab_BMM4_BdToJpsiKstar_MC_13Tev.chain 
+  398  ls -lrt
+  399  $BMMBASE/perl/mkCheckedChain crab_BMM4_BdToJpsiKstar_MC_13Tev.chain 
+  400  ls -lrt
+  401  rm cless ccheckChain.C 
+  402  ls -lrt
+  403  emacs -nw checkChain.C 
+  404  ls
+  405  ls -lrt
+  406  rm \#checkChain.C# 
+  407  ls -lrt
+  408  crab status -d crab_projects/crab_BMM4_crabtest_Charmonium_Run2015B/
+  409  pwd
+  410  ls -lrt
+  411  less crabConfig_Bd2JpsiKstar.py
+  412  less crab_BMM4_BdToJpsiKstar_MC_13Tev.chain
+  413  less ccrab_BMM4_BdToJpsiKstar_MC_13Tev.chain
+  414  ls -lrt
+  415  cd CMSSW_7_4_6/src/
+  416  cmsenv
+  417  cd
+  418  source .bashrc
+  419  emacs -nw .bashrc
+  420  cd CMSSW_7_4_6/src/
+  421  cmsenv
+  422  cd Bmm/CmsswAnalysis/test/
+  423  ls
+  424  cd bmm4/
+  425  ls
+  426  crab status -d crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  427  cd crab_projects/
+  428  ls
+  429  crab status -d crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  430  crab status -d crab_BMM4_crabtest_Charmonium_Run2015B/
+  431  crab status -d crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  432  ls -lrt
+  433  less crab.log 
+  434  cd crab_BMM4_BdToJpsiKstar_MC_13Tev/
+  435  cd ..
+  436  cd crab_BMM4_crabtest_Charmonium_Run2015B/
+  437  ls
+  438  less crab.log 
+  439  tail crab.log 
+  440  clear
+  441  tail crab.log 
+  442  pwd
+  443  cd ../../..
+  444  pwd
+  445  ls
+  446  cd bmm4/
+  447  ls
+  448  cd ..
+  449  ls
+  450  cd ..
+  451  ls
+  452  cd plugins/
+  453  ls
+  454  cd ../python/
+  455  ls
+  456  less HFBmm_cff.py
+  457  ls
+  458  cd ..
+  459  ls
+  460  cd test/
+  461  ls
+  462  cd bmm4/testData.py
+  463  cd bmm4/
+  464  less testData.py
+  465  pwd
+  466  ls
+  467  cd .
+  468  cd ..
+  469  ls
+  470  cd bmm4/
+  471  ls
+  472  cd ..
+  473  ls
+  474  cd interface/
+  475  ls
+  476  cd ..
+  477  ls
+  478  cd plugins/
+  479  ls
+  480  emacs -nw HFBs2JpsiPhi.cc
+  481  /home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/RootAnalysis/macros
+  482  cd /home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/RootAnalysis/macros
+  483  emacs candAnaBs2JpsiPhi.hh 
+  484  emacs -nw candAnaBs2JpsiPhi.hh 
+  485  exit
+  486  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/
+  487  ls
+  488  cd python/
+  489  ls
+  490  less 
+  491  less HFBmm_cff.py
+  492  less HFCandidate_cff.py
+  493  pwd
+  494  cd ..
+  495  ls
+  496  cd plugins/
+  497  ls
+  498  cd ..
+  499  ls
+  500  cd ..
+  501  ls
+  502  cd RootAnalysis/
+  503  ls
+  504  cd common/
+  505  ls
+  506  c ..
+  507  ls
+  508  cd ..
+  509  ls
+  510  cd macros/
+  511  ls
+  512  less candAnaBs2JpsiPhi.cc
+  513  emacs -nw  candAnaBs2JpsiPhi.cc
+  514  pwd
+  515  emacs -nw  candAnaBs2JpsiPhi.cc
+  516  exit
+  517  grep -lir "fRefPlab.Perp()"
+  518  less CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/candAna.cc
+  519  emacs -nw CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/candAna.cc
+  520  emacs -nw CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/candAna.hh 
+  521  emacs -nw CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/candAna.cc
+  522  pwd
+  523  exit
+  524  source .bashrc
+  525  cd CMSSW_7_4_6/src/
+  526  cms env
+  527  cmsenv
+  528  cd Bmm/CmsswAnalysis/test/
+  529  ls
+  530  cd bmm4/
+  531  ls
+  532  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/Charmonium/crab_BMM4_crabtest_Charmonium_Run2015B/150816_235008/0000/ -name "*.root" > crab_BMM4_crabtest_Charmonium_Run2015B.chain 
+  533  echo $BMMBASE
+  534  export BMMBASE='/home/hep/jmonroym/CMSSW_7_4_6/src/Bmm/'
+  535  $BMMBASE/perl/mkCheckedChain crab_BMM4_crabtest_Charmonium_Run2015B.chain 
+  536  ls -lrt
+  537  ls 
+  538  emacs -nw crabConfig_Bd2JpsiKstar.py
+  539  fg
+  540  emacs -nw crabConfig_Bd2JpsiKstar.py
+  541  emacs -nw testData_Bd2JpsiKstar.py
+  542  ls 
+  543  ls -lrt
+  544  emacs -nw crabConfig_Bd2JpsiKstar.py
+  545  ls -lrt
+  546  less crabConfig_Bs2JpsiPhi.py
+  547  emacs -nw crabConfig_Bs2JpsiPhi.py 
+  548  crab submit -c crabConfig_Bs2JpsiPhi.py
+  549  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/
+  550  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --long
+  551  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ 
+  552  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --long
+  553  ls
+  554  crab resubmit -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --jobids 74,78-79,81,84,86-87,89,91,93-95,98-100,129,171-173,176,178,180-181,183,186,191-195,201-202,204,207,214,217-218,222,234,242-243,246-250,252,258
+  555  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ 
+  556  source .bashrc
+  557  cd CMSSW_7_4_6/src/
+  558  cmsenv
+  559  cd Bmm/CmsswAnalysis/test/
+  560  ls
+  561  cd bmm4/
+  562  ls
+  563  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --long
+  564  crab resubmit -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --jobids 74,84,98,176,178,181,183,186,191,193-194,201,207,214,218,222,242,247-249,252,258
+  565  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/
+  566  source .bashrc
+  567  root
+  568  cd CMSSW_7_4_6/src/
+  569  cmsenv
+  570  root -l
+  571  pwd
+  572  pw
+  573  pwd
+  574  ls
+  575  cd
+  576  git status
+  577  pwd
+  578  ls
+  579  cd CMSSW_7_4_6/src/
+  580  git cms-init
+  581  scramv1 b -j8
+  582  git status
+  583  ls -lrt
+  584  ls
+  585  cd Bmm/
+  586  cd RootAnalysis/rootio/
+  587  make -j8 all links
+  588  cd -
+  589  cd ..
+  590  pwd
+  591  scramv1 b -j8
+  592  chmod 777 src/Bmm/CmsswAnalysis/python/HFBmm_cff.pyc
+  593  pwd
+  594  chmod 777 Bmm/CmsswAnalysis/python/HFBmm_cff.py
+  595  scramv1 b -j8
+  596  ls
+  597  git status
+  598  git fetch
+  599  git fetch origin
+  600  git master
+  601  git --help
+  602  git fetch git@github.com:Bmm4/Bmm
+  603  pwd
+  604  scramv1 b -j8
+  605  cmsenv
+  606  cd Bmm/RootAnalysis/rootio
+  607  make -j8 all links
+  608  cd - 
+  609  scramv1 b -j8
+  610  ls -lrt /
+  611  pwd
+  612  ls -lrt  Bmm/CmsswAnalysis/python/
+  613  cd Bmm/CmsswAnalysis/python/
+  614  ls
+  615  chmod 777 HFBhh_cff.py
+  616  chmod 777 HFBhh_cff.pyc 
+  617  scramv1 b -j8
+  618  emacs .bashrc
+  619  source .bashrc
+  620  echo $BMMBASE
+  621  cd CMSSW_7_4_6/src/
+  622  cmsenv
+  623  cd Bmm/CmsswAnalysis/test/
+  624  ls
+  625  cd bmm4/
+  626  ls
+  627  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --long
+  628  crab resubmit -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/ --jobids 181
+  629  crab status -d crab_projects/crab_BMM4_BsToJpsiPhi_MC_8Tev/
+  630  cd cd $BMMBASE/CmsswAnalysis/test/bmm4
+  631  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  632  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BsToJpsiPhi_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BsToJpsiPhi_MC_8Tev/150820_203253/0000/ -name "*.root" > crab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  633  ls -lrt
+  634  $BMMBASE/perl/mkCheckedChain crab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  635  ls -lrt
+  636  cd crab_projects/
+  637  ls
+  638  cd ..
+  639  ls
+  640  cd crab_projects/
+  641  ls
+  642  mv crab_BMM4_BsToJpsiPhi_MC_8Tev/ crab_BMM4_BsToJpsiPhi_MC_13Tev/
+  643  cd ..
+  644  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BsToJpsiPhi_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BsToJpsiPhi_MC_13Tev/150820_203253/0000/ -name "*.root" > crab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  645  cd crab_projects/
+  646  ls
+  647  cd crab_BMM4_BsToJpsiPhi_MC_13Tev
+  648  ls
+  649  cd results/
+  650  cd ..
+  651  ls
+  652  cd ..
+  653  /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/
+  654  cd /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/
+  655  ls
+  656  cd BsToJpsiPhi_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/
+  657  ls
+  658  mv crab_BMM4_BsToJpsiPhi_MC_8Tev crab_BMM4_BsToJpsiPhi_MC_13Tev
+  659  cd crab_BMM4_BsToJpsiPhi_MC_13Tev/150820_203253/
+  660  ls
+  661  cd $BMMBASE/CmsswAnalysis/test/bmm4
+  662  ls
+  663  ls -lrt
+  664  find /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BsToJpsiPhi_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BsToJpsiPhi_MC_13Tev/150820_203253/0000/ -name "*.root" > crab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  665  $BMMBASE/perl/mkCheckedChain crab_BMM4_BsToJpsiPhi_MC_13Tev.chain
+  666  ls -lrt
+  667  cd /mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/jmonroym/BsToJpsiPhi_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/crab_BMM4_BsToJpsiPhi_MC_13Tev/150820_203253/0000/ 
+  668  ls
+  669  root -l
+  670  pwd
+  671  source .bashrc
+  672  cd D
+  673  CMSSW_7_4_6/src/
+  674  cmsenv
+  675  pwd
+  676  ls
+  677  cd CMSSW_7_4_6/src/
+  678  cmsenv
+  679  cd Bmm/CmsswAnalysis/test/bmm4/
+  680  ls -lrt
+  681  less testData.py
+  682  ls
+  683  cd ..
+  684  ls
+  685  cd ..
+  686  ls
+  687  cd plugins/
+  688  ls
+  689  less HFBd2JpsiKstar.cc
+  690  less HFBu2JpsiKp.cc 
+  691  less HFBs2JpsiPhi.c 
+  692  less HFBs2JpsiPhi.cc 
+  693  ps
+  694  source .bashrc
+  695  ls
+  696  git push jmonroy develHFBd2JpsiKstar
+  697  git cms-init
+  698  cd CMSSW_7_4_6/src/
+  699  git cms-init
+  700  cmsenv
+  701  git cms-init
+  702  git push jmonroy develHFBd2JpsiKstar
+  703  git status
+  704  git push jmonroy develHFBd2JpsiKstar
+  705  git origin
+  706  git --help
+  707  git fetch
+  708  git push jmonroy develHFBd2JpsiKstar
+  709  ls
+  710  cd Bmm/
+  711  ls
+  712  cd CmsswAnalysis/plugins/
+  713  git push jmonroy develHFBd2JpsiKstar
+  714  root -l
+  715  ls
+  716  cd
+  717  ls
+  718  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/test/bmm4/
+  719  ls
+  720  root -l output.root 
+  721  ls
+  722  cd ..
+  723  pwd
+  724  cd ..
+  725  pwd
+  726  cd Bmm/RootAnalysis/rootio/
+  727  make -j8 all links
+  728  cd -
+  729  scramv1 b -j8
+  730  ls
+  731  cd Bmm/CmsswAnalysis/test/
+  732  cd bmm4
+  733  less test.py 
+  734  root -l
+  735  pwd
+  736  ps
+  737  kill 18148 
+  738  kill -9 18148
+  739  ps
+  740  kill -9 18147
+  741  ps
+  742  kill -9 18148
+  743  ps
+  744  kill -9 18325
+  745  ps
+  746  roo -l
+  747  root -l
+  748  clear
+  749  ls
+  750  cmsRun testData.py
+  751  emacs -nw testData.py
+  752  cmsRun testData.py
+  753  source .bashrc
+  754  cd CMSSW_7_4_6/src/
+  755  cmsenv
+  756  ps
+  757  cd Bmm/CmsswAnalysis/test/bmm4/
+  758  cmsRun testData.py
+  759  ls -lrt
+  760  root -l
+  761  ls
+  762  more testData.py
+  763  pwd
+  764  more testData.py
+  765  less testData.py
+  766  ls
+  767  ls -lrt
+  768  emacs testData.py
+  769  cmsRun testData.py
+  770  voms-proxy-init -voms cms 
+  771  cmsRun testData.py
+  772  pwd
+  773  cmsRun testData.py
+  774  exit
+  775  cd CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/
+  776  emacs -nw bmmReader.cc 
+  777  ls
+  778  less runBmm.cc
+  779  less treeReader01.icc
+  780  voms-proxy-init -voms cms 
+  781  pwd
+  782  cd ..
+  783  cd CmsswAnalysis/test/bmm4/
+  784  less test.py 
+  785  pwd
+  786  cd ../../plugins/
+  787  git origin
+  788  git status
+  789  git add ../python/HFBhh_cff.py
+  790  git add ../python/HFBmm_cff.py
+  791  git add ../test/bmm4/testData.py
+  792  git add ../test/bmm4/ccrab_BMM4_BdToJpsiKstar_MC_13Tev.chain
+  793  git add ../test/bmm4/ccrab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  794  git add ../test/bmm4/ccrab_BMM4_crabtest_Charmonium_Run2015B.chain 
+  795  git add ../test/bmm4/checkChain.C 
+  796  git add ../test/bmm4/crab.log 
+  797  git add ../test/bmm4/crabConfig*
+  798  git status
+  799  git add -f ../test/bmm4/crabConfig*
+  800  git status
+  801  git add ../test/bmm4/crabConfig_Bd2JpsiKstar.py
+  802  git add ../test/bmm4/crab*
+  803  git add  ../test/bmm4/crab
+  804  git status
+  805  git add ../test/bmm4/crabConfig_Bs2JpsiPhi.py
+  806  git add ../test/bmm4/crab_BMM4_BdToJpsiKstar_MC_13Tev.chain 
+  807  git add ../test/bmm4/crab_BMM4_BsToJpsiPhi_MC_13Tev.chain 
+  808  git add ../test/bmm4/crab_BMM4_crabtest_Charmonium_Run2015B.chain 
+  809  git add ../test/bmm4/testData_Bd2JpsiKstar.py
+  810  git add ../test/bmm4/testData_Bs2JpsiPhi.py
+  811  git status
+  812   git commit -m 'add chain and checked chain files for Bs and Bd'
+  813  git status
+  814  pwd
+  815  git pull jmonroy develHFBd2JpsiKstar
+  816  git status
+  817  git branch
+  818  git branch -v
+  819  git branch
+  820  git remote
+  821  git log
+  822  git show
+  823  clear
+  824  pwd
+  825  git remote
+  826  git branch
+  827  git checkout master
+  828  git status
+  829  ls
+  830  git checkout develHFBd2JpsiKstar
+  831  git branch
+  832  git status
+  833  git log
+  834  }
+  835  pwd
+  836  cd ..
+  837  cd test/bmm4/
+  838  ls -lrt
+  839  exit
+  840  cd CMSSW_7_4_6/src/Bmm/RootAnalysis/macros/
+  841  emacs -nw treeReader01.cc 
+  842  exit
+  843  source .bashrc
+  844  cd CMSSW_7_4_6/src/
+  845  cmsenv
+  846  git cms-init
+  847  cd Bmm/RootAnalysis/rootio/
+  848  make -j8 all links
+  849  cd -
+  850  scramv1 b -j8
+  851  voms-proxy-init -voms cms 
+  852  scramv1 b -j8
+  853  clear
+  854  cmsenv
+  855  ls
+  856  cd ..
+  857  cmsenv
+  858  git cms-init
+  859  cd
+  860  ls
+  861  cd CMSSW_7_4_6/src/
+  862  cmsenv
+  863  git cms-init
+  864  cd Bmm/RootAnalysis/rootio/
+  865  make -j8 all links
+  866  cd -
+  867  scramv1 b -j8
+  868  ls -lrt Bmm/CmsswAnalysis/python/
+  869  scramv1 b -j8
+  870  git fecth git@github.com:Bmm4/Bmm
+  871  git fetch git@github.com:Bmm4/Bmm
+  872  scramv1 b -j8
+  873  pwd
+  874  ls
+  875  cd
+  876  ls
+  877  mkdir testsetup
+  878  cd testsetup/
+  879  cmsrel CMSSW_7_4_6
+  880  cd CMSSW_7_4_6/src/
+  881  cmsenv
+  882  git cms-init
+  883  git clone git@github.com:Bmm4/Bmm
+  884  cd Bmm/RootAnalysis/rootio/
+  885  make -j8 all links
+  886  cd -
+  887  scramv1 b -j8
+  888  cd
+  889  source .bashrc
+  890  cd -
+  891  cd Bmm/CmsswAnalysis/test/bmm4/
+  892  ls
+  893  less test.py 
+  894  emacs -nw test.py 
+  895  echo $BMMBASE
+  896  cmsRun test.py 
+  897  ls -lrt
+  898  pwd
+  899  less test.py 
+  900  emacs -nw test.py 
+  901  cmsRun test.py 
+  902  emacs -nw test.py 
+  903  cmsRun test.py 
+  904  emacs -nw test.py 
+  905  cmsRun test.py 
+  906  cd -
+  907  cd Bmm/RootAnalysis/common/
+  908  make -j8 
+  909  cd ../common/
+  910  make -j8
+  911  pwd
+  912   cd $BMMBASE/RootAnalysis/macros
+  913  bin/runBmm -f ../../CmsswAnalysis/test/bmm4/test.root -C cuts/bmmReader.mix-Bu2JpsiK
+  914  ls -lrt
+  915  root -l test.bmmReader.mix-Bu2JpsiK.root 
+  916  root -l 
+  917  Tbrowser t
+  918  root -l 
+  919  pwd
+  920  root
+  921  cmsenv
+  922  root
+  923  clear
+  924  root -l 
+  925  root -l test.bmmReader.mix-Bu2JpsiK.root 
+  926  pwd
+  927  ls
+  928  ls -lrt
+  929  root -l test.defaults.root 
+  930  ls *.root
+  931  cd ..
+  932  pwd
+  933  cd ../CmsswAnalysis/test/bmm4/
+  934  ls
+  935  ls -lrt
+  936  root -l
+  937  clear
+  938  ls
+  939  ls -lrt
+  940  pwd
+  941  cd
+  942  ls
+  943  cd testsetup/
+  944  ls
+  945  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/test/bmm4/
+  946  ls
+  947  ls -lrt
+  948  root
+  949  clear
+  950  ls
+  951  pwd
+  952  emacs -nw testData.py 
+  953  cmsRun testData.py 
+  954  LS -LRT
+  955  ls -lrt
+  956  root -l
+  957  clear
+  958  pwd
+  959  ls
+  960  cd .
+  961  cd
+  962  ls
+  963  rm testsetup/
+  964  rm -rf testsetup/
+  965  cd CMSSW_7_4_6/src/
+  966  cmsenv
+  967  cd
+  968  source .bashrc
+  969  cd CMSSW_7_4_6/src/Bmm/CmsswAnalysis/test/
+  970  ls
+  971  cd bmm4/
+  972  ls
+  973  ls -lrt
+  974  cd ..
+  975  ls
+  976  cd ..
+  977  ls
+  978  pwd
+  979  cd ..
+  980  Ãls
+  981  ls
+  982  cd ..
+  983  ls
+  984  pwd
+  985  cd src/
+  986  git status
+  987  git fetch git@github.com:Bmm4/Bmm
+  988  scramv1 b -j8
+  989  git fetch https://github.com/Bmm4/Bmm.git
+  990  scramv1 b -j8
+  991  git pull https://github.com/Bmm4/Bmm.git
+  992  git fetch https://github.com/Bmm4/Bmm.git
+  993  git cms-init
+  994  git fetch https://github.com/Bmm4/Bmm.git
+  995  scramv1 b -j8
+  996  voms-proxy-init -voms cms 
+  997  git fetch https://github.com/Bmm4/Bmm.git
+  998  scramv1 b -j8
+  999  exit
+ 1000  source .bashrc
+ 1001  cd CMSSW_7_4_6/src/
+ 1002  ls
+ 1003  cmsenv
+ 1004  git cms-init
+ 1005  git branch
+ 1006  scramv1 b -j8
+ 1007  git fetch https://github.com/Bmm4/Bmm.git
+ 1008  scramv1 b -j8
+ 1009  which grid-proxy-info
+ 1010  pwd
+ 1011  git fetch https://github.com/Bmm4/Bmm.git
+ 1012  git status
+ 1013  cd Bmm/
+ 1014  ls
+ 1015  git status
+ 1016  git fetch https://github.com/Bmm4/Bmm.git
+ 1017  git diff
+ 1018  git diff --color
+ 1019  git commit -m 'adjust the testData files for Bs and Bd' -a
+ 1020  git merge origin/master
+ 1021  git log
+ 1022  git remote -v
+ 1023  git fetch origin
+ 1024  git merge origin/master
+ 1025  cd RootAnalysis/rootio/
+ 1026  make -j8 all links
+ 1027  cd ../..
+ 1028  pwd
+ 1029  cd CmsswAnalysis/
+ 1030  scram b -j8
+ 1031  ls -l python/
+ 1032  ls -l python/ | head
+ 1033  rm python/HFBhh_cff.py
+ 1034  rm python/HFBhh_cff.pyc
+ 1035  rm python/HFBmm_cff.py
+ 1036  git status
+ 1037  git checkout python/HFBmm_cff.py
+ 1038  git checkout python/HFBhh_cff.py
+ 1039  scram b -j8
+ 1040  rm python/HFBmm_cff.pyc 
+ 1041  scram b -j8
+ 1042  git remote
+ 1043  git remote -v
+ 1044  git branch
+ 1045  git push jmonroy develHFBd2JpsiKstar
+ 1046  ls
+ 1047  cd test/
+ 1048  ls
+ 1049  cd bmm4/
+ 1050  ls
+ 1051  ls -lrt
+ 1052  less testData.py
+ 1053  emacs -nw testData.py
+ 1054  cmsRun testData.py
+ 1055  ls -lrt
+ 1056  root -l
+ 1057  history
+ 1058  ls
+ 1059  emacs -nw testMc_Bd2JpsiKstar.py
+ 1060  mv output.root output_charmonium_data.root 
+ 1061  cmsRun testMc_Bd2JpsiKstar.py
+ 1062  history >history.log
