@@ -449,3 +449,105 @@ vector<int> defVector(int n, ...) {
   va_end(vl);
   return vect;
 }
+
+
+// ----------------------------------------------------------------------
+string formatTex(double n, string name, int digits, int sgn) {
+  
+  char line[200]; 
+  if ( TMath::IsNaN(n) ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
+  } else if (0 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%i } } }", name.c_str(), static_cast<int>(n));
+  } else if (1 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.1f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.1f } } }", name.c_str(), n);
+  } else if (2 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.2f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.2f } } }", name.c_str(), n);
+  } else if (3 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.3f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.3f } } }", name.c_str(), n);
+  } else if (4 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.4f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.4f } } }", name.c_str(), n);
+  } else if (5 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%6.5f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+6.5f } } }", name.c_str(), n);
+  } else if (6 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%7.6f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+7.6f } } }", name.c_str(), n);
+  } else {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+f } } }", name.c_str(), n);
+  }
+
+  return string(line); 
+}
+
+// ----------------------------------------------------------------------
+string formatTex(double n, string name, string tag) {
+  
+  char line[200]; 
+  
+  if (TMath::IsNaN(n) ) {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str(), tag.c_str());
+    //   } else if ( n > 1.e10) {
+    //     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%s } } }", name.c_str(), tag.c_str(), (texForm2(n)).Data());
+    //   } else if ( n > 1.e4) {
+    //     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%s } } }", name.c_str(), tag.c_str(), (texForm(n)).Data());
+  } else if ( n > 100. ) {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%6.0f } } }", name.c_str(), tag.c_str(), n);
+  } else if ( n > 1. ) {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%4.2f } } }", name.c_str(), tag.c_str(), n);
+  } else if ( n > 1.e-1) {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%4.3f } } }", name.c_str(), tag.c_str(), n);
+  } else if ( n > 1.e-3) {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%4.3f } } }", name.c_str(), tag.c_str(), n);
+    //   } else if ( n > 1.e-9 ) {
+    //     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%s } } }", name.c_str(), tag.c_str(), (texForm(n)).Data());
+    //   } else if ( n > 1.e-19 ){
+    //     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{%s } } }", name.c_str(), tag.c_str(), (texForm2(n)).Data());
+  } else {
+    sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{0.0 } } }", name.c_str(), tag.c_str());
+  }
+  
+  string result(line); 
+  return result;
+}
+
+// ----------------------------------------------------------------------
+void stamp(double x1, string text1, double x2, string text2, TLatex *tl) {
+  double size(-1.);
+  if (0 == tl) {
+    tl = new TLatex(); 
+  } else {
+    size = tl->GetTextSize(); 
+  }
+
+  cout << "stamp() > " << x1 << " " << text1 << " " << x2 << " " << text2 << endl;
+  tl->SetNDC(kTRUE); 
+  tl->SetTextSize(0.05); 
+  tl->DrawLatex(x1, 0.91, text1.c_str());   
+  tl->DrawLatex(x2, 0.91, text2.c_str()); 
+  if (size < 0) {
+    // ??
+  } else {
+    tl->SetTextSize(size); 
+  }
+}
+
+
+// ----------------------------------------------------------------------=
+void rmSubString(string &sInput, const string &sub) {
+  string::size_type foundpos = sInput.find(sub);
+  if (foundpos != string::npos)  sInput.erase(sInput.begin() + foundpos, sInput.begin() + foundpos + sub.length());
+}
+
+// ----------------------------------------------------------------------=
+void rmPath(string &sInput) {
+  while(string::size_type foundpos = sInput.find("/")) {
+    if (foundpos != string::npos)  sInput.erase(sInput.begin(), sInput.begin() + foundpos);
+  }
+  sInput.erase(sInput.begin(), sInput.begin() + 1); // delete also leading /
+}

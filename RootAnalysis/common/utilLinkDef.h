@@ -1,6 +1,7 @@
 #include "TH1.h"
 #include "TGraph.h"
 #include "TMinuit.h"
+#include "TLatex.h"
 #include "TCanvas.h"
 
 #ifdef __CINT__
@@ -57,6 +58,11 @@
 #pragma link C++ function isStableCharged(int);
 
 #pragma link C++ function defVector(int, ...);
+#pragma link C++ function formatTex(double, std::string, int, int);
+#pragma link C++ function formatTex(double, string, string);
+#pragma link C++ function stamp(double, std::string, double, std::string, TLatex *);
+#pragma link C++ function rmSubString(std::string &, const std::string &);
+#pragma link C++ function rmPath(std::string &);
 
 
 #endif

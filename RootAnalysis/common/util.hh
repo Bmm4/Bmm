@@ -10,6 +10,7 @@
 #include "TMinuit.h"
 #include "TDirectory.h"
 #include "TColor.h"
+#include "TLatex.h"
 
 #include <vector>
 
@@ -30,6 +31,13 @@ int  wait();
 void colors(int choice = 0);
 void replaceAll(std::string &s, const std::string &from, const std::string &to);
 std::vector<int> defVector(int n, ...);
+
+std::string formatTex(double n, std::string name, int digits, int sgn = 0);
+std::string formatTex(double n, std::string name, std::string tag);
+void stamp(double x1, std::string text1, double x2, std::string text2, TLatex *tl = 0);
+
+void rmSubString(std::string &sinput, const std::string &remove);
+void rmPath(std::string &sInput);
 
 // ======================================================================
 // Utitilities for displays and typing shortcuts
