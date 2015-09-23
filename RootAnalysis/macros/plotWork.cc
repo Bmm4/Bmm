@@ -349,7 +349,7 @@ void plotWork::setCuts(string cuts) {
 // ----------------------------------------------------------------------
 void plotWork::loadFiles(string afiles) {
   
-  string files = fDirectory + "/" + afiles;
+  string files = fDirectory + string("/") + afiles;
   cout << "==> Loading files listed in " << files << endl;
 
   char buffer[1000];
