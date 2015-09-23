@@ -41,7 +41,7 @@ EXTHEADERS    = -I..
 
 # -- Files
 UTIL     := PidTable.o PidData.o \
-            AnalysisCuts.o AnalysisDistribution.o selpoint.o dataset.o \
+            AnalysisCuts.o AnalysisDistribution.o HistCutEfficiency.o selpoint.o dataset.o \
             util.o initFunc.o hpl.o JSON.o PdTrigger.o ana.o
 UTILDICT := ${UTIL:.o=Dict.o}
 
