@@ -74,7 +74,7 @@ public :
                  plotClass(std::string dir = "hpt0", std::string files = "plotLq.files", std::string setup = "m");
   virtual        ~plotClass();
   void           closeHistFile();
-  virtual void   readCuts(const char *filename); 
+  virtual void   readCuts(std:: string filename); 
   virtual void   printCuts(ostream &OUT); 
 
   virtual void   loadFiles(std::string afiles);

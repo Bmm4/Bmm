@@ -1085,7 +1085,7 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::readCuts(const char *filename) {
+void plotClass::readCuts(string filename) {
   cout << "==> plotClass: Reading " << filename << " for cut settings" << endl;
   vector<string> cutLines; 
   char  buffer[200];
