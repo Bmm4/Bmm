@@ -10,10 +10,10 @@ public:
   dataset();
   void   cd(std::string dir) {fF->cd(dir.c_str()); }
   TFile* getFile() {return fF;}
-  TH1D*  getHist(std::string name);
+  TH1D*  getHist(std::string name, bool clone = true);
 
   TFile *fF; 
-  std::string fName;
+  std::string fName, fFullName;
   // -- decay/process specifics
   double fXsec, fBf, fMass, fLambda;
   // -- generation information
@@ -21,6 +21,8 @@ public:
   // -- display
   int fColor, fLcolor, fFcolor, fSymbol, fFillStyle; 
   double fSize, fWidth; 
+
+  int fNclone;
 };
 
 #endif

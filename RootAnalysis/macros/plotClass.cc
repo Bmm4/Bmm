@@ -90,11 +90,11 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
   if (method == UNITY) {
     smethod = "unity"; 
     scale = (h->Integral() > 0 ? 1./h->Integral() : 1.); 
-    setTitles(h, h->GetXaxis()->GetTitle(), "normalized to 1");
+    setTitles(h, h->GetXaxis()->GetTitle(), "normalized to 1", 1.1, 1.5);
   } else if (method == SOMETHING) {
     smethod = "something"; 
     scale = fNorm * (h->Integral() > 0 ? fNorm/h->Integral() : 1.); 
-    setTitles(h, h->GetXaxis()->GetTitle(), "weighted events");
+    setTitles(h, h->GetXaxis()->GetTitle(), "weighted events", 1.1, 1.5);
   } else if (method == XSECTION) {
     smethod = "xsection"; 
     // -- normalize to EFFECTIVE xsec*bf (EFFECTIVE to account for cuts)
@@ -135,100 +135,65 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
 void plotClass::overlayAll() {
 }
 
+
 // ----------------------------------------------------------------------
-void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, int method, bool log, bool legend, double xleg, double yleg) {
+void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool loga, bool legend, double xleg, double yleg) {
+  const bool verbose(false);
 
   showOverflow(h1);
   showOverflow(h2);
+  if (h3) showOverflow(h3);
 
   normHist(h1, f1, method); 
   normHist(h2, f2, method); 
-
-  double hmax(1.2*h1->GetMaximum()); 
-  if (h2->GetMaximum() > hmax) hmax = 1.2*h2->GetMaximum(); 
-  if (log) {
-    gPad->SetLogy(1); 
-    hmax *= 2.;
-    h1->SetMinimum(1.e-4*h1->GetMaximum());
-  } else {
-    h1->SetMinimum(0.001); 
-  }
-  h1->SetMaximum(hmax); 
-
-  h1->DrawCopy("hist"); 
-  h2->DrawCopy("histsame");
-  cout << "==> plotClass: overlay(" << f1 << ", " << h1->GetName() << " integral= " << h1->Integral()
-       << ", " << f2 << ", " << h2->GetName() << " integral= " << h2->Integral()
-       << ") legend = " << legend << " log: " << log 
-       << endl;
-  
-  if (legend) {
-    newLegend(xleg, yleg, xleg+0.25, yleg+0.10); 
-    legg->SetTextSize(0.03);
-    legg->AddEntry(h1, fDS[f1]->fName.c_str(), "f"); 
-    legg->AddEntry(h2, fDS[f2]->fName.c_str(), "f"); 
-    legg->Draw();
-    if (fDBX) {
-      tl->SetNDC(kTRUE);
-      tl->SetTextSize(0.05);
-      tl->SetTextColor(fDS[f1]->fColor); 
-      tl->DrawLatex(0.15, 0.92, Form("%.2e", h1->Integral())); 
-      tl->SetTextColor(fDS[f2]->fColor); 
-      tl->DrawLatex(0.40, 0.92, Form("%.2e", h2->Integral())); 
-    }
-  }
-}
-
-// ----------------------------------------------------------------------
-void plotClass::overlay(string h1name, string f1, string h2name, string f2, int method, bool log, bool legend, double xleg, double yleg) {
-  TH1D *h1 = fDS[f1]->getHist(Form("%s", h1name.c_str())); 
-  TH1D *h2 = fDS[f2]->getHist(Form("%s", h2name.c_str())); 
-  overlay(h1, f1, h2, f2, method, log, legend); 
-}
-
-// ----------------------------------------------------------------------
-void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool log, bool legend, double xleg, double yleg) {
-
-  showOverflow(h1);
-  showOverflow(h2);
-  showOverflow(h3);
-
-  normHist(h1, f1, method); 
-  normHist(h2, f2, method); 
-  normHist(h3, f3, method); 
+  if (h3) normHist(h3, f3, method); 
   double ymin(0.0001);
-  double hmax(1.2*h1->GetMaximum()); 
-  if (h2->GetMaximum() > hmax) hmax = 1.2*h2->GetMaximum(); 
-  if (h3->GetMaximum() > hmax) hmax = 1.2*h3->GetMaximum(); 
-  if (log) {
+  double h1max(h1->GetBinContent(h1->GetMaximumBin())); 
+  double h2max(h2->GetBinContent(h2->GetMaximumBin())); 
+  double h3max(h3->GetBinContent(h3->GetMaximumBin())); 
+  double hmax(h1max);
+  int imax(1);
+  if (h2max > h1max) {
+    hmax = h2max; 
+    imax = 2;
+  }
+  if (h3max > h2max) {
+    hmax = h3max; 
+    imax = 3;
+  }
+  hmax *= 1.2; 
+  if (verbose)  {
+    cout << "hmax = " << hmax << " from imax = " << imax;
+    if (1 == imax) cout << " bin " << h1->GetMaximumBin() << " with maximum " << h1->GetBinContent(h1->GetMaximumBin()) << endl;
+    if (2 == imax) cout << " bin " << h2->GetMaximumBin() << " with maximum " << h2->GetBinContent(h2->GetMaximumBin()) << endl;
+    if (3 == imax) cout << " bin " << h3->GetMaximumBin() << " with maximum " << h3->GetBinContent(h3->GetMaximumBin()) << endl;
+  }
+  if (loga) {
     gPad->SetLogy(1); 
     hmax *= 2.;
     double hmin(h1->GetMinimum(ymin)); 
-    cout << "hmin1 = " << hmin << endl;
+    if (verbose) cout << "hmin1 = " << hmin << endl;
     if (h2->GetMinimum(ymin) < hmin) {
       hmin = h2->GetMinimum(ymin);
-      cout << "hmin2 = " << hmin << endl;
+      if (verbose) cout << "hmin2 = " << hmin << endl;
     }
-    if (h3->GetMinimum(ymin) < hmin) {
+    if (h3 && h3->GetMinimum(ymin) < hmin) {
       hmin = h3->GetMinimum(ymin);
-      cout << "hmin3 = " << hmin << endl;
+      if (verbose) cout << "hmin3 = " << hmin << endl;
     }
     h1->SetMinimum(0.1*hmin); 
-    cout << "hmin = " << hmin << endl;
+    if (verbose) cout << "hmin = " << hmin << endl;
   } else {
+    gPad->SetLogy(0); 
     h1->SetMinimum(0.); 
   }
+  
   h1->SetMaximum(hmax); 
 
   h1->DrawCopy("hist"); 
   h2->DrawCopy("histsame");
-  h3->DrawCopy("histsame");
-  cout << "==> plotClass: overlay(" << f1 << ", " << h1->GetName() << " integral= " << h1->Integral()
-       << ", " << f2 << ", " << h2->GetName() << " integral= " << h2->Integral()
-       << ", " << f3 << ", " << h3->GetName() << " integral= " << h3->Integral()
-       << ") legend = " << legend << " log: " << log 
-       << endl;
-  
+  if (h3) h3->DrawCopy("histsame");
+
   if (legend) {
     newLegend(xleg, yleg, xleg+0.25, yleg+0.15); 
     legg->SetTextSize(0.03);
@@ -245,23 +210,41 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
     }
     legg->AddEntry(h2, text.c_str(), "f"); 
 
-    text = fDS[f3]->fName.c_str(); 
-    if (fDBX) {
-      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f3]->fName.c_str(), h3->GetMean(), h3->GetMeanError(), h3->GetRMS()); 
+    if (h3) {
+      text = fDS[f3]->fName.c_str(); 
+      if (fDBX) {
+	text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f3]->fName.c_str(), h3->GetMean(), h3->GetMeanError(), h3->GetRMS()); 
+      }
+      legg->AddEntry(h3, text.c_str(), "f"); 
     }
-    legg->AddEntry(h3, text.c_str(), "f"); 
+
     legg->Draw();
   }
 
+
+  if (verbose) cout << "==>plotClass: overlay(" << f1 << ", " << h1->GetName() << " integral= " << h1->Integral()
+		    << ", " << f2 << ", " << h2->GetName() << " integral= " << h2->Integral()
+		    << (h3? Form(", %s, %s, %f", f3.c_str(), h3->GetName(), h3->Integral()) : "")
+		    << ")  log: " << loga << " legend = " << legend
+		    << endl;
 }
 
 // ----------------------------------------------------------------------
-void plotClass::overlay(string h1name, string f1, string h2name, string f2, string h3name, string f3, int method, bool log, 
+void plotClass::overlay(string h1name, string f1, string h2name, string f2, string h3name, string f3, int method, bool loga, 
 			bool legend, double xleg, double yleg) {
-  TH1D *h1 = fDS[f1]->getHist(Form("%s", h1name.c_str())); 
-  TH1D *h2 = fDS[f2]->getHist(Form("%s", h2name.c_str())); 
-  TH1D *h3 = fDS[f3]->getHist(Form("%s", h3name.c_str())); 
-  overlay(h1, f1, h2, f2, h3, f3, method, log, legend); 
+
+  cout << h1name << " from " << f1 << " vs. " << h2name << " from " << f2 << " vs. " << h3name << " from " << f3 << endl;
+
+  TH1D *h1 = fDS[f1]->getHist(Form("%s", h1name.c_str()), true); 
+  TH1D *h2 = fDS[f2]->getHist(Form("%s", h2name.c_str()), true); 
+  TH1D *h3(0); 
+  if (h3name != "") {
+    h3 = fDS[f3]->getHist(Form("%s", h3name.c_str()), true); 
+  } else {
+    h3= 0; 
+  }
+
+  overlay(h1, f1, h2, f2, h3, f3, method, loga, legend, xleg, yleg); 
 }
 
 
@@ -358,7 +341,7 @@ void plotClass::replaceAll(string &sInput, const string &oldString, const string
 
 // ----------------------------------------------------------------------
 void plotClass::newLegend(double x1, double y1, double x2, double y2, string title) {
-  if (legg) delete legg;
+  //  if (legg) delete legg;
   legg = new TLegend(x1, y1, x2, y2, title.c_str());
   legg->SetFillStyle(0); 
   legg->SetBorderSize(0); 

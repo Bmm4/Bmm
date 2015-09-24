@@ -1,6 +1,7 @@
 # root files do not belong into the repository
 __init__.py
 *Dict_rdict.pcm
+*.log
 *.root
 *.o
 *Dict.h

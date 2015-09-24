@@ -1,7 +1,13 @@
 #include "genAnalysis.hh"
 #include "common/HFMasses.hh"
+#include "common/util.hh"
 
 #include "TRandom.h"
+#include "TF1.h"
+#include "TCanvas.h"
+#include "TPad.h"
+#include "TStyle.h"
+
 #include <cmath>
 #include <map>
 
@@ -14,11 +20,14 @@ using namespace std;
 // ----------------------------------------------------------------------
 genAnalysis::genAnalysis(TChain *tree, TString evtClassName): treeReader01(tree, evtClassName) {
   cout << "==> genAnalysis: constructor..." << endl;
+
+  f511Mass = f521Mass = f531Mass = f5122Mass = f541Mass = 0; 
 }
 
 // ----------------------------------------------------------------------
 genAnalysis::~genAnalysis() {
   cout << "==> genAnalysis: destructor..." << endl;
+
 }
 
 // ----------------------------------------------------------------------
@@ -41,27 +50,12 @@ void genAnalysis::eventProcessing() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::endAnalysis() {
-
-  double ftilde(0.11); 
-  double f = 2.*ftilde*(1-ftilde) + ftilde*ftilde; 
-  double n0 = ((TH1D*)fpHistFile->Get("e111"))->GetSumOfWeights(); 
-  double n1 = ((TH1D*)fpHistFile->Get("e112"))->GetSumOfWeights();
-  double c0 = ((TH1D*)fpHistFile->Get("h110"))->GetSumOfWeights(); 
-  double c1 = ((TH1D*)fpHistFile->Get("h112"))->GetSumOfWeights();
-
-  if (NTOTAL > 0) {
-    cout << "XSECTION:            " << XSECTION << endl;
-    cout << "NTOTAL:              " << NTOTAL << endl;
-    cout << "b->mu events:        " << n0 << endl;
-    cout << "b->mu decays:        " << c0 << endl;
-    cout << "b->mu events in acc: " << n1 << endl;
-    cout << "b->mu decays in acc: " << c1 << endl;
-    
-    cout << "bbbar xsection:       " << n0/(f*NTOTAL)*XSECTION << endl;
-    cout << "bbbar xsection:       " << c0/(2.*ftilde*NTOTAL)*XSECTION << endl;
-    cout << "b-mu  xsection:       " << n0/(NTOTAL)*XSECTION << endl;
-    cout << "b-mu in acc xsection: " << n1/(NTOTAL)*XSECTION << endl;
-  }
+  cout << "==> B+ mass: " << f521Mass << endl;
+  cout << "==> B0 mass: " << f511Mass << endl;
+  cout << "==> Bs mass: " << f531Mass << endl;
+  cout << "==> Bc mass: " << f541Mass << endl;
+  cout << "==> Lb mass: " << f5122Mass << endl;
+  compare2PDG(0, 2014, true);
 }
 
 
@@ -74,24 +68,32 @@ void genAnalysis::genB() {
     static const double aparticles[] = {511, 521, 531, 5122};
     vector<int> particles(aparticles, aparticles + sizeof(aparticles)/sizeof(aparticles[0]));
     for (unsigned int i = 0; i < particles.size(); ++i) {
-      new TH1D(Form("pt%d", particles[i]), Form("pt%d", particles[i]), 80, 0., 40.); 
-      new TH1D(Form("cpt%d", particles[i]), Form("pt%d", particles[i]), 40, 0., 20.); 
+      new TH1D(Form("pt%d", particles[i]), Form("pt%d", particles[i]), 100, 0., 50.); 
+      new TH1D(Form("cpt%d", particles[i]), Form("pt%d", particles[i]), 30, 0., 30.); 
       new TH1D(Form("eta%d", particles[i]), Form("eta%d", particles[i]), 50, -10., 10.); 
       new TH1D(Form("ceta%d", particles[i]), Form("ceta%d", particles[i]), 60, -3., 3.); 
       new TH1D(Form("mom%d", particles[i]), Form("mom%d", particles[i]), 500, 500., 1000.); 
+      new TH1D(Form("iso%d", particles[i]), Form("iso%d", particles[i]), 51, 0., 1.02); 
     }
   }
   
   TGenCand *pCand, *pD; 
-  int mom(0), muType(0), evtType(0), nevt(0), bevt(0), bacc(0); 
-  bool acc(false);
-  double pt(0.), eta(0.); 
-  //  cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
+  int mom(0), aid(0); 
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
-    int aid = TMath::Abs(pCand->fID); 
+    aid = TMath::Abs(pCand->fID); 
+
+    // -- ignore the oscillated ones (in this loop look at produced B, 
+    //    in compare2PDG the mixed ones will be used for the lifetime)
+    if (531 == aid || 511 == aid) {
+      if (aid == TMath::Abs(fpEvt->getGenCand(pCand->fMom1)->fID)) {
+	continue;
+      }
+    }
 
     if (531 == aid || 521 == aid || 511 == aid || 5122 == aid) {
+      compare2PDG(pCand, 2014, false);
+      double iso = isolation(pCand);
       pD = fpEvt->getGenCand(pCand->fMom1); 
       mom = TMath::Abs(pD->fID);
       ((TH1D*)fpHistFile->Get(Form("pt%d", aid)))->Fill(pCand->fP.Perp()); 
@@ -99,6 +101,15 @@ void genAnalysis::genB() {
       ((TH1D*)fpHistFile->Get(Form("eta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("ceta%d", aid)))->Fill(pCand->fP.Eta()); 
       ((TH1D*)fpHistFile->Get(Form("mom%d", aid)))->Fill(mom); 
+      // -- ignore underflow!
+      if (iso > -0.5) ((TH1D*)fpHistFile->Get(Form("iso%d", aid)))->Fill(iso); 
+      
+      if (511 == aid) f511Mass = pCand->fP.M();
+      if (521 == aid) f521Mass = pCand->fP.M();
+      if (531 == aid) f531Mass = pCand->fP.M();
+      if (541 == aid) f541Mass = pCand->fP.M();
+      if (5122 == aid) f5122Mass = pCand->fP.M();
+
     }
   }
 
@@ -109,9 +120,6 @@ void genAnalysis::genB() {
 void genAnalysis::printBdecays() {
   
   TGenCand *pCand, *pD; 
-  int muType(0), evtType(0), nevt(0), bevt(0), bacc(0); 
-  bool acc(false);
-  double pt(0.), eta(0.); 
   cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
@@ -158,7 +166,7 @@ void genAnalysis::printBdecays() {
     error  = fpEvt->fHLTError[i]; 
 
     if (wasRun && result) {
-      cout << a << endl;
+      cout << a << " " << ps << endl;
     }      
   }
 
@@ -305,18 +313,17 @@ void genAnalysis::fillHist() {
 void genAnalysis::bookHist() {
   cout << "==> genAnalysis: bookHist " << endl;
   
-  TH1D *h; 
-  h = new TH1D("h1",   "mu type", 20, 0., 20.);
-  h = new TH1D("h100", "mu pt 0", 100, 0., 20.);
-  h = new TH1D("h110", "mu pt ==1", 100, 0., 20.);
-  h = new TH1D("h112", "mu pt ==1", 100, 0., 20.);
-
-  h = new TH1D("e1",  "evt type", 20, 0., 20.);
-  h = new TH1D("e100", "evt pt 0", 100, 0., 20.);
-  h = new TH1D("e110", "evt pt ==1", 100, 0., 20.);
-  h = new TH1D("e111", "evt pt ==1", 100, 0., 20.);
-  h = new TH1D("e112", "evt acc ==1", 100, 0., 20.);
-
+  new TH1D("h1",   "mu type", 20, 0., 20.);
+  new TH1D("h100", "mu pt 0", 100, 0., 20.);
+  new TH1D("h110", "mu pt ==1", 100, 0., 20.);
+  new TH1D("h112", "mu pt ==1", 100, 0., 20.);
+  
+  new TH1D("e1",  "evt type", 20, 0., 20.);
+  new TH1D("e100", "evt pt 0", 100, 0., 20.);
+  new TH1D("e110", "evt pt ==1", 100, 0., 20.);
+  new TH1D("e111", "evt pt ==1", 100, 0., 20.);
+  new TH1D("e112", "evt acc ==1", 100, 0., 20.);
+  
   // -- Reduced Tree
   fTree = new TTree("events", "events");
   fTree->Branch("run",     &fRun,     "run/I");
@@ -365,4 +372,209 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
   if (dump)  cout << "------------------------------------" << endl;
 
+}
+
+
+// ----------------------------------------------------------------------
+double genAnalysis::isolation(TGenCand *pCand) {
+
+  // -- not interested outside of acceptance
+  if (TMath::Abs(pCand->fP.Eta()) > 2.4) return -1.;
+  
+  TGenCand *pC; 
+  double iso(0.); 
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pC = fpEvt->getGenCand(iC);
+    if (isStableCharged(pC->fID)) {
+      if (fpEvt->isAncestor(pCand, pC)) continue;
+      if (pCand->fP.DeltaR(pC->fP) < 0.7 && pC->fP.Perp() > 0.9) {
+	iso += pC->fP.Perp();
+      }
+    }
+  }
+
+  return (pCand->fP.Perp()/(pCand->fP.Perp() + iso)); 
+}
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
+
+  static double M511(0.), M521(0.), M531(0.), M541(0.), M5122(0.); 
+  static double L511(0.), L521(0.), L531(0.), L541(0.), L5122(0.); 
+
+  if (2014 == year) {
+    M511 = 5.27958;
+    M521 = 5.27926;
+    M531 = 5.36677;
+    M541 = 6.2756;
+    M5122= 5.6195;
+
+    L511 = 455.4;
+    L521 = 491.1;
+    L531 = 453.3;
+    L541 = 135.5;
+    L5122= 435;
+  }
+
+  static int first(1); 
+  if (1 == first) {
+    first = 0; 
+    vector<int> particles = defVector(5, 511, 521, 531, 541, 5122); 
+    for (unsigned int i = 0; i < particles.size(); ++i) {
+      new TH1D(Form("t%d", particles[i]), Form("t%d", particles[i]), 50, 0., 2000.); 
+    }
+    
+    new TH1D("m511",  "m511",  100, 5.279, 5.280); 
+    new TH1D("m521",  "m521",  100, 5.279, 5.280); 
+    new TH1D("m531",  "m531",  100, 5.360, 5.370); 
+    new TH1D("m541",  "m541",  100, 6.270, 6.280); 
+    new TH1D("m5122", "m5122", 100, 5.610, 5.630); 
+  }
+
+
+  if (finalize) {
+    // -- Masses
+    cout << "Masses" << endl;
+    cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m511"))->GetMean(), 
+		 M511, 
+		 ((TH1D*)fpHistFile->Get("m511"))->GetMean() - M511
+		 ) 
+	 << endl;
+
+    cout << Form("B+: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m521"))->GetMean(), 
+		 M521, 
+		 ((TH1D*)fpHistFile->Get("m521"))->GetMean() - M521
+		 ) 
+	 << endl;
+
+    cout << Form("Bs: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m531"))->GetMean(), 
+		 M531, 
+		 ((TH1D*)fpHistFile->Get("m531"))->GetMean() - M531
+		 ) 
+	 << endl;
+
+    cout << Form("Lb: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean(), 
+		 M5122, 
+		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean() - M5122
+		 ) 
+	 << endl;
+
+    if (((TH1D*)fpHistFile->Get("m541"))->GetEntries() > 1) 
+      cout << Form("Bc: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+		   ((TH1D*)fpHistFile->Get("m541"))->GetMean(), 
+		   M541, 
+		   ((TH1D*)fpHistFile->Get("m541"))->GetMean() - M541
+		   ) 
+	   << endl;
+
+    // -- Lifetimes
+    cout << "Lifetime" << endl;
+    double t(1.), tE(1.), chi2(0); 
+    TH1D *h = (TH1D*)fpHistFile->Get("t521");
+    TF1 *f(0); 
+    gStyle->SetOptFit(1); 
+    if (h->GetEntries() > 100) {
+      h->Fit("expo", "lq"); 
+      //      gPad->SaveAs("t521.pdf");
+      f = (TF1*)h->GetFunction("expo");
+      chi2 = f->GetChisquare()/f->GetNDF(); 
+      t    = -1./f->GetParameter(1); 
+      tE   = -t*f->GetParError(1)/f->GetParameter(1); 
+      cout << Form("B+: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L521, (t-L521)/tE, chi2) << endl;
+    }
+    h = (TH1D*)fpHistFile->Get("t511");
+    if (h->GetEntries() > 100) {
+      h->Fit("expo", "ql"); 
+      //      gPad->SaveAs("t511.pdf");
+      f = (TF1*)h->GetFunction("expo");
+      chi2 = f->GetChisquare()/f->GetNDF(); 
+      t    = -1./f->GetParameter(1); 
+      tE   = -t*f->GetParError(1)/f->GetParameter(1); 
+      cout << Form("B0: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L511, (t-L511)/tE, chi2) << endl;
+    }
+
+    h = (TH1D*)fpHistFile->Get("t531");
+    if (h->GetEntries() > 100) {
+      h->Fit("expo", "ql"); 
+      //      gPad->SaveAs("t531.pdf");
+      f = (TF1*)h->GetFunction("expo");
+      chi2 = f->GetChisquare()/f->GetNDF(); 
+      t    = -1./f->GetParameter(1); 
+      tE   = -t*f->GetParError(1)/f->GetParameter(1); 
+      cout << Form("Bs: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L531, (t-L531)/tE, chi2) << endl;
+    }
+
+    h = (TH1D*)fpHistFile->Get("t5122");
+    if (h->GetEntries() > 100) {
+      h->Fit("expo", "ql"); 
+      //      gPad->SaveAs("t5122.pdf");
+      f = (TF1*)h->GetFunction("expo");
+      chi2 = f->GetChisquare()/f->GetNDF(); 
+      t    = -1./f->GetParameter(1); 
+      tE   = -t*f->GetParError(1)/f->GetParameter(1); 
+      cout << Form("Lb: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L5122, (t-L5122)/tE, chi2) << endl;
+    }
+
+    h = (TH1D*)fpHistFile->Get("t541");
+    if (h->GetEntries() > 100) {
+      h->Fit("expo", "ql"); 
+      //      gPad->SaveAs("t541.pdf");
+      f = (TF1*)h->GetFunction("expo");
+      chi2 = f->GetChisquare()/f->GetNDF(); 
+      t    = -1./f->GetParameter(1); 
+      tE   = -t*f->GetParError(1)/f->GetParameter(1); 
+      cout << Form("Bc: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L541, (t-L541)/tE, chi2) << endl;
+    }
+
+    //  -- save at the end to remove the intermittent root printout
+    ((TH1D*)fpHistFile->Get("t521"))->Draw(); 
+    gPad->SaveAs("t521.pdf");
+
+    ((TH1D*)fpHistFile->Get("t511"))->Draw(); 
+    gPad->SaveAs("t511.pdf");
+
+    ((TH1D*)fpHistFile->Get("t531"))->Draw(); 
+    gPad->SaveAs("t531.pdf");
+
+    ((TH1D*)fpHistFile->Get("t5122"))->Draw(); 
+    gPad->SaveAs("t5122.pdf");
+
+    ((TH1D*)fpHistFile->Get("t541"))->Draw(); 
+    gPad->SaveAs("t541.pdf");
+    
+    return;
+  }
+  
+  int aid = TMath::Abs(pCand->fID); 
+
+  if (511 == aid || 521 == aid || 531 == aid || 541 == aid || 5122 == aid) {
+  } else {
+    cout << "wrong aid for compare2PDG, returning ... " << endl;
+    return;
+  }
+
+
+  ((TH1D*)fpHistFile->Get(Form("m%d", aid)))->Fill(pCand->fP.M()); 
+
+  // -- get daughter, and check for oscillated cand
+  TGenCand *pDau  = fpEvt->getGenCand(pCand->fDau1);
+  if (aid == TMath::Abs(pDau->fID)) pDau  = fpEvt->getGenCand(pDau->fDau1);
+  
+  double x        = (pCand->fV - pDau->fV).Mag(); 
+  double lifetime = x * pCand->fP.M() / pCand->fP.Rho() / TMath::Ccgs();
+  lifetime *= 1.e6*299792458;
+  if (0 && 531 == aid && lifetime < 20) {
+    cout << "----------------------------------------------------------------------" << endl;
+    fpEvt->dumpGenBlock();
+    cout << "pCand at " << pCand->fNumber << " pDau at " << pDau->fNumber << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+  }    
+  
+  ((TH1D*)fpHistFile->Get(Form("t%d", aid)))->Fill(lifetime); 
+  
 }

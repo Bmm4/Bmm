@@ -34,14 +34,12 @@ process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
 #         "/store/user/ursl/files/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen-0000.root"
-#         "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
 #	 "/store/relval/CMSSW_7_3_0_pre2/RelValBsToMuMu_13/GEN-SIM-RECO/MCRUN2_73_V1-v1/00000/7CA64471-C16B-E411-BB89-02163E00F463.root"
 #	"/store/data/Run2012A/MuOnia/AOD/22Jan2013-v1/30000/000D2FF5-EE82-E211-BEBA-0026189438A5.root"
 #    "/store/data/Run2012A/MuOnia/RECO/22Jan2013-v1/30000/0002CEE5-4183-E211-84FB-00304867915A.root"
 #        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/066732D9-752A-E511-B293-02163E0121CC.root",
         "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root"
-
-        ),
+ ),
  skipEvents = cms.untracked.uint32(704)
 )
 

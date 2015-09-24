@@ -20,9 +20,9 @@ public :
   void   bookHist(int mode);
 
   // -- validate gen production
-  void   genValidation(std::string hist = "eta511", 
-		       std::string ds1 = "pythia8soft", std::string ds2 = "pythia8hard", std::string ds3 = "pythia6", 
-		       bool log = false, bool legend = false); 
+  void   prodValidation(std::string hist = "pt531", 
+			std::string ds1 = "inelastic_nofilter", std::string ds2 = "pythia6_nofilter", std::string ds3 = "", 
+			bool log = false, bool legend = false, double xleg = 0.4, double yleg = 0.6); 
   void   loopFunction1(); 
 
 

@@ -48,76 +48,52 @@ plotWork::~plotWork() {
 // ----------------------------------------------------------------------
 void plotWork::makeAll(int bitmask) {
 
+  if (bitmask & 0x1) {
+
+    prodValidation("all", "default_nofilter", "inelastic_nofilter", "pythia6_nofilter"); 
+
+    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "pythia6_etaptfilter"); 
+    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "hardqcd8_etaptfilter");
+    prodValidation("all", "default_etaptfilter", "pythia6_etaptfilter", "noevtgen_etaptfilter");
+  }
+
 }
 
 
 
 // ----------------------------------------------------------------------
-void plotWork::genValidation(string hist, string ds1, string ds2, string ds3, bool loga, bool legend) {
-  cout << ds1 << " vs. " << ds2 << endl;  
+void plotWork::prodValidation(string hist, string ds1, string ds2, string ds3, bool loga, bool legend, double xleg, double yleg) {
+  cout << endl << "==>prodValidation: " << hist << " ds: " << ds1 << " vs. " << ds2 << " vs. " << ds3 << endl;  
 
   if (hist == "all") {
-    zone(2,3, c0); 
+    zone(2,2, c0); 
     
-    vector<int> particles = defVector(4, 531, 521, 511, 5122); 
+    vector<int> particles = defVector(1, 531); 
 
     for (unsigned int i = 0; i< particles.size(); ++i) {
       cout << "loop: " << particles[i] << endl;
     
       c0->cd(1);
-      genValidation(Form("pt%d", particles[i]), ds1, ds2, ds3, false, true);     
+      prodValidation(Form("pt%d", particles[i]), ds1, ds2, ds3, true, true, 0.4, 0.75);     
       c0->cd(2);
-      genValidation(Form("cpt%d", particles[i]), ds1, ds2, ds3, false, true); 
+      prodValidation(Form("cpt%d", particles[i]), ds1, ds2, ds3, false, true, 0.4, 0.75); 
       c0->cd(3);
-      genValidation(Form("eta%d", particles[i]), ds1, ds2, ds3); 
+      prodValidation(Form("eta%d", particles[i]), ds1, ds2, ds3, false); 
+
       c0->cd(4);
-      genValidation(Form("ceta%d", particles[i]), ds1, ds2, ds3); 
-      c0->cd(5);
-      genValidation(Form("mom%d", particles[i]), ds1, ds2, ds3, true); 
+      prodValidation(Form("iso%d", particles[i]), ds1, ds2, ds3, false); 
       
-      c0->SaveAs(Form("%s/genValidation-%d-%s-%s-%s.pdf", fDirectory.c_str(), particles[i], ds1.c_str(), ds2.c_str(), ds3.c_str())); 
-
-      if (string::npos != ds1.find("nofilter")) {
-	
-
-
-      }
-
+      c0->SaveAs(Form("%s/prodValidation-%d-%s-%s-%s.pdf", fDirectory.c_str(), particles[i], ds1.c_str(), ds2.c_str(), ds3.c_str())); 
 
     }
 
     return;
   }
 
-  if (hist == "old") {
-    zone(2,2, c0); 
-
-    genValidation("pt511", ds1, ds2, ds3);     
-    c0->cd(2);
-    genValidation("pt521", ds1, ds2, ds3); 
-    c0->cd(3);
-    genValidation("pt531", ds1, ds2, ds3); 
-    c0->cd(4);
-    genValidation("pt5122", ds1, ds2, ds3); 
-    c0->SaveAs(Form("%s/genValidation-pt-%s-%s.pdf", fDirectory.c_str(), ds1.c_str(), ds2.c_str())); 
-
-    zone(2,2, c0); 
-
-    genValidation("eta511", ds1, ds2, ds3);     
-    c0->cd(2);
-    genValidation("eta521", ds1, ds2, ds3); 
-    c0->cd(3);
-    genValidation("eta531", ds1, ds2, ds3); 
-    c0->cd(4);
-    genValidation("eta5122", ds1, ds2, ds3); 
-    c0->SaveAs(Form("%s/genValidation-eta-%s-%s.pdf", fDirectory.c_str(), ds1.c_str(), ds2.c_str())); 
-    return;
-  }
-  
   overlay(Form("%s", hist.c_str()), ds1, 
 	  Form("%s", hist.c_str()), ds2, 
-	  Form("%s", hist.c_str()), ds3, 
-	  UNITY, loga, legend); 
+	  (ds3 != ""? Form("%s", hist.c_str()) : ""), ds3, 
+	  UNITY, loga, legend, xleg, yleg); 
 
 }
 
@@ -383,6 +359,9 @@ void plotWork::loadFiles(string afiles) {
     if (buffer[0] == '/') {continue;}
     
     string sbuffer = string(buffer); 
+    replaceAll(sbuffer, " ", ""); 
+    replaceAll(sbuffer, "\t", ""); 
+    if (sbuffer.size() < 1) continue;
 
     string::size_type m1 = sbuffer.find("lumi="); 
     string stype = sbuffer.substr(5, m1-5); 
@@ -392,278 +371,151 @@ void plotWork::loadFiles(string afiles) {
     string sfile = sbuffer.substr(m2+5); 
     string sname, sdecay; 
 
+    cout << "stype: ->" << stype << "<-" << endl;
+
     TFile *pF(0); 
     if (string::npos != stype.find("data")) {
       // -- DATA
-      cout << "XXXX do not know YET what to do with data?!" << endl;
-    } else {
-      // -- MC
       pF = loadFile(sfile); 
-      cout << "stype: " << stype << endl;
       
       dataset *ds = new dataset(); 
       ds->fSize = 1; 
       ds->fWidth = 2; 
 
-      if (string::npos != stype.find("nondiffractive") && string::npos != stype.find("nofilter")) {
-        sname = "nondiffractive_nofilter"; 
-        sdecay = "nondiffractive"; 
-	
-	ds->fColor = kRed-7; 
-	ds->fLcolor = kRed-7; 
-	ds->fFcolor = kRed-7; 
-	ds->fSymbol = 20; 
-	
+      if (string::npos != stype.find("bmm")) {
+        sname = "data_bmm"; 
+        sdecay = "bmm"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-      if (string::npos != stype.find("nondiffractive") && string::npos != stype.find("etaptfilter")) {
-        sname = "nondiffractive_etaptfilter"; 
-        sdecay = "nondiffractive"; 
-	
-	ds->fColor = kRed+1; 
-	ds->fLcolor = kRed+1; 
-	ds->fFcolor = kRed+1; 
-	ds->fSymbol = 20; 
-	
+      if (string::npos != stype.find("bu2jpsik")) {
+        sname = "data_bu2jpsik"; 
+        sdecay = "bu2jpsik"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
+      ds->fLcolor = ds->fColor; 
+      ds->fFcolor = ds->fColor; 
+      ds->fName   = sdecay; 
+      ds->fFullName = sname; 
+      fDS.insert(make_pair(sname, ds)); 
 
-      if (string::npos != stype.find("nsd") && string::npos != stype.find("nofilter")) {
-        sname = "nsd_nofilter"; 
-        sdecay = "nsd"; 
-	
-	ds->fColor = kYellow-6; 
-	ds->fLcolor = kYellow-6; 
-	ds->fFcolor = kYellow-6; 
-	ds->fSymbol = 21; 
-	
+
+    } else {
+      // -- MC
+      pF = loadFile(sfile); 
+      //      cout << "stype: " << stype << endl;
+      
+      dataset *ds = new dataset(); 
+      ds->fSize = 1; 
+      ds->fWidth = 2; 
+
+      string filter = "nofilter"; 
+      if (string::npos != stype.find("etaptfilter")) filter = "etaptfilter";
+
+      if (string::npos != stype.find("bu2jpsik")) {
+        sname = "bu2jpsik_" + filter; 
+        sdecay = "bu2jpsik"; 
+	ds->fColor = kBlue-7; 
+	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-      if (string::npos != stype.find("nsd") && string::npos != stype.find("etaptfilter")) {
-        sname = "nsd_etaptfilter"; 
-        sdecay = "nsd"; 
-	
-	ds->fColor = kYellow+3; 
-	ds->fLcolor = kYellow+3; 
-	ds->fFcolor = kYellow+3; 
-	ds->fSymbol = 21; 
-	
+      // -------------------------
+      // -- genAnalyis files below
+      // -------------------------
+      if (string::npos != stype.find("default")) {
+        sname = "default_" + filter; 
+        sdecay = "default"; 
+	ds->fColor = kBlue-7; 
+	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-
-      if (string::npos != stype.find("singlediffractive") && string::npos != stype.find("nofilter")) {
-        sname = "singlediffractive_nofilter"; 
-        sdecay = "singlediffractive"; 
-	
-	ds->fColor = kYellow-5; 
-	ds->fLcolor = kYellow-5; 
-	ds->fFcolor = kYellow-5; 
-	ds->fSymbol = 22; 
-	
+      if (string::npos != stype.find("inelastic")) {
+        sname = "inelastic_" + filter; 
+        sdecay = "inelastic"; 
+	ds->fColor = kMagenta-1; 
+	ds->fSymbol = 25; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-      if (string::npos != stype.find("singlediffractive") && string::npos != stype.find("etaptfilter")) {
-        sname = "singlediffractive_etaptfilter"; 
-        sdecay = "singlediffractive"; 
-	
+      if (string::npos != stype.find("hardqcd8")) {
+        sname = "hardqcd8_" + filter; 
+        sdecay = "hardqcd8"; 
+	ds->fColor = kRed-2; 
+	ds->fSymbol = 30; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+	fDS.insert(make_pair(sname, ds)); 
+      }
+
+      if (string::npos != stype.find("pythia6")) {
+        sname = "pythia6_" + filter; 
+        sdecay = "pythia6"; 
+	ds->fColor = kGreen+3; 
+	ds->fSymbol = 26; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+	fDS.insert(make_pair(sname, ds)); 
+      }
+
+      if (string::npos != stype.find("noevtgen")) {
+        sname = "noevtgen_" + filter; 
+        sdecay = "noevtgen"; 
 	ds->fColor = kYellow+2; 
-	ds->fLcolor = kYellow+2; 
-	ds->fFcolor = kYellow+2; 
-	ds->fSymbol = 22; 
-	
+	ds->fSymbol = 28; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
 	ds->fFillStyle = 3365; 
 	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
       }
 
-      if (string::npos != stype.find("doublediffractive") && string::npos != stype.find("nofilter")) {
-        sname = "doublediffractive_nofilter"; 
-        sdecay = "doublediffractive"; 
-	
-	ds->fColor = kYellow-3; 
-	ds->fLcolor = kYellow-3; 
-	ds->fFcolor = kYellow-3; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("doublediffractive") && string::npos != stype.find("etaptfilter")) {
-        sname = "doublediffractive_etaptfilter"; 
-        sdecay = "doublediffractive"; 
-	
-	ds->fColor = kYellow+1; 
-	ds->fLcolor = kYellow+1; 
-	ds->fFcolor = kYellow+1; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("hardqcd8") && string::npos != stype.find("nofilter")) {
-        sname = "hardqcd8_nofilter"; 
-        sdecay = "hardqcd8"; 
-	
-	ds->fColor = kBlue-3; 
-	ds->fLcolor = kBlue-3; 
-	ds->fFcolor = kBlue-3; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("hardqcd8") && string::npos != stype.find("etaptfilter")) {
-        sname = "hardqcd8_etaptfilter"; 
-        sdecay = "hardqcd8"; 
-	
-	ds->fColor = kGreen+1; 
-	ds->fLcolor = kGreen+1; 
-	ds->fFcolor = kGreen+1; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("hardqcd10") && string::npos != stype.find("nofilter")) {
-        sname = "hardqcd10_nofilter"; 
-        sdecay = "hardqcd10"; 
-	
-	ds->fColor = kBlue-2; 
-	ds->fLcolor = kBlue-2; 
-	ds->fFcolor = kBlue-2; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("hardqcd10") && string::npos != stype.find("etaptfilter")) {
-        sname = "hardqcd10_etaptfilter"; 
-        sdecay = "hardqcd10"; 
-	
-	ds->fColor = kGreen+2; 
-	ds->fLcolor = kGreen+2; 
-	ds->fFcolor = kGreen+2; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-     
-
-      if (string::npos != stype.find("hardqcd12") && string::npos != stype.find("nofilter")) {
-        sname = "hardqcd12_nofilter"; 
-        sdecay = "hardqcd12"; 
-	
-	ds->fColor = kBlue-1; 
-	ds->fLcolor = kBlue-1; 
-	ds->fFcolor = kBlue-1; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
-
-      if (string::npos != stype.find("hardqcd12") && string::npos != stype.find("etaptfilter")) {
-        sname = "hardqcd12_etaptfilter"; 
-        sdecay = "hardqcd12"; 
-	
-	ds->fColor = kGreen+1; 
-	ds->fLcolor = kGreen+1; 
-	ds->fFcolor = kGreen+1; 
-	ds->fSymbol = 22; 
-	
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fName   = sdecay; 
-	ds->fFillStyle = 3365; 
-	fDS.insert(make_pair(sname, ds)); 
-	cout << "inserted " << sname << " with ... into fDS" << endl;
-      }
+      ds->fLcolor = ds->fColor; 
+      ds->fFcolor = ds->fColor; 
+      ds->fName   = sdecay; 
+      ds->fFullName = sname; 
+      fDS.insert(make_pair(sname, ds)); 
 
 
 
     } 
     
     
+  }
+
+  is.close();
+
+  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+    cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }

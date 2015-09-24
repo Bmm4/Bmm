@@ -76,7 +76,7 @@ void checkChain(const char *chain, const char *tree) {
         cout << "no tree found" << endl;
       }
     } else {
-      if (f->TestBit(TFile::kRecovered) {
+      if (f->TestBit(TFile::kRecovered)) {
         cout << "Skipping recovered file " << meta << endl;
       } else {
         cout << "Cannot open file " << meta << endl;
