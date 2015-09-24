@@ -36,6 +36,7 @@ if ($opt_o) {
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
 
+my $goback = 0; 
 
 # ----------------------------------------------------------------------
 # -- read in (and eval) configuration: 
@@ -63,7 +64,6 @@ if ($opt_h) {
 
 
 # -- create (split) files
-my $goback = 0; 
 if ($opt_p) {
     foreach $j (keys %catalogs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
