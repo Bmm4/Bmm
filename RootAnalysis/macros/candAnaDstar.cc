@@ -388,17 +388,17 @@ void candAnaDstar::candAnalysis() {
   
   // Check the trigger matching
   // Make sure that there is a trigger which does not involve the pi & K
-  fveto=0;
+  fveto=false;
   //                                      singleMatch
-  bool veto1 = candAna::doTriggerVeto(pPi,pK,false); // doube match, for testing only 
-  if(veto1) fveto=1;
+  bool veto1 = candAna::doTriggerVeto(pPi,pK,false); // double match, for testing only 
+  //if(veto1) fveto=1;
   bool veto2 = candAna::doTriggerVeto(pPi,pK,true); // use this, 1 track in trigger vetos the event
-  if(veto2) fveto=2;
+  if(veto2) fveto=true;
   if(MYDEBUG) cout<<" veto "<<veto1<<" "<<veto2<<" "<<fveto<<endl;
 
-  if(fveto==0)       ((TH1D*)fHistDir->Get("Status"))->Fill(37.);
-  else if(fveto==1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
-  else if(fveto==2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
+  if(fveto)  ((TH1D*)fHistDir->Get("Status"))->Fill(37.);
+  if(veto1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
+  if(veto2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
 
   //  match to offline muons 
   double dr1 = matchToMuon(pPi,true); // skip same track muons
@@ -413,6 +413,8 @@ void candAnaDstar::candAnalysis() {
   ((TH1D*)fHistDir->Get("dr6"))->Fill(dr1);
   if(dr1<0.02)  ((TH1D*)fHistDir->Get("Status"))->Fill(41.);
   if(dr2<0.02)  ((TH1D*)fHistDir->Get("Status"))->Fill(42.);
+  if(dr11<0.02)  ((TH1D*)fHistDir->Get("Status"))->Fill(43.);
+  if(dr12<0.02)  ((TH1D*)fHistDir->Get("Status"))->Fill(44.);
 
   // match offline muons to muon triggers, save in a vector
   int numHltMuon = doMuonTriggerMatching(fpCand);
@@ -425,8 +427,8 @@ void candAnaDstar::candAnalysis() {
   bool matchToTrigMu2 = matchToTriggeredMuon(pK, idx2); 
   if(MYDEBUG) cout<<" matchToTriggeredMuon "<<matchToTrigMu1<<" "<<idx1<<" "
 		  <<matchToTrigMu2<<" "<<idx2<<endl;
-  if(matchToTrigMu1)  ((TH1D*)fHistDir->Get("Status"))->Fill(43.);
-  if(matchToTrigMu2)  ((TH1D*)fHistDir->Get("Status"))->Fill(44.);
+  if(matchToTrigMu1)  ((TH1D*)fHistDir->Get("Status"))->Fill(45.);
+  if(matchToTrigMu2)  ((TH1D*)fHistDir->Get("Status"))->Fill(46.);
 
   // Match with a Jpsi in this event   IS IT USEFULL?
   idx1=-1; idx2=-1;
@@ -434,9 +436,9 @@ void candAnaDstar::candAnalysis() {
   bool RejectPion = ( (idx1==pPi->fIndex) || (idx2==pPi->fIndex) ); 
   bool RejectKaon = ( (idx1==pK->fIndex)  || (idx2==pK->fIndex) ); 
   if(MYDEBUG) cout<<" found jpis "<<foundJpsi<<" "<<RejectPion<<" "<<RejectKaon<<endl;
-  if(foundJpsi)  ((TH1D*)fHistDir->Get("Status"))->Fill(45.);
-  if(RejectPion)  ((TH1D*)fHistDir->Get("Status"))->Fill(46.);
-  if(RejectKaon)  ((TH1D*)fHistDir->Get("Status"))->Fill(47.);
+  if(foundJpsi)  ((TH1D*)fHistDir->Get("Status"))->Fill(47.);
+  if(RejectPion)  ((TH1D*)fHistDir->Get("Status"))->Fill(48.);
+  if(RejectKaon)  ((TH1D*)fHistDir->Get("Status"))->Fill(49.);
 
   // Isolation (something has changed in nCloseTracks)
   //                       dcaCut(cm) ptCut(GeV)         
