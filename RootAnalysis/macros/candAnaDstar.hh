@@ -41,7 +41,8 @@ public:
   void        efficiencyCalculation();
   int         doTest(TAnaCand *pC, int mode =-1); 
   int         getJpsi(int &idx1, int &idx2);
-
+  bool        matchToTriggeredMuon(TAnaTrack *pt, int &idx);
+  int         doMuonTriggerMatching(TAnaCand *pC, int mode=0); // match all offline muons 
   double      doTriggerMatchingTest(TAnaTrack *pt, int trig = 0); // match a single track to HLT
 
 private:
@@ -56,14 +57,15 @@ private:
   float fchipi, fchik;
   float mudr1, mudr2;  
   float match1dr, match2dr;
-  int fnumHltMuons, fnumHltPureMuons; // for number of hlt matched muons
+  //int fnumHltMuons, fnumHltPureMuons; // for number of hlt matched muons
   bool fmuidmva1, fmuidmva2; // MVA muon id
+  bool fveto;
   double fmva1, fmva2; // MVA
   // test
   float match1dr1, match2dr1,match1dr2, match2dr2,match1dr3, match2dr3,match1dr4, match2dr4;
   vector<int> hltMatchedMuons;
-  bool fMatchedPion,fMatchedKaon,fRejectPion,fRejectKaon;
-  int foundJpsis;
+  //bool fRejectPion,fRejectKaon;
+  //int foundJpsis;
 };
 
 #endif

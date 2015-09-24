@@ -3,12 +3,9 @@
 #include "common/HFMasses.hh"
 #include "common/AnalysisDistribution.hh"
 
-
 using namespace std;
 
-#define NEW_MATCHING
-
-const double deltaRthrsh = 0.02; // muon/hlt matching cut
+//const double deltaRthrsh = 0.02; // muon/hlt matching cut
 
 struct near_track_t {
   int ix;
@@ -224,13 +221,10 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fHLTmatch=false;  
     if(fGoodHLT && fpMuon1 != NULL && fpMuon2 != NULL){ // do only when 2 muons exist
 
-#ifdef NEW_MATCHING 
       // check matching for both muons in parallel 
       fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2); 
-#else
       // old code, still keep for verification 
-      fHLTmatch = doTriggerMatching_OLD(fpMuon1, fpMuon2); 
-#endif
+      //fHLTmatch = doTriggerMatching_OLD(fpMuon1, fpMuon2); 
 
     }
 
@@ -464,12 +458,9 @@ void candAna::candAnalysis() {
 
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 1 "<<endl;
-#ifdef NEW_MATCHING
   // false - consider only selecetd triggers, true - match to muon trigger objects  
   fMu1TrigM     = doTriggerMatchingR(p1, false, true); 
-#else
-  fMu1TrigM     = doTriggerMatchingR_OLD(p1, true); // true- consider selected triggers
-#endif
+  //fMu1TrigM     = doTriggerMatchingR_OLD(p1, true); // true- consider selected triggers
   if (fTrigMatchDeltaPt > 0.1) fMu1TrigM *= -1.;
 
   //  fMu1Id        = fMu1MvaId && (fMu1TrigM < 0.1) && (fMu1TrigM > 0); 
@@ -531,11 +522,9 @@ void candAna::candAnalysis() {
 
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 2 "<<endl;
-#ifdef NEW_MATCHING
   fMu2TrigM     = doTriggerMatchingR(p2, false, true);
-#else
-  fMu2TrigM     = doTriggerMatchingR_OLD(p2, true);
-#endif
+  //fMu2TrigM     = doTriggerMatchingR_OLD(p2, true);
+
   if (fTrigMatchDeltaPt > 0.1) fMu2TrigM *= -1.;
 
   //  fMu2Id        = fMu2MvaId && (fMu2TrigM < 0.1) && (fMu2TrigM > 0); 
@@ -1369,6 +1358,11 @@ void candAna::bookHist() {
   h11 = new TH1D("test6", "test6",200, 0., 2.); 
   h11 = new TH1D("test7", "test7", 400, 0., 4.);
   h11 = new TH1D("test8", "test8",200, -1., 1.); 
+
+  h11 = new TH1D("test11", "dr", 1000, 0., 1.);
+  h11 = new TH1D("test12", "dr", 1000, 0., 1.);
+  h11 = new TH1D("test13", "dpt", 200, -1., 1.);
+  h11 = new TH1D("test14", "dpt", 200, -1., 1.);
 
   h11 = new TH1D("gp1cms", "p1cms", 50, 0, 10.); 
   h11 = new TH1D("gp2cms", "p2cms", 50, 0, 10.); 
@@ -3706,16 +3700,11 @@ bool candAna::doTriggerMatching(TAnaTrack *pt, bool anyTrig, bool muonsOnly) {
 
   const double deltaRthrsh(0.02); // final cut, Frank had 0.5, change 0.020
 
-#ifdef NEW_MATCHING 
   double dR = doTriggerMatchingR(pt,anyTrig,muonsOnly);
-#else
-  double dR = doTriggerMatchingR_OLD(pt,anyTrig);
-#endif
+  //double dR = doTriggerMatchingR_OLD(pt,anyTrig);
 
   ((TH1D*)fHistDir->Get("test6"))->Fill(dR); 
 
-  //if(dR!=dR2) cout<<"Warning: doTriggerMatching inconsistent (R new old) "<<dR<<" "<<dR2<<" "<<anyTrig<<endl;
- 
   bool HLTmatch = (dR<deltaRthrsh );
   return HLTmatch;
 
@@ -3839,10 +3828,10 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 	     <<m1<<" "<< deltaRmin1 <<" "<<trigMatchDeltaPt1<<" "
 	     <<m2<<" "<< deltaRmin2 <<" "<<trigMatchDeltaPt2<<endl;
 
-      ((TH1D*)fHistDir->Get("testhh3"))->Fill(trigMatchDeltaPt1); 
-      ((TH1D*)fHistDir->Get("testhh3"))->Fill(trigMatchDeltaPt2); 
-      ((TH1D*)fHistDir->Get("testhh1"))->Fill(deltaRmin1); 
-      ((TH1D*)fHistDir->Get("testhh1"))->Fill(deltaRmin2); 
+      ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt1); 
+      ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt2); 
+      ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin1); 
+      ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin2); 
 
       if(match1 || match2) {
 	  modulesSingleMatched++;
@@ -3879,10 +3868,10 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 
   } // loop over all modules
 
-  ((TH1D*)fHistDir->Get("testhh4"))->Fill(trigMatchDeltaPtAll1); 
-  ((TH1D*)fHistDir->Get("testhh4"))->Fill(trigMatchDeltaPtAll2); 
-  ((TH1D*)fHistDir->Get("testhh2"))->Fill(deltaRminAll1); 
-  ((TH1D*)fHistDir->Get("testhh2"))->Fill(deltaRminAll2); 
+  ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll1); 
+  ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll2); 
+  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll1); 
+  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll2); 
 
   bool veto = false;
   if(singleMatch) { // check single matched only
