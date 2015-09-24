@@ -29,9 +29,12 @@ sub runCommand() {
 # -- define catalog splitting into py files
 %catalogs = (); 
 $dataset = "Run2015B__Charmonium__PromptReco-v1";
+$catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015B-XXXX.py -f ../../../catalogs/Run2015B__Charmonium__PromptReco-v1/150722 -s $version -r -e 20000; ";
+$catalogs{$dataset} .= "cd ..";
 
 $dataset = "Summer12_DR53X";
+$catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToMuMu_BdFilter_8TeV-pythia6-evtgen -s $version -n 10 -l; \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToMuMu_EtaPtFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BuToJPsiK_K2MuFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
@@ -39,12 +42,13 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToJPsiPhi_2K2MuFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToJPsiPhi_2K2MuPtEtaFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToKPi_EtaPtFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
+$catalogs{$dataset} .= "cd ..";
 
 $dataset = "Summer15_private";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Bs2MuMu_EtaPtFilter -s $version -n 5 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Bd2MuMu_EtaPtFilter -s $version -n 5 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Bu2JpsiK_EtaPtFilter -s $version -n 5 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Bs2JpsiPhi_EtaPtFilter -s $version -n 5 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOEVTGEN_Bs2MuMu_EtaPtFilter -s $version -n 5 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/HARDQCD0_Bs2MuMu_EtaPtFilter -s $version -n 5 -l;  \ \n";
+$catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_NoFilter -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_EtaPtFilter -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_NoFilter -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_EtaPtFilter -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "cd ..";
 	
