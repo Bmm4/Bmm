@@ -1,23 +1,5 @@
-# -- define the command to run and the delphes output file
-my $vdataset = "dataset";
 my $version = "v01";
-
 my $dataset = "bla";
-
-# -- keep in the order given below
-tie %jobs, "Tie::IxHash";
-
-# -- define all the jobs
-%jobs = ();
-$dataset = "Run2015B__Charmonium__PromptReco-v1"; 
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
-
-$dataset = "Summer15_private";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
-
-$dataset = "Summer12_DR53X";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
-
 
 # -- did not manage to do this with refs, so do it with a function: 
 sub runCommand() {
@@ -26,14 +8,20 @@ sub runCommand() {
 
 
 
-# -- define catalog splitting into py files
+# -- define catalog splitting into py files and jobs
 %catalogs = (); 
+tie %catalogs, "Tie::IxHash";
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
 $dataset = "Run2015B__Charmonium__PromptReco-v1";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015B-XXXX.py -f ../../../catalogs/Run2015B__Charmonium__PromptReco-v1/150722 -s $version -r -e 20000; ";
 $catalogs{$dataset} .= "cd ..";
 
 $dataset = "Summer12_DR53X";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToMuMu_BdFilter_8TeV-pythia6-evtgen -s $version -n 10 -l; \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToMuMu_EtaPtFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
@@ -45,6 +33,7 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX
 $catalogs{$dataset} .= "cd ..";
 
 $dataset = "Summer15_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} .= "mkdir -p $dataset && cd $dataset; ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_NoFilter -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_EtaPtFilter -s $version -n 20 -l;  \ \n";
