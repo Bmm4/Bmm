@@ -25,8 +25,9 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string setup)
   fTEX.open(fNumbersFileName.c_str(), ios::app);
 
   // -- initialize cuts
-  cout << "===> Reading cuts from " << Form("%s/plotBmm.%s.cuts", dir.c_str(), setup.c_str()) << endl;
-  readCuts(Form("%s/plotBmm.%s.cuts", dir.c_str(), setup.c_str())); 
+  string cutfile = Form("%s/plotBmm.%s.cuts", dir.c_str(), setup.c_str());
+  cout << "===> Reading cuts from " << cutfile << endl;
+  readCuts(cutfile);
   fNchan = fCuts.size(); 
 
   printCuts(cout); 
