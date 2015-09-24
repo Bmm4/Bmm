@@ -262,6 +262,44 @@ void candAnaHh::candAnalysis() {
 
   if(MYDEBUG) cout<< " trigger veto (double) "<< veto1 <<" (single) "<<veto2<<endl;
 
+  // veto global and tracker muons and standalone muons
+  bool muon11 = ( (mid1&0x7) != 0);
+  bool muon12 = ( (mid2&0x7) != 0); 
+  // Thight muon 
+  bool muon21 = tightMuon(p1); 
+  bool muon22 = tightMuon(p2); 
+
+  if(MYDEBUG) cout<< " muon-is "
+		  << muon11 <<"/"<<muon12<<" "
+		  << muon21 <<"/"<<muon22<<" "
+		//<< muon31 <<"/"<<muon32<<" "
+		  <<endl;
+
+  if(muon11) ((TH1D*)fHistDir->Get("testhh0"))->Fill(10.); // count accepeted candidates
+  if(muon12) ((TH1D*)fHistDir->Get("testhh0"))->Fill(20.); // count accepeted candidates
+  if(muon21) ((TH1D*)fHistDir->Get("testhh0"))->Fill(11.); // count accepeted candidates
+  if(muon22) ((TH1D*)fHistDir->Get("testhh0"))->Fill(21.); // count accepeted candidates
+  //if(muon31) ((TH1D*)fHistDir->Get("testhh0"))->Fill(12.); // count accepeted candidates
+  //if(muon31) ((TH1D*)fHistDir->Get("testhh0"))->Fill(22.); // count accepeted candidates
+  if(!veto1){
+  if(muon11) ((TH1D*)fHistDir->Get("testhh0"))->Fill(13.); // count accepeted candidates
+  if(muon12) ((TH1D*)fHistDir->Get("testhh0"))->Fill(23.); // count accepeted candidates
+  if(muon21) ((TH1D*)fHistDir->Get("testhh0"))->Fill(14.); // count accepeted candidates
+  if(muon22) ((TH1D*)fHistDir->Get("testhh0"))->Fill(24.); // count accepeted candidates
+  //if(muon31) ((TH1D*)fHistDir->Get("testhh0"))->Fill(15.); // count accepeted candidates
+  //if(muon32) ((TH1D*)fHistDir->Get("testhh0"))->Fill(25.); // count accepeted candidates
+  }
+  if(!veto2){
+  if(muon11) ((TH1D*)fHistDir->Get("testhh0"))->Fill(16.); // count accepeted candidates
+  if(muon12) ((TH1D*)fHistDir->Get("testhh0"))->Fill(26.); // count accepeted candidates
+  if(muon21) ((TH1D*)fHistDir->Get("testhh0"))->Fill(17.); // count accepeted candidates
+  if(muon22) ((TH1D*)fHistDir->Get("testhh0"))->Fill(27.); // count accepeted candidates
+  //if(muon31) ((TH1D*)fHistDir->Get("testhh0"))->Fill(18.); // count accepeted candidates
+  //if(muon32) ((TH1D*)fHistDir->Get("testhh0"))->Fill(28.); // count accepeted candidates
+  }
+
+
+
   if( fpCand->fMass<HH_MLO || fpCand->fMass>HH_MHI ) fPreselection = 0; 
   //if( MUON_VETO==1 ) fPreselection = fPreselection && !antimuon_veto;
 
@@ -1038,10 +1076,10 @@ void candAnaHh::bookHist() {
   fHistDir->cd();  
   h = new TH1D("testhh0", "stat", 100, -1., 99.);
   
-  h = new TH1D("testhh1", "dr", 1000, 0., 1.);
-  h = new TH1D("testhh2", "dr", 1000, 0., 1.);
-  h = new TH1D("testhh3", "dpt", 200, -1., 1.);
-  h = new TH1D("testhh4", "dpt", 200, -1., 1.);
+  //h = new TH1D("testhh1", "dr", 1000, 0., 1.);
+  //h = new TH1D("testhh2", "dr", 1000, 0., 1.);
+  //h = new TH1D("testhh3", "dpt", 200, -1., 1.);
+  //h = new TH1D("testhh4", "dpt", 200, -1., 1.);
 
   h = new TH1D("testhh11", "dr", 1000, 0, 1);
   h = new TH1D("testhh12", "dr", 1000, 0, 1);
