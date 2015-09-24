@@ -74,14 +74,13 @@ void treeReader01::fillHist() {
 
 // ----------------------------------------------------------------------
 void treeReader01::bookHist() {
-  TH1 *h;
   cout << "==> treeReader01: bookHist> " << endl;
 
-  h = new TH1D("h1", "nTrk", 40, 0., 40.);
-  h = new TH1D("h10", "pT", 40, 0., 20.);
-  h = new TH1D("h20", "ntrk", 20, 0, 20.);
-
-  h = new TH1D("h100", "m", 40, 2.8, 3.4);
+  new TH1D("h1", "nTrk", 40, 0., 40.);
+  new TH1D("h10", "pT", 40, 0., 20.);
+  new TH1D("h20", "ntrk", 20, 0, 20.);
+  
+  new TH1D("h100", "m", 40, 2.8, 3.4);
 
   // -- Reduced Tree
   fTree = new TTree("events", "events");
