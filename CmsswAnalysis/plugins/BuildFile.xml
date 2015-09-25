@@ -41,5 +41,6 @@
   <use   name="TrackingTools/TransientTrack"/>
   <use   name="Bmm/CmsswAnalysis"/>
   <use   name="roothistmatrix"/>
+  <use name="fastjet"/>
   <flags   EDM_PLUGIN="1"/>
 </library>

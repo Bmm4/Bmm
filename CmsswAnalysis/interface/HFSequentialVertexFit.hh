@@ -26,16 +26,25 @@
 
 #include <vector>
 
-class HFSequentialVertexFit
-{
- public:
+class HFSequentialVertexFit {
+public:
   
-  HFSequentialVertexFit(edm::Handle<edm::View<reco::Track> > hTracks, const reco::MuonCollection* muons, const TransientTrackBuilder *TTB, edm::Handle<reco::VertexCollection> pvCollection, const MagneticField *field, reco::BeamSpot beamSpot, int verbose = 0, bool removeCandTracksFromVtx = true);
+  HFSequentialVertexFit(edm::Handle<edm::View<reco::Track> > hTracks, 
+			const reco::MuonCollection* muons, 
+			const TransientTrackBuilder *TTB, 
+			edm::Handle<reco::VertexCollection> pvCollection, 
+			const MagneticField *field, 
+			reco::BeamSpot beamSpot, 
+			int verbose = 0, bool removeCandTracksFromVtx = true);
+
   virtual ~HFSequentialVertexFit();
   
   void doFit(HFDecayTree *tree);
+  void pvIndices(int &pv0, int &pv1) {pv0 = fPvIx; pv1 = fPvIx2;}
+  void pvLip(double &pv0, double &pv1) {pv0 = fPvLip; pv1 = fPvLip2;}
+  void pvLipE(double &pv0, double &pv1) {pv0 = fPvLipE; pv1 = fPvLipE2;}
   
- private:
+private:
   bool fitTree(HFDecayTree *tree);
   void saveTree(HFDecayTree *tree);
   
@@ -60,25 +69,27 @@ class HFSequentialVertexFit
 
   jac9_t makeJacobianVector3d(const AlgebraicVector3 &vtx1, const AlgebraicVector3 &vtx2, const AlgebraicVector3 &momentum);
   jac9_t makeJacobianVector3d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
-			    const GlobalPoint &vtx2, const TVector3 &tv3momentum);
+			      const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   jac9_t makeJacobianVector3d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum);
 
   jac9_t makeJacobianVector2d(const AlgebraicVector3 &vtx1, const AlgebraicVector3 &vtx2, const AlgebraicVector3 &momentum);
   jac9_t makeJacobianVector2d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
-			    const GlobalPoint &vtx2, const TVector3 &tv3momentum);
+			      const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   jac9_t makeJacobianVector2d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   
- private: // instance variables
-	int fVerbose;
-	const TransientTrackBuilder* fpTTB;
-	edm::Handle<edm::View<reco::Track> > fhTracks;
-	edm::Handle<reco::VertexCollection> fPVCollection;
-	const reco::MuonCollection *fMuons;
-	const MagneticField* magneticField;
-	reco::BeamSpot fBeamSpot;
-	bool removeCandTracksFromVtx_;
-	//RefCountedHFNodeCut nodeCut;
-
+private: // instance variables
+  int fVerbose;
+  const TransientTrackBuilder* fpTTB;
+  edm::Handle<edm::View<reco::Track> > fhTracks;
+  edm::Handle<reco::VertexCollection> fPVCollection;
+  const reco::MuonCollection *fMuons;
+  const MagneticField* magneticField;
+  reco::BeamSpot fBeamSpot;
+  bool removeCandTracksFromVtx_;
+  // -- variables for PV choice
+  int fPvIx, fPvIx2; 
+  double fPvLip, fPvLip2;   
+  double fPvLipE, fPvLipE2; 
 };
 
 #endif
