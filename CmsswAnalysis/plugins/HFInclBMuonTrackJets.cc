@@ -138,7 +138,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder",builder);  
 
   TAnaTrack *pTrack; 
-  int index = 0;
+  int index (0), matchedJetIndex(-1);
   if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> nMuons =" << muons->size() << endl;
 
   for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++ muon ) { 
@@ -171,6 +171,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	      if (!muonOnlyJet && r<rmin && it->et() > fJetEtMin) {
 		rmin    = r;
 		matchedjet   = (*it).clone();
+		matchedJetIndex = indj;
 		found = true;
 		if (fVerbose) cout << " matched!";
 	      }
@@ -220,7 +221,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	      if (foundmuon) {
 		pTrack           = gHFEvent->addSigTrack();
 		pTrack->fInt1    = 100100; // type
-		pTrack->fInt2    = indj;
+		pTrack->fInt2    = matchedJetIndex;
 		
 		pTrack->fDouble1 = -99.;   // ptrel
 		TVector3 a; 
