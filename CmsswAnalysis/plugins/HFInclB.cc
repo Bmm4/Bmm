@@ -151,7 +151,7 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
       reco::Track tT(*tTrackView);
       already = 0; 
       if (pvidx == pv0) {
-	if (ix == muonList[im]) continue; // muon is added below
+	if (ix == static_cast<unsigned int>(muonList[im])) continue; // muon is added below
 	if (tT.pt() < 0.5) continue;
 	if (tT.pt() > 500.) continue;
 	already = 1; 
