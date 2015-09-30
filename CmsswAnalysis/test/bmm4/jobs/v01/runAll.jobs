@@ -18,6 +18,10 @@ $dataset = "Run2015B__Charmonium__PromptReco-v1";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015B-XXXX.py -f ../../../catalogs/Run2015B__Charmonium__PromptReco-v1/150722 -s $version -r -e 20000; ";
 
+$dataset = "Run2015D__Charmonium__PromptReco-v3";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/Run2015D__Charmonium__PromptReco-v3/150930 -s $version -r -e 20000; ";
+
 $dataset = "Summer12_DR53X";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToMuMu_BdFilter_8TeV-pythia6-evtgen -s $version -n 10 -l; \ \n";
