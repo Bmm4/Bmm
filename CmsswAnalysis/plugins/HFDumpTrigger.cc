@@ -799,7 +799,7 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
 {
   bool hasChanged;
   validHLTConfig = hltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
-  cout << "HFDumpTrigger::beginRun> hltConfig.tableName() = " << hltConfig.tableName() << endl;
+  //  cout << "HFDumpTrigger::beginRun> hltConfig.tableName() = " << hltConfig.tableName() << endl;
   vector<string> v = hltConfig.datasetNames();
   
   TDirectory *pDir = gDirectory; 
@@ -808,7 +808,7 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
   h1->SetDirectory(gHFFile); 
 
   for (unsigned int i = 0; i < v.size(); ++i) {
-    cout << "                           " << v[i] << endl;
+    //    cout << "                           " << v[i] << endl;
     h1->GetXaxis()->SetBinLabel(i+1, v[i].c_str()); 
   }
 
