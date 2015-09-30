@@ -32,7 +32,7 @@ use Getopt::Std;
 getopts('abBcDp:s:t:v');
 
 my $commandFrozen = "hltConfigFromDB --offline --configName "; 
-my $commandCdaq   = "hltConfigFromDB --v2 --configName "; 
+my $commandCdaq   = "hltConfigFromDB --adg --v2 --configName "; 
 
 
 # -- allow either /frozen/... or menu__frozen__... version
