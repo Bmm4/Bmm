@@ -28,13 +28,13 @@ HFInclB = cms.EDAnalyzer("HFInclB",
     nMuons             = cms.untracked.int32(1),
     trackPt            = cms.untracked.double(1.0),
     deltaR             = cms.untracked.double(99.0),
-    maxDoca            = cms.untracked.double(0.1),
+    maxDoca            = cms.untracked.double(0.01),
     maxD0              = cms.untracked.double(99.0),
     maxDz              = cms.untracked.double(99.0),
     pvWeight           = cms.untracked.double(0.6),
     type               = cms.untracked.int32(1300)
 )
 
-HFInclBSignalSequence = cms.Sequence(HFInclB)
+HFInclBSignalSequence = cms.Sequence(HFInclB*HFInclBMuonTrackJets)
 
  
