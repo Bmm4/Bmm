@@ -27,6 +27,10 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 
+#include "TH1.h"
+#include "TFile.h"
+#include "TDirectory.h"
+
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
@@ -43,6 +47,7 @@
 
 // -- Yikes!
 extern TAna01Event *gHFEvent;
+extern TFile       *gHFFile;
 
 using namespace std;
 using namespace edm;
@@ -794,6 +799,23 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
 {
   bool hasChanged;
   validHLTConfig = hltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
+  cout << "HFDumpTrigger::beginRun> hltConfig.tableName() = " << hltConfig.tableName() << endl;
+  vector<string> v = hltConfig.datasetNames();
+  
+  TDirectory *pDir = gDirectory; 
+  gHFFile->cd();
+  TH1D *h1 = new TH1D(Form("pd%d", run.run()), hltConfig.tableName().c_str(), v.size()+1, 0., v.size()+1); 
+  h1->SetDirectory(gHFFile); 
+
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    cout << "                           " << v[i] << endl;
+    h1->GetXaxis()->SetBinLabel(i+1, v[i].c_str()); 
+  }
+
+  h1->Write();
+  delete h1; 
+
+  pDir->cd(); 
 }
 
 void HFDumpTrigger::endRun(Run const&, EventSetup const&)
