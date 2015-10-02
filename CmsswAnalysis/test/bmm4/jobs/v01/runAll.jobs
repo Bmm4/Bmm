@@ -39,3 +39,14 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_NoFilter -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_EtaPtFilter -s $version -n 20 -l;  \ \n";
 	
+$dataset = "Run2012A__MuOnia__22Jan2013-v1";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
+
+$dataset = "Run2012B__MuOnia__22Jan2013-v1";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
+
+$dataset = "Run2012C__MuOnia__22Jan2013-v1";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
+
+$dataset = "Run2012D__MuOnia__22Jan2013-v1";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
