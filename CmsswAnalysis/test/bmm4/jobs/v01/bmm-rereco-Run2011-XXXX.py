@@ -25,6 +25,7 @@ process.GlobalTag.globaltag = "FT_53_LV5_AN1::All"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 
 
 
