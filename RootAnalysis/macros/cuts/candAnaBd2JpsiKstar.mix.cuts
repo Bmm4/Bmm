@@ -28,5 +28,5 @@ TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
 +input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
-# -- phi cuts
+# -- kstar cuts
 +input cuts/kstar.cuts
