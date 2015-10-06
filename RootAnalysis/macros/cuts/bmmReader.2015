@@ -1,7 +1,7 @@
 candAnaMuMu       cuts/candAnaMuMu.2015.cuts
 candAnaBu2JpsiK   cuts/candAnaBu2JpsiK.2015.cuts
 candAnaBs2JpsiPhi cuts/candAnaBs2JpsiPhi.2015.cuts
-candAnaBd2JpsiKstar cuts/candAnaBs2JpsiKstar.2015.cuts
+candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.2015.cuts
 #
 JSON             ../common/json/Cert_246908-251883_13TeV_PromptReco_Collisions15_JSON_MuonPhys_v2.txt
 PDTRIGGER        ../common/pd
