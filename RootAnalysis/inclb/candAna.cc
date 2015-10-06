@@ -1,10 +1,12 @@
 #include "candAna.hh"
 
 #include "common/HFMasses.hh"
+//#include "fastjet/ClusterSequence.hh"
 
 #include "common/ana.hh"
 
 using namespace std;
+//using namespace fastjet;
 
 // ----------------------------------------------------------------------
 candAna::candAna(inclbReader *pReader, string name, string cutsFile) {
@@ -17,6 +19,37 @@ candAna::candAna(inclbReader *pReader, string name, string cutsFile) {
   fHistDir = gFile->mkdir(fName.c_str());
   readCuts(cutsFile, 1); 
   cout << "======================================================================" << endl;	 
+
+  // // -- test FASTJET
+  //   vector<PseudoJet> particles;
+  //   // an event with three particles:   px    py  pz      E
+  //   particles.push_back( PseudoJet(   99.0,  0.1,  0, 100.0) ); 
+  //   particles.push_back( PseudoJet(    4.0, -0.1,  0,   5.0) ); 
+  //   particles.push_back( PseudoJet(  -99.0,    0,  0,  99.0) );
+  
+  //   // choose a jet definition
+  //   double R = 0.7;
+  //   JetDefinition jet_def(antikt_algorithm, R);
+  
+  //   // run the clustering, extract the jets
+  //   ClusterSequence cs(particles, jet_def);
+  //   vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets());
+  
+  //   // print out some infos
+  //   cout << "Clustering with " << jet_def.description() << endl;
+  
+  //   // print the jets
+  //   cout <<   "        pt y phi" << endl;
+  //   for (unsigned i = 0; i < jets.size(); i++) {
+  //     cout << "jet " << i << ": "<< jets[i].pt() << " " 
+  // 	 << jets[i].rap() << " " << jets[i].phi() << endl;
+  //     vector<PseudoJet> constituents = jets[i].constituents();
+  //     for (unsigned j = 0; j < constituents.size(); j++) {
+  //       cout << "    constituent " << j << "'s pt: " << constituents[j].pt()
+  //            << endl;
+  //     }
+  //   }
+  
 }
 
 
@@ -49,7 +82,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   fpEvt = evt; 
 
   TAnaTrack *pSigTrack(0);
-  if (fVerbose == -66) { 
+  if (fVerbose > 39) { 
     cout << "---- Evt: " << fEvt << " n(sig tracks) = " << fpEvt->nSigTracks() << endl;
   }
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
@@ -59,8 +92,13 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     pSigTrack = fpEvt->getSigTrack(iC);
     
     if (TYPE != pSigTrack->fInt1) {
-      if (fVerbose > 39) cout << "  skipping sig track at " << iC << " which is of type " << pSigTrack->fInt1 <<endl;
+      if (fVerbose > 39) cout << "  skipping sig track at " << iC << " which is of type " << pSigTrack->fInt1 << endl;
       continue;
+    } else {
+      if (fVerbose > 39) cout << "  analyzing sig track at " << iC << " which is of type " << pSigTrack->fInt1 
+			      << " with ptrel = " << pSigTrack->fDouble1
+			      << " jet index = " << pSigTrack->fInt2
+			      << endl;
     }
     
     if (pSigTrack->fInt2 < 0) continue;
@@ -69,37 +107,9 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpSigJet   = fpEvt->getTrackJet(pSigTrack->fInt2);
 
     // -- FIXME should be via index'ed track
-    TAnaMuon *pM(0); 
-    for (int imuon = 0; imuon < fpEvt->nMuons(); ++imuon) {
-      pM = fpEvt->getMuon(imuon); 
-      if ((TMath::Abs(1. - fpSigTrack->fPlab.Perp()/pM->fPlab.Perp()) < 0.001) 
-	  && (TMath::Abs(1. - fpSigTrack->fPlab.Eta()/pM->fPlab.Eta()) < 0.001)) {
-	break;
-      }
-      pM = 0; 
-    }
-    if (pM) {
-      fpMuon = pM; 
-    } else {
-      fpMuon = 0; 
-    }
-
-
-    TSimpleTrack *pT(0); 
-    for (int it = 0; it < fpEvt->nSimpleTracks(); ++it) {
-      pT = fpEvt->getSimpleTrack(it); 
-      if ((TMath::Abs(1. - fpSigTrack->fPlab.Perp()/pT->getP().Perp()) < 0.001) 
-	  && (TMath::Abs(1. - fpSigTrack->fPlab.Eta()/pT->getP().Eta()) < 0.001)) {
-	break;
-      }
-      pT = 0; 
-    }
-    if (pT) {
-      fpTrack = pT; 
-    } else {
-      fpTrack = 0; 
-    }
-
+    fpMuon = fpEvt->getSimpleTrackMuon(fpSigTrack->fIndex); 
+    fpTrack = fpEvt->getSimpleTrack(fpSigTrack->fIndex); 
+    //    cout << "  fpMuon = " << fpMuon << "  fpTrack = " << fpTrack << endl;
 
     if (fVerbose > 99) {
       TVector3 vj = fpSigJet->fPlab - fpSigTrack->fPlab; 
@@ -147,7 +157,7 @@ void candAna::candAnalysis() {
   fJetEta  = fpSigJet->fPlab.Eta(); 
   fJetPhi  = fpSigJet->fPlab.Phi(); 
 
-
+  cout << "fMuPtRel = " << fMuPtRel << " fMuPt = " << fMuPt << " HLT: " <<  fGoodHLT << endl;
   fillRedTreeData();
 
 }
@@ -379,6 +389,9 @@ void candAna::fillRedTreeData() {
   fRTD.phi       = fMuPhi; 
   fRTD.ptrel     = fMuPtRel; 
 
+  fRTD.jpt        = fJetPt; 
+  fRTD.jeta       = fJetEta; 
+  fRTD.jphi       = fJetPhi; 
 }
 
 
@@ -444,7 +457,11 @@ void candAna::triggerSelection() {
     result = fpEvt->fHLTResult[i]; 
     error  = fpEvt->fHLTError[i]; 
 
-    if (-31 == fVerbose) cout << a << endl;
+    if (-31 == fVerbose && wasRun > 0) cout << a 
+					    << " was run: " << wasRun 
+					    << " result: " << result 
+					    << " ps: " << ps 
+					    << endl;
 
     string spath; 
     int rmin, rmax; 
@@ -453,39 +470,15 @@ void candAna::triggerSelection() {
       rmin = imap->second.first; 
       rmax = imap->second.second; 
       if (!a.CompareTo(imap->first.c_str())) {
-	fGoodHLT = true; 
+	fGoodHLT = result; 
 	if (fVerbose > 1 || -32 == fVerbose  ) cout << "exact match: " << imap->first.c_str() << " HLT: " << a << " result: " << result << endl;
-      }
-      
-      if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
-	fGoodHLT = true; 
-	if (fVerbose > 1 || -32 == fVerbose) cout << "close match: " << imap->first.c_str() << " HLT: " << a 
-						  << " result: " << result 
-						  << " in run " << fRun 
-						  << endl;
       }
     }
   }      
-  
-  // Print trigger object for trigger matching TESTING ONLY
-  if (true) { //  && fGoodHLT) {  
-    
-    if (-32 == fVerbose ) {
-      TTrgObj *p;     
-      for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
-	p = fpEvt->getTrgObj(i); 
-	
-	// First check the selective matching
-	if (p->fNumber > -1)  {
-	  cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = " << p->fID << " pT = " << p->fP.Perp() 
-	      << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "<<p->fID << endl;
-	} // number
-      } // for
-    } // verbose
-  } // true
 
   if (false == fGoodHLT) {
-    if (fVerbose > 1) cout << "------->  event NOT triggered!" << endl;
+    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event NOT triggered!" << endl;
+  } else {
+    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event     triggered!" << endl;
   }
-
 }

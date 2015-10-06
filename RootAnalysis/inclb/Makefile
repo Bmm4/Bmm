@@ -33,8 +33,9 @@ SOFLAGS       = -shared
 
 CXXFLAGS     += $(ROOTCFLAGS)
 GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA
-EXTHEADERS    = -I..
-
+EXTHEADERS    = -I.. 
+#EXTHEADERS    = -I.. -I../fastjet-install/include/
+#FASTJETLIBS   = `../fastjet-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 # -- Files
 READER = treeReader01.o inclbReader.o genAnalysis.o candAna.o # plotClass.o plotWork.o
@@ -73,11 +74,13 @@ $(addprefix lib/,%.pcm) :
 all: vars prep lib bin
 
 lib: $(addprefix obj/,$(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaInclBClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaInclBClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so 
+#	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaInclBClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so $(FASTJETLIBS)
 
 
 bin: lib obj/runInclB.o
-	$(LD) $(LDFLAGS) -o bin/runInclB $(GLIBS) obj/runInclB.o lib/libAnaInclBClasses.so lib/libAna00.so lib/libUtil.so
+	$(LD) $(LDFLAGS) -o bin/runInclB $(GLIBS) obj/runInclB.o lib/libAnaInclBClasses.so lib/libAna00.so lib/libUtil.so 
+#	$(LD) $(LDFLAGS) -o bin/runInclB $(GLIBS) obj/runInclB.o lib/libAnaInclBClasses.so lib/libAna00.so lib/libUtil.so $(FASTJETLIBS)
 
 
 # -- preparatory setup

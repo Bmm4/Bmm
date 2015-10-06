@@ -36,8 +36,6 @@ if ($opt_o) {
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
 
-my $goback = 0; 
-
 # ----------------------------------------------------------------------
 # -- read in (and eval) configuration: 
 #      $runCommand
@@ -63,22 +61,26 @@ if ($opt_h) {
 }
 
 
-# -- create (split) files
+# -- create (split) files. They ALWAYS go into a subdirectory
 if ($opt_p) {
     foreach $j (keys %catalogs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
-	$goback = 0; 
-	if (-d "$j") {
-	    chdir("$j");
-	    $goback = 1; 
-	} 
+	if (-d "jobs") {
+	    chdir("jobs"); 
+	} else {
+	    if (-d "$j") {
+		chdir("$j");
+	    } else {
+		mkdir("$j"); 
+		chdir("$j");
+	    }
+	}
+
 	print "$catalogs{$j}\n";
 	if (!$opt_d) {
 	    system("$catalogs{$j}");
 	}
-	if ($goback == 1) {
-	    chdir("..");
-	}
+	chdir("..");
     }
     
     exit(0); 

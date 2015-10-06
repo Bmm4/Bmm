@@ -27,53 +27,55 @@
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
 
 struct HFSetupException {
-	HFSetupException(const char* msg) : fMsg(msg) {}
-	std::string fMsg;
+HFSetupException(const char* msg) : fMsg(msg) {}
+  std::string fMsg;
 };
 
+
+// ----------------------------------------------------------------------
 class HFVirtualDecay : public edm::EDAnalyzer {
 	
-	public:
-		explicit HFVirtualDecay(const edm::ParameterSet& iConfig);
+ public:
+  explicit HFVirtualDecay(const edm::ParameterSet& iConfig);
 	
-	protected:
-		virtual void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup);
+ protected:
+  virtual void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup);
 		
-		virtual void dumpConfiguration();
-	protected:
-		// configuration
-		int fVerbose;
+  virtual void dumpConfiguration();
+ protected:
+  // configuration
+  int fVerbose;
 		
-		edm::InputTag fTracksLabel;
-		std::string fTrackQualityString;
-		edm::InputTag fPrimaryVertexLabel;
-		edm::InputTag fBeamSpotLabel;
-		edm::InputTag fMuonsLabel;
-		std::string fMuonQualityString;
+  edm::InputTag fTracksLabel;
+  std::string fTrackQualityString;
+  edm::InputTag fPrimaryVertexLabel;
+  edm::InputTag fBeamSpotLabel;
+  edm::InputTag fMuonsLabel;
+  std::string fMuonQualityString;
 		
-		double fTrackPt;
-		double fMuonPt;
-		double fDeltaR;
-		double fMaxDoca;
-		double fMaxD0;
-		double fMaxDz;
-		double fPvWeight;
+  double fTrackPt;
+  double fMuonPt;
+  double fDeltaR;
+  double fMaxDoca;
+  double fMaxD0;
+  double fMaxDz;
+  double fPvWeight;
 		
-		int fType;
+  int fType;
 	
-	protected:
-		// data for subclasses
-		const MagneticField *fMagneticField;
-		const reco::MuonCollection *fMuonCollection;
-		reco::VertexCollection fVertexCollection;
-		reco::BeamSpot fBeamSpot;
+ protected:
+  // data for subclasses
+  const MagneticField *fMagneticField;
+  const reco::MuonCollection *fMuonCollection;
+  reco::VertexCollection fVertexCollection;
+  reco::BeamSpot fBeamSpot;
 		
-		edm::Handle<edm::View<reco::Track> > fTracksHandle;
-		edm::ESHandle<TransientTrackBuilder> fTTB;
+  edm::Handle<edm::View<reco::Track> > fTracksHandle;
+  edm::ESHandle<TransientTrackBuilder> fTTB;
 		
-		// track list builder
-		std::auto_ptr<HFTrackListBuilder> fListBuilder;
-		std::auto_ptr<HFSequentialVertexFit> fSequentialFitter;
+  // track list builder
+  std::auto_ptr<HFTrackListBuilder> fListBuilder;
+  std::auto_ptr<HFSequentialVertexFit> fSequentialFitter;
 };
 
 #endif

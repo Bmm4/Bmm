@@ -25,7 +25,7 @@ inclbReader::~inclbReader() {
 // ----------------------------------------------------------------------
 void inclbReader::startAnalysis() {
   cout << "==> inclbReader: fVerbose = " << fVerbose << endl;
-  fpJSON = new JSON(JSONFILE.c_str(), (fVerbose!=0?1:0)); 
+  fpJSON = new JSON(JSONFILE.c_str(), 1); 
 }
 
 // ----------------------------------------------------------------------
@@ -114,11 +114,13 @@ void inclbReader::readCuts(TString filename, int dump) {
   char buffer[1000]; 
   char className[200], cutFile[200]; 
   while (is.getline(buffer, 1000, '\n')) {
+    if (buffer[0] == '#') {continue;}
+    if (buffer[0] == '/') {continue;}
     sscanf(buffer, "%s %s", className, cutFile);
-
+    string sclassName(className); 
     // -- set up candidate analyzer classes
-    if (!strcmp(className, "candAna")) {
-      candAna *a = new candAna(this, "candAna", cutFile); 
+    if (string::npos != sclassName.find("candAna")) {
+      candAna *a = new candAna(this, className, cutFile); 
       lCandAnalysis.push_back(a); 
     }
 

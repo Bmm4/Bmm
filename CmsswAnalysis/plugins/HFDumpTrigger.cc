@@ -27,6 +27,10 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 
+#include "TH1.h"
+#include "TFile.h"
+#include "TDirectory.h"
+
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
@@ -43,6 +47,7 @@
 
 // -- Yikes!
 extern TAna01Event *gHFEvent;
+extern TFile       *gHFFile;
 
 using namespace std;
 using namespace edm;
@@ -794,6 +799,39 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
 {
   bool hasChanged;
   validHLTConfig = hltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
+  cout << hltConfig.tableName() << endl;
+  vector<string> pds = hltConfig.datasetNames();
+  
+  TDirectory *pDir = gDirectory; 
+  gHFFile->cd();
+  TH1D *h1 = new TH1D(Form("pd_run%d", run.run()), hltConfig.tableName().c_str(), pds.size(), 0., pds.size()); 
+  h1->SetDirectory(gHFFile); 
+
+  for (unsigned int i = 0; i < pds.size(); ++i) {
+    cout << "   " << pds[i] << endl;
+    h1->GetXaxis()->SetBinLabel(i+1, pds[i].c_str()); 
+  }
+
+  h1->Write();
+  delete h1; 
+
+
+  for (unsigned int ipd = 0; ipd < pds.size(); ++ipd) {
+    vector<string> pdTriggers = hltConfig.datasetContent(pds[ipd]);
+    cout << "  --> pd: " << pds[ipd] << endl;
+    h1 = new TH1D(Form("triggers_%s_run%d", pds[ipd].c_str(), run.run()), 
+		  Form("triggers_%s_run%d (%s)", pds[ipd].c_str(), run.run(), hltConfig.tableName().c_str()), 
+		  pdTriggers.size(), 0., pdTriggers.size()); 
+    h1->SetDirectory(gHFFile); 
+    for (unsigned int it = 0; it < pdTriggers.size(); ++it) {
+      cout << "           " << pdTriggers[it] << endl;
+      h1->GetXaxis()->SetBinLabel(it+1, pdTriggers[it].c_str()); 
+    }
+    h1->Write();
+    delete h1; 
+  }
+  
+  pDir->cd(); 
 }
 
 void HFDumpTrigger::endRun(Run const&, EventSetup const&)

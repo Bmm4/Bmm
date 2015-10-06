@@ -325,7 +325,6 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   double mass;
   double diffChi2 = 9999;
   unsigned int j;
-  int pvIx = -1, pvIx2 = -1; // PV index of this candidate
   ImpactParameters pvImpParams;
   ImpactParameters pvImpParams2nd(Measurement1D(9999.,9999.),Measurement1D(9999.,9999.),Measurement1D(9999.,9999.)); // stores just tip of second best PV to detect pile-up problems
   AnalyticalImpactPointExtrapolator extrapolator(magneticField);
@@ -430,7 +429,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
       // store?
       if (nGoodVtx == 0 ) // the first PV, this is currently the best one ;)
 	{
-	  pvIx = j;
+	  fPvIx = j;
 	  pvImpParams.lip = currentIp.second;
 	  pvImpParams.ip3d = cur3DIP.second;
 	}
@@ -439,12 +438,12 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	  if (fabs(currentIp.second.value()) >= fabs(pvImpParams.lip.value())) {// not the best but the second best
 	    pvImpParams2nd.lip = currentIp.second;
 	    pvImpParams2nd.ip3d = cur3DIP.second;
-	    pvIx2 = j;
+	    fPvIx2 = j;
 	  }
 	  else {
 	    // the best, the previous one is the current 2nd best
-	    pvIx2 = pvIx;
-	    pvIx = j;
+	    fPvIx2 = fPvIx;
+	    fPvIx = j;
 	    pvImpParams2nd.lip = pvImpParams.lip;
 	    pvImpParams2nd.ip3d = pvImpParams.ip3d;
 	    pvImpParams.lip = currentIp.second;
@@ -459,13 +458,13 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	      // but the second best
 	      pvImpParams2nd.lip = currentIp.second;
 	      pvImpParams2nd.ip3d = cur3DIP.second;
-	      pvIx2 = j;
+	      fPvIx2 = j;
 	    }
 	  }
 	  else {
 	    // this is currently the best one, keep it and put the old best one to 2nd best
-	    pvIx2 = pvIx;
-	    pvIx = j;
+	    fPvIx2 = fPvIx;
+	    fPvIx = j;
 	    pvImpParams2nd.lip = pvImpParams.lip;
 	    pvImpParams2nd.ip3d = pvImpParams.ip3d;
 	    pvImpParams.lip = currentIp.second;
@@ -477,17 +476,17 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	  
     // now, compute the tip w.r.t. PV
     // this code might be obsolete but certainly does not do anything wrong
-    tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),RecoVertex::convertPos((*fPVCollection)[pvIx].position()));
+    tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),RecoVertex::convertPos((*fPVCollection)[fPvIx].position()));
 
     if (!tsos.isValid()) {
       if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
       pvImpParams.tip = (Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.));
     } else {
       pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),
-				     VertexState(RecoVertex::convertPos((*fPVCollection)[pvIx].position()),
-						 RecoVertex::convertError((*fPVCollection)[pvIx].error())));
+				     VertexState(RecoVertex::convertPos((*fPVCollection)[fPvIx].position()),
+						 RecoVertex::convertError((*fPVCollection)[fPvIx].error())));
     }
-    if (fVerbose > 2) cout<<"==> HFSequentialVertexFit: Selected best PVs "<<pvIx<<" "<<pvIx2<<endl;
+    if (fVerbose > 2) cout<<"==> HFSequentialVertexFit: Selected best PVs "<< fPvIx<<" "<<fPvIx2<<endl;
   }
   
   double vtxDistanceCosAlphaPlab(0); // will be used later while calculating the lifetime but easier to determine here.
@@ -509,11 +508,11 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
     const GlobalVector diff = kinVertex->vertexState().position() - wrtVertexState->position() ;
     const TVector3 tv3diff = TVector3(diff.x(),diff.y(),diff.z());
     vtxDistanceCosAlphaPlab = plab.Dot(tv3diff) / (plab.Mag() * tv3diff.Mag());
-  } else if (pvIx >= 0) {
+  } else if (fPvIx >= 0) {
     // -- Distance w.r.t primary vertex
     AdaptiveVertexFitter avf; // PV refit
     KalmanVertexFitter kvf; // delta chi2
-    Vertex currentPV = (*fPVCollection)[pvIx];
+    Vertex currentPV = (*fPVCollection)[fPvIx];
     Vertex currentPVWithSignal;
     vector<TransientTrack> vrtxRefit;
 	  
@@ -572,7 +571,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	  
     // compute the delta chi2 using the Kalman vertex fitter and only tracks with weight > 0.5
     vrtxRefit.clear();
-    currentPV = (*fPVCollection)[pvIx];
+    currentPV = (*fPVCollection)[fPvIx];
     for (itTBR = currentPV.tracks_begin(); itTBR != currentPV.tracks_end(); ++itTBR) {
       if (currentPV.trackWeight(*itTBR) <= 0.5)
 	continue;
@@ -635,8 +634,8 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   pCand->fMaxDoca = tree->maxDoca();
   pCand->fMinDoca = tree->minDoca();
   
-  pCand->fPvIdx = pvIx;
-  pCand->fPvIdx2 = pvIx2;
+  pCand->fPvIdx = fPvIx;
+  pCand->fPvIdx2 = fPvIx2;
   pCand->fPvLip = pvImpParams.lip.value();
   pCand->fPvLipE = pvImpParams.lip.error();
   pCand->fPvTip = pvImpParams.tip.value();
@@ -645,6 +644,11 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   pCand->fPvLipE2 = pvImpParams2nd.lip.error();
   pCand->fPvTip2 = pvImpParams2nd.tip.value();
   pCand->fPvTipE2 = pvImpParams2nd.tip.error();
+
+  fPvLip   = pCand->fPvLip;
+  fPvLipE  = pCand->fPvLipE;
+  fPvLip2  = pCand->fPvLip2;
+  fPvLipE2 = pCand->fPvLipE2;
 
   pCand->fPvIP3d  = pvImpParams.ip3d.value();
   pCand->fPvIP3dE = pvImpParams.ip3d.error();
@@ -722,7 +726,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 			   kinVertex->degreesOfFreedom(),
 			   daughterParticles.size());
 	  
-	  if (pvIx >= 0 && muon::isTightMuon(*muonIt, (*fPVCollection)[pvIx]))
+	  if (fPvIx >= 0 && muon::isTightMuon(*muonIt, (*fPVCollection)[fPvIx]))
 	    pTrack->fMuID |= 0x1<<15;
 	  
 	  if (muon::isTightMuon(*muonIt, secVertex))
@@ -770,6 +774,10 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 // ----------------------------------------------------------------------
 void HFSequentialVertexFit::doFit(HFDecayTree *tree) {
   if (fVerbose > 5) cout << "==>HFSequentialVertexFit> doFit()" << endl;
+
+  fPvIx = fPvIx2 = -9999;
+
+  fPvLip = fPvLip2 = fPvLipE = fPvLipE2 = 9999.; // this will be overridden by the initial value from TAnaCand
   
   try {
     tree->resetKinematicTree(1);
