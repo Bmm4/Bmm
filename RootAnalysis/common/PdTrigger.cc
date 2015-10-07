@@ -30,8 +30,7 @@ PdTrigger::~PdTrigger() {
 
 // ----------------------------------------------------------------------
 void PdTrigger::print() {
-  map<string, vector<string> >::iterator it = fPdTriggers.begin(); 
-  for (; it != fPdTriggers.end(); ++it) {
+  for (map<string, vector<string> >::iterator it = fPdTriggers.begin(); it != fPdTriggers.end(); ++it) {
     cout << it->first << endl;
     for (unsigned int i = 0; i < it->second.size(); ++i) {
       cout << "  " << it->second[i] << endl;
@@ -82,7 +81,7 @@ bool PdTrigger::triggerInPd(string pdname, string triggername) {
       return false;
     }
   }
-  if (0 == fPdTriggers.count(key)) {
+  if (0 == pMap->count(key)) {
     cout << "error: HLTKey:PD = " << key << " not found in map; returning false (but you should add this to PdTriggers!)" << endl;
     return false; 
   }
@@ -108,7 +107,7 @@ bool PdTrigger::triggerInPd(string hltkey, string pdname, string triggername) {
 
   string key = hltkey+string(":")+pdname;
 
-  if (0 == fPdTriggers.count(key)) {
+  if (0 == pMap->count(key)) {
     cout << "error: HLTKey:PD = " << key << ", from " << hltkey << ":" << pdname 
 	 << " not found in map; returning false (but you should add this to PdTriggers!)" 
 	 << endl;
