@@ -66,7 +66,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   HFTwoParticleCombinatoricsSet kstarList = a.combine(trkList,MKAON,trkList,MPION,MKSTAR-fKstarWindow,MKSTAR+fKstarWindow, 0);
 
-  if (fVerbose > 0) cout << "==>HFBs2JpsiKstar> J/psi list size: " << psiList.size() << endl;
+  if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> J/psi list size: " << psiList.size() << endl;
   if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> kstar list size: " << kstarList.size() << endl;
 	
   // -- Build J/psi + kstar
