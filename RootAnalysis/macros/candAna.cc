@@ -111,14 +111,28 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   //  return;
 
 
-  // Select only events with the cndidate 
-//   bool selected = false;
-//   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-//     TAnaCand *pCand = fpEvt->getCand(iC);
-//     if (TYPE == pCand->fType) {selected=true; break;}
-//   }
-//   if(!selected) return;
-
+  // -- Debugging output
+  if (0) {
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << " event " << fEvt << " run " << fRun << " cands " << fpEvt->nCands() 
+	 << " searching for candidate type = " <<  TYPE
+	 << endl;
+    bool selected = false;
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      TAnaCand *pCand = fpEvt->getCand(iC);
+      cout << pCand->fType << endl;
+      if (TYPE == pCand->fType) {
+	selected = true; 
+	break;
+      }
+    }
+    
+    if (!selected) {
+      return;
+    } else {
+      cout << "selected!" << endl;
+    }
+  }
 
   if(fVerbose>0) {
     cout<<"---------------------------------------------------"<<endl;
@@ -2149,31 +2163,33 @@ void candAna::readCuts(string fileName, int dump) {
   }
 
   // -- this is now hard-coded!
-  string sXmlName;
-  // -- barrel
-  string bXml = (fYear == 2011?"TMVA-0":"TMVA-2"); 
-  sXmlName = "weights/" + bXml + "-Events0_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents0.push_back(setupReader(sXmlName, frd)); 
-  sXmlName = "weights/" + bXml + "-Events1_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents1.push_back(setupReader(sXmlName, frd)); 
-  sXmlName = "weights/" + bXml + "-Events2_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents2.push_back(setupReader(sXmlName, frd)); 
-  
-  // -- endcap
-  string fXml = (fYear == 2011?"TMVA-1":"TMVA-3"); 
-  sXmlName = "weights/" + fXml + "-Events0_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents0.push_back(setupReader(sXmlName, frd)); 
-  sXmlName = "weights/" + fXml + "-Events1_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents1.push_back(setupReader(sXmlName, frd)); 
-  sXmlName = "weights/" + fXml + "-Events2_BDT.weights.xml"; 
-  if (dump) cout << "xml:                   " << sXmlName << endl;
-  fReaderEvents2.push_back(setupReader(sXmlName, frd)); 
-  
+  if (0) {
+    string sXmlName;
+    // -- barrel
+    string bXml = (fYear == 2011?"TMVA-0":"TMVA-2"); 
+    sXmlName = "weights/" + bXml + "-Events0_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents0.push_back(setupReader(sXmlName, frd)); 
+    sXmlName = "weights/" + bXml + "-Events1_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents1.push_back(setupReader(sXmlName, frd)); 
+    sXmlName = "weights/" + bXml + "-Events2_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents2.push_back(setupReader(sXmlName, frd)); 
+    
+    // -- endcap
+    string fXml = (fYear == 2011?"TMVA-1":"TMVA-3"); 
+    sXmlName = "weights/" + fXml + "-Events0_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents0.push_back(setupReader(sXmlName, frd)); 
+    sXmlName = "weights/" + fXml + "-Events1_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents1.push_back(setupReader(sXmlName, frd)); 
+    sXmlName = "weights/" + fXml + "-Events2_BDT.weights.xml"; 
+    if (dump) cout << "xml:                   " << sXmlName << endl;
+    fReaderEvents2.push_back(setupReader(sXmlName, frd)); 
+  }
+
   if (dump)  cout << "------------------------------------" << endl;
 }
 
@@ -3032,6 +3048,9 @@ void candAna::calcBDT() {
   
   frd.m  = fCandM; 
   //  cout << "Evt = " << fEvt << " %3 = " << fEvt%3 << " chan = " << fChan << " " << " etas = " << fMu1Eta << " " << fMu2Eta;
+
+  fBDT = 0.;
+  return;
   if (0 == fEvt%3) {
     fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT"); 
   } else if (1 == fEvt%3) {
