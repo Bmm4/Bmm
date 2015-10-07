@@ -39,6 +39,9 @@ void stamp(double x1, std::string text1, double x2, std::string text2, TLatex *t
 void rmSubString(std::string &sinput, const std::string &remove);
 void rmPath(std::string &sInput);
 
+
+std::vector<std::string> glob(std::string basedir, std::string basename);
+
 // ======================================================================
 // Utitilities for displays and typing shortcuts
 // ====================================================================== 

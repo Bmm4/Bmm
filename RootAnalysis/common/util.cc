@@ -8,6 +8,7 @@
 #include "TCanvas.h"
 #include "TLatex.h"
 #include "TString.h"
+#include "TSystem.h"
 #include "TH2.h"
 
 #include<stdarg.h>
@@ -550,4 +551,21 @@ void rmPath(string &sInput) {
     if (foundpos != string::npos)  sInput.erase(sInput.begin(), sInput.begin() + foundpos);
   }
   sInput.erase(sInput.begin(), sInput.begin() + 1); // delete also leading /
+}
+
+// ----------------------------------------------------------------------
+vector<string> glob(string basedir, string basename) {
+  cout << "Looking in " << basedir << " for " << basename << endl;
+  vector<string> lof; 
+  TString fname;
+  const char *file;
+  TSystem *lunix = gSystem; //new TUnixSystem();
+  void *pDir = lunix->OpenDirectory(basedir.c_str());
+  while ((file = lunix->GetDirEntry(pDir))) {
+    fname = file;
+    if (fname.Contains(basename.c_str())) {
+      lof.push_back(string(fname));
+    }
+  }  
+  return lof; 
 }
