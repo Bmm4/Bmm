@@ -14,6 +14,6 @@ DSNAME       Charmonium
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-+input cuts/bdt.2012.cuts
+#no input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts

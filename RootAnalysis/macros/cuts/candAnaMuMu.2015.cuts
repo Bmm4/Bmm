@@ -12,4 +12,4 @@ NOPRESELECTION      1
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-+input cuts/bdt.2012.cuts
+#no input cuts/bdt.2012.cuts
