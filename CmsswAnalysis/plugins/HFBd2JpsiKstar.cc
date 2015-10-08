@@ -119,7 +119,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
 
       // -- sequential fit: J/Psi kaon + pion
-      HFDecayTree theTree(310511, true, MB_0, false, -1.0, true);
+      HFDecayTree theTree(300511, true, MB_0, false, -1.0, true);
 			
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false); // Don't use kinematic particle for the Psi
       iterator->addTrack(iMuon1,13);
@@ -136,7 +136,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       fSequentialFitter->doFit(&theTree);
 			
       // -- sequential fit: J/Psi (constraint) kstar (unconstraint)
-      theTree.clear(410511, true, MB_0, false, -1.0, true);
+      theTree.clear(400511, true, MB_0, false, -1.0, true);
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
