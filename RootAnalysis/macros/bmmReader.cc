@@ -33,7 +33,7 @@ bmmReader::~bmmReader() {
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
   fpJSON = new JSON(JSONFILE.c_str(), 1); 
-  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 1); 
+  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 0); 
 
 //   cout << "HLT_PFHT650: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT650") << endl;
 //   cout << "HLT_PFHT649: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT649") << endl;

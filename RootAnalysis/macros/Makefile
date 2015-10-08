@@ -80,12 +80,10 @@ $(addprefix lib/,%.pcm) :
 all: vars prep lib bin
 
 lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
-
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so 
 
 bin: lib obj/runBmm.o
-	$(LD) $(LDFLAGS) -o bin/runBmm $(GLIBS) obj/runBmm.o lib/libAnaClasses.so lib/libAna00.so lib/libUtil.so
-
+	$(LD) $(LDFLAGS) -o bin/runBmm $(GLIBS) obj/runBmm.o lib/libAnaClasses.so lib/libAna00.so lib/libUtil.so 
 
 # -- preparatory setup
 prep: 

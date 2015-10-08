@@ -67,11 +67,10 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   
   for (int it = fpCand->fSig1; it <= fpCand->fSig2; ++it) {
     p0 = fpEvt->getSigTrack(it);     
-    if (TMath::Abs(p0->fMCID) != 321) continue;
-    // if (TMath::Abs(p0->fMCID) != 211) continue;
-    if (0 == p1) {
+    if (321 == TMath::Abs(p0->fMCID)) {
       p1 = p0; 
-    } else {
+    }
+    if (211 == TMath::Abs(p0->fMCID)) {
       p2 = p0; 
     }
   }
