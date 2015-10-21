@@ -27,6 +27,7 @@ public:
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
   void                triggerSelection();
+   void               genAnalysis();
   
   virtual void        bookHist();
 
@@ -45,6 +46,7 @@ public:
   TAnaTrack *fpSigTrack;
   TSimpleTrack *fpTrack;
   TAnaMuon *fpMuon;
+  TGenCand *fpGenMuon;
   TAnaJet *fpSigJet;
 
   int fVerbose;
