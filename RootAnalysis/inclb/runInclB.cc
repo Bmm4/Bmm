@@ -64,7 +64,7 @@ int main(int argc, char *argv[]) {
 	cout << "-C filename   file with cuts" << endl;
 	cout << "-D path       where to put the output" << endl;
 	cout << "-f filename   single file instead of chain" << endl;
-	cout << "-m            use MC information" << endl;
+	cout << "-m [3|4|5]    running on MC for light|charm|beauty" << endl;
 	cout << "-n integer    number of events to run on" << endl;
 	cout << "-r class name which tree reader class to run" << endl;
 	cout << "-s number     seed for random number generator" << endl;
@@ -80,7 +80,7 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-D"))  {dirName    = string(argv[++i]);  dirspec = 1; } // where to put the output
     if (!strcmp(argv[i],"-f"))  {fileName   = string(argv[++i]); file = 1; }     // single file instead of chain
     if (!strcmp(argv[i],"-j"))  {jsonName   = string(argv[++i]); json = 1; }     // single file instead of chain
-    if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
+    if (!strcmp(argv[i],"-m"))  {isMC       = atoi(argv[++i]); }                 // use MC information?
     if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run 
     if (!strcmp(argv[i],"-r"))  {readerName = string(argv[++i]); }               // which tree reader class to run
     if (!strcmp(argv[i],"-s"))  {randomSeed = atoi(argv[++i]); }                 // set seed for random gen.
@@ -201,7 +201,7 @@ int main(int argc, char *argv[]) {
     a->openHistFile(histfile); 
 
     if (isMC) {
-      a->setMC(1);
+      a->setMC(isMC);
     } else {
       a->setMC(0); 
     }

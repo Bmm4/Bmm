@@ -33,7 +33,7 @@ bmmReader::~bmmReader() {
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
   fpJSON = new JSON(JSONFILE.c_str(), 1); 
-  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 1); 
+  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 0); 
 
 //   cout << "HLT_PFHT650: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT650") << endl;
 //   cout << "HLT_PFHT649: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT649") << endl;
@@ -162,6 +162,15 @@ void bmmReader::readCuts(TString filename, int dump) {
       candAna *a = new candAnaBs2JpsiPhi(this, "candAnaBs2JpsiPhi", cutFile); 
       lCandAnalysis.push_back(a); 
     }
+
+    //////added by jmonroy
+
+    if (!strcmp(className, "candAnaBd2JpsiKstar")) {
+      candAna *a = new candAnaBd2JpsiKstar(this, "candAnaBd2JpsiKstar", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+    //////////
 
     if (!strcmp(className, "candAnaDstar")) {
       candAna *a = new candAnaDstar(this, "candAnaDstar", cutFile); 

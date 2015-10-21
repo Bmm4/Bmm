@@ -422,7 +422,9 @@ void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
     first = 0; 
     vector<int> particles = defVector(5, 511, 521, 531, 541, 5122); 
     for (unsigned int i = 0; i < particles.size(); ++i) {
-      new TH1D(Form("t%d", particles[i]), Form("t%d", particles[i]), 50, 0., 2000.); 
+      new TH1D(Form("t%d", particles[i]), Form("t%d", particles[i]), 50, 0., 5000.); 
+      new TH1D(Form("tpos%d", particles[i]), Form("tpos%d", particles[i]), 50, 0., 5000.); 
+      new TH1D(Form("tneg%d", particles[i]), Form("tneg%d", particles[i]), 50, 0., 5000.); 
     }
     
     new TH1D("m511",  "m511",  100, 5.279, 5.280); 
@@ -576,5 +578,7 @@ void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
   }    
   
   ((TH1D*)fpHistFile->Get(Form("t%d", aid)))->Fill(lifetime); 
+  if (pDau->fID > 0) ((TH1D*)fpHistFile->Get(Form("tpos%d", aid)))->Fill(lifetime); 
+  if (pDau->fID < 0) ((TH1D*)fpHistFile->Get(Form("tneg%d", aid)))->Fill(lifetime); 
   
 }

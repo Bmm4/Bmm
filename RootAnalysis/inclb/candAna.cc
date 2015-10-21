@@ -4,6 +4,7 @@
 //#include "fastjet/ClusterSequence.hh"
 
 #include "common/ana.hh"
+#include "common/util.hh"
 
 using namespace std;
 //using namespace fastjet;
@@ -15,7 +16,7 @@ candAna::candAna(inclbReader *pReader, string name, string cutsFile) {
   fYear    = fpReader->fYear; 
   fName    = name; 
   cout << "======================================================================" << endl;
-  cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << endl;
+  cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << " verbose = " << fVerbose << endl;
   fHistDir = gFile->mkdir(fName.c_str());
   readCuts(cutsFile, 1); 
   cout << "======================================================================" << endl;	 
@@ -106,10 +107,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpSigTrack = pSigTrack; 
     fpSigJet   = fpEvt->getTrackJet(pSigTrack->fInt2);
 
-    // -- FIXME should be via index'ed track
     fpMuon = fpEvt->getSimpleTrackMuon(fpSigTrack->fIndex); 
     fpTrack = fpEvt->getSimpleTrack(fpSigTrack->fIndex); 
-    //    cout << "  fpMuon = " << fpMuon << "  fpTrack = " << fpTrack << endl;
 
     if (fVerbose > 99) {
       TVector3 vj = fpSigJet->fPlab - fpSigTrack->fPlab; 
@@ -124,15 +123,139 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 		  << endl;
     }
 
+    genAnalysis();
     candAnalysis();
     triggerSelection();
+    fillRedTreeData();
 
-    fTree->Fill(); 
+    bool doFill(true);
+    if ((3 == fIsMC) && (0 < fProcessType)) {
+      doFill = false;
+    }
+    if ((4 == fIsMC) && ((499 < fProcessType && fProcessType < 600) || (0 == fProcessType))) {
+      doFill = false;
+    }
+    if ((5 == fIsMC) && ((399 < fProcessType && fProcessType < 500) || (0 == fProcessType))) {
+      doFill = false;
+    }
+    if (doFill) {
+      fTree->Fill(); 
+    }
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
   } 
 
 }
+
+
+// ----------------------------------------------------------------------
+void candAna::genAnalysis() {
+
+  fProcessType = 0; 
+
+  if (0 == fIsMC) {
+    //    cout << "not MC" << endl;
+    return;
+  }
+
+  if (fpTrack->getGenIndex() < 0) {
+    //    cout << "no matching gen cand found" << endl;
+    return;
+  }
+
+  //  fpEvt->dumpGenBlock();
+
+  fpGenMuon = fpEvt->getGenCand(fpTrack->getGenIndex());
+  TGenCand *pM(fpGenMuon); 
+  int iMom(2), aid(0); 
+  bool beauty(false), 
+    charm(false), 
+    light(false), 
+    ccbar(false), 
+    tau(false), 
+    fake(false); 
+  
+  int cnt(-1); 
+  while (iMom > 1 && iMom < fpEvt->nGenCands()) {
+    ++cnt;
+    //    cout << "cnt = " << cnt << " iMom = " << iMom << " pM = " << pM << endl;
+    iMom = pM->fMom1;
+    pM   = fpEvt->getGenCand(iMom);
+
+    aid = TMath::Abs(pM->fID); 
+    if ((211 == aid) 
+	|| (321 == aid) 
+	|| (2212 == aid) 
+	) fake = true;
+
+    if ((111 == aid)        // pi0
+	|| (221 == aid)     // eta
+	|| (113 == aid)     // rho0
+	|| (213 == aid)     // rho+
+	|| (223 == aid)     // omega
+	|| (333 == aid)     // phi
+	) light = true; 
+
+    if ((441 == aid )       // eta_c
+	|| (443 == aid)     // J/psi
+	|| (100443 == aid)  // J/psi
+	) ccbar = true; 
+
+    if (15 == aid)          // tau
+      tau = true;
+
+    if (isCharmMesonWeak(aid)) charm = true; 
+
+    if (isBeautyMesonWeak(aid)) {
+      beauty = true; 
+      break;
+    }
+
+    if (21 == aid) break;
+    if (5 == aid) break;
+    if (4 == aid) break;
+    if (3 == aid) break;
+    if (2 == aid) break;
+    if (1 == aid) break;
+  }
+
+  if (beauty) {
+    if (charm) {
+      if (tau) {
+	fProcessType = 550; 
+      } else if (light) {
+	fProcessType = 560; 
+      } else {
+	fProcessType = 510; 
+      }
+    } else if (ccbar) {
+      fProcessType = 530; 
+    } else if (tau) {
+      fProcessType = 540; 
+    } else if (light) {
+      fProcessType = 520; 
+    } else if (fake) {
+      fProcessType = 590; 
+    } else {
+      fProcessType = 500; 
+    }
+  } else if (charm) {
+    if (tau) {
+      fProcessType = 440; 
+    } else if (light) {
+      fProcessType = 420; 
+    } else if (fake) {
+      fProcessType = 490; 
+    } else {
+      fProcessType = 400; 
+    }
+  }
+
+
+  //  cout << "==> fProcessType = " << fProcessType 
+  //       << endl;
+}
+
 
 // ----------------------------------------------------------------------
 void candAna::candAnalysis() {
@@ -156,9 +279,6 @@ void candAna::candAnalysis() {
   fJetPt   = fpSigJet->fPlab.Perp(); 
   fJetEta  = fpSigJet->fPlab.Eta(); 
   fJetPhi  = fpSigJet->fPlab.Phi(); 
-
-  cout << "fMuPtRel = " << fMuPtRel << " fMuPt = " << fMuPt << " HLT: " <<  fGoodHLT << endl;
-  fillRedTreeData();
 
 }
 
@@ -378,6 +498,7 @@ void candAna::fillRedTreeData() {
   fRTD.run       = fRun;
   fRTD.evt       = fEvt;
   fRTD.ls        = fLS;
+  fRTD.type      = fProcessType;
 
   fRTD.muid      = fMuId;
   fRTD.hlt       = fGoodHLT;
@@ -427,7 +548,7 @@ void candAna::triggerSelection() {
   bool result(false), wasRun(false), error(false); 
 
   if (0 && HLTRANGE.begin()->first == "NOTRIGGER" ) { 
-    //    cout << "NOTRIGGER requested... " << endl;
+    cout << "NOTRIGGER requested... " << endl;
     fGoodHLT = true; 
     return;
   }
@@ -447,7 +568,7 @@ void candAna::triggerSelection() {
     }
   }
   
-  if(fVerbose==-32) cout<<" event "<<fEvt<<endl;
+  if (fVerbose == -32) cout<<" event " << fEvt << endl;
 
   for (int i = 0; i < NHLT; ++i) {
     result = wasRun = error = false;
@@ -464,11 +585,8 @@ void candAna::triggerSelection() {
 					    << endl;
 
     string spath; 
-    int rmin, rmax; 
     for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {  
       spath = imap->first; 
-      rmin = imap->second.first; 
-      rmax = imap->second.second; 
       if (!a.CompareTo(imap->first.c_str())) {
 	fGoodHLT = result; 
 	if (fVerbose > 1 || -32 == fVerbose  ) cout << "exact match: " << imap->first.c_str() << " HLT: " << a << " result: " << result << endl;
@@ -477,8 +595,8 @@ void candAna::triggerSelection() {
   }      
 
   if (false == fGoodHLT) {
-    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event NOT triggered!" << endl;
+    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event NOT triggered (pt = " << fMuPt << ", ptrel = " << fMuPtRel << ")" << endl;
   } else {
-    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event     triggered!" << endl;
+    if (fVerbose > 1 || fVerbose == -32) cout << "------->  event     triggered (pt = " << fMuPt << ", ptrel = " << fMuPtRel << ")" << endl;
   }
 }

@@ -1,12 +1,10 @@
-TYPE           300521
-TRUTHCAND         521
+TYPE           310511
+TRUTHCAND         511
 NOPRESELECTION      1
 #
 TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v1(251168:99999999)
-DSNAME       Charmonium
-#DSNAME       DoubleMuon
 # -- boxes
-+input cuts/boxes.Bu2JpsiK.cuts
++input cuts/boxes.Bd2JpsiKstar.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
@@ -14,6 +12,8 @@ DSNAME       Charmonium
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-#no input cuts/bdt.2012.cuts
+# no input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
+# -- kstar cuts
++input cuts/kstar.cuts

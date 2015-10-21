@@ -25,8 +25,8 @@ TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-+input cuts/bdt.2012.cuts
+#no input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
-# -- phi cuts
+# -- kstar cuts
 +input cuts/kstar.cuts

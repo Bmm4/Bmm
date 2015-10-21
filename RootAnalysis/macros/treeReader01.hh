@@ -30,31 +30,32 @@ class treeReader01 {
 public:
   treeReader01(TChain *tree, TString evtClassName);
   virtual      ~treeReader01();
-  virtual void init(TString evtClassName);
+  virtual void       init(TString evtClassName);
 
-  virtual void openHistFile(TString filename);
-  virtual void closeHistFile();
-  virtual void bookHist();
-  virtual void readCuts(TString filename, int dump = 1);
+  virtual void       openHistFile(TString filename);
+  virtual void       closeHistFile();
+  virtual void       bookHist();
+  virtual void       readCuts(TString filename, int dump = 1);
 
-  virtual void startAnalysis();
-  virtual void endAnalysis();
-  virtual int  loop(int nevents = 1, int start = -1);
-  virtual void eventProcessing();
-  virtual void initVariables(); 
-  virtual void fillHist();
-  virtual bool goodRun();
-  virtual void setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
-  virtual void setYear(int f) {std::cout << Form("setYear(%d)", f) << std::endl;  fYear = f;}
-  virtual void setMC(int f) {std::cout << Form("setMC(%d)", f) << std::endl; fIsMC = f;}
-  virtual void runBlind() {std::cout << "running blinded" << std::endl; BLIND = 1;}
-  virtual int  numberOfBPixLayers(TAnaTrack *t);
-  virtual int  numberOfPixLayers(TAnaTrack *t);
-  virtual int  numberOfPixelHits(TAnaTrack *pTrack);
-  virtual int  numberOfBPixLayer1Hits(TAnaTrack *t);
-  virtual int  numberOfTrackerLayers(TAnaTrack *t);
-  virtual void setJSONFile(const char *name) {JSONFILE = name;}
-  virtual void forceJSON() {fForceJson = true;}
+  virtual void       startAnalysis();
+  virtual void       endAnalysis();
+  virtual int        loop(int nevents = 1, int start = -1);
+  virtual TFile*     getFile() {return fpChain->GetCurrentFile();}
+  virtual void       eventProcessing();
+  virtual void       initVariables(); 
+  virtual void       fillHist();
+  virtual bool       goodRun();
+  virtual void       setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
+  virtual void       setYear(int f) {std::cout << Form("setYear(%d)", f) << std::endl;  fYear = f;}
+  virtual void       setMC(int f) {std::cout << Form("setMC(%d)", f) << std::endl; fIsMC = f;}
+  virtual void       runBlind() {std::cout << "running blinded" << std::endl; BLIND = 1;}
+  virtual int        numberOfBPixLayers(TAnaTrack *t);
+  virtual int        numberOfPixLayers(TAnaTrack *t);
+  virtual int        numberOfPixelHits(TAnaTrack *pTrack);
+  virtual int        numberOfBPixLayer1Hits(TAnaTrack *t);
+  virtual int        numberOfTrackerLayers(TAnaTrack *t);
+  virtual void       setJSONFile(const char *name) {JSONFILE = name;}
+  virtual void       forceJSON() {fForceJson = true;}
   virtual PdTrigger* pdTrigger() {return fpPdTrigger;}
 
   int fVerbose;
