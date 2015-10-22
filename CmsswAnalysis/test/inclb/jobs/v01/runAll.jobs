@@ -32,12 +32,15 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclH2Mu -s $version -n 100 -l;  \ \n";
 
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclH2Mu -s $version -n 100 -l;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-RunIISpring15DR74-XXXX.py -f ../../../catalogs/InclusivebtoMu_bMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1 -s $version -e 30000;  \ \n";
 
