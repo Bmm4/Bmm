@@ -74,7 +74,7 @@ void HFInclB::dumpConfiguration() {
 void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   int printout(0);
-  cout << "----------------------------------------------------------------------" << endl;
+  if (printout) cout << "----------------------------------------------------------------------" << endl;
 
   try {
     HFVirtualDecay::analyze(iEvent,iSetup);
