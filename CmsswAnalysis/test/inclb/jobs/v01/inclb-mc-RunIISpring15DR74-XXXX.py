@@ -25,6 +25,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'MCRUN2_74_V9', '')
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
