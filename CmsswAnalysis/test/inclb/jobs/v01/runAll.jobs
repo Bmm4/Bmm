@@ -24,20 +24,23 @@ sub runCommand() {
 # - NB: NO -s HINMuon possible, all jobs in "jobs"!
 $jobs{$dataset}   = "cd jobs && ".&runCommand." -m batch -q all.q *.py && cd - ";
 
+$dataset = "HINMuon";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run251721  -s $version -n 2 -l;  \ \n";
+
 $dataset = "mc";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclH2Mu -s $version -n 100 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclH2Mu -s $version -n 100 -l;  \ \n";
+
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclH2Mu -s $version -n 100 -l;  \ \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-RunIISpring15DR74-XXXX.py -f ../../../catalogs/InclusivebtoMu_bMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1 -s $version -e 30000;  \ \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-RunIISpring15DR74-XXXX.py -f ../../../catalogs/InclusivectoMu_cMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1 -s $version -e 30000;  \ \n";
 
-$dataset = "HINMuon";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run251721  -s $version -n 2 -l;  \ \n";
 
-$dataset = "SingleMuon";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/SingleMuon__Run2015B-PromptReco-v1 -s $version -r -e 100000;  \ \n";
-
-$dataset = "DoubleMuon";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/DoubleMuon__Run2015B-PromptReco-v1 -s $version -r -e 100000;  \ \n";
