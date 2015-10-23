@@ -3,7 +3,7 @@
   
   cout << "Loading rootlibs" << endl;
   gSystem->Load("lib/libAnaInclBClasses.so");
-  gSystem->Load("lib/libUtil.so");
+  gSystem->Load("../common/lib/libUtil.so");
   
   gROOT->Macro("cms-tdr.C");
   gROOT->ForceStyle();
