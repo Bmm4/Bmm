@@ -36,6 +36,7 @@ public:
 
   void                getSigTracks(std::vector<int> &v, TAnaCand *pC);
   std::string         splitTrigRange(std::string tl, int &r1, int &r2);
+  bool                doTriggerMatching(TAnaTrack *fp1);
 
   std::string fName; 
   std::string fCutFile; 
@@ -70,7 +71,9 @@ public:
 
   // -- variables for reduced tree, they are from fpCand
   bool    fJSON;
-  bool    fMuId, fGoodHLT, fHLTmatch;
+  bool    fMuId, fGoodHLT;
+  int     fHltType, fHltPs; 
+  std::string fHLTPath;
 
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 
