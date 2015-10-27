@@ -23,8 +23,8 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-# requires >= CMSSW_7_4_10
-process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v2"
+# requires >= CMSSW_7_4_6
+process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
@@ -32,7 +32,7 @@ process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v2"
 
 
 # ----------------------------------------------------------------------
-rootFileName = "bmm-prompt-Run2015D-XXXX.root"
+rootFileName = "bmm-prompt-Run2015B-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",

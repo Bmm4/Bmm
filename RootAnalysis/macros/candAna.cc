@@ -1092,6 +1092,7 @@ void candAna::triggerSelection() {
   if ( HLTRANGE.begin()->first == "PDTRIGGER") { //
     //cout << "HLT: " << fpReader->pdTrigger()->triggerInPd("Charmonium", "HLT_DoubleMu4_3_Jpsi_Displaced") << endl;
     if(fVerbose > 2) cout << "PDTRIGGER requested... " << endl;
+    fpReader->pdTrigger()->setHLTKey(fRun, fpReader->getFile());  // needed for the new way
     pdTrigger=true;
   } // PDTRIGGER
 

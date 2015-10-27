@@ -13,7 +13,7 @@ using namespace std;
 namespace {
   TVector3 DSVertex(0,0,0), DZVertex(0,0,0), PV(0,0,0);  
   TVector3 DSMom(0,0,0), DZMom(0,0,0), PiSlowMom(0,0,0), PiMom(0,0,0), KMom(0,0,0);  
-  const bool MYDEBUG=true;
+  const bool MYDEBUG=false;
 }
 
 // ----------------------------------------------------------------------
@@ -45,7 +45,7 @@ void candAnaDstar::candAnalysis() {
   fmdz=0.;
   fpt=0.;
 
-  if (0 == fpCand) return;
+  if (0 == fpCand) return; // skip if no cand 
 
   if(MYDEBUG) cout<<" Call canAna::candAnalysis "<<endl;
   candAna::candAnalysis();  // call the main analysis 
@@ -135,8 +135,8 @@ void candAnaDstar::candAnalysis() {
   } // end if
 
   // Pt, eta
-  double pt    = fpCand->fPlab.Perp(); // cand pt
-  double ptdz  = pC->fPlab.Perp();
+  double pt    = fpCand->fPlab.Perp(); // D* cand pt
+  double ptdz  = pC->fPlab.Perp();  // D0
   double ptPis = pPis->fPlab.Perp();
   double ptPi  = pPi->fPlab.Perp();
   double ptK   = pK->fPlab.Perp();
@@ -193,6 +193,7 @@ void candAnaDstar::candAnalysis() {
   alpha  = t2.Angle(pC->fPlab); // D0 angle
   //falpha2 = t3.Angle(pC->fPlab); // D0 angle versus SV2-SV1
   dr = piSlowMom.Angle(fpCand->fPlab); // pislow openinig
+  double dR = piSlowMom.Angle(pC->fPlab); // pislow openinig versus D0, this is what is used in HFDstar
   
   if(fVerbose>8 ) {
     cout<<" PVs "<<pvidx<<" "
@@ -232,6 +233,7 @@ void candAnaDstar::candAnalysis() {
     ((TH1D*)fHistDir->Get("alpha"))->Fill(alpha);
     ((TH1D*)fHistDir->Get("pt"))->Fill(pt);
     ((TH1D*)fHistDir->Get("dr"))->Fill(dr);
+    ((TH1D*)fHistDir->Get("dR"))->Fill(dR);
     
     ((TH1D*)fHistDir->Get("ptdz"))->Fill(ptdz);
     ((TH1D*)fHistDir->Get("ptPis"))->Fill(ptPis);
@@ -251,7 +253,8 @@ void candAnaDstar::candAnalysis() {
   // Now the selection cuts cut 
   if(fVerbose>8 ) cout<<"Check pre-cuts "<<endl;
   //  does not do aything for data, cand reco is already with 4
-  if(ptPi<4. || ptK<4.) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
+  //if(ptPi<4. || ptK<4.) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
+  if(ptPi<3.5 || ptK<3.5) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
   ((TH1D*)fHistDir->Get("Status"))->Fill(11.);
   
   // skip wrong sign decys 
@@ -395,7 +398,12 @@ void candAnaDstar::candAnalysis() {
   bool veto2 = candAna::doTriggerVeto(pPi,pK,true); // use this, 1 track in trigger vetos the event
   if(veto2) fveto=true;
   if(MYDEBUG) cout<<" veto "<<veto1<<" "<<veto2<<" "<<fveto<<endl;
-
+  //if( (fveto==false && (muid1==true||muid2==true)) 
+      //|| (fveto==true  && (muid1==false&&muid2==false)) 
+  //  ) {
+  //cout<<" veto "<<fveto<<" muid "<<muid1<<"/"<<muid2<<endl;
+  doTest(fpCand,41);
+  //}
   if(fveto)  ((TH1D*)fHistDir->Get("Status"))->Fill(37.);
   if(veto1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
   if(veto2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
@@ -543,8 +551,8 @@ bool candAnaDstar::matchToTriggeredMuon(TAnaTrack *pt, int &idx) {
 
   } // for loop 
 
-  if(select==it0) 
-    cout<<" the matched muon has the same track id as the tracj under test "<<it0<<endl;
+  if(PRINT && select==it0) 
+    cout<<" the matched muon has the same track id as the track under test "<<it0<<endl;
 
   bool match = (dRMin<0.02);
   if(match) idx = select;
@@ -912,6 +920,10 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
   bool printSignal = ( (mode==0) || (mode>=20&&mode<=29) );
   bool printMuons  = ( (mode==0) || (mode>=30&&mode<=39) );
   bool printHLT    = ( (mode==0) || (mode>=40&&mode<=49) );
+  bool printHLTObj = ( (mode==0) || (mode>=50&&mode<=59) );
+
+  // disable printing for 11,21,31,41,51
+  if( (mode%10)==1 ) PRINT=false;
   int status = 0;
 
   if(printSimple) {
@@ -1049,10 +1061,9 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
 
   // HLT 
   if(printHLT) {
-
+    
     if(PRINT) cout<<" List HLT "<<NHLT<<endl;
-      ((TH1D*)fHistDir->Get("htest1"))->Fill(0.);
-      //bool foundJpsi=false;
+    ((TH1D*)fHistDir->Get("htest1"))->Fill(0.);
     for (int i = 0; i < NHLT; ++i) {
       TString a = fpEvt->fHLTNames[i]; 
       //int    ps = fpEvt->fHLTPrescale[i]; 
@@ -1061,64 +1072,45 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
       //bool error  = fpEvt->fHLTError[i]; 
       
       if (wasRun && result) {
-	if(PRINT) cout << "run and fired: " << a << endl;
 
-        // if (a.Contains("_Bs_")) {
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(1.);
-	//   status = 1;
-        // } else if (a.Contains("HLT_DoubleMu4_Jpsi_Displaced")) {
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(2.);
-	//   status = 2;
+	bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
+	if(rightDS) {
+	  if(PRINT) cout << a << " ";
 
-        // } else if (a.Contains("LowMass_Displaced")) {
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(3.);
-	//   status = 3;
+        if (a.Contains("_Bs_")) ((TH1D*)fHistDir->Get("htest1"))->Fill(1.);
+        else if (a.Contains("_Jpsi_Displaced")) 
+	  ((TH1D*)fHistDir->Get("htest1"))->Fill(2.);
+        else if (a.Contains("_JpsiTrk_Displaced")) 
+	  ((TH1D*)fHistDir->Get("htest1"))->Fill(3.);
+        else if (a.Contains("_Jpsi_")) 
+	  ((TH1D*)fHistDir->Get("htest1"))->Fill(4.);
+	else if (a.Contains("PsiPrime_")) 
+	  ((TH1D*)fHistDir->Get("htest1"))->Fill(5.);
+	else // catch the rest
+	  ((TH1D*)fHistDir->Get("htest1"))->Fill(19.);
 
         // } else if (a.Contains("SameSign")) {
         //     ((TH1D*)fHistDir->Get("htest1"))->Fill(4.);
-	//   status = 4;
-
         // } else if (a.Contains("Upsilon")) {
         //     ((TH1D*)fHistDir->Get("htest1"))->Fill(5.);
-	//   status = 5;
-
         // } else if (a.Contains("Tau2Mu")) {
         //     ((TH1D*)fHistDir->Get("htest1"))->Fill(6.);
-	//   status = 6;
-        // } else if (a.Contains("TkMu5")) {    // HLT_Mu15_TkMu5_Onia_v1 (from parked)  
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(7.);
-	//   status = 7;
         // } else if (a.Contains("_JpsiTk_Displaced")) {
         //     ((TH1D*)fHistDir->Get("htest1"))->Fill(8.);
-	//   status = 8;
-
         // } else if (a.Contains("_Jpsi_Muon")) {
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(9.);
-	//   status = 9;
-
-        // } else if (a.Contains("_Jpsi_v") && a.Contains("_Mu")&& a.Contains("_Track")) {
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(10.);
-	//   status = 10;
-
         // } else if (a.Contains("_Jpsi_v")) {
         //     ((TH1D*)fHistDir->Get("htest1"))->Fill(11.);
-	//   status = 11;
-	//   //cout << a << " "<<mode<<endl;
-
-        // } else if (a.Contains("Jpsi_NoVertexing")) { // 
-        //     ((TH1D*)fHistDir->Get("htest1"))->Fill(12.);
-	//   status = 12;
-
         // } else if (a.Contains("Jpsi")) { // catch all JPsi
         //   ((TH1D*)fHistDir->Get("htest1"))->Fill(13.);
-	//   status = 13;
-	//   //cout << a << " "<<mode<<endl;
-        // } // if name
-        // if (a.Contains("Jpsi")) foundJpsi=true;
 
+	} // DS
       } // ifRun
     } // for loop 
+    if(PRINT) cout <<endl;
+  } // if
 
+
+  if(printHLTObj) {
     // Look at Trig Object v2
     TTrgObjv2 *pTO;     
     cout<<" Dump TTrgObjv2 "<<fpEvt->nTrgObjv2()<<endl;
@@ -1145,7 +1137,7 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
       
     }
     
-  } // printHLT
+  } // printHLTObj
 
   return status;
 }
@@ -1403,16 +1395,17 @@ void candAnaDstar::bookHist() {
   TH1 *h = new TH1D("Status", "Status", 50, -0.5, 49.5);
 
   // Dstar histos
-  h = new TH1D("mds", "m(dstar)", 50, 1.8, 2.5);
-  h = new TH1D("mdz", "m(d0)", 70, 1.8, 2.5);
-  h = new TH1D("dm", "delta(m)", 60, 0.13, 0.16);
+  h = new TH1D("mds", "m(dstar)",100, 1.5, 2.5);
+  h = new TH1D("mdz", "m(d0)",   100, 1.5, 2.5);
+  h = new TH1D("dm", "delta(m)", 80, 0.13, 0.17);
   h = new TH1D("ncand", "ncand", 200, 0., 200);
-  h = new TH1D("fls3d", "fls3d", 60, 0., 20);
-  h = new TH1D("flsxy", "flsxy", 60, 0., 20);
+  h = new TH1D("fls3d", "fls3d", 200, 0., 20);
+  h = new TH1D("flsxy", "flsxy", 200, 0., 20);
   h = new TH1D("prob", "prob(chi2/dof)", 100, 0., 1.);
   h = new TH1D("chi2", "chi2", 100, 0., 10.);
   h = new TH1D("alpha", "alpha", 50, 0., 1.0);
-  h = new TH1D("dr","dr",100, 0., 1);
+  h = new TH1D("dr","dr",100, 0., 1);  // pislow versus D*
+  h = new TH1D("dR","dR",100, 0., 1);  // pislow versus D0
   h = new TH1D("pt", "pT", 50, 0., 25);
   h = new TH1D("ptdz", "pT", 50, 0., 25);
   h = new TH1D("ptK",   "pT", 50, 0., 10);
@@ -1663,7 +1656,7 @@ double candAnaDstar::doTriggerMatchingTest(TAnaTrack *pt, int trig) {
     cout << "pt,eta,phi: " << pt->fPlab.Perp() << " " << pt->fPlab.Eta() << " " << pt->fPlab.Phi() << endl;
   }
   
-  ((TH1D*)fHistDir->Get("test1"))->Fill(20.); 
+  //((TH1D*)fHistDir->Get("test1"))->Fill(20.); 
   tlvMu1.SetPtEtaPhiM(pt->fPlab.Perp(),pt->fPlab.Eta(),pt->fPlab.Phi(),MMUON); // assume a muon
   
   for(int i=0; i!=fpEvt->nTrgObj(); i++) {

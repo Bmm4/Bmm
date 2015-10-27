@@ -23,8 +23,8 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-# requires >= CMSSW_7_4_6
-process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
+# requires >= CMSSW_7_4_10
+process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v3"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
@@ -32,13 +32,15 @@ process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
 
 
 # ----------------------------------------------------------------------
-rootFileName = "bmm-prompt-Run2015B-XXXX.root"
+#rootFileName = "bmm-prompt-Run2015B-XXXX.root"
+rootFileName = "dstar-prompt-Run2015B-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
-    requireCand    =  cms.untracked.bool(False),
+#    requireCand    =  cms.untracked.bool(False),
+    requireCand    =  cms.untracked.bool(True),
     fullGenBlock   = cms.untracked.bool(False),
     fileName       = cms.untracked.string(rootFileName)
     )
@@ -48,11 +50,13 @@ process.tree = cms.EDAnalyzer(
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
 process.load("Bmm.CmsswAnalysis.HFBmm_cff")
+process.load("Bmm.CmsswAnalysis.HFHadronic_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
     process.recoStuffSequence*
-    process.bmmSequence*
+    #process.bmmSequence*
+    process.dstarDump*
     process.tree
 )
