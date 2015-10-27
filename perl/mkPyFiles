@@ -330,9 +330,10 @@ sub createPyFilesPerRun() {
 		    } else {
 			print OUT "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32($opt_e) )\n";
 		    }
+		}				
+		# -- remove process.source (which is present for crab running)
+		elsif ($in[$l] =~ /process\.source/) {
 		}
-		
-		
 		# -- substitute files
 		elsif ($in[$l] =~ /REPLACEFILES/) {
 		    if ($opt_n) {
@@ -439,6 +440,9 @@ sub createPyFilesPerBlock() {
 		    print OUT ")\n";
 		    print OUT "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )\n";
 		}
+		# -- remove process.source (which is present for crab running)
+		elsif ($in[$l] =~ /process\.source/) {
+		}
 		else {
 		    print OUT $in[$l], "\n"; 
 		}		
@@ -517,6 +521,9 @@ sub createPyFilesWithoutEvents() {
 		    
 		    print OUT ")\n";
 		    print OUT "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )\n";
+		}
+		# -- remove process.source (which is present for crab running)
+		elsif ($in[$l] =~ /process\.source/) {
 		}
 		else {
 		    print OUT $in[$l], "\n"; 

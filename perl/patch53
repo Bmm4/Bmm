@@ -1,0 +1,19 @@
+#!/usr/bin/perl
+
+# ----------------------------------------------------------------------
+# Usage examples
+# ==============
+#
+# $BMMBASE/perl/patch53
+#
+# ----------------------------------------------------------------------
+
+
+print "$ENV{CMSSW_BASE}/src/Bmm/CmsswAnalysis\n";
+chdir("$ENV{CMSSW_BASE}/src/Bmm/CmsswAnalysis");
+system("pwd");
+system("perl -pi -e 's/HitPattern::MISSING_OUTER_HITS//g' plugins/HFDumpMuons.cc");
+
+system("perl -pi -e 's/HitPattern::TRACK_HITS,//g' src/HFDumpUtilities.cc");
+system("perl -pi -e \"s/HitPattern::TRACK_HITS//g\" src/HFDumpUtilities.cc");
+

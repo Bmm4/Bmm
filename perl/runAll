@@ -51,6 +51,7 @@ eval $gProgram;
 # -- merge rootfiles
 if ($opt_h) {
     foreach $j (keys %jobs) {
+	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	$command = &srmHadd($j); 
 	print "$command\n";
 	if (!$opt_d) {

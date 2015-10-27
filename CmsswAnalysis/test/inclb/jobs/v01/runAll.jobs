@@ -1,0 +1,49 @@
+# -- define the command to run and the delphes output file
+my $version = "v01";
+
+my $dataset = "bla";
+
+# -- keep in the order given below
+tie %jobs, "Tie::IxHash";
+%jobs = ();
+
+tie %catalogs, "Tie::IxHash";
+%catalogs = ();
+
+
+# -- did not manage to do this with refs, so do it with a function: 
+sub runCommand() {
+    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/inclb/cmsRun/$version/%SITE T3_CH_PSI' ";
+}   
+
+
+
+# -- define catalog splitting into py files
+%catalogs = (); 
+
+# - NB: NO -s HINMuon possible, all jobs in "jobs"!
+$jobs{$dataset}   = "cd jobs && ".&runCommand." -m batch -q all.q *.py && cd - ";
+
+$dataset = "HINMuon";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run251721  -s $version -n 2 -l;  \ \n";
+
+$dataset = "mc";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclH2Mu -s $version -n 100 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclH2Mu -s $version -n 100 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu_NOEVTGEN -s $version -n 100 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-RunIISpring15DR74-XXXX.py -f ../../../catalogs/InclusivebtoMu_bMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1 -s $version -e 30000;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-RunIISpring15DR74-XXXX.py -f ../../../catalogs/InclusivectoMu_cMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A-v1 -s $version -e 30000;  \ \n";
+
+

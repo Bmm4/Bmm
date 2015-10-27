@@ -73,8 +73,8 @@ void HFInclB::dumpConfiguration() {
 // ----------------------------------------------------------------------
 void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
-  int printout(1);
-  cout << "----------------------------------------------------------------------" << endl;
+  int printout(0);
+  if (printout) cout << "----------------------------------------------------------------------" << endl;
 
   try {
     HFVirtualDecay::analyze(iEvent,iSetup);
@@ -287,7 +287,7 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     muvect.SetPtEtaPhiM(tM.pt(), tM.eta(), tM.phi(), MMUON);
     vect = vect - muvect;
     pTrack->fDouble1 = muvect.Perp(vect.Vect()); //Ptrel in respct to the corrected jets direction
-    if (fVerbose) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
+    if (printout) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
     
     //define direction
     GlobalVector direction(vect.X(),vect.Y(),vect.Z());

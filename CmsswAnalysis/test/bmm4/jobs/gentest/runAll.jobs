@@ -3,7 +3,7 @@
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/gentest; $BMMBASE/perl/runAll -p -s Summer15_private
 #
 # -- submit cmsRun jobs 
-#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/gentest; $BMMBASE/perl/runAll -t $BMMBASE../../150826bmm4.tar.gz -s Summer15_private
+#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/gentest; $BMMBASE/perl/runAll -t $BMMBASE../../151001bmm4.tar.gz -s Summer15_private
 #
 
 my $version = "gentest";
@@ -19,7 +19,7 @@ tie %catalogs, "Tie::IxHash";
 
 # -- did not manage to do this with refs, so do it with a function: 
 sub runCommand() {
-    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$dataset/%SITE T3_CH_PSI' ";
+    return "$BMMBASE/perl/run -q short.q -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$dataset/%SITE T3_CH_PSI' ";
 }   
 
 $dataset = "gentest";
@@ -30,8 +30,8 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_pri
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA6_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA6_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 												      
-#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOEVTGEN_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
-#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOEVTGEN_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOEVTGEN_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOEVTGEN_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 												      
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Inelastic_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/Inelastic_Bs2MuMu_NoFilter -s $version -n 20 -l;  \n";
@@ -40,16 +40,16 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_pri
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/HARDQCD8_Bs2MuMu_NoFilter -s $version -n 20 -l;  \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTOS_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTOS_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTOS_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTONNOEVTGEN_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTONNOEVTGEN_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/NOPHOTONNOEVTGEN_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 												      
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS_Bs2MuMu_EtaPtFilter -s $version -n 20 -l;  \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS0_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS0_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/DGS0_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_EtaPtFilter -s $version -n 20 -l; \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_NoFilter -s $version -n 20 -l; \n";
