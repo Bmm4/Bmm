@@ -21,7 +21,6 @@ process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
-from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 process.GlobalTag.globaltag = "FT53_V21A_AN6::All"
 
