@@ -4,7 +4,7 @@ config = config()
 config.General.requestName = 'DSTAR_Run2012C'
 config.General.workArea = 'crab_projects'
 config.General.transferOutputs = True
-config.General.transferLogs = False
+config.General.transferLogs = True
 
 config.JobType.pluginName = 'Analysis'
 config.JobType.psetName = 'dstar-rereco-Run2012-XXXX.py'
