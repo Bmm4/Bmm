@@ -31,7 +31,7 @@ process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 
 
 # ----------------------------------------------------------------------
-rootFileName = "dstar-prompt-Run2012A-XXXX.root"
+rootFileName = "dstar-rereco-Run2012-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
