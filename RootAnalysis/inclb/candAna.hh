@@ -27,7 +27,7 @@ public:
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
   void                triggerSelection();
-   void               genAnalysis();
+  void                genAnalysis();
   
   virtual void        bookHist();
 
@@ -58,7 +58,7 @@ public:
   int fEvent; 
   int fRunRange;
   int fYear;
-  int fProcessType;
+  int fProcessType, fMuonProcessType;
 
   std::map<std::string, std::pair<int, int> > HLTRANGE;
 
@@ -70,6 +70,7 @@ public:
   
 
   // -- variables for reduced tree, they are from fpCand
+  bool    fDoFill;
   bool    fJSON;
   bool    fMuId, fGoodHLT;
   int     fHltType, fHltPs; 
@@ -78,7 +79,7 @@ public:
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 
   double  fJetPt, fJetEta, fJetPhi; 
-
+  double  fGenMuPt, fGenMuEta, fGenMuPhi;
   struct RedTreeData fRTD;
 
 };

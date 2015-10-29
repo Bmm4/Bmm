@@ -126,26 +126,34 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     genAnalysis();
     candAnalysis();
     triggerSelection();
-    fillRedTreeData();
 
-    bool doFill(true);
-    if ((3 == fIsMC) && (0 < fProcessType)) {
-      doFill = false;
+    // -- MC filling?
+    fDoFill = true;
+    if ((3 == fIsMC) && (0 < fMuonProcessType)) {
+      fDoFill = false;
     }
-    if ((4 == fIsMC) && ((499 < fProcessType && fProcessType < 600) || (0 == fProcessType))) {
-      doFill = false;
+    if ((4 == fIsMC) && ((499 < fMuonProcessType && fMuonProcessType < 600) || (0 == fMuonProcessType))) {
+      fDoFill = false;
     }
-    if ((5 == fIsMC) && ((399 < fProcessType && fProcessType < 500) || (0 == fProcessType))) {
-      doFill = false;
+    if ((5 == fIsMC) && ((399 < fMuonProcessType && fMuonProcessType < 500) || (0 == fMuonProcessType))) {
+      fDoFill = false;
     }
+
 
     // -- for data only fill HLT-triggered (and matched!) muons from good runs
     if (0 == fIsMC) {
-      if (!fGoodHLT) doFill = false; 
-      if (!fJSON) doFill = false; 
+      if (!fGoodHLT) fDoFill = false; 
+      if (!fJSON) fDoFill = false; 
+      if (0) cout << "goodHLT: " << fGoodHLT << " JSON: " << fJSON 
+		  << " run: " << fRun << " evt: " << fEvt << " ls: " << fLS
+		  << " fDoFill: " << fDoFill
+		  << endl;
     }
 
-    if (doFill) {
+
+    fillRedTreeData();
+    
+    if (fDoFill) {
       fTree->Fill(); 
     }
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
@@ -158,7 +166,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 // ----------------------------------------------------------------------
 void candAna::genAnalysis() {
 
-  fProcessType = 0; 
+  
+  fMuonProcessType = 0; 
 
   if (0 == fIsMC) {
     //    cout << "not MC" << endl;
@@ -173,6 +182,10 @@ void candAna::genAnalysis() {
   //  fpEvt->dumpGenBlock();
 
   fpGenMuon = fpEvt->getGenCand(fpTrack->getGenIndex());
+  fGenMuPt  = fpGenMuon->fP.Perp();
+  fGenMuEta = fpGenMuon->fP.Eta();
+  fGenMuPhi = fpGenMuon->fP.Phi();
+
   TGenCand *pM(fpGenMuon); 
   int iMom(2), aid(0); 
   bool beauty(false), 
@@ -229,37 +242,37 @@ void candAna::genAnalysis() {
   if (beauty) {
     if (charm) {
       if (tau) {
-	fProcessType = 550; 
+	fMuonProcessType = 550; 
       } else if (light) {
-	fProcessType = 560; 
+	fMuonProcessType = 560; 
       } else {
-	fProcessType = 510; 
+	fMuonProcessType = 510; 
       }
     } else if (ccbar) {
-      fProcessType = 530; 
+      fMuonProcessType = 530; 
     } else if (tau) {
-      fProcessType = 540; 
+      fMuonProcessType = 540; 
     } else if (light) {
-      fProcessType = 520; 
+      fMuonProcessType = 520; 
     } else if (fake) {
-      fProcessType = 590; 
+      fMuonProcessType = 590; 
     } else {
-      fProcessType = 500; 
+      fMuonProcessType = 500; 
     }
   } else if (charm) {
     if (tau) {
-      fProcessType = 440; 
+      fMuonProcessType = 440; 
     } else if (light) {
-      fProcessType = 420; 
+      fMuonProcessType = 420; 
     } else if (fake) {
-      fProcessType = 490; 
+      fMuonProcessType = 490; 
     } else {
-      fProcessType = 400; 
+      fMuonProcessType = 400; 
     }
   }
 
 
-  //  cout << "==> fProcessType = " << fProcessType 
+  //  cout << "==> fMuonProcessType = " << fMuonProcessType 
   //       << endl;
 }
 
@@ -295,21 +308,103 @@ void candAna::bookHist() {
 
   fHistDir->cd();
 
-  TH1D *h11(0); 
-  (void)h11; 
-  h11 = new TH1D(Form("mon%s", fName.c_str()), Form("mon%s", fName.c_str()), 50, 0., 50.); 
-
-
-  TH2D *h22(0); 
-  (void)h22; 
+  new TH1D(Form("mon%s", fName.c_str()), Form("mon%s", fName.c_str()), 50, 0., 50.); 
 
   // -- Reduced Tree
   fTree = new TTree("events", "events");
   setupRedTree(fTree); 
   
   // -- Analysis distributions
-  TH1D *h = new TH1D("analysisDistributions", "analysisDistributions", 10000, 0., 10000.); 
-  (void)h;
+  new TH1D("analysisDistributions", "analysisDistributions", 10000, 0., 10000.); 
+
+
+  cout << "booking hists for " << fName << endl;
+  TH1::SetDefaultSumw2(kTRUE);
+  double MAXPTREL(10.);
+  int NBINS(50); 
+  new TH1D("ptrel_4_6", "ptrel_4_6", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_6_8", "ptrel_6_8", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_8_10", "ptrel_8_10", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_10_15", "ptrel_10_15", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_15_20", "ptrel_15_20", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_20_30", "ptrel_20_30", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_30_40", "ptrel_30_40", NBINS, 0., MAXPTREL); 
+  new TH1D("ptrel_40_50", "ptrel_40_50", NBINS, 0., MAXPTREL); 
+  
+  TH1D *h(0);
+  TH2D *h2(0); 
+  char hname[1000], htitle[1000];
+  // -- level: 
+  //    5 trigger-matched muon + jet
+  //    (6 trigger-matched muon with impact parameter)
+  int i(5); 
+  // -- tag
+  //    0 data???
+  //    1 b 
+  //    2 c
+  //    3 uds
+  //    ... more to come ...
+  vector<int> vTag; 
+  vTag.push_back(0); 
+  vTag.push_back(1); 
+  vTag.push_back(2); 
+  vTag.push_back(3); 
+  vTag.push_back(8);  // FCR
+  vTag.push_back(9);  // FEC
+  vTag.push_back(10); // GS
+  for (unsigned int jv = 0; jv < vTag.size(); ++jv) {
+    int j = vTag[jv];
+    sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta", i, j); 
+    sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
+    h2 = new TH2D(hname, htitle, 80, -4., 4., 100, 0., 10.); 
+    setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
+    h2->Sumw2(); 
+    
+    sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt", i, j); 
+    sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d", i, j);
+    h2 = new TH2D(hname, htitle, 100, 0., 100., 100, 0., 10.); 
+    setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
+    h2->Sumw2();
+    
+    for (int m = 1; m < 11; ++m) {
+      sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt%c", i, j, 96+m); 
+      sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d",i,j);
+      h2 = new TH2D(hname,htitle, 100, 0., 100., 100, 0., 10.); 
+      setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
+      h2->Sumw2();
+      
+      sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta%c", i, j, 96+m); 
+      sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
+      h2 = new TH2D(hname,htitle, 80, -4., 4., 100, 0., 10.); 
+      setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
+      h2->Sumw2();
+    }
+    
+    
+    sprintf(hname, "GEN_%d_%d_muon_pt", i, j); 
+    sprintf(htitle, "GEN muon pt: level %d tag %d", i, j);
+    h = new TH1D(hname, htitle, 100, 0., 100.); 
+    setTitles(h, "p_{T} [GeV]", "events/bin"); 
+    h->Sumw2();
+    
+    sprintf(hname, "GEN_%d_%d_muon_eta", i, j); 
+    sprintf(htitle, "GEN muon #eta: level %d tag %d", i, j);
+    h = new TH1D(hname,htitle, 80, -4., 4.); 
+    setTitles(h, "#eta", "events/bin"); 
+    h->Sumw2(); 
+    
+    sprintf(hname, "RECO_%d_%d_muon_pt", i, j); 
+    sprintf(htitle,"RECO muon pt: level %d tag %d", i, j);
+    h = new TH1D(hname,htitle, 100, 0., 100.); 
+    setTitles(h, "p_{T} [GeV]", "events/bin"); 
+    h->Sumw2();
+    
+    sprintf(hname, "RECO_%d_%d_muon_eta", i, j); 
+    sprintf(htitle, "RECO muon #eta: level %d tag %d", i, j);
+    h = new TH1D(hname, htitle, 80, -4., 4.); 
+    setTitles(h, "#eta", "events/bin"); 
+    h->Sumw2();
+  }
 
 }
 
@@ -328,6 +423,7 @@ void candAna::setupRedTree(TTree *t) {
   t->Branch("json",    &fRTD.json,         "json/O");
 
   t->Branch("type",    &fRTD.type,         "type/I");
+  t->Branch("procid",  &fRTD.procid,       "procid/I");
 
   t->Branch("pt",      &fRTD.pt,           "pt/F");
   t->Branch("eta",     &fRTD.eta,          "eta/F");
@@ -506,7 +602,8 @@ void candAna::fillRedTreeData() {
   fRTD.run       = fRun;
   fRTD.evt       = fEvt;
   fRTD.ls        = fLS;
-  fRTD.type      = fProcessType;
+  fRTD.procid    = fProcessType;
+  fRTD.type      = fMuonProcessType;
 
   fRTD.muid      = fMuId;
   fRTD.hlt       = fGoodHLT;
@@ -520,6 +617,93 @@ void candAna::fillRedTreeData() {
   fRTD.jpt        = fJetPt; 
   fRTD.jeta       = fJetEta; 
   fRTD.jphi       = fJetPhi; 
+
+  fHistDir->cd();
+  
+  if (fDoFill && fGoodHLT) {
+    if ( 4 <= fMuPt && fMuPt <  6) { ((TH1D*)fHistDir->Get("ptrel_4_6"))->Fill(fMuPtRel); }
+    if ( 6 <= fMuPt && fMuPt <  8) { ((TH1D*)fHistDir->Get("ptrel_6_8"))->Fill(fMuPtRel); }
+    if ( 8 <= fMuPt && fMuPt < 10) { ((TH1D*)fHistDir->Get("ptrel_8_10"))->Fill(fMuPtRel); }
+    if (10 <= fMuPt && fMuPt < 15) { ((TH1D*)fHistDir->Get("ptrel_10_15"))->Fill(fMuPtRel); }
+    if (15 <= fMuPt && fMuPt < 20) { ((TH1D*)fHistDir->Get("ptrel_15_20"))->Fill(fMuPtRel); }
+    if (20 <= fMuPt && fMuPt < 30) { ((TH1D*)fHistDir->Get("ptrel_20_30"))->Fill(fMuPtRel); }
+    if (30 <= fMuPt && fMuPt < 40) { ((TH1D*)fHistDir->Get("ptrel_30_40"))->Fill(fMuPtRel); }
+    if (40 <= fMuPt && fMuPt < 50) { ((TH1D*)fHistDir->Get("ptrel_40_50"))->Fill(fMuPtRel); }
+
+
+    if (0 == fIsMC) {
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 0)))->Fill(fMuEta, fMuPtRel); 
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 0)))->Fill(fMuPt, fMuPtRel); 
+      for (int m = 1; m < 11; ++m) {
+	double ptrelm = fMuPtRel*(1.02 - m*0.01);
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 0, 96+m)))->Fill(fMuEta, ptrelm); 
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 0, 96+m)))->Fill(fMuPt, ptrelm); 
+      }
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 0)))->Fill(fMuPt); 
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 0)))->Fill(fMuEta); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
+    }
+
+    if (5 == fIsMC) {
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel); 
+      for (int m = 1; m < 11; ++m) {
+	double ptrelm = fMuPtRel*(1.02 - m*0.01);
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 1, 96+m)))->Fill(fMuEta, ptrelm); 
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 1, 96+m)))->Fill(fMuPt, ptrelm); 
+      }
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 1)))->Fill(fMuPt); 
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 1)))->Fill(fMuEta); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
+      // -- production processes
+      if (40 == fProcessType) {
+	((TH2D*)fHistDir->Get(Form("RECO_8_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get(Form("RECO_8_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+      }
+
+      if (41 == fProcessType) {
+	((TH2D*)fHistDir->Get(Form("RECO_9_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get(Form("RECO_9_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+      }
+
+      if (42 == fProcessType) {
+	((TH2D*)fHistDir->Get(Form("RECO_10_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get(Form("RECO_10_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+      }
+
+    }
+
+    if (4 == fIsMC) {
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 2)))->Fill(fMuEta, fMuPtRel); 
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 2)))->Fill(fMuPt, fMuPtRel); 
+      for (int m = 1; m < 11; ++m) {
+	double ptrelm = fMuPtRel*(1.02 - m*0.01);
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 2, 96+m)))->Fill(fMuEta, ptrelm); 
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 2, 96+m)))->Fill(fMuPt, ptrelm); 
+      }
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 2)))->Fill(fMuPt); 
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 2)))->Fill(fMuEta); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
+    }
+
+    if (3 == fIsMC) {
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 3)))->Fill(fMuEta, fMuPtRel); 
+      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 3)))->Fill(fMuPt, fMuPtRel); 
+      for (int m = 1; m < 11; ++m) {
+	double ptrelm = fMuPtRel*(1.02 - m*0.01);
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 3, 96+m)))->Fill(fMuEta, ptrelm); 
+	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 3, 96+m)))->Fill(fMuPt, ptrelm); 
+      }
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 3)))->Fill(fMuPt); 
+      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 3)))->Fill(fMuEta); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
+      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
+    }
+
+  }
 }
 
 
