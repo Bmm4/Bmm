@@ -45,7 +45,8 @@ public:
   virtual void   readCuts(TString filename, int dump = 1);
   virtual void   bookHist();
 
-  virtual void   processType();
+  virtual void   processTypePythia6();
+  virtual void   processTypePythia8();
   virtual void   setYear(int year) {fYear = year;}
 
   std::vector<candAna*> lCandAnalysis;

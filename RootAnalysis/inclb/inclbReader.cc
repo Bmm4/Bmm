@@ -44,9 +44,9 @@ void inclbReader::eventProcessing() {
 
   bool json = false;  
    
-  if (fIsMC) {
+  if (fIsMC > 0) {
     json = 1; 
-    processType(); 
+    processTypePythia8(); 
   } else {
     json = fpJSON->good(fRun, fLS); 
     if (fVerbose > 100 && !json) {
@@ -137,7 +137,72 @@ void inclbReader::readCuts(TString filename, int dump) {
 
 
 // ----------------------------------------------------------------------
-void inclbReader::processType() {
+// http://home.thep.lu.se/~torbjorn/pythia82html/ParticleProperties.html
+void inclbReader::processTypePythia8() {
+
+  TGenCand *pG;
+  
+  // hard-scatter partons (entries { d, u, s, c, b, t } )
+  double hsPartCnt[6];
+  double hsAntiCnt[6];
+
+  // partons
+  double parPartCnt[6];
+  double parAntiCnt[6];    
+    
+  for (int i = 0; i < 6; i++) {
+    hsPartCnt[i] = 0; 
+    hsAntiCnt[i] = 0; 
+    parPartCnt[i] = 0; 
+    parAntiCnt[i] = 0; 
+  }
+
+  int aid(0);
+  for (int i = 0; i < fpEvt->nGenCands(); ++i) {
+    pG = fpEvt->getGenCand(i);
+    // -- in PYTHIA8 the hard scatter particles are 21-29
+    if (pG->fStatus > 20 && pG->fStatus < 30) {
+      aid = TMath::Abs(pG->fID); 
+      
+      for (int j = 0; j < 6; j++) {
+	if (pG->fID == j+1) {  
+	  hsPartCnt[j]++;
+	}
+	if (pG->fID == -(j+1)) {  
+	  hsAntiCnt[j]++;
+	}
+      }
+      //      pG->dump(); 
+    }
+  }
+
+  // -- beauty
+  if (hsPartCnt[4] >= 1 && hsAntiCnt[4] >= 1) {
+    fProcessType = 40; // gluon fusion
+    //    cout << Form("====> b: GGF (%i)", fProcessType) << endl;
+    return;
+  } 
+  
+  if ((hsPartCnt[4] >= 1 && hsAntiCnt[4] == 0) || (hsPartCnt[4] == 0 && hsAntiCnt[4] >= 1) ) {
+    fProcessType = 41; // flavor excitation
+    //    cout << Form("====> b: FEX (%i)", fProcessType) << endl;
+    return;
+  }
+
+  if (hsPartCnt[4] == 0 && hsAntiCnt[4] == 0) {
+    fProcessType = 42; // gluon splitting
+    //    cout << Form("====> b: GSP (%i)", fProcessType) << endl;
+
+    return;
+  }
+
+  fpEvt->dumpGenBlock();
+  
+}
+
+
+// ----------------------------------------------------------------------
+void inclbReader::processTypePythia6() {
 
   TGenCand *pG;
   
