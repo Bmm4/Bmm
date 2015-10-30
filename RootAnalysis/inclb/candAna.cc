@@ -659,20 +659,19 @@ void candAna::fillRedTreeData() {
       ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
       // -- production processes
       if (40 == fProcessType) {
-	((TH2D*)fHistDir->Get(Form("RECO_8_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get(Form("RECO_8_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+	((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
 
       if (41 == fProcessType) {
-	((TH2D*)fHistDir->Get(Form("RECO_9_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get(Form("RECO_9_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+	((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
 
       if (42 == fProcessType) {
-	((TH2D*)fHistDir->Get(Form("RECO_10_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get(Form("RECO_10_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel);
+	((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
-
     }
 
     if (4 == fIsMC) {
