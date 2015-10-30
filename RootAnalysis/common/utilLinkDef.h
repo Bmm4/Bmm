@@ -4,6 +4,8 @@
 #include "TLatex.h"
 #include "TCanvas.h"
 
+#include "dataset.hh"
+
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -21,6 +23,7 @@
 
 #pragma link C++ function setTitles(TH1*,const char*,const char*,float,float,float,float,int);
 #pragma link C++ function setHist(TH1*,int,int,double,double);
+#pragma link C++ function setHist(TH1*,dataset*);
 #pragma link C++ function setGraph(TGraph*,int,int,double,double);
 #pragma link C++ function setFilledHist(TH1 *,int,int,int,int);
 #pragma link C++ function setMaximum(double, TH1 *, TH1 *);
