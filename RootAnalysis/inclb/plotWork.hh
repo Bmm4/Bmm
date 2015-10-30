@@ -21,6 +21,9 @@ public :
 
   // -- validate production
   void   validation(std::string hist, std::string dir, std::string dname, std::string bname, std::string cname); 
+  void   validation(std::string hist1, std::string hist2, double xmin, double xmax,
+		    std::string dname, std::string bname, std::string cname);
+  TH1D*  getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
   void   loopFunction1(); 
 
 
