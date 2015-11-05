@@ -3,6 +3,7 @@
 
 #include <TFile.h>
 #include <TH1.h>
+#include <TH2.h>
 
 
 class dataset {
@@ -11,6 +12,7 @@ public:
   void   cd(std::string dir) {fF->cd(dir.c_str()); }
   TFile* getFile() {return fF;}
   TH1D*  getHist(std::string name, bool clone = true);
+  TH2D*  getHist2(std::string name, bool clone = true);
 
   TFile *fF; 
   std::string fName, fFullName;

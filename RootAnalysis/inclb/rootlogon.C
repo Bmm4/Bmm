@@ -2,7 +2,8 @@
   string version = gSystem->Getenv("VERSION"); 
   
   cout << "Loading rootlibs" << endl;
-  gSystem->Load("lib/libAnaClasses.so");
+  gSystem->Load("lib/libAnaInclBClasses.so");
+  gSystem->Load("../common/lib/libUtil.so");
   
   gROOT->Macro("cms-tdr.C");
   gROOT->ForceStyle();

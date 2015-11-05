@@ -1,18 +1,34 @@
 my $version = "v01";
 my $dataset = "bla";
 
-# -- did not manage to do this with refs, so do it with a function: 
-sub runCommand() {
-    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/".$dataset."%SITE T3_CH_PSI' ";
-}   
+# -- keep in the order given below
+tie %jobs, "Tie::IxHash";
 
+# -- define all the jobs
+%jobs = ();
+$dataset = "Run2015B__Charmonium__PromptReco_Dstar-v1"; 
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
+
+$dataset = "Run2015B__Charmonium__PromptReco-v1"; 
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
+
+$dataset = "Summer15_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
+
+$dataset = "Summer12_DR53X";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q all.q *.py && cd - ";
 
 
 # -- define catalog splitting into py files and jobs
 %catalogs = (); 
+
 tie %catalogs, "Tie::IxHash";
 %jobs = ();
 tie %jobs, "Tie::IxHash";
+
+
+$dataset = "Run2015B__Charmonium__PromptReco_Dstar-v1";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2015B-XXXX.py -f ../../../catalogs/Run2015B__Charmonium__PromptReco-v1/150722 -s $version -r -e 20000; ";
 
 $dataset = "Run2015B__Charmonium__PromptReco-v1";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
@@ -39,14 +55,4 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_NoFilter -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bu2JpsiK_EtaPtFilter -s $version -n 20 -l;  \ \n";
 	
-$dataset = "Run2012A__MuOnia__22Jan2013-v1";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
 
-$dataset = "Run2012B__MuOnia__22Jan2013-v1";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
-
-$dataset = "Run2012C__MuOnia__22Jan2013-v1";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";
-
-$dataset = "Run2012D__MuOnia__22Jan2013-v1";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2015D-XXXX.py -f ../../../catalogs/2012/$dataset -s $version -r -e 40000; ";

@@ -17,7 +17,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 PdTrigger::PdTrigger(string directory, int verbose): fHLTKey("nada"), fVerbose(verbose) {
-  readPdTriggers(Form("%s/pdtriggers.txt", directory.c_str()));
+  //  readPdTriggers(Form("%s/pdtriggers.txt", directory.c_str()));
   mkPdTriggersNoV();
   if (verbose) print();
 }
@@ -48,7 +48,7 @@ string PdTrigger::getHLTKey(int run, TFile *f) {
   if (h) {
     key = h->GetTitle(); 
   } else {
-    cout << "did not find " << Form("pd_run%d", run) << " in file " << gFile->GetName() << endl;
+    cout << "did not find " << Form("pd_run%d", run) << " in file " << f->GetName() << endl;
   }
   return key;
 }
@@ -56,9 +56,37 @@ string PdTrigger::getHLTKey(int run, TFile *f) {
 
 // ----------------------------------------------------------------------
 void PdTrigger::setHLTKey(int run, TFile *f) {
-  setHLTKey(getHLTKey(run, f)); 
-}
+  if (run == fRun) return;
 
+  fHLTKey = getHLTKey(run, f); 
+  fRun = run; 
+  cout << "setHLTKey: " << fHLTKey << " for run " << fRun << endl;
+
+  bool notFound(true);
+  string pdfound(""); 
+  if (0 == fPdTriggers.size()) {
+    allPdTriggersFromFile(f);
+    mkPdTriggersNoV();
+    notFound = false; 
+  } else {
+    for (map<string, vector<string> >::iterator it = fPdTriggers.begin(); it != fPdTriggers.end(); ++it) {
+      if (string::npos == it->first.find(fHLTKey)) {
+	pdfound = it->first; 
+      } else {
+	notFound = false; 
+	break;
+      }
+    }
+  }
+
+  if (notFound) {
+    cout << "PdTrigger::setHLTKey> did not find " << fHLTKey << " for run " << run << "; inserting into map" << endl;
+    allPdTriggersFromFile(f);
+    mkPdTriggersNoV();
+  } else {
+    cout << "PdTrigger::setHLTKey> did find " << fHLTKey << " for run " << run << " in " << pdfound << endl;
+  }
+}
 
 // ----------------------------------------------------------------------
 bool PdTrigger::triggerInPd(string pdname, string triggername) {
@@ -83,6 +111,7 @@ bool PdTrigger::triggerInPd(string pdname, string triggername) {
   }
   if (0 == pMap->count(key)) {
     cout << "error: HLTKey:PD = " << key << " not found in map; returning false (but you should add this to PdTriggers!)" << endl;
+    
     return false; 
   }
 
@@ -122,11 +151,8 @@ bool PdTrigger::triggerInPd(string hltkey, string pdname, string triggername) {
 }
 
 
-
-
 // ----------------------------------------------------------------------
-void PdTrigger::addPdTriggers(string chain) {
-  if (0 == fPdTriggers.size()) readPdTriggers("pdtriggers.txt");
+void PdTrigger::addPdTriggersFromChain(string chain) {
   
   vector<string> vChain;
   cout << "reading all files form chain " << chain << endl;
@@ -136,13 +162,13 @@ void PdTrigger::addPdTriggers(string chain) {
   char  buffer[1000];
 
   if ("all" == chain) {
-    addPdTriggers("chains/v01/jobs/cbmm-v01-rereco-Run2012A__MuOnia__22Jan2013-v1");
-    addPdTriggers("chains/v01/jobs/cbmm-v01-rereco-Run2012B__MuOnia__22Jan2013-v1");
-    addPdTriggers("chains/v01/jobs/cbmm-v01-rereco-Run2012C__MuOnia__22Jan2013-v1");
-    addPdTriggers("chains/v01/jobs/cbmm-v01-rereco-Run2012D__MuOnia__22Jan2013-v1");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-rereco-Run2012A__MuOnia__22Jan2013-v1");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-rereco-Run2012B__MuOnia__22Jan2013-v1");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-rereco-Run2012C__MuOnia__22Jan2013-v1");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-rereco-Run2012D__MuOnia__22Jan2013-v1");
 
-    addPdTriggers("chains/v01/jobs/cbmm-v01-prompt-Run2015B__Charmonium__PromptReco-v1");
-    addPdTriggers("chains/v01/jobs/cbmm-v01-prompt-Run2015D__Charmonium__PromptReco-v3");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-prompt-Run2015B__Charmonium__PromptReco-v1");
+    addPdTriggersFromChain("chains/v01/jobs/cbmm-v01-prompt-Run2015D__Charmonium__PromptReco-v3");
     return;    
   }
 
@@ -157,68 +183,74 @@ void PdTrigger::addPdTriggers(string chain) {
   is.close();
 
   TFile *f(0); 
-  TKey *key(0);   
-  TH1D *h(0);
-  string sname; 
-  string::size_type m1, m2;
-
-  string pd, lpd, hk; 
   for (unsigned int i = 0; i < vChain.size(); ++i) {
     //  for (unsigned int i = 0; i < 1; ++i) {
     cout << vChain[i] << endl;
     f = TFile::Open(vChain[i].c_str()); 
-    TIter next(f->GetListOfKeys());
-    vector<string> triggers;
-    while ((key = (TKey*)next())) {
-      sname = key->GetName();
-      
-      if (string::npos == sname.find("triggers_") || string::npos == sname.find("_run")) continue;
-      m1 = sname.find("triggers_") + string("triggers_").size(); 
-      m2 = sname.rfind("_run");       
-      pd = sname.substr(m1, m2-m1); 
 
-      lpd = pd;
-      std::transform(lpd.begin(), lpd.end(), lpd.begin(), ::tolower);
-      if (string::npos != lpd.find("alca")) {
-	continue;
-      }
-      if (string::npos != lpd.find("test")) continue;
-      if (string::npos != lpd.find("commissioning")) continue;
-      if (string::npos != lpd.find("cosmics")) continue;
-      if (string::npos != lpd.find("hcal")) continue;
-      if (string::npos != lpd.find("monitor")) continue;
-      if (string::npos != lpd.find("zerobias")) continue;
-      if (string::npos != lpd.find("laser")) continue;
-      if (string::npos != lpd.find("scouting")) continue;
-      if (string::npos != lpd.find("l1accept")) continue;
-      if (string::npos != lpd.find("express")) continue;
-      if (string::npos != lpd.find("onlinehltresults")) continue;
-
-      h = (TH1D*)f->Get(sname.c_str()); 
-      sname = h->GetTitle(); 
-      m1 = sname.find("("); 
-      m2 = sname.find(")"); 
-      hk = sname.substr(m1+1, m2-m1-1);
-
-      for (int ibin = 1; ibin < h->GetNbinsX(); ++ibin) {
-	triggers.push_back(h->GetXaxis()->GetBinLabel(ibin));
-	//	cout << "   " << h->GetXaxis()->GetBinLabel(ibin) << endl;
-      }
-
-      if (0 == fPdTriggers.count(hk+string(":")+pd)) {
-	cout << "inserting new hlt key: " << hk << " pd: " << pd << endl;
-	fPdTriggers.insert(make_pair(hk+string(":")+pd, triggers));
-      }
-      triggers.clear();
-
-      
-    }
-    f->Close();
+    allPdTriggersFromFile(f);
   }
   
   writePdTriggers("../common/pd/pdtriggers.txt");
 }
 
+
+// ----------------------------------------------------------------------
+void PdTrigger::allPdTriggersFromFile(TFile *f) {
+  TKey *key(0);   
+  TH1D *h(0);
+  string sname; 
+  string::size_type m1, m2;
+  string pd, lpd, hk; 
+
+  TIter next(f->GetListOfKeys());
+  vector<string> triggers;
+  while ((key = (TKey*)next())) {
+    sname = key->GetName();
+    
+    if (string::npos == sname.find("triggers_") || string::npos == sname.find("_run")) continue;
+    m1 = sname.find("triggers_") + string("triggers_").size(); 
+    m2 = sname.rfind("_run");       
+    pd = sname.substr(m1, m2-m1); 
+    
+    lpd = pd;
+    std::transform(lpd.begin(), lpd.end(), lpd.begin(), ::tolower);
+    if (string::npos != lpd.find("alca")) {
+      continue;
+    }
+    if (string::npos != lpd.find("test")) continue;
+    if (string::npos != lpd.find("commissioning")) continue;
+    if (string::npos != lpd.find("cosmics")) continue;
+    if (string::npos != lpd.find("hcal")) continue;
+    if (string::npos != lpd.find("monitor")) continue;
+    if (string::npos != lpd.find("zerobias")) continue;
+    if (string::npos != lpd.find("laser")) continue;
+    if (string::npos != lpd.find("scouting")) continue;
+    if (string::npos != lpd.find("l1accept")) continue;
+    if (string::npos != lpd.find("express")) continue;
+    if (string::npos != lpd.find("onlinehltresults")) continue;
+    
+    h = (TH1D*)f->Get(sname.c_str()); 
+    sname = h->GetTitle(); 
+    m1 = sname.find("("); 
+    m2 = sname.find(")"); 
+    hk = sname.substr(m1+1, m2-m1-1);
+    
+    for (int ibin = 1; ibin < h->GetNbinsX(); ++ibin) {
+      triggers.push_back(h->GetXaxis()->GetBinLabel(ibin));
+      //	cout << "   " << h->GetXaxis()->GetBinLabel(ibin) << endl;
+    }
+    
+    if (0 == fPdTriggers.count(hk+string(":")+pd)) {
+      cout << "inserting new hlt key: " << hk << " pd: " << pd << endl;
+      fPdTriggers.insert(make_pair(hk+string(":")+pd, triggers));
+    }
+    triggers.clear();
+    
+    
+  }
+  f->Close();
+}
 
 
 // ----------------------------------------------------------------------
@@ -270,6 +302,8 @@ void PdTrigger::writePdTriggers(string file) {
 // ----------------------------------------------------------------------
 void PdTrigger::mkPdTriggersNoV() {
 
+  fPdTriggersNoV.clear();
+  
   string t; 
   for (map<string, vector<string> >::iterator it = fPdTriggers.begin(); it != fPdTriggers.end(); ++it) {
     vector<string> v; 

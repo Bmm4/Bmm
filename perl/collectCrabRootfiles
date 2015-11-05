@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+# ----------------------------------------------------------------------
+# Usage examples
+# ==============
+#
+#
+# collectCrabRootfiles -x DoubleMuon/crab_doubleMuon-2015B/151022_095340/0000/
+#
+# ----------------------------------------------------------------------
+
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+use Tie::IxHash;
+
+use Cwd;
+ 
+use Getopt::Std;
+getopts('dn:x:');
+
+my $dir = cwd();
+
+my $xdir = ".";
+if ($opt_x) {
+    $xdir = $opt_x;
+}
+
+my $name = "crab";
+if ($opt_n) {
+    $name = $opt_n;
+}
+
+my $BMMBASE = $ENV{BMMBASE};
+my $USER = $ENV{USER};
+
+
+print "dir  = $dir\n";
+print "xdir = $xdir\n";
+print "name = $name\n";
+
+chdir("$xdir"); 
+print "cd to ", cwd(), "\n";
+@rootfiles = `find . -name "*.root" -print`;
+chdir("$dir"); 
+print "cd to ", cwd(), "\n";
+
+@rootfiles;
+
+unlink("$xdir/collectcrab.$name");
+open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$name\n";
+my $cnt = 0; 
+foreach $file (@rootfiles) {
+    chop($file); 
+    if ($file =~ /failed/) {next;}
+    $file =~ s%./%%g;
+    $numeral = sprintf("%04i", $cnt);
+    $newrootfilename = "$name-$numeral.root"; 
+    print "mv $xdir/$file $newrootfilename\n";
+    print OUT "$xdir/$file -> $newrootfilename\n";
+    if (!$opt_d) {
+	system("mv $xdir/$file $dir/$newrootfilename");
+    }
+    $cnt++;
+}
+
+close OUT; 

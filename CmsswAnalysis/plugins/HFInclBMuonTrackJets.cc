@@ -90,8 +90,10 @@ HFInclBMuonTrackJets::~HFInclBMuonTrackJets() {
 // ----------------------------------------------------------------------
 void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   fNevt++;
+
+  int printout(0); 
   
-  if (fVerbose) cout << "----------------------------------------------------------------------" << endl;
+  if (printout) cout << "----------------------------------------------------------------------" << endl;
 
   //muon collection
   edm::Handle<reco::MuonCollection> muons;
@@ -139,15 +141,15 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 
   TAnaTrack *pTrack; 
   int index (0), matchedJetIndex(-1);
-  if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> nMuons =" << muons->size() << endl;
+  if (fVerbose > 5) cout << "==>HFInclBMuonTrackJets> nMuons =" << muons->size() << endl;
 
   for (reco::MuonCollection::const_iterator muon = muons->begin(); muon != muons->end(); ++ muon ) { 
     
     if (!muon::isGoodMuon(*muon, muon::AllGlobalMuons)) continue;
     if (muon->track()->pt() < 4.0) continue;
     
-    if (fVerbose > 0) cout << "==>HFInclBMuonTrackJets> found global muon " << endl;
-    if (fVerbose) cout << "MUON pt/eta/phi = " << muon->track()->pt() << "/" <<  muon->track()->eta()  << "/" <<  muon->track()->phi() << endl;
+    if (printout) cout << "==>HFInclBMuonTrackJets> found global muon " << endl;
+    if (printout) cout << "MUON pt/eta/phi = " << muon->track()->pt() << "/" <<  muon->track()->eta()  << "/" <<  muon->track()->phi() << endl;
     
     if (jetsH.isValid()) {
       const BasicJetCollection *jets = jetsH.product();  
@@ -157,7 +159,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
       BasicJet* matchedjet=0;
       bool found = false;
       int indj=0;
-      if (fVerbose > 0) cout << " number of trackjets " << jets->size() << endl;
+      if (printout) cout << " number of trackjets " << jets->size() << endl;
       
       for (BasicJetCollection::const_iterator it = jets->begin(); it != jets->end(); it ++ ) {
 	TVector3 jetcand;
@@ -165,7 +167,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	TVector3 a; 
 	a.SetPtEtaPhi(muon->track()->pt(), muon->track()->eta(), muon->track()->phi());
 	double r = a.DeltaR(jetcand);
-	if (fVerbose) cout << "   " << indj << " pt/eta/phi: " << it->pt() << "/" << it->eta() << "/" << it->phi() 
+	if (printout) cout << "   " << indj << " pt/eta/phi: " << it->pt() << "/" << it->eta() << "/" << it->phi() 
 			   << " ntrk = " << it->nConstituents()
 			   << " r = " << r; 
 	bool muonOnlyJet = (r < 1.e-6) && (it->nConstituents() == 1); 
@@ -174,12 +176,12 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	  matchedjet   = (*it).clone();
 	  matchedJetIndex = indj;
 	  found = true;
-	  if (fVerbose) cout << " matched!";
+	  if (printout) cout << " matched!";
 	}
 	if (muonOnlyJet) {
-	  if (fVerbose) cout << " this is a muon-only jet, do not match"; 
+	  if (printout) cout << " this is a muon-only jet, do not match"; 
 	}
-	if (fVerbose) cout << endl;
+	if (printout) cout << endl;
 	indj++;
       } 
 	  
@@ -189,10 +191,10 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	vect.SetPtEtaPhiE(matchedjet->pt(), matchedjet->eta(), matchedjet->phi(), matchedjet->energy());
 	bool foundmuon = false;
 	std::vector< const reco::Candidate * > Constituent = matchedjet->getJetConstituentsQuick();
-	if (1) cout << "  found a trackjet with nconsti = " << Constituent.size() << " close to muon, jet pt/eta/phi = " 
-		    << matchedjet->pt() << "/" << matchedjet->eta() << "/" << matchedjet->phi()
-		    << endl;
-
+	if (printout) cout << "  found a trackjet with nconsti = " << Constituent.size() << " close to muon, jet pt/eta/phi = " 
+			   << matchedjet->pt() << "/" << matchedjet->eta() << "/" << matchedjet->phi()
+			   << endl;
+	
 	for (unsigned int i=0; i< Constituent.size(); i++) {
 	  unsigned int idx  = 99999;
 	  const reco::Candidate * consti = Constituent[i];
@@ -206,10 +208,10 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	      }
 	    }
 
-	    if (1) cout << "            consti " << i 
-			<< " with trk index " << idx
-			<< " and trk pt/eta/phi: " << consti->pt() << "/" << consti->eta() << "/" << consti->phi() << " " 
-			<< endl;
+	    if (printout) cout << "            consti " << i 
+			       << " with trk index " << idx
+			       << " and trk pt/eta/phi: " << consti->pt() << "/" << consti->eta() << "/" << consti->phi() << " " 
+			       << endl;
 
 		
 	    if (idx == (muon->track()).index()) {
@@ -233,7 +235,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	  muvect.SetPtEtaPhiM(muon->track()->pt(), muon->track()->eta(), muon->track()->phi(), mmuon);
 	  vect = vect - muvect;
 	  pTrack->fDouble1 = muvect.Perp(vect.Vect()); //Ptrel in respct to the corrected jets direction
-	  if (fVerbose) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
+	  if (printout) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
 	  
 	  //define direction
 	  GlobalVector direction(vect.X(),vect.Y(),vect.Z());
@@ -248,7 +250,7 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 	    pTrack->fMuID = 0;
 	  }
 	} // found muon	in jet
-	cout << "--> done with muon " << muon->track().index() << endl;
+	if (printout) cout << "--> done with muon " << muon->track().index() << endl;
       } // found jet
     } // jetsH valid
     index++;  

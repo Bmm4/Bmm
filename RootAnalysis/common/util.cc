@@ -13,6 +13,8 @@
 
 #include<stdarg.h>
 
+#include "dataset.hh"
+
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -49,6 +51,12 @@ void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
   h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size); 
   h->SetStats(kFALSE); 
   h->SetFillStyle(0); h->SetFillColor(color);
+}
+
+// ----------------------------------------------------------------------
+void setHist(TH1 *h, dataset *ds) {
+  if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth); 
+  if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth); 
 }
 
 // ----------------------------------------------------------------------

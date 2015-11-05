@@ -27,6 +27,7 @@ public:
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
   void                triggerSelection();
+  void                genAnalysis();
   
   virtual void        bookHist();
 
@@ -35,6 +36,7 @@ public:
 
   void                getSigTracks(std::vector<int> &v, TAnaCand *pC);
   std::string         splitTrigRange(std::string tl, int &r1, int &r2);
+  bool                doTriggerMatching(TAnaTrack *fp1);
 
   std::string fName; 
   std::string fCutFile; 
@@ -45,6 +47,7 @@ public:
   TAnaTrack *fpSigTrack;
   TSimpleTrack *fpTrack;
   TAnaMuon *fpMuon;
+  TGenCand *fpGenMuon;
   TAnaJet *fpSigJet;
 
   int fVerbose;
@@ -55,7 +58,7 @@ public:
   int fEvent; 
   int fRunRange;
   int fYear;
-  int fProcessType;
+  int fProcessType, fMuonProcessType;
 
   std::map<std::string, std::pair<int, int> > HLTRANGE;
 
@@ -67,13 +70,16 @@ public:
   
 
   // -- variables for reduced tree, they are from fpCand
+  bool    fDoFill;
   bool    fJSON;
-  bool    fMuId, fGoodHLT, fHLTmatch;
+  bool    fMuId, fGoodHLT;
+  int     fHltType, fHltPs; 
+  std::string fHLTPath;
 
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 
   double  fJetPt, fJetEta, fJetPhi; 
-
+  double  fGenMuPt, fGenMuEta, fGenMuPhi;
   struct RedTreeData fRTD;
 
 };

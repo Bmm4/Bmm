@@ -38,7 +38,8 @@ EXTHEADERS    = -I..
 #FASTJETLIBS   = `../fastjet-install/bin/fastjet-config --cxxflags --libs --plugins`
 
 # -- Files
-READER = treeReader01.o inclbReader.o genAnalysis.o candAna.o # plotClass.o plotWork.o
+CSTUFF = preselection.o 
+READER = treeReader01.o inclbReader.o genAnalysis.o candAna.o  plotClass.o plotWork.o
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
@@ -73,7 +74,7 @@ $(addprefix lib/,%.pcm) :
 # -- Targets
 all: vars prep lib bin
 
-lib: $(addprefix obj/,$(READER)  $(DICT))
+lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaInclBClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so 
 #	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaInclBClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so $(FASTJETLIBS)
 
@@ -94,7 +95,7 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(READER) $(DICT) runInclB.o) 
+	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runInclB.o) 
 	rm -f $(DICTHEADERS)  $(DICTSOURCES) 
 	rm -f lib/* obj/* bin/*
 

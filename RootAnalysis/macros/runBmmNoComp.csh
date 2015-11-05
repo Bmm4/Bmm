@@ -109,6 +109,6 @@ date
 
 
 # -- cleanup
-/bin/rm -rf /tmp/
+#/bin/rm -rf /tmp/
 
 echo "run: This is the end, my friend"

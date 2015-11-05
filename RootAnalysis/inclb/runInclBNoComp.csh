@@ -9,6 +9,9 @@ setenv EXECUTABLE
 setenv FILE1 $JOB.root
 setenv STORAGE1
 
+setenv PFNS     
+setenv SITE     
+
 echo "========================"
 echo "====> SGE wrapper <===="
 echo "========================"
@@ -21,13 +24,13 @@ echo "--> Running grid job wrapper"
 echo "--> Environment:"
 date
 hostname
-cat /proc/cpuinfo
+#cat /proc/cpuinfo
 uname -a
 echo "--> df -kl:"
 df -kl
 
 echo $VO_CMS_SW_DIR
-ls -l $VO_CMS_SW_DIR
+#ls -l $VO_CMS_SW_DIR
 source $VO_CMS_SW_DIR/cmsset_default.csh
 echo "-> which edg-gridftp-ls"
 which edg-gridftp-ls
@@ -85,28 +88,21 @@ date
 # -- Save Output to NFS, not the SE
 # ----------------------------------------------------------------------
 
-# several files possible if tree grows to big. copy them all
-echo "--> Save output to SE: $STORAGE1/$FILE1"
-echo $SRMCP 
+echo "--> Save output to SE: $PFNS/$STORAGE1/$FILE1"
+echo " job   rootfile: $FILE1"
 
-set FILES=`ls $JOB*.root`
-echo "Found the following output root files: $FILES"
-foreach f ($FILES)
-  echo lcg-del  "$STORAGE1/$f"
-  lcg-del -b -D srmv2 -l "$STORAGE1/$f"
-  echo lcg-cp    file:///`pwd`/$f "$STORAGE1/$f"
-  lcg-cp -b -D srmv2  file:///`pwd`/$f "$STORAGE1/$f"
-  echo lcg-ls     "$STORAGE1/$f"
-  lcg-ls -b -D srmv2 -l "$STORAGE1/$f"
-end
+echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
+lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
+# -- switch to data_replica.py
+ls `pwd`/$FILE1 > dr.list
+echo "--> cat dr.list: " 
+cat dr.list
+echo "--> AM running data_replica.py: " 
+/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE1"
 
-# copy the log file.
-#echo lcg-del  "$STORAGE1/$JOB.log"
-#lcg-del -b -D srmv2 -l "$STORAGE1/$JOB.log"
-#echo lcg-cp file:///`pwd`/$JOB.log "$STORAGE1/$JOB.log"
-#lcg-cp -b -D srmv2     file:///`pwd`/$JOB.log "$STORAGE1/$JOB.log"
-#echo lcg-ls     "$STORAGE1/$JOB.log"
-#lcg-ls -b -D srmv2 -l  "$STORAGE1/$JOB.log"
+echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1" 
+echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
+lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 
 date
 

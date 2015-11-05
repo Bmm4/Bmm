@@ -286,8 +286,12 @@ void cleanupTruthMatching(Handle<View<Track> > &hTracks, ESHandle<MagneticField>
 				TrackCharge(pGen->fQ),
 				magfield.product());
       tsof = ipExt.extrapolate(fts,vtx);
-      ipGen.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
-      
+      if (!tsof.isValid()) {
+	ipGen.SetXYZ(9999., 9999., 9999.);
+      } else {
+	ipGen.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
+      }
+
       double dIP(99.), dIPmin(99.); 
       int imin(-1); 
       
