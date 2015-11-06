@@ -134,10 +134,8 @@ public:
   // To return the full deltaR not just a bool
   virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false, bool muonsOnly=true); 
   // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=false); 
-
-  //virtual bool        doTriggerMatching_OLD(TAnaTrack *pt1, TAnaTrack *pt2); // match the 2 muons from the dimuon to HLT
-  //virtual double      doTriggerMatchingR_OLD(TAnaTrack *pt, bool anyTrig = false); // match a single track to HLT
+  virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
+				    bool muonsOnly=true, bool matchPt=true); 
 
   std::string fName; 
   std::string fCutFile; 

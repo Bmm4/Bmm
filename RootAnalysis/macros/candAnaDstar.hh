@@ -47,6 +47,8 @@ public:
 
 private:
   TTree * tree;
+
+  // reduced tree variables 
   int ftm, fnclose;
   bool fmuid1, fmuid2, fmumat1, fmumat2;
   float fmds, fmdz;
@@ -55,17 +57,17 @@ private:
   float fpvd, fiso;
   float feta, fetapi, fetak;
   float fchipi, fchik;
-  float mudr1, mudr2;  
-  float match1dr, match2dr;
-  //int fnumHltMuons, fnumHltPureMuons; // for number of hlt matched muons
+  float fmudr1, fmudr2;  
+  float fmatch1dr, fmatch2dr;
   bool fmuidmva1, fmuidmva2; // MVA muon id
   bool fveto;
   double fmva1, fmva2; // MVA
   // test
-  float match1dr1, match2dr1,match1dr2, match2dr2,match1dr3, match2dr3,match1dr4, match2dr4;
+  float fmatch1dr1, fmatch2dr1,fmatch1dr2, fmatch2dr2,fmatch1dr3, fmatch2dr3,fmatch1dr4, fmatch2dr4;
+  bool fb1, fb2, fb3;
+
   vector<int> hltMatchedMuons;
-  //bool fRejectPion,fRejectKaon;
-  //int foundJpsis;
+
 };
 
 #endif

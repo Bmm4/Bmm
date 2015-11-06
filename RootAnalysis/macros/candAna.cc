@@ -431,10 +431,6 @@ void candAna::candAnalysis() {
   }
   
   //cout<<p1->fMuIndex<<" "<<p2->fMuIndex<<endl;
-  if(fVerbose>98) {
-    cout<<" mu1 "<<p1->fRefPlab.Perp()<<" "<<p1->fRefPlab.Perp()<<" "<<p1->fRefPlab.Perp()<<endl;
-    cout<<" mu2 "<<p2->fRefPlab.Perp()<<" "<<p2->fRefPlab.Perp()<<" "<<p2->fRefPlab.Perp()<<endl;
-  }
 
   // -- for rare backgrounds there are no "true" muons
   if (fpCand->fType > 1000000 && fpCand->fType < 2000000) {
@@ -445,6 +441,11 @@ void candAna::candAnalysis() {
   // Special case for Dstar (prompt and from Bd)
   if (fpCand->fType == 54 || fpCand->fType == 300054 || fpCand->fType == 300031) {
     return;
+  }
+
+  if(fVerbose>98) {
+    cout<<" mu1 "<<p1->fRefPlab.Perp()<<" "<<p1->fRefPlab.Perp()<<" "<<p1->fRefPlab.Perp()<<endl;
+    cout<<" mu2 "<<p2->fRefPlab.Perp()<<" "<<p2->fRefPlab.Perp()<<" "<<p2->fRefPlab.Perp()<<endl;
   }
 
   // -- Bd2DstarPi
@@ -1166,6 +1167,7 @@ void candAna::triggerSelection() {
 
       } else { // TRIGRANGE mode - select only the trigger from our list
 
+
 	string spath; 
 	int rmin, rmax; 
 	for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); 
@@ -1197,6 +1199,8 @@ void candAna::triggerSelection() {
 	fhltType = i;  
 	fHLTPath = a.Data();
 	
+	//if(ps!=1) cout<<"prescale not one "<<a.Data()<<" "<<ps<<endl;
+
 	bool foundHltObject = false;
 	TTrgObjv2 *pTO;     
 	if( (fVerbose>9) || (fVerbose==-32)) 
@@ -1236,20 +1240,37 @@ void candAna::triggerSelection() {
     } // if passed      
   } // end for loop hlt
   if( (fVerbose>9) || (fVerbose==-32)) 
-    cout<<" number of found mathcing hlt objects: "<<foundNumHltObjects<<endl;
+    cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<endl;
 
+  //bool somethingWrong=false;
+  if(pdTrigger && (foundNumHltObjects==0)) { 
+    cout<<" No matching hlt objects found:  "<<endl;
+    //cout<< " Passed triggers: ";
+    for (int i = 0; i < NHLT; ++i) {
+      result = wasRun = false;
+      a = fpEvt->fHLTNames[i]; 
+      //ps = fpEvt->fHLTPrescale[i]; 
+      wasRun = fpEvt->fHLTWasRun[i]; 
+      result = fpEvt->fHLTResult[i]; 
+      //error  = fpEvt->fHLTError[i];       
+      if (wasRun && result) cout << a << " ";
+    }
+    cout<<endl;
+    //somethingWrong=true;
+  }
 
   // TESTS 
-  if (fVerbose>999) {  // Just testing 
+
+  if(fVerbose>999) {  // Just testing 
     cout << " ----------------------------------------------------------------------" << endl;
-    TAnaMuon *pM(0);
-    for (int i = 0; i < fpEvt->nMuons(); ++i) {
-      pM = fpEvt->getMuon(i);
-      if (pM->fMuID & 1) {
-	cout << "STA pt = " << pM->fPlab.Pt() << " eta = " << pM->fPlab.Eta() 
-	     << " phi = " << pM->fPlab.Phi() << endl;
-      }
-    }
+    // TAnaMuon *pM(0);
+    // for (int i = 0; i < fpEvt->nMuons(); ++i) {
+    //   pM = fpEvt->getMuon(i);
+    //   if (pM->fMuID & 1) {
+    // 	cout << "STA pt = " << pM->fPlab.Pt() << " eta = " << pM->fPlab.Eta() 
+    // 	     << " phi = " << pM->fPlab.Phi() << endl;
+    //   }
+    // }
 
     TTrgObjv2 *pTO;     
     cout<<" Dump TTrgObjv2 "<<fpEvt->nTrgObjv2()<<endl;
@@ -1383,6 +1404,7 @@ void candAna::bookHist() {
 
   h11 = new TH1D("test11", "dr", 1000, 0., 1.);
   h11 = new TH1D("test12", "dr", 1000, 0., 1.);
+
   h11 = new TH1D("test13", "dpt", 200, -1., 1.);
   h11 = new TH1D("test14", "dpt", 200, -1., 1.);
 
@@ -1404,6 +1426,7 @@ void candAna::bookHist() {
   TH2D *h22(0); 
   (void)h22; 
   h22 = new TH2D("tvsm",   "tvsm", 50, 4.9, 5.9, 50, -1., 1.); 
+  h22 = new TH2D("h2dtest",   "h2dtest", 50, 0.0, 0.05, 50, 0.,0.5); 
 
   h11 = new TH1D("rp1cmsg", "p1cms (with photons)", 50, 0, 10.); 
   h11 = new TH1D("rp2cmsg", "p2cms (with photons)", 50, 0, 10.); 
@@ -3741,9 +3764,14 @@ bool candAna::doTriggerMatching(TAnaTrack *pt, bool anyTrig, bool muonsOnly) {
 // returns
 //  1 - veto=true : the di-track pair is in the trigger, it triggered the event
 //  0 - veto=false : there is a trigger which is not associated with the di-track
-bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) { 
-  const double deltaRthr(0.02); // final cut, Frank had 0.5, change 0.020
-  const double deltaPtMatch(0.15); // the pt matching cut 
+// fp1/2 : input trakcs
+// singleMatch : if true one matched track is enought to set the veto to true
+// muonsOnly : if true onlt muon trigger objects are considered 
+// matchPt : if true include the Pt matching
+bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, 
+			    bool singleMatch, bool muonsOnly, bool matchPt) { 
+  const double deltaRthr0(0.01); // final cut, Frank had 0.5, to change 0.020
+  const double deltaPtMatch(0.30); // the pt matching cut 0.15 
   const int verboseThr = 20;
   bool localPrint = (fVerbose==-32) || (fVerbose > verboseThr);
   //localPrint=true;
@@ -3764,6 +3792,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
   TLorentzVector tlvMu1, tlvMu2;
    
   if (localPrint) {
+    cout<<" doTriggerVeto "<<deltaRthr0<<" "<<deltaPtMatch<<endl;
     cout << "1: pt,eta,phi: " << fp1->fPlab.Perp() << " " << fp1->fPlab.Eta() << " " << fp1->fPlab.Phi()<< endl;
     cout << "2: pt,eta,phi: " << fp2->fPlab.Perp() << " " << fp2->fPlab.Eta() << " " << fp2->fPlab.Phi()<< endl;
   }
@@ -3779,6 +3808,14 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
       if(localPrint) cout<<i<<" selected hlt "<<pTO->fHltPath<<" hlt-index "<<hltIndex<<" module label "
 			 <<pTO->fLabel<<" type "<<pTO->fType<<" number "<<pTO->fNumber<<endl;
       modulesSelected++;
+
+      TString a = pTO->fHltPath;
+      double deltaRthr= deltaRthr0; // default cut
+      if(a.Contains("L2") || a.Contains("L1") ) { // check if this is an L2 or L1 path
+	deltaRthr=0.05; // extend for L1&L2 objects
+	if (localPrint) 
+	  cout<<" L2/L1 object, extend dr cut to  "<<deltaRthr<<endl;
+      }
 
       // reset the best resuts for each trigger module
       bool match1=false, match2=false;
@@ -3799,7 +3836,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 	  cout<<"trg-track: pt/eta/phi "<<p.Pt()<<"/"<<p.Eta()<<"/"<<p.Phi()<<" i/n "<<i<<"/"<<n<<endl; 
 
 	// Do we do it? Can be a non-muon in the trigger
-	if( abs(id) != 13 ) { // if not muon trigger skip 
+	if( muonsOnly && (abs(id) != 13) ) { // if not muon trigger skip if requested  
 	  if(fVerbose>1) 
 	    cout<<" a none hlt-muon found in a trigger object "
 		<<n<<" id "<<id<<" "<<pTO->fHltPath<<" "<<pTO->fLabel<<" "
@@ -3820,33 +3857,45 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 	// muon 1
 	if(deltaR1<deltaRmin1) {
 	  deltaRmin1=deltaR1;  // best match until now
-	  if (fVerbose > verboseThr || localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
-	    // check now the pt matching 
-	  double trigMatchDeltaPt=999.;
-	  if (fp1->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
-	  if( trigMatchDeltaPt < deltaPtMatch ) {  // check if it is good enough
-	    if (deltaR1<deltaRthr) {
-	      trigMatchDeltaPt1=trigMatchDeltaPt;
+	  if(localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
+	  ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin1); 
+
+	  if (deltaR1<deltaRthr) {
+	    // check now the p matching 
+	    double trigMatchDeltaPt=999.;
+	    if (fp1->fPlab.Mag() > 0.) 
+	      //trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
+	      trigMatchDeltaPt = (p.Pt()  - fp1->fPlab.Perp())/fp1->fPlab.Perp(); 
+	    ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt); 
+	    ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin1,TMath::Abs(trigMatchDeltaPt)); 
+	    if( !matchPt || (TMath::Abs(trigMatchDeltaPt) < deltaPtMatch) ) {  // check if it is good enough
+	      trigMatchDeltaPt1=(trigMatchDeltaPt);
 	      match1=true;
 	      m1=n;
-	    } // if delta 
-	  } // if pt match 
+	    } else {if(localPrint) cout<<" pt1 match failed "<<trigMatchDeltaPt<<endl;} // if pt match 
+	  } else {if(localPrint) cout<<" dr1 too large "<<deltaR1<<endl; }// if delta 	    
 	} // if direction match 
 
 	// muon 2
 	if(deltaR2<deltaRmin2) {
 	  deltaRmin2=deltaR2;
 	  if (localPrint) {cout << " mu2 selected "<< deltaR2 <<endl;}
+	  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRmin2); 
+
+	  if (deltaR2<deltaRthr) {
 	    // check now the pt matching 
-	  double trigMatchDeltaPt=999.;
-	  if (fp2->fPlab.Mag() > 0.) trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
-	  if( trigMatchDeltaPt < deltaPtMatch ) {
-	    if (deltaR2<deltaRthr) {
+	    double trigMatchDeltaPt=999.;
+	    if (fp2->fPlab.Mag() > 0.) 
+	      //trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
+	      trigMatchDeltaPt = (p.Pt()  - fp2->fPlab.Perp())/fp2->fPlab.Perp(); 
+	    ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPt); 
+	    ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin2,TMath::Abs(trigMatchDeltaPt)); 
+	    if(!matchPt || (TMath::Abs(trigMatchDeltaPt) < deltaPtMatch) ) {
 	      trigMatchDeltaPt2=trigMatchDeltaPt;
 	      match2=true;
 	      m2=n;
-	    } // if delta 
-	  } // if pt match 
+	    } else {if(localPrint) cout<<" pt2 match failed "<<trigMatchDeltaPt<<endl;} // if pt match 
+	  } else {if(localPrint) cout<<" dr2 too large "<<deltaR2<<endl; }// if delta 
 	} // if direction match 
       } // end for loop n, tracks in a trig object 
 
@@ -3855,14 +3904,34 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 	     <<m1<<" "<< deltaRmin1 <<" "<<trigMatchDeltaPt1<<" "
 	     <<m2<<" "<< deltaRmin2 <<" "<<trigMatchDeltaPt2<<endl;
 
-      ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt1); 
-      ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt2); 
-      ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin1); 
-      ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin2); 
+      // ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt1); 
+      // ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt2); 
+      // ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin1); 
+      // ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin2); 
 
       if(match1 || match2) {
 	  modulesSingleMatched++;
 	  matchS=true;
+	  if(localPrint) cout<<" single matching for module "<<i<<endl;
+
+	  // select the best batch
+	  if(deltaRmin1<drMin) { // a better match, save it
+	    drMin=deltaRmin1;
+	    mu1match = m1;
+	    hlt1 = pTO->fLabel;
+	    indx1=i;
+	    deltaRminAll1 = deltaRmin1;
+	    trigMatchDeltaPtAll1 = trigMatchDeltaPt1; 
+	  }
+	  if(deltaRmin2<drMin) { // a better match, save it
+	    drMin=deltaRmin2;
+	    mu2match = m2;
+	    hlt2 = pTO->fLabel;  // redundant 
+	    indx2=i; // redundant 
+	    deltaRminAll2 = deltaRmin2; 
+	    trigMatchDeltaPtAll2 = trigMatchDeltaPt2; 
+	  }
+
       }
 
       // check if this module matched 
@@ -3872,7 +3941,8 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 	} else { // ok
 	  match=true;
 	  modulesMatched++;
-	  if(localPrint) cout<<" matching good for module "<<i<<endl;
+	  if(localPrint) cout<<" double matching for module "<<i<<endl;
+
 	  // select the best batch
 	  double dr = deltaRmin1 + deltaRmin2; // maybe product is better 
 	  if(dr<drMin) { // a better match, save it
@@ -3895,10 +3965,10 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2, bool singleMatch) {
 
   } // loop over all modules
 
-  ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll1); 
-  ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll2); 
-  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll1); 
-  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll2); 
+  //((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll1); 
+  //((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPtAll2); 
+  //((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll1); 
+  //((TH1D*)fHistDir->Get("test12"))->Fill(deltaRminAll2); 
 
   bool veto = false;
   if(singleMatch) { // check single matched only
