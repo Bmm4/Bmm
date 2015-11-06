@@ -98,12 +98,18 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
   //muon collection
   edm::Handle<reco::MuonCollection> muons;
   iEvent.getByLabel( fMuonLabel.c_str(), muons);
-  if (!muons.isValid()) { cout<<"****** no "<<fMuonLabel<<endl; return; }
+    if (!muons.isValid()) {
+      //      cout<<"****** no "<<fMuonLabel<<endl;
+      return;
+    }
 
   //primary vertex
   Handle<reco::VertexCollection> primaryVertex;
   iEvent.getByLabel(fVertexLabel.c_str(),primaryVertex); 
-  if (!primaryVertex.isValid()) { cout<<"****** no "<<fVertexLabel<<endl; return; }
+  if (!primaryVertex.isValid()) {
+    //    cout<<"****** no "<<fVertexLabel<<endl;
+    return;
+  }
 
   // use beamspot, or 0 if not available
   math::XYZPoint bs = math::XYZPoint(0.,0.,0.);
@@ -128,12 +134,16 @@ void HFInclBMuonTrackJets::analyze(const edm::Event& iEvent, const edm::EventSet
 
   Handle<BasicJetCollection> jetsH;
   iEvent.getByLabel(fJetsLabel.c_str(),jetsH);
-  if (!jetsH.isValid()) { cout<<"****** HFInclBMuonTrackJets> no "<<fJetsLabel<<endl;  }
+  if (!jetsH.isValid()) {
+    //    cout<<"****** HFInclBMuonTrackJets> no "<<fJetsLabel<<endl;
+  }
 
   //tracks (jet constituents)
   Handle<reco::CandidateView> candidates1Handle;
   iEvent.getByLabel(fTracksLabel.c_str(), candidates1Handle); 
-  if (!candidates1Handle.isValid()) { cout<<"****** HFInclBMuonTrackJets> no "<<fTracksLabel<<endl;  }
+  if (!candidates1Handle.isValid()) {
+    //    cout<<"****** HFInclBMuonTrackJets> no "<<fTracksLabel<<endl;
+  }
 
   //transient track builder
   edm::ESHandle<TransientTrackBuilder> builder;
