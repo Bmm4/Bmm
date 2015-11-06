@@ -254,9 +254,9 @@ void candAnaHh::candAnalysis() {
   ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr1); 
   ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr2); 
   if(MYDEBUG) cout<< " DR All/!Muons "<< dr1 <<" "<< dr2 <<endl;
-  //                            singleMatch
-  bool veto1 = doTriggerVeto(p1,p2,false); //
-  bool veto2 = doTriggerVeto(p1,p2,true); // use this, 1 track in trigger vetos the event
+  //                            singleMatch muonsOnly matchPt
+  bool veto1 = doTriggerVeto(p1,p2,false,true,true); //
+  bool veto2 = doTriggerVeto(p1,p2,true,true,true); // use this, 1 track in trigger vetos the event
   if(!veto1) ((TH1D*)fHistDir->Get("testhh0"))->Fill(5.); // count accepeted candidates
   if(!veto2) ((TH1D*)fHistDir->Get("testhh0"))->Fill(6.); 
 

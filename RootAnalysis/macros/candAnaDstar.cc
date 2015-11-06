@@ -204,10 +204,41 @@ void candAnaDstar::candAnalysis() {
     cout<<"  "<<sv.fD3d<<" "<<sv.fDxy<<" "<<svD0.fD3d<<" "<<svD0.fDxy<<" "
 	<<alpha<<" "<<t2.Angle(pC->fPlab)<<" "<<t3.Angle(pC->fPlab)<<" "<<t1.Angle(t3)<<endl;
   }
+  
+  
+  ((TH1D*)fHistDir->Get("Status"))->Fill(10.);
+  count1++;
 
+  // Now the selection cuts cut 
+  if(fVerbose>8 ) cout<<"Check pre-cuts "<<endl;
+
+  // Now histogram 
   const bool doHisto = true;
   if(doHisto) {  //
-    //((TH1D*)fHistDir->Get("h61"))->Fill( float(qpi+qpis));
+    ((TH1D*)fHistDir->Get("mds"))->Fill(mdstar);
+    ((TH1D*)fHistDir->Get("mdz"))->Fill(mdz);
+    ((TH2D*)fHistDir->Get("h2d"))->Fill(mdz, dm);
+    ((TH1D*)fHistDir->Get("dm"))->Fill(dm);
+  }
+
+  // Cuts always done 
+  // skip wrong sign decys 
+  if( (qpi+qpis)==0 ) {if(fVerbose>3) cout<<" failed qpi+qpis cut "<<qpi<<" "<<qpis<<endl; return;} 
+  ((TH1D*)fHistDir->Get("Status"))->Fill(11.);  //11
+  // check sign
+  if( (qk+qpi)!=0 ) {if(fVerbose>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;}
+  ((TH1D*)fHistDir->Get("Status"))->Fill(12.);
+  // limit dm to +-160MeV
+  if( dm<0.130 || dm>0.160 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;} 
+  ((TH1D*)fHistDir->Get("Status"))->Fill(13.);
+  // Restablish mass cuts from MSSW
+  if( mdz<1.76 || mdz>1.96 ) {if(fVerbose>3) cout<<" failed mdz cut "<<mdz<<endl; return;} 
+  ((TH1D*)fHistDir->Get("Status"))->Fill(14.);
+  if( mdstar<1.91 || mdstar>2.11 ) {if(fVerbose>3) cout<<" failed mdstar cut "<<mdstar<<endl; return;} 
+  ((TH1D*)fHistDir->Get("Status"))->Fill(15.);
+
+  // Now histogram 
+  if(doHisto) {  //
     
     ((TH1D*)fHistDir->Get("h1"))->Fill(t1.Mag());
     ((TH1D*)fHistDir->Get("h2"))->Fill(t2.Mag());
@@ -222,10 +253,6 @@ void candAnaDstar::candAnalysis() {
     ((TH1D*)fHistDir->Get("h9"))->Fill(t1.Angle(t3));
     ((TH1D*)fHistDir->Get("h10"))->Fill(t1.Angle(fpCand->fPlab));
     
-    ((TH1D*)fHistDir->Get("mds"))->Fill(mdstar);
-    ((TH1D*)fHistDir->Get("mdz"))->Fill(mdz);
-    ((TH2D*)fHistDir->Get("h2d"))->Fill(mdz, dm);
-    ((TH1D*)fHistDir->Get("dm"))->Fill(dm);
     ((TH1D*)fHistDir->Get("fls3d"))->Fill(fls3d);
     ((TH1D*)fHistDir->Get("flsxy"))->Fill(flsxy);
     ((TH1D*)fHistDir->Get("prob"))->Fill(prob);
@@ -245,48 +272,34 @@ void candAnaDstar::candAnalysis() {
 
     //if(tm==1) tcount1++;
   }  // if 
-  
-  
-  ((TH1D*)fHistDir->Get("Status"))->Fill(10.);
-  count1++;
 
-  // Now the selection cuts cut 
-  if(fVerbose>8 ) cout<<"Check pre-cuts "<<endl;
-  //  does not do aything for data, cand reco is already with 4
-  //if(ptPi<4. || ptK<4.) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
+
+  if(1) { // skip for testing 
+  //if (prob < 0.05) {if(fVerbose>3) cout<<" failed prob "<<prob<endl; return;}
+  //((TH1D*)fHistDir->Get("Status"))->Fill(14.);
+
   if(ptPi<3.5 || ptK<3.5) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
-  ((TH1D*)fHistDir->Get("Status"))->Fill(11.);
-  
-  // skip wrong sign decys 
-  if( (qpi+qpis)==0 ) {if(fVerbose>3) cout<<" failed qpi+qpis cut "<<qpi<<" "<<qpis<<endl; return;} 
-  ((TH1D*)fHistDir->Get("Status"))->Fill(12.);
-  
-  //if (prob < 0.05) {if(fVerbose>3) cout<<" failed pt cut "<<ptPi<<" "<<ptK<<endl; return;}
-  ((TH1D*)fHistDir->Get("Status"))->Fill(13.);
-  
-  if (ptPis < 0.4) {if(fVerbose>3) cout<<" failed pt slow pt cut "<<ptPis<<endl; return;}
-  ((TH1D*)fHistDir->Get("Status"))->Fill(14.);
-  
-  if (dr > 0.25) {if(fVerbose>3) cout<<" failed dr cut "<<dr<<endl; return;}
-  ((TH1D*)fHistDir->Get("Status"))->Fill(15.);
-  
-  if (chi2 > 2.0) {if(fVerbose>3) cout<<" failed chis2 cut "<<chi2<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(16.);
-  
-  if (pt < 2) {if(fVerbose>3) cout<<" failed pt cut "<<pt<<endl; return;}
+    
+  if (ptPis < 0.4) {if(fVerbose>3) cout<<" failed pt slow pt cut "<<ptPis<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(17.);
   
-  if (alpha > 0.4) {if(fVerbose>3) cout<<" failed alpha cut "<<alpha<<endl; return;}
+  if (dr > 0.15) {if(fVerbose>3) cout<<" failed dr cut "<<dr<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(18.);
   
-  if (fls3d < 2) {if(fVerbose>3) cout<<" failed fls3d cut "<<fls3d<<endl; return;}
+  if (chi2 > 2.0) {if(fVerbose>3) cout<<" failed chis2 cut "<<chi2<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(19.);
   
-  if( dm<0.130 || dm>0.160 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;} 
+  if (pt < 5) {if(fVerbose>3) cout<<" failed pt cut "<<pt<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(20.);
   
-  if( (qk+qpi)!=0 ) {if(fVerbose>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;}
+  if (alpha > 0.3) {if(fVerbose>3) cout<<" failed alpha cut "<<alpha<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(21.);
+  
+  if (fls3d < 2) {if(fVerbose>3) cout<<" failed fls3d cut "<<fls3d<<endl; return;}
+  ((TH1D*)fHistDir->Get("Status"))->Fill(22.);
+  
+  } // skip for testing 
   
   if(fVerbose>8 ) cout<<"Passed pre-cuts "<<endl;
   count2++;
@@ -335,19 +348,19 @@ void candAnaDstar::candAnalysis() {
 
   // use the matching function from candAna()
   //                               anyTrig muonOnly
-  match1dr = doTriggerMatchingR(pPi,false,true);  // see if it matches HLT muon
-  match2dr = doTriggerMatchingR(pK, false,true);  // see if it matches HLT muon
+  fmatch1dr = doTriggerMatchingR(pPi,false,true);  // see if it matches HLT muon
+  fmatch2dr = doTriggerMatchingR(pK, false,true);  // see if it matches HLT muon
 
   // for testing only 
   //                               anyTrig muonOnly
-  match1dr1 = doTriggerMatchingR(pPi,false,false);  // see if it matches HLT muon
-  match2dr1 = doTriggerMatchingR(pK, false,false);  // see if it matches HLT muon
+  fmatch1dr1 = doTriggerMatchingR(pPi,false,false);  // see if it matches HLT muon
+  fmatch2dr1 = doTriggerMatchingR(pK, false,false);  // see if it matches HLT muon
 
-  match1dr2 = doTriggerMatchingR(pPi,true,false);  // see if it matches HLT muon
-  match2dr2 = doTriggerMatchingR(pK, true,false);  // see if it matches HLT muon
+  fmatch1dr2 = doTriggerMatchingR(pPi,true,false);  // see if it matches HLT muon
+  fmatch2dr2 = doTriggerMatchingR(pK, true,false);  // see if it matches HLT muon
 
-  match1dr3 = doTriggerMatchingR(pPi,true,true);  // see if it matches HLT muon
-  match2dr3 = doTriggerMatchingR(pK, true,true);  // see if it matches HLT muon
+  fmatch1dr3 = doTriggerMatchingR(pPi,true,true);  // see if it matches HLT muon
+  fmatch2dr3 = doTriggerMatchingR(pK, true,true);  // see if it matches HLT muon
 
   // use matching function from candAnaDstar() FOR TESTING
   //match1dr4 = doTriggerMatchingTest(pPi,0); // see if it matches HLT muon
@@ -355,20 +368,22 @@ void candAnaDstar::candAnalysis() {
 
   if(MYDEBUG) {
     //if(muid1 && (match1dr2 != match1dr4)) 
-    cout<<" match 1 "<<match1dr<<" "<<match1dr1<<" "<<match1dr2<<" "<<match1dr3<<" "<<match1dr4<<endl;
+    cout<<" match 1 "<<fmatch1dr<<" "<<fmatch1dr1<<" "<<fmatch1dr2<<" "<<fmatch1dr3<<" "<<fmatch1dr4<<endl;
     //if(muid2&&(match2dr2 != match2dr4)) 
-    cout<<" match 2 "<<match2dr<<" "<<match2dr1<<" "<<match2dr2<<" "<<match2dr3<<" "<<match2dr4<<endl;
+    cout<<" match 2 "<<fmatch2dr<<" "<<fmatch2dr1<<" "<<fmatch2dr2<<" "<<fmatch2dr3<<" "<<fmatch2dr4<<endl;
   }
 
-  bool mumatch1 = (match1dr<0.02); // see if it matches HLT muon
-  bool mumatch2 = (match2dr<0.02); // see if it matches HLT muon
+  //bool mumatch1 = (fmatch1dr<0.02); // see if it matches HLT muon
+  //bool mumatch2 = (fmatch2dr<0.02); // see if it matches HLT muon
+  bool mumatch1 = (fmatch1dr<0.01); // see if it matches HLT muon
+  bool mumatch2 = (fmatch2dr<0.01); // see if it matches HLT muon
   if(mumatch1) ((TH1D*)fHistDir->Get("Status"))->Fill(35.);
   if(mumatch2) ((TH1D*)fHistDir->Get("Status"))->Fill(36.);
 
-  ((TH1D*)fHistDir->Get("dr7"))->Fill(match1dr);
-  ((TH1D*)fHistDir->Get("dr8"))->Fill(match2dr);
-  if(muid1) ((TH1D*)fHistDir->Get("dr1"))->Fill(match1dr);
-  if(muid2) ((TH1D*)fHistDir->Get("dr2"))->Fill(match2dr);
+  ((TH1D*)fHistDir->Get("dr7"))->Fill(fmatch1dr);
+  ((TH1D*)fHistDir->Get("dr8"))->Fill(fmatch2dr);
+  if(muid1) ((TH1D*)fHistDir->Get("dr1"))->Fill(fmatch1dr);
+  if(muid2) ((TH1D*)fHistDir->Get("dr2"))->Fill(fmatch2dr);
 
 #ifndef MYTREES
   fPreselection = true;  // select this event for the standrad redtree
@@ -392,21 +407,45 @@ void candAnaDstar::candAnalysis() {
   // Check the trigger matching
   // Make sure that there is a trigger which does not involve the pi & K
   fveto=false;
-  //                                      singleMatch
-  bool veto1 = candAna::doTriggerVeto(pPi,pK,false); // double match, for testing only 
-  //if(veto1) fveto=1;
-  bool veto2 = candAna::doTriggerVeto(pPi,pK,true); // use this, 1 track in trigger vetos the event
-  if(veto2) fveto=true;
-  if(MYDEBUG) cout<<" veto "<<veto1<<" "<<veto2<<" "<<fveto<<endl;
-  //if( (fveto==false && (muid1==true||muid2==true)) 
-      //|| (fveto==true  && (muid1==false&&muid2==false)) 
-  //  ) {
-  //cout<<" veto "<<fveto<<" muid "<<muid1<<"/"<<muid2<<endl;
-  doTest(fpCand,41);
-  //}
+  //                                    singleMatch muonsOnly matchPt 
+  fveto = candAna::doTriggerVeto(pPi,pK,true,true,true); // use this, 1 track in trigger vetos the event
+  bool veto1 = candAna::doTriggerVeto(pPi,pK,false,true,true); // double match, for testing only 
+  fb1 = candAna::doTriggerVeto(pPi,pK,true,false,true);  // for testing only 
+  fb2 = candAna::doTriggerVeto(pPi,pK,true,true,false);  // for testing only 
+  fb3 = candAna::doTriggerVeto(pPi,pK,true,false,false); // for testing only 
+
+  //if( (fveto||fb1||fb2||fb3) != (fveto&&fb1&&fb2&&fb3) ) 
+  if(MYDEBUG) 
+    cout<<" veto "<<fveto<<" "<<veto1<<" "<<fb1<<" "<<fb2<<" "<<fb3<<endl;
+  
+  if(0 && !fveto && (mumatch1||mumatch2) ) {
+    cout<<" Dstar candidate "<<fpCand->fType<<" in event "<<fEvt<<" v "<<fVerbose;
+    cout << " with mass = " << fpCand->fMass <<" cand num "<<count0<<endl;
+    cout<<" veto "<<fveto<<" "<<veto1<<" "<<fb1<<" "<<fb2<<" "<<fb3<<endl;
+    cout<<" muid "<<muid1<<"/"<<muid2<<" "
+  	<<fmatch1dr<<"/"<<fmatch2dr<<" "
+  	<<fmatch1dr1<<"/"<<fmatch2dr1<<" "
+  	<<fmatch1dr2<<"/"<<fmatch2dr2<<" "
+  	<<fmatch1dr3<<"/"<<fmatch2dr3<<" "
+  	<<endl;
+    cout << "DUMP HFDstarCandidate  " <<endl;
+    dumpHFDstarCand(fpCand); 
+    doTest(fpCand,0);    
+
+    int fVerbose0 = fVerbose;
+    fVerbose=100;
+    bool tmp = candAna::doTriggerVeto(pPi,pK,true,false,false); // use this, 1 track in trigger vetos the event
+    float r1 = doTriggerMatchingR(pPi,false,true);  // see if it matches HLT muon
+    float r2 = doTriggerMatchingR(pK, false,true);  // see if it matches HLT muon
+    cout<<tmp<<" "<<r1<<" "<<r2<<endl;
+    fVerbose=fVerbose0;
+  }
+
+  //doTest(fpCand,40); // some trigger tests 
+  
   if(fveto)  ((TH1D*)fHistDir->Get("Status"))->Fill(37.);
-  if(veto1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
-  if(veto2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
+  //if(veto1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
+  //if(veto2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
 
   //  match to offline muons 
   double dr1 = matchToMuon(pPi,true); // skip same track muons
@@ -482,8 +521,8 @@ void candAnaDstar::candAnalysis() {
   fmuid2 = muid2;
   fmumat1 = mumatch1;
   fmumat2 = mumatch2;
-  mudr1 = dr1;
-  mudr2 = dr2;
+  fmudr1 = dr1;
+  fmudr2 = dr2;
   
   fchipi = chiPi;
   fchik = chiK;  
@@ -950,8 +989,10 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
     double pt = mom.Perp();
     status++; // count for return
 
-    if(PRINT) cout<<" track "<<itrk<<" idx "<<index<<" "<<q<<" "<<qual<<" muon "<<muonId<<" "<<pvidx<<" gen "<<genidx<<" "
-		  <<hex<<inds<<" "<<bits<<dec<<" "<<pt<<" "<<mom.Phi()<<" "<<mom.Eta()<<endl;
+    if(PRINT) cout<<" track "<<itrk<<" idx "<<index<<" "<<q<<" "<<qual
+		  <<" muon "<<muonId<<" "<<pvidx<<" gen "<<genidx<<" "
+		  <<hex<<inds<<" "<<bits<<dec<<" "
+		  <<pt<<" "<<mom.Eta()<<" "<<mom.Phi()<<endl;
  
     ((TH1D*)fHistDir->Get("htrackpt1"))->Fill(pt);
 
@@ -1066,16 +1107,16 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
     ((TH1D*)fHistDir->Get("htest1"))->Fill(0.);
     for (int i = 0; i < NHLT; ++i) {
       TString a = fpEvt->fHLTNames[i]; 
-      //int    ps = fpEvt->fHLTPrescale[i]; 
+      int    ps = fpEvt->fHLTPrescale[i]; 
       bool wasRun = fpEvt->fHLTWasRun[i]; 
       bool result = fpEvt->fHLTResult[i]; 
-      //bool error  = fpEvt->fHLTError[i]; 
+      bool error  = fpEvt->fHLTError[i]; 
       
       if (wasRun && result) {
 
 	bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
 	if(rightDS) {
-	  if(PRINT) cout << a << " ";
+	  if(PRINT) cout << a << " "<<ps<<" "<<error<<endl;
 
         if (a.Contains("_Bs_")) ((TH1D*)fHistDir->Get("htest1"))->Fill(1.);
         else if (a.Contains("_Jpsi_Displaced")) 
@@ -1106,7 +1147,7 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
 	} // DS
       } // ifRun
     } // for loop 
-    if(PRINT) cout <<endl;
+    //if(PRINT) cout <<endl;
   } // if
 
 
@@ -1465,7 +1506,7 @@ void candAnaDstar::bookHist() {
   h = new TH1D("h300", "h300", 10, -5., 5.);
 
 #ifdef MYTREES
-  // MY Ntuples 
+  // MY Ntuples NOT USED ANYMORE
   tree = new TTree("dstar","dstar");
   // special to dstar
   tree->Branch("ftm",&ftm,"ftm/I");
@@ -1498,11 +1539,11 @@ void candAnaDstar::bookHist() {
   tree->Branch("fiso",&fiso,"fiso/F");
   tree->Branch("fnclose",&fnclose,"fnclose/I");
 
-  tree->Branch("mudr1",&mudr1,"fmudr1/F");
-  tree->Branch("mudr2",&mudr2,"fmudr2/F");
+  tree->Branch("mudr1",&fmudr1,"fmudr1/F");
+  tree->Branch("mudr2",&fmudr2,"fmudr2/F");
 
-  tree->Branch("hltdr1",    &match1dr,      "hltdr1/F");
-  tree->Branch("hltdr2",    &match2dr,      "hltdr2/F");
+  tree->Branch("hltdr1",    &fmatch1dr,      "hltdr1/F");
+  tree->Branch("hltdr2",    &fmatch2dr,      "hltdr2/F");
   // 
   tree->Branch("fpvd",&fpvd,"fpvd/F");
   tree->Branch("run",     &fRun,               "run/L");
@@ -1521,14 +1562,14 @@ void candAnaDstar::bookHist() {
   //t->Branch("pvw8",    &fPvAveW8,           "pvw8/D");
   tree->Branch("hltm",    &fHLTmatch,          "hltm/O");
   tree->Branch("hlttype",   &fhltType,        "hltype/I");
-  tree->Branch("hltdr11",    &match1dr1,      "hltdr11/F");
-  tree->Branch("hltdr12",    &match2dr1,      "hltdr12/F");
-  tree->Branch("hltdr21",    &match1dr2,      "hltdr21/F");
-  tree->Branch("hltdr22",    &match2dr2,      "hltdr22/F");
-  tree->Branch("hltdr31",    &match1dr3,      "hltdr31/F");
-  tree->Branch("hltdr32",    &match2dr3,      "hltdr32/F");
-  tree->Branch("hltdr41",    &match1dr4,      "hltdr41/F");
-  tree->Branch("hltdr42",    &match2dr4,      "hltdr42/F");
+  tree->Branch("hltdr11",    &fmatch1dr1,      "hltdr11/F");
+  tree->Branch("hltdr12",    &fmatch2dr1,      "hltdr12/F");
+  tree->Branch("hltdr21",    &fmatch1dr2,      "hltdr21/F");
+  tree->Branch("hltdr22",    &fmatch2dr2,      "hltdr22/F");
+  tree->Branch("hltdr31",    &fmatch1dr3,      "hltdr31/F");
+  tree->Branch("hltdr32",    &fmatch2dr3,      "hltdr32/F");
+  tree->Branch("hltdr41",    &fmatch1dr4,      "hltdr41/F");
+  tree->Branch("hltdr42",    &fmatch2dr4,      "hltdr42/F");
   tree->Branch("muidmva1",    &fmuidmva1,      "fmuidmva1/O");
   tree->Branch("muidmva2",    &fmuidmva2,      "fmuidmva2/O");
   tree->Branch("mva1",    &fmva1,      "fmva1/D");
@@ -1565,40 +1606,35 @@ void candAnaDstar::bookHist() {
   fTree->Branch("fiso",&fiso,"fiso/F");
   fTree->Branch("fnclose",&fnclose,"fnclose/I");
 
-  fTree->Branch("mudr1",&mudr1,"fmudr1/F");
-  fTree->Branch("mudr2",&mudr2,"fmudr2/F");
+  fTree->Branch("fmudr1",&fmudr1,"fmudr1/F");
+  fTree->Branch("fmudr2",&fmudr2,"fmudr2/F");
 
-  fTree->Branch("match1dr",    &match1dr,      "match1dr/F");
-  fTree->Branch("match2dr",    &match2dr,      "match2dr/F");
+  fTree->Branch("fmatch1dr",    &fmatch1dr,      "fmatch1dr/F");
+  fTree->Branch("fmatch2dr",    &fmatch2dr,      "fmatch2dr/F");
 
   // MVA
-  fTree->Branch("muidmva1",    &fmuidmva1,      "fmuidmva1/O");
-  fTree->Branch("muidmva2",    &fmuidmva2,      "fmuidmva2/O");
+  fTree->Branch("fmuidmva1",    &fmuidmva1,      "fmuidmva1/O");
+  fTree->Branch("fmuidmva2",    &fmuidmva2,      "fmuidmva2/O");
 
-  fTree->Branch("mva1",    &fmva1,      "fmva1/D");
-  fTree->Branch("mva2",    &fmva2,      "fmva2/D");
+  fTree->Branch("fmva1",    &fmva1,      "fmva1/D");
+  fTree->Branch("fmva2",    &fmva2,      "fmva2/D");
 
-  fTree->Branch("veto",&fveto,   "fveto/O");
-
-  //fTree->Branch("numHltMuons",    &fnumHltMuons,     "numHltMuons/I");
-  //fTree->Branch("numHltPureMuons",&fnumHltPureMuons, "numHltPureMuons/I");
+  fTree->Branch("fveto",&fveto,   "fveto/O");
 
   // tests
-  fTree->Branch("match1dr1",    &match1dr1,      "match1dr1/F");
-  fTree->Branch("match2dr1",    &match2dr1,      "match2dr1/F");
-  fTree->Branch("match1dr2",    &match1dr2,      "match1dr2/F");
-  fTree->Branch("match2dr2",    &match2dr2,      "match2dr2/F");
-  fTree->Branch("match1dr3",    &match1dr3,      "match1dr3/F");
-  fTree->Branch("match2dr3",    &match2dr3,      "match2dr3/F");
-  fTree->Branch("match1dr4",    &match1dr4,      "match1dr4/F");
-  fTree->Branch("match2dr4",    &match2dr4,      "match2dr4/F");
+  fTree->Branch("fmatch1dr1",    &fmatch1dr1,      "fmatch1dr1/F");
+  fTree->Branch("fmatch2dr1",    &fmatch2dr1,      "fmatch2dr1/F");
+  fTree->Branch("fmatch1dr2",    &fmatch1dr2,      "fmatch1dr2/F");
+  fTree->Branch("fmatch2dr2",    &fmatch2dr2,      "fmatch2dr2/F");
+  fTree->Branch("fmatch1dr3",    &fmatch1dr3,      "fmatch1dr3/F");
+  fTree->Branch("fmatch2dr3",    &fmatch2dr3,      "fmatch2dr3/F");
+  fTree->Branch("fmatch1dr4",    &fmatch1dr4,      "fmatch1dr4/F");
+  fTree->Branch("fmatch2dr4",    &fmatch2dr4,      "fmatch2dr4/F");
 
-  //fTree->Branch("matchedPion",&fMatchedPion,   "matchedPion/O");
-  //fTree->Branch("matchedKaon",&fMatchedKaon,   "matchedKaon/O");
-  //fTree->Branch("rejectPion", &fRejectPion,    "rejectPion/O");
-  //fTree->Branch("rejectKaon", &fRejectKaon,    "rejectKaon/O");
+  fTree->Branch("fb1",&fb1,   "fb1/O");
+  fTree->Branch("fb2",&fb2,   "fb2/O");
+  fTree->Branch("fb3",&fb3,   "fb3/O");
 
-  //fTree->Branch("jpsis",      &foundJpsis,     "jpsis/I");
 }
 
 // ----------------------------------------------------------------------
