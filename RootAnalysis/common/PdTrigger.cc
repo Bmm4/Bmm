@@ -236,7 +236,7 @@ void PdTrigger::allPdTriggersFromFile(TFile *f) {
     m2 = sname.find(")"); 
     hk = sname.substr(m1+1, m2-m1-1);
     
-    for (int ibin = 1; ibin < h->GetNbinsX(); ++ibin) {
+    for (int ibin = 1; ibin <= h->GetNbinsX(); ++ibin) {
       triggers.push_back(h->GetXaxis()->GetBinLabel(ibin));
       //	cout << "   " << h->GetXaxis()->GetBinLabel(ibin) << endl;
     }
