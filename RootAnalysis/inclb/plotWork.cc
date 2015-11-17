@@ -47,19 +47,26 @@ plotWork::~plotWork() {
 
 
 // ----------------------------------------------------------------------
-void plotWork::makeAll(int bitmask) {
+void plotWork::makeAll(int bitmask, string what) {
 
-  if (bitmask & 0x1) {
-    zone(2,2); 
-    validation("RECO_5", "ptrelvsmuonpt", 4, 5, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+  if (0 == bitmask) {
+    makeAll(0x2);
+    makeAll(0x4);
+    makeAll(0x8);
+    makeAll(0x10); 
+    makeAll(0x11); 
+    
+  } else if (bitmask == 0x2) {
+    zone(2, 2); 
+    validation("RECO_5", "ptrelvsmuonpt", 4, 6, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(2);
-    validation("RECO_5", "ptrelvsmuonpt", 6, 6, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    validation("RECO_5", "ptrelvsmuonpt", 6, 8, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(3);
-    validation("RECO_5", "ptrelvsmuonpt", 6, 7, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    validation("RECO_5", "ptrelvsmuonpt", 8, 12, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(4);
-    validation("RECO_5", "ptrelvsmuonpt", 7, 8, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
-    c0->SaveAs("ptrelvsmuonpt-HIL2Mu3.pdf");
-  } else if (bitmask & 0x2) {
+    validation("RECO_5", "ptrelvsmuonpt",12, 30, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    c0->SaveAs(Form("ptrelvsmuonpt-%s.pdf", what.c_str()));
+  } else if (bitmask == 0x4) {
     zone(2,2); 
     validation("RECO_5", "ptrelvsmuonpt", 8, 10, "dataMu8", "bSignalMu8", "cSignalMu8");
     c0->cd(2);
@@ -69,7 +76,7 @@ void plotWork::makeAll(int bitmask) {
     c0->cd(4);
     validation("RECO_5", "ptrelvsmuonpt",15, 25, "dataMu8", "bSignalMu8", "cSignalMu8");
     c0->SaveAs("ptrelvsmuonpt-Mu8.pdf");
-  } else if (bitmask & 0x4) {
+  } else if (bitmask == 0x8) {
     zone(2,2); 
     validation("RECO_5", "ptrelvsmuonpt", 24, 30, "dataMu24", "bSignalMu24", "cSignalMu24");
     c0->cd(2);
@@ -79,17 +86,17 @@ void plotWork::makeAll(int bitmask) {
     c0->cd(4);
     validation("RECO_5", "ptrelvsmuonpt", 50, 100, "dataMu24", "bSignalMu24", "cSignalMu24");
     c0->SaveAs("ptrelvsmuonpt-Mu24.pdf");
-  } else if (bitmask & 0x8) {
+  } else if (bitmask == 0x10) {
     zone(2,2); 
-    validation("RECO_5", "ptrelvsmuoneta",-2, -1, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    validation("RECO_5", "ptrelvsmuoneta",-2, -1, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(2);
-    validation("RECO_5", "ptrelvsmuoneta",-1,  0, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    validation("RECO_5", "ptrelvsmuoneta",-1,  0, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(3);
-    validation("RECO_5", "ptrelvsmuoneta", 0,  1, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    validation("RECO_5", "ptrelvsmuoneta", 0,  1, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
     c0->cd(4);
-    validation("RECO_5", "ptrelvsmuoneta", 1,  2, "dataHIL2Mu3", "bSignalHIL2Mu3", "cSignalHIL2Mu3");
-    c0->SaveAs("ptrelvsmuoneta-HIL2Mu3.pdf");
-  } else if (bitmask & 0x10) {
+    validation("RECO_5", "ptrelvsmuoneta", 1,  2, what, "bSignalHIL2Mu3", "cSignalHIL2Mu3");
+    c0->SaveAs(Form("ptrelvsmuonpt-%s.pdf", what.c_str()));
+  } else if (bitmask == 0x11) {
     zone(2,2); 
     TH1D *h0 = getPtRel("RECO_5_1_ptrelvsmuonpt", "candAnaMuHIL2Mu3", "bSignalHIL2Mu3", 6, 10); 
     h0->Draw();
@@ -156,7 +163,7 @@ void plotWork::validation(string hist1, string hist2, double xmin, double xmax, 
   string dir("candAnaMu8");
   if (string::npos != dname.find("Mu24")) dir = "candAnaMu24";
   if (string::npos != dname.find("Mu50")) dir = "candAnaMu50";
-  if (string::npos != dname.find("HIL2Mu3")) dir = "candAnaMuHIL2Mu3";
+  if (string::npos != dname.find("run")) dir = "candAnaMuHIL2Mu3";
   
   // -- my histograms
   TH2D *h2d = fDS[dname]->getHist2(Form("%s/%s_0_%s", dir.c_str(), hist1.c_str(), hist2.c_str()));
@@ -198,7 +205,8 @@ void plotWork::validation(string hist1, string hist2, double xmin, double xmax, 
     result->Draw("samehist");
     if (string::npos != hist2.find("muonpt")) tl->DrawLatex(0.4, 0.85, Form("%3.1f < p_{T} < %3.1f GeV", xmin, xmax)); 
     if (string::npos != hist2.find("muoneta")) tl->DrawLatex(0.4, 0.85, Form("%3.1f < #eta < %3.1f", xmin, xmax)); 
-    tl->DrawLatex(0.6, 0.80, Form("N_{B} ~ %4.0f", fracB*hd->GetSumOfWeights())); 
+    tl->DrawLatex(0.5, 0.78, dname.c_str()); 
+    tl->DrawLatex(0.6, 0.71, Form("N_{B} ~ %4.0f", fracB*hd->GetSumOfWeights())); 
   }
 
 
@@ -352,9 +360,20 @@ void plotWork::loadFiles(string afiles) {
       ds->fSize = 1; 
       ds->fWidth = 2; 
       
-      if (string::npos != stype.find("HIL2Mu3")) {
-        sname = "dataHIL2Mu3"; 
-        sdecay = "HIL2Mu3"; 
+      if (string::npos != stype.find("run251721")) {
+        sname = "run251721"; 
+        sdecay = "HIL2Mu3 (251721)"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 20; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3350; 
+      }
+
+      if (string::npos != stype.find("run255031")) {
+        sname = "run255031"; 
+        sdecay = "HIL2Mu3 (255031)"; 
 	ds->fColor = kBlack; 
 	ds->fSymbol = 20; 
 	ds->fF      = pF; 
@@ -387,7 +406,7 @@ void plotWork::loadFiles(string afiles) {
 
       if (string::npos != stype.find("Mu50")) {
         sname = "dataMu50"; 
-        sdecay = "Mu24"; 
+        sdecay = "Mu50"; 
 	ds->fColor = kBlack; 
 	ds->fSymbol = 20; 
 	ds->fF      = pF; 
@@ -406,7 +425,6 @@ void plotWork::loadFiles(string afiles) {
     } else {
       // -- MC
       pF = loadFile(sfile); 
-      cout << "  " << sfile << ": " << pF << endl;
       
       dataset *ds = new dataset(); 
       ds->fSize = 1; 
@@ -492,9 +510,9 @@ void plotWork::loadFiles(string afiles) {
   is.close();
   cout << "Summary: " << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << "===> " << it->first << endl;
+    cout << "===>" << it->first << "<==" << endl;
     cout << "       " << it->second->fName << endl;
-    cout << "       " << it->second->fF->GetName() << endl;
+    //    cout << "       " << it->second->fF->GetName() << endl;
     cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }

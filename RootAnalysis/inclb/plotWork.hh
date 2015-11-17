@@ -16,7 +16,7 @@ public :
 
   // -- Main analysis methods 
   void   loadFiles(std::string afiles);
-  void   makeAll(int bitmask = 0);
+  void   makeAll(int bitmask = 0, std::string what = "run251721");
   void   bookHist(int mode);
 
   // -- validate production
