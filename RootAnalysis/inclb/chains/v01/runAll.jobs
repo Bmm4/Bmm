@@ -48,6 +48,13 @@ my $NMC =  50000;
 # -----------------------------------------------
 # data
 # -----------------------------------------------
+$dataset = "prompt-Run2015B-HINMuon-combined"; 
+$mode = "inclb-$dataset-$version"; $pattern = "prompt-Run2015B-HINMuon_run";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu' c$mode-*  && cd - ";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR -p $mode";
+
 $dataset = "prompt-Run2015B-HINMuon-run251721"; 
 $mode = "inclb-$dataset-$version"; ($pattern = $dataset) =~ s/-run/_run/;
 $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu' c$mode-*  && cd - ";
