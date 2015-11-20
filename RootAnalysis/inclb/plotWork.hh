@@ -5,6 +5,21 @@
 #include "common/dataset.hh"
 #include "RedTreeData.hh"
 
+struct numbers {
+  void init() {hD = hSum = hB = hC = hL = 0; status = -1;}
+  int status; 
+  double minPt, maxPt, meanPt, minEta, maxEta, meanEta;
+  double nData2, nB2, nC2, nL2;     // Integral()
+  double nData, nB, nC, nL;         // GetSumOfWeights()
+  double nDataE0, nBE0, nCE0, nLE0; // central value
+  double fracB, fracC, fracL;       // central value
+  double fracBE0, fracCE0, fracLE0; // statistical error
+  double effB; 
+  std::string sname; 
+  TH1D *hD, *hSum, *hB, *hC, *hL, *hPlot;   // histograms with scale factors from fit applied
+};
+
+
 // ----------------------------------------------------------------------
 class plotWork: public plotClass {
 
@@ -20,12 +35,16 @@ public :
   void   bookHist(int mode);
 
   // -- validate production
-  void   validation(std::string hist, std::string dir, std::string dname, std::string bname, std::string cname); 
   void   validation(std::string hist1, std::string hist2, double xmin, double xmax,
 		    std::string dname, std::string bname, std::string cname);
-  TH1D*  getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
   void   loopFunction1(); 
 
+  // -- data analysis
+  void   hinValidation(); 
+  void   dSigmadPt(); 
+  
+  TH1D*    getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
+  void fitPtRel(numbers *, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl = 0); 
 
   void   setupTree(TTree *t); 
 
@@ -42,7 +61,7 @@ private:
   bool fGoodCand;
   double PTLO;
 
-  
+  std::vector<numbers*> fVectorResult; 
   // ----------------------------------------------------------------------
   ClassDef(plotWork,1) 
 
