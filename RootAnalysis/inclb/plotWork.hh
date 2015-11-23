@@ -15,7 +15,8 @@ struct numbers {
   double fracB, fracC, fracL;       // central value
   double fracBE0, fracCE0, fracLE0; // statistical error
   double effB; 
-  std::string sname; 
+  std::string sname;         // pd name: dataMu24, dataMuHIL2Mu3, ...
+  std::string dname;         // directory name: candAnaMu8, candAnaMuHIL2Mu3, ...
   TH1D *hD, *hSum, *hB, *hC, *hL, *hPlot;   // histograms with scale factors from fit applied
 };
 
@@ -43,8 +44,9 @@ public :
   void   hinValidation(); 
   void   dSigmadPt(); 
   
-  TH1D*    getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
-  void fitPtRel(numbers *, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl = 0); 
+  TH1D*  getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
+  void   fitPtRel(numbers *, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl = 0); 
+  void   efficiency(numbers *, std::string bString); 
 
   void   setupTree(TTree *t); 
 

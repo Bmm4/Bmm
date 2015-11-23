@@ -233,52 +233,60 @@ void plotWork::dSigmadPt() {
 
   fVectorResult.clear();
   numbers *a(0);
-  a = new numbers();  a->minPt =  4.;  a->maxPt =  5.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =  5.;  a->maxPt =  6.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =  6.;  a->maxPt =  7.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =  6.;  a->maxPt =  8.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =  8.;  a->maxPt = 10.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 10.;  a->maxPt = 15.;  a->sname = "dataMuHIL2Mu3"; fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 15.;  a->maxPt = 20.;  a->sname = "dataMu8";       fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 20.;  a->maxPt = 25.;  a->sname = "dataMu8";       fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 25.;  a->maxPt = 30.;  a->sname = "dataMu24";      fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 30.;  a->maxPt = 40.;  a->sname = "dataMu24";      fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 40.;  a->maxPt = 50.;  a->sname = "dataMu24";      fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 50.;  a->maxPt =100.;  a->sname = "dataMu50";      fVectorResult.push_back(a);
+  a = new numbers();  a->minPt =  4.;  a->maxPt =  5.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt =  5.;  a->maxPt =  6.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt =  6.;  a->maxPt =  7.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt =  6.;  a->maxPt =  8.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt =  8.;  a->maxPt = 10.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 10.;  a->maxPt = 15.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 15.;  a->maxPt = 20.;  a->sname = "dataMu8"; a->dname = "candAnaMu8";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 20.;  a->maxPt = 25.;  a->sname = "dataMu8"; a->dname = "candAnaMu8";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 25.;  a->maxPt = 30.;  a->sname = "dataMu24"; a->dname = "candAnaMu24";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 30.;  a->maxPt = 40.;  a->sname = "dataMu24"; a->dname = "candAnaMu24";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 40.;  a->maxPt = 50.;  a->sname = "dataMu24"; a->dname = "candAnaMu24";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 50.;  a->maxPt =100.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
+  fVectorResult.push_back(a);
 
   tl->SetNDC(kTRUE);
   tl->SetTextSize(0.05);
-  string candString, dString, bString, cString, tString;
+  string dString, bString, cString, tString;
   for (unsigned int i = 0; i < fVectorResult.size(); ++i) {
     c3->cd(i+1); 
     a = fVectorResult[i];
     tString = a->sname;
     replaceAll(tString, "dataMu", ""); 
-    if (string::npos == a->sname.find("HIL2Mu3")) {
-      candString = "candAna";
-    } else {
-      candString = "candAnaMu";
-    }
 
     cout << "**********************************************************************" << endl;
     cout << "***  " << i << ": " << a->sname << " " << a->minPt << " .. " << a->maxPt << " ***" << endl;
-    cout << "RECO_5_0_ptrelvsmuonpt" << " .. " << candString + tString << " .. " <<  a->sname<< endl;
-    hd = getPtRel("RECO_5_0_ptrelvsmuonpt", "candAnaMu"+tString, a->sname, a->minPt, a->maxPt); 
+    cout << "RECO_5_0_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  a->sname<< endl;
+    hd = getPtRel("RECO_5_0_ptrelvsmuonpt", a->dname, a->sname, a->minPt, a->maxPt); 
     if (0 == hd) {
       return;
     }
     cout << "hd = " << hd << ": " << hd->GetName() << endl;
     bString = "bSignalMu" + tString;
-    cout << "RECO_5_1_ptrelvsmuonpt" << " .. " << candString + tString << " .. " <<  bString << endl;
-    hb = getPtRel("RECO_5_1_ptrelvsmuonpt", "candAnaMu"+tString, bString, a->minPt, a->maxPt); 
+    cout << "RECO_5_1_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  bString << endl;
+    hb = getPtRel("RECO_5_1_ptrelvsmuonpt", a->dname, bString, a->minPt, a->maxPt); 
+    efficiency(a, bString); 
     if (0 == hb) {
       return;
     }
     cout << "hb = " << hb << ": " << hb->GetName() << endl;
     cString = "cSignalMu" + tString;
-    cout << "RECO_5_2_ptrelvsmuonpt" << " .. " << candString + tString << " .. " <<  cString << " "
+    cout << "RECO_5_2_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  cString << " "
 	 <<  a->minPt << " " <<  a->maxPt << endl;
-    hc = getPtRel("RECO_5_2_ptrelvsmuonpt", "candAnaMu"+tString, cString, a->minPt, a->maxPt); 
+    hc = getPtRel("RECO_5_2_ptrelvsmuonpt", a->dname, cString, a->minPt, a->maxPt); 
     if (0 == hc) {
       return;
     }
@@ -459,6 +467,20 @@ TH1D* plotWork::getPtRel(string histname, string dir, string dname, double xmin,
   return h;
   
 }
+
+// ----------------------------------------------------------------------
+void plotWork::efficiency(numbers *a, string bString) {
+  // FIXME
+  // TH1D *hRec = getPtRel("RECO_5_1_muon_pt", a->dname, bString, a->minPt, a->maxPt); 
+  // TH1D *hGen = getPtRel("GEN_5_1_muon_pt", a->dname, bString, a->minPt, a->maxPt); 
+
+  cout << "*** Efficiency: rec = " << hRec->GetSumOfWeights() << endl;
+  cout << "*** Efficiency: gen = " << hGen->GetSumOfWeights() << endl;
+   
+
+}
+
+
 
 // ----------------------------------------------------------------------
 void plotWork::fitPtRel(numbers* n, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl) {
