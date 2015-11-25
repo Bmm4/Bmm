@@ -78,6 +78,7 @@ public:
 
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 
+  double  fMuIp3d, fMuIp3dE, fMuIp2d, fMuIp2dE; 
   double  fJetPt, fJetEta, fJetPhi; 
   double  fGenMuPt, fGenMuEta, fGenMuPhi;
   struct RedTreeData fRTD;

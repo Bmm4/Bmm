@@ -147,6 +147,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
     // -- for data only fill HLT-triggered (and matched!) muons from good runs
     if (0 == fIsMC) {
+      fDoFill = true;
       if (!fGoodHLT) fDoFill = false; 
       if (!fJSON) fDoFill = false; 
       if (0) cout << "goodHLT: " << fGoodHLT << " JSON: " << fJSON 
@@ -316,6 +317,15 @@ void candAna::candAnalysis() {
   fMuEta   = fpSigTrack->fPlab.Eta(); 
   fMuPhi   = fpSigTrack->fPlab.Phi(); 
 
+  // FIXME?? Check track parametrization 
+  fMuIp3d  =  fpSigTrack->fd0;
+  fMuIp3dE =  fpSigTrack->fd0E;
+
+  fMuIp2d  =  fpSigTrack->fTip;
+  fMuIp2dE =  fpSigTrack->fTipE;
+  cout << "fpSigTrack->fd0 = " << fpSigTrack->fd0 << " fpSigTrack->fTip = " << fpSigTrack->fTip << endl;
+
+  
   fJetPt   = fpSigJet->fPlab.Perp(); 
   fJetEta  = fpSigJet->fPlab.Eta(); 
   fJetPhi  = fpSigJet->fPlab.Phi(); 
@@ -455,6 +465,11 @@ void candAna::setupRedTree(TTree *t) {
   t->Branch("phi",     &fRTD.phi,          "phi/F");
   t->Branch("ptrel",   &fRTD.ptrel,        "ptrel/F");
 
+  t->Branch("ip3d",    &fRTD.ip3d,         "ip3d/F");
+  t->Branch("ip3de",   &fRTD.ip3dE,        "ip3de/F");
+  t->Branch("ip2d",    &fRTD.ip2d,         "ip2d/F");
+  t->Branch("ip2de",   &fRTD.ip2dE,        "ip2de/F");
+  
   t->Branch("jpt",     &fRTD.jpt,          "jpt/F");
   t->Branch("jeta",    &fRTD.jeta,         "jeta/F");
   t->Branch("jphi",    &fRTD.jphi,         "jphi/F");
@@ -639,6 +654,11 @@ void candAna::fillRedTreeData() {
   fRTD.eta       = fMuEta; 
   fRTD.phi       = fMuPhi; 
   fRTD.ptrel     = fMuPtRel; 
+
+  fRTD.ip3d      = fMuIp3d; 
+  fRTD.ip3dE     = fMuIp3dE; 
+  fRTD.ip2d      = fMuIp2d; 
+  fRTD.ip2dE     = fMuIp2dE; 
 
   fRTD.jpt        = fJetPt; 
   fRTD.jeta       = fJetEta; 
