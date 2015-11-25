@@ -128,17 +128,22 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     triggerSelection();
 
     // -- MC filling?
-    fDoFill = true;
-    if ((3 == fIsMC) && (0 < fMuonProcessType)) {
+    fDoFill = false;
+    if ((3 == fIsMC) && (300 == fMuonProcessType)) {
+      fDoFill = true;
+    }
+    if ((4 == fIsMC) && ((399 < fMuonProcessType && fMuonProcessType < 500))) {
+      fDoFill = true;
+    }
+    if ((5 == fIsMC) && ((499 < fMuonProcessType && fMuonProcessType < 600))) {
+      fDoFill = true;
+    }
+    if ((22 == fIsMC) && (22 == fMuonProcessType)) {
+      fDoFill = true;
+    }
+    if (0 == fMuonProcessType) {
       fDoFill = false;
     }
-    if ((4 == fIsMC) && ((499 < fMuonProcessType && fMuonProcessType < 600) || (0 == fMuonProcessType))) {
-      fDoFill = false;
-    }
-    if ((5 == fIsMC) && ((399 < fMuonProcessType && fMuonProcessType < 500) || (0 == fMuonProcessType))) {
-      fDoFill = false;
-    }
-
 
     // -- for data only fill HLT-triggered (and matched!) muons from good runs
     if (0 == fIsMC) {
@@ -193,7 +198,8 @@ void candAna::genAnalysis() {
     light(false), 
     ccbar(false), 
     tau(false), 
-    fake(false); 
+    fake(false),
+    drellYan(false); 
   
   int cnt(-1); 
   while (iMom > 1 && iMom < fpEvt->nGenCands()) {
@@ -224,9 +230,12 @@ void candAna::genAnalysis() {
     if (15 == aid)          // tau
       tau = true;
 
-    if (isCharmMesonWeak(aid)) charm = true; 
+    if (22 == aid)          // Drell-Yan
+      drellYan = true;
+    
+    if (isCharmMesonWeak(aid) || isCharmBaryonWeak(aid)) charm = true; 
 
-    if (isBeautyMesonWeak(aid)) {
+    if (isBeautyMesonWeak(aid) || isBeautyBaryonWeak(aid)) {
       beauty = true; 
       break;
     }
@@ -269,8 +278,19 @@ void candAna::genAnalysis() {
     } else {
       fMuonProcessType = 400; 
     }
+  } else if (light) {
+    fMuonProcessType = 300;
+  } else if (drellYan) {
+    fMuonProcessType = 22;
+  } else {
+    if (fpSigTrack->fDouble1 > 10) {
+      cout << "----------------------------------------------------------------------" << endl;
+      cout << "reco muon pt/eta/phi = " << fpSigTrack->fPlab.Perp() << "/" << fpSigTrack->fPlab.Eta() << "/" << fpSigTrack->fPlab.Phi() << endl;
+      cout << "gen muon  pt/eta/phi = " << fGenMuPt << "/" << fGenMuEta << "/" << fGenMuPhi <<  " at " << fpTrack->getGenIndex() << endl;
+      fpEvt->dumpGenBlock();
+      cout << "----------------------------------------------------------------------" << endl;
+    }
   }
-
 
   //  cout << "==> fMuonProcessType = " << fMuonProcessType 
   //       << endl;
@@ -346,12 +366,14 @@ void candAna::bookHist() {
   //    1 b 
   //    2 c
   //    3 uds
+  //   22 Drell-Yan
   //    ... more to come ...
   vector<int> vTag; 
   vTag.push_back(0); 
   vTag.push_back(1); 
   vTag.push_back(2); 
   vTag.push_back(3); 
+  vTag.push_back(22); 
   vTag.push_back(8);  // FCR
   vTag.push_back(9);  // FEC
   vTag.push_back(10); // GS
@@ -705,6 +727,18 @@ void candAna::fillRedTreeData() {
       }
       if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 3)))->Fill(fMuPt); 
       if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 3)))->Fill(fMuEta); 
+    }
+
+    if (22 == fIsMC) {
+      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 22)))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 22)))->Fill(fMuPt, fMuPtRel); 
+      for (int m = 1; m < 11; ++m) {
+	double ptrelm = fMuPtRel*(1.02 - m*0.01);
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 22, 96+m)))->Fill(fMuEta, ptrelm); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 22, 96+m)))->Fill(fMuPt, ptrelm); 
+      }
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 22)))->Fill(fMuPt); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 22)))->Fill(fMuEta); 
     }
 
   }
