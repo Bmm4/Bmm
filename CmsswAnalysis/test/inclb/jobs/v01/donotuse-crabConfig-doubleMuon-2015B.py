@@ -13,8 +13,7 @@ config.JobType.outputFiles = ['inclb-prompt-Run2015B-XXXX.root']
 config.Data.inputDataset  = '/DoubleMuon/Run2015B-PromptReco-v1/AOD'
 config.Data.inputDBS      = 'global'
 config.Data.splitting     = 'LumiBased'
-config.Data.unitsPerJob   = 200
-#config.Data.runRange      = '251168-251493,251496-251548,251559-251562,251638-252126'
+config.Data.unitsPerJob   = 50
 config.Data.outLFNDirBase = '/store/user/ursl/inclb/cmsRun/v01'
 config.Data.publication   = False
 

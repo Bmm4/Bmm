@@ -14,7 +14,7 @@ config.Data.inputDataset  = '/SingleMuon/Run2015B-PromptReco-v1/AOD'
 config.Data.inputDBS      = 'global'
 config.Data.splitting     = 'LumiBased'
 config.Data.unitsPerJob   = 50
-config.Data.outLFNDirBase = '/store/user/ursl/inclb/cmsRun/v01/'
+config.Data.outLFNDirBase = '/store/user/ursl/inclb/cmsRun/v01'
 config.Data.publication   = False
 
 config.Site.storageSite = 'T3_CH_PSI'
