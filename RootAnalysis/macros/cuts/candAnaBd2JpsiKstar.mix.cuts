@@ -1,21 +1,22 @@
-TYPE          3000067
+TYPE          3000069
 TRUTHCAND         511
 #
-TRIGRANGE    HLT_DoubleMu3_Jpsi_v1(1:99999999)
-TRIGRANGE    HLT_DoubleMu3_Jpsi_v2(1:99999999)
-TRIGRANGE    HLT_Dimuon6p5_Jpsi_Displaced_v1(1:99999999)
-TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v1(1:99999999)
-TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v2(1:99999999)
-TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v3(1:99999999)
-TRIGRANGE    HLT_DoubleMu3p5_Jpsi_Displaced_v2(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v1(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v4(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v5(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v9(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v10(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v11(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
-TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
+TRIGRANGE    NOTRIGGER
+#TRIGRANGE    HLT_DoubleMu3_Jpsi_v1(1:99999999)
+#TRIGRANGE    HLT_DoubleMu3_Jpsi_v2(1:99999999)
+#TRIGRANGE    HLT_Dimuon6p5_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v2(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v3(1:99999999)
+#TRIGRANGE    HLT_DoubleMu3p5_Jpsi_Displaced_v2(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v4(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v5(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v9(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v10(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v11(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
 # -- boxes
 +input cuts/boxes.Bd2JpsiKstar.cuts
 # -- tracks
