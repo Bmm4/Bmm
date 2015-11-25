@@ -175,7 +175,11 @@ int treeReader01::loop(int nevents, int start) {
 
     if (jEvent%step == 0) {
       TTimeStamp ts; 
-      cout  << " (run: " << Form("%8ld", fRun) << ", event: " << Form("%10ld", fEvt) << ", " << ts.AsString("lc") << ")" << endl;	
+      cout  << " (run: " << Form("%8ld", fRun)
+	    << ", event: " << Form("%10ld", fEvt)
+	    << ", ls: " << Form("%5d", fLS)
+	    << ", time now: " << ts.AsString("lc")
+	    << ")" << endl;	
     }
 
     if (fForceJson && !fpJSON->good(fRun, fLS)) {
