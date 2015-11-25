@@ -33,6 +33,12 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run255029  -s $version -n 2 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run255031  -s $version -n 2 -l;  \ \n";
 
+$dataset = "DoubleMuon_Run2015B_PromptReco";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/DoubleMuon_Run2015B_PromptReco -s $version -n 2 -l;  \ \n";
+
+$dataset = "SingleMuon_Run2015B_PromptReco";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/SingleMuon_Run2015B_PromptReco  -s $version -n 2 -l;  \ \n";
+
 $dataset = "mc";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu -s $version -n 100 -l;  \ \n";
