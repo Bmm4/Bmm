@@ -10,7 +10,6 @@
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 
 #include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
-#include "TrackingTools/IPTools/interface/IPTools.h"
 
 #include "DataFormats/TrackerRecHit2D/interface/SiTrackerGSRecHit2D.h" 
 
@@ -24,6 +23,7 @@
 
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
+
 #include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
@@ -90,9 +90,16 @@ void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int
     yE = vc->at(pvIdx).yError();
     zE = vc->at(pvIdx).zError();
   } else {
-    xE = 99.;
-    yE = 99.;
-    zE = 99.;
+    if (bs) {
+      refPt = bs->position(); 
+      xE = bs->BeamWidthX();
+      yE = bs->BeamWidthY();
+      zE = bs->sigmaZ();
+    } else {
+      xE = 99.;
+      yE = 99.;
+      zE = 99.;
+    } 
   }
   
   pTrack->fIndex = tidx;
@@ -125,7 +132,6 @@ void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int
     pTrack->fBsLip  = -99.;
     pTrack->fBsLipE = -99.;
   }
-  // FIXME: dxy() and d0() are (up to their sign) identical. 
   pTrack->fdxy  = trackView.dxy();
   pTrack->fdxyE = trackView.dxyError();
   pTrack->fd0   = trackView.d0();
