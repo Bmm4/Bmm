@@ -317,19 +317,22 @@ void candAna::candAnalysis() {
   fMuEta   = fpSigTrack->fPlab.Eta(); 
   fMuPhi   = fpSigTrack->fPlab.Phi(); 
 
-  // FIXME?? Check track parametrization 
-  fMuIp3d  =  fpSigTrack->fd0;
-  fMuIp3dE =  fpSigTrack->fd0E;
+  // in03_008.pdf
+  fMuIp3d  =  fpSigTrack->fTip;
+  fMuIp3dE =  fpSigTrack->fTipE;
 
-  fMuIp2d  =  fpSigTrack->fTip;
-  fMuIp2dE =  fpSigTrack->fTipE;
-  cout << "fpSigTrack->fd0 = " << fpSigTrack->fd0 << " fpSigTrack->fTip = " << fpSigTrack->fTip << endl;
-
+  fMuIp2d  =  fpSigTrack->fd0;
+  fMuIp2dE =  fpSigTrack->fd0E;
   
   fJetPt   = fpSigJet->fPlab.Perp(); 
   fJetEta  = fpSigJet->fPlab.Eta(); 
   fJetPhi  = fpSigJet->fPlab.Phi(); 
 
+  // cout << fpSigTrack->fTip << " +/- " << fpSigTrack->fTipE <<  ", " << fpSigTrack->fdxy << " +/- " << fpSigTrack->fdxyE
+  //      << " vtx: " << fpSigTrack->fPvIdx << " (nPv = " << fpEvt->nPV() << ")"
+  //      << " wrt bs: " << fpSigTrack->fBsTip << " +/- " << fpSigTrack->fBsTipE
+  //      << endl;
+  
 }
 
 
@@ -350,27 +353,17 @@ void candAna::bookHist() {
 
   cout << "booking hists for " << fName << endl;
   TH1::SetDefaultSumw2(kTRUE);
-  double MAXPTREL(10.);
-  int NBINS(50); 
-  new TH1D("ptrel_4_6", "ptrel_4_6", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_6_8", "ptrel_6_8", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_8_10", "ptrel_8_10", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_10_15", "ptrel_10_15", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_15_20", "ptrel_15_20", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_20_30", "ptrel_20_30", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_30_40", "ptrel_30_40", NBINS, 0., MAXPTREL); 
-  new TH1D("ptrel_40_50", "ptrel_40_50", NBINS, 0., MAXPTREL); 
-  new TH1D("prescale0", "prescale", 1000, 0., 1000.); 
-  new TH1D("prescale1", "prescale (pt > 4)", 1000, 0., 1000.); 
-  new TH1D("prescale2", "prescale (|eta| < 2.1)", 1000, 0., 1000.); 
   
   TH1D *h(0);
   TH2D *h2(0); 
   char hname[1000], htitle[1000];
   // -- level: 
   //    5 trigger-matched muon + jet
-  //    (6 trigger-matched muon with impact parameter)
+  //    6 trigger-matched muon with impact parameter
   int i(5); 
+  vector<int> vi;
+  vi.push_back(5); 
+  vi.push_back(6); 
   // -- tag
   //    0 data???
   //    1 b 
@@ -387,60 +380,62 @@ void candAna::bookHist() {
   vTag.push_back(8);  // FCR
   vTag.push_back(9);  // FEC
   vTag.push_back(10); // GS
-  for (unsigned int jv = 0; jv < vTag.size(); ++jv) {
-    int j = vTag[jv];
-    sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta", i, j); 
-    sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
-    h2 = new TH2D(hname, htitle, 80, -4., 4., 100, 0., 10.); 
-    setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
-    h2->Sumw2(); 
-    
-    sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt", i, j); 
-    sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d", i, j);
-    h2 = new TH2D(hname, htitle, 100, 0., 100., 100, 0., 10.); 
-    setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
-    h2->Sumw2();
-    
-    for (int m = 1; m < 11; ++m) {
-      sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt%c", i, j, 96+m); 
-      sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d",i,j);
-      h2 = new TH2D(hname,htitle, 100, 0., 100., 100, 0., 10.); 
+  for (unsigned int iv = 0; iv < vi.size(); ++iv) {
+    i = vi[iv]; // recycle
+    for (unsigned int jv = 0; jv < vTag.size(); ++jv) {
+      int j = vTag[jv];
+      sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta", i, j); 
+      sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
+      h2 = new TH2D(hname, htitle, 80, -4., 4., 100, 0., 10.); 
+      setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
+      h2->Sumw2(); 
+      
+      sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt", i, j); 
+      sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d", i, j);
+      h2 = new TH2D(hname, htitle, 100, 0., 100., 100, 0., 10.); 
       setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
       h2->Sumw2();
       
-      sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta%c", i, j, 96+m); 
-      sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
-      h2 = new TH2D(hname,htitle, 80, -4., 4., 100, 0., 10.); 
-      setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
-      h2->Sumw2();
+      for (int m = 1; m < 11; ++m) {
+	sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt%c", i, j, 96+m); 
+	sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d",i,j);
+	h2 = new TH2D(hname,htitle, 100, 0., 100., 100, 0., 10.); 
+	setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
+	h2->Sumw2();
+	
+	sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta%c", i, j, 96+m); 
+	sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
+	h2 = new TH2D(hname,htitle, 80, -4., 4., 100, 0., 10.); 
+	setTitles(h2, "#eta^{muon}", "p_{T}^{rel} [GeV]"); 
+	h2->Sumw2();
+      }
+          
+      
+      sprintf(hname, "GEN_%d_%d_muon_pt", i, j); 
+      sprintf(htitle, "GEN muon pt: level %d tag %d", i, j);
+      h = new TH1D(hname, htitle, 100, 0., 100.); 
+      setTitles(h, "p_{T} [GeV]", "events/bin"); 
+      h->Sumw2();
+      
+      sprintf(hname, "GEN_%d_%d_muon_eta", i, j); 
+      sprintf(htitle, "GEN muon #eta: level %d tag %d", i, j);
+      h = new TH1D(hname,htitle, 80, -4., 4.); 
+      setTitles(h, "#eta", "events/bin"); 
+      h->Sumw2(); 
+      
+      sprintf(hname, "RECO_%d_%d_muon_pt", i, j); 
+      sprintf(htitle,"RECO muon pt: level %d tag %d", i, j);
+      h = new TH1D(hname,htitle, 100, 0., 100.); 
+      setTitles(h, "p_{T} [GeV]", "events/bin"); 
+      h->Sumw2();
+      
+      sprintf(hname, "RECO_%d_%d_muon_eta", i, j); 
+      sprintf(htitle, "RECO muon #eta: level %d tag %d", i, j);
+      h = new TH1D(hname, htitle, 80, -4., 4.); 
+      setTitles(h, "#eta", "events/bin"); 
+      h->Sumw2();
     }
-    
-    
-    sprintf(hname, "GEN_%d_%d_muon_pt", i, j); 
-    sprintf(htitle, "GEN muon pt: level %d tag %d", i, j);
-    h = new TH1D(hname, htitle, 100, 0., 100.); 
-    setTitles(h, "p_{T} [GeV]", "events/bin"); 
-    h->Sumw2();
-    
-    sprintf(hname, "GEN_%d_%d_muon_eta", i, j); 
-    sprintf(htitle, "GEN muon #eta: level %d tag %d", i, j);
-    h = new TH1D(hname,htitle, 80, -4., 4.); 
-    setTitles(h, "#eta", "events/bin"); 
-    h->Sumw2(); 
-    
-    sprintf(hname, "RECO_%d_%d_muon_pt", i, j); 
-    sprintf(htitle,"RECO muon pt: level %d tag %d", i, j);
-    h = new TH1D(hname,htitle, 100, 0., 100.); 
-    setTitles(h, "p_{T} [GeV]", "events/bin"); 
-    h->Sumw2();
-    
-    sprintf(hname, "RECO_%d_%d_muon_eta", i, j); 
-    sprintf(htitle, "RECO muon #eta: level %d tag %d", i, j);
-    h = new TH1D(hname, htitle, 80, -4., 4.); 
-    setTitles(h, "#eta", "events/bin"); 
-    h->Sumw2();
   }
-
 }
 
 
@@ -666,125 +661,97 @@ void candAna::fillRedTreeData() {
 
   fHistDir->cd();
 
-  double MUONPT(4.0); 
-  double MUONETA(2.1); 
 
   // -- histogram filling for data and MC as used in analysis (gen-level is below!)
   if (fDoFill && fGoodHLT) {
-    if (TMath::Abs(fMuEta) < MUONETA) {
-      if ( 4 <= fMuPt && fMuPt <  6) { ((TH1D*)fHistDir->Get("ptrel_4_6"))->Fill(fMuPtRel); }
-      if ( 6 <= fMuPt && fMuPt <  8) { ((TH1D*)fHistDir->Get("ptrel_6_8"))->Fill(fMuPtRel); }
-      if ( 8 <= fMuPt && fMuPt < 10) { ((TH1D*)fHistDir->Get("ptrel_8_10"))->Fill(fMuPtRel); }
-      if (10 <= fMuPt && fMuPt < 15) { ((TH1D*)fHistDir->Get("ptrel_10_15"))->Fill(fMuPtRel); }
-      if (15 <= fMuPt && fMuPt < 20) { ((TH1D*)fHistDir->Get("ptrel_15_20"))->Fill(fMuPtRel); }
-      if (20 <= fMuPt && fMuPt < 30) { ((TH1D*)fHistDir->Get("ptrel_20_30"))->Fill(fMuPtRel); }
-      if (30 <= fMuPt && fMuPt < 40) { ((TH1D*)fHistDir->Get("ptrel_30_40"))->Fill(fMuPtRel); }
-      if (40 <= fMuPt && fMuPt < 50) { ((TH1D*)fHistDir->Get("ptrel_40_50"))->Fill(fMuPtRel); }
-    }
+   
+    bool goodIP = (fMuIp3d > 0.008); 
     
     if (0 == fIsMC) {
-      ((TH1D*)fHistDir->Get("prescale0"))->Fill(fHltPs); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get("prescale1"))->Fill(fHltPs); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get("prescale2"))->Fill(fHltPs); 
-
-      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 0)))->Fill(fMuEta, fMuPtRel); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA)       ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 0)))->Fill(fMuPt, fMuPtRel); 
-      for (int m = 1; m < 11; ++m) {
-	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 0, 96+m)))->Fill(fMuEta, ptrelm); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 0, 96+m)))->Fill(fMuPt, ptrelm); 
-      }
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 0)))->Fill(fMuPt); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 0)))->Fill(fMuEta); 
+      fillRecoHistograms(5, 0); 
+      if (goodIP) fillRecoHistograms(6, 0); 
     }
-
+    
     if (5 == fIsMC) {
-      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel); 
-      for (int m = 1; m < 11; ++m) {
-	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 1, 96+m)))->Fill(fMuEta, ptrelm); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 1, 96+m)))->Fill(fMuPt, ptrelm); 
-      }
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 1)))->Fill(fMuPt); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 1)))->Fill(fMuEta); 
-      // -- production processes
-      if (40 == fProcessType) {
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
-      }
-
-      if (41 == fProcessType) {
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
-      }
-
-      if (42 == fProcessType) {
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
-      }
+      fillRecoHistograms(5, 1);
+      if (goodIP) fillRecoHistograms(6, 1); 
     }
 
     if (4 == fIsMC) {
-      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 2)))->Fill(fMuEta, fMuPtRel); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 2)))->Fill(fMuPt, fMuPtRel); 
-      for (int m = 1; m < 11; ++m) {
-	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 2, 96+m)))->Fill(fMuEta, ptrelm); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 2, 96+m)))->Fill(fMuPt, ptrelm); 
-      }
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 2)))->Fill(fMuPt); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 2)))->Fill(fMuEta); 
+      fillRecoHistograms(5, 2);
+      if (goodIP) fillRecoHistograms(6, 2); 
     }
 
     if (3 == fIsMC) {
-      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 3)))->Fill(fMuEta, fMuPtRel); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 3)))->Fill(fMuPt, fMuPtRel); 
-      for (int m = 1; m < 11; ++m) {
-	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 3, 96+m)))->Fill(fMuEta, ptrelm); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 3, 96+m)))->Fill(fMuPt, ptrelm); 
-      }
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 3)))->Fill(fMuPt); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 3)))->Fill(fMuEta); 
+      fillRecoHistograms(5, 3);
+      if (goodIP) fillRecoHistograms(6, 3); 
     }
 
     if (22 == fIsMC) {
-      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 22)))->Fill(fMuEta, fMuPtRel); 
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 22)))->Fill(fMuPt, fMuPtRel); 
-      for (int m = 1; m < 11; ++m) {
-	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 22, 96+m)))->Fill(fMuEta, ptrelm); 
-	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 22, 96+m)))->Fill(fMuPt, ptrelm); 
-      }
-      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 22)))->Fill(fMuPt); 
-      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 22)))->Fill(fMuEta); 
+      fillRecoHistograms(5, 22);
+      if (goodIP) fillRecoHistograms(6, 22); 
     }
-
   }
-
+  
   if (0 == fIsMC) {
     // -- these histograms likely are always empty
-    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
+    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
   }
-
+  
   if (3 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
+    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
   }
-
+  
   if (4 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
+    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
   }
-
+  
   if (5 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
+    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
   }
-
 }
+
+// ----------------------------------------------------------------------
+// imode = 5 standard
+//         6 with impact parameter cut
+void candAna::fillRecoHistograms(int imode, int id) {
+
+
+  if (fMuId && fMuPt > MUPTLO) ((TH2D*)fHistDir->Get(Form("RECO_%d_%d_ptrelvsmuoneta", imode, id)))->Fill(fMuEta, fMuPtRel); 
+  if (fMuId && TMath::Abs(fMuEta) < MUETAHI)       ((TH2D*)fHistDir->Get(Form("RECO_%d_%d_ptrelvsmuonpt", imode, id)))->Fill(fMuPt, fMuPtRel); 
+  for (int m = 1; m < 11; ++m) {
+    double ptrelm = fMuPtRel*(1.02 - m*0.01);
+    if (fMuId && fMuPt > MUPTLO) ((TH2D*)fHistDir->Get(Form("RECO_%d_%d_ptrelvsmuoneta%c", imode, id, 96+m)))->Fill(fMuEta, ptrelm); 
+    if (fMuId && TMath::Abs(fMuEta) < MUETAHI) ((TH2D*)fHistDir->Get(Form("RECO_%d_%d_ptrelvsmuonpt%c", imode, id, 96+m)))->Fill(fMuPt, ptrelm); 
+  }
+  if (fMuId && TMath::Abs(fMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("RECO_%d_%d_muon_pt", imode, id)))->Fill(fMuPt); 
+  if (fMuId && fMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("RECO_%d_%d_muon_eta", imode, id)))->Fill(fMuEta); 
+
+  if (5 == id) {
+    // -- production processes
+    if (40 == fProcessType) {
+      if (fMuId && fMuPt > MUPTLO) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUETAHI) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+    }
+    
+    if (41 == fProcessType) {
+      if (fMuId && fMuPt > MUPTLO) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUETAHI) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+    }
+    
+    if (42 == fProcessType) {
+      if (fMuId && fMuPt > MUPTLO) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUETAHI) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+    }
+  }
+  
+  
+}
+ 
 
 
 // ----------------------------------------------------------------------

@@ -26,6 +26,7 @@ public:
   virtual void        endAnalysis();
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
+  void                fillRecoHistograms(int imode, int id);
   void                triggerSelection();
   void                genAnalysis();
   
