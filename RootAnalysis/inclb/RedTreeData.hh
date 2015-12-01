@@ -3,7 +3,7 @@
 
 struct RedTreeData {
   Long64_t run, evt; 
-  int      ls;
+  int      ls, ps;
   int      type, procid;
   
   bool     muid, hlt, hltmatch, json; 

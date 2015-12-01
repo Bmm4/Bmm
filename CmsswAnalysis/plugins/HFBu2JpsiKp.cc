@@ -115,10 +115,12 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       bu = ka + psi; 
       if (TMath::Abs(bu.M() - MBPLUS) > fBuWindow) continue;
 
-      // -- sequential fit: J/Psi kaon
-      if (fVerbose > 5) cout << "==>HFBu2JpsiKp> going to sequential fit" << endl;
-      HFDecayTree theTree(300521, true, MBPLUS, false, -1.0, true);
+      // HFDecayTree:
+      // addDecayTree(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
+      //        clear(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false); 
 
+      // -- sequential fit: J/Psi kaon
+      HFDecayTree theTree(300521, true, MBPLUS, false, -1.0, true);
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
@@ -130,9 +132,8 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit without mass constraint" << endl;
       fSequentialFitter->doFit(&theTree);
 
-      // -- sequential fit: J/Psi kaon
+      // -- sequential fit: (mass-constrained) J/Psi kaon
       theTree.clear(400521, true, MBPLUS, false, -1.0, true);
-
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
@@ -145,7 +146,7 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       fSequentialFitter->doFit(&theTree);
       if (fVerbose > 5) cout << "==>HFBu2JpsiKp> done with fitting for track " << *trkIt << endl;
 
-      // -- global fit: J/Psi kaon
+      // -- global fit: J/Psi kaon ????????
       theTree.clear(500521, true, MBPLUS, false, -1.0, true);
       iterator = theTree.addDecayTree(500443, false, MJPSI, false);
       iterator->addTrack(iMuon1,13,true);

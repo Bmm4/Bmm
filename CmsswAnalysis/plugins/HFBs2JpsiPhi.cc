@@ -111,10 +111,13 @@ void HFBs2JpsiPhi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       bs = psi + phi; 
       if (TMath::Abs(bs.M() - MBS) > fBsWindow) continue;
 			
+      // HFDecayTree:
+      // addDecayTree(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
+      //        clear(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false); 
+
       // -- sequential fit: J/Psi kaons
       HFDecayTree theTree(300531, true, MBS, false, -1.0, true);
-			
-      HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false); // Don't use kinematic particle for the Psi
+      HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
       iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
@@ -128,7 +131,7 @@ void HFBs2JpsiPhi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			
       fSequentialFitter->doFit(&theTree);
 			
-      // -- sequential fit: J/Psi (constraint) phi (unconstraint)
+      // -- sequential fit: J/Psi (constrained) phi (unconstrained)
       theTree.clear(400531, true, MBS, false, -1.0, true);
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1,13);
@@ -144,7 +147,7 @@ void HFBs2JpsiPhi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			
       fSequentialFitter->doFit(&theTree);
 			
-      // -- global fit: J/Psi (constraint) phi (unconstraint)
+      // -- global fit: J/Psi (constrained) phi (unconstrained) ????????
       theTree.clear(500531, true, MBS, false, -1.0, true);
       iterator = theTree.addDecayTree(500443, false, MJPSI, false);
       iterator->addTrack(iMuon1,13,true);

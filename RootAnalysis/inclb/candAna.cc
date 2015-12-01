@@ -330,6 +330,9 @@ void candAna::bookHist() {
   new TH1D("ptrel_20_30", "ptrel_20_30", NBINS, 0., MAXPTREL); 
   new TH1D("ptrel_30_40", "ptrel_30_40", NBINS, 0., MAXPTREL); 
   new TH1D("ptrel_40_50", "ptrel_40_50", NBINS, 0., MAXPTREL); 
+  new TH1D("prescale0", "prescale", 1000, 0., 1000.); 
+  new TH1D("prescale1", "prescale (pt > 4)", 1000, 0., 1000.); 
+  new TH1D("prescale2", "prescale (|eta| < 2.1)", 1000, 0., 1000.); 
   
   TH1D *h(0);
   TH2D *h2(0); 
@@ -607,6 +610,7 @@ void candAna::fillRedTreeData() {
 
   fRTD.muid      = fMuId;
   fRTD.hlt       = fGoodHLT;
+  fRTD.ps        = fHltPs;
   fRTD.json      = fJSON;
 
   fRTD.pt        = fMuPt; 
@@ -619,90 +623,113 @@ void candAna::fillRedTreeData() {
   fRTD.jphi       = fJetPhi; 
 
   fHistDir->cd();
-  
+
+  double MUONPT(4.0); 
+  double MUONETA(2.1); 
+
+  // -- histogram filling for data and MC as used in analysis (gen-level is below!)
   if (fDoFill && fGoodHLT) {
-    if ( 4 <= fMuPt && fMuPt <  6) { ((TH1D*)fHistDir->Get("ptrel_4_6"))->Fill(fMuPtRel); }
-    if ( 6 <= fMuPt && fMuPt <  8) { ((TH1D*)fHistDir->Get("ptrel_6_8"))->Fill(fMuPtRel); }
-    if ( 8 <= fMuPt && fMuPt < 10) { ((TH1D*)fHistDir->Get("ptrel_8_10"))->Fill(fMuPtRel); }
-    if (10 <= fMuPt && fMuPt < 15) { ((TH1D*)fHistDir->Get("ptrel_10_15"))->Fill(fMuPtRel); }
-    if (15 <= fMuPt && fMuPt < 20) { ((TH1D*)fHistDir->Get("ptrel_15_20"))->Fill(fMuPtRel); }
-    if (20 <= fMuPt && fMuPt < 30) { ((TH1D*)fHistDir->Get("ptrel_20_30"))->Fill(fMuPtRel); }
-    if (30 <= fMuPt && fMuPt < 40) { ((TH1D*)fHistDir->Get("ptrel_30_40"))->Fill(fMuPtRel); }
-    if (40 <= fMuPt && fMuPt < 50) { ((TH1D*)fHistDir->Get("ptrel_40_50"))->Fill(fMuPtRel); }
-
-
+    if (TMath::Abs(fMuEta) < MUONETA) {
+      if ( 4 <= fMuPt && fMuPt <  6) { ((TH1D*)fHistDir->Get("ptrel_4_6"))->Fill(fMuPtRel); }
+      if ( 6 <= fMuPt && fMuPt <  8) { ((TH1D*)fHistDir->Get("ptrel_6_8"))->Fill(fMuPtRel); }
+      if ( 8 <= fMuPt && fMuPt < 10) { ((TH1D*)fHistDir->Get("ptrel_8_10"))->Fill(fMuPtRel); }
+      if (10 <= fMuPt && fMuPt < 15) { ((TH1D*)fHistDir->Get("ptrel_10_15"))->Fill(fMuPtRel); }
+      if (15 <= fMuPt && fMuPt < 20) { ((TH1D*)fHistDir->Get("ptrel_15_20"))->Fill(fMuPtRel); }
+      if (20 <= fMuPt && fMuPt < 30) { ((TH1D*)fHistDir->Get("ptrel_20_30"))->Fill(fMuPtRel); }
+      if (30 <= fMuPt && fMuPt < 40) { ((TH1D*)fHistDir->Get("ptrel_30_40"))->Fill(fMuPtRel); }
+      if (40 <= fMuPt && fMuPt < 50) { ((TH1D*)fHistDir->Get("ptrel_40_50"))->Fill(fMuPtRel); }
+    }
+    
     if (0 == fIsMC) {
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 0)))->Fill(fMuEta, fMuPtRel); 
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 0)))->Fill(fMuPt, fMuPtRel); 
+      ((TH1D*)fHistDir->Get("prescale0"))->Fill(fHltPs); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get("prescale1"))->Fill(fHltPs); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get("prescale2"))->Fill(fHltPs); 
+
+      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 0)))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA)       ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 0)))->Fill(fMuPt, fMuPtRel); 
       for (int m = 1; m < 11; ++m) {
 	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 0, 96+m)))->Fill(fMuEta, ptrelm); 
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 0, 96+m)))->Fill(fMuPt, ptrelm); 
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 0, 96+m)))->Fill(fMuEta, ptrelm); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 0, 96+m)))->Fill(fMuPt, ptrelm); 
       }
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 0)))->Fill(fMuPt); 
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 0)))->Fill(fMuEta); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 0)))->Fill(fMuPt); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 0)))->Fill(fMuEta); 
     }
 
     if (5 == fIsMC) {
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel); 
+      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 1)))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 1)))->Fill(fMuPt, fMuPtRel); 
       for (int m = 1; m < 11; ++m) {
 	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 1, 96+m)))->Fill(fMuEta, ptrelm); 
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 1, 96+m)))->Fill(fMuPt, ptrelm); 
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 1, 96+m)))->Fill(fMuEta, ptrelm); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 1, 96+m)))->Fill(fMuPt, ptrelm); 
       }
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 1)))->Fill(fMuPt); 
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 1)))->Fill(fMuEta); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 1)))->Fill(fMuPt); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 1)))->Fill(fMuEta); 
       // -- production processes
       if (40 == fProcessType) {
-	((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_8_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
 
       if (41 == fProcessType) {
-	((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_9_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
 
       if (42 == fProcessType) {
-	((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
-	((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuoneta"))->Fill(fMuEta, fMuPtRel); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get("RECO_5_10_ptrelvsmuonpt"))->Fill(fMuPt, fMuPtRel);
       }
     }
 
     if (4 == fIsMC) {
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 2)))->Fill(fMuEta, fMuPtRel); 
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 2)))->Fill(fMuPt, fMuPtRel); 
+      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 2)))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 2)))->Fill(fMuPt, fMuPtRel); 
       for (int m = 1; m < 11; ++m) {
 	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 2, 96+m)))->Fill(fMuEta, ptrelm); 
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 2, 96+m)))->Fill(fMuPt, ptrelm); 
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 2, 96+m)))->Fill(fMuEta, ptrelm); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 2, 96+m)))->Fill(fMuPt, ptrelm); 
       }
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 2)))->Fill(fMuPt); 
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 2)))->Fill(fMuEta); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 2)))->Fill(fMuPt); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 2)))->Fill(fMuEta); 
     }
 
     if (3 == fIsMC) {
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 3)))->Fill(fMuEta, fMuPtRel); 
-      ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 3)))->Fill(fMuPt, fMuPtRel); 
+      if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta", 3)))->Fill(fMuEta, fMuPtRel); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt", 3)))->Fill(fMuPt, fMuPtRel); 
       for (int m = 1; m < 11; ++m) {
 	double ptrelm = fMuPtRel*(1.02 - m*0.01);
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 3, 96+m)))->Fill(fMuEta, ptrelm); 
-	((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 3, 96+m)))->Fill(fMuPt, ptrelm); 
+	if (fMuId && fMuPt > MUONPT) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuoneta%c", 3, 96+m)))->Fill(fMuEta, ptrelm); 
+	if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH2D*)fHistDir->Get(Form("RECO_5_%d_ptrelvsmuonpt%c", 3, 96+m)))->Fill(fMuPt, ptrelm); 
       }
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 3)))->Fill(fMuPt); 
-      ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 3)))->Fill(fMuEta); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
-      ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
+      if (fMuId && TMath::Abs(fMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_pt", 3)))->Fill(fMuPt); 
+      if (fMuId && fMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("RECO_5_%d_muon_eta", 3)))->Fill(fMuEta); 
     }
 
   }
+
+  if (0 == fIsMC) {
+    // -- these histograms likely are always empty
+    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
+  }
+
+  if (3 == fIsMC) {
+    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
+  }
+
+  if (4 == fIsMC) {
+    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
+  }
+
+  if (5 == fIsMC) {
+    if (TMath::Abs(fGenMuEta) < MUONETA) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
+    if (fGenMuPt > MUONPT) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
+  }
+
 }
 
 
