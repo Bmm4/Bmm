@@ -54,22 +54,7 @@ void inclbReader::eventProcessing() {
     }
     fProcessType = -98; 
   }
-  
-  // -- fill a few basic histograms
-  TSimpleTrack *pT(0); 
-  double x(0.);
-  ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks()); 
-  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i); 
-    x = pT->getP().Perp();
-    ((TH1D*)fpHistFile->Get("pt0"))->Fill(x); 
-    ((TH1D*)fpHistFile->Get("pt1"))->Fill(x); 
-    x = pT->getP().Eta();
-    ((TH1D*)fpHistFile->Get("eta"))->Fill(x); 
-    x = pT->getP().Phi();
-    ((TH1D*)fpHistFile->Get("phi"))->Fill(x); 
-  }
-  
+ 
   // -- call candidate analyses
   for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
     lCandAnalysis[i]->fIsMC        = fIsMC;
@@ -91,11 +76,6 @@ void inclbReader::bookHist() {
   fpHistFile->cd();
   TH1D *h(0);
   h = new TH1D("monEvents", "monEvents", 20, 0., 20.);
-  h = new TH1D("ntracks", "ntracks", 100, 0., 1000.);
-  h = new TH1D("pt0", "pt(tracks)", 100, 0., 10.);
-  h = new TH1D("pt1", "pt(tracks)", 100, 0., 50.);
-  h = new TH1D("eta", "eta(tracks)", 60, -3.0, 3.0);
-  h = new TH1D("phi", "phi(tracks)", 50, -3.15, 3.15);
 
   (void)h; // make compiler warning go away
 
