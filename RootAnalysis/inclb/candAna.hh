@@ -59,7 +59,7 @@ public:
   int fEvent; 
   int fRunRange;
   int fYear;
-  int fProcessType, fMuonProcessType;
+  int fProcessType, fMuonProcessType, fHistIndex;
 
   std::map<std::string, std::pair<int, int> > HLTRANGE;
 

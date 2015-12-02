@@ -82,11 +82,21 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   
   fpEvt = evt; 
 
+  cout << "--- " << fName << " -------------------------------------------------------------------" << endl;
+  if (fVerbose == -13) { 
+    cout << "----------------------------------------------------------------------" << endl;
+    fpEvt->dumpGenBlock(); 
+    return;
+  }
+
+  
   TAnaTrack *pSigTrack(0);
   if (fVerbose > 39) { 
     cout << "---- Evt: " << fEvt << " n(sig tracks) = " << fpEvt->nSigTracks() << endl;
   }
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
+  ((TH1D*)fHistDir->Get(Form("trgobj%s", fName.c_str())))->Fill(fpEvt->nTrgObjv2());
+
   fpSigTrack = 0; 
   fpSigJet = 0; 
   for (int iC = 0; iC < fpEvt->nSigTracks(); ++iC) {
@@ -127,29 +137,13 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     candAnalysis();
     triggerSelection();
 
-    // -- MC filling?
-    fDoFill = false;
-    if ((3 == fIsMC) && (300 == fMuonProcessType)) {
-      fDoFill = true;
-    }
-    if ((4 == fIsMC) && ((399 < fMuonProcessType && fMuonProcessType < 500))) {
-      fDoFill = true;
-    }
-    if ((5 == fIsMC) && ((499 < fMuonProcessType && fMuonProcessType < 600))) {
-      fDoFill = true;
-    }
-    if ((22 == fIsMC) && (22 == fMuonProcessType)) {
-      fDoFill = true;
-    }
-    if (0 == fMuonProcessType) {
-      fDoFill = false;
-    }
+    fDoFill = true;
 
     // -- for data only fill HLT-triggered (and matched!) muons from good runs
     if (0 == fIsMC) {
-      fDoFill = true;
-      if (!fGoodHLT) fDoFill = false; 
-      if (!fJSON) fDoFill = false; 
+      fDoFill = false;
+      if (fGoodHLT) fDoFill = true; 
+      if (fJSON) fDoFill = true; 
       if (0) cout << "goodHLT: " << fGoodHLT << " JSON: " << fJSON 
 		  << " run: " << fRun << " evt: " << fEvt << " ls: " << fLS
 		  << " fDoFill: " << fDoFill
@@ -157,6 +151,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     }
 
 
+    fHistDir->cd();
     fillRedTreeData();
     
     if (fDoFill) {
@@ -171,21 +166,16 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
 // ----------------------------------------------------------------------
 void candAna::genAnalysis() {
-
-  
+  fHistIndex = 0; 
   fMuonProcessType = 0; 
 
   if (0 == fIsMC) {
-    //    cout << "not MC" << endl;
     return;
   }
 
   if (fpTrack->getGenIndex() < 0) {
-    //    cout << "no matching gen cand found" << endl;
     return;
   }
-
-  //  fpEvt->dumpGenBlock();
 
   fpGenMuon = fpEvt->getGenCand(fpTrack->getGenIndex());
   fGenMuPt  = fpGenMuon->fP.Perp();
@@ -201,6 +191,12 @@ void candAna::genAnalysis() {
     tau(false), 
     fake(false),
     drellYan(false); 
+
+  aid = TMath::Abs(pM->fID); 
+  if ((211 == aid) 
+      || (321 == aid) 
+      || (2212 == aid) 
+      ) fake = true;
   
   int cnt(-1); 
   while (iMom > 1 && iMom < fpEvt->nGenCands()) {
@@ -210,10 +206,6 @@ void candAna::genAnalysis() {
     pM   = fpEvt->getGenCand(iMom);
 
     aid = TMath::Abs(pM->fID); 
-    if ((211 == aid) 
-	|| (321 == aid) 
-	|| (2212 == aid) 
-	) fake = true;
 
     if ((111 == aid)        // pi0
 	|| (221 == aid)     // eta
@@ -269,6 +261,7 @@ void candAna::genAnalysis() {
     } else {
       fMuonProcessType = 500; 
     }
+    fHistIndex = 1;
   } else if (charm) {
     if (tau) {
       fMuonProcessType = 440; 
@@ -279,14 +272,18 @@ void candAna::genAnalysis() {
     } else {
       fMuonProcessType = 400; 
     }
-  } else if (light) {
-    fMuonProcessType = 300;
+    fHistIndex = 2;
   } else if (drellYan) {
     fMuonProcessType = 22;
+    fHistIndex = 22;
   } else {
+    fMuonProcessType = 300;
+    fHistIndex = 3;
     if (fpSigTrack->fDouble1 > 10) {
       cout << "----------------------------------------------------------------------" << endl;
-      cout << "reco muon pt/eta/phi = " << fpSigTrack->fPlab.Perp() << "/" << fpSigTrack->fPlab.Eta() << "/" << fpSigTrack->fPlab.Phi() << endl;
+      cout << "reco muon pt/eta/phi = " << fpSigTrack->fPlab.Perp() << "/" << fpSigTrack->fPlab.Eta() << "/" << fpSigTrack->fPlab.Phi()
+	   << " with ptrel = " << fpSigTrack->fDouble1
+	   << endl;
       cout << "gen muon  pt/eta/phi = " << fGenMuPt << "/" << fGenMuEta << "/" << fGenMuPhi <<  " at " << fpTrack->getGenIndex() << endl;
       fpEvt->dumpGenBlock();
       cout << "----------------------------------------------------------------------" << endl;
@@ -342,6 +339,7 @@ void candAna::bookHist() {
   fHistDir->cd();
 
   new TH1D(Form("mon%s", fName.c_str()), Form("mon%s", fName.c_str()), 50, 0., 50.); 
+  new TH1D(Form("trgobj%s", fName.c_str()), Form("trgobj%s", fName.c_str()), 55, 0., 1100.); 
 
   // -- Reduced Tree
   fTree = new TTree("events", "events");
@@ -370,7 +368,7 @@ void candAna::bookHist() {
   //    2 c
   //    3 uds
   //   22 Drell-Yan
-  //    ... more to come ...
+  //    ... more to come?! ...
   vector<int> vTag; 
   vTag.push_back(0); 
   vTag.push_back(1); 
@@ -661,58 +659,16 @@ void candAna::fillRedTreeData() {
 
   fHistDir->cd();
 
-
   // -- histogram filling for data and MC as used in analysis (gen-level is below!)
   if (fDoFill && fGoodHLT) {
-   
     bool goodIP = (fMuIp3d > 0.008); 
-    
-    if (0 == fIsMC) {
-      fillRecoHistograms(5, 0); 
-      if (goodIP) fillRecoHistograms(6, 0); 
-    }
-    
-    if (5 == fIsMC) {
-      fillRecoHistograms(5, 1);
-      if (goodIP) fillRecoHistograms(6, 1); 
-    }
-
-    if (4 == fIsMC) {
-      fillRecoHistograms(5, 2);
-      if (goodIP) fillRecoHistograms(6, 2); 
-    }
-
-    if (3 == fIsMC) {
-      fillRecoHistograms(5, 3);
-      if (goodIP) fillRecoHistograms(6, 3); 
-    }
-
-    if (22 == fIsMC) {
-      fillRecoHistograms(5, 22);
-      if (goodIP) fillRecoHistograms(6, 22); 
-    }
+    fillRecoHistograms(5, fHistIndex); 
+    if (goodIP) fillRecoHistograms(6, fHistIndex); 
   }
   
-  if (0 == fIsMC) {
-    // -- these histograms likely are always empty
-    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 0)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 0)))->Fill(fGenMuEta); 
-  }
-  
-  if (3 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 3)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 3)))->Fill(fGenMuEta); 
-  }
-  
-  if (4 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 2)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 2)))->Fill(fGenMuEta); 
-  }
-  
-  if (5 == fIsMC) {
-    if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", 1)))->Fill(fGenMuPt); 
-    if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", 1)))->Fill(fGenMuEta); 
-  }
+  // -- for reconstructed(!) candidates fill the corresponding gen histograms (this is NOT for efficiency!)
+  if (TMath::Abs(fGenMuEta) < MUETAHI) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_pt", fHistIndex)))->Fill(fGenMuPt); 
+  if (fGenMuPt > MUPTLO) ((TH1D*)fHistDir->Get(Form("GEN_5_%d_muon_eta", fHistIndex)))->Fill(fGenMuEta); 
 }
 
 // ----------------------------------------------------------------------
@@ -783,6 +739,18 @@ void candAna::triggerSelection() {
   fHltType = 0; 
   fHltPs = 0; 
 
+  // -- reset trigger matching 
+  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects 
+    TTrgObjv2 *pTO = fpEvt->getTrgObjv2(i); 
+    int hltIndex = pTO->fHltIndex;
+    if (hltIndex > 1000) {
+      cout << "XXX resetting trgobjv2 = " << i << " from " << hltIndex; 
+      hltIndex = hltIndex%1000;
+      pTO->fHltIndex = hltIndex;
+      cout << " to " << hltIndex << endl;
+    }
+  }
+  
   TString a; 
   int ps(0); 
   bool result(false), wasRun(false), error(false); 
@@ -802,6 +770,7 @@ void candAna::triggerSelection() {
   if(fVerbose==-32) cout<<" event "<<fEvt<<endl;
   fHltType=0; // reset this variable 
   int foundNumHltObjects=0;
+  string triggerPath("untriggered"); 
   for (int i = 0; i < NHLT; ++i) {
     result = wasRun = error = false;
     a = fpEvt->fHLTNames[i]; 
@@ -836,6 +805,7 @@ void candAna::triggerSelection() {
 	rmax = imap->second.second; 
 	if (!a.CompareTo(imap->first.c_str())) {
 	  good=true;
+	  triggerPath = a; 
 	  if (fVerbose > 2 || -32 == fVerbose  ) 
 	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a 
 		 << " result: " << result << endl;
@@ -872,7 +842,11 @@ void candAna::triggerSelection() {
 	    
 	    int hltIndex = pTO->fHltIndex;
 	    // mark it as selected by adding a large number, so >1000.
-	    if(hltIndex<1000) {pTO->fHltIndex = hltIndex + (foundNumHltObjects*1000);}
+	    if(hltIndex<1000) {
+	      cout << "XXX changing trgobjv2 = " << i << " from " << hltIndex; 
+	      pTO->fHltIndex = hltIndex + (foundNumHltObjects*1000);
+	      cout << " to " << pTO->fHltIndex << endl;
+	    }
 	    else cout<<" hltIndex>1000 "<<hltIndex<<" problem marking it"<<endl;
 	    
 	    vector<int> muonIndex = pTO->fIndex;
@@ -904,7 +878,7 @@ void candAna::triggerSelection() {
   
   if (fGoodHLT) {
     if (fVerbose > 1 || fVerbose == -32) {
-      cout << "------->  event     triggered! mu pt/eta = " << fMuPt << "/" << fMuEta;
+      cout << "------->  event     triggered! mu pt/eta = " << fMuPt << "/" << fMuEta << " for path " << triggerPath; 
       if (goodMatch) {
 	cout << " and matched!";
       } else {
