@@ -10,21 +10,14 @@ process.MessageLogger.cerr.FwkReport.reportEvery = 1000
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 
-# ----------------------------------------------------------------------
-# -- Database configuration
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
-process.load("CondCore.DBCommon.CondDBSetup_cfi")
-
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
-#process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
+process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v3"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
