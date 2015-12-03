@@ -17,7 +17,8 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v3"
+# requires CMSSW_7_4_X with X>10!!
+process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v4"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE

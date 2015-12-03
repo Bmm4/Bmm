@@ -30,7 +30,12 @@ process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
 # POOLSOURCE
 process.source = cms.Source(
     "PoolSource", 
-    fileNames = cms.untracked.vstring()
+    fileNames = cms.untracked.vstring(),
+    inputCommands = cms.untracked.vstring(
+        'keep *',
+        'drop recoCSCHaloData_CSCHaloData__RECO'
+    )
+    
 )
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
