@@ -61,6 +61,9 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-
 #$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD50-Mu20 -s $version -n 55 -l;  \ \n";
 #$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD100-Mu50 -s $version -n 100 -l;  \ \n";
 
+
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclMu13_hardQCD12 -s $version -n 35 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD12-Mu13 -s $version -n 55 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD16-Mu18 -s $version -n 55 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD25-Mu28 -s $version -n 55 -l;  \ \n";
