@@ -6,6 +6,10 @@ tie %jobs, "Tie::IxHash";
 
 # -- define all the jobs
 %jobs = ();
+
+$dataset = "Run2015D__Charmonium__PromptReco_Dstar-v3"; 
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
+
 $dataset = "Run2015B__Charmonium__PromptReco_Dstar-v1"; 
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 
@@ -26,6 +30,9 @@ tie %catalogs, "Tie::IxHash";
 %jobs = ();
 tie %jobs, "Tie::IxHash";
 
+
+$dataset = "Run2015D__Charmonium__PromptReco_Dstar-v3";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2015D-XXXX.py -f ../../../catalogs/Run2015D__Charmonium__PromptReco-v3/150930 -s $version -r -e 20000; ";
 
 $dataset = "Run2015B__Charmonium__PromptReco_Dstar-v1";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2015B-XXXX.py -f ../../../catalogs/Run2015B__Charmonium__PromptReco-v1/150722 -s $version -r -e 20000; ";

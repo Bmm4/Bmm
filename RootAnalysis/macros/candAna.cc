@@ -1239,6 +1239,12 @@ void candAna::triggerSelection() {
 	} // end if fGoodHLT
     } // if passed      
   } // end for loop hlt
+
+  if(fhltType>999) {cout<<fhltType<<endl; fhltType -= 1000;}
+  fhltType = fhltType + (1000 * (foundNumHltObjects-1));  
+  //cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<" "
+  //  <<fhltType<<endl;
+  
   if( (fVerbose>9) || (fVerbose==-32)) 
     cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<endl;
 
@@ -3732,7 +3738,7 @@ double candAna::doTriggerMatchingR(TAnaTrack *fp1, bool anyTrig, bool muonsOnly)
   fTrigMatchDeltaPt=trigMatchDeltaPt1;
   
   if(mu1match>-1) {
-    if(localPrint) cout<<" matching OK"<<endl;
+    if(localPrint) cout<<" matching OK "<<deltaRmin1<<" "<<hlt1<<endl;
     //double tmp=fMu1TrigM;
     //fMu1TrigM = deltaRmin1;
     //if(tmp!=fMu1TrigM) cout<<" two methods inconsistent "<<tmp<<" "<<fMu1TrigM<<endl;
@@ -3784,7 +3790,8 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2,
   string hlt1, hlt2;
   double deltaRmin1(99.),deltaRmin2(99.);
   double trigMatchDeltaPt1 = 99., trigMatchDeltaPt2 = 99.;
-
+  int level=0;
+  const int SL = 2;
   int modulesSelected=0, modulesMatched=0, modulesSingleMatched=0;
   double drMin=99.;
   bool match = false, matchS=false;
@@ -3814,8 +3821,10 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2,
       if(a.Contains("L2") || a.Contains("L1") ) { // check if this is an L2 or L1 path
 	deltaRthr=0.05; // extend for L1&L2 objects
 	if (localPrint) 
-	  cout<<" L2/L1 object, extend dr cut to  "<<deltaRthr<<endl;
-      }
+	  cout<<" L2/L1 object, extend dr cut to  "<<a<<" "<<deltaRthr<<endl;
+	if(a.Contains("L1")) {cout<<" L1 "<<a<<endl; level=1;}
+	//if(a.Contains("L2")) {cout<<" L2 "<<a<<endl; level=2;}	
+      } else if(a.Contains("L3")) {level=3;}
 
       // reset the best resuts for each trigger module
       bool match1=false, match2=false;
@@ -3856,42 +3865,42 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2,
 
 	// muon 1
 	if(deltaR1<deltaRmin1) {
-	  deltaRmin1=deltaR1;  // best match until now
 	  if(localPrint) {cout << " mu1 selected "<< deltaR1 <<endl;}
-	  ((TH1D*)fHistDir->Get("test11"))->Fill(deltaRmin1); 
-
+	  
+	  if(level==SL) {((TH1D*)fHistDir->Get("test11"))->Fill(deltaR1);} 
 	  if (deltaR1<deltaRthr) {
 	    // check now the p matching 
 	    double trigMatchDeltaPt=999.;
 	    if (fp1->fPlab.Mag() > 0.) 
 	      //trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp1->fPlab.Mag())/fp1->fPlab.Mag(); 
 	      trigMatchDeltaPt = (p.Pt()  - fp1->fPlab.Perp())/fp1->fPlab.Perp(); 
-	    ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt); 
-	    ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin1,TMath::Abs(trigMatchDeltaPt)); 
+	    if(level==SL) ((TH1D*)fHistDir->Get("test13"))->Fill(trigMatchDeltaPt); 
+	    if(level==SL) ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin1,TMath::Abs(trigMatchDeltaPt)); 
 	    if( !matchPt || (TMath::Abs(trigMatchDeltaPt) < deltaPtMatch) ) {  // check if it is good enough
 	      trigMatchDeltaPt1=(trigMatchDeltaPt);
+	      deltaRmin1=deltaR1;  // best match until now
 	      match1=true;
 	      m1=n;
 	    } else {if(localPrint) cout<<" pt1 match failed "<<trigMatchDeltaPt<<endl;} // if pt match 
 	  } else {if(localPrint) cout<<" dr1 too large "<<deltaR1<<endl; }// if delta 	    
 	} // if direction match 
-
+	
 	// muon 2
 	if(deltaR2<deltaRmin2) {
-	  deltaRmin2=deltaR2;
 	  if (localPrint) {cout << " mu2 selected "<< deltaR2 <<endl;}
-	  ((TH1D*)fHistDir->Get("test12"))->Fill(deltaRmin2); 
-
+	  if(level==SL) ((TH1D*)fHistDir->Get("test12"))->Fill(deltaR2); 
+	  
 	  if (deltaR2<deltaRthr) {
 	    // check now the pt matching 
 	    double trigMatchDeltaPt=999.;
 	    if (fp2->fPlab.Mag() > 0.) 
 	      //trigMatchDeltaPt = TMath::Abs(p.Rho()  - fp2->fPlab.Mag())/fp2->fPlab.Mag(); 
 	      trigMatchDeltaPt = (p.Pt()  - fp2->fPlab.Perp())/fp2->fPlab.Perp(); 
-	    ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPt); 
-	    ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin2,TMath::Abs(trigMatchDeltaPt)); 
+	    if(level==SL) ((TH1D*)fHistDir->Get("test14"))->Fill(trigMatchDeltaPt); 
+	    if(level==SL) ((TH2D*)fHistDir->Get("h2dtest"))->Fill(deltaRmin2,TMath::Abs(trigMatchDeltaPt)); 
 	    if(!matchPt || (TMath::Abs(trigMatchDeltaPt) < deltaPtMatch) ) {
 	      trigMatchDeltaPt2=trigMatchDeltaPt;
+	      deltaRmin2=deltaR2;
 	      match2=true;
 	      m2=n;
 	    } else {if(localPrint) cout<<" pt2 match failed "<<trigMatchDeltaPt<<endl;} // if pt match 
@@ -3979,6 +3988,13 @@ bool candAna::doTriggerVeto(TAnaTrack *fp1, TAnaTrack *fp2,
       {veto=true; if(localPrint) cout<<" double veto "<<endl;}   
   }
 
+  // For testing only
+  if (modulesSelected <= 0) cout<<" error: no module found "<<endl;
+  //else if (modulesSelected > 1) veto=true; // veto multi trigger events, testing only  
+
+  if( (modulesSelected-1) != (fhltType/1000) ) 
+    cout<<" modules "<<modulesSelected<<" "<<modulesMatched<<" "<<modulesSingleMatched<<" "<<veto<<" "<<fhltType<<endl;
+  
   if (localPrint) {
     cout<<" veto = "<<veto<<" "<<match<<" "<<matchS<<endl;
     cout<<" modules "<<modulesSelected<<" "<<modulesMatched<<" "<<modulesSingleMatched<<endl;

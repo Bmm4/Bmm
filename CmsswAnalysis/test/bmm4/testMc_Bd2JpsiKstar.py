@@ -35,7 +35,8 @@ process.source = cms.Source(
   fileNames = cms.untracked.vstring(
 #         "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
 #        "/store/mc/RunIISpring15DR74/BdToJpsiKstar_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/30000/0289A96C-7124-E511-9287-A0040420FE80.root"
-        "/store/mc/RunIISpring15DR74/BdToJpsiKstarV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/06C0BB5C-5F5D-E511-8DBC-24BE05C6E7E1.root"
+#        "/store/mc/RunIISpring15DR74/BdToJpsiKstarV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/06C0BB5C-5F5D-E511-8DBC-24BE05C6E7E1.root"
+        "/store/mc/RunIISpring15DR74/BdToJpsiKstarV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/10000/1A4D5A65-125D-E511-9596-001E675A6AB3.root"
  ),
  skipEvents = cms.untracked.uint32(704)
 )

@@ -55,6 +55,8 @@ void candAnaDstar::candAnalysis() {
 
   ((TH1D*)fHistDir->Get("Status"))->Fill(0.);
 
+  //cout<<fhltType<<" "<<int(fhltType/1000)<<" "<<(fhltType%1000)<<endl;
+
   if (fVerbose>2) {
     cout<<" Dstar candidate "<<fpCand->fType<<" in event "<<fEvt<<" v "<<fVerbose;
     cout << " with mass = " << fpCand->fMass <<" cand num "<<count0<<endl;
@@ -301,6 +303,8 @@ void candAnaDstar::candAnalysis() {
   
   } // skip for testing 
   
+
+
   if(fVerbose>8 ) cout<<"Passed pre-cuts "<<endl;
   count2++;
   
@@ -366,13 +370,6 @@ void candAnaDstar::candAnalysis() {
   //match1dr4 = doTriggerMatchingTest(pPi,0); // see if it matches HLT muon
   //match2dr4 = doTriggerMatchingTest(pK,0);  // see if it matches HLT muon
 
-  if(MYDEBUG) {
-    //if(muid1 && (match1dr2 != match1dr4)) 
-    cout<<" match 1 "<<fmatch1dr<<" "<<fmatch1dr1<<" "<<fmatch1dr2<<" "<<fmatch1dr3<<" "<<fmatch1dr4<<endl;
-    //if(muid2&&(match2dr2 != match2dr4)) 
-    cout<<" match 2 "<<fmatch2dr<<" "<<fmatch2dr1<<" "<<fmatch2dr2<<" "<<fmatch2dr3<<" "<<fmatch2dr4<<endl;
-  }
-
   //bool mumatch1 = (fmatch1dr<0.02); // see if it matches HLT muon
   //bool mumatch2 = (fmatch2dr<0.02); // see if it matches HLT muon
   bool mumatch1 = (fmatch1dr<0.01); // see if it matches HLT muon
@@ -384,6 +381,16 @@ void candAnaDstar::candAnalysis() {
   ((TH1D*)fHistDir->Get("dr8"))->Fill(fmatch2dr);
   if(muid1) ((TH1D*)fHistDir->Get("dr1"))->Fill(fmatch1dr);
   if(muid2) ((TH1D*)fHistDir->Get("dr2"))->Fill(fmatch2dr);
+
+  if(MYDEBUG) {
+    //if(muid1 && (match1dr2 != match1dr4)) 
+    cout<<" match 1 "<<fmatch1dr<<" "<<fmatch1dr1<<" "<<fmatch1dr2<<" "<<fmatch1dr3<<" "<<fmatch1dr4
+	<<" "<<mumatch1<<endl;
+    //if(muid2&&(match2dr2 != match2dr4)) 
+    cout<<" match 2 "<<fmatch2dr<<" "<<fmatch2dr1<<" "<<fmatch2dr2<<" "<<fmatch2dr3<<" "<<fmatch2dr4
+	<<" "<<mumatch2<<endl;
+  }
+
 
 #ifndef MYTREES
   fPreselection = true;  // select this event for the standrad redtree
@@ -417,9 +424,37 @@ void candAnaDstar::candAnalysis() {
   //if( (fveto||fb1||fb2||fb3) != (fveto&&fb1&&fb2&&fb3) ) 
   if(MYDEBUG) 
     cout<<" veto "<<fveto<<" "<<veto1<<" "<<fb1<<" "<<fb2<<" "<<fb3<<endl;
-  
-  if(0 && !fveto && (mumatch1||mumatch2) ) {
-    cout<<" Dstar candidate "<<fpCand->fType<<" in event "<<fEvt<<" v "<<fVerbose;
+
+
+  // harder cuts, like final for testing only  
+  //static int ic=0;
+  if(0) {
+    if( dm<0.135 || dm>0.155 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;} 
+    if( mdz<1.82 || mdz>1.91 ) {if(fVerbose>3) cout<<" failed mdz cut "<<mdz<<endl; return;} 
+    if( mdstar<1.97 || mdstar>2.05 ) {if(fVerbose>3) cout<<" failed mdstar cut "<<mdstar<<endl; return;} 
+    if(ptPi<4.0 || ptK<4.0) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}  
+    if (ptPis < 0.5) {if(fVerbose>3) cout<<" failed pt slow pt cut "<<ptPis<<endl; return;}
+    if (dr > 0.08) {if(fVerbose>3) cout<<" failed dr cut "<<dr<<endl; return;}
+    if (chi2 > 2.0) {if(fVerbose>3) cout<<" failed chis2 cut "<<chi2<<endl; return;}
+    if (pt < 6.0) {if(fVerbose>3) cout<<" failed pt cut "<<pt<<endl; return;}
+    if (alpha > 0.15) {if(fVerbose>3) cout<<" failed alpha cut "<<alpha<<endl; return;}
+    if (fls3d < 2.0) {if(fVerbose>3) cout<<" failed fls3d cut "<<fls3d<<endl; return;}
+
+    // json cut
+    if(!fJSON) return; // check jason 
+    // 1 tigger 
+    if(fhltType>=1000) return;  // veto multiple triggers
+    // veto
+    if(fb3) return;  // veto trigger matched pi
+    // muid
+    if(!muid1) return; // select miidentified pi->mu 
+
+    ic++;
+    cout<<fJSON<<" "<<fhltType<<" "<<fb3<<" "<<muid1<<" "<<muid2<<" "<<ic<<endl;
+  }
+
+  if(0) { // PRINTOUT FOR TESTING 
+    cout<<" Dstar candidate "<<fpCand->fType<<" in event "<<fEvt<<" run "<<fRun;
     cout << " with mass = " << fpCand->fMass <<" cand num "<<count0<<endl;
     cout<<" veto "<<fveto<<" "<<veto1<<" "<<fb1<<" "<<fb2<<" "<<fb3<<endl;
     cout<<" muid "<<muid1<<"/"<<muid2<<" "
@@ -427,7 +462,7 @@ void candAnaDstar::candAnalysis() {
   	<<fmatch1dr1<<"/"<<fmatch2dr1<<" "
   	<<fmatch1dr2<<"/"<<fmatch2dr2<<" "
   	<<fmatch1dr3<<"/"<<fmatch2dr3<<" "
-  	<<endl;
+  	<<mumatch1<<" "<<mumatch2<<endl;
     cout << "DUMP HFDstarCandidate  " <<endl;
     dumpHFDstarCand(fpCand); 
     doTest(fpCand,0);    
@@ -435,17 +470,24 @@ void candAnaDstar::candAnalysis() {
     int fVerbose0 = fVerbose;
     fVerbose=100;
     bool tmp = candAna::doTriggerVeto(pPi,pK,true,false,false); // use this, 1 track in trigger vetos the event
-    float r1 = doTriggerMatchingR(pPi,false,true);  // see if it matches HLT muon
-    float r2 = doTriggerMatchingR(pK, false,true);  // see if it matches HLT muon
+    //float r1 = doTriggerMatchingR(pPi,false,true);  // see if it matches HLT muon
+    //float r2 = doTriggerMatchingR(pK, false,true);  // see if it matches HLT muon
+    float r1 = doTriggerMatchingR(pPi,true,true);  // see if it matches HLT muon
+    float r2 = doTriggerMatchingR(pK, true,true);  // see if it matches HLT muon
     cout<<tmp<<" "<<r1<<" "<<r2<<endl;
     fVerbose=fVerbose0;
+    //doTest(fpCand,40); // some trigger tests 
+
+    if(fmatch1dr>0.5 && fmatch1dr2<0.1) {
+      int dum;
+      cin>>dum;
+    }
   }
 
-  //doTest(fpCand,40); // some trigger tests 
   
   if(fveto)  ((TH1D*)fHistDir->Get("Status"))->Fill(37.);
-  //if(veto1)  ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
-  //if(veto2)  ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
+  if(fb1)    ((TH1D*)fHistDir->Get("Status"))->Fill(38.);
+  if(fb3)    ((TH1D*)fHistDir->Get("Status"))->Fill(39.);
 
   //  match to offline muons 
   double dr1 = matchToMuon(pPi,true); // skip same track muons
@@ -1115,8 +1157,9 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
       if (wasRun && result) {
 
 	bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
+	if(PRINT) cout << "triggered "<<a << " "<<ps<<" "<<error<<" "<<rightDS<<endl;
 	if(rightDS) {
-	  if(PRINT) cout << a << " "<<ps<<" "<<error<<endl;
+	  if(PRINT) cout << "   right DS "<< a << " "<<ps<<" "<<error<<endl;
 
         if (a.Contains("_Bs_")) ((TH1D*)fHistDir->Get("htest1"))->Fill(1.);
         else if (a.Contains("_Jpsi_Displaced")) 
