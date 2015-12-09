@@ -35,14 +35,14 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
-    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_InclMu_hardQCD8_CUEP8M1_13TeV_cff.py $'),
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation, pThat = 8GeV, pT(mu) > 10GeV, 13TeV, Tune CUEP8M1')
+    name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_InclMu_nonDiffractive_CUEP8M1_13TeV_cff.py $'),
+    annotation = cms.untracked.string('Pythia8+EvtGen130 generation, non-diffractive, pT(mu) > 3GeV, 13TeV, Tune CUEP8M1')
 )
 
 # -- Filters
 muFilter = cms.EDFilter(
     "PythiaFilter",
-    MinPt = cms.untracked.double(10.),
+    MinPt = cms.untracked.double(3.),
     MaxPt = cms.untracked.double(9999.),
     MaxEta = cms.untracked.double(3.),
     MinEta = cms.untracked.double(-3.),

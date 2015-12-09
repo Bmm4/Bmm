@@ -39,7 +39,7 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
     name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_InclMu_hardQCD31_CUEP8M1_13TeV_cff.py $'),
-    annotation = cms.untracked.string('Spring 2015: Pythia8+EvtGen130 generation, pThat = 31GeV, pT(mu) > 34GeV, 13TeV, Tune CUEP8M1')
+    annotation = cms.untracked.string('Pythia8+EvtGen130 generation, pThat = 31GeV, pT(mu) > 34GeV, 13TeV, Tune CUEP8M1')
 )
 
 # -- Filters
