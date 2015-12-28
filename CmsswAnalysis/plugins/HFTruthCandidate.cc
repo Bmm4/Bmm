@@ -469,6 +469,42 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	aSeq.doFit(&theTree4);
       }
 
+      //// added by jmonroy //////
+
+      // -- special case for Bd2JPsiKstar
+      if (69 == fType) {
+	HFDecayTree theTree7(3000000 + fType, true, MB_0, false, -1.0, true);
+
+	HFDecayTreeIterator iterator = theTree7.addDecayTree(300443, false, MJPSI, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (13 == TMath::Abs(ID)) {
+	    iterator->addTrack(IDX, 13);
+	  }
+	}
+	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+
+	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (321 == TMath::Abs(ID)) {
+	    iterator->addTrack(IDX, 321);
+	  }
+	  if (211 == TMath::Abs(ID)) {
+	    iterator->addTrack(IDX, 211); // assign the pion mass!
+	  }
+	}
+	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+	theTree7.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree7);
+      }
+
+      ////////////////////////////
+
       // -- special case for B0 -> J/psi Kstar reconstructed as B+ -> J/psi K (leaving out the pion)
       if (10 == fType) {
 	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
