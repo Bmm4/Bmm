@@ -70,6 +70,8 @@ HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
   fMotherID(iConfig.getUntrackedParameter("motherID", 0)), 
   fType(iConfig.getUntrackedParameter("type", 67)),
   fGenType(iConfig.getUntrackedParameter("GenType", -67)),
+  //fType(iConfig.getUntrackedParameter("type", 69)),
+  //fGenType(iConfig.getUntrackedParameter("GenType", -69)),
   fMaxDoca(iConfig.getUntrackedParameter<double>("maxDoca", 99.)),
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)) {
 
@@ -470,7 +472,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
 
       //// added by jmonroy //////
-
+      /*
       // -- special case for Bd2JPsiKstar
       if (69 == fType) {
 	HFDecayTree theTree7(3000000 + fType, true, MB_0, false, -1.0, true);
@@ -504,7 +506,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
 
       ////////////////////////////
-
+      */
       // -- special case for B0 -> J/psi Kstar reconstructed as B+ -> J/psi K (leaving out the pion)
       if (10 == fType) {
 	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
@@ -614,9 +616,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     // -- now copy reduced part of gen block and clear the original
     gHFEvent->fillGenT(motherIndex); 
   }
-
-  
-
 
 }
 

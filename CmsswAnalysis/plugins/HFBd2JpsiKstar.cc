@@ -126,7 +126,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       iterator->addTrack(iMuon2,13);
       iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 			
-      iterator = theTree.addDecayTree(300892, false, MKSTAR, false);
+      iterator = theTree.addDecayTree(300313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
       iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
@@ -142,7 +142,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       iterator->addTrack(iMuon2,13);
       iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 			
-      iterator = theTree.addDecayTree(400892, false, MKSTAR, false);
+      iterator = theTree.addDecayTree(400313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
       iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
