@@ -472,7 +472,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
 
       //// added by jmonroy //////
-      /*
+      
       // -- special case for Bd2JPsiKstar
       if (69 == fType) {
 	HFDecayTree theTree7(3000000 + fType, true, MB_0, false, -1.0, true);
@@ -506,7 +506,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
 
       ////////////////////////////
-      */
+      
       // -- special case for B0 -> J/psi Kstar reconstructed as B+ -> J/psi K (leaving out the pion)
       if (10 == fType) {
 	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
