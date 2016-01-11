@@ -388,8 +388,27 @@ bool isBeautyMesonWeak(int i) {
 } 
 
 // ----------------------------------------------------------------------
+bool isBeautyBaryonWeak(int i) {
+  if (5122 == TMath::Abs(i)) return true;
+  if (5132 == TMath::Abs(i)) return true;
+  if (5232 == TMath::Abs(i)) return true;
+  if (5332 == TMath::Abs(i)) return true;
+  return false; 
+} 
+
+
+// ----------------------------------------------------------------------
 bool isCharmMesonWeak(int i) {
   return (4 == TMath::Abs(i)/100);
+} 
+
+// ----------------------------------------------------------------------
+bool isCharmBaryonWeak(int i) {
+  if (4122 == TMath::Abs(i)) return true;
+  if (4132 == TMath::Abs(i)) return true;
+  if (4232 == TMath::Abs(i)) return true;
+  if (4332 == TMath::Abs(i)) return true;
+  return false; 
 } 
 
 

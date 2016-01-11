@@ -1,6 +1,11 @@
 candAnaMu8       cuts/candAna_Mu8.cuts
+candAnaMu17      cuts/candAna_Mu17.cuts
+candAnaMu20      cuts/candAna_Mu20.cuts
 candAnaMu24      cuts/candAna_Mu24.cuts
+candAnaMu27      cuts/candAna_Mu27.cuts
+candAnaMu34      cuts/candAna_Mu34.cuts
 candAnaMu50      cuts/candAna_Mu50.cuts
+candAnaMu300     cuts/candAna_Mu300.cuts
 #
 JSON             ../common/json/Cert_246908-258750_13TeV_PromptReco_Collisions15_JSON_MuonPhys.txt
 #

@@ -62,7 +62,6 @@ $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
-
 # -----------------------------------------------
 $dataset = "Run2012D__MuOnia__22Jan2013-v1"; 
 # -----------------------------------------------
@@ -100,10 +99,48 @@ $catalogs{$mode} .= "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
+# -----------------------------------------------
+$dataset = "dstar-2012"; 
+# -----------------------------------------------
+#$mode = "dstar-$version-$dataset"; $pattern = "dstar-Run2012A-MuOnia";
+#$mode = "dstar-$version-$dataset"; $pattern = "dstar-Run2012B-MuOnia";
+$mode = "dstar-$version-$dataset"; $pattern = "dstar-Run2012C-MuOnia";
+#$mode = "dstar-$version-$dataset"; $pattern = "dstar-Run2012D-MuOnia";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
+#$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version/$dataset/2012A -c -p $pattern | sort > $mode " . &mCC;
+#$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version/$dataset/2012B -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version/$dataset/2012C -c -p $pattern | sort > $mode " . &mCC;
+#$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/$version/$dataset/2012D -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 50000 c$mode && mv c$mode-* jobs";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+# -----------------------------------------------
+$dataset = "Run2015B__Charmonium__PromptReco_Dstar-v1"; 
+# -----------------------------------------------
+$mode = "dstar-$version-prompt-$dataset"; $pattern = "dstar-prompt-Run2015B";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 50000 c$mode && mv c$mode-* jobs";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+# -----------------------------------------------
+$dataset = "Run2015D__Charmonium__PromptReco_Dstar-v4"; 
+# -----------------------------------------------
+$mode = "dstar-$version-prompt-$dataset"; $pattern = "dstar-prompt-Run2015D";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 50000 c$mode && mv c$mode-* jobs";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 
-
-
+# -----------------------------------------------
+$dataset = "Run2015D__Charmonium__PromptReco_Dstar-v3"; 
+# -----------------------------------------------
+$mode = "dstar-$version-prompt-$dataset"; $pattern = "dstar-prompt-Run2015D";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 50000 c$mode && mv c$mode-* jobs";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # ----------------------------
 $dataset = "Summer15_private";

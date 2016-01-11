@@ -108,9 +108,11 @@ double getErrorRange(TH1*, int = -1, int = -1);
 bool isBeautyMeson(int i); 
 bool isBeautyMesonWeak(int i); 
 bool isBeautyBaryon(int i); 
+bool isBeautyBaryonWeak(int i); 
 bool isCharmMeson(int i); 
 bool isCharmMesonWeak(int i); 
 bool isCharmBaryon(int i); 
+bool isCharmBaryonWeak(int i); 
 bool isLightMeson(int i); 
 bool isStableCharged(int i); 
 

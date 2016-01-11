@@ -52,10 +52,12 @@
 #pragma link C++ function isBeautyMeson(int);
 #pragma link C++ function isBeautyMesonWeak(int);
 #pragma link C++ function isBeautyBaryon(int);
+#pragma link C++ function isBeautyBaryonWeak(int);
 
 #pragma link C++ function isCharmMeson(int);
 #pragma link C++ function isCharmMesonWeak(int);
 #pragma link C++ function isCharmBaryon(int);
+#pragma link C++ function isCharmBaryonWeak(int);
 
 #pragma link C++ function isLightMeson(int);
 #pragma link C++ function isStableCharged(int);

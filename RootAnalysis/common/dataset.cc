@@ -24,11 +24,11 @@ TH1D*  dataset::getHist(string name, bool clone) {
   if (!fF) return 0;
   TH1D *h(0); 
   if (clone) 
-    h = (TH1D*)((TH1D*)(fF->Get(Form("%s", name.c_str()))))->Clone(Form("%s_%s_%d", fFullName.c_str(), name.c_str(), fNclone));
+    h = (TH1D*)((TH1D*)(fF->Get(Form("%s", name.c_str()))))->Clone(Form("%s_%s_%d", fFullName.c_str(), name.c_str(), fNclone++));
   else 
     h = (TH1D*)(fF->Get(Form("%s", name.c_str())));
 
-  cout << fName << ": hist " << h->GetName() << " with entries = " << h->GetEntries() << " from " << fF->GetName() << endl;
+  //  cout << fName << ": hist " << h->GetName() << " with entries = " << h->GetEntries() << " from " << fF->GetName() << endl;
 
   if (!h) return 0; 
   setHist(h); 
@@ -41,8 +41,13 @@ TH1D*  dataset::getHist(string name, bool clone) {
 TH2D*  dataset::getHist2(string name, bool clone) {
   if (!fF) return 0;
   TH2D *h(0); 
+  string name_ = name;
+  replaceAll(name_, "/", "_");
+
+  cout << "try to get " << Form("%s", name.c_str()) << endl;
+  
   if (clone) 
-    h = (TH2D*)((TH2D*)(fF->Get(Form("%s", name.c_str()))))->Clone(Form("%s_%s_%d", fFullName.c_str(), name.c_str(), fNclone));
+    h = (TH2D*)((TH2D*)(fF->Get(Form("%s", name.c_str()))))->Clone(Form("%s_%s_%d", fFullName.c_str(), name_.c_str(), fNclone++));
   else 
     h = (TH2D*)(fF->Get(Form("%s", name.c_str())));
 

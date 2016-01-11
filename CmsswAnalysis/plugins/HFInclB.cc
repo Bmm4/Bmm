@@ -160,7 +160,10 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     } else {
       if (fVertexCollection.size() < 2) {
 	pv0 = 0; 
-	if (printout) cout << "--> trkList.size() = " << trkList.size() << " and npv = " << fVertexCollection.size() << ",  simple PV choice: pv0 = " << pv0  << endl;
+	if (printout) cout << "--> trkList.size() = " << trkList.size()
+			   << " and npv = " << fVertexCollection.size()
+			   << ",  simple PV choice: pv0 = " << pv0
+			   << endl;
       } else {
 	double distZ(0.), distZmin(99.); 
 	int bestPV(-2);
@@ -173,7 +176,11 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    bestPV = iv; 
 	  }
 	}
-	if (printout) cout << "--> trkList.size() = " << trkList.size() << ",  npv = " << fVertexCollection.size() << ", chose pv0 = " << bestPV << " with distZ = " << distZmin << endl;
+	if (printout) cout << "--> trkList.size() = " << trkList.size()
+			   << ",  npv = " << fVertexCollection.size()
+			   << ", chose pv0 = " << bestPV
+			   << " with distZ = " << distZmin
+			   << endl;
       }
     }
 
@@ -194,7 +201,10 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	PseudoJet a(tT.px(), tT.py(), tT.pz(), TMath::Sqrt(tT.p()*tT.p() + MPION*MPION));
 	a.set_user_index(ix); 
 	particles.push_back(a);
-	if (printout) cout << "  adding to jet particles bestPV trk " << ix << " with pt/eta/phi = " << tT.pt() << "/" << tT.eta() << "/" << tT.phi() << endl;
+	if (printout) cout << "  adding to jet particles bestPV trk " << ix
+			   << " with pt/eta/phi = " << tT.pt()
+			   << "/" << tT.eta() << "/" << tT.phi()
+			   << endl;
       }
       if (trkList.end() !=  find(trkList.begin(), trkList.end(), ix)) {
 	if (1 == already) {
@@ -205,13 +215,19 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	PseudoJet a(tT.px(), tT.py(), tT.pz(), TMath::Sqrt(tT.p()*tT.p() + MPION*MPION));
 	a.set_user_index(ix); 
 	particles.push_back(a); 
-	if (printout) cout << "  adding to jet particles close trk  " << ix << " with pt/eta/phi = " << tT.pt() << "/" << tT.eta() << "/" << tT.phi() << endl;
+	if (printout) cout << "  adding to jet particles close trk  " << ix
+			   << " with pt/eta/phi = " << tT.pt()
+			   << "/" << tT.eta() << "/" << tT.phi()
+			   << endl;
       }
     }
     // -- add muon
     PseudoJet am(tM.px(), tM.py(), tM.pz(), TMath::Sqrt(tM.p()*tM.p() + MMUON*MMUON));
     am.set_user_index(muonList[im]); 
-    if (printout) cout << "  adding to jet particles muon  " << muonList[im] << " with pt/eta/phi = " << tM.pt() << "/" << tM.eta() << "/" << tM.phi() << endl;
+    if (printout) cout << "  adding to jet particles muon  " << muonList[im]
+		       << " with pt/eta/phi = " << tM.pt()
+		       << "/" << tM.eta() << "/" << tM.phi()
+		       << endl;
     particles.push_back(am); 
 
 
@@ -222,7 +238,7 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     ClusterSequence cs(particles, jet_def);
     vector<PseudoJet> jets = sorted_by_pt(cs.inclusive_jets(1.0));
     
-    // -- print the jets
+    // -- find the b-jet: ibjet
     int ibjet(-1), bJetSize(-1); 
     for (unsigned i = 0; i < jets.size(); i++) {
       vector<PseudoJet> constituents = jets[i].constituents();
@@ -242,15 +258,18 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (ibjet != static_cast<int>(i)) {
 	  cout << "   jet " << i << ": "<< jets[i].pt() << " "  << jets[i].pseudorapidity() << " " << jets[i].phi() << endl;
 	  for (unsigned j = 0; j < constituents.size(); j++) {
-	    cout << "       constituent " << j << " with trk index " << constituents[j].user_index() << " and pt: " << constituents[j].pt() << endl;
+	    cout << "       constituent " << j << " with trk index " << constituents[j].user_index()
+		 << " and pt: " << constituents[j].pt()
+		 << endl;
 	  }
 	}
       }
-    
       cout << "  bjet " << ibjet << ": "<< jets[ibjet].pt() << " "  << jets[ibjet].pseudorapidity() << " " << jets[ibjet].phi() << endl;
       vector<PseudoJet> constituents = jets[ibjet].constituents();
       for (unsigned j = 0; j < constituents.size(); j++) {
-	cout << "       constituent " << j << " with trk index " << constituents[j].user_index() << " and pt: " << constituents[j].pt() << endl;
+	cout << "       constituent " << j << " with trk index " << constituents[j].user_index()
+	     << " and pt: " << constituents[j].pt()
+	     << endl;
       }
     }
 
@@ -275,31 +294,18 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     
     TAnaTrack *pTrack; 
     pTrack           = gHFEvent->addSigTrack();
+    int gidx         = gHFEvent->getSimpleTrack(muonList[im])->getGenIndex();
+    fillAnaTrack(pTrack, tM, muonList[im], gidx, &fVertexCollection, fMuonCollection, &fBeamSpot); 
     pTrack->fInt1    = 100101; // type
     pTrack->fInt2    = pTrackJet->fIndex;
     
     pTrack->fDouble1 = -99.;   // ptrel
-    TVector3 a; 
-    a.SetPtEtaPhi(tM.pt(), tM.eta(), tM.phi());
-    pTrack->fPlab    = a;
-    
     TLorentzVector muvect;
     muvect.SetPtEtaPhiM(tM.pt(), tM.eta(), tM.phi(), MMUON);
     vect = vect - muvect;
-    pTrack->fDouble1 = muvect.Perp(vect.Vect()); //Ptrel in respct to the corrected jets direction
+    pTrack->fDouble1 = muvect.Perp(vect.Vect()); // Ptrel with respect to the corrected jets direction
     if (printout) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
-    
-    //define direction
-    GlobalVector direction(vect.X(),vect.Y(),vect.Z());
-    
-    pTrack->fIndex = muonList[im];
-    pTrack->fQ     = tM.charge(); 
-    TAnaMuon *pM = gHFEvent->getSimpleTrackMuon(muonList[im]); 
-    if (pM) {
-      pTrack->fMuID = pM->fMuID;
-    } else {
-      pTrack->fMuID = 0;
-    }
+
 
   }
 }

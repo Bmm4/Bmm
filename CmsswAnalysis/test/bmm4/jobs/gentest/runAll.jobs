@@ -23,7 +23,7 @@ sub runCommand() {
 }   
 
 $dataset = "gentest";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_EtaPtFilter -s $version -n 20 -l; \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../../v01/bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/PYTHIA8_Bs2MuMu_NoFilter -s $version -n 20 -l; \n";
 												      

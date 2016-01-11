@@ -5,7 +5,7 @@
 # ==============
 #
 #
-# collectCrabRootfiles -x DoubleMuon/crab_doubleMuon-2015B/151022_095340/0000/
+# collectCrabRootfiles [-o 23] -x DoubleMuon/crab_doubleMuon-2015B/151022_095340/0000/ -n inclb-prompt-Run2015B-SingleMuon
 #
 # ----------------------------------------------------------------------
 
@@ -15,7 +15,7 @@ use Tie::IxHash;
 use Cwd;
  
 use Getopt::Std;
-getopts('dn:x:');
+getopts('dn:o:x:');
 
 my $dir = cwd();
 
@@ -32,10 +32,15 @@ if ($opt_n) {
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
 
+my $cnt = 0; 
+if ($opt_o) {
+    $cnt = $opt_o; 
+}
 
 print "dir  = $dir\n";
 print "xdir = $xdir\n";
 print "name = $name\n";
+print "offset = $cnt\n";
 
 chdir("$xdir"); 
 print "cd to ", cwd(), "\n";
@@ -43,11 +48,11 @@ print "cd to ", cwd(), "\n";
 chdir("$dir"); 
 print "cd to ", cwd(), "\n";
 
-@rootfiles;
+#@rootfiles;
 
 unlink("$xdir/collectcrab.$name");
 open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$name\n";
-my $cnt = 0; 
+
 foreach $file (@rootfiles) {
     chop($file); 
     if ($file =~ /failed/) {next;}

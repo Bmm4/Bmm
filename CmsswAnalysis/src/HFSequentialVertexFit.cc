@@ -427,65 +427,66 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
       }
 		  
       // store?
-      if (nGoodVtx == 0 ) // the first PV, this is currently the best one ;)
-	{
+      // the first PV, this is currently the best one ;)
+      if (nGoodVtx == 0 ) {
+	fPvIx = j;
+	pvImpParams.lip = currentIp.second;
+	pvImpParams.ip3d = cur3DIP.second;
+      } else if (nGoodVtx == 1) { // now the second PV
+	if (fabs(currentIp.second.value()) >= fabs(pvImpParams.lip.value())) {// not the best but the second best
+	  pvImpParams2nd.lip = currentIp.second;
+	  pvImpParams2nd.ip3d = cur3DIP.second;
+	  fPvIx2 = j;
+	}
+	else {   // the best, the previous one is the current 2nd best
+	  fPvIx2 = fPvIx;
 	  fPvIx = j;
+	  pvImpParams2nd.lip = pvImpParams.lip;
+	  pvImpParams2nd.ip3d = pvImpParams.ip3d;
 	  pvImpParams.lip = currentIp.second;
 	  pvImpParams.ip3d = cur3DIP.second;
 	}
-      else if (nGoodVtx == 1) // now the second PV
-	{
-	  if (fabs(currentIp.second.value()) >= fabs(pvImpParams.lip.value())) {// not the best but the second best
+      } else { // we have more than 2 PV
+	if (fabs(currentIp.second.value()) >= fabs(pvImpParams.lip.value())) {
+	  // not the best
+	  if (fabs(currentIp.second.value()) < fabs(pvImpParams2nd.lip.value())) {
+	    // but the second best
 	    pvImpParams2nd.lip = currentIp.second;
 	    pvImpParams2nd.ip3d = cur3DIP.second;
 	    fPvIx2 = j;
 	  }
-	  else {
-	    // the best, the previous one is the current 2nd best
-	    fPvIx2 = fPvIx;
-	    fPvIx = j;
-	    pvImpParams2nd.lip = pvImpParams.lip;
-	    pvImpParams2nd.ip3d = pvImpParams.ip3d;
-	    pvImpParams.lip = currentIp.second;
-	    pvImpParams.ip3d = cur3DIP.second;
-	  }
+	} else {
+	  // this is currently the best one, keep it and put the old best one to 2nd best
+	  fPvIx2 = fPvIx;
+	  fPvIx = j;
+	  pvImpParams2nd.lip = pvImpParams.lip;
+	  pvImpParams2nd.ip3d = pvImpParams.ip3d;
+	  pvImpParams.lip = currentIp.second;
+	  pvImpParams.ip3d = cur3DIP.second;
 	}
-      else // we have more than 2 PV
-	{
-	  if (fabs(currentIp.second.value()) >= fabs(pvImpParams.lip.value())) {
-	    // not the best
-	    if (fabs(currentIp.second.value()) < fabs(pvImpParams2nd.lip.value())) {
-	      // but the second best
-	      pvImpParams2nd.lip = currentIp.second;
-	      pvImpParams2nd.ip3d = cur3DIP.second;
-	      fPvIx2 = j;
-	    }
-	  }
-	  else {
-	    // this is currently the best one, keep it and put the old best one to 2nd best
-	    fPvIx2 = fPvIx;
-	    fPvIx = j;
-	    pvImpParams2nd.lip = pvImpParams.lip;
-	    pvImpParams2nd.ip3d = pvImpParams.ip3d;
-	    pvImpParams.lip = currentIp.second;
-	    pvImpParams.ip3d = cur3DIP.second;
-	  }
-	}
+      }
       nGoodVtx++; // Count the no. of good vertices
     }
 	  
     // now, compute the tip w.r.t. PV
     // this code might be obsolete but certainly does not do anything wrong
-    tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),RecoVertex::convertPos((*fPVCollection)[fPvIx].position()));
-
-    if (!tsos.isValid()) {
+    // FIXME why is this not with respect to currentPV???
+    if (fPvIx > -1) {
+      tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(), RecoVertex::convertPos((*fPVCollection)[fPvIx].position()));
+      if (!tsos.isValid()) {
+	if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
+	pvImpParams.tip = (Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.));
+      } else {
+	pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),
+				       VertexState(RecoVertex::convertPos((*fPVCollection)[fPvIx].position()),
+						   RecoVertex::convertError((*fPVCollection)[fPvIx].error())));
+      }
+    } else {
+      cout << "fPvIx = " << fPvIx << " event: " << gHFEvent->fEventNumber << endl;
       if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
       pvImpParams.tip = (Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.),Measurement1D(-9999.,-9999.));
-    } else {
-      pvImpParams.tip = axy.distance(VertexState(tsos.globalPosition(),tsos.cartesianError().position()),
-				     VertexState(RecoVertex::convertPos((*fPVCollection)[fPvIx].position()),
-						 RecoVertex::convertError((*fPVCollection)[fPvIx].error())));
     }
+    
     if (fVerbose > 2) cout<<"==> HFSequentialVertexFit: Selected best PVs "<< fPvIx<<" "<<fPvIx2<<endl;
   }
   
