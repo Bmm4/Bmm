@@ -10,6 +10,7 @@
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 
 #include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
 
 #include "DataFormats/TrackerRecHit2D/interface/SiTrackerGSRecHit2D.h" 
 
@@ -132,6 +133,9 @@ void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int
     pTrack->fBsLip  = -99.;
     pTrack->fBsLipE = -99.;
   }
+
+  // see https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookTrackAnalysis
+  // FIXME: dxy() and d0() are the same (modulo sign)
   pTrack->fdxy  = trackView.dxy();
   pTrack->fdxyE = trackView.dxyError();
   pTrack->fd0   = trackView.d0();
