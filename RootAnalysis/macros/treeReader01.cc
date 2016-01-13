@@ -228,8 +228,7 @@ int  treeReader01::numberOfTrackerLayers(TAnaTrack *pTrack) {
   for (int i = 0; i < 9; ++i) tecw[i] = false; 
 
   int hits = pTrack->fValidHits;
-  int valids(0);
-  //if(hits>20) hits=20; // pattern has only 20 locations
+  if(hits>20) hits=20; // pattern has only 20 locations
   //  cout << "----------------------------------------------------------------------" << endl;
   int hit(0), hitmask(3); 
   int det(0), detpos(7), detmask(0); 
@@ -237,16 +236,15 @@ int  treeReader01::numberOfTrackerLayers(TAnaTrack *pTrack) {
   detmask = 0x7 << detpos;
   layermask = 0xf << layerpos;
   //  cout << "detmask = " << std::hex << detmask << " laymask = " << layermask << std::dec << endl;
-  for(int i =0; i<40; ++i){
+  for(int i =0; i<hits; ++i){
     unsigned int pat = pTrack->fHitPattern[i];
     
     hit = (pat & hitmask);
-    if (hit == 0) {valids += 1;if (valids > hits) {break;}}
     det = 0; 
     det = (pat & detmask)>>detpos; 
     lay = 0; 
     lay = (pat & layermask)>>layerpos; 
-    lay = lay - 1; // FIXME this line is necessary to be correct. But you should use TAnaTrack::fNumberOfValidTrkHits anyway!
+    //    lay = lay - 1; // FIXME this line is necessary to be correct. But you should use TAnaTrack::fNumberOfValidTrkHits anyway!
     if ((1 == det) && (0 == hit)) pixl[lay] = true; 
     if ((2 == det) && (0 == hit)) pixd[lay] = true; 
 	 	       	      

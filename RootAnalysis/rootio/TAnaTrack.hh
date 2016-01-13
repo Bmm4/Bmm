@@ -33,7 +33,7 @@ public:
   double         fChi2;
   int            fTrackQuality; 
   int            fAlgorithm;                    // see DataFormats/TrackReco/interface/TrackBase.h
-  int            fHitPattern[40];               // see DataFormats/TrackReco/interface/HitPattern.h
+  int            fHitPattern[20];               // see DataFormats/TrackReco/interface/HitPattern.h
 
   // -- refitted track parameters (for sig tracks)
   TVector3       fRefPlab; 
