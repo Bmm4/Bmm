@@ -294,31 +294,18 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     
     TAnaTrack *pTrack; 
     pTrack           = gHFEvent->addSigTrack();
+    int gidx         = gHFEvent->getSimpleTrack(muonList[im])->getGenIndex();
+    fillAnaTrack(pTrack, tM, muonList[im], gidx, &fVertexCollection, fMuonCollection, &fBeamSpot); 
     pTrack->fInt1    = 100101; // type
     pTrack->fInt2    = pTrackJet->fIndex;
     
     pTrack->fDouble1 = -99.;   // ptrel
-    TVector3 a; 
-    a.SetPtEtaPhi(tM.pt(), tM.eta(), tM.phi());
-    pTrack->fPlab    = a;
-    
     TLorentzVector muvect;
     muvect.SetPtEtaPhiM(tM.pt(), tM.eta(), tM.phi(), MMUON);
     vect = vect - muvect;
     pTrack->fDouble1 = muvect.Perp(vect.Vect()); // Ptrel with respect to the corrected jets direction
     if (printout) cout << "--> matched muon with ptrel = " << muvect.Perp(vect.Vect()) << endl;
-    
-    //define direction
-    GlobalVector direction(vect.X(),vect.Y(),vect.Z());
-    
-    pTrack->fIndex = muonList[im];
-    pTrack->fQ     = tM.charge(); 
-    TAnaMuon *pM = gHFEvent->getSimpleTrackMuon(muonList[im]); 
-    if (pM) {
-      pTrack->fMuID = pM->fMuID;
-    } else {
-      pTrack->fMuID = 0;
-    }
+
 
   }
 }

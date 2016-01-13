@@ -26,6 +26,7 @@ public:
   virtual void        endAnalysis();
   virtual void        setupRedTree(TTree *);
   virtual void        fillRedTreeData();
+  void                fillRecoHistograms(int imode, int id);
   void                triggerSelection();
   void                genAnalysis();
   
@@ -58,7 +59,7 @@ public:
   int fEvent; 
   int fRunRange;
   int fYear;
-  int fProcessType, fMuonProcessType;
+  int fProcessType, fMuonProcessType, fHistIndex;
 
   std::map<std::string, std::pair<int, int> > HLTRANGE;
 
@@ -78,6 +79,7 @@ public:
 
   int     fType; 
   double  fMuPt, fMuEta, fMuPhi, fMuPtRel; 
+  double  fMuIp3d, fMuIp3dE, fMuIp2d, fMuIp2dE; 
   double  fJetPt, fJetEta, fJetPhi; 
   double  fGenMuPt, fGenMuEta, fGenMuPhi;
   struct RedTreeData fRTD;

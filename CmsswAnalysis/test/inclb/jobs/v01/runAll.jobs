@@ -33,6 +33,12 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run255029  -s $version -n 2 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/HINMuon_run255031  -s $version -n 2 -l;  \ \n";
 
+$dataset = "DoubleMuon_Run2015B_PromptReco";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/DoubleMuon_Run2015B_PromptReco -s $version -r -e 100000;  \ \n";
+
+$dataset = "SingleMuon_Run2015B_PromptReco";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-prompt-Run2015B-XXXX.py -f ../../../catalogs/SingleMuon_Run2015B_PromptReco  -s $version -r -e 100000;  \ \n";
+
 $dataset = "mc";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclB2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu -s $version -n 100 -l;  \ \n";
@@ -50,9 +56,19 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_hardQCD20 -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclC2Mu_hardQCD50 -s $version -n 100 -l;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD50-Mu20 -s $version -n 100 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD100-Mu50 -s $version -n 100 -l;  \ \n";
+#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD10-Mu20 -s $version -n 55 -l;  \ \n";
+#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD20-Mu20 -s $version -n 55 -l;  \ \n";
+#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD50-Mu20 -s $version -n 55 -l;  \ \n";
+#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD100-Mu50 -s $version -n 100 -l;  \ \n";
 
+
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_InclMu13_hardQCD12 -s $version -n 35 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD12-Mu13 -s $version -n 55 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD16-Mu18 -s $version -n 55 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD25-Mu28 -s $version -n 55 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD35-Mu38 -s $version -n 55 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_hardQCD45-Mu48 -s $version -n 55 -l;  \ \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclB2Mu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../inclb-mc-Summer15_private-XXXX.py -f ../../../catalogs/PYTHIA8_lowpu_InclC2Mu -s $version -n 100 -l;  \ \n";

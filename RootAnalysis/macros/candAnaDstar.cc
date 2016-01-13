@@ -427,7 +427,7 @@ void candAnaDstar::candAnalysis() {
 
 
   // harder cuts, like final for testing only  
-  //static int ic=0;
+  static int ic=0;
   if(0) {
     if( dm<0.135 || dm>0.155 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;} 
     if( mdz<1.82 || mdz>1.91 ) {if(fVerbose>3) cout<<" failed mdz cut "<<mdz<<endl; return;} 
