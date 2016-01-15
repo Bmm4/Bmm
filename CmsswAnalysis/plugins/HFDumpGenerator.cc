@@ -34,6 +34,10 @@ HFDumpGenerator::HFDumpGenerator(const ParameterSet& iConfig):
   cout << "---  candidates label:                " << fGenCandidatesLabel << endl;
   cout << "---  event label:                     " << fGenEventLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
+
+  fTokenGenParticle  = consumes<vector<reco::GenParticle> >(fGenCandidatesLabel);
+  fTokenHepMCProduct = consumes<vector<HepMCProduct> >(fGenEventLabel);
+
 }
 
 
@@ -61,7 +65,7 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
   if (fVerbose > 3) {
     cout << "=================HEPMC===================" << endl;
     Handle<HepMCProduct> evt;
-    iEvent.getByLabel(fGenEventLabel.c_str(), evt);
+    iEvent.getByToken(fTokenHepMCProduct, evt);
     const HepMC::GenEvent *genEvent = evt->GetEvent();
     genEvent->print();
     
@@ -72,14 +76,15 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- From PhysicsTools/HepMCCandAlgos/plugins/ParticleListDrawer.cc
   int iMo1(-1), iMo2(-1), iDa1(-1), iDa2(-1); 
 
-  std::vector<const GenParticle *> cands;
+  vector<const GenParticle *> cands;
   cands.clear();
   vector<const GenParticle *>::const_iterator found = cands.begin();
 
-  edm::Handle<GenParticleCollection> genParticlesH;
+  Handle<GenParticleCollection> genParticlesH;
   genParticlesH.clear();
   try {
-    iEvent.getByLabel (fGenCandidatesLabel.c_str(), genParticlesH);
+    //    iEvent.getByLabel(fGenCandidatesLabel.c_str(), genParticlesH);
+    iEvent.getByToken(fTokenGenParticle, genParticlesH);
   } catch(cms::Exception ce) {
     cout << "==> HFDumpGenerator caught std::exception " << ce.what() << endl;
   }
