@@ -35,7 +35,7 @@ class HFDumpGenerator : public edm::EDAnalyzer {
 
 
   edm::EDGetTokenT<std::vector<reco::GenParticle>> fTokenGenParticle;
-  edm::EDGetTokenT<std::vector<edm::HepMCProduct>> fTokenHepMCProduct;
+  edm::EDGetTokenT<edm::HepMCProduct> fTokenHepMCProduct;
   
   
 };
