@@ -501,7 +501,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 	theTree7.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
-	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi" << endl;
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
       }
 
