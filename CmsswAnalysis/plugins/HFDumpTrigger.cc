@@ -1,3 +1,16 @@
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFDumpTrigger
+// ------------
+//
+// 2016/01/22 Urs Langenegger      migrate to "consumes"
+// 2016/01/13 Danek Kotlinski      L1 work
+// 2015/10/01 Urs Langenegger      all primary datasets and triggers
+// 2015/08/25 Danek Kotlinski      TTrgObjv2 and more protection for *Mu* names
+// stone age  Urs Langenegger      first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "HFDumpTrigger.h"
 
@@ -13,8 +26,6 @@
 #include "DataFormats/L1Trigger/interface/L1MuonParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
 #include "DataFormats/L1Trigger/interface/L1ParticleMapFwd.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
 #include "DataFormats/HLTReco/interface/TriggerEventWithRefs.h"
 #include "DataFormats/HLTReco/interface/TriggerObject.h"
 #include "DataFormats/HLTReco/interface/TriggerFilterObjectWithRefs.h"
@@ -59,12 +70,12 @@ using namespace trigger;
 HFDumpTrigger::HFDumpTrigger(const edm::ParameterSet& iConfig):
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
   fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
-  fL1GTReadoutRecordLabel(iConfig.getUntrackedParameter<InputTag>("L1GTReadoutRecordLabel", edm::InputTag("gtDigis"))),
+  fL1GTReadoutRecordLabel(iConfig.getUntrackedParameter<InputTag>("L1GTReadoutRecordLabel", InputTag("gtDigis"))),
   fL1GTmapLabel(iConfig.getUntrackedParameter<InputTag>("hltL1GtObjectMap")),
   fL1MuonsLabel(iConfig.getUntrackedParameter<InputTag>("L1MuonsLabel")),
   fTriggerEventLabel(iConfig.getUntrackedParameter<InputTag>("TriggerEventLabel")),
-  fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel"))
-{
+  fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel")) {
+  //76  fHltPrescaleProvider(iConfig, consumesCollector(), *this) {
 
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFDumpTrigger constructor" << endl;
@@ -78,7 +89,12 @@ HFDumpTrigger::HFDumpTrigger(const edm::ParameterSet& iConfig):
   cout << "----------------------------------------------------------------------" << endl;
 
   fNevt = 0; 
-  
+
+  fTokenL1GlobalTriggerReadoutRecord    = consumes<L1GlobalTriggerReadoutRecord>(fL1GTReadoutRecordLabel); 
+  fTokenL1GlobalTriggerObjectMapRecord  = consumes<L1GlobalTriggerObjectMapRecord>(InputTag("hltL1GtObjectMap")); 
+  fTokenL1GlobalTriggerObjectMap        = consumes<L1GlobalTriggerObjectMap>(InputTag("hltL1GtObjectMap")); 
+  fTokenTriggerResults                  = consumes<TriggerResults>(fHLTResultsLabel); 
+  fTokenTriggerEvent                    = consumes<TriggerEvent>(fTriggerEventLabel); 
 }
 
 
@@ -92,29 +108,6 @@ HFDumpTrigger::~HFDumpTrigger() {
 void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   fNevt++;
-
-  // TESTING
-  //if(fNevt<100) return;
-  //if( fNevt!=169 && fNevt!=511 && fNevt!=940  ) return;
-  // This will not be needed once we switch to TrgObjv2
-  // class muonTrigObject {
-  // public:
-  //   int hltIndex;
-  //   string hltPath;
-  //   int lastModuleIndex;
-  //   int lastModuleLevel;
-  //   string lastModuleLabel;
-  //   string lastModuleType;
-  //   vector<int> muonIndex;
-  //   vector<int> muonID;
-  //   vector<float> muonPt;
-  //   vector<float> muonEta;
-  //   vector<float> muonPhi;
-  // };
-  // vector<muonTrigObject> muonTrigObjects;
-  // vector<muonTrigObject>::iterator  imto;
-  // muonTrigObject oneMuonTrigObject;
-
 
   // ----------------------------------------------------------------------
   // -- L1 results: physics and technical triggers
@@ -134,15 +127,17 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     
   if (fVerbose > 5) cout << "Retrieving trigger records" << endl;
   Handle<L1GlobalTriggerReadoutRecord> L1GTRR;
-  iEvent.getByLabel(fL1GTReadoutRecordLabel,L1GTRR);
-  Handle<L1GlobalTriggerObjectMapRecord> hL1GTmap; 
-  iEvent.getByLabel("hltL1GtObjectMap", hL1GTmap);
+  iEvent.getByToken(fTokenL1GlobalTriggerReadoutRecord, L1GTRR); 
+
+  Handle<L1GlobalTriggerObjectMapRecord> hL1GTmaprecord; 
+  iEvent.getByToken(fTokenL1GlobalTriggerObjectMapRecord, hL1GTmaprecord);
+
+  Handle<L1GlobalTriggerObjectMap> hL1GTmap; 
+  iEvent.getByToken(fTokenL1GlobalTriggerObjectMap, hL1GTmap);
 
   if (fVerbose > 5) cout << "Retrieving L1GtUtils" << endl;
   L1GtUtils l1GtUtils;
   l1GtUtils.retrieveL1EventSetup(iSetup);
-  // cout << "L1 trigger menu: ";
-  // cout << l1GtUtils.l1TriggerMenu() << endl;
 
   if (fVerbose > 5) cout << "Get L1GtTriggerMenu" << endl;
   edm::ESHandle<L1GtTriggerMenu> menuRcd;
@@ -160,10 +155,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
     algoname = (algo->second).algoName();
     algobit  = (algo->second).algoBitNumber();
-    //result   = l1GtUtils.decisionAfterMask(iEvent, algoname, iErrorCode);
-    //mask     = l1GtUtils.triggerMask(iEvent, algoname, iErrorCode);
-    //prescale = l1GtUtils.prescaleFactor(iEvent, algoname, iErrorCode);
-    // this does the same in one go, moreover the three calls above use this - three times of course...
     iErrorCode = l1GtUtils.l1Results(iEvent, algoname, resultBeforeMask, result, prescale, mask);
 
     gHFEvent->fL1TNames[algobit]    = TString(algoname);
@@ -192,9 +183,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   // ----------------------------------------------------------------------
 
   vector<string> validTriggerNames;
-  if (validHLTConfig) validTriggerNames = hltConfig.triggerNames();
+  if (fValidHLTConfig) validTriggerNames = fHltConfig.triggerNames();
   else cerr << "==> HFDumpTrigger: No valid Trigger configuration!!!" << endl;
-  //can assert?!  hltConfig.dump("PrescaleTable");
+  //can assert?!  fHltConfig.dump("PrescaleTable");
 
   if (validTriggerNames.size() < 1) {
     cout << "==>HFDumpTrigger: NO valid trigger names returned by HLT config provided!!??" << endl;
@@ -219,7 +210,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   for(int i=0; i<TEMP_SIZE;++i) lastMuonIndex[i]=-1;
 
   try {
-    iEvent.getByLabel(fHLTResultsLabel, hHLTresults);
+    iEvent.getByToken(fTokenTriggerResults, hHLTresults);
   } catch (cms::Exception &ex) {
     if (fVerbose > 0) cout << "==>HFDumpTrigger> Triggerresults  " << fHLTResultsLabel.encode() << " not found " << endl;
     hltF = false;
@@ -229,7 +220,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   Handle<trigger::TriggerEvent> triggerSummary;
   hltF = true;
   try {
-    iEvent.getByLabel(fTriggerEventLabel, triggerSummary);
+    iEvent.getByToken(fTokenTriggerEvent, triggerSummary);
   } catch (const cms::Exception& e) {
     hltF = false;
     cout<<"Error!! No TriggerEvent with label " << fTriggerEventLabel << endl;
@@ -246,14 +237,16 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     unsigned int index(999); 
     bool wasrun(false), result(false), error(false);
     int prescale(1); 
-    int psSet = -1; 
-    psSet = hltConfig.prescaleSet(iEvent, iSetup);
+    int psSet = -1;
+    cout << "test 3" << endl;
+    psSet = fHltConfig.prescaleSet(iEvent, iSetup);
+    cout << "test 4" << endl;
     //    cout << "validTriggerNames.size() = " << validTriggerNames.size() << endl;
 
     // Loop over all HLT-paths
     for (unsigned int it = 0; it < validTriggerNames.size(); ++it) {
       index    = trigName.triggerIndex(validTriggerNames[it]); 
-      const unsigned int triggerIndex = hltConfig.triggerIndex(validTriggerNames[it]); //dk
+      const unsigned int triggerIndex = fHltConfig.triggerIndex(validTriggerNames[it]); //dk
       if(index!=triggerIndex) cout<<" something wrong 1 "<<index<<" "<<triggerIndex<<endl;
 
       if (index >= hHLTresults->size())
@@ -264,7 +257,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       wasrun   = hHLTresults->wasrun(index);
       error    = hHLTresults->error(index);
       if (psSet > -1) {
-	prescale = hltConfig.prescaleValue(psSet, validTriggerNames[it]);
+	prescale = fHltConfig.prescaleValue(psSet, validTriggerNames[it]);
       } else {
 	//	cout << "==>HFDumpTrigger> error in prescale set!?" << endl;
 	prescale = 0;
@@ -276,7 +269,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       gHFEvent->fHLTError[index]    = error;
       gHFEvent->fHLTPrescale[index] = prescale;
 
-      const vector<string>& moduleLabels(hltConfig.moduleLabels(index));
+      const vector<string>& moduleLabels(fHltConfig.moduleLabels(index));
       const unsigned int moduleIndex(hHLTresults->index(index));
 
       if ( (fVerbose > 99) ) {
@@ -322,7 +315,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  // loop over all modules 
 	  for(unsigned int j=0;j<=moduleIndex;j++) {
 	    const string& moduleLabel = moduleLabels[j]; 
-	    const string& type = hltConfig.moduleType(moduleLabel);
+	    const string& type = fHltConfig.moduleType(moduleLabel);
 	    const unsigned int filterIndex = triggerSummary->
 	      filterIndex(InputTag(moduleLabel,"","HLT"));
 	    if(fVerbose>98) {
@@ -468,10 +461,10 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       } // if hlt passed
 
       //  cout << " Last active module - label/type: "
-      //   << moduleLabels[moduleIndex] << "/" << hltConfig.moduleType(moduleLabels[moduleIndex])
+      //   << moduleLabels[moduleIndex] << "/" << fHltConfig.moduleType(moduleLabels[moduleIndex])
       //   << endl;
 
-      if ( moduleIndex < moduleLabels.size() && hltConfig.moduleType(moduleLabels[moduleIndex]) == "HLTPrescaler" ){
+      if ( moduleIndex < moduleLabels.size() && fHltConfig.moduleType(moduleLabels[moduleIndex]) == "HLTPrescaler" ){
 	if (fVerbose > 99) cout << " HLTPrescaler  " << endl;
 	int tmp = gHFEvent->fHLTError[index];
 	gHFEvent->fHLTError[index] = (tmp<<2);
@@ -480,7 +473,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
       // cout << "gHFEvent->fHLTError[index] = " << gHFEvent->fHLTError[index] << endl;
       if ( (gHFEvent->fHLTError[index] & 1)  && (fVerbose > 99) )
-	cout << " Last active module type =  " << hltConfig.moduleType(moduleLabels[moduleIndex]) << endl;
+	cout << " Last active module type =  " << fHltConfig.moduleType(moduleLabels[moduleIndex]) << endl;
 
 
     } // for it 
@@ -794,17 +787,16 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   
 } // the end
 
-// ------------ method called once each job just before starting event loop  ------------
-void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
-{
+// ----------------------------------------------------------------------
+void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup) {
   bool hasChanged;
-  validHLTConfig = hltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
-  cout << hltConfig.tableName() << endl;
-  vector<string> pds = hltConfig.datasetNames();
+  fValidHLTConfig = fHltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
+  cout << fHltConfig.tableName() << endl;
+  vector<string> pds = fHltConfig.datasetNames();
   
   TDirectory *pDir = gDirectory; 
   gHFFile->cd();
-  TH1D *h1 = new TH1D(Form("pd_run%d", run.run()), hltConfig.tableName().c_str(), pds.size(), 0., pds.size()); 
+  TH1D *h1 = new TH1D(Form("pd_run%d", run.run()), fHltConfig.tableName().c_str(), pds.size(), 0., pds.size()); 
   h1->SetDirectory(gHFFile); 
 
   for (unsigned int i = 0; i < pds.size(); ++i) {
@@ -817,10 +809,10 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
 
 
   for (unsigned int ipd = 0; ipd < pds.size(); ++ipd) {
-    vector<string> pdTriggers = hltConfig.datasetContent(pds[ipd]);
+    vector<string> pdTriggers = fHltConfig.datasetContent(pds[ipd]);
     cout << "  --> pd: " << pds[ipd] << endl;
     h1 = new TH1D(Form("triggers_%s_run%d", pds[ipd].c_str(), run.run()), 
-		  Form("triggers_%s_run%d (%s)", pds[ipd].c_str(), run.run(), hltConfig.tableName().c_str()), 
+		  Form("triggers_%s_run%d (%s)", pds[ipd].c_str(), run.run(), fHltConfig.tableName().c_str()), 
 		  pdTriggers.size(), 0., pdTriggers.size()); 
     h1->SetDirectory(gHFFile); 
     for (unsigned int it = 0; it < pdTriggers.size(); ++it) {
@@ -834,17 +826,17 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup)
   pDir->cd(); 
 }
 
-void HFDumpTrigger::endRun(Run const&, EventSetup const&)
-{
-  validHLTConfig = false;
+// ----------------------------------------------------------------------
+void HFDumpTrigger::endRun(Run const&, EventSetup const&) {
+  fValidHLTConfig = false;
 } // HFDumpTrigger::endRun()
 
-// ------------ method called once each job just before starting event loop  ------------
+// ----------------------------------------------------------------------
 void  HFDumpTrigger::beginJob() {
 
 }
 
-// ------------ method called once each job just after ending the event loop  ------------
+// ----------------------------------------------------------------------
 void  HFDumpTrigger::endJob() {
 
 }

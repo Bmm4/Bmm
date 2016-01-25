@@ -13,7 +13,14 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
+#include "DataFormats/Common/interface/TriggerResults.h"
+#include "DataFormats/HLTReco/interface/TriggerEvent.h"
+
+#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+//76 #include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
 
 class TFile;
 class TTree;
@@ -43,8 +50,16 @@ class HFDumpTrigger : public edm::EDAnalyzer {
   edm::InputTag fTriggerEventLabel;
   edm::InputTag fHLTResultsLabel;
   
-  HLTConfigProvider hltConfig;
-  bool validHLTConfig;
+  //  HLTPrescaleProvider  fHltPrescaleProvider
+
+  HLTConfigProvider fHltConfig;
+  bool              fValidHLTConfig;
+
+  edm::EDGetTokenT<L1GlobalTriggerReadoutRecord>  fTokenL1GlobalTriggerReadoutRecord;
+  edm::EDGetTokenT<trigger::TriggerEvent> fTokenTriggerEvent;
+  edm::EDGetTokenT<edm::TriggerResults> fTokenTriggerResults;
+  edm::EDGetTokenT<L1GlobalTriggerObjectMap>  fTokenL1GlobalTriggerObjectMap;
+  edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> fTokenL1GlobalTriggerObjectMapRecord;
 };
 
 #endif
