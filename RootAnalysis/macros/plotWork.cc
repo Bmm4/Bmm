@@ -52,10 +52,11 @@ void plotWork::makeAll(int bitmask) {
     prodValidation("all", "default_nofilter", "inelastic_nofilter", "pythia6_nofilter"); 
     prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "pythia6_etaptfilter"); 
     prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "hardqcd8_etaptfilter");
+    prodValidation("all", "default_nofilter", "pythia6_nofilter", "noevtgen_nofilter");
     prodValidation("all", "default_etaptfilter", "pythia6_etaptfilter", "noevtgen_etaptfilter");
   } else if (bitmask & 0x2) {
     prodValidation("all", "default_etaptfilter", "nophotos_etaptfilter", "nophotonnoevtgen_etaptfilter");
-    prodValidation("tau", "default_etaptfilter", "dgs_etaptfilter", "dgs0_etaptfilter");
+    prodValidation("tau", "default_etaptfilter", "dgs_etaptfilter",      "dgs0_etaptfilter");
   }
 
 }
@@ -563,11 +564,10 @@ void plotWork::loadFiles(string afiles) {
   is.close();
   cout << "Summary: " << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << it->first << endl;
-    cout << ": " << it->second->fName << endl;
-    cout << ", " << it->second->fF->GetName() << endl;
-
-    cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
+    cout << "===> " << it->first << endl;
+    cout << "       " << it->second->fName << endl;
+    cout << "       " << it->second->fF->GetName() << endl;
+    cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }
 
