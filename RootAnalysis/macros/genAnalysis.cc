@@ -38,13 +38,89 @@ void genAnalysis::startAnalysis() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::eventProcessing() {
-  genB();
-  //  printBdecays();
-  //  bbbarCrossSection();
+  if (0) fpEvt->dumpGenBlock(); 
+
+  if (0) yVsEta();
+  if (0) genB();
+  if (0) printBdecays();
+  if (0) bbbarCrossSection();
+
   // -- initialize all variables
   //  initVariables(); 
 
 }
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::yVsEta() {
+
+  static int first(1); 
+  if (1 == first) {
+    first = 0; 
+    new TH2D("yeta1", "yeta1", 50, 0., 2.5, 50, 0., 2.5);
+    new TH2D("yeta2", "yeta2", 50, 0., 2.5, 50, 0., 2.5);
+    new TH2D("yetaMin", "yetaMin", 50, 0., 2.5, 50, 0., 2.5);
+    new TH2D("yetaMax", "yetaMax", 50, 0., 2.5, 50, 0., 2.5);
+    new TH2D("yetaMin3", "yetaMin3", 50, 0., 2.5, 50, 0., 2.5);
+    new TH2D("yetaMax3", "yetaMax3", 50, 0., 2.5, 50, 0., 2.5);
+  }
+
+  
+  TGenCand *pCand(0);
+  int aid(0); 
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    aid = TMath::Abs(pCand->fID); 
+    if (521 == aid) {
+      TGenCand *pD(0), *pJpsi(0), *pK(0), *pMu1(0), *pMu2(0); 
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pD = fpEvt->getGenCand(iD);
+	if (443 == TMath::Abs(pD->fID)) {
+	  pJpsi = pD;
+	}
+	if (321 == TMath::Abs(pD->fID)) {
+	  pK = pD; 
+	}
+      }
+      if (pJpsi) {
+	for (int iD = pJpsi->fDau1; iD <= pJpsi->fDau2; ++iD) {
+	  pD = fpEvt->getGenCand(iD);
+	  if (13 == pD->fID) {
+	    pMu1 = pD;
+	  }
+	  if (-13 == pD->fID) {
+	    pMu2 = pD;
+	  }
+	}
+	
+	if (pCand && pMu1 && pMu2 && pK) {
+	  double yB = TMath::Abs(pCand->fP.Rapidity()); 
+	  double eta1 = TMath::Abs(pMu1->fP.PseudoRapidity()); 
+	  double eta2 = TMath::Abs(pMu2->fP.PseudoRapidity()); 
+	  double etaK = TMath::Abs(pK->fP.PseudoRapidity()); 
+	  double etaMin = (eta1 < eta2? eta1: eta2); 
+	  double etaMax = (eta1 > eta2? eta1: eta2); 
+	  double etaMin3 = (etaK < etaMin? etaK: etaMin); 
+	  double etaMax3 = (etaK > etaMax? etaK: etaMin); 
+
+	  ((TH1D*)fpHistFile->Get("yeta1"))->Fill(yB, eta1); 
+	  ((TH1D*)fpHistFile->Get("yeta2"))->Fill(yB, eta2); 
+	  ((TH1D*)fpHistFile->Get("yetaMin"))->Fill(yB, etaMin); 
+	  ((TH1D*)fpHistFile->Get("yetaMax"))->Fill(yB, etaMax); 
+	  ((TH1D*)fpHistFile->Get("yetaMin3"))->Fill(yB, etaMin3); 
+	  ((TH1D*)fpHistFile->Get("yetaMax3"))->Fill(yB, etaMax3); 
+	  return;
+	}
+	
+      }
+      
+	
+      
+    }
+  }
+  
+}
+
 
 
 
@@ -57,7 +133,6 @@ void genAnalysis::endAnalysis() {
   cout << "==> Lb mass: " << f5122Mass << endl;
   compare2PDG(0, 2014, true);
 }
-
 
 // ----------------------------------------------------------------------
 void genAnalysis::genB() {
@@ -427,7 +502,7 @@ void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
       new TH1D(Form("tneg%d", particles[i]), Form("tneg%d", particles[i]), 50, 0., 5000.); 
     }
     
-    new TH1D("m511",  "m511",  100, 5.279, 5.280); 
+    new TH1D("m511",  "m511",  100, 5.2794, 5.2796); 
     new TH1D("m521",  "m521",  100, 5.279, 5.280); 
     new TH1D("m531",  "m531",  100, 5.360, 5.370); 
     new TH1D("m541",  "m541",  100, 6.270, 6.280); 
