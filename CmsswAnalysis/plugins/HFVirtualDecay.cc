@@ -1,19 +1,26 @@
-/*
- *  HFVirtualDecay.cc
- *
- *  Created by Christoph Nägeli <christoph.naegeli@psi.ch> on 31.01.13.
- *
- */
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFVirtualDecay
+// --------------
+//
+// 2016/01/20 Urs Langenegger      migrate to "consumes"
+// 2013/01/31 Christoph Naegeli    first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #include "HFVirtualDecay.h"
 
 #include "MagneticField/Records/interface/IdealMagneticFieldRecord.h"
+#include "DataFormats/BeamSpot/interface/BeamSpot.h"
 
 #include "DataFormats/Common/interface/Handle.h"
 
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 
 #include <TString.h>
+
+using namespace std;
+using namespace edm;
+using namespace reco;
 
 // ----------------------------------------------------------------------
 HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
@@ -31,8 +38,13 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fMaxD0(iConfig.getUntrackedParameter<double>("maxD0", 999.)),
   fMaxDz(iConfig.getUntrackedParameter<double>("maxDz", 999.)),
   fPvWeight(iConfig.getUntrackedParameter<double>("pvWeight", 0.6)),
-  fType(iConfig.getUntrackedParameter<int>("type"))
-{ }
+  fType(iConfig.getUntrackedParameter<int>("type")) {
+
+  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel); 
+  fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
+  fTokenMuon       = consumes<MuonCollection>(fMuonsLabel) ;
+  fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
+}
 
 
 // ----------------------------------------------------------------------
@@ -61,34 +73,50 @@ void HFVirtualDecay::dumpConfiguration() {
 void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
   using std::cout; using std::endl;
 	
-  // -- load the magnetic field
+  // -- magnetic field
   edm::ESHandle<MagneticField> fieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(fieldHandle);
   fMagneticField = fieldHandle.product();
 	
-  // -- load the primary vertices
-  edm::Handle<reco::VertexCollection> vertexHandle;
-  iEvent.getByLabel(fPrimaryVertexLabel, vertexHandle);
-  if (!vertexHandle.isValid()) throw HFSetupException("No primary vertex collection found, skipping");
-  fVertexCollection = *vertexHandle;
-  if (fVertexCollection.size() == 0) throw HFSetupException("Primary vertex collection is empty, skipping");
+  // -- primary vertices
+  Handle<VertexCollection> hVertexCollection; 
+  try {
+    iEvent.getByToken(fTokenVertex, hVertexCollection);
+    hVertexCollection.isValid();
+    fVertexCollection = *hVertexCollection;
+    if (fVertexCollection.size() == 0) throw HFSetupException("Primary vertex collection is empty, skipping");
+  } catch(cms::Exception&){
+    throw HFSetupException("No primary vertex collection found, skipping");
+  }
 	
-  // -- load the beam spot
-  edm::Handle<reco::BeamSpot> bspotHandle;
-  iEvent.getByLabel(fBeamSpotLabel, bspotHandle);
-  if (!bspotHandle.isValid()) throw HFSetupException("No beamspot found, skipping");
-  fBeamSpot = *bspotHandle;
-	
-  // -- load the tracks
-  iEvent.getByLabel(fTracksLabel, fTracksHandle);
-  if (!fTracksHandle.isValid()) throw HFSetupException(Form("No valid TrackCollection with label '%s' found, skipping",fTracksLabel.encode().c_str()));
-	
-  // -- load the muons
-  edm::Handle<reco::MuonCollection> muonHandle;
-  iEvent.getByLabel(fMuonsLabel, muonHandle);
-  if (!muonHandle.isValid()) throw HFSetupException(Form("No valid MuonCollection with label '%s' found, skipping",fMuonsLabel.encode().c_str()));
-  fMuonCollection = muonHandle.product();
-	
+  // -- beam spot
+  Handle<BeamSpot> hBeamSpot;
+  try {
+    iEvent.getByToken(fTokenBeamSpot, hBeamSpot);
+    hBeamSpot.isValid();
+    fBeamSpot = *hBeamSpot;
+  } catch(cms::Exception&){
+    throw HFSetupException("No beam spot collection found, skipping");
+  }
+
+  // -- tracks
+  try {
+    iEvent.getByToken(fTokenTrack, fTracksHandle);
+    fTracksHandle.isValid();
+  } catch(cms::Exception&){
+    throw HFSetupException(Form("No valid TrackCollection with label '%s' found, skipping", fTracksLabel.encode().c_str()));
+  }
+  
+  // -- muons
+  Handle<MuonCollection> hMuonCollection;
+  try {
+    iEvent.getByToken(fTokenMuon, hMuonCollection);
+    hMuonCollection.isValid();
+    fMuonCollection = hMuonCollection.product();
+  } catch(cms::Exception&){
+    throw HFSetupException(Form("No valid MuonCollection with label '%s' found, skipping",fMuonsLabel.encode().c_str()));
+  }
+
   // -- load the transient track builder
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", fTTB);
   if (!fTTB.isValid()) throw HFSetupException("Error: no TransientTrackBuilder found");
@@ -104,5 +132,5 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   fListBuilder->setMuonQuality(muonType); 
 	
   // -- construct the sequential vertex fitter
-  fSequentialFitter.reset(new HFSequentialVertexFit(fTracksHandle, fMuonCollection, fTTB.product(), vertexHandle, fMagneticField, fBeamSpot, fVerbose));
+  fSequentialFitter.reset(new HFSequentialVertexFit(fTracksHandle, fMuonCollection, fTTB.product(), hVertexCollection, fMagneticField, fBeamSpot, fVerbose));
 }
