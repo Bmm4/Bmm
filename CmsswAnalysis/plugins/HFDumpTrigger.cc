@@ -22,6 +22,7 @@
 
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
+
 #include "DataFormats/L1Trigger/interface/L1MuonParticle.h"
 #include "DataFormats/L1Trigger/interface/L1MuonParticleFwd.h"
 #include "DataFormats/L1Trigger/interface/L1ParticleMap.h"
@@ -38,6 +39,12 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMaskAlgoTrigRcd.h"
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMask.h"
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
+
 #include "TH1.h"
 #include "TFile.h"
 #include "TDirectory.h"
@@ -51,9 +58,6 @@
 #include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 #include "Bmm/RootAnalysis/rootio/TTrgObjv2.hh"
 
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
 
 
 // -- Yikes!
@@ -112,76 +116,207 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   // ----------------------------------------------------------------------
   // -- L1 results: physics and technical triggers
   // ----------------------------------------------------------------------
-  if (fVerbose > 99) cout << "Resetting all trigger arrays" << endl;
-  for (int i = 0; i < NL1T; ++i) {
-    gHFEvent->fL1TPrescale[i] = gHFEvent->fL1TResult[i] = gHFEvent->fL1TMask[i] = gHFEvent->fL1TError[i] = 0; 
-  }
 
-  for (int i = 0; i < NLTT; ++i) {
-    gHFEvent->fLTTPrescale[i] = gHFEvent->fLTTResult[i] = gHFEvent->fLTTMask[i] = gHFEvent->fLTTError[i] = 0; 
-  }
+  // At the moment we do not use L1 information in the analysis 
+  // so keep it only for special debugging 
+  // if neeeded for analysis it has to be rewritten
+  if (0) {
 
-  for (int i = 0; i < NHLT; ++i) {
-    gHFEvent->fHLTPrescale[i] = gHFEvent->fHLTResult[i] = gHFEvent->fHLTWasRun[i] = gHFEvent->fHLTError[i] = 0; 
-  }
+    cout << " L1 " << endl;
+    for (int i = 0; i < NL1T; ++i) {
+      gHFEvent->fL1TPrescale[i] = gHFEvent->fL1TResult[i] = gHFEvent->fL1TMask[i] = gHFEvent->fL1TError[i] = 0; 
+    }
     
-  if (fVerbose > 5) cout << "Retrieving trigger records" << endl;
-  Handle<L1GlobalTriggerReadoutRecord> L1GTRR;
-  iEvent.getByToken(fTokenL1GlobalTriggerReadoutRecord, L1GTRR); 
+    if (fVerbose > 5) cout << "Retrieving trigger records" << endl;
+    Handle<L1GlobalTriggerReadoutRecord> L1GTRR;
+    iEvent.getByToken(fTokenL1GlobalTriggerReadoutRecord, L1GTRR); 
 
-  Handle<L1GlobalTriggerObjectMapRecord> hL1GTmaprecord; 
-  iEvent.getByToken(fTokenL1GlobalTriggerObjectMapRecord, hL1GTmaprecord);
+    Handle<L1GlobalTriggerObjectMapRecord> hL1GTmaprecord; 
+    iEvent.getByToken(fTokenL1GlobalTriggerObjectMapRecord, hL1GTmaprecord);
 
-  Handle<L1GlobalTriggerObjectMap> hL1GTmap; 
-  iEvent.getByToken(fTokenL1GlobalTriggerObjectMap, hL1GTmap);
+    Handle<L1GlobalTriggerObjectMap> hL1GTmap; 
+    iEvent.getByToken(fTokenL1GlobalTriggerObjectMap, hL1GTmap);
 
-  if (fVerbose > 5) cout << "Retrieving L1GtUtils" << endl;
-  L1GtUtils l1GtUtils;
-  l1GtUtils.retrieveL1EventSetup(iSetup);
+    if (fVerbose > 5) cout << "Retrieving L1GtUtils" << endl;
+    L1GtUtils l1GtUtils;
+    l1GtUtils.retrieveL1EventSetup(iSetup);
 
-  if (fVerbose > 5) cout << "Get L1GtTriggerMenu" << endl;
-  edm::ESHandle<L1GtTriggerMenu> menuRcd;
-  iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-  const L1GtTriggerMenu* menu = menuRcd.product();
+    if (fVerbose > 5) cout << "Get L1GtTriggerMenu" << endl;
+    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+    const L1GtTriggerMenu* menu = menuRcd.product();
 
-  string algoname; 
-  int    algobit(-1); 
-  bool   result(false); 
-  bool   resultBeforeMask(false); // not really used, needed by interface which is by ref
-  int    prescale(0); 
-  int    mask(0); 
-  int    iErrorCode(0); 
+    string algoname; 
+    int    algobit(-1); 
+    bool   result(false); 
+    bool   resultBeforeMask(false); // not really used, needed by interface which is by ref
+    int    prescale(0); 
+    int    mask(0); 
+    int    iErrorCode(0); 
 
-  for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
-    algoname = (algo->second).algoName();
-    algobit  = (algo->second).algoBitNumber();
-    iErrorCode = l1GtUtils.l1Results(iEvent, algoname, resultBeforeMask, result, prescale, mask);
+    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+      algoname = (algo->second).algoName();
+      algobit  = (algo->second).algoBitNumber();
+      iErrorCode = l1GtUtils.l1Results(iEvent, algoname, resultBeforeMask, result, prescale, mask);
 
-    gHFEvent->fL1TNames[algobit]    = TString(algoname);
-    gHFEvent->fL1TResult[algobit]   = result;
-    gHFEvent->fL1TMask[algobit]     = mask;
-    gHFEvent->fL1TError[algobit]    = iErrorCode;
-    gHFEvent->fL1TPrescale[algobit] = prescale;
-  }
+      gHFEvent->fL1TNames[algobit]    = TString(algoname);
+      gHFEvent->fL1TResult[algobit]   = result;
+      gHFEvent->fL1TMask[algobit]     = mask;
+      gHFEvent->fL1TError[algobit]    = iErrorCode;
+      gHFEvent->fL1TPrescale[algobit] = prescale;
+    }
 
-  for (CItAlgo algo = menu->gtTechnicalTriggerMap().begin(); algo != menu->gtTechnicalTriggerMap().end(); ++algo) {
-    algoname = (algo->second).algoName();
-    algobit  = (algo->second).algoBitNumber();
-    result   = l1GtUtils.decisionAfterMask(iEvent, algoname, iErrorCode);
-    mask     = l1GtUtils.triggerMask(iEvent, algoname, iErrorCode);
-    prescale = l1GtUtils.prescaleFactor(iEvent, algoname, iErrorCode);
+    for (int i = 0; i < NLTT; ++i) {
+      gHFEvent->fLTTPrescale[i] = gHFEvent->fLTTResult[i] = gHFEvent->fLTTMask[i] = gHFEvent->fLTTError[i] = 0; 
+    }
+
+    // Once per run (from setup), can be called only per run from beginRun
+    // l1gtutils - used 
+    if (fVerbose > 5) cout << "Retrieving L1GtUtils" << endl;
+    L1GtUtils l1GtUtils;
+    l1GtUtils.retrieveL1EventSetup(iSetup);
+    cout << "L1 trigger menu: "<< l1GtUtils.l1TriggerMenu() << endl;
     
-    gHFEvent->fLTTNames[algobit]    = TString(algoname);
-    gHFEvent->fLTTResult[algobit]   = result;
-    gHFEvent->fLTTMask[algobit]     = mask;
-    gHFEvent->fLTTError[algobit]    = iErrorCode;
-    gHFEvent->fLTTPrescale[algobit] = prescale;
-  }
+    // L1-Mask - used 
+    if (fVerbose > 5) cout << "Retrieving trigger mask records" << endl;
+    ESHandle<L1GtTriggerMask> handleAlgoMask;
+    iSetup.get<L1GtTriggerMaskAlgoTrigRcd>().get(handleAlgoMask); 
+    auto const & masks = handleAlgoMask->gtTriggerMask(); 
+    
+    if (fVerbose > 5) cout << "Get L1GtTriggerMenu" << endl;
+    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+    const L1GtTriggerMenu* menu = menuRcd.product();
+    //L1GtTriggerMenu const & l1tMenu = * menuRcd;  // unused
+    // this should be a map l1algo[string algoname]
+    //auto const & mapping = menuRcd->gtAlgorithmAliasMap(); //  unused 
+    //cout<<mapping["L1_ZeroBias"].algoName() << " "  DOES NOT WORK
+    //  <<mapping["L1_ZeroBias"].algoAlias() << " "
+    //  <<mapping["L1_ZeroBias"].algoBitNumber()<<endl;
+
+    
+    // Once per event, from event
+
+    // L1 map - unused, so comment out 
+    //Handle<L1GlobalTriggerObjectMapRecord> hL1GTmap; 
+    //iEvent.getByLabel("hltL1GtObjectMap", hL1GTmap);
+    //cout<<" l1 map "<<endl;
+    
+    // Two methods to access L1
+    // both have problems so I am not sure which one we should use
+    // Method 1, knows about fired bit but I have to find the algoname  
+    // in works but stops working if I remove the l1AlgoTechTrigBitNumeber?
+    // L1-Readout - this knows about fired L1 triggers  
+    if (fVerbose > 5) cout << "Retrieving trigger records" << endl;
+    Handle<L1GlobalTriggerReadoutRecord> L1GTRR;
+    iEvent.getByLabel(fL1GTReadoutRecordLabel,L1GTRR); // "gtDigis"
+    //event.getByToken(token, L1GTRR); 
+    auto const & word = L1GTRR->decisionWord(); 
+    
+    //int select=-1;
+    for (unsigned int i = 0; i < L1GTRR->decisionWord().size(); ++i) {
+      int l1flag = L1GTRR->decisionWord()[i]; 
+      //int t1flag = L1GTRR->technicalTriggerWord()[i];       
+      if(l1flag>0) {
+	cout<<" passed "<<i;
+	
+	L1GtUtils::TriggerCategory category;
+	string alias, name;
+	int bit=i;
+	int bit2=-1;
+	bool b2 = l1GtUtils.l1TriggerNameFromBit(bit, category, alias,name);
+	cout<<" name "<<name<<" alias "<<alias<<" category "<<category<<" ";
+	
+	// The line below is useless but withour it the reults are missing???
+	b2 = l1GtUtils.l1AlgoTechTrigBitNumber(name, category, bit2);
+	//cout<<b1<<" "<<bit2<<" "<<category<<" ";
+	
+	bool res = word[i] & masks[i];  // verfies that the bit fired 
+	cout<< res <<" "<<b2<<endl;
+	
+	//cout<<mapping[name].algoName() <<endl; // DOES NOT WORK
+	//cout<<mapping[i].algoName() << " "   DOES NOT WORK
+	//  <<mapping[i].algoAlias() << " "
+	//  <<mapping[i].algoBitNumber()<<endl;
+	
+	// Could select specific triggers here 
+	//if(     name == "L1_DoubleMu0_Eta1p6_WdEta18") select=i;
+	//else if(name == "L1_Double_10_0_WdEta18") select=i;
+	
+      }
+      
+    }
+    
+    // Method 2, list all algo names but does not know which fired.
+    // try using the word array to figure it out
+    string algoname; 
+    int    algobit(-1); 
+    bool   result(false); 
+    //bool   resultBeforeMask(false); // not really used, needed by interface which is by ref
+    int    prescale(0); 
+    int    mask(0); 
+    int    iErrorCode(0); 
+    for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+      algoname = (algo->second).algoName();
+      algobit  = (algo->second).algoBitNumber();
+      // always false
+      //bool result1 = l1GtUtils.decisionAfterMask(iEvent, algoname, iErrorCode);//always off
+      //bool result2 = l1GtUtils.decisionBeforeMask(iEvent, algoname, iErrorCode);//always off
+      mask     = l1GtUtils.triggerMask(iEvent, algoname, iErrorCode);
+      prescale = l1GtUtils.prescaleFactor(iEvent, algoname, iErrorCode);
+      // this does the same in one go, moreover the three calls above use this - three times of course...
+      
+      // does not work, l1Results does not pass the trigger status 
+      //iErrorCode = l1GtUtils.l1Results(iEvent, algoname, resultBeforeMask, result, prescale, mask);
+      
+      // somehow the mask does not always work, switched form 255 to 254 
+      // skipping the  first bit, than x&y is 0
+      //result = word[algobit] & masks[algobit]; // masks sometimes wrong
+      result = word[algobit];  // seems to be ok
+      //cout<< algobit<<" "<<result <<endl;
+      
+      //  
+      if ( result  && (fVerbose > 2)) 
+	//if (algobit == select) 
+	cout<<" L1 "<<algoname<<" "<<algobit<<" "<<result<<" "
+	  //<<result1<<" "<<result2<<" "<<resultBeforeMask<<"  "
+	  //<<prescale<<" "
+	    <<mask<<" "<<iErrorCode<<" "<<algo->first<<" "
+	    <<word[algobit]<<" "<<masks[algobit]
+	    <<endl;
+      
+      gHFEvent->fL1TNames[algobit]    = TString(algoname);
+      gHFEvent->fL1TResult[algobit]   = result;
+      gHFEvent->fL1TMask[algobit]     = mask;
+      gHFEvent->fL1TError[algobit]    = iErrorCode;
+      gHFEvent->fL1TPrescale[algobit] = prescale;
+    }
+    
+    // Same problem here
+    for (CItAlgo algo = menu->gtTechnicalTriggerMap().begin(); algo != menu->gtTechnicalTriggerMap().end(); ++algo) {
+      algoname = (algo->second).algoName();
+      algobit  = (algo->second).algoBitNumber();
+      result   = l1GtUtils.decisionAfterMask(iEvent, algoname, iErrorCode);
+      mask     = l1GtUtils.triggerMask(iEvent, algoname, iErrorCode);
+      prescale = l1GtUtils.prescaleFactor(iEvent, algoname, iErrorCode);
+      
+      gHFEvent->fLTTNames[algobit]    = TString(algoname);
+      gHFEvent->fLTTResult[algobit]   = result;
+      gHFEvent->fLTTMask[algobit]     = mask;
+      gHFEvent->fLTTError[algobit]    = iErrorCode;
+      gHFEvent->fLTTPrescale[algobit] = prescale;
+    }
+  } // if verbose
 
   // ----------------------------------------------------------------------
   // -- HLT results
   // ----------------------------------------------------------------------
 
+  if (fVerbose > 99) cout << "Resetting all trigger arrays" << endl;
+  for (int i = 0; i < NHLT; ++i) {
+    gHFEvent->fHLTPrescale[i] = gHFEvent->fHLTResult[i] = gHFEvent->fHLTWasRun[i] = gHFEvent->fHLTError[i] = 0; 
+  }
+    
   vector<string> validTriggerNames;
   if (fValidHLTConfig) validTriggerNames = fHltConfig.triggerNames();
   else cerr << "==> HFDumpTrigger: No valid Trigger configuration!!!" << endl;
@@ -335,7 +470,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	      TString moduleLabelT = TString(moduleLabel);
 	      bool muLabel = (moduleLabelT.Contains("mu") ||
 			      moduleLabelT.Contains("Mu")) ||
-		              !moduleLabelT.Contains("MuonNo");
+		!moduleLabelT.Contains("MuonNo");
 
 	      if( (n>0) && muLabel) {
 
@@ -507,9 +642,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       for (trigger::size_type i = n0; i != n1; ++i) {
 	const trigger::TriggerObject& obj( triggerSummary->getObjects().at(i) );
 	if(fVerbose>10) 
-	   cout << "===> For L1: " << i << " id: " << obj.id() 
-	   << " m = " << obj.mass() << " pT,eta,phi = " << obj.pt() << "," 
-	   <<  obj.eta() << "," << obj.phi() << endl;
+	  cout << "===> For L1: " << i << " id: " << obj.id() 
+	       << " m = " << obj.mass() << " pT,eta,phi = " << obj.pt() << "," 
+	       <<  obj.eta() << "," << obj.phi() << endl;
 			  
 	TTrgObj *pTO = gHFEvent->addTrgObj();
 	pTO->fP.SetPtEtaPhiE(obj.pt(), 
@@ -673,8 +808,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	<< " muon trigger "<<muonTrigger<<" modules "<<muonLabels
 	<<" muon objects "<<muonObjects<<" labels"<<countMuonLabels<<" selected "
 	<<countSelectedMuonObjects<<" l3muon "<<l3muon<<endl;
-      //<<" L1 "<<countL1Modules<<" L2 "<<countL2Modules<<" L3 "<<countL3Modules<<" LNo "
-      //<<countLNoModules<<" : "<<" objects "<<countMuonObjects<<" "
+    //<<" L1 "<<countL1Modules<<" L2 "<<countL2Modules<<" L3 "<<countL3Modules<<" LNo "
+    //<<countLNoModules<<" : "<<" objects "<<countMuonObjects<<" "
 
     if(fVerbose >1) {
 
@@ -824,6 +959,8 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup) {
   }
   
   pDir->cd(); 
+
+
 }
 
 // ----------------------------------------------------------------------

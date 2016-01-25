@@ -6,7 +6,7 @@ process = cms.Process("HFA")
 # ----------------------------------------------------------------------
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
-process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.cerr.FwkReport.reportEvery = 10
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 
@@ -34,8 +34,8 @@ process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
 #        "/store/mc/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen/AODSIM/PU_S10_START53_V7A-v2/0000/521047B4-E0DD-E111-8146-02215E94E7DF.root"
-#        "/store/mc/RunIISpring15DR74/BsToJpsiPhiV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/0CA8408E-A75C-E511-BB58-0CC47A4D9A72.root"
-        "/store/mc/RunIISpring15DR74/BsToJpsiPhiV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2A5DB6ED-9A5C-E511-9F09-00259073E536.root"
+        "/store/mc/RunIISpring15DR74/BsToJpsiPhiV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/0CA8408E-A75C-E511-BB58-0CC47A4D9A72.root"
+#        "/store/mc/RunIISpring15DR74/BsToJpsiPhiV2_BFilter_TuneCUEP8M1_13TeV-pythia8-evtgen/AODSIM/Asympt25ns_MCRUN2_74_V9-v1/00000/2A5DB6ED-9A5C-E511-9F09-00259073E536.root"
  ),
  skipEvents = cms.untracked.uint32(704)
 )

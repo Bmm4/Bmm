@@ -1,4 +1,5 @@
-TYPE          3000067
+#TYPE          3000067
+TYPE          300531
 TRUTHCAND         531
 #
 TRIGRANGE    HLT_DoubleMu3_Jpsi_v1(1:99999999)
