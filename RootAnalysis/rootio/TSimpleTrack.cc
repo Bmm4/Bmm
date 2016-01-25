@@ -16,8 +16,8 @@ void TSimpleTrack::clear() {
 
 
 void TSimpleTrack::dump() {
-  cout << Form("SimpleTrack idx = %d q = %d, p = (%5.4f, %5.4f, %5.3f), HP = %d, muid = %d, PV = %d", 
-	       getIndex(), getCharge(), fPx, fPy, fPz, getHighPurity(), getMuonID(), getPvIndex())
+  cout << Form("SimpleTrack idx = %d q = %+d, p = (%+6.4f, %+6.4f, %+6.3f), HP = %d, muid = %d, PV = %d, genIdx = %d", 
+	       getIndex(), getCharge(), fPx, fPy, fPz, getHighPurity(), getMuonID(), getPvIndex(), getGenIndex())
        << endl;
 }
   
