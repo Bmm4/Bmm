@@ -64,6 +64,7 @@ void candAna::endAnalysis() {
 // ----------------------------------------------------------------------
 void candAna::evtAnalysis(TAna01Event *evt) {
   
+  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
   fpEvt = evt; 
   fBadEvent = false;
 
@@ -176,7 +177,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   TAnaCand *pCand(0);
   if (fVerbose == -66) { cout << "----------------------------------------------------------------------" << endl;}
-  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
+  bool fillNoCand(true); 
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     pCand = fpEvt->getCand(iC);
 
@@ -219,7 +220,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
     }
 
-
+    fillNoCand = false; 
+    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(3);
     fpCand = pCand;
     fCandIdx = iC; 
 
@@ -312,6 +314,9 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       } // if blind
     } // if MC  
   }  // loop over cands
+
+  // -- fill events with no passing candidate (one entry per event)
+  if (fillNoCand) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(2);
 
 }
 
@@ -881,11 +886,11 @@ void candAna::candAnalysis() {
 
   fillRedTreeData();
 
-  if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
-    calcBDT();
-  } else {
-    calcBDT();
-  }  
+  // if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
+  //   calcBDT();
+  // } else {
+  //   calcBDT();
+  // }  
 
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX)); 
 
