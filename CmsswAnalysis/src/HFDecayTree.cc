@@ -1,10 +1,13 @@
-/*
- *  HFDecayTree
- *
- *  Created by Christoph on 28.4.10.
- *  Modified by Frank on 31.3.11: added flag for massConstraint, sign of mass no longer determines behaviour.
- *
- */
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFDecayTree
+// -----------
+//
+// 2011/03/31 Frank Meier          added flag for massConstraint, 
+//                                 sign of mass no longer determines behavior
+// 2010/04/28 Christoph Naegeli    first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #include <iostream>
 
 #include "Bmm/CmsswAnalysis/interface/HFDecayTree.hh"
