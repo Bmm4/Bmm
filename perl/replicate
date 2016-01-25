@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 #
-# replicate -t file.template -f 01000 -l 02000 -p 'run set',reportFile,histFileName
+# replicate -t file.template -f 01000 -l 02000 [-s 1 || -p 'run set',reportFile,histFileName]
 #
 # This is useful for the generation of many files, which are built 
 # according to the following scheme: 
@@ -26,7 +26,7 @@
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
-getopts('t:f:l:p:');
+getopts('t:f:l:s:p:');
 
 
 if ($opt_t) {
@@ -46,6 +46,10 @@ if ($opt_l) {
     $lastNum = $opt_l;
 } else {
     die "need ending number\n";
+}
+
+if (1 == $opt_s) {
+    $opt_p = "generator,VtxSmeared,g4SimHits,fileName"
 }
 
 if ($opt_p) {$replace = $opt_p; }
