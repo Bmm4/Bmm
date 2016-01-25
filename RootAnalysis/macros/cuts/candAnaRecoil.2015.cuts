@@ -1,0 +1,17 @@
+TYPE          1000080
+TRUTH             531
+#BRECOTYPE     3000068 
+#BRECOTRUTH        521
+BRECOTYPE     3000069 
+BRECOTRUTH        511
+NOPRESELECTION      1
+# -- trigger
++input cuts/triggerBs.cuts
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts
+# -- candidate
++input cuts/candidate.cuts
