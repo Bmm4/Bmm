@@ -1,10 +1,3 @@
-/*
- *  HFTrackListBuilder.hh
- *
- *  Created by Christoph Naegeli <christoph.naegeli@psi.ch> on 10.11.12.
- *
- */
-
 #ifndef HFTRACKLISTBUILDER_H
 #define HFTRACKLISTBUILDER_H
 
