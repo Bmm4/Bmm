@@ -21,6 +21,8 @@
 
 using namespace std;
 
+void skimEvents(TChain *);
+
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %% Usage: bin/runBmm [-r genAnalysis] -f test.root
@@ -196,6 +198,8 @@ int main(int argc, char *argv[]) {
   } else if ("genAnalysis" == readerName) {
     cout << "instantiating genAnalysis" << endl;
     a = new genAnalysis(chain, TString(evtClassName));
+  } else if ("skim" == readerName) {
+    skimEvents(chain);
   }
   
   
@@ -233,3 +237,67 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
+
+
+// ----------------------------------------------------------------------
+void skimEvents(TChain *chain) {
+  int oldRun(-1), run(-1), evt(-1); 
+  vector<pair<int, int> > events; 
+  ifstream INS; 
+  string sline, bla; 
+  INS.open("skim.events");
+  while (getline(INS, sline)) {
+    INS >> bla >> run >> bla >> evt; 
+    events.push_back(make_pair(run, evt)); 
+  }
+      
+  INS.close();
+
+  cout << "skim event list" << endl;
+  cout << "----------------------------------------------------------------------" << endl;
+  if (events.size() < 1) {
+    cout << "no file ./skim.events found! exit(0)" << endl;
+    exit(0); 
+  } else {
+    for (unsigned int i = 0; i < events.size(); ++i) {
+      cout << "run: " << events[i].first << " event: " << events[i].second << endl;
+    }
+  }
+  cout << "----------------------------------------------------------------------" << endl;
+
+  TAna01Event *pEvt = new TAna01Event(0);
+  chain->SetBranchAddress("TAna01Event", &pEvt);
+
+  TFile *newfile = new TFile("skimevents.root", "recreate");
+  TTree *newtree = chain->CloneTree(0);
+  
+  int nb(0); 
+  cout << "chain entries: " << chain->GetEntries() << endl;
+  for (int jEvent = 0; jEvent < chain->GetEntries(); ++jEvent) {
+    pEvt->Clear();                        
+    nb += chain->GetEvent(jEvent);          
+    
+    evt = static_cast<long int>(pEvt->fEventNumber);		
+    run = static_cast<long int>(pEvt->fRunNumber);
+
+    if (run != oldRun) {
+      cout << "new run: " << run << " (event " << jEvent << " in chain)" << endl;
+      oldRun = run;
+    }
+    
+    for (unsigned int i = 0; i < events.size(); ++i) {
+      if (run == events[i].first) {
+	if (evt == events[i].second) {
+	  cout << "skimming run = " << run <<  " evt = " << evt << endl;
+	  newtree->Fill();
+	  pEvt->Clear();
+	}
+      }
+    }
+  }
+
+  newtree->Print();
+  newtree->AutoSave();
+  delete newfile;
+
+}
