@@ -238,9 +238,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     bool wasrun(false), result(false), error(false);
     int prescale(1); 
     int psSet = -1;
-    cout << "test 3" << endl;
+    // FIXME: The following line should be behind a consumes. I have not found an example how to achieve this in CMSS_7_4_X
+    //        Things will be different for CMSSW_7_6_X
     psSet = fHltConfig.prescaleSet(iEvent, iSetup);
-    cout << "test 4" << endl;
     //    cout << "validTriggerNames.size() = " << validTriggerNames.size() << endl;
 
     // Loop over all HLT-paths
