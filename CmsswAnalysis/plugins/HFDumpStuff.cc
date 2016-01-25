@@ -1,3 +1,12 @@
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFDumpStuff.cc
+// ------------------
+//
+// 2016/01/15 Urs Langenegger      migrate to "consumes"
+// stone age  Urs Langenegger      first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 
@@ -64,7 +73,7 @@ HFDumpStuff::HFDumpStuff(const edm::ParameterSet& iConfig):
   fTokenLumiSummary = consumes<LumiSummary, edm::InLumi>(fLumiSummaryLabel);
   fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel); 
   fTokenTrack       = consumes<vector<Track> >(fPrimaryVertexTracksLabel) ;
-  fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);; 
+  fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
 }
 
 
