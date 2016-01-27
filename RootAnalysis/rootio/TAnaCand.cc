@@ -40,7 +40,8 @@ void TAnaCand::clear() {
 
 
 void TAnaCand::dump() {
-  cout << Form("m = %5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f ", fMass, fPlab.Perp(), fPlab.Phi(), fPlab.Eta()) << endl;
+  cout << Form("Cand: idx = %3d m = %5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f ", fIndex, fMass, fPlab.Perp(), fPlab.Phi(), fPlab.Eta()) << endl;
+  cout << "daughter cands: " << fDau1 << " .. " << fDau2  << " sig tracks: " << fSig1 << " .. " << fSig2 << endl;
   fVtx.dump();
 }
 
