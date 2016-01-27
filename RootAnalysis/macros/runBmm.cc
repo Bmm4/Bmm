@@ -27,6 +27,7 @@ void skimEvents(TChain *);
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 // %% Usage: bin/runBmm [-r genAnalysis] -f test.root
 // %%        bin/runBmm -c chains/bg-test -D root
+// %%        bin/runBmm -c chains/bg-test -s skim
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 int main(int argc, char *argv[]) {
