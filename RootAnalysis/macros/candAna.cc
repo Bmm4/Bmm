@@ -68,6 +68,11 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   fpEvt = evt; 
   fBadEvent = false;
 
+  if (1234 == fVerbose) {
+    fpEvt->dump();
+    return;
+  }
+
   // -- cross check Marco's truth-matching problem with 92 as mothers of the muons (on special file)
   //   bool evtOK(false); 
   //   static int n80(0); 
@@ -227,7 +232,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
     // -- call derived functions
     candAnalysis();
-    
+
     if(fVerbose>9) {  // Just print something 
       if (fCandM > 4.99 && fCandM < 5.02 && fCandFLS3d > 13 && fCandA < 0.05 && fMu1Pt > 4.5 && fMu2Pt > 4.5) {
 	TLorentzVector gm1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(fpEvt->getSigTrack(pCand->fSig1)->fIndex)->getGenIndex())->fP;
