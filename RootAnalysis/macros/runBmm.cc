@@ -12,6 +12,8 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "TUnixSystem.h"
+#include "TSystem.h"
+#include "TKey.h"
 
 #include "bmmReader.hh"
 #include "genAnalysis.hh"
@@ -284,8 +286,32 @@ void skimEvents(TChain *chain) {
     if (run != oldRun) {
       cout << "new run: " << run << " (event " << jEvent << " in chain)" << endl;
       oldRun = run;
+
+      // -- dump all pd histograms
+      TKey *key(0);   
+      TH1D *h(0);
+      string sname; 
+      string::size_type m1, m2;
+      string pd, lpd, hk; 
+      
+      TIter next(chain->GetFile()->GetListOfKeys());
+      vector<string> triggers;
+      while ((key = (TKey*)next())) {
+	sname = key->GetName();
+	
+	if (string::npos == sname.find("triggers_")
+	    && string::npos == sname.find("pd_run")
+	    && string::npos == sname.find("_run")) continue;
+	
+	h = (TH1D*)chain->GetFile()->Get(sname.c_str()); 
+	cout << sname << endl;
+	h->SetDirectory(newfile);
+	h->Write();
+	delete h; 
+      }
+
     }
-    
+
     for (unsigned int i = 0; i < events.size(); ++i) {
       if (run == events[i].first) {
 	if (evt == events[i].second) {
@@ -301,6 +327,7 @@ void skimEvents(TChain *chain) {
 
   newtree->Print();
   newtree->AutoSave();
+
   delete newfile;
 
 }
