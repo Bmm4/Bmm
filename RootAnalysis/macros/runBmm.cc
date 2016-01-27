@@ -288,7 +288,9 @@ void skimEvents(TChain *chain) {
     for (unsigned int i = 0; i < events.size(); ++i) {
       if (run == events[i].first) {
 	if (evt == events[i].second) {
-	  cout << "skimming run = " << run <<  " evt = " << evt << endl;
+	  cout << "skimming run = " << run <<  " evt = " << evt
+	       << " file: " << chain->GetFile()->GetName()
+	       << endl;
 	  newtree->Fill();
 	  pEvt->Clear();
 	}
