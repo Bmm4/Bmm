@@ -12,6 +12,8 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
+#include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
+#include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
 class TFile;
 class TTree;
@@ -31,6 +33,11 @@ class HFDumpGenerator : public edm::EDAnalyzer {
   int         fVerbose;
   std::string fGenCandidatesLabel, fGenEventLabel;
 
+
+  edm::EDGetTokenT<std::vector<reco::GenParticle>> fTokenGenParticle;
+  edm::EDGetTokenT<edm::HepMCProduct> fTokenHepMCProduct;
+  
+  
 };
 
 #endif

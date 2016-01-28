@@ -13,6 +13,7 @@
 #include "candAnaHh.hh"
 #include "candAnaBd2DstarPi.hh"
 #include "candAnaBd2JpsiKstar.hh"
+#include "candAnaRecoil.hh"
 
 using namespace std;
 
@@ -33,7 +34,7 @@ bmmReader::~bmmReader() {
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
   fpJSON = new JSON(JSONFILE.c_str(), 1); 
-  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 0); 
+  fpPdTrigger = new PdTrigger(PDTRIGGER.c_str(), 1); 
 
 //   cout << "HLT_PFHT650: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT650") << endl;
 //   cout << "HLT_PFHT649: " << fpPdTrigger->triggerInPd("JetHT", "HLT_PFHT649") << endl;
@@ -184,6 +185,11 @@ void bmmReader::readCuts(TString filename, int dump) {
 
     if (!strcmp(className, "candAnaBd2DstarPi")) {
       candAna *a = new candAnaBd2DstarPi(this, "candAnaBd2DstarPi", cutFile); 
+      lCandAnalysis.push_back(a); 
+    }
+
+    if (!strcmp(className, "candAnaRecoil")) {
+      candAna *a = new candAnaRecoil(this, "candAnaRecoil", cutFile); 
       lCandAnalysis.push_back(a); 
     }
 

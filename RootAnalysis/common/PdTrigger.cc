@@ -172,7 +172,7 @@ void PdTrigger::addPdTriggersFromChain(string chain) {
     return;    
   }
 
-  ifstream is(chain);
+  ifstream is(chain.c_str());
   while (is.getline(buffer, 1000, '\n')) {
     sscanf(buffer, "%s %d", pName, &nentries); 
     if (nentries > -1) {
@@ -257,7 +257,7 @@ void PdTrigger::allPdTriggersFromFile(TFile *f) {
 void PdTrigger::readPdTriggers(string file) {
 
   char  buffer[1000];
-  ifstream is(file);
+  ifstream is(file.c_str());
   string sbuffer, hk, pd;
   string::size_type m1, m2;
   vector<string> triggers;
@@ -286,7 +286,7 @@ void PdTrigger::readPdTriggers(string file) {
 // ----------------------------------------------------------------------
 void PdTrigger::writePdTriggers(string file) {
 
-  ofstream os(file);
+  ofstream os(file.c_str());
   for (map<string, vector<string> >::iterator it = fPdTriggers.begin(); it != fPdTriggers.end(); ++it) {
     os << (*it).first << endl;
     for (unsigned int i = 0; i < (*it).second.size(); ++i) {

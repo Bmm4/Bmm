@@ -60,16 +60,16 @@ void TAnaMuon::dump() {
   cout << Form(" midx=%3d", fMuIndex) << " ID=" << static_cast<std::bitset<32> >(fMuID) << endl;
 
   if (fPlab.Perp() > 0) {
-    cout << Form(" P:      q=%+2d pT=%6.2f f=%+4.3f eta=%+4.3f ", fQ, fPlab.Perp(), fPlab.Phi(), fPlab.Eta()) << endl;
+    cout << Form(" P:      q=%+2d pT=%6.2f eta=%+4.3f f=%+4.3f ", fQ, fPlab.Perp(), fPlab.Eta(), fPlab.Phi()) << endl;
   }
   if (fInnerPlab.Perp() > 0) {
-    cout << Form(" inner:  q=%+2d pT=%6.2f f=%+4.3f eta=%+4.3f ", fQ, fInnerPlab.Perp(), fInnerPlab.Phi(), fInnerPlab.Eta()) << endl;
+    cout << Form(" inner:  q=%+2d pT=%6.2f eta=%+4.3f f=%+4.3f ", fQ, fInnerPlab.Perp(), fInnerPlab.Eta(), fInnerPlab.Phi()) << endl;
   } 
   if (fOuterPlab.Perp() > 0) {
-    cout << Form(" outer:  q=%+2d pT=%6.2f f=%+4.3f eta=%+4.3f ", fQ, fOuterPlab.Perp(), fOuterPlab.Phi(), fOuterPlab.Eta()) << endl;
+    cout << Form(" outer:  q=%+2d pT=%6.2f eta=%+4.3f f=%+4.3f ", fQ, fOuterPlab.Perp(), fOuterPlab.Eta(), fOuterPlab.Phi()) << endl;
   } 
   if (fGlobalPlab.Perp() > 0) {
-    cout << Form(" global: q=%+2d pT=%6.2f f=%+4.3f eta=%+4.3f ", fQ, fGlobalPlab.Perp(), fGlobalPlab.Phi(), fGlobalPlab.Eta()) << endl;
+    cout << Form(" global: q=%+2d pT=%6.2f eta=%+4.3f f=%+4.3f ", fQ, fGlobalPlab.Perp(), fGlobalPlab.Eta(), fGlobalPlab.Phi()) << endl;
   } 
   cout << Form(" X=%+4.1f z=%4.1f r=%+4.1f cl=%4.1f c2=%4.1f", fMuonChi2, fMuonZ, fMuonR, fCaloComp, fSegmComp);
   cout << Form(" DT=%3d CSC=%3d RPC=%3d t=%4.1f+/-%4.1f (%3d)", fNhitsDT, fNhitsCSC, fNhitsRPC, fTimeInOut, fTimeInOutE, fTimeNdof);

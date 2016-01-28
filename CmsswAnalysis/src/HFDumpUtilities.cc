@@ -1,3 +1,12 @@
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFDumpUtilities.cc
+// ------------------
+//
+// stone age  Urs Langenegger      first shot
+// 2016/01/20 Urs Langenegger      changes because of "consumes" migration
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #include <iostream>
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
@@ -10,6 +19,7 @@
 #include "SimDataFormats/Track/interface/SimTrackContainer.h"
 
 #include "TrackingTools/GeomPropagators/interface/AnalyticalImpactPointExtrapolator.h"
+#include "TrackingTools/IPTools/interface/IPTools.h"
 
 #include "DataFormats/TrackerRecHit2D/interface/SiTrackerGSRecHit2D.h" 
 
@@ -132,6 +142,9 @@ void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int
     pTrack->fBsLip  = -99.;
     pTrack->fBsLipE = -99.;
   }
+
+  // see https://twiki.cern.ch/twiki/bin/view/CMSPublic/WorkBookTrackAnalysis
+  // FIXME: dxy() and d0() are the same (modulo sign)
   pTrack->fdxy  = trackView.dxy();
   pTrack->fdxyE = trackView.dxyError();
   pTrack->fd0   = trackView.d0();
@@ -248,7 +261,7 @@ int muonID(const Muon &rm) {
 
 
 // ----------------------------------------------------------------------
-void cleanupTruthMatching(Handle<View<Track> > &hTracks, ESHandle<MagneticField> &magfield) {
+void cleanupTruthMatching(Handle<View<Track> > &hTracks, const MagneticField *magfield) {
   const int verbose(0); 
 
   // -- Determine which gen Tracks are mapped to more than one simple track
@@ -272,7 +285,7 @@ void cleanupTruthMatching(Handle<View<Track> > &hTracks, ESHandle<MagneticField>
       
       TGenCand *pGen = gHFEvent->getGenCand(ii->first);
       
-      AnalyticalImpactPointExtrapolator ipExt(magfield.product());
+      AnalyticalImpactPointExtrapolator ipExt(magfield);
       GlobalPoint vtx(0,0,0);
       FreeTrajectoryState fts;
       TrajectoryStateOnSurface tsof;
@@ -284,7 +297,7 @@ void cleanupTruthMatching(Handle<View<Track> > &hTracks, ESHandle<MagneticField>
       fts = FreeTrajectoryState(GlobalPoint(pGen->fV.X(),pGen->fV.Y(),pGen->fV.Z()),
 				GlobalVector(pGen->fP.X(),pGen->fP.Y(),pGen->fP.Z()),
 				TrackCharge(pGen->fQ),
-				magfield.product());
+				magfield);
       tsof = ipExt.extrapolate(fts,vtx);
       if (!tsof.isValid()) {
 	ipGen.SetXYZ(9999., 9999., 9999.);
@@ -321,7 +334,7 @@ void cleanupTruthMatching(Handle<View<Track> > &hTracks, ESHandle<MagneticField>
 	fts = FreeTrajectoryState(GlobalPoint(trackView->vx(),trackView->vy(),trackView->vz()),
 				  GlobalVector(trackView->px(),trackView->py(),trackView->pz()),
 				  trackView->charge(),
-				  magfield.product());
+				  magfield);
 	tsof = ipExt.extrapolate(fts,vtx);
 	ipThis.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
 	

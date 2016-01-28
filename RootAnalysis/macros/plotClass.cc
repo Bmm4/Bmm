@@ -1089,7 +1089,7 @@ void plotClass::readCuts(string filename) {
   cout << "==> plotClass: Reading " << filename << " for cut settings" << endl;
   vector<string> cutLines; 
   char  buffer[200];
-  ifstream is(filename);
+  ifstream is(filename.c_str());
   while (is.getline(buffer, 200, '\n')) {
     cutLines.push_back(string(buffer));
   }

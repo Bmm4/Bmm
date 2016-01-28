@@ -45,8 +45,8 @@ void TAnaTrack::dump() {
   //        << " f = " << fPlab.Phi() 
   //        << " t = " << fPlab.Theta();
 
-  cout << Form("q=%+2d pT=%6.2f f=%+4.3f eta=%+4.3f a=%2d", 
-	       fQ, fPlab.Perp(), fPlab.Phi(), fPlab.Eta(), fAlgorithm
+  cout << Form("q=%+2d pT=%6.2f eta=%+4.3f f=%+4.3f a=%2d", 
+	       fQ, fPlab.Perp(), fPlab.Eta(), fPlab.Phi(), fAlgorithm
 	       );
 
   if (fMCID != -99999) {

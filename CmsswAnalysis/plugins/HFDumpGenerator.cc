@@ -34,6 +34,10 @@ HFDumpGenerator::HFDumpGenerator(const ParameterSet& iConfig):
   cout << "---  candidates label:                " << fGenCandidatesLabel << endl;
   cout << "---  event label:                     " << fGenEventLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
+
+  fTokenGenParticle  = consumes<vector<reco::GenParticle> >(fGenCandidatesLabel);
+  fTokenHepMCProduct = consumes<HepMCProduct>(fGenEventLabel);
+
 }
 
 
@@ -47,21 +51,19 @@ HFDumpGenerator::~HFDumpGenerator() {
 void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   // -- CAREFUL!
+  // keep this Clear()! If a genfilter based on gHFEvent is used in the job, this clear will
+  // make sure that the old GenBlock is cleared before filling it again. 
   gHFEvent->Clear();
-
-  // Das Clear ist dafuer da, wenn ein GenFilter (der mit gHFEvent arbeitet
-  // anstatt mit dem HEPMC EDM-product direkt) da ist, der nicht alle
-  // Events durchlaesst. Wenn das Clear() nicht da waere, wuerde bei einem
-  // neuen Event der alte (weggefilterte) GenBlock auch noch drin sein.
-
 
   static int nevt(0); 
   ++nevt;
 
   if (fVerbose > 3) {
+    // FIXME: This is broken! AGAIN?!
+    // cf http://cmslxr.fnal.gov/source/GeneratorInterface/GenFilters/src/PythiaFilter.cc?v=CMSSW_7_6_2
     cout << "=================HEPMC===================" << endl;
     Handle<HepMCProduct> evt;
-    iEvent.getByLabel(fGenEventLabel.c_str(), evt);
+    iEvent.getByToken(fTokenHepMCProduct, evt);
     const HepMC::GenEvent *genEvent = evt->GetEvent();
     genEvent->print();
     
@@ -72,14 +74,14 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- From PhysicsTools/HepMCCandAlgos/plugins/ParticleListDrawer.cc
   int iMo1(-1), iMo2(-1), iDa1(-1), iDa2(-1); 
 
-  std::vector<const GenParticle *> cands;
+  vector<const GenParticle *> cands;
   cands.clear();
   vector<const GenParticle *>::const_iterator found = cands.begin();
 
-  edm::Handle<GenParticleCollection> genParticlesH;
+  Handle<GenParticleCollection> genParticlesH;
   genParticlesH.clear();
   try {
-    iEvent.getByLabel (fGenCandidatesLabel.c_str(), genParticlesH);
+    iEvent.getByToken(fTokenGenParticle, genParticlesH);
   } catch(cms::Exception ce) {
     cout << "==> HFDumpGenerator caught std::exception " << ce.what() << endl;
   }

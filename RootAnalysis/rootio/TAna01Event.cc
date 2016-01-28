@@ -691,82 +691,91 @@ void TAna01Event::dump() {
   cout << "Run: " << fRunNumber << ", Event: " << fEventNumber 
        << " nGenCand = " << nGenCands()
        << " nRecTrk = " << nRecTracks()
+       << " nSimpleTrk = " << nSimpleTracks()
+       << " nCands = " << nCands()
+       << " nMuons = " << nMuons()
+       << " nPV = " << nPV()
        << endl;
 
-  cout << "Primary Vtx: "; 
+  cout << "Primary Vertices: " << endl; 
   TAnaVertex *pPV;
   for (int i = 0; i < fnPV; i++) {
     pPV = getPV(i);
-    if (i > 0) cout << "             ";
+    cout << "  " << Form("%3d: ", i);
     pPV->dump();
   }
   
+  cout << "L1 triggers: " << endl; 
   for (int j = 0; j < NL1T; ++j) {
-    cout << Form("%15s %2d ", fL1TNames[j].Data(), (fL1TResult[j]? 1: 0)) << endl; 
+    cout << Form("%80s sel:%1d ", fL1TNames[j].Data(), (fL1TResult[j]? 1: 0)) << endl; 
   }
 
+  cout << "technical triggers: " << endl; 
   for (int i = 0; i < NLTT; ++i) {
-    cout << Form("%15s %2d ", fLTTNames[i].Data(), (fLTTResult[i]? 1: 0)) << endl; 
+    cout << Form("%80s sel:%1d ", fLTTNames[i].Data(), (fLTTResult[i]? 1: 0)) << endl; 
   }
 
+  cout << "HLT paths: " << endl; 
   for (int i = 0; i < NHLT; ++i) {
-    cout << Form("%15s %2d ", fHLTNames[i].Data(), (fHLTResult[i]? 1: 0)); 
+    cout << Form("%100s sel:%1d ", fHLTNames[i].Data(), (fHLTResult[i]? 1: 0)) << endl; 
   }
 
+  cout << "generator candidates: " << endl; 
   TGenCand *pGenCand;
   for (int i = 0; i < fnGenCands; i++) {
     pGenCand = getGenCand(i);
-    cout << "genT: ";
     pGenCand->dump();
   }
   
+  cout << "simple tracks: " << endl; 
   TSimpleTrack *sTrk;
   for (int i = 0; i < fnSimpleTracks; ++i) {
     sTrk = getSimpleTrack(i);
-    cout << "simpleT: ";
     sTrk->dump();
   }
 
+  cout << "rec tracks: " << endl; 
   TAnaTrack *pTrk;
   TAnaCand  *pCand;
   for (int i = 0; i < fnRecTracks; ++i) {
     pTrk = getRecTrack(i);
-    cout << "recT: ";
     pTrk->dump();
   }
 
+  cout << "muons: " << endl; 
   TAnaMuon  *pMuon;
   for (int i = 0; i < fnMuons; ++i) {
     pMuon = getMuon(i);
-    cout << "muon: ";
     pMuon->dump();
   }
   
-  TTrgObj  *pTrgObj;
-  for (int i = 0; i < fnTrgObj; ++i) {
-    pTrgObj = getTrgObj(i);
-    cout << "trgObj: ";
-    pTrgObj->dump();
+  if (0) {
+    TTrgObj  *pTrgObj;
+    for (int i = 0; i < fnTrgObj; ++i) {
+      pTrgObj = getTrgObj(i);
+      pTrgObj->dump();
+    }
   }
-  
+
+  cout << "trigger objects (v2):" << endl;
   TTrgObjv2  *pTrgObjv2;
   for (int i = 0; i < fnTrgObjv2; ++i) {
     pTrgObjv2 = getTrgObjv2(i);
-    cout << "trgObjv2: ";
     pTrgObjv2->dump();
   }
   
+  cout << "candidates: " << endl;
+  for (int i = 0; i < fnCandidates; ++i) {
+    pCand = getCand(i);
+    pCand->dump();
+  }
+
+  cout << "sig tracks:" << endl;
   for (int i = 0; i < fnSigTracks; ++i) {
     pTrk = getSigTrack(i);
-    cout << "sigT: ";
     pTrk->dump();
   }
 
-  for (int i = 0; i < fnCandidates; ++i) {
-    pCand = getCand(i);
-    cout << "cand: ";
-    pCand->dump();
-  }
 
   cout << endl;
 }

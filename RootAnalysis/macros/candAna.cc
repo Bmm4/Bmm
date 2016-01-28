@@ -64,8 +64,14 @@ void candAna::endAnalysis() {
 // ----------------------------------------------------------------------
 void candAna::evtAnalysis(TAna01Event *evt) {
   
+  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
   fpEvt = evt; 
   fBadEvent = false;
+
+  if (1234 == fVerbose) {
+    fpEvt->dump();
+    return;
+  }
 
   // -- cross check Marco's truth-matching problem with 92 as mothers of the muons (on special file)
   //   bool evtOK(false); 
@@ -176,7 +182,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   TAnaCand *pCand(0);
   if (fVerbose == -66) { cout << "----------------------------------------------------------------------" << endl;}
-  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
+  bool fillNoCand(true); 
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     pCand = fpEvt->getCand(iC);
 
@@ -219,13 +225,14 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
     }
 
-
+    fillNoCand = false; 
+    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(3);
     fpCand = pCand;
     fCandIdx = iC; 
 
     // -- call derived functions
     candAnalysis();
-    
+
     if(fVerbose>9) {  // Just print something 
       if (fCandM > 4.99 && fCandM < 5.02 && fCandFLS3d > 13 && fCandA < 0.05 && fMu1Pt > 4.5 && fMu2Pt > 4.5) {
 	TLorentzVector gm1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(fpEvt->getSigTrack(pCand->fSig1)->fIndex)->getGenIndex())->fP;
@@ -312,6 +319,9 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       } // if blind
     } // if MC  
   }  // loop over cands
+
+  // -- fill events with no passing candidate (one entry per event)
+  if (fillNoCand) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(2);
 
 }
 
@@ -881,11 +891,11 @@ void candAna::candAnalysis() {
 
   fillRedTreeData();
 
-  if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
-    calcBDT();
-  } else {
-    calcBDT();
-  }  
+  // if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
+  //   calcBDT();
+  // } else {
+  //   calcBDT();
+  // }  
 
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX)); 
 

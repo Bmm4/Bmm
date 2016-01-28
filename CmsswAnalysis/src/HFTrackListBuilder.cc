@@ -1,9 +1,10 @@
-/*
- *  HFTrackListBuilder.cc
- *
- *  Created by Christoph Naegeli <christoph.naegeli@psi.ch> on 10.11.12.
- *
- */
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFTrackListBuilder
+// ------------------
+//
+// 2012/11/10 Christoph Naegeli    first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #include <algorithm>
 
@@ -40,11 +41,14 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
   vector<int>::iterator trackIt;
 	
   trackList.reserve(20); // 20 muons should be enough
-	
+
+  int ix(0); 
   for (muonIt = fMuons->begin(); muonIt != fMuons->end(); ++muonIt) {
     if (!muon::isGoodMuon(*muonIt, fMuonQuality)) continue;
     int ixMu = muonIt->track().index();
     if (ixMu >= 0) trackList.push_back(ixMu);
+    if (fVerbose > 0) cout << "==>" << fCallerName << "> muon " << ix << " with track index " << ixMu << endl;
+    ++ix; 
   }
 	
   if (fVerbose > 0) {
@@ -69,9 +73,7 @@ std::vector<int> HFTrackListBuilder::getTrackList() {
     reco::TrackBaseRef rTrackView(fhTracks, ix);
     const reco::Track trackView(*rTrackView);
     if (!trackView.quality(reco::TrackBase::qualityByName(fTrackQuality))) continue;
-	  
-    if ( !(*this)(ix)) 
-      trackList.push_back(ix);
+    if (!(*this)(ix)) trackList.push_back(ix);
   }
 	
   return trackList;

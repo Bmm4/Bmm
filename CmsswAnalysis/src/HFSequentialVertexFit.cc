@@ -1,8 +1,10 @@
-/*
- *  HFSequentialVertexFit.cc
- *
- *  Created by Christoph Naegeli <christoph.naegeli@psi.ch> on 29.4.10.
- */
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFSequentialVertexFit
+// ---------------------
+//
+// 2010/04/10 Christoph Naegeli      first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
 #include "Bmm/RootAnalysis/common/HFMasses.hh"

@@ -39,13 +39,13 @@ process.source = cms.Source(
 #	"/store/data/Run2012A/MuOnia/AOD/22Jan2013-v1/30000/000D2FF5-EE82-E211-BEBA-0026189438A5.root"
 #    "/store/data/Run2012A/MuOnia/RECO/22Jan2013-v1/30000/0002CEE5-4183-E211-84FB-00304867915A.root"
 #        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/066732D9-752A-E511-B293-02163E0121CC.root",
-        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root"
-
+        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/562/00000/2C938991-692A-E511-9F4A-02163E014761.root",
+        "/store/data/Run2015B/Charmonium/AOD/PromptReco-v1/000/251/561/00000/FC613934-142A-E511-9401-02163E012B2A.root"
         ),
- skipEvents = cms.untracked.uint32(704)
+        skipEvents = cms.untracked.uint32(14550)
 )
 
-#process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(20) )
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 

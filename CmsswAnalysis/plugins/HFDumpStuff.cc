@@ -1,3 +1,12 @@
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFDumpStuff.cc
+// ------------------
+//
+// 2016/01/15 Urs Langenegger      migrate to "consumes"
+// stone age  Urs Langenegger      first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 
 
@@ -60,6 +69,11 @@ HFDumpStuff::HFDumpStuff(const edm::ParameterSet& iConfig):
   cout << "---  PrimaryVertexLabel:         " << fPrimaryVertexLabel << endl;
   cout << "---  PrimaryVertexTracksLabel:   " << fPrimaryVertexTracksLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
+
+  fTokenLumiSummary = consumes<LumiSummary, edm::InLumi>(fLumiSummaryLabel);
+  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel); 
+  fTokenTrack       = consumes<vector<Track> >(fPrimaryVertexTracksLabel) ;
+  fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
 }
 
 
@@ -86,34 +100,33 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   gHFEvent->fTimeHi      = high;
 
   // Get the luminosity information 
-  edm::LuminosityBlock const& iLumi = iEvent.getLuminosityBlock();
-  edm::Handle<LumiSummary> lumi;
-  iLumi.getByLabel(fLumiSummaryLabel, lumi);
-  edm::Handle<edm::ConditionsInLumiBlock> cond;
-  float intlumi = 0, instlumi=0;
-  //int beamint1=0, beamint2=0;
-  iLumi.getByLabel("conditionsInEdm", cond);
-  // This will only work when running on RECO until (if) they fix it in the FW
-  // When running on RAW and reconstructing, the LumiSummary will not appear
-  // in the event before reaching endLuminosityBlock(). Therefore, it is not
-  // possible to get this info in the event
-  if (lumi.isValid()) {
-    intlumi =(lumi->intgRecLumi())/1000.; // integrated lumi in pb-1 per LS
-    instlumi=(lumi->avgInsDelLumi())/1000.; //inst. lumi per pb-1 averaged overLS
-    //beamint1=(cond->totalIntensityBeam1)/1000;
-    //beamint2=(cond->totalIntensityBeam2)/1000;
+  // cf http://cmslxr.fnal.gov/source/HLTrigger/HLTanalyzers/src/EventHeader.cc?v=CMSSW_7_6_1
+  float intlumi(0.), instlumi(0.);
+  bool lumiException(false);
+  const LuminosityBlock &iLumi = iEvent.getLuminosityBlock(); 
+  Handle<LumiSummary> lumiSummary; 
+  try {
+    iLumi.getByToken(fTokenLumiSummary, lumiSummary);
+    lumiSummary->isValid();
+  } catch(cms::Exception&){
+    lumiException = true;
+  }
+
+  if(!lumiException) {
+    intlumi =(lumiSummary->intgRecLumi())/1000.; // integrated lumi in pb-1 per LS
+    instlumi=(lumiSummary->avgInsDelLumi())/1000.; //inst. lumi per pb-1 averaged overLS
   } else {
-    //std::cout << "** ERROR: Event does not get lumi info\n";
+    intlumi = -9999.;
+    instlumi= -9999.;
   }
 
   gHFEvent->fLumi     = instlumi;
   gHFEvent->fLumiInt  = intlumi;
 
   // -- beam spot
-  reco::BeamSpot beamSpot;
-  edm::Handle<reco::BeamSpot> beamSpotHandle;
-  iEvent.getByLabel(fBeamSpotLabel, beamSpotHandle);
-  
+  BeamSpot beamSpot;
+  Handle<BeamSpot> beamSpotHandle;
+  iEvent.getByToken(fTokenBeamSpot, beamSpotHandle);
   if (beamSpotHandle.isValid())    {
     beamSpot = *beamSpotHandle;
   } else {
@@ -134,11 +147,15 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   // -- Primary vertex
   int bestPV(-1), bestN(-1), cnt(0); 
+  Handle<vector<Track> > hTrackCollection;
   try {
     // -- get the collection of RecoTracks 
-    edm::Handle<edm::View<Track> > tracksView;
-    iEvent.getByLabel(fPrimaryVertexTracksLabel, tracksView);
+    iEvent.getByToken(fTokenTrack, hTrackCollection);
+  } catch (cms::Exception &ex) {
+    if (fVerbose > 1) cout << "No Track collection with label " << fPrimaryVertexTracksLabel << endl;
+  }
 
+  try {
     edm::Handle<VertexCollection> recoPrimaryVertexCollection;
     iEvent.getByLabel(fPrimaryVertexLabel, recoPrimaryVertexCollection);
     //    const VertexCollection vertices = *(recoPrimaryVertexCollection.product());
@@ -177,6 +194,7 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
       pVtx->setCovXX(cov);
 
+     
       //       Vertex::trackRef_iterator v1TrackIter;
       //       Vertex::trackRef_iterator v1TrackBegin = iv->tracks_begin();
       //       Vertex::trackRef_iterator v1TrackEnd   = iv->tracks_end();

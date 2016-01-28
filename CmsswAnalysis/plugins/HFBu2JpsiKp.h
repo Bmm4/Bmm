@@ -4,16 +4,16 @@
 #include "Bmm/CmsswAnalysis/plugins/HFVirtualDecay.h"
 
 class HFBu2JpsiKp : public HFVirtualDecay {
-
-	public:
-		explicit HFBu2JpsiKp(const edm::ParameterSet&);
-
-	protected:
-		virtual void analyze(const edm::Event&, const edm::EventSetup&);
-		virtual void dumpConfiguration();
-
-		int           fPsiMuons;
-		double        fPsiWindow, fBuWindow;
+  
+ public:
+  explicit HFBu2JpsiKp(const edm::ParameterSet&);
+  
+ protected:
+  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  virtual void dumpConfiguration();
+  
+  int           fPsiMuons;
+  double        fPsiWindow, fBuWindow;
 };
 
 #endif

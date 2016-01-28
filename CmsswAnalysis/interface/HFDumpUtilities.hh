@@ -35,6 +35,6 @@ int getPv(int tidx, const reco::VertexCollection *vc);
 int muonID(const reco::Muon &rm);
 
 //void cleanupTruthMatching();
-void cleanupTruthMatching(edm::Handle<edm::View<reco::Track> > &hTracks, edm::ESHandle<MagneticField> &magfield);
+void cleanupTruthMatching(edm::Handle<edm::View<reco::Track> > &hTracks, const MagneticField *magfield);
 
 #endif

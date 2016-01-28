@@ -1,10 +1,3 @@
-/*
- *  HFVirtualDecay.h
- *
- *  Created by Christoph Naegeli <christoph.naegeli@psi.ch> on 31.01.13.
- *
- */
-
 #ifndef HFVIRTUALDECAY_H
 #define HFVIRTUALDECAY_H
 
@@ -43,15 +36,14 @@ class HFVirtualDecay : public edm::EDAnalyzer {
 		
   virtual void dumpConfiguration();
  protected:
-  // configuration
   int fVerbose;
 		
   edm::InputTag fTracksLabel;
-  std::string fTrackQualityString;
+  std::string   fTrackQualityString;
   edm::InputTag fPrimaryVertexLabel;
   edm::InputTag fBeamSpotLabel;
   edm::InputTag fMuonsLabel;
-  std::string fMuonQualityString;
+  std::string   fMuonQualityString;
 		
   double fTrackPt;
   double fMuonPt;
@@ -64,18 +56,22 @@ class HFVirtualDecay : public edm::EDAnalyzer {
   int fType;
 	
  protected:
-  // data for subclasses
-  const MagneticField *fMagneticField;
-  const reco::MuonCollection *fMuonCollection;
-  reco::VertexCollection fVertexCollection;
-  reco::BeamSpot fBeamSpot;
+  const MagneticField                 *fMagneticField;
+  const reco::MuonCollection          *fMuonCollection;
+  reco::VertexCollection               fVertexCollection;
+  reco::BeamSpot                       fBeamSpot;
 		
   edm::Handle<edm::View<reco::Track> > fTracksHandle;
   edm::ESHandle<TransientTrackBuilder> fTTB;
 		
-  // track list builder
-  std::auto_ptr<HFTrackListBuilder> fListBuilder;
+  std::auto_ptr<HFTrackListBuilder>    fListBuilder;
   std::auto_ptr<HFSequentialVertexFit> fSequentialFitter;
+
+  edm::EDGetTokenT<reco::BeamSpot> fTokenBeamSpot;
+  edm::EDGetTokenT<edm::View<reco::Track> > fTokenTrack;
+  edm::EDGetTokenT<reco::MuonCollection>  fTokenMuon;
+  edm::EDGetTokenT<reco::VertexCollection> fTokenVertex;
+
 };
 
 #endif
