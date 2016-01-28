@@ -244,13 +244,14 @@ int main(int argc, char *argv[]) {
 
 // ----------------------------------------------------------------------
 void skimEvents(TChain *chain) {
-  int oldRun(-1), run(-1), evt(-1); 
+  int oldRun(-1), run(-1), evt(-1), ls(-1); 
   vector<pair<int, int> > events; 
   ifstream INS; 
   string sline, bla; 
   INS.open("skim.events");
-  while (getline(INS, sline)) {
+  while (1) {
     INS >> bla >> run >> bla >> evt; 
+    if (INS.eof()) break;
     events.push_back(make_pair(run, evt)); 
   }
       
@@ -282,7 +283,8 @@ void skimEvents(TChain *chain) {
     
     evt = static_cast<long int>(pEvt->fEventNumber);		
     run = static_cast<long int>(pEvt->fRunNumber);
-
+    ls = pEvt->fLumiSection;
+    
     if (run != oldRun) {
       cout << "new run: " << run << " (event " << jEvent << " in chain)" << endl;
       oldRun = run;
@@ -313,14 +315,12 @@ void skimEvents(TChain *chain) {
     }
 
     for (unsigned int i = 0; i < events.size(); ++i) {
-      if (run == events[i].first) {
-	if (evt == events[i].second) {
-	  cout << "skimming run = " << run <<  " evt = " << evt
-	       << " file: " << chain->GetFile()->GetName()
-	       << endl;
-	  newtree->Fill();
-	  pEvt->Clear();
-	}
+      if ((run == events[i].first) && (evt == events[i].second)) {
+	cout << "skimming run = " << run <<  " ls = " << ls << " evt = " << evt
+	     << " file: " << chain->GetFile()->GetName()
+	     << endl;
+	newtree->Fill();
+	pEvt->Clear();
       }
     }
   }
