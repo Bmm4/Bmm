@@ -173,8 +173,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     // Once per run (from setup), can be called only per run from beginRun
     // l1gtutils - used 
     if (fVerbose > 5) cout << "Retrieving L1GtUtils" << endl;
-    L1GtUtils l1GtUtils;
-    l1GtUtils.retrieveL1EventSetup(iSetup);
     cout << "L1 trigger menu: "<< l1GtUtils.l1TriggerMenu() << endl;
     
     // L1-Mask - used 
@@ -183,10 +181,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     iSetup.get<L1GtTriggerMaskAlgoTrigRcd>().get(handleAlgoMask); 
     auto const & masks = handleAlgoMask->gtTriggerMask(); 
     
-    if (fVerbose > 5) cout << "Get L1GtTriggerMenu" << endl;
-    edm::ESHandle<L1GtTriggerMenu> menuRcd;
-    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
-    const L1GtTriggerMenu* menu = menuRcd.product();
     //L1GtTriggerMenu const & l1tMenu = * menuRcd;  // unused
     // this should be a map l1algo[string algoname]
     //auto const & mapping = menuRcd->gtAlgorithmAliasMap(); //  unused 
@@ -207,10 +201,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     // Method 1, knows about fired bit but I have to find the algoname  
     // in works but stops working if I remove the l1AlgoTechTrigBitNumeber?
     // L1-Readout - this knows about fired L1 triggers  
-    if (fVerbose > 5) cout << "Retrieving trigger records" << endl;
-    Handle<L1GlobalTriggerReadoutRecord> L1GTRR;
-    iEvent.getByLabel(fL1GTReadoutRecordLabel,L1GTRR); // "gtDigis"
-    //event.getByToken(token, L1GTRR); 
+
     auto const & word = L1GTRR->decisionWord(); 
     
     //int select=-1;
@@ -249,13 +240,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     
     // Method 2, list all algo names but does not know which fired.
     // try using the word array to figure it out
-    string algoname; 
-    int    algobit(-1); 
-    bool   result(false); 
-    //bool   resultBeforeMask(false); // not really used, needed by interface which is by ref
-    int    prescale(0); 
-    int    mask(0); 
-    int    iErrorCode(0); 
     for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
       algoname = (algo->second).algoName();
       algobit  = (algo->second).algoBitNumber();
@@ -413,13 +397,13 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	     << " Result = " <<  gHFEvent->fHLTResult[index]
 	     << " WasRun = " <<  gHFEvent->fHLTWasRun[index]
 	     << " Error = " <<  gHFEvent->fHLTError[index]
-	     << " Presacle = " <<  gHFEvent->fHLTPrescale[index] 
+	     << " Prescale = " <<  gHFEvent->fHLTPrescale[index] 
 	     << endl;
       }
 
       // Find L3 Muon modules 
       // Do only for passed HLT
-      if(result) {
+      if(1||result) {
 
 	if (fVerbose > 2) 
 	  cout<<" passed "<<validTriggerNames[it]<<" "
@@ -431,7 +415,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  (validTriggerNamesT.Contains("Mu")) ||
 	  (validTriggerNamesT.Contains("MU"));  // select only muon triggers
 
-	if(lookAt || fVerbose>98) { 
+	if(1||lookAt || fVerbose>98) { 
 
 	  muonTrigger = muonTrigger 
 	    || (lookAt && // accumulate if several passed HLTs
@@ -451,8 +435,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  for(unsigned int j=0;j<=moduleIndex;j++) {
 	    const string& moduleLabel = moduleLabels[j]; 
 	    const string& type = fHltConfig.moduleType(moduleLabel);
-	    const unsigned int filterIndex = triggerSummary->
-	      filterIndex(InputTag(moduleLabel,"","HLT"));
+	    const unsigned int filterIndex = triggerSummary->filterIndex(InputTag(moduleLabel,"","HLT"));
 	    if(fVerbose>98) {
 	      cout<<j<<" label "<<moduleLabel<<" type "<<type<<" index "
 		  <<filterIndex<<endl;

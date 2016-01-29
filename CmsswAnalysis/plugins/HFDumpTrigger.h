@@ -40,9 +40,9 @@ class HFDumpTrigger : public edm::EDAnalyzer {
   virtual void endJob() ;
   virtual void endRun(edm::Run const&, edm::EventSetup const&);
 
-  int           fVerbose;
   int           fNevt;
-
+  int           fVerbose;
+  
   std::string   fHLTProcessName; 
   edm::InputTag fL1GTReadoutRecordLabel; 
   edm::InputTag fL1GTmapLabel;
