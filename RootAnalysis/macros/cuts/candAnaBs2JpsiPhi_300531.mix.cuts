@@ -1,0 +1,33 @@
+TYPE          300531
+TRUTHCAND         531
+#
+TRIGRANGE    NOTRIGGER
+#TRIGRANGE    HLT_DoubleMu3_Jpsi_v1(1:99999999)
+#TRIGRANGE    HLT_DoubleMu3_Jpsi_v2(1:99999999)
+#TRIGRANGE    HLT_Dimuon6p5_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v2(1:99999999)
+#TRIGRANGE    HLT_Dimuon7_Jpsi_Displaced_v3(1:99999999)
+#TRIGRANGE    HLT_DoubleMu3p5_Jpsi_Displaced_v2(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v1(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v4(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v5(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v9(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v10(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v11(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
+#TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v12(1:99999999)
+# -- boxes
++input cuts/boxes.Bs2JpsiPhi.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.cuts
+# -- candidate
++input cuts/candidate.cuts
+# -- bdt input
+#no input cuts/bdt.2012.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
+# -- phi cuts
++input cuts/phi.cuts
