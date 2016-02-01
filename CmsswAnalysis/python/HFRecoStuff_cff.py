@@ -5,7 +5,8 @@ stuffDump = cms.EDAnalyzer(
     "HFDumpStuff",
     verbose                  = cms.untracked.int32(0),
     PrimaryVertexLabel       = cms.untracked.InputTag("offlinePrimaryVertices"),
-    PrimaryVertexTracksLabel = cms.untracked.InputTag("generalTracks")
+    PrimaryVertexTracksLabel = cms.untracked.InputTag("generalTracks"),
+    type                     = cms.untracked.int32(0)
     )
 
 
@@ -18,51 +19,40 @@ trkDump = cms.EDAnalyzer(
     verbose                        = cms.untracked.int32(0),
     tracksLabel                    = cms.untracked.InputTag('generalTracks'),
     primaryVertexCollectionLabel   = cms.untracked.InputTag('offlinePrimaryVertices'),
-    generatorEventLabel            = cms.untracked.InputTag('generator'),
     muonsLabel                     = cms.untracked.InputTag("muons"),
-    calomuonsLabel                 = cms.untracked.InputTag("calomuons"),
-    trackingParticlesLabel         = cms.untracked.InputTag('trackingParticles'),
-    associatorLabel                = cms.untracked.InputTag('TrackAssociatorByHits'),
     doTruthMatching                = cms.untracked.int32(3),
-    simTracksLabel                 = cms.untracked.InputTag('allLayer1TrackCands'),
     dumpSimpleTracks               = cms.untracked.bool(True), 
     dumpRecTracks                  = cms.untracked.bool(False), 
-    loadCalomuons                  = cms.untracked.bool(False),
-    propMuon                       = cms.PSet(
-        useStation2 = cms.bool(False), 
-        useTrack = cms.string("tracker"),
-        useState = cms.string("atVertex"),  # in AOD
-        useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
-        )
-    )
+    type                           = cms.untracked.int32(0)
+)
 
 # ----------------------------------------------------------------------
 muonDump = cms.EDAnalyzer(
     "HFDumpMuons",
-    verbose         = cms.untracked.int32(0),
-    tracksLabel     = cms.untracked.InputTag("generalTracks"),
-    muonsLabel      = cms.untracked.InputTag("muons"),
-    calomuonsLabel  = cms.untracked.InputTag("calomuons"),
-    doTruthMatching = cms.untracked.int32(0),
-    runOnAOD        = cms.untracked.bool(True),
-    maxTrackDist    = cms.untracked.double(0.1),
-    docaVertex      = cms.untracked.double(0.05),
-    keepBest        = cms.untracked.int32(3),
-    maxCandTracks   = cms.untracked.int32(3),
+    verbose                        = cms.untracked.int32(0),
+    primaryVertexCollectionLabel   = cms.untracked.InputTag('offlinePrimaryVertices'),
+    tracksLabel                    = cms.untracked.InputTag("generalTracks"),
+    muonsLabel                     = cms.untracked.InputTag("muons"),
+    calomuonsLabel                 = cms.untracked.InputTag("calomuons"),
+    maxTrackDist                   = cms.untracked.double(0.1),
+    docaVertex                     = cms.untracked.double(0.05),
+    keepBest                       = cms.untracked.int32(3),
+    maxCandTracks                  = cms.untracked.int32(3),
+    type                           = cms.untracked.int32(0),
     # Configuration for the extrapolation at the muon system 
     propM1 = cms.PSet(
         useStation2 = cms.bool(False), 
         useTrack = cms.string("tracker"),
         useState = cms.string("atVertex"),  # in AOD
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
-        ),
+    ),
     propM2 = cms.PSet(
         useStation2 = cms.bool(True), 
         useTrack = cms.string("tracker"),
         useState = cms.string("atVertex"),  # in AOD
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
-        )
     )
+)
 
 # ----------------------------------------------------------------------
 triggerDump = cms.EDAnalyzer(
