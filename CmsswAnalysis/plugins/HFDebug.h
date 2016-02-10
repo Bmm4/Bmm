@@ -13,12 +13,9 @@
 
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
-#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerObjectMapRecord.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 #include "DataFormats/HLTReco/interface/TriggerEvent.h"
 
-#include "L1Trigger/GlobalTriggerAnalyzer/interface/L1GtUtils.h"
 #include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
 
 #include "MagneticField/Engine/interface/MagneticField.h"
@@ -32,6 +29,10 @@
 #include "DataFormats/RecoCandidate/interface/RecoChargedCandidateFwd.h"
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+
+#include "HLTrigger/HLTcore/interface/HLTConfigProvider.h"
+#include "HLTrigger/HLTcore/interface/HLTPrescaleProvider.h"
+
 
 class TFile;
 class TTree;
@@ -51,28 +52,27 @@ class HFDebug : public edm::EDAnalyzer {
   virtual void endJob() ;
   virtual void endRun(edm::Run const&, edm::EventSetup const&);
 
-  int           fNevt;
+
   int           fVerbose;
+  int           fNevt;
   
   edm::InputTag fTracksLabel;
-  std::string   fHLTProcessName; 
-  edm::InputTag fL1GTReadoutRecordLabel; 
-  edm::InputTag fL1GTmapLabel;
-  edm::InputTag fL1MuonsLabel;
-  edm::InputTag fTriggerEventLabel;
-  edm::InputTag fHLTResultsLabel;
-  
-  HLTConfigProvider fHltConfig;
-  bool              fValidHLTConfig;
-
-
   edm::EDGetTokenT<edm::View<reco::Track> > fTokenTrack;
 
-  edm::EDGetTokenT<L1GlobalTriggerReadoutRecord>  fTokenL1GlobalTriggerReadoutRecord;
+  edm::InputTag fL1MuonsLabel;
+
+  std::string   fHLTProcessName; 
+
+  edm::InputTag fTriggerEventLabel;
   edm::EDGetTokenT<trigger::TriggerEvent> fTokenTriggerEvent;
+
+  edm::InputTag fHLTResultsLabel;
   edm::EDGetTokenT<edm::TriggerResults> fTokenTriggerResults;
-  edm::EDGetTokenT<L1GlobalTriggerObjectMap>  fTokenL1GlobalTriggerObjectMap;
-  edm::EDGetTokenT<L1GlobalTriggerObjectMapRecord> fTokenL1GlobalTriggerObjectMapRecord;
+  
+  HLTPrescaleProvider  fHltPrescaleProvider;
+
+  HLTConfigProvider fHltConfig;
+  bool              fValidHLTConfig;
 
   edm::Handle<edm::View<reco::Track> > fTracksHandle;
 

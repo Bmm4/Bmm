@@ -12,7 +12,7 @@ stuffDump = cms.EDAnalyzer(
 
 # ----------------------------------------------------------------------
 from TrackingTools.TransientTrack.TransientTrackBuilder_cfi import *
-from SimTracker.TrackAssociation.TrackAssociatorByHits_cfi import *
+#from SimTracker.TrackAssociation.TrackAssociatorByHits_cfi import *
 
 trkDump = cms.EDAnalyzer(
     "HFDumpTracks",

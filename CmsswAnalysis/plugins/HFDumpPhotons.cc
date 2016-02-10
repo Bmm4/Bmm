@@ -9,8 +9,6 @@
 
 #include "SimDataFormats/GeneratorProducts/interface/HepMCProduct.h"
 
-#include "DataFormats/TrackerRecHit2D/interface/SiTrackerGSRecHit2D.h" 
-
 #include "DataFormats/TrackingRecHit/interface/TrackingRecHit.h"
 #include "DataFormats/TrackReco/interface/TrackExtraFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"

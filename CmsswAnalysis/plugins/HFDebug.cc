@@ -36,12 +36,6 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 
-#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
-#include "CondFormats/DataRecord/interface/L1GtTriggerMaskAlgoTrigRcd.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMask.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
-#include "CondFormats/L1TObjects/interface/L1GtTriggerMenuFwd.h"
-
 #include "TH1.h"
 #include "TFile.h"
 #include "TDirectory.h"
@@ -70,38 +64,35 @@ using namespace trigger;
 // ----------------------------------------------------------------------
 HFDebug::HFDebug(const edm::ParameterSet& iConfig):
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
+  fNevt(0),  
+
   fTracksLabel(iConfig.getUntrackedParameter<edm::InputTag>("tracksLabel", edm::InputTag("generalTracks"))),
-  fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
-  fL1GTReadoutRecordLabel(iConfig.getUntrackedParameter<InputTag>("L1GTReadoutRecordLabel", InputTag("gtDigis"))),
-  fL1GTmapLabel(iConfig.getUntrackedParameter<InputTag>("hltL1GtObjectMap")),
+  fTokenTrack(consumes<View<Track> >(fTracksLabel)), 
+
   fL1MuonsLabel(iConfig.getUntrackedParameter<InputTag>("L1MuonsLabel")),
+
+  fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
+
   fTriggerEventLabel(iConfig.getUntrackedParameter<InputTag>("TriggerEventLabel")),
+  fTokenTriggerEvent(consumes<TriggerEvent>(fTriggerEventLabel)), 
+
   fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel")),
+  fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)),
+
+  fHltPrescaleProvider(iConfig, consumesCollector(), *this),
+
   fL1MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l1muonsLabel", edm::InputTag("hltL1extraParticles"))),
   fL2MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l2muonsLabel", edm::InputTag("hltL2MuonCandidates"))),
-  fL3MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l3muonsLabel", edm::InputTag("hltL3MuonCandidates"))) {
-  //76  fHltPrescaleProvider(iConfig, consumesCollector(), *this) {
-  //
+  fL3MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l3muonsLabel", edm::InputTag("hltL3MuonCandidates"))) {  
+
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFDebug constructor" << endl;
   cout << "--- Verbose                     : " << fVerbose << endl;
   cout << "--- HLT process name            : " << fHLTProcessName << endl;
-  cout << "--- L1 GT Readout Record Label  : " << fL1GTReadoutRecordLabel << endl;
-  cout << "--- L1 GT Object Map Label      : " << fL1GTmapLabel << endl;
   cout << "--- L1 Muons Label              : " << fL1MuonsLabel << endl;
   cout << "--- HLTResultsLabel             : " << fHLTResultsLabel << endl;
   cout << "--- Trigger Event Label         : " << fTriggerEventLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
-
-  fNevt = 0; 
-
-  fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
-  
-  fTokenL1GlobalTriggerReadoutRecord    = consumes<L1GlobalTriggerReadoutRecord>(fL1GTReadoutRecordLabel); 
-  fTokenL1GlobalTriggerObjectMapRecord  = consumes<L1GlobalTriggerObjectMapRecord>(InputTag("hltL1GtObjectMap")); 
-  fTokenL1GlobalTriggerObjectMap        = consumes<L1GlobalTriggerObjectMap>(InputTag("hltL1GtObjectMap")); 
-  fTokenTriggerResults                  = consumes<TriggerResults>(fHLTResultsLabel); 
-  fTokenTriggerEvent                    = consumes<TriggerEvent>(fTriggerEventLabel); 
 
 
   l1extramuToken_  = consumes<l1extra::L1MuonParticleCollection>(fL1MuonsNewLabel); 
@@ -205,7 +196,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   bool wasrun(false), result(false);
   int prescale(1); 
   int psSet = -1;
-  psSet = fHltConfig.prescaleSet(iEvent, iSetup);
+  psSet = fHltPrescaleProvider.prescaleSet(iEvent, iSetup);
   
   // Loop over all HLT-paths
   for (unsigned int it = 0; it < validTriggerNames.size(); ++it) {
