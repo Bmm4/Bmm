@@ -3,8 +3,8 @@
 // HFDumpUtilities.cc
 // ------------------
 //
-// stone age  Urs Langenegger      first shot
 // 2016/01/20 Urs Langenegger      changes because of "consumes" migration
+// stone age  Urs Langenegger      first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 #include <iostream>
