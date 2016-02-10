@@ -1,5 +1,7 @@
 #include "candAna.hh"
 
+#include <TProfile.h>
+
 #include "common/HFMasses.hh"
 #include "common/AnalysisDistribution.hh"
 
@@ -70,6 +72,11 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   if (1234 == fVerbose) {
     fpEvt->dump();
+    return;
+  }
+
+  if (1235 == fVerbose) {
+    play();
     return;
   }
 
@@ -1397,7 +1404,21 @@ void candAna::bookHist() {
   h11 = new TH1D("tm_eta", "tight muon eta", 50, -2.5, 2.5); 
   h11 = new TH1D("bm_eta", "BDT muon eta", 50, -2.5, 2.5); 
 
+  h11 = new TH1D("l1pt",  "(pT(L3) - pT(L1))/(pT(L3)", 40, -2., 2.); 
+  h11 = new TH1D("l1pt_10_11",  "(pT(L3) - pT(L1))/(pT(L3) for 10 < pT < 11", 40, -2., 2.); 
+  h11 = new TH1D("l1pt_15_17",  "(pT(L3) - pT(L1))/(pT(L3) for 15 < pT < 17", 40, -2., 2.); 
+  h11 = new TH1D("l1ptec_5_6",  "(pT(L3) - pT(L1))/(pT(L3) for 5 < pT < 6 (endcap)", 40, -2., 2.); 
+  h11 = new TH1D("l1ptec_10_11",  "(pT(L3) - pT(L1))/(pT(L3) for 10 < pT < 11 (endcap)", 40, -2., 2.); 
 
+  h11 = new TH1D("l1eta", "(eta(L3) - eta(L1))", 40, -2., 2.); 
+  h11 = new TH1D("l1phi", "(phi(L3) - phi(L1))", 40, -2., 2.); 
+  TProfile *p1;
+  p1 = new TProfile("pl1pt","Profile of (pT(L3) - pT(L1))/pT(L3)", 30, 0., 30., -2., 2., "S");
+  p1 = new TProfile("pl1eta","Profile of L1 eta resolution", 25, -2.5, 2.5, -2., 2., "S");
+  p1 = new TProfile("pl1phi","Profile of L1 phi resolution", 32, -3.15, 3.15, -2., 2., "S");
+  p1 = new TProfile("pl1ptec","Profile of (pT(L3) - pT(L1))/pT(L3) (endcap)", 30, 0., 30., -2., 2., "S");
+
+  
   h11 = new TH1D("L1_0", "hltL1sL1DoubleMu33HighQ", 50, -2.5, 2.5); 
   h11 = new TH1D("L1_1", "hltL1sL1DoubleMu0or33HighQ", 50, -2.5, 2.5); 
   h11 = new TH1D("L1_2", "hltDimuon33L1Filtered0", 50, -2.5, 2.5); 
@@ -4388,6 +4409,178 @@ double candAna::matchToMuon(TAnaTrack *pt, bool skipSame) {
 // ----------------------------------------------------------------------
 void candAna::play() {
 
+  TTrgObj *p;     
+  TTrgObj *l3m0(0), *l3m1(0);     
+  //  cout << "Dumping TTrgObj " << fpEvt->nTrgObj() << " for event " << fEvt << endl;
+  // for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+  //   fpEvt->getTrgObj(i)->dump();
+  // }
+  for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+    p = fpEvt->getTrgObj(i); 
+    if (p->fLabel.Contains("HLT")) {
+      if (0 == l3m0) {
+	l3m0 = p;
+      } else {
+	l3m1 = p;
+      }
+      if (0 != l3m1) break;
+    }
+  }
+
+  // hltL1extraParticles
+  // hltL2MuonCandidates
+  // hltL3MuonCandidates
+
+  // -- get L2 candidates matching to L3 muon 0 and muon 1
+  double r0Min(99.), r1Min(99.);
+  TTrgObj *l2m0(0), *l2m1(0);     
+  for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+    p = fpEvt->getTrgObj(i); 
+    if (p->fLabel.Contains("hltL2MuonCandidates")) {
+      double r(99.);
+      if (l3m0) {
+	r = l3m0->fP.DeltaR(p->fP);
+	if (r < r0Min) {
+	  r0Min = r; 
+	  l2m0 = p;
+	}
+      }
+      if (l3m1) {
+	r = l3m1->fP.DeltaR(p->fP);
+	if (r < r1Min) {
+	  r1Min = r; 
+	  l2m1 = p;
+	}
+      }    
+    }
+  }
+  
+
+  // -- get L1 candidates matching to L2 muon 0 and muon 1
+  r0Min = 99.;
+  r1Min = 99.;
+  TTrgObj *l1m0(0), *l1m1(0);     
+  double r(99.);
+  for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+    p = fpEvt->getTrgObj(i); 
+    if (p->fLabel.Contains("hltL1extraParticles")) {
+      if (l2m0) {
+	r = l2m0->fP.DeltaR(p->fP);
+	if (r < r0Min) {
+	  r0Min = r; 
+	  l1m0 = p;
+	}
+      }
+    } else break;
+  }
+
+  for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+    p = fpEvt->getTrgObj(i); 
+    if (p->fLabel.Contains("hltL1extraParticles")) {
+      if (p == l1m0) continue;
+      if (l2m1) {
+	r = l2m1->fP.DeltaR(p->fP);
+	if (r < r0Min) {
+	  r0Min = r; 
+	  l1m1 = p;
+	}
+      }
+    } else break;
+  }
+
+  double compare(0.); 
+  if (l1m0) {
+    double rd = (l3m0->fP.Perp() - l1m0->fP.Perp()) / l3m0->fP.Perp();
+    compare = rd; 
+    if (l3m0->fP.Perp() > 10. && l3m0->fP.Perp() < 11.) {
+      ((TH1D*)fHistDir->Get("l1pt_10_11"))->Fill(rd);
+    }
+    if (l3m0->fP.Perp() > 15. && l3m0->fP.Perp() < 17.) {
+      ((TH1D*)fHistDir->Get("l1pt_15_17"))->Fill(rd);
+    }
+    ((TH1D*)fHistDir->Get("l1pt"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1pt"))->Fill(l3m0->fP.Perp(), rd);
+    if (TMath::Abs(l3m0->fP.Eta()) > 1.6) {
+      ((TProfile*)fHistDir->Get("pl1ptec"))->Fill(l3m0->fP.Perp(), rd);
+      if (l3m0->fP.Perp() > 5. && l3m0->fP.Perp() < 6.) {
+	((TH1D*)fHistDir->Get("l1ptec_5_6"))->Fill(rd);
+      }
+      if (l3m0->fP.Perp() > 10. && l3m0->fP.Perp() < 11.) {
+	((TH1D*)fHistDir->Get("l1ptec_10_11"))->Fill(rd);
+      }
+    }
+    
+    rd = (l3m0->fP.Eta() - l1m0->fP.Eta());
+    ((TH1D*)fHistDir->Get("l1eta"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1eta"))->Fill(l3m0->fP.Eta(), rd);
+
+    rd = l3m0->fP.DeltaPhi(l1m0->fP); 
+    ((TH1D*)fHistDir->Get("l1phi"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1phi"))->Fill(l3m0->fP.Phi(), rd);
+
+  }
+  if (l1m1) {
+   double rd = (l3m1->fP.Perp() - l1m1->fP.Perp()) / l3m1->fP.Perp();
+    if (l3m1->fP.Perp() > 10. && l3m1->fP.Perp() < 11.) {
+      ((TH1D*)fHistDir->Get("l1pt_10_11"))->Fill(rd);
+    }
+    if (l3m1->fP.Perp() > 15. && l3m1->fP.Perp() < 17.) {
+      ((TH1D*)fHistDir->Get("l1pt_15_17"))->Fill(rd);
+    }
+    ((TH1D*)fHistDir->Get("l1pt"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1pt"))->Fill(l3m1->fP.Perp(), rd);
+    if (TMath::Abs(l3m1->fP.Eta()) > 1.6) {
+      ((TProfile*)fHistDir->Get("pl1ptec"))->Fill(l3m1->fP.Perp(), rd);
+      if (l3m1->fP.Perp() > 5. && l3m1->fP.Perp() < 6.) {
+	((TH1D*)fHistDir->Get("l1ptec_5_6"))->Fill(rd);
+      }
+      if (l3m1->fP.Perp() > 10. && l3m1->fP.Perp() < 11.) {
+	((TH1D*)fHistDir->Get("l1ptec_10_11"))->Fill(rd);
+      }
+    }
+
+    // if (TMath::Abs(compare - rd) < 0.01) {
+    //   cout << "----------------------------------------------------------------------" << endl;
+    //   cout << "dpt1 = " << rd
+    // 	   << " l3m1 pt = " << l3m1->fP.Perp()
+    // 	   << " eta = " << l3m1->fP.Eta()
+    // 	   << " phi = " << l3m1->fP.Phi()
+    // 	   << " l1m1 pt = " << l1m1->fP.Perp()
+    // 	   << " eta = " << l1m1->fP.Eta()
+    // 	   << " phi = " << l1m1->fP.Phi()
+    // 	   << endl;
+    //   cout << "dpt0 = " << compare
+    // 	   << " l3m0 pt = " << l3m0->fP.Perp()
+    // 	   << " eta = " << l3m0->fP.Eta()
+    // 	   << " phi = " << l3m0->fP.Phi()
+    // 	   << " l1m0 pt = " << l1m0->fP.Perp()
+    // 	   << " eta = " << l1m0->fP.Eta()
+    // 	   << " phi = " << l1m0->fP.Phi()
+    // 	   << endl;
+    //   if ((TMath::Abs(l1m0->fP.Perp() - l1m1->fP.Perp()) < 0.01)
+    // 	  && (TMath::Abs(l1m0->fP.Eta() - l1m1->fP.Eta()) < 0.01)) {
+    // 	cout << "Dumping TTrgObj " << fpEvt->nTrgObj() << " for event " << fEvt << endl;
+    // 	for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+    // 	  fpEvt->getTrgObj(i)->dump();
+    // 	}
+
+    //   }
+
+    // }
+
+    rd = (l3m1->fP.Eta() - l1m1->fP.Eta());
+    ((TH1D*)fHistDir->Get("l1eta"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1eta"))->Fill(l3m1->fP.Eta(), rd);
+
+    rd = l3m1->fP.DeltaPhi(l1m1->fP); 
+    ((TH1D*)fHistDir->Get("l1phi"))->Fill(rd);
+    ((TProfile*)fHistDir->Get("pl1phi"))->Fill(l3m1->fP.Phi(), rd);
+
+  }
+
+  
+  
+  
 }
 
 void candAna::play2() {
