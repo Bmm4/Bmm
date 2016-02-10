@@ -24,13 +24,25 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-process.GlobalTag.globaltag = "74X_dataRun2_Prompt_v1"
+#process.GlobalTag.globaltag = "FIXME"
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 # ----------------------------------------------------------------------
 process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
-         "/store/user/ursl/files/251721/0AE391DA-652C-E511-9C17-02163E012AA4.root"
+#        "/store/user/ursl/files/251721/0AE391DA-652C-E511-9C17-02163E012AA4.root"
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40000.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40001.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40002.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40003.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40004.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40005.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40006.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40007.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40008.root",
+        "/store/user/ursl/inclb/prod/aodsim/PYTHIA8_InclB2Mu/PYTHIA8_InclB2Mu_CUEP8M1_13TeV_step3-40009.root"
+         #        "file:/shome/ursl/bmm4/prod/CMSSW_7_4_1_patch4/src/step3.root"
  )
 )
 process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
