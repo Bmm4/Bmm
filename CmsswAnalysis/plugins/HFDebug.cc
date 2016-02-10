@@ -373,7 +373,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/src/HLTAnalyzer.cc
   // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/src/HLTMuon.cc
   // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/python/HLTAnalyser_cfi.py
-  
+  /*  
   Handle<l1extra::L1MuonParticleCollection> l1extmu; // hltL1extraParticles
   Handle<RecoChargedCandidateCollection> mucands2, mucands3; // hltL2MuonCandidates hltL3MuonCandidates
 
@@ -406,7 +406,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if (fVerbose > 0) cout << "==>HFDebug> RecoChargedCandidateCollection  " << fL3MuonsNewLabel.encode() << " not found " << endl;
     return;
   }
-
+  */
 
   
   
