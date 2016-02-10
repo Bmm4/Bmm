@@ -266,6 +266,16 @@ void HFSequentialVertexFit::saveTree(HFDecayTree *tree) {
   for (treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt)
     saveTree(&(*treeIt));
 
+  if (fVerbose > 5) {
+    TAnaTrack *pTrk(0); 
+    pMomCand->dump();
+    for (int i = pMomCand->fSig1; i <= pMomCand->fSig2; ++i) {
+      pTrk = gHFEvent->getSigTrack(i);
+      pTrk->dump();
+    }
+  }
+  
+  
 } // saveTree()
 
 
