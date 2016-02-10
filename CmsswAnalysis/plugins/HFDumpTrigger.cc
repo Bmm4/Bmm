@@ -313,9 +313,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
   Handle<TriggerResults> hHLTresults;
   bool hltF = true;
-  int selected=0;  // to store the right trigger objects
-  string selectedObj[10];
-  int selectedObjIndex[10];
+  //int selected=0;  // to store the right trigger objects
+  //string selectedObj[10];
+  //int selectedObjIndex[10];
   bool muonTrigger = false, muonLabels = false, muonObjects=false, l3muon=false;  
   int countSelectedMuonObjects=0, countMuonLabels=0;
   //int countL1Modules=0, countL2Modules=0, countL3Modules=0, countLNoModules=0;
@@ -403,7 +403,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
       // Find L3 Muon modules 
       // Do only for passed HLT
-      if(1||result) {
+      if(result) {
 
 	if (fVerbose > 2) 
 	  cout<<" passed "<<validTriggerNames[it]<<" "
@@ -415,7 +415,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  (validTriggerNamesT.Contains("Mu")) ||
 	  (validTriggerNamesT.Contains("MU"));  // select only muon triggers
 
-	if(1||lookAt || fVerbose>98) { 
+	//if(lookAt || fVerbose>98) {   // store only mu
+	if(1||lookAt || fVerbose>98) {   // try to store all
 
 	  muonTrigger = muonTrigger 
 	    || (lookAt && // accumulate if several passed HLTs
@@ -451,10 +452,10 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	      const size_type n(max(nI,nK));
 
 	      TString moduleLabelT = TString(moduleLabel);
-	      bool muLabel = (moduleLabelT.Contains("mu") ||
-			      moduleLabelT.Contains("Mu")) ||
-		!moduleLabelT.Contains("MuonNo");
-
+	      //bool muLabel = (moduleLabelT.Contains("mu") ||
+	      //	      moduleLabelT.Contains("Mu")) ||
+	      //!moduleLabelT.Contains("MuonNo");
+	      bool muLabel = true;  // override to save all modules, is it a big increae?
 	      if( (n>0) && muLabel) {
 
 		countMuonLabels++;
@@ -469,30 +470,16 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 		lastModuleLabel = moduleLabel;
 		lastModuleType  = type;
 
-		// TESTING
-		// if(moduleLabelT.Contains("L3") || moduleLabelT.Contains("l3")) {
-		//   countL3Modules++;
-		//   lastModuleLevel  = 3;
-		//   //cout<<" L3 module "<<endl;
-		// } else if(moduleLabelT.Contains("L2") || moduleLabelT.Contains("l2")) {
-		//   countL2Modules++;
-		//   lastModuleLevel  = 2;
-		//   //cout<<" L2 module "<<endl;
-		// } else if(moduleLabelT.Contains("L1") || moduleLabelT.Contains("l1")) {
-		//   countL1Modules++; 
-		//   lastModuleLevel  = 1;
-		//   //cout<<" L1 module "<<endl;
-	        // } else {
-		//   countLNoModules++;
-		//   lastModuleLevel  = 3;
-		//   //cout<<" non L module "<<endl;
-		// }
-
 		// loop over muons
 		numMuons=0;
 		const trigger::TriggerObjectCollection& TOC = triggerSummary->getObjects();
 		for (size_type i=0; i!=n; ++i) {
 		  const trigger::TriggerObject& TO=TOC[KEYS[i]];
+
+		  if(fVerbose>11)  
+		    cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
+			 << TO.id() << " " << TO.pt() << " " << TO.eta() << " " 
+			 << TO.phi() << " " << TO.mass()<< endl;                                               
 
 		  if(i<TEMP_SIZE) {
 		    numMuons++;
@@ -509,70 +496,60 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 			<<filterIndex<<" "<<n<<" "<<KEYS[i]<<" "<<TO.pt()<<" "<<TO.eta()<<endl;
 		  }
 
-		  if(fVerbose>11)  
-		    cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-			 << TO.id() << " " << TO.pt() << " " << TO.eta() << " " 
-			 << TO.phi() << " " << TO.mass()<< endl;                                                                 
-		} // end for
+		} // end for(i)
 		
+		// save every module 
+		if(numMuons>0) { // do only for modules with at least 1 kinemtics
+		  TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
+		  pTO->fHltPath  = validTriggerNames[it];
+		  pTO->fHltIndex  = index;
+		  pTO->fLabel  = lastModuleLabel;
+		  pTO->fType  = lastModuleType;
+		  pTO->fNumber  = lastModuleIndex;	  
+		  TLorentzVector v;
+		  for(int m=0;m<numMuons;++m) {	    
+		    v.SetPtEtaPhiE(lastMuonPt[m],lastMuonEta[m],lastMuonPhi[m],lastMuonE[m]);
+		    pTO->fP.push_back(v);
+		    pTO->fID.push_back(lastMuonID[m]);
+		    pTO->fIndex.push_back(lastMuonIndex[m]);
+		    lastMuonIndex[m]=-1;
+		  }  //  for(m)
+		} // numMuons>0
+				
 	      } // end if n>0
 	    }  // end if
 
 	    // do we still need this? maybe keep it for the trigger confirmation 
-	    if(type == "HLTMuonDimuonL3Filter") {
-	      if(selected<10) {
-		selectedObj[selected] = moduleLabels[j];
-		selectedObjIndex[selected] = j+1;
-		selected++;
-	      } else {
-		cout<<"ERROR: array too small "<<selected<<endl;
-	      }
-	    } // if type
+	    // if(type == "HLTMuonDimuonL3Filter") {
+	    //   if(selected<10) {
+	    // 	selectedObj[selected] = moduleLabels[j];
+	    // 	selectedObjIndex[selected] = j+1;
+	    // 	selected++;
+	    //   } else {
+	    // 	cout<<"ERROR: array too small "<<selected<<endl;
+	    //   }
+	    // } // if type
 
 
 	  } // for j, modul loop
 
-	  // testing
-	  // oneMuonTrigObject.hltIndex = index;
-	  // oneMuonTrigObject.hltPath = validTriggerNames[it];
-	  // oneMuonTrigObject.muonIndex.clear();
-	  // oneMuonTrigObject.muonID.clear();
-	  // oneMuonTrigObject.muonPt.clear();
-	  // oneMuonTrigObject.muonEta.clear();
-	  // oneMuonTrigObject.muonPhi.clear();
-	  // //oneMuonTrigObject.muonE.clear();
-	  // oneMuonTrigObject.lastModuleIndex = lastModuleIndex;
-	  // oneMuonTrigObject.lastModuleLabel = lastModuleLabel;
-	  // oneMuonTrigObject.lastModuleType  = lastModuleType;
-	  // oneMuonTrigObject.lastModuleLevel = lastModuleLevel;
-	  // for(int m=0;m<numMuons;++m) {	    
-	  //   oneMuonTrigObject.muonID.push_back(lastMuonID[m]);
-	  //   oneMuonTrigObject.muonIndex.push_back(lastMuonIndex[m]);
-	  //   oneMuonTrigObject.muonPt.push_back(lastMuonPt[m]);
-	  //   oneMuonTrigObject.muonEta.push_back(lastMuonEta[m]);
-	  //   oneMuonTrigObject.muonPhi.push_back(lastMuonPhi[m]);
-	  //   //oneMuonTrigObject.muonE.push_back(lastMuonE[m]);
-	  // }
-	  // muonTrigObjects.push_back(oneMuonTrigObject);
-	  //cout<<" save "<<oneMuonTrigObject.hltPath<<" "<<oneMuonTrigObject.hltIndex<<" "
-	  //  <<lastModuleIndex<<" "<<lastModuleLabel<<" "
-	  //  <<lastModuleType<<" "<<lastModuleLevel<<" "<<numMuons<<endl;
 
+	  // save only the final module 
 	  // load the trigger information to TrgObjv2
-	  TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
-	  pTO->fHltPath  = validTriggerNames[it];
-	  pTO->fHltIndex  = index;
-	  pTO->fLabel  = lastModuleLabel;
-	  pTO->fType  = lastModuleType;
-	  pTO->fNumber  = lastModuleIndex;	  
-	  TLorentzVector v;
-	  for(int m=0;m<numMuons;++m) {	    
-	    v.SetPtEtaPhiE(lastMuonPt[m],lastMuonEta[m],lastMuonPhi[m],lastMuonE[m]);
-	    pTO->fP.push_back(v);
-	    pTO->fID.push_back(lastMuonID[m]);
-	    pTO->fIndex.push_back(lastMuonIndex[m]);
-	    lastMuonIndex[m]=-1;
-	  }
+	  // TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
+	  // pTO->fHltPath  = validTriggerNames[it];
+	  // pTO->fHltIndex  = index;
+	  // pTO->fLabel  = lastModuleLabel;
+	  // pTO->fType  = lastModuleType;
+	  // pTO->fNumber  = lastModuleIndex;	  
+	  // TLorentzVector v;
+	  // for(int m=0;m<numMuons;++m) {	    
+	  //   v.SetPtEtaPhiE(lastMuonPt[m],lastMuonEta[m],lastMuonPhi[m],lastMuonE[m]);
+	  //   pTO->fP.push_back(v);
+	  //   pTO->fID.push_back(lastMuonID[m]);
+	  //   pTO->fIndex.push_back(lastMuonIndex[m]);
+	  //   lastMuonIndex[m]=-1;
+	  // }
 
 
 	} // if mu
@@ -599,13 +576,13 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   
 
   // Testing only 
-  if (fVerbose > 99)  {
-    cout<<"Selected HLT modules "<<selected<<endl;
-    for(int i=0; i<selected; ++i) {
-      cout<<i<<" "<<selectedObj[i]<<" "<<selectedObjIndex[i]<<endl;
-    }
-    if(selected>1) cout<<" MORE THAN ONE OBJECT SELECTED "<<endl;
-  } // if verbose 
+  // if (fVerbose > 99)  {
+  //   cout<<"Selected HLT modules "<<selected<<endl;
+  //   for(int i=0; i<selected; ++i) {
+  //     cout<<i<<" "<<selectedObj[i]<<" "<<selectedObjIndex[i]<<endl;
+  //   }
+  //   if(selected>1) cout<<" MORE THAN ONE OBJECT SELECTED "<<endl;
+  // } // if verbose 
 
   // ----------------------------------------------------------------------
   // -- Get trigger muon  objects
@@ -704,86 +681,88 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     }
 
     // -- muon filter objects
-    TriggerObjectCollection allObjects = triggerSummary->getObjects();
-    if(fVerbose>9) cout << "===> Found muon filter objects -> " 
-			<< triggerSummary->sizeFilters() << endl;
-    for (int i=0; i < triggerSummary->sizeFilters(); i++){         
-      //cout<<i<<endl;
-      Keys keys = triggerSummary->filterKeys(i);
-      //cout<<keys.size()<<endl;
-      if (keys.size() > 0) {
+    if(0) { // skip it, it is not very usefull
+      TriggerObjectCollection allObjects = triggerSummary->getObjects();
+      if(fVerbose>9) cout << "===> Found muon filter objects -> " 
+			  << triggerSummary->sizeFilters() << endl;
+      for (int i=0; i < triggerSummary->sizeFilters(); i++){         
+	//cout<<i<<endl;
+	Keys keys = triggerSummary->filterKeys(i);
+	//cout<<keys.size()<<endl;
+	if (keys.size() > 0) {
+	  
+	  //cout<<triggerSummary->filterLabel(i)  // crash 
+	  //<<" "<<triggerSummary->filterTagEncoded(i)
+	  //<<" "<<triggerSummary->collectionTagEncoded(i)
+	  //<<" "<<triggerSummary->filterTag(i)  
+	  //<<" "<<triggerSummary->filterIndex(triggerSummary->filterTag(i))
+	  //  <<" "<<triggerSummary->collectionTag(i)
+	  //<<" "<<triggerSummary->collectionIndex(triggerSummary->collectionTag(i))
+	  //  <<endl;
+	  
+	  TString label = TString(triggerSummary->filterTag(i).label()+":"+triggerSummary->filterTag(i).process()+":"+triggerSummary->filterTag(i).instance()+":");
+	  
+	  if (fVerbose > 99) 
+	    cout <<i<<" object "<<triggerSummary->filterTag(i).label()<<endl; 
+	  
+	  // -- the following removes cross trigger filter objects even when they have Mu in the name!
+	  //if (label.Contains("Jet")) continue; // diable dk.,there are mu+jet cross triggers 
+	  //if (label.Contains("HT")) continue;  // same
+	  //if (label.Contains("Tau")) continue; // same
+	  //if (label.Contains("EG")) continue; // unused
+	  //if (label.Contains("Pi0")) continue;
+	  //if (label.Contains("AlCa")) continue;
+	  //if (label.Contains("Multiplicity")) continue;
+	  // if (label.Contains("Mu") || label.Contains("mu")) {
+	  //   // fill
+	  // } else {
+	  //   continue;
+	  // }
+	  
+	  if (fVerbose > 12) 
+	    cout <<i<<" object "<<triggerSummary->filterTag(i).label()<<endl; 
+	  
+	  // Check if this path was in the fired HLT path 
+	  bool matched=true;
+	  // for(int n=0;n<selected; ++n) {
+	  //   if ( triggerSummary->filterTag(i).label() == selectedObj[n] ) {
+	  //     selectedObjIndex[n]=0;
+	  //     matched=true;
+	  //     if (fVerbose > 12) 
+	  //       cout<<" This is the triggered object --> "
+	  // 	  <<i<<" "<<triggerSummary->filterTag(i).label()<<endl;
+	  //     break;
+	  //   }
+	  // }
+	  
+	  if(matched) {  // save only matched objects 
+	    countSelectedMuonObjects++;
+	    // loop over particles (muons?) in this object and save them
+	    for (unsigned int j=0; j<keys.size(); j++){
+	      TTrgObj *pTO = gHFEvent->addTrgObj();
+	      pTO->fP.SetPtEtaPhiE(allObjects[keys[j]].pt(), 
+				   allObjects[keys[j]].eta(), 
+				   allObjects[keys[j]].phi(), 
+				   allObjects[keys[j]].energy()
+				   ); 
+	      pTO->fID     = allObjects[keys[j]].id(); 
+	      pTO->fLabel  = label;
+	      pTO->fNumber = i;  // marked selected objects for later analysis  
+	      if (fVerbose > 12) 
+		cout << " pt = " <<  allObjects[keys[j]].pt() 
+		     << " eta = " << allObjects[keys[j]].eta() 
+		     << " phi = " << allObjects[keys[j]].phi() 
+		     << " e = " << allObjects[keys[j]].energy() 
+		     << " id = " << allObjects[keys[j]].id() 
+		  //<< " label: " << pTO->fLabel
+		     << " number:" << pTO->fNumber
+		     << endl;
+	    } // end for j
+	  } // if matched 
+	} // if size>0
+      } // for i
+    } // if muon-objects 
 
-	//cout<<triggerSummary->filterLabel(i)  // crash 
-	//<<" "<<triggerSummary->filterTagEncoded(i)
-	//<<" "<<triggerSummary->collectionTagEncoded(i)
-	//<<" "<<triggerSummary->filterTag(i)  
-	//<<" "<<triggerSummary->filterIndex(triggerSummary->filterTag(i))
-	//  <<" "<<triggerSummary->collectionTag(i)
-	//<<" "<<triggerSummary->collectionIndex(triggerSummary->collectionTag(i))
-	//  <<endl;
-
-	TString label = TString(triggerSummary->filterTag(i).label()+":"+triggerSummary->filterTag(i).process()+":"+triggerSummary->filterTag(i).instance()+":");
-	
-	if (fVerbose > 99) 
-	  cout <<i<<" object "<<triggerSummary->filterTag(i).label()<<endl; 
-	
-	// -- the following removes cross trigger filter objects even when they have Mu in the name!
-	//if (label.Contains("Jet")) continue; // diable dk.,there are mu+jet cross triggers 
-	//if (label.Contains("HT")) continue;  // same
-	//if (label.Contains("Tau")) continue; // same
-	//if (label.Contains("EG")) continue; // unused
-	//if (label.Contains("Pi0")) continue;
-	//if (label.Contains("AlCa")) continue;
-	//if (label.Contains("Multiplicity")) continue;
-	// if (label.Contains("Mu") || label.Contains("mu")) {
-	//   // fill
-	// } else {
-	//   continue;
-	// }
-
-	if (fVerbose > 12) 
-	  cout <<i<<" object "<<triggerSummary->filterTag(i).label()<<endl; 
-
-	// Check if this path was in the fired HLT path 
-	bool matched=false;
-	for(int n=0;n<selected; ++n) {
-	  if ( triggerSummary->filterTag(i).label() == selectedObj[n] ) {
-	    selectedObjIndex[n]=0;
-	    matched=true;
-	    if (fVerbose > 12) 
-	      cout<<" This is the triggered object --> "
-		  <<i<<" "<<triggerSummary->filterTag(i).label()<<endl;
-	    break;
-	  }
-	}
-
-	if(matched) {  // save only matched objects 
-	  countSelectedMuonObjects++;
-	  // loop over particles (muons?) in this object and save them
-	  for (unsigned int j=0; j<keys.size(); j++){
-	    TTrgObj *pTO = gHFEvent->addTrgObj();
-	    pTO->fP.SetPtEtaPhiE(allObjects[keys[j]].pt(), 
-				 allObjects[keys[j]].eta(), 
-				 allObjects[keys[j]].phi(), 
-				 allObjects[keys[j]].energy()
-				 ); 
-	    pTO->fID     = allObjects[keys[j]].id(); 
-	    pTO->fLabel  = label;
-	    pTO->fNumber = i;  // marked selected objects for later analysis  
-	    if (fVerbose > 12) 
-	      cout << " pt = " <<  allObjects[keys[j]].pt() 
-		   << " eta = " << allObjects[keys[j]].eta() 
-		   << " phi = " << allObjects[keys[j]].phi() 
-		   << " e = " << allObjects[keys[j]].energy() 
-		   << " id = " << allObjects[keys[j]].id() 
-		//<< " label: " << pTO->fLabel
-		   << " number:" << pTO->fNumber
-		   << endl;
-	  } // end for j
-	} // if matched 
-      } // if size>0
-    } // for i
-    
   }  // if hltf
   
   if (fVerbose > 0)  {
@@ -849,13 +828,13 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       }
     } // fVerbose
 
-    if (fVerbose > 99)  {
-      cout<<"Selected HLT modules "<<selected<<endl;
-      for(int i=0; i<selected; ++i) {
-	cout<<selectedObj[i]<<" "<<selectedObjIndex[i]<<endl;
-	if(selectedObjIndex[i]!=0) cout<<" found non matched selected object "<<selectedObj[i]<<endl;
-      }
-    }   
+    // if (fVerbose > 99)  {
+    //   cout<<"Selected HLT modules "<<selected<<endl;
+    //   for(int i=0; i<selected; ++i) {
+    // 	cout<<selectedObj[i]<<" "<<selectedObjIndex[i]<<endl;
+    // 	if(selectedObjIndex[i]!=0) cout<<" found non matched selected object "<<selectedObj[i]<<endl;
+    //   }
+    // }   
 
   } // verbose?
 
