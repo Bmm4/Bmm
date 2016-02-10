@@ -70,29 +70,6 @@ $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/
 $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-# -- Bu2JpsiK
-$mode = "PYTHIA8_BuJpsiK_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bu2JpsiK_NoFilter";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-$mode = "PYTHIA8_Bu2JpsiK_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA8_Bu2JpsiK_EtaPtFilter";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-# -- inelastic
-$mode = "Inelastic_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-Inelastic_Bs2MuMu_NoFilter";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-$mode = "Inelastic_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-Inelastic_Bs2MuMu_EtaPtFilter";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-
 # -- other variations
 $mode = "PYTHIA6_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-PYTHIA6_Bs2MuMu_NoFilter";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
@@ -104,22 +81,12 @@ $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/
 $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-#$mode = "NOEVTGEN_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_NoFilter";
-#$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-#$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-#$merges{$mode} = "-x $SEDIR -p $mode";
-#
-#$mode = "NOEVTGEN_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_EtaPtFilter";
-#$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-#$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
-#$merges{$mode} = "-x $SEDIR -p $mode";
-
-$mode = "HARDQCD8_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-HARDQCD8_Bs2MuMu_NoFilter";
+$mode = "NOEVTGEN_Bs2MuMu_NoFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_NoFilter";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-$mode = "HARDQCD8_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-HARDQCD8_Bs2MuMu_EtaPtFilter";
+$mode = "NOEVTGEN_Bs2MuMu_EtaPtFilter"; $pattern = "bmm-mc-Summer15_private-NOEVTGEN_Bs2MuMu_EtaPtFilter";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/bmm4/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x '$runBmm' c$mode-*; cd - ";
 $merges{$mode} = "-x $SEDIR -p $mode";
