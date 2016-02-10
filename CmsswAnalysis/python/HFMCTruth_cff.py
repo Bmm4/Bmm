@@ -10,7 +10,8 @@ HepPDTESSource = cms.ESSource(
 genParticles = cms.EDProducer(
     "GenParticleProducer",
     saveBarCodes          = cms.untracked.bool(True),
-    src                   = cms.InputTag("generator"),
+#    src                   = cms.InputTag("generator"),
+    src                   = cms.InputTag("source"),
     abortOnUnknownPDGCode = cms.untracked.bool(False)
     )
 
