@@ -17,7 +17,8 @@ struct numbers {
   double effB; 
   std::string sname;         // pd name: dataMu24, dataMuHIL2Mu3, ...
   std::string dname;         // directory name: candAnaMu8, candAnaMuHIL2Mu3, ...
-  TH1D *hD, *hSum, *hB, *hC, *hL, *hPlot;   // histograms with scale factors from fit applied
+  TH1D *hD, *hSum, *hB, *hC, *hL, *hPlot;             // ptrel histograms with scale factors from fit applied
+  TH1D *hDPt, *hSumPt, *hBPt, *hCPt, *hLPt, *hPlotPt; // pt(mu) histograms with scale factors from fit applied
 };
 
 
@@ -45,7 +46,8 @@ public :
   void   dSigmadPt(); 
   
   TH1D*  getPtRel(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
-  void   fitPtRel(numbers *, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl = 0); 
+  TH1D*  getPt(std::string histname, std::string dir, std::string ds, double xmin, double xmax);
+  void   fitPtRel(numbers *); 
   void   efficiency(numbers *, std::string bString); 
 
   void   setupTree(TTree *t); 

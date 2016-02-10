@@ -153,7 +153,7 @@ void plotWork::hinValidation() {
     hc = getPtRel("RECO_5_2_ptrelvsmuonpt", "candAnaMuHIL2Mu3", "cSignalMuHIL2Mu3", minPt, maxPt); 
     cout << "hc = " << hc << ": " << hc->GetName() << endl;
 
-    fitPtRel(a, hd, hb, hc);
+    fitPtRel(a);
     a->minPt = minPt;
     a->maxPt = maxPt;
     
@@ -220,12 +220,16 @@ void plotWork::hinValidation() {
 // ----------------------------------------------------------------------
 void plotWork::dSigmadPt() {
 
-  TH1D *hd(0), *hb(0), *hc(0);
-
+  // -- ptrel spectra
   makeCanvas(4);
   c3->SetWindowSize(1200, 700); 
   zone(5, 3, c3);
-  
+
+  // -- try the pT(mu) spectra here
+  makeCanvas(1);
+  c1->SetWindowSize(1200, 700); 
+  zone(5, 3, c1);
+
   gStyle->SetOptStat(0); 
   gStyle->SetOptFit(0); 
 
@@ -243,7 +247,7 @@ void plotWork::dSigmadPt() {
   fVectorResult.push_back(a);
   a = new numbers();  a->minPt =  8.;  a->maxPt = 10.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 10.;  a->maxPt = 15.;  a->sname = "dataMuHIL2Mu3"; a->dname = "candAnaMuHIL2Mu3";
+  a = new numbers();  a->minPt = 10.;  a->maxPt = 15.;  a->sname = "dataMu8"; a->dname = "candAnaMu8";
   fVectorResult.push_back(a);
   a = new numbers();  a->minPt = 15.;  a->maxPt = 20.;  a->sname = "dataMu8"; a->dname = "candAnaMu8";
   fVectorResult.push_back(a);
@@ -251,15 +255,17 @@ void plotWork::dSigmadPt() {
   fVectorResult.push_back(a);
   a = new numbers();  a->minPt = 25.;  a->maxPt = 30.;  a->sname = "dataMu20"; a->dname = "candAnaMu20";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 30.;  a->maxPt = 40.;  a->sname = "dataMu20"; a->dname = "candAnaMu20";
+  a = new numbers();  a->minPt = 30.;  a->maxPt = 40.;  a->sname = "dataMu27"; a->dname = "candAnaMu27";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 40.;  a->maxPt = 50.;  a->sname = "dataMu20"; a->dname = "candAnaMu20";
+  a = new numbers();  a->minPt = 40.;  a->maxPt = 50.;  a->sname = "dataMu34"; a->dname = "candAnaMu34";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt = 50.;  a->maxPt =100.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
+  a = new numbers();  a->minPt = 50.;  a->maxPt = 60.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =100.;  a->maxPt =300.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
+  a = new numbers();  a->minPt = 60.;  a->maxPt = 70.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
   fVectorResult.push_back(a);
-  a = new numbers();  a->minPt =300.;  a->maxPt =500.;  a->sname = "dataMu300"; a->dname = "candAnaMu300";
+  a = new numbers();  a->minPt = 70.;  a->maxPt = 80.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
+  fVectorResult.push_back(a);
+  a = new numbers();  a->minPt = 80.;  a->maxPt =100.;  a->sname = "dataMu50"; a->dname = "candAnaMu50";
   fVectorResult.push_back(a);
 
   tl->SetNDC(kTRUE);
@@ -274,29 +280,32 @@ void plotWork::dSigmadPt() {
     cout << "**********************************************************************" << endl;
     cout << "***  " << i << ": " << a->sname << " " << a->minPt << " .. " << a->maxPt << " ***" << endl;
     cout << "RECO_5_0_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  a->sname<< endl;
-    hd = getPtRel("RECO_5_0_ptrelvsmuonpt", a->dname, a->sname, a->minPt, a->maxPt); 
-    if (0 == hd) {
+    a->hD   = getPtRel("RECO_5_0_ptrelvsmuonpt", a->dname, a->sname, a->minPt, a->maxPt); 
+    a->hDPt = getPt("RECO_5_0_ptrelvsmuonpt", a->dname, a->sname, a->minPt, a->maxPt); 
+    if (0 == a->hD) {
       return;
     }
-    cout << "hd = " << hd << ": " << hd->GetName() << endl;
+    cout << "hd = " << a->hD << ": " << a->hD->GetName() << endl;
     bString = "bSignalMu" + tString;
     cout << "RECO_5_1_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  bString << endl;
-    hb = getPtRel("RECO_5_1_ptrelvsmuonpt", a->dname, bString, a->minPt, a->maxPt); 
+    a->hB   = getPtRel("RECO_5_1_ptrelvsmuonpt", a->dname, bString, a->minPt, a->maxPt); 
+    a->hBPt = getPt("RECO_5_1_ptrelvsmuonpt", a->dname, bString, a->minPt, a->maxPt); 
     //    efficiency(a, bString); 
-    if (0 == hb) {
+    if (0 == a->hB) {
       return;
     }
-    cout << "hb = " << hb << ": " << hb->GetName() << endl;
+    cout << "hb = " << a->hB << ": " << a->hB->GetName() << endl;
     cString = "cSignalMu" + tString;
     cout << "RECO_5_2_ptrelvsmuonpt" << " .. " << a->dname << " .. " <<  cString << " "
 	 <<  a->minPt << " " <<  a->maxPt << endl;
-    hc = getPtRel("RECO_5_2_ptrelvsmuonpt", a->dname, cString, a->minPt, a->maxPt); 
-    if (0 == hc) {
+    a->hC   = getPtRel("RECO_5_2_ptrelvsmuonpt", a->dname, cString, a->minPt, a->maxPt); 
+    a->hCPt = getPt("RECO_5_2_ptrelvsmuonpt", a->dname, cString, a->minPt, a->maxPt); 
+    if (0 == a->hC) {
       return;
     }
-    cout << "hc = " << hc << ": " << hc->GetName() << endl;
+    cout << "hc = " << a->hC << ": " << a->hC->GetName() << endl;
 
-    fitPtRel(a, hd, hb, hc);
+    fitPtRel(a);
     
     a->hD->SetTitle("");
     a->hD->SetMarkerStyle(24);
@@ -306,6 +315,7 @@ void plotWork::dSigmadPt() {
     cout << "pT: " <<  a->minPt << " " <<  a->maxPt << endl;
     tl->DrawLatex(0.4, 0.77, Form(" %3.0f < p_{T} < %3.0f", a->minPt, a->maxPt)); 
     if (0 == a->status) {
+      a->hSum->SetLineWidth(2);
       a->hSum->Draw("samehist");
       a->hB->SetLineWidth(1);
       setHist(a->hB, fDS[bString]);
@@ -315,12 +325,37 @@ void plotWork::dSigmadPt() {
       setHist(a->hC, fDS[cString]);
       a->hC->Draw("samehist");
       tl->DrawLatex(0.4, 0.7, Form("N_{B} = %4.1f #pm %4.1f", a->nB, a->nBE0)); 
+      tl->DrawLatex(0.4, 0.63, Form("N_{Data} = %4.0f", a->nData));
     } else {
       tl->DrawLatex(0.5, 0.7, Form("N_{Data} = %4.0f", a->nData)); 
     }
 
+    // pt(mu) spectra
+    c1->cd(i+1); 
+    a->hDPt->SetTitle("");
+    a->hDPt->SetMarkerStyle(24);
+    a->hDPt->SetMarkerSize(0.7);
+    a->hDPt->SetMinimum(0.);
+    a->hDPt->SetMaximum(1.2*a->hDPt->GetMaximum());
+    a->hDPt->Draw("e");
+    tl->DrawLatex(0.2, 0.92, a->sname.c_str()); 
+    tl->DrawLatex(0.6, 0.77, Form("N_{Data} = %4.0f", a->hDPt->GetSumOfWeights()));
+    //identical(!):    tl->DrawLatex(0.6, 0.70, Form("N_{Data} = %4.0f", a->hDPt->Integral()));
+    if (0 == a->status) {
+      a->hSumPt->SetLineWidth(2);
+      a->hSumPt->Draw("samehist");
+      a->hBPt->SetLineWidth(1);
+      setHist(a->hBPt, fDS[bString]);
+      a->hBPt->Draw("samehist");
+
+      a->hCPt->SetLineWidth(1);
+      setHist(a->hCPt, fDS[cString]);
+      a->hCPt->Draw("samehist");
+    }     
   }  
-  c3->SaveAs(Form("%s/dSigmadPt-fits.pdf", fDirectory.c_str()));
+
+  c3->SaveAs(Form("%s/dSigmadPt-ptrel-fits.pdf", fDirectory.c_str()));
+  c1->SaveAs(Form("%s/dSigmadPt-pt-summed.pdf", fDirectory.c_str()));
 
   
 }
@@ -465,11 +500,35 @@ TH1D* plotWork::getPtRel(string histname, string dir, string dname, double xmin,
   TH2D *h2 = fDS[dname]->getHist2(Form("%s/%s", dir.c_str(), histname.c_str()));
   if (0 == h2) return 0; 
   int bin1 = h2->GetXaxis()->FindBin(xmin); 
-  int bin2 = h2->GetXaxis()->FindBin(xmax); 
+  int bin2 = h2->GetXaxis()->FindBin(xmax)-1; 
 
   cout << "projecting into " << Form("proj_%s_%d_%d_%s_%s", h2->GetName(), bin1, bin2, dir.c_str(), dname.c_str()) << endl;
   
   TH1D *h = h2->ProjectionY(Form("proj_%s_%d_%d_%s_%s", h2->GetName(), bin1, bin2, dir.c_str(), dname.c_str()), bin1, bin2);
+  return h;
+  
+}
+
+
+// ----------------------------------------------------------------------
+TH1D* plotWork::getPt(string histname, string dir, string dname, double xmin, double xmax) {
+  cout << "trying to get " << Form("%s/%s", dir.c_str(), histname.c_str()) << " from " << fDS[dname]->fF->GetName() << endl;
+  TH2D *h2 = fDS[dname]->getHist2(Form("%s/%s", dir.c_str(), histname.c_str()));
+  if (0 == h2) return 0; 
+
+  int bin1 = h2->GetXaxis()->FindBin(xmin); 
+  int bin2 = h2->GetXaxis()->FindBin(xmax)-1; 
+
+  TH1D *h = new TH1D(Form("pt_%s_%d_%d_%s_%s", h2->GetName(), bin1, bin2, dir.c_str(), dname.c_str()),
+		     Form("pt_%s_%d_%d_%s_%s", h2->GetName(), bin1, bin2, dir.c_str(), dname.c_str()),
+		     bin2-bin1+1, xmin, xmax); 
+
+  cout << "filling into " << Form("pt_%s_%d_%d_%s_%s", h2->GetName(), bin1, bin2, dir.c_str(), dname.c_str()) << endl;
+  
+  for (int i = bin1; i <= bin2; ++i) {
+    h->SetBinContent(i-bin1+1, h2->Integral(i, i, 0, h2->GetNbinsY())); 
+  }
+
   return h;
   
 }
@@ -489,75 +548,94 @@ void plotWork::efficiency(numbers *a, string bString) {
 
 
 // ----------------------------------------------------------------------
-void plotWork::fitPtRel(numbers* n, TH1D* hd, TH1D* hb, TH1D* hc, TH1D* hl) {
+void plotWork::fitPtRel(numbers* n) {
 
   n->status = -1; 
 
   TObjArray *mc(0);
-  if (0 == hl) {
+  if (0 == n->hL) {
     mc = new TObjArray(2);
-    mc->Add(hb);
-    mc->Add(hc);
+    mc->Add(n->hB);
+    mc->Add(n->hC);
   } else {
     mc = new TObjArray(3);
-    mc->Add(hb);
-    mc->Add(hc);
-    mc->Add(hl);
+    mc->Add(n->hB);
+    mc->Add(n->hC);
+    mc->Add(n->hL);
   }
-  n->nData = hd->GetSumOfWeights(); 
-  n->hD = hd; 
+  n->nData = n->hD->GetSumOfWeights(); 
 
-  if (hb->GetSumOfWeights() < 500) return;
-  if (hc->GetSumOfWeights() < 500) return;
-  if (hd->GetSumOfWeights() < 500) return;
+  if (n->hB->GetSumOfWeights() < 500) {
+    cout << "fitPtRel with hb->GetSumOfWeights() = " << n->hB->GetSumOfWeights() << ", returning" << endl;
+    return;
+  }
+  if (n->hC->GetSumOfWeights() < 100) {
+    cout << "fitPtRel with hc->GetSumOfWeights() = " << n->hC->GetSumOfWeights() << ", returning" << endl;
+    return;
+  }
+  if (n->hD->GetSumOfWeights() < 500) {
+    cout << "fitPtRel with hd->GetSumOfWeights() = " << n->hD->GetSumOfWeights() << ", returning" << endl;
+    return;
+  }
   
-  TFractionFitter* fit = new TFractionFitter(hd, mc); 
+  TFractionFitter* fit = new TFractionFitter(n->hD, mc); 
   fit->SetRangeX(1, 50); 
   Int_t status = fit->Fit();
-  cout << "fitted " << hd->GetName() << ", status: " << status << endl;
+  cout << "fitted " << n->hD->GetName() << ", status: " << status << endl;
   
   if (status == 0) {                       // check on fit status
     n->status  = 0; 
-    n->nData   = hd->GetSumOfWeights();
-    n->nData2  = hd->Integral();
+    n->nData   = n->hD->GetSumOfWeights();
+    n->nData2  = n->hD->Integral();
     
     double fracB, fracC, fracL, err;
     fit->GetResult(0, fracB, err);
     n->fracB   = fracB; 
     n->fracBE0 = err; 
-    n->nB      = fracB*hd->GetSumOfWeights();
+    n->nB      = fracB*n->hD->GetSumOfWeights();
     n->nBE0    = (err/fracB)*n->nB;
-    n->nB2     = fracB*hd->Integral();
+    n->nB2     = fracB*n->hD->Integral();
     
     fit->GetResult(1, fracC, err);
     n->fracC  = fracC; 
     n->fracCE0 = err; 
-    n->nC      = fracC*hd->GetSumOfWeights();
+    n->nC      = fracC*n->hD->GetSumOfWeights();
     n->nCE0    = (err/fracC)*n->nC;
-    n->nC2     = fracC*hd->Integral();
+    n->nC2     = fracC*n->hD->Integral();
 
-    if (0 != hl) {
+    if (0 != n->hL) {
       fit->GetResult(1, fracL, err);
       n->fracL  = fracL; 
       n->fracLE0 = err; 
-      n->nL      = fracL*hd->GetSumOfWeights();
+      n->nL      = fracL*n->hD->GetSumOfWeights();
       n->nLE0    = (err/fracL)*n->nL;
-      n->nL2     = fracL*hd->Integral();
+      n->nL2     = fracL*n->hD->Integral();
     }
     
-    hb->Scale(fracB*hd->GetSumOfWeights()/hb->GetSumOfWeights());
-    hc->Scale(fracC*hd->GetSumOfWeights()/hc->GetSumOfWeights());
-    if (hl) hl->Scale(fracL*hd->GetSumOfWeights()/hl->GetSumOfWeights());
-    n->hB = hb; 
-    n->hC = hc; 
-    n->hL = hl; 
-    
-    n->hSum = (TH1D*)hb->Clone(Form("sum_%s", hd->GetName())); 
+    // -- pTrel spectra
+    n->hB->Scale(fracB*n->hD->GetSumOfWeights()/n->hB->GetSumOfWeights());
+    n->hC->Scale(fracC*n->hD->GetSumOfWeights()/n->hC->GetSumOfWeights());
+    if (n->hL) n->hL->Scale(fracL*n->hD->GetSumOfWeights()/n->hL->GetSumOfWeights());
+
+    // -- pT(mu) spectra
+    n->hBPt->Scale(fracB*n->hDPt->GetSumOfWeights()/n->hBPt->GetSumOfWeights());
+    n->hCPt->Scale(fracC*n->hDPt->GetSumOfWeights()/n->hCPt->GetSumOfWeights());
+    if (n->hLPt) n->hLPt->Scale(fracL*n->hDPt->GetSumOfWeights()/n->hLPt->GetSumOfWeights());
+
+    n->hSum = (TH1D*)n->hB->Clone(Form("sum_%s", n->hD->GetName())); 
     n->hSum->SetLineColor(kBlack); 
     n->hSum->SetFillStyle(0);
-    n->hSum->Add(hc); 
-    if (hl) n->hSum->Add(hl); 
+    n->hSum->Add(n->hC); 
+    if (n->hL) n->hSum->Add(n->hL); 
     n->hPlot = (TH1D*)fit->GetPlot();
+
+    // -- pT(mu) sum spectrum
+    n->hSumPt = (TH1D*)n->hBPt->Clone(Form("sumpt_%s", n->hDPt->GetName())); 
+    n->hSumPt->SetLineColor(kBlack); 
+    n->hSumPt->SetFillStyle(0);
+    n->hSumPt->Add(n->hCPt); 
+    if (n->hLPt) n->hSum->Add(n->hLPt); 
+
   }
 
 
@@ -749,9 +827,20 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3350; 
       }
 
-      if (string::npos != stype.find("Mu24")) {
-        sname = "dataMu24"; 
-        sdecay = "Mu24"; 
+      if (string::npos != stype.find("Mu27")) {
+        sname = "dataMu27"; 
+        sdecay = "Mu27"; 
+	ds->fColor = kBlack; 
+	ds->fSymbol = 20; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3350; 
+      }
+
+      if (string::npos != stype.find("Mu34")) {
+        sname = "dataMu34"; 
+        sdecay = "Mu34"; 
 	ds->fColor = kBlack; 
 	ds->fSymbol = 20; 
 	ds->fF      = pF; 
@@ -853,9 +942,20 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365; 
       }
 
-      if (string::npos != stype.find("bsignal,Mu24")) {
-        sname = "bSignalMu24"; 
-        sdecay = "bSignalMu24"; 
+      if (string::npos != stype.find("bsignal,Mu27")) {
+        sname = "bSignalMu27"; 
+        sdecay = "bSignalMu27"; 
+	ds->fColor = kBlue-7; 
+	ds->fSymbol = 24; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+      }
+      
+      if (string::npos != stype.find("bsignal,Mu34")) {
+        sname = "bSignalMu34"; 
+        sdecay = "bSignalMu34"; 
 	ds->fColor = kBlue-7; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
@@ -889,7 +989,7 @@ void plotWork::loadFiles(string afiles) {
       if (string::npos != stype.find("csignal,Mu8")) {
         sname = "cSignalMu8"; 
         sdecay = "cSignalMu8"; 
-	ds->fColor = kBlue-7; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -900,7 +1000,7 @@ void plotWork::loadFiles(string afiles) {
       if (string::npos != stype.find("csignal,Mu17")) {
         sname = "cSignalMu17"; 
         sdecay = "cSignalMu17"; 
-	ds->fColor = kBlue-7; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -911,7 +1011,7 @@ void plotWork::loadFiles(string afiles) {
       if (string::npos != stype.find("csignal,Mu20")) {
         sname = "cSignalMu20"; 
         sdecay = "cSignalMu20"; 
-	ds->fColor = kBlue-7; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -919,10 +1019,21 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365; 
       }
 
-      if (string::npos != stype.find("csignal,Mu24")) {
-        sname = "cSignalMu24"; 
-        sdecay = "cSignalMu24"; 
-	ds->fColor = kBlue-7; 
+      if (string::npos != stype.find("csignal,Mu27")) {
+        sname = "cSignalMu27"; 
+        sdecay = "cSignalMu27";
+	ds->fColor = kGreen+3; 
+	ds->fSymbol = 24; 
+	ds->fF      = pF; 
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365; 
+      }
+
+      if (string::npos != stype.find("csignal,Mu34")) {
+        sname = "cSignalMu34"; 
+        sdecay = "cSignalMu34"; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -933,7 +1044,7 @@ void plotWork::loadFiles(string afiles) {
       if (string::npos != stype.find("csignal,Mu50")) {
         sname = "cSignalMu50"; 
         sdecay = "cSignalMu50"; 
-	ds->fColor = kBlue-7; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;
@@ -944,7 +1055,7 @@ void plotWork::loadFiles(string afiles) {
       if (string::npos != stype.find("csignal,Mu300")) {
         sname = "cSignalMu300"; 
         sdecay = "cSignalMu300"; 
-	ds->fColor = kBlue-7; 
+	ds->fColor = kGreen+3; 
 	ds->fSymbol = 24; 
 	ds->fF      = pF; 
 	ds->fBf     = 1.;

@@ -120,32 +120,13 @@ $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-# -----------------------------------------------
-# official b MC 50ns
-# -----------------------------------------------
-$dataset = "RunIISpring15DR74-b2mu-50ns-evtgen"; 
-$mode = "inclb-mc-$dataset-$version"; $pattern = "bMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A";
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-# -----------------------------------------------
-# official c MC 50ns
-# -----------------------------------------------
-$dataset = "RunIISpring15DR74-c2mu-50ns-evtgen"; 
-$mode = "inclb-mc-$dataset-$version"; $pattern = "cMuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A";
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 4' c$mode-*  && cd - ";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
-$merges{$mode} = "-x $SEDIR -p $mode";
 
 # -----------------------------------------------
 # official b+c MC 50ns as light
 # -----------------------------------------------
 $dataset = "RunIISpring15DR74-h2mu-50ns-evtgen"; 
 $mode = "inclb-mc-$dataset-$version"; $pattern = "MuonFilter_TuneCUEP8M1_13TeV-pythia8-evtgen__RunIISpring15DR74-Asympt50ns_MCRUN2_74_V9A";
-$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 3' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd jobs && ".&runCommand." -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
@@ -156,14 +137,14 @@ $merges{$mode} = "-x $SEDIR -p $mode";
 # ----------------------------
 $dataset = "Summer15_private-InclB2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclB2Mu-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-InclC2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclC2Mu-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 4' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
@@ -171,89 +152,82 @@ $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-InclH2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclH2Mu-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 3' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-InclH3";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclH3";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 3' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 
-$dataset = "Summer15_private-InclB2Mu-hardQCD10";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclB2Mu_hardQCD10";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+# -- Summer15_private-PYTHIA8_InclMu13_hardQCD12
+$dataset = "Summer15_private-InclMu13-hardQCD12";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclMu13_hardQCD12";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-$dataset = "Summer15_private-InclC2Mu-hardQCD10";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclC2Mu_hardQCD10";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+# -- Summer15_private-PYTHIA8_hardQCD12-Mu13
+$dataset = "Summer15_private-hardQCD12-Mu13";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD12-Mu13";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
-
-$dataset = "Summer15_private-InclB2Mu-hardQCD20";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclB2Mu_hardQCD20";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-$dataset = "Summer15_private-InclC2Mu-hardQCD20";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclC2Mu_hardQCD20";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+# -- Summer15_private-PYTHIA8_hardQCD16-Mu18
+$dataset = "Summer15_private-hardQCD16-Mu18";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD16-Mu18";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 
-$dataset = "Summer15_private-InclB2Mu-hardQCD50";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclB2Mu_hardQCD50";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-$dataset = "Summer15_private-InclC2Mu-hardQCD50";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclC2Mu_hardQCD50";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+# -- Summer15_private-PYTHIA8_hardQCD25-Mu28
+$dataset = "Summer15_private-hardQCD25-Mu28";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD25-Mu28";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 
-$dataset = "Summer15_private-hardQCD100-Mu50";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD100-Mu50";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
-$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
-$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
-$merges{$mode} = "-x $SEDIR -p $mode";
-
-$dataset = "Summer15_private-hardQCD50-Mu20";
-$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD50-Mu20";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+# -- Summer15_private-PYTHIA8_hardQCD35-Mu38
+$dataset = "Summer15_private-hardQCD35-Mu38";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD35-Mu38";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 
+# -- Summer15_private-PYTHIA8_hardQCD45-Mu48
+$dataset = "Summer15_private-hardQCD45-Mu48";
+$mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_hardQCD45-Mu48";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
+$catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR -p $mode";
+
+
+# -- other MC samples
 $dataset = "Summer15_private-InclB2Mu-NOEVTGEN";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclB2Mu_NOEVTGEN-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 5' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-InclC2Mu-NOEVTGEN";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_InclC2Mu_NOEVTGEN";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 4' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.2015 -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
@@ -264,35 +238,35 @@ $merges{$mode} = "-x $SEDIR -p $mode";
 # ----------------------------
 $dataset = "Summer15_private-lowpu-InclB2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_lowpu_InclB2Mu-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 5' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-lowpu-InclC2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_lowpu_InclC2Mu-";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 4' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-lowpu-InclH2Mu";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_lowpu_InclH2Mu";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 3' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-lowpu-InclB2Mu-NOEVTGEN";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_lowpu_InclB2Mu_NOEVTGEN";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 5' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";
 
 $dataset = "Summer15_private-lowpu-InclC2Mu-NOEVTGEN";
 $mode = "inclb-mc-$dataset-$version";  $pattern = "Summer15_private-PYTHIA8_lowpu_InclC2Mu_NOEVTGEN";
-$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 4' c$mode-*  && cd - ";
+$jobs{$mode}  = "cd jobs && ".&runCommand."  -m batch -q short.q -x 'bin/runInclB -C cuts/inclbReader.lowpu -m 1' c$mode-*  && cd - ";
 $catalogs{$mode} = "srmLs -x srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat/store/user/$USER/inclb/cmsRun/$version -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR -p $mode";

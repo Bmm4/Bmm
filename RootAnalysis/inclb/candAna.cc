@@ -82,7 +82,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   
   fpEvt = evt; 
 
-  cout << "--- " << fName << " -------------------------------------------------------------------" << endl;
+  //  cout << "--- " << fName << " -------------------------------------------------------------------" << endl;
   if (fVerbose == -13) { 
     cout << "----------------------------------------------------------------------" << endl;
     fpEvt->dumpGenBlock(); 
@@ -190,6 +190,7 @@ void candAna::genAnalysis() {
     ccbar(false), 
     tau(false), 
     fake(false),
+    branching(false), 
     drellYan(false); 
 
   aid = TMath::Abs(pM->fID); 
@@ -199,6 +200,41 @@ void candAna::genAnalysis() {
       ) fake = true;
   
   int cnt(-1); 
+
+  bool tQuark(false), bQuark(false), cQuark(false), lQuark(false), zBoson(false), wBoson(false); 
+  for (int ig = 0; ig < fpEvt->nGenCands(); ++ig) {
+    aid = TMath::Abs(fpEvt->getGenCand(ig)->fID);
+    if (6 == aid) {
+      tQuark = true;
+    }
+    if (5 == aid) {
+      bQuark = true;
+    }
+    if (4 == aid) {
+      cQuark = true;
+    }
+    if (3 == aid || 2 == aid || 1 == aid || 21 == aid) {
+      lQuark = true;
+    }
+    if (23 == aid) {
+      zBoson = true;
+    }
+    if (24 == aid) {
+      wBoson = true;
+    }
+  }
+
+  if (tQuark) {
+    bQuark = cQuark = lQuark = zBoson = wBoson = false;
+  }
+  if (bQuark) {
+    cQuark = lQuark = zBoson = wBoson = false;
+  }
+  if (cQuark) {
+    lQuark = zBoson = wBoson = false;
+  }
+
+  
   while (iMom > 1 && iMom < fpEvt->nGenCands()) {
     ++cnt;
     //    cout << "cnt = " << cnt << " iMom = " << iMom << " pM = " << pM << endl;
@@ -213,22 +249,30 @@ void candAna::genAnalysis() {
 	|| (213 == aid)     // rho+
 	|| (223 == aid)     // omega
 	|| (333 == aid)     // phi
-	) light = true; 
+	|| lQuark
+	) {
+      light = true;
+    }
 
     if ((441 == aid )       // eta_c
 	|| (443 == aid)     // J/psi
 	|| (100443 == aid)  // J/psi
 	) ccbar = true; 
 
-    if (15 == aid)          // tau
+    if (15 == aid) {
+      // tau
       tau = true;
-
-    if (22 == aid)          // Drell-Yan
-      drellYan = true;
+    }
     
-    if (isCharmMesonWeak(aid) || isCharmBaryonWeak(aid)) charm = true; 
+    if (22 == aid && pM->fStatus == 44) {
+      branching = true; 
+    }
+    
+    if (isCharmMesonWeak(aid) || isCharmBaryonWeak(aid) || cQuark) {
+      charm = true;
+    }
 
-    if (isBeautyMesonWeak(aid) || isBeautyBaryonWeak(aid)) {
+    if (isBeautyMesonWeak(aid) || isBeautyBaryonWeak(aid) || bQuark) {
       beauty = true; 
       break;
     }
@@ -258,6 +302,8 @@ void candAna::genAnalysis() {
       fMuonProcessType = 520; 
     } else if (fake) {
       fMuonProcessType = 590; 
+    } else if (branching) {
+      fMuonProcessType = 580; 
     } else {
       fMuonProcessType = 500; 
     }
@@ -269,6 +315,8 @@ void candAna::genAnalysis() {
       fMuonProcessType = 420; 
     } else if (fake) {
       fMuonProcessType = 490; 
+    } else if (branching) {
+      fMuonProcessType = 480; 
     } else {
       fMuonProcessType = 400; 
     }
@@ -276,20 +324,53 @@ void candAna::genAnalysis() {
   } else if (drellYan) {
     fMuonProcessType = 22;
     fHistIndex = 22;
-  } else {
-    fMuonProcessType = 300;
-    fHistIndex = 3;
-    if (fpSigTrack->fDouble1 > 10) {
+    if (0 && fpSigTrack->fDouble1 > -10) {
       cout << "----------------------------------------------------------------------" << endl;
+      cout << "DRELL YAN" << endl;
       cout << "reco muon pt/eta/phi = " << fpSigTrack->fPlab.Perp() << "/" << fpSigTrack->fPlab.Eta() << "/" << fpSigTrack->fPlab.Phi()
 	   << " with ptrel = " << fpSigTrack->fDouble1
 	   << endl;
       cout << "gen muon  pt/eta/phi = " << fGenMuPt << "/" << fGenMuEta << "/" << fGenMuPhi <<  " at " << fpTrack->getGenIndex() << endl;
+      cout << " fake: " << fake
+	   << " beauty: " << beauty 
+	   << " charm: " << charm 
+	   << " light: " << light 
+	   << " branching: " << branching 
+	   << " DY: " << drellYan
+	   << endl;
+      fpEvt->dumpGenBlock();
+    }
+  } else if (light) {
+    fMuonProcessType = 300;
+    if (fake) {
+      fMuonProcessType = 390; 
+    } else if (branching) {
+      fMuonProcessType = 380;
+    }
+    fHistIndex = 3;
+  } else if (fake) {
+    fMuonProcessType = 310;
+    fHistIndex = 3;
+  } else {
+    if (fpSigTrack->fDouble1 > -10) {
+      cout << "----------------------------------------------------------------------" << endl;
+      cout << "UNKNOWN PROCESS" << endl;
+      cout << "reco muon pt/eta/phi = " << fpSigTrack->fPlab.Perp() << "/" << fpSigTrack->fPlab.Eta() << "/" << fpSigTrack->fPlab.Phi()
+	   << " with ptrel = " << fpSigTrack->fDouble1
+	   << endl;
+      cout << " fake: " << fake
+	   << " beauty: " << beauty 
+	   << " charm: " << charm 
+	   << " light: " << light 
+	   << " branching: " << branching 
+	   << " DY: " << drellYan
+	   << endl;
+      cout << "gen muon  pt/eta/phi = " << fGenMuPt << "/" << fGenMuEta << "/" << fGenMuPhi <<  " at " << fpTrack->getGenIndex() << endl;
       fpEvt->dumpGenBlock();
       cout << "----------------------------------------------------------------------" << endl;
+
     }
   }
-
   //  cout << "==> fMuonProcessType = " << fMuonProcessType 
   //       << endl;
 }
@@ -393,14 +474,28 @@ void candAna::bookHist() {
       h2 = new TH2D(hname, htitle, 100, 0., 100., 100, 0., 10.); 
       setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
       h2->Sumw2();
-      
+
+      // more finely binned version
+      sprintf(hname, "RECO_%d_%d_ptrelvsmuon2pt", i, j); 
+      sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d", i, j);
+      h2 = new TH2D(hname, htitle, 1000, 0., 100., 100, 0., 10.); 
+      setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
+      h2->Sumw2();
+
       for (int m = 1; m < 11; ++m) {
 	sprintf(hname, "RECO_%d_%d_ptrelvsmuonpt%c", i, j, 96+m); 
 	sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d",i,j);
 	h2 = new TH2D(hname,htitle, 100, 0., 100., 100, 0., 10.); 
 	setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
 	h2->Sumw2();
-	
+
+	// more finely binned version
+	sprintf(hname, "RECO_%d_%d_ptrelvsmuon2pt%c", i, j, 96+m); 
+	sprintf(htitle, "RECO ptrel vs muon pt: level %d tag %d",i,j);
+	h2 = new TH2D(hname,htitle, 100, 0., 100., 100, 0., 10.); 
+	setTitles(h2, "pt^{muon}[GeV]", "p_{T}^{rel} [GeV]"); 
+	h2->Sumw2();
+
 	sprintf(hname, "RECO_%d_%d_ptrelvsmuoneta%c", i, j, 96+m); 
 	sprintf(htitle, "RECO ptrel vs muon eta: level %d tag %d", i, j);
 	h2 = new TH2D(hname,htitle, 80, -4., 4., 100, 0., 10.); 
@@ -744,10 +839,10 @@ void candAna::triggerSelection() {
     TTrgObjv2 *pTO = fpEvt->getTrgObjv2(i); 
     int hltIndex = pTO->fHltIndex;
     if (hltIndex > 1000) {
-      cout << "XXX resetting trgobjv2 = " << i << " from " << hltIndex; 
+      //      cout << "XXX resetting trgobjv2 = " << i << " from " << hltIndex; 
       hltIndex = hltIndex%1000;
       pTO->fHltIndex = hltIndex;
-      cout << " to " << hltIndex << endl;
+      // cout << " to " << hltIndex << endl;
     }
   }
   
@@ -843,9 +938,9 @@ void candAna::triggerSelection() {
 	    int hltIndex = pTO->fHltIndex;
 	    // mark it as selected by adding a large number, so >1000.
 	    if(hltIndex<1000) {
-	      cout << "XXX changing trgobjv2 = " << i << " from " << hltIndex; 
+	      //	      cout << "XXX changing trgobjv2 = " << i << " from " << hltIndex; 
 	      pTO->fHltIndex = hltIndex + (foundNumHltObjects*1000);
-	      cout << " to " << pTO->fHltIndex << endl;
+	      //	      cout << " to " << pTO->fHltIndex << endl;
 	    }
 	    else cout<<" hltIndex>1000 "<<hltIndex<<" problem marking it"<<endl;
 	    
