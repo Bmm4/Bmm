@@ -47,7 +47,6 @@ while (<IN>) {
 }
 eval $gProgram;
 
-
 # -- merge rootfiles
 if ($opt_h) {
     foreach $j (keys %jobs) {
@@ -65,7 +64,6 @@ if ($opt_h) {
 # -- create (split) files. They ALWAYS go into a subdirectory
 if ($opt_p) {
     foreach $j (keys %catalogs) {
-	print "key $j\n";
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	if (-d "jobs") {
 	    chdir("jobs"); 
