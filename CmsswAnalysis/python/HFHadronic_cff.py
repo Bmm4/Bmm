@@ -39,6 +39,64 @@ dstarDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------
+ksDump = cms.EDAnalyzer(
+    "HFDiTracks",
+    verbose            = cms.untracked.int32(0), 
+    tracksLabel        = cms.untracked.InputTag("generalTracks"),
+    PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
+    BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
+    trackPt            = cms.untracked.double(3.5),
+    track1Mass         = cms.untracked.double(0.1396),
+    track2Mass         = cms.untracked.double(0.1396),
+    massLow            = cms.untracked.double(0.44),
+    massHigh           = cms.untracked.double(0.56),
+    maxDoca            = cms.untracked.double(0.025),
+    pvWeight           = cms.untracked.double(0.60),
+    type               = cms.untracked.int32(11310),
+    nbrMuons           = cms.untracked.int32(0),
+    closeToMuons       = cms.untracked.bool(False)
+    )
+
+# ----------------------------------------------------------------------
+phiDump = cms.EDAnalyzer(
+    "HFDiTracks",
+    verbose            = cms.untracked.int32(0), 
+    tracksLabel        = cms.untracked.InputTag("generalTracks"),
+    PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
+    BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
+    trackPt            = cms.untracked.double(3.5),
+    track1Mass         = cms.untracked.double(0.4937),
+    track2Mass         = cms.untracked.double(0.4937),
+    massLow            = cms.untracked.double(0.98),
+    massHigh           = cms.untracked.double(1.10),
+    maxDoca            = cms.untracked.double(0.025),
+    pvWeight           = cms.untracked.double(0.60),
+    type               = cms.untracked.int32(11333),
+    nbrMuons           = cms.untracked.int32(0),
+    closeToMuons       = cms.untracked.bool(False)
+    )
+
+# ----------------------------------------------------------------------
+lambdaDump = cms.EDAnalyzer(
+    "HFDiTracks",
+    verbose            = cms.untracked.int32(0), 
+    tracksLabel        = cms.untracked.InputTag("generalTracks"),
+    PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
+    BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
+    trackPt            = cms.untracked.double(3.5),
+    track1Mass         = cms.untracked.double(0.9383),
+    track2Mass         = cms.untracked.double(0.1396),
+    massLow            = cms.untracked.double(1.0),
+    massHigh           = cms.untracked.double(1.2),
+    maxDoca            = cms.untracked.double(0.025),
+    pvWeight           = cms.untracked.double(0.60),
+    type               = cms.untracked.int32(113122),
+    nbrMuons           = cms.untracked.int32(0),
+    closeToMuons       = cms.untracked.bool(False)
+    )
+
+
+# ----------------------------------------------------------------------
 hhDump = cms.EDAnalyzer(
     "HFDiTracks",
     verbose            = cms.untracked.int32(0), 
@@ -56,6 +114,7 @@ hhDump = cms.EDAnalyzer(
     nbrMuons           = cms.untracked.int32(0),
     closeToMuons       = cms.untracked.bool(False)
     )
+
 
 # ######################################################################
 # Sequences
