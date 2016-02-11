@@ -16,10 +16,8 @@ process.load("CondCore.DBCommon.CondDBCommon_cfi")
 process.load("CondCore.DBCommon.CondDBSetup_cfi")
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
-#process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
@@ -32,14 +30,12 @@ process.GlobalTag.globaltag = "76X_dataRun2_v15"
 
 
 # ----------------------------------------------------------------------
-#rootFileName = "bmm-prompt-Run2015B-XXXX.root"
 rootFileName = "dstar-rereco-Run2015-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
-#    requireCand    =  cms.untracked.bool(False),
     requireCand    =  cms.untracked.bool(True),
     fullGenBlock   = cms.untracked.bool(False),
     fileName       = cms.untracked.string(rootFileName)
@@ -49,7 +45,6 @@ process.tree = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
-process.load("Bmm.CmsswAnalysis.HFBmm_cff")
 process.load("Bmm.CmsswAnalysis.HFHadronic_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 
