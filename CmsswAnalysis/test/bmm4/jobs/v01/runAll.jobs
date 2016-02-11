@@ -9,7 +9,7 @@ tie %jobs, "Tie::IxHash";
 
 # -- did not manage to do this with refs, so do it with a function: 
 sub runCommand() {
-    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/%SITE T3_CH_PSI' ";
+    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/$dataset%SITE T3_CH_PSI' ";
 }   
 
 
