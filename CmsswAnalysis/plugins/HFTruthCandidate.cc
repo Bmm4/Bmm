@@ -1,3 +1,18 @@
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+//
+// HFTruthCandidate
+// ----------------
+//
+// Output:       -81 (=fGenType) gen-level candidate
+//          1e6 + 81 (=fType)    truth-level identified tracks with muon mass hypothesis
+//          2e6 + 81 (=fType)    truth-level identified tracks with correct (truth)  mass hypothesis
+//          3e6 + 81 (=fType)    special cases for complex samples with sequential kinematic fit
+//
+//
+// 2016/02/11 Urs Langenegger      migrate to "consumes"
+// stone age  Urs Langenegger      first shot
+// %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
 #include "FWCore/Framework/interface/MakerMacros.h"
 #include "HFTruthCandidate.h"
 
@@ -63,15 +78,17 @@ using namespace reco;
 // ----------------------------------------------------------------------
 HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
   fTracksLabel(iConfig.getUntrackedParameter<InputTag>("tracksLabel", string("goodTracks"))), 
+  fTokenTrack(consumes<View<Track> >(fTracksLabel)),
   fPrimaryVertexLabel(iConfig.getUntrackedParameter<InputTag>("PrimaryVertexLabel", InputTag("offlinePrimaryVertices"))),
+  fTokenVertex(consumes<VertexCollection>(fPrimaryVertexLabel)),
   fBeamSpotLabel(iConfig.getUntrackedParameter<InputTag>("BeamSpotLabel", InputTag("offlineBeamSpot"))),
-  fMuonsLabel(iConfig.getUntrackedParameter<edm::InputTag>("muonsLabel", edm::InputTag("muons"))),
-  fPartialDecayMatching(iConfig.getUntrackedParameter<bool>("partialDecayMatching", false)), 
-  fMotherID(iConfig.getUntrackedParameter("motherID", 0)), 
+  fTokenBeamSpot(consumes<BeamSpot>(fBeamSpotLabel)),
+  fMuonsLabel(iConfig.getUntrackedParameter<edm::InputTag>("muonsLabel", InputTag("muons"))),
+  fTokenMuon(consumes<MuonCollection>(fMuonsLabel)), 
   fType(iConfig.getUntrackedParameter("type", 67)),
   fGenType(iConfig.getUntrackedParameter("GenType", -67)),
-  //fType(iConfig.getUntrackedParameter("type", 69)),
-  //fGenType(iConfig.getUntrackedParameter("GenType", -69)),
+  fMotherID(iConfig.getUntrackedParameter("motherID", 0)), 
+  fPartialDecayMatching(iConfig.getUntrackedParameter<bool>("partialDecayMatching", false)), 
   fMaxDoca(iConfig.getUntrackedParameter<double>("maxDoca", 99.)),
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)) {
 
