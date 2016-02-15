@@ -1,0 +1,2 @@
+# -- default signal
+type=charmonium,data    lumi=1. file=/scratch/ursl/bmm4/fake/cdstar-rereco-dstarCharmoniumRun2015B-v01.bmmReader.fake.root
