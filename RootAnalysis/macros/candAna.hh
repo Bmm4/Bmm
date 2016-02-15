@@ -137,6 +137,9 @@ public:
   virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
 				    bool muonsOnly=true, bool matchPt=true); 
 
+  virtual void        print1();
+  
+  
   std::string fName; 
   std::string fCutFile; 
   TDirectory *fHistDir; 
