@@ -1,0 +1,12 @@
+TYPE            11333
+TRUTHCAND         333
+NOPRESELECTION      1
+TRIGRANGE    NOTRIGGER
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts
+# -- candidate
++input cuts/candidate.cuts
