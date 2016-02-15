@@ -14,6 +14,7 @@
 #include "candAnaBd2DstarPi.hh"
 #include "candAnaBd2JpsiKstar.hh"
 #include "candAnaRecoil.hh"
+#include "candAnaFake.hh"
 
 using namespace std;
 
@@ -190,6 +191,12 @@ void bmmReader::readCuts(TString filename, int dump) {
 
     if (!strcmp(className, "candAnaRecoil")) {
       candAna *a = new candAnaRecoil(this, "candAnaRecoil", cutFile); 
+      lCandAnalysis.push_back(a); 
+    }
+
+    string sclassName(className); 
+    if (string::npos != sclassName.find("candAnaFake")) {
+      candAna *a = new candAnaFake(this, className, cutFile); 
       lCandAnalysis.push_back(a); 
     }
 
