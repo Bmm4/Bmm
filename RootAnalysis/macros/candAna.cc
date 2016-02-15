@@ -80,73 +80,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  // -- cross check Marco's truth-matching problem with 92 as mothers of the muons (on special file)
-  //   bool evtOK(false); 
-  //   static int n80(0); 
-  //   cout << "evt " << fEvent << " ncands = " << fpEvt->nCands() << ": " ;
-  //   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-  //     TAnaCand *pCand = fpEvt->getCand(iC);
-  //     cout << pCand->fType << " "; 
-  //     if (-80 == pCand->fType) { 
-  //       ++n80;
-  //       evtOK = true; 
-  //     }
-  //   }
-  //   cout << " n80 = " << n80 << endl;
-  //   if (!evtOK) {
-  //     cout << "XXX TRUTH CAND NOT FOUND" << endl;
-  //     fpEvt->dumpGenBlock();
-  //   }
-  //   return;
-
-
-
-  //  cout << "candAna blind = " << BLIND << endl;
-
-
-  //   if (fEvt == 239800563) {
-  //     fVerbose = 100; 
-  //   } else {
-  //     fVerbose = 0;
-  //   }
-
-  // TESTING d.k.
-  //static int count = 0; //dk
-  //select_print = false; //dk
-  //if(fEvt>4500000 && fEvt<5500000) {cout<<" selected "<<endl; select_print = true;} //dk
-  //if(fRun>=163270 && fRun <= 163869) { select_print = true;} //dk
-  //if( fRun==165472 ) { select_print = true;} //dk
-  //select_print = true; //dk
-  //if(!select_print) cout<<" not selected, evt = "<<fEvt<<" run = "<<fRun<<" ------------------------------------"<<endl;
-  //if(!select_print) return;
-  //cout<<" selected, evt = "<<fEvt<<" run = "<<fRun<<" ------------------------------------"<<endl;
-  //  play(); 
-  //  return;
-
-
-  // -- Debugging output
-  if (0) {
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << " event " << fEvt << " run " << fRun << " cands " << fpEvt->nCands() 
-	 << " searching for candidate type = " <<  TYPE
-	 << endl;
-    bool selected = false;
-    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      TAnaCand *pCand = fpEvt->getCand(iC);
-      cout << pCand->fType << endl;
-      if (TYPE == pCand->fType) {
-	selected = true; 
-	break;
-      }
-    }
-    
-    if (!selected) {
-      return;
-    } else {
-      cout << "selected!" << endl;
-    }
-  }
-
   if(fVerbose>0) {
     cout<<"---------------------------------------------------"<<endl;
     cout<<" event "<<fEvt<<" run "<<fRun<<" cands "<<fpEvt->nCands()<<" verbose "
@@ -166,26 +99,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   triggerSelection();
   runRange(); 
-
-  //return;
-  // Skip data events where there was no valid trigger
-  // NO!  if(!fIsMC && !fGoodHLT) {return;}  
-
-  //  test cases for triggerInPd(...)
-  if (0) {
-    string hk = fpReader->pdTrigger()->getHLTKey(fRun, fpReader->getFile()); 
-    cout << "hk  = " << hk << endl;
-    string key = hk + string(":") + "JetHT"; 
-    cout << "key = " << key << endl;
-    cout << "HLT_PFHT650:          " << fpReader->pdTrigger()->triggerInPd(key, "HLT_PFHT650") << endl;
-    cout << "HLT_PFHT650_v3:       " << fpReader->pdTrigger()->triggerInPd(key, "HLT_PFHT650_v3") << endl;
-    
-    fpReader->pdTrigger()->setHLTKey(fRun, fpReader->getFile()); 
-    cout << "HLT_PFHT650_v4:       " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT650_v4") << endl;
-    cout << "HLT_PFHT649_v3:       " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT649_v3") << endl;
-    cout << "HLT_PFHT649:          " << fpReader->pdTrigger()->triggerInPd("JetHT", "HLT_PFHT649") << endl;
-    cout << "wrong PD:             " << fpReader->pdTrigger()->triggerInPd("JetHE", "HLT_PFHT650") << endl;
-  }
 
   TAnaCand *pCand(0);
   if (fVerbose == -66) { cout << "----------------------------------------------------------------------" << endl;}
@@ -335,10 +248,10 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 // ----------------------------------------------------------------------
 void candAna::candAnalysis() {
 
-  //cout<<" cand 0 "<<fpCand<<endl;
-
   if (0 == fpCand) return;
 
+  fpMuon1 = fpMuon2 = 0; 
+  
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(1); 
 
   TAnaVertex *pVtx; 
@@ -351,9 +264,7 @@ void candAna::candAnalysis() {
       //      cout << "skipping  fake vertex" << endl;
     }
   }
-
-  //cout << "fPvN = " << fPvN << " "<<fpCand->fPvIdx <<" "<<fpCand->fPvIdx2 <<" "<<fpEvt->nPV()<<endl;
-
+  
   if (fpCand->fPvIdx > -1 && fpCand->fPvIdx < fpEvt->nPV()) {
     TAnaVertex *pv = fpEvt->getPV(fpCand->fPvIdx); 
     fPvX = pv->fPoint.X(); 
@@ -455,7 +366,13 @@ void candAna::candAnalysis() {
     p2 = fpEvt->getSigTrack(fpCand->fSig2); 
   }
 
-  // Special case for Dstar (prompt and from Bd)
+  // -- candidates for fake rate determination from light hadrons
+  if (fpCand->fType == 11310 || fpCand->fType == 11333 || fpCand->fType == 113122) {
+    p1 = fpEvt->getSigTrack(fpCand->fSig1); 
+    p2 = fpEvt->getSigTrack(fpCand->fSig2); 
+  }
+
+  //  Dstar (prompt and from Bd)
   if (fpCand->fType == 54 || fpCand->fType == 300054 || fpCand->fType == 300031) {
     return;
   }
@@ -505,7 +422,7 @@ void candAna::candAnalysis() {
   //  fMu1Id        = fMu1MvaId && (fMu1TrigM < 0.1) && (fMu1TrigM > 0); 
   fMu1Id        = fMu1MvaId;
   if (HLTRANGE.begin()->first == "NOTRIGGER") fMu1Id = true; 
-
+  
   fMu1Pt        = p1->fRefPlab.Perp(); 
   fMu1Eta       = p1->fRefPlab.Eta(); 
   fMu1Phi       = p1->fRefPlab.Phi(); 
@@ -668,8 +585,6 @@ void candAna::candAnalysis() {
     ((TH1D*)fHistDir->Get("bm_eta"))->Fill(fMu2Eta); 
   }
 
-  //cout<<p1->fMuIndex<<" "<<p2->fMuIndex<<endl;
-
   // -- cut on fMuIndex so that fake muons (from rare backgrounds) can be treated above as real muons
   if (p1->fMuIndex > -1 && p2->fMuIndex > -1) {
     TVector3 rm1  = fpEvt->getMuon(p1->fMuIndex)->fPositionAtM2;
@@ -718,27 +633,6 @@ void candAna::candAnalysis() {
 
   double dphi = p1->fPlab.DeltaPhi(p2->fPlab);
   fCowboy = (p1->fQ*dphi > 0); 
-
-  // -- Muon weights
-  //   PidTable *pT, *pT1, *pT2; 
-  //   if (fCowboy) {
-  //     pT = fpReader->ptCbMUID; 
-  //   } else {
-  //     pT = fpReader->ptSgMUID; 
-  //   }
-  
-  //   fMu1W8Mu      = pT->effD(fMu1Pt, TMath::Abs(fMu1Eta), fMu1Phi);
-  //   fMu2W8Mu      = pT->effD(fMu2Pt, TMath::Abs(fMu2Eta), fMu2Phi);
-  
-  //   if (fCowboy) {
-  //     pT1 = fpReader->ptCbMUT1;
-  //     pT2 = fpReader->ptCbMUT2;
-  //   } else {
-  //     pT1 = fpReader->ptSgMUT1;
-  //     pT2 = fpReader->ptSgMUT2;
-  //   }
-  //   fMu1W8Tr      = pT1->effD(fMu1Pt, TMath::Abs(fMu1Eta), fMu1Phi)*pT2->effD(fMu1Pt, TMath::Abs(fMu1Eta), fMu1Phi);
-  //   fMu2W8Tr      = pT1->effD(fMu2Pt, TMath::Abs(fMu2Eta), fMu2Phi)*pT2->effD(fMu2Pt, TMath::Abs(fMu2Eta), fMu2Phi);
 
   fMu1W8Mu = fMu2W8Mu = fMu1W8Tr = fMu2W8Tr = -2.;
 
@@ -822,22 +716,7 @@ void candAna::candAnalysis() {
   if (TMath::IsNaN(fCandFLSxy)) fCandFLSxy = -1.;
 
   fCandTau   = fCandFL3d*MBS/fCandP/TMath::Ccgs();
-
-//   cout << "event : " << fEvt << " " << fEvent << endl;
-//   cout << "muon 1: " << p1->fRefPlab.X() << " " << p1->fRefPlab.Y() << " " << p1->fRefPlab.Z() << endl;
-//   cout << "muon 2: " << p2->fRefPlab.X() << " " << p2->fRefPlab.Y() << " " << p2->fRefPlab.Z() << endl;
-//   cout << "PV: x = " << fpEvt->getPV(pvidx)->fPoint.X() 
-//        << " y = " << fpEvt->getPV(pvidx)->fPoint.Y() 
-//        << " z = " << fpEvt->getPV(pvidx)->fPoint.Z() 
-//        << " c = " << fpEvt->getPV(pvidx)->fChi2 << "/" << fpEvt->getPV(pvidx)->fNdof
-//        << endl;
-//   cout << "SV: x = " << sv.fPoint.X() << " y = " << sv.fPoint.Y() << " z = " << sv.fPoint.Z() 
-//        << " c = " << sv.fChi2 << "/" << sv.fNdof
-//        << endl;
-//   cout << "fl3d = " << fCandFL3d << " fl3de = " << fCandFL3dE << " fls3d = " << fCandFLS3d << endl;
-//   cout << "pvip = " << fCandPvIp3D << " pvipe = " << fCandPvIpE3D << " pvips = " << fCandPvIpS3D << endl;
-//   cout << "alpha = " << fCandA << " cosalpha = " <<  fCandCosA << endl;
-
+  
   // -- variables for production mechanism studies
   //  fpOsCand      = osCand(fpCand);
   fOsIso        = osIsolation(fpCand, 1.0, 0.9); 
@@ -3560,6 +3439,8 @@ bool candAna::doTriggerMatching(TAnaTrack *fp1, TAnaTrack *fp2) { // call the no
   TLorentzVector tlvMu1, tlvMu2;
    
   if (localPrint) {
+    cout << "fp1: " << fp1 << endl;
+    cout << "fp2: " << fp2 << endl;
     cout << "mu1: pt,eta,phi: " << fp1->fPlab.Perp() << " " << fp1->fPlab.Eta() << " " << fp1->fPlab.Phi()<< endl;
     cout << "mu2: pt,eta,phi: " << fp2->fPlab.Perp() << " " << fp2->fPlab.Eta() << " " << fp2->fPlab.Phi()<< endl;
   }
@@ -4826,3 +4707,24 @@ void candAna::fillMuonData(muonData &a, TAnaMuon *pt) {
 }
 
 
+// ----------------------------------------------------------------------
+void candAna::print1() {
+
+  cout << "--------------------------------------------------" << endl;
+  cout << "event : " << fEvt << " " << fEvent << endl;
+  cout << "muon 1: " << fpMuon1->fRefPlab.X() << " " << fpMuon1->fRefPlab.Y() << " " << fpMuon1->fRefPlab.Z() << endl;
+  cout << "muon 2: " << fpMuon2->fRefPlab.X() << " " << fpMuon2->fRefPlab.Y() << " " << fpMuon2->fRefPlab.Z() << endl;
+  int pvidx = (fpCand->fPvIdx > -1? fpCand->fPvIdx : 0); 
+  cout << "PV: x = " << fpEvt->getPV(pvidx)->fPoint.X() 
+       << " y = " << fpEvt->getPV(pvidx)->fPoint.Y() 
+       << " z = " << fpEvt->getPV(pvidx)->fPoint.Z() 
+       << " c = " << fpEvt->getPV(pvidx)->fChi2 << "/" << fpEvt->getPV(pvidx)->fNdof
+       << endl;
+  TAnaVertex sv = fpCand->fVtx;
+  cout << "SV: x = " << sv.fPoint.X() << " y = " << sv.fPoint.Y() << " z = " << sv.fPoint.Z() 
+       << " c = " << sv.fChi2 << "/" << sv.fNdof
+       << endl;
+  cout << "fl3d = " << fCandFL3d << " fl3de = " << fCandFL3dE << " fls3d = " << fCandFLS3d << endl;
+  cout << "pvip = " << fCandPvIp3D << " pvipe = " << fCandPvIpE3D << " pvips = " << fCandPvIpS3D << endl;
+  cout << "alpha = " << fCandA << " cosalpha = " <<  fCandCosA << endl;
+}
