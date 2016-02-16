@@ -18,6 +18,7 @@ public:
 
   void resetLimits(); 
   void limitPar(int ipar, double lo, double hi); 
+  void applyLimits(int npar, TF1 *f, std::string name);
 
   // -- background functions
   TF1* pol0(TH1 *h); 
@@ -37,6 +38,8 @@ public:
   TF1* expoErr(double lo, double hi); 
 
   // -- signal+background functions
+  TF1* pol0gauss(TH1 *h, double peak = 0.5, double sigma = 0.006); 
+  TF1* pol0Gauss(TH1 *h, double peak = 0.5, double sigma = 0.006); 
   TF1* pol1gauss(TH1 *h, double peak = 5.3, double sigma = 0.04); 
   TF1* pol1Gauss(TH1 *h, double peak = 5.3, double sigma = 0.04); 
 
@@ -66,13 +69,14 @@ public:
   TF1* expoErrGaussLandau(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14); 
 
 
+  void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);
   void initExpo(double &p0, double &p1, TH1 *h);
 
   double fLo, fHi;
   double fBgFractionLo, fBgFractionHi; 
   double fLimitLo[20], fLimitHi[20]; 
-  bool fLimit[20];
+  bool   fLimit[20];
 
 private: 
 

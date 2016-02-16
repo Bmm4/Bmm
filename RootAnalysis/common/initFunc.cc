@@ -238,6 +238,16 @@ namespace {
 
 
   // ----------------------------------------------------------------------
+  // pol0 and gauss 
+  double iF_pol0_gauss(double *x, double *par) {
+    //   par[0] = normalization of gaussian
+    //   par[1] = mean of gaussian
+    //   par[2] = sigma of gaussian
+    //   par[3] = par 0 of pol0
+    return  (iF_pol0(x, &par[3]) + iF_gauss(x, &par[0]));
+  }
+
+  // ----------------------------------------------------------------------
   // pol1 and gauss 
   double iF_pol1_gauss(double *x, double *par) {
     //   par[0] = normalization of gaussian
@@ -441,6 +451,16 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  // pol0 and Gauss 
+  double iF_pol0_Gauss(double *x, double *par) {
+    //   par[0] = area of gaussian
+    //   par[1] = mean of gaussian
+    //   par[2] = sigma of gaussian
+    //   par[3] = par 0 of pol1
+    return  (iF_pol1(x, &par[3]) + iF_Gauss(x, &par[0]));
+  }
+
+  // ----------------------------------------------------------------------
   // pol1 and gauss2 
   double iF_pol1_gauss2c(double *x, double *par) {
     //   par[0] = norm of gaussian
@@ -458,11 +478,8 @@ namespace {
 
 
 // ----------------------------------------------------------------------
-initFunc::initFunc() {
-  //cout << "ctor initFunc" << endl;
-  fLo = 99.; 
-  fHi = -99.;
-  fBgFractionLo = fBgFractionHi = -99.;
+initFunc::initFunc(): fLo(99.), fHi(-99.), fBgFractionLo(-99), fBgFractionHi(-99.) {
+  resetLimits();
 }
 
 
@@ -482,14 +499,26 @@ void initFunc::limitPar(int i, double lo, double hi) {
 
 // ----------------------------------------------------------------------
 void initFunc::resetLimits() {
-
   for (int i = 0; i < 20; ++i) {
     fLimitLo[i] = 0.; 
     fLimitHi[i] = -1.; 
     fLimit[i] = false; 
   }
-
 }
+
+
+// ----------------------------------------------------------------------
+void initFunc::applyLimits(int npar, TF1 *f, string name) {
+  for (int i = 0; i < npar; ++i) {
+    if (fLimit[i]) {
+      cout << "initFunc::" << name << "> limiting par " << i << " from " << fLimitLo[i] << " .. " << fLimitHi[i] << endl;
+      f->SetParLimits(i, fLimitLo[i], fLimitHi[i]); 
+    } else {
+      f->ReleaseParameter(i);
+    }
+  }
+}
+
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol0(double lo, double hi) {
@@ -754,7 +783,8 @@ TF1* initFunc::pol0BsBlind(TH1 *h) {
 
 // ----------------------------------------------------------------------
 TF1* initFunc::crystalBall(TH1 *h, double peak, double sigma, double alpha, double tailLength) {
-  TF1 *f = new TF1("f1", iF_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 5);
+  int npar(5); 
+  TF1 *f = new TF1("f1", iF_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("peak", "sigma", "crossover", "tail", "normalization"); 			   
 
   int lbin(1), hbin(h->GetNbinsX()+1); 
@@ -766,50 +796,15 @@ TF1* initFunc::crystalBall(TH1 *h, double peak, double sigma, double alpha, doub
   double g0 = h->Integral(lbin, hbin)*h->GetBinWidth(1);  
 
   f->SetParameters(peak, sigma, alpha, tailLength, g0); 
-
-  f->ReleaseParameter(0);     
-  if (fLimit[0]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 0 from " << fLimitLo[0] << " .. " << fLimitHi[0] << endl;
-    f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
-  } else {
-    f->SetParLimits(0, 0., 1.e7); 
-  }
-
-  if (fLimit[1]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 1 from " << fLimitLo[1] << " .. " << fLimitHi[1] << endl;
-    f->SetParLimits(1, fLimitLo[1], fLimitHi[1]); 
-  } else {
-    f->ReleaseParameter(1);     
-  }
-
-  if (fLimit[2]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 2 from " << fLimitLo[2] << " .. " << fLimitHi[2] << endl;
-    f->SetParLimits(2, fLimitLo[2], fLimitHi[2]); 
-  } else {
-    f->ReleaseParameter(2);     
-  }
-
-  if (fLimit[3]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 3 from " << fLimitLo[3] << " .. " << fLimitHi[3] << endl;
-    f->SetParLimits(3, fLimitLo[3], fLimitHi[3]); 
-  } else {
-    f->ReleaseParameter(3);     
-  }
-
-  if (fLimit[4]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 4 from " << fLimitLo[4] << " .. " << fLimitHi[4] << endl;
-    f->SetParLimits(4, fLimitLo[4], fLimitHi[4]); 
-  } else {
-    f->ReleaseParameter(4);     
-  }
-
+  applyLimits(npar, f, "crystalBall"); 
   return f; 
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1CrystalBall(TH1 *h, double peak, double sigma, double alpha, double tailLength) {
-  TF1 *f = new TF1("f1", iF_pol1_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 7);
+  int npar(7);
+  TF1 *f = new TF1("f1", iF_pol1_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("peak", "sigma", "crossover", "tail", "normalization", "constant", "slope"); 			   
 
   int lbin(1), hbin(h->GetNbinsX()+1); 
@@ -825,51 +820,63 @@ TF1* initFunc::pol1CrystalBall(TH1 *h, double peak, double sigma, double alpha, 
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);  
 
   f->SetParameters(peak, sigma, alpha, tailLength, g0, p0, p1); 
+  applyLimits(npar, f, "pol1CrystalBall"); 
+  return f; 
+}
 
-  f->ReleaseParameter(0);     
-  if (fLimit[0]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 0 from " << fLimitLo[0] << " .. " << fLimitHi[0] << endl;
-    f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
-  } else {
-    f->SetParLimits(0, 0., 1.e7); 
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol0gauss(TH1 *h, double peak, double sigma) {
+  int npar(4); 
+  TF1 *f = new TF1("f1", iF_pol0_gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("normalization", "peak", "sigma", "constant"); 			   
+
+  int lbin(1), hbin(h->GetNbinsX()+1); 
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo); 
+    hbin = h->FindBin(fHi); 
+  }
+  
+  double p0; 
+  initPol0(p0, h);
+  double A  = p0 * (fHi - fLo);
+  double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);  
+
+  f->SetParameters(g0, peak, sigma, p0); 
+  applyLimits(npar, f, "pol0gauss"); 
+  return f; 
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol0Gauss(TH1 *h, double peak, double sigma) {
+  int npar(4); 
+  TF1 *f = new TF1("f1", iF_pol0_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("area", "peak", "sigma", "constant", "slope"); 			   
+
+  int lbin(1), hbin(h->GetNbinsX()); 
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo); 
+    hbin = h->FindBin(fHi); 
   }
 
-  if (fLimit[1]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 1 from " << fLimitLo[1] << " .. " << fLimitHi[1] << endl;
-    f->SetParLimits(1, fLimitLo[1], fLimitHi[1]); 
-  } else {
-    f->ReleaseParameter(1);     
-  }
+  cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
+  
+  double p0; 
+  initPol0(p0, h);
+  double A  = p0*(fHi - fLo);
+  double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);  
 
-  if (fLimit[2]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 2 from " << fLimitLo[2] << " .. " << fLimitHi[2] << endl;
-    f->SetParLimits(2, fLimitLo[2], fLimitHi[2]); 
-  } else {
-    f->ReleaseParameter(2);     
-  }
-
-  if (fLimit[3]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 3 from " << fLimitLo[3] << " .. " << fLimitHi[3] << endl;
-    f->SetParLimits(3, fLimitLo[3], fLimitHi[3]); 
-  } else {
-    f->ReleaseParameter(3);     
-  }
-
-  if (fLimit[4]) {
-    cout << "initFunc::pol1CrystalBall> limiting par 4 from " << fLimitLo[4] << " .. " << fLimitHi[4] << endl;
-    f->SetParLimits(4, fLimitLo[4], fLimitHi[4]); 
-  } else {
-    f->ReleaseParameter(4);     
-  }
-
+  f->SetParameters(g0, peak, sigma, p0); 
+  applyLimits(npar, f, "pol0Gauss"); 
   return f; 
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
-
-  TF1 *f = new TF1("f1", iF_pol1_gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 5);
+  int npar(5); 
+  TF1 *f = new TF1("f1", iF_pol1_gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("normalization", "peak", "sigma", "constant", "slope"); 			   
 
   int lbin(1), hbin(h->GetNbinsX()+1); 
@@ -885,38 +892,15 @@ TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);  
 
   f->SetParameters(g0, peak, sigma, p0, p1); 
-
-  f->ReleaseParameter(0);     
-  if (fLimit[0]) {
-    cout << "initFunc::pol1Gauss> limiting par 0 from " << fLimitLo[0] << " .. " << fLimitHi[0] << endl;
-    f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
-  } else {
-    f->SetParLimits(0, 0., 1.e7); 
-  }
-
-  if (fLimit[1]) {
-    cout << "initFunc::pol1Gauss> limiting par 1 from " << fLimitLo[1] << " .. " << fLimitHi[1] << endl;
-    f->SetParLimits(1, fLimitLo[1], fLimitHi[1]); 
-  } else {
-    f->ReleaseParameter(1);     
-  }
-
-  if (fLimit[2]) {
-    cout << "initFunc::pol1Gauss> limiting par 2 from " << fLimitLo[2] << " .. " << fLimitHi[2] << endl;
-    f->SetParLimits(2, fLimitLo[2], fLimitHi[2]); 
-  } else {
-    f->ReleaseParameter(2);     
-  }
-
+  applyLimits(npar, f, "pol1gauss"); 
   return f; 
-
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1Gauss(TH1 *h, double peak, double sigma) {
-
-  TF1 *f = new TF1("f1", iF_pol1_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 5);
+  int npar(5);
+  TF1 *f = new TF1("f1", iF_pol1_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("area", "peak", "sigma", "constant", "slope"); 			   
 
   int lbin(1), hbin(h->GetNbinsX()); 
@@ -934,18 +918,13 @@ TF1* initFunc::pol1Gauss(TH1 *h, double peak, double sigma) {
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);  
 
   f->SetParameters(g0, peak, sigma, p0, p1); 
-  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7); 
-  f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45); 
-  f->ReleaseParameter(2);     f->SetParLimits(2, 0.010, 0.080); 
-
+  applyLimits(npar, f, "pol1Gauss"); 
   return f; 
-
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol2local(TH1 *h, double width) {
-
   TF1 *f = (TF1*)gROOT->FindObject("iF_pol2local"); 
   if (f) delete f; 
 
@@ -961,7 +940,6 @@ TF1* initFunc::pol2local(TH1 *h, double width) {
   f->SetParameters(maxVal, slope, maxPlace); 
   cout << "pol2local initialized to " << maxVal << " " << slope << " " << maxPlace << endl;
   f->SetLineWidth(2);
-
   return f; 
 }
 
@@ -1572,6 +1550,22 @@ TF1* initFunc::pol1gauss2c(TH1 *h, double peak, double sigma) {
 
 }
 
+
+// ----------------------------------------------------------------------
+void initFunc::initPol0(double &p0, TH1 *h) {
+
+  int EDG(4), NB(EDG+1); 
+  int lbin(1), hbin(h->GetNbinsX()+1); 
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo); 
+    hbin = h->FindBin(fHi); 
+  }
+  
+  double ylo = h->Integral(lbin, lbin+EDG)/NB; 
+  double yhi = h->Integral(hbin-EDG, hbin)/NB;
+  
+  p0  = 0.5 * (ylo + yhi);
+}
 
 // ----------------------------------------------------------------------
 void initFunc::initPol1(double &p0, double &p1, TH1 *h) {
