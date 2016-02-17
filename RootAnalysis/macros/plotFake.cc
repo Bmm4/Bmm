@@ -99,6 +99,7 @@ void plotFake::fakeRate(string var, string dataset, string particle) {
       for (int i = 2; i <= 3; ++i) {
 	c0->cd(++ipad);
 	h1 = h2->ProjectionY(Form("hist%dpt%d", ihist, i), i, i);
+	h1->SetTitle(Form("hist%dpt%d %s", ihist, i, h1->GetTitle())); 
 	if (string::npos != hname.find("Fake310")) {
 	  fitKs(h1);
 	} else if (string::npos != hname.find("Fake333")) {
@@ -173,10 +174,20 @@ void plotFake::fitPhi(TH1D *h) {
   fIF->fVerbose = true; 
   fIF->resetLimits(); 
   fIF->limitPar(1, 1.01, 1.03); 
-  fIF->limitPar(2, 0.002, 0.006); 
+  fIF->limitPar(2, 0.002, 0.005); 
+  fIF->limitPar(3, 0.001, 0.150); 
+  fIF->limitPar(4, 0.0051, 0.030); 
 
-  TF1* f1 = fIF->phiKK(h); 
-  h->Fit(f1, "lq", "e"); 
+  TF1 *f1 = fIF->phiKK(h); 
+  h->Fit(f1, "l", "e"); 
+
+  TF1 *f2 = fIF->argus(h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1)); 
+  f2->SetLineColor(kBlue); 
+  f2->SetLineStyle(kDashed); 
+  f2->SetParameter(0, f1->GetParameter(5));
+  f2->SetParameter(1, f1->GetParameter(6));
+  f2->SetParameter(2, f1->GetParameter(7));
+  f2->Draw("same");
 }
 
 
