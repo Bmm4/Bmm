@@ -101,32 +101,33 @@ void candAnaFake::candAnalysis() {
   if (skip) return; 
 
   ((TH1D*)fHistDir->Get("mall"))->Fill(fpCand->fMass); 
-  // cout << "MUBDT = " << MUBDT << " fMu1rMvaId = " << fMu1rMvaId << " fMu1rBDT = " << fMu1rBDT
-  //      << " fMu2rMvaId = " << fMu2rMvaId << " fMu2rBDT = " << fMu2rBDT
-  //      << endl;
 
   bool muid(false);
   // -- leg 1
   if (fMu1Pt >  3.5) {
     muid = ((fpMuon1->fMuID & 2) == 2); // global muon!
+    ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
+    ((TH1D*)fHistDir->Get("eta1all"))->Fill(TMath::Abs(fMu1Eta), fpCand->fMass); 
     if (muid) {
       ((TH1D*)fHistDir->Get("pt1muo"))->Fill(fMu1Pt, fpCand->fMass); 
-      ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("eta1muo"))->Fill(TMath::Abs(fMu1Eta), fpCand->fMass); 
     } else {
       ((TH1D*)fHistDir->Get("pt1nmu"))->Fill(fMu1Pt, fpCand->fMass); 
-      ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("eta1nmu"))->Fill(TMath::Abs(fMu1Eta), fpCand->fMass); 
     }
   }
   
   // -- leg 2
   if (fMu2Pt >  3.5) {
     muid = ((fpMuon2->fMuID & 2) == 2); // global muon!
+    ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+    ((TH1D*)fHistDir->Get("eta2all"))->Fill(TMath::Abs(fMu2Eta), fpCand->fMass); 
     if (muid) {
       ((TH1D*)fHistDir->Get("pt2muo"))->Fill(fMu2Pt, fpCand->fMass); 
-      ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("eta2muo"))->Fill(TMath::Abs(fMu2Eta), fpCand->fMass); 
     } else {
       ((TH1D*)fHistDir->Get("pt2nmu"))->Fill(fMu2Pt, fpCand->fMass); 
-      ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("eta2nmu"))->Fill(TMath::Abs(fMu2Eta), fpCand->fMass);
     }
   }
   return;
@@ -167,8 +168,8 @@ void candAnaFake::bookHist() {
   mode.push_back("nmu"); 
   mode.push_back("muo"); 
   if (310 == TRUTHCAND) {
+    new TH1D("mall", Form("%s", name.c_str()), mbin, mmin, mmax);
     for (unsigned i = 0; i < mode.size(); ++i) {
-      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
       new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
@@ -178,8 +179,8 @@ void candAnaFake::bookHist() {
     name = "#phi";
     mmin = 0.98;
     mmax = 1.06;
+    new TH1D("mall", Form("%s", name.c_str()), mbin, mmin, mmax);
     for (unsigned i = 0; i < mode.size(); ++i) {
-      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
       new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
@@ -189,8 +190,8 @@ void candAnaFake::bookHist() {
     name = "#Lambda";
     mmin = 1.05;
     mmax = 1.20;
+    new TH1D("mall", Form("%s", name.c_str()), mbin, mmin, mmax);
     for (unsigned i = 0; i < mode.size(); ++i) {
-      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
       new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
       new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
