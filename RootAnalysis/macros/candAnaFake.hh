@@ -26,7 +26,7 @@ public:
   ~candAnaFake();
 
   void        candAnalysis();
-  void        hhAnalysis();
+  // void        hhAnalysis();
   void        efficiencyCalculation();
   
   void        processType(); 
@@ -43,7 +43,7 @@ public:
 
   int         truthMatch(TAnaCand *pC, int verbose = 0); 
   void        dumpHFTruthCand(TAnaCand *pC); 
-  void        dumpHFHhCand(TAnaCand *pC); 
+  // void        dumpHFHhCand(TAnaCand *pC); 
 
 
 private:
