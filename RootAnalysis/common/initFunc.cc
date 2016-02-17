@@ -94,36 +94,43 @@ namespace {
   }
   
   // ----------------------------------------------------------------------
-  double iF_argus_gauss(double *x, double *par) {
+  double iF_argus_gauss2(double *x, double *par) {
     // par[0] -> Gaussian const
     // par[1] -> Gaussian mean
     // par[2] -> Gaussian sigma
-    // par[3] -> Argus normalization 
-    // par[4] -> Argus exponential factor 
-    // par[5] -> Argus endpoint
+    // par[3] -> fraction in second gaussian
+    // par[4] -> sigma of second gaussian
+    // par[5] -> Argus normalization 
+    // par[6] -> Argus exponential factor 
+    // par[7] -> Argus endpoint
     //           > 0: normal situation (zero above endpoint)
     //           < 0: inverted situation (zero below endpoint)
     
     //  double ebeam = 10.58/2;
-    double ebeam = par[5];
+    double ebeam = par[7];
     double ebeam2 = ebeam*ebeam;
     double background = 0.;
     double x2 = x[0]*x[0];
     double ratio = x2/ebeam2; 
-    if (par[5] < 0) ratio = ebeam2/x2;
+    if (par[7] < 0) ratio = ebeam2/x2;
     if (ratio < 1.) {
-      background = par[3]*x[0] * sqrt(1. - (ratio)) * exp(par[4] * (1. - (ratio))); 
+      background = par[5]*x[0] * sqrt(1. - (ratio)) * exp(par[6] * (1. - (ratio))); 
     } else {
       background = 0.;
     }
 
-    double signal(0.);
-    if (par[2] > 0.) {
-      double arg = (x[0] - par[1]) / par[2];
-      signal =  par[0]*TMath::Exp(-0.5*arg*arg);
-    }
 
-    return (signal + background);
+    Double_t arg1(0.), arg2(0.), sig1(0.), sig2(0.); 
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      sig1 = par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[5] > 0.) {
+      arg2 = (x[0] - par[1]) / par[4];
+      sig2 = par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+   
+    return ((1-par[3])*sig1 + par[3]*sig2 + background);
   }
 
 
@@ -627,6 +634,14 @@ TF1* initFunc::expoErr(double lo, double hi) {
   return f; 
 }
 
+// ----------------------------------------------------------------------
+TF1* initFunc::argus(double lo, double hi) {
+  TF1 *f = new TF1("f1", iF_argus, lo, hi, 3);
+  f->SetParNames("norm.", "expo.", "endpoint"); 
+  return f; 
+}
+
+
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1(TH1 *h) {
@@ -695,6 +710,32 @@ TF1* initFunc::expo(TH1 *h, double lo, double hi) {
   return expo(h); 
 }
 
+
+// ----------------------------------------------------------------------
+TF1* initFunc::argus(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0; 
+  }
+  TF1 *f(0); 
+  while ((f = (TF1*)gROOT->FindObject("iF_argus"))) if (f) delete f; 
+  f = new TF1("iF_argus", iF_argus, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 3);
+  f->SetParNames("norm.", "expo.", "endpoint"); 
+  f->SetParameter(0, h->GetMaximum()); 
+  f->SetParameter(1, h->GetMaximum());
+  f->SetParameter(2, 5.28); 
+
+  return f; 
+}
+
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::argus(TH1 *h, double lo, double hi) {
+  fLo = lo; 
+  fHi = hi; 
+  return argus(h); 
+}
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1BsBlind(TH1 *h) {
@@ -1681,23 +1722,25 @@ TF1* initFunc::landsimp(TH1 *h, double mpv, double sigma) {
 
 // ----------------------------------------------------------------------
 TF1* initFunc::phiKK(TH1 *h) {
-  int npar(6);
+  int npar(8);
   TF1 *f = (TF1*)gROOT->FindObject("iF_phiKK"); 
   if (f) delete f; 
-  f = new TF1("iF_phiKK", iF_argus_gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
-  f->SetParNames("const", "peak", "sigma", "normalization", "exponential", "endpoint"); 			   
+  f = new TF1("iF_phiKK", iF_argus_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("const", "peak", "sigma1", "fraction", "sigma2", "norm.", "expo.", "endpoint"); 			   
   f->SetLineWidth(2); 
 
   int lbin = h->FindBin(2.*MKAON); 
   int hbin = h->GetNbinsX()+1;
   
-  fixPar(5, -2.*MKAON);
-  f->SetParameter(3, 10.); 
-  f->SetParameter(4, 10.); 
 
   f->SetParameter(0, 10.); 
   f->SetParameter(1, 1.02); 
-  f->SetParameter(2, 0.01); 
+  f->SetParameter(2, 0.003); 
+  f->SetParameter(3, 0.3); 
+  f->SetParameter(4, 0.010); 
+  f->SetParameter(5, 10.); 
+  f->SetParameter(6, 1.); 
+  fixPar(7, -2.*MKAON);
 
   applyLimits(npar, f, "phiKK"); 
   return f; 
