@@ -49,11 +49,9 @@ void candAnaFake::candAnalysis() {
   bool skip(false); 
   if (!fJSON) skip = true; 
   if (fCandChi2 > 3) skip = true; 
-  if (fCandDoca > 0.005) skip = true; 
+  if (fCandDoca > 0.01) skip = true; 
   if (!fGoodTracks) skip = true;
   if (!fGoodQ) skip = true; 
-  if (fMu1Pt <  3.5) skip = true;
-  if (fMu2Pt <  3.5) skip = true;
   // FIXME: These should be replaced with the proper signed 3D impact parameter (to be filled!)
   //  if (fpMuon1->fLip/fpMuon1->fLipE < 1.) skip = true; 
   //  if (fpMuon2->fLip/fpMuon2->fLipE < 1.) skip = true; 
@@ -65,8 +63,7 @@ void candAnaFake::candAnalysis() {
     if (fCandFLxy > 4.0)      skip = true; 
     if (fCandFLSxy < 15.0)    skip = true; 
     if (fCandFLS3d < 15.0)    skip = true; 
-    if (fCandA > 0.1)         skip = true; 
-    if (fCandDoca > 0.005)    skip = true; 
+    if (fCandA > 0.01)        skip = true; 
     if (fCandPvIpS > 5.0)     skip = true; 
     if (fCandPvLipS > 1.0)    skip = true;
     // -- calculate Lambda mass
@@ -108,24 +105,30 @@ void candAnaFake::candAnalysis() {
   //      << " fMu2rMvaId = " << fMu2rMvaId << " fMu2rBDT = " << fMu2rBDT
   //      << endl;
 
+  bool muid(false);
   // -- leg 1
-  if (fMu1rMvaId > MUBDT) {
-    ((TH1D*)fHistDir->Get("pt1muo"))->Fill(fMu1Pt, fpCand->fMass); 
-    ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
-  } else {
-    ((TH1D*)fHistDir->Get("pt1nmu"))->Fill(fMu1Pt, fpCand->fMass); 
-    ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
-  }
-
-  // -- leg 2
-  if (fMu2rMvaId > MUBDT) {
-    ((TH1D*)fHistDir->Get("pt2muo"))->Fill(fMu2Pt, fpCand->fMass); 
-    ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
-  } else {
-    ((TH1D*)fHistDir->Get("pt2nmu"))->Fill(fMu2Pt, fpCand->fMass); 
-    ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+  if (fMu1Pt >  3.5) {
+    muid = ((fpMuon1->fMuID & 2) == 2); // global muon!
+    if (muid) {
+      ((TH1D*)fHistDir->Get("pt1muo"))->Fill(fMu1Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
+    } else {
+      ((TH1D*)fHistDir->Get("pt1nmu"))->Fill(fMu1Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("pt1all"))->Fill(fMu1Pt, fpCand->fMass); 
+    }
   }
   
+  // -- leg 2
+  if (fMu2Pt >  3.5) {
+    muid = ((fpMuon2->fMuID & 2) == 2); // global muon!
+    if (muid) {
+      ((TH1D*)fHistDir->Get("pt2muo"))->Fill(fMu2Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+    } else {
+      ((TH1D*)fHistDir->Get("pt2nmu"))->Fill(fMu2Pt, fpCand->fMass); 
+      ((TH1D*)fHistDir->Get("pt2all"))->Fill(fMu2Pt, fpCand->fMass); 
+    }
+  }
   return;
 }
 
@@ -156,38 +159,43 @@ void candAnaFake::bookHist() {
   
   fHistDir->cd();  
   string name("K_{S}");
-  double xmin(0.45), xmax(0.55);
-  double nbin(50); 
+  double mmin(0.45), mmax(0.55);
+  double mbin(50); 
+  TH1::SetDefaultSumw2(kTRUE);
+  vector<string> mode;
+  mode.push_back("all"); 
+  mode.push_back("nmu"); 
+  mode.push_back("muo"); 
   if (310 == TRUTHCAND) {
-    new TH1D("mall", name.c_str(), nbin, xmin, xmax);
-    new TH2D("pt1all", "pt1 pion (all)", 6, xbins, nbin, xmin, xmax);
-    new TH2D("pt1muo", "pt1 pion (muon)", 6, xbins, nbin, xmin, xmax);
-    new TH2D("pt1nmu", "pt1 pion (non-muon)", 6, xbins, nbin, xmin, xmax);
-    new TH2D("pt2all", "pt2 pion (all)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2muo", "pt2 pion (muon)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2nmu", "pt2 pion (non-muon)", nbins, xbins, nbin, xmin, xmax);
+    for (unsigned i = 0; i < mode.size(); ++i) {
+      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
+      new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+      new TH2D(Form("eta2%s", mode[i].c_str()), Form("eta2 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+    }
   } else if (333 == TRUTHCAND) {
     name = "#phi";
-    xmin = 0.98;
-    xmax = 1.06;
-    new TH1D("mall", name.c_str(), nbin, xmin, xmax);
-    new TH2D("pt1all", "pt1 kaon (all)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt1muo", "pt1 kaon (muon)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt1nmu", "pt1 kaon (non-muon)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2all", "pt2 kaon (all)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2muo", "pt2 kaon (muon)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2nmu", "pt2 kaon (non-muon)", nbins, xbins, nbin, xmin, xmax);
+    mmin = 0.98;
+    mmax = 1.06;
+    for (unsigned i = 0; i < mode.size(); ++i) {
+      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
+      new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+      new TH2D(Form("eta2%s", mode[i].c_str()), Form("eta2 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+    }
   } else if (3122 == TRUTHCAND) {
     name = "#Lambda";
-    xmin = 1.05;
-    xmax = 1.20;
-    new TH1D("mall", name.c_str(), nbin, xmin, xmax);
-    new TH2D("pt1all", "pt1 proton (all)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt1muo", "pt1 proton (muon)", nbins, xbins, 50,  1.0, 1.2);
-    new TH2D("pt1nmu", "pt1 proton (non-muon)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2all", "pt2 pion (all)", nbins, xbins, nbin, xmin, xmax);
-    new TH2D("pt2muo", "pt2 pion (muon)", nbins, xbins, 50,  1.0, 1.2);
-    new TH2D("pt2nmu", "pt2 pion (non-muon)", nbins, xbins, nbin, xmin, xmax);
+    mmin = 1.05;
+    mmax = 1.20;
+    for (unsigned i = 0; i < mode.size(); ++i) {
+      new TH1D(Form("m%s", mode[i].c_str()), Form("%s m%s", name.c_str(), mode[i].c_str()), mbin, mmin, mmax);
+      new TH2D(Form("pt1%s", mode[i].c_str()), Form("pt1 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("pt2%s", mode[i].c_str()), Form("pt2 pion (%s)", mode[i].c_str()), nbins, xbins, mbin, mmin, mmax);
+      new TH2D(Form("eta1%s", mode[i].c_str()), Form("eta1 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+      new TH2D(Form("eta2%s", mode[i].c_str()), Form("eta2 pion (%s)", mode[i].c_str()), 6, 0., 2.4, mbin, mmin, mmax);
+    }
   } 
 
 }
