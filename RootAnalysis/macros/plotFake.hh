@@ -20,7 +20,11 @@ public :
   void   bookHist(int mode);
 
   // -- Fake rate from light hadrons
-  void   fake1(int id = 211); 
+  void   fakeRate(std::string var = "pt", std::string dataset = "data_charmonium", std::string particle = "pion"); 
+  void   fitKs(TH1D*); 
+  void   fitPhi(TH1D*); 
+  void   fitLambda(TH1D*); 
+
   void   loopFunction1(); 
  
 
@@ -35,10 +39,11 @@ private:
 
   struct redTreeData fb; 
 
-
   bool fGoodCand;
   double PTLO;
 
+  double fYield, fYieldE; 
+  
   
   // ----------------------------------------------------------------------
   ClassDef(plotFake,1) 

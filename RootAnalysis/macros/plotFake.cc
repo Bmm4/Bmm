@@ -51,23 +51,137 @@ void plotFake::makeAll(int bitmask) {
 }
 
 // ----------------------------------------------------------------------
-void plotFake::fake1(int id) {
+void plotFake::fakeRate(string var, string dataset, string particle) {
 
-  fDS["data_charmonium"]->cd("candAnaFake310");
+  tl->SetNDC(kTRUE); 
+  
   c0->Clear();
-  c0->Divide(2,2);
-  c0->cd(1);
-  TH2D *h1 = fDS["data_charmonium"]->getHist2("candAnaFake310/pt1all");
-  TH2D *h2 = fDS["data_charmonium"]->getHist2("candAnaFake310/pt2all");
-  TH2D *h3 = fDS["data_charmonium"]->getHist2("candAnaFake3122/pt2all");
+  //  c0->Divide(4, 4);
+  c0->Divide(2, 3);
+  int ipad(0); 
 
-  h1->ProjectionY()->Draw("e");
-  c0->cd(2);
-  h2->ProjectionY()->Draw();
-  c0->cd(3);
-  h3->ProjectionY()->Draw();
+  vector<string> mode;
+  mode.push_back("nmu"); 
+  //  mode.push_back("muo"); 
+
+  map<string, TH1D*> hmode; 
   
+  vector<string> histos; 
+  if (particle == "pion") {
+    histos.push_back(Form("candAnaFake310/%s1", var.c_str()));
+    histos.push_back(Form("candAnaFake310/%s2", var.c_str()));
+  } else if (particle == "kaon") {
+    histos.push_back(Form("candAnaFake333/%s1", var.c_str()));
+    //    histos.push_back(Form("candAnaFake333/%s2", var.c_str()));
+  }  else if (particle == "proton") {
+    histos.push_back(Form("candAnaFake3122/%s1", var.c_str()));
+  } else {
+    cout << "particle " << particle << " not known, returning" << endl;
+  }
   
+  // -- get "default" to properly initialize results histograms 
+  string hname = histos[0] + mode[0]; 
+  TH2D *h2 = fDS[dataset]->getHist2(hname, false);
+
+  for (unsigned int imode = 0; imode < mode.size(); ++imode) {
+    hname = particle + "_" + mode[imode];
+    TH1D *hr = new TH1D(hname.c_str(), hname.c_str(), h2->GetNbinsX(), h2->GetXaxis()->GetXbins()->GetArray());
+    hr->Sumw2();
+    hmode[hname] = hr; 
+    for (unsigned int ihist = 0; ihist < histos.size(); ++ihist) {
+      hname = histos[ihist] + mode[imode]; 
+      cout << "====> getting " << hname << " from dataset " << dataset << endl;
+      TH2D *h2 = fDS[dataset]->getHist2(hname, false);
+      int nbins(h2->GetNbinsX()); 
+      cout << "x bins: " << nbins  << endl;
+      TH1D *h1(0); 
+      //      for (int i = 1; i <= nbins; ++i) {
+      for (int i = 2; i <= 3; ++i) {
+	c0->cd(++ipad);
+	h1 = h2->ProjectionY(Form("hist%dpt%d", ihist, i), i, i);
+	if (string::npos != hname.find("Fake310")) {
+	  fitKs(h1);
+	} else if (string::npos != hname.find("Fake333")) {
+	  fitPhi(h1);
+	} else if (string::npos != hname.find("Fake3122")) {
+	  fitLambda(h1);
+	}
+	tl->DrawLatex(0.2, 0.7, Form("%4.2f#pm%4.2f", fYield, fYieldE)); 
+	hr->SetBinContent(i, hr->GetBinContent(i) + fYield); 
+	hr->SetBinError(i, TMath::Sqrt(hr->GetBinError(i)*hr->GetBinError(i) + fYieldE*fYieldE)); 
+      }
+      c0->cd(++ipad);
+      h2->Draw("colz");
+    }
+  }
+  // c0->cd(++ipad);
+  // hmode[Form("%s_nmu", particle.c_str())]->Draw("e1");
+  // for (int i = 1; i <= hmode["pion_nmu"]->GetNbinsX(); ++i) {
+  //   cout << hmode["pion_nmu"]->GetBinLowEdge(i) << ": " << hmode["pion_nmu"]->GetBinContent(i)
+  // 	 << " +/- " << hmode["pion_nmu"]->GetBinError(i)
+  // 	 << endl;
+  // }
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotFake::fitKs(TH1D *h) {
+  fIF->fVerbose = false; 
+  fIF->resetLimits(); 
+  fIF->limitPar(1, 0.495, 0.503); 
+  fIF->limitPar(2, 0.004, 0.008); 
+  TF1* f1 = fIF->pol0gauss(h, 0.498, 0.006); 
+  f1->FixParameter(4, 0.);
+  TFitResultPtr r = h->Fit(f1, "lsq", "e"); 
+  double bwidth = h->GetBinWidth(h->FindBin(1)); 
+  double peak = f1->GetParameter(1); 
+  double sigma = f1->GetParameter(2); 
+  double xmin = peak - 2.*sigma;
+  double xmax = peak + 2.*sigma;
+  double aintegral  = f1->Integral(xmin, xmax)/bwidth;
+  // -- (slight?) overestimate of signal integral error by including the background
+  double fintegralE = f1->IntegralError(xmin, xmax, r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray())/bwidth;
+  // -- now set constant of pol0 to zero and integrate over signal only
+  f1->SetParameter(3, 0.); 
+  double fintegral  = f1->Integral(xmin, xmax)/bwidth;
+  if (fintegral > 0) {
+    double err1 = f1->GetParError(0)/f1->GetParameter(0);
+    double err2 = f1->GetParError(2)/f1->GetParameter(2);
+    double errT = TMath::Sqrt(err1*err1 + err2*err2); 
+    fYieldE = errT*fintegral; 
+    fYieldE = fintegralE; 
+    fYield  = fintegral;
+  } else {
+    double fallbackXmin(0.485);
+    double fallbackXmax(0.511);
+    int nsgbins = h->FindBin(fallbackXmax) - h->FindBin(fallbackXmin) + 1; 
+    double sg = h->Integral(h->FindBin(fallbackXmin), h->FindBin(fallbackXmax));
+    int nbgbins = h->FindBin(fallbackXmax) - 1 - 1 + 1;
+    nbgbins    += h->GetNbinsX() - (h->FindBin(fallbackXmax) + 1) + 1;
+    double bg = h->Integral(1, h->FindBin(fallbackXmin)-1) +  h->Integral(h->FindBin(fallbackXmax)+1, h->GetNbinsX());
+
+    fYield  = sg - nsgbins*(bg/nbgbins);
+    fYieldE = (sg > 1? TMath::Sqrt(sg): 1.);
+  }
+}
+
+
+
+// ----------------------------------------------------------------------
+void plotFake::fitPhi(TH1D *h) {
+  fIF->fVerbose = true; 
+  fIF->resetLimits(); 
+  fIF->limitPar(1, 1.01, 1.03); 
+  fIF->limitPar(2, 0.002, 0.006); 
+
+  TF1* f1 = fIF->phiKK(h); 
+  h->Fit(f1, "lq", "e"); 
+}
+
+
+// ----------------------------------------------------------------------
+void plotFake::fitLambda(TH1D *h) {
 
 }
 
