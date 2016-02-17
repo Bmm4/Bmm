@@ -464,7 +464,6 @@ void showOverflow(TH1 *h) {
 
 // ----------------------------------------------------------------------
 vector<int> defVector(int n, ...) {
-  
   va_list vl;
   va_start(vl, n);
   vector<int> vect; 
@@ -473,7 +472,6 @@ vector<int> defVector(int n, ...) {
     a = va_arg(vl, int);
     vect.push_back(a); 
   }
-  
   va_end(vl);
   return vect;
 }

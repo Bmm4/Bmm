@@ -8,6 +8,8 @@
 #include <iomanip>
 
 
+#include "HFMasses.hh"
+
 ClassImp(initFunc)
 
 using namespace std;
@@ -20,6 +22,7 @@ namespace {
     //     const                        mpv   sigma
     return par[2] * TMath::Landau(x[0],par[0],par[1]);
   }
+
   // ----------------------------------------------------------------------
   // This is a simplfied "landau" using an analytical formula.
   // I use it because it was easiter for me to understand the integral (area) of this formula,
@@ -35,7 +38,7 @@ namespace {
 
   // ----------------------------------------------------------------------
   double iF_err(double *x, double *par) {
-    // from DK: TMath::Erf((a1-x)/a2))+a3
+    // from DK: a4*(TMath::Erf((a1-x)/a2))+a3)
     return par[3]*(TMath::Erf((par[0]-x[0])/par[1])+par[2]); 
   } 
 
@@ -67,7 +70,65 @@ namespace {
     return cb;
   }
 
+  // ----------------------------------------------------------------------
+  double iF_argus(double *x, double *par) {
+    // par[0] -> normalization 
+    // par[1] -> exponential factor
+    // par[2] -> endpoint
+    //           > 0: normal situation (zero above endpoint)
+    //           < 0: inverted situation (zero below endpoint)
+    
+    //  double ebeam = 10.58/2;
+    double ebeam = par[2];
+    double ebeam2 = ebeam*ebeam;
+    double background = 0.;
+    double x2 = x[0]*x[0];
+    double ratio = x2/ebeam2; 
+    if (par[2] < 0) ratio = ebeam2/x2;
+    if (ratio < 1.) {
+      background = par[0]*x[0] * sqrt(1. - (ratio)) * exp(par[1] * (1. - (ratio))); 
+    } else {
+      background = 0.;
+    }
+    return background;
+  }
+  
+  // ----------------------------------------------------------------------
+  double iF_argus_gauss(double *x, double *par) {
+    // par[0] -> Gaussian const
+    // par[1] -> Gaussian mean
+    // par[2] -> Gaussian sigma
+    // par[3] -> Argus normalization 
+    // par[4] -> Argus exponential factor 
+    // par[5] -> Argus endpoint
+    //           > 0: normal situation (zero above endpoint)
+    //           < 0: inverted situation (zero below endpoint)
+    
+    //  double ebeam = 10.58/2;
+    double ebeam = par[5];
+    double ebeam2 = ebeam*ebeam;
+    double background = 0.;
+    double x2 = x[0]*x[0];
+    double ratio = x2/ebeam2; 
+    if (par[5] < 0) ratio = ebeam2/x2;
+    if (ratio < 1.) {
+      background = par[3]*x[0] * sqrt(1. - (ratio)) * exp(par[4] * (1. - (ratio))); 
+    } else {
+      background = 0.;
+    }
 
+    double signal(0.);
+    if (par[2] > 0.) {
+      double arg = (x[0] - par[1]) / par[2];
+      signal =  par[0]*TMath::Exp(-0.5*arg*arg);
+    }
+
+    return (signal + background);
+  }
+
+
+
+  
   // ----------------------------------------------------------------------
   double iF_gauss(double *x, double *par) {
     // par[0] -> const
@@ -478,7 +539,7 @@ namespace {
 
 
 // ----------------------------------------------------------------------
-initFunc::initFunc(): fLo(99.), fHi(-99.), fBgFractionLo(-99), fBgFractionHi(-99.) {
+initFunc::initFunc(): fLo(99.), fHi(-99.), fBgFractionLo(-99), fBgFractionHi(-99.), fVerbose(true) {
   resetLimits();
 }
 
@@ -491,9 +552,18 @@ initFunc::~initFunc() {
 
 // ----------------------------------------------------------------------
 void initFunc::limitPar(int i, double lo, double hi) {
-  fLimit[i] = true; 
+  fLimit[i]   = true; 
+  fFix[i]     = false;
   fLimitLo[i] = lo; 
   fLimitHi[i] = hi; 
+}
+
+// ----------------------------------------------------------------------
+void initFunc::fixPar(int i, double fix) {
+  fLimit[i]   = false; 
+  fFix[i]     = true;
+  fLimitLo[i] = fix; 
+  fLimitHi[i] = fix; 
 }
 
 
@@ -502,7 +572,8 @@ void initFunc::resetLimits() {
   for (int i = 0; i < 20; ++i) {
     fLimitLo[i] = 0.; 
     fLimitHi[i] = -1.; 
-    fLimit[i] = false; 
+    fLimit[i]   = false; 
+    fFix[i]     = false; 
   }
 }
 
@@ -510,15 +581,20 @@ void initFunc::resetLimits() {
 // ----------------------------------------------------------------------
 void initFunc::applyLimits(int npar, TF1 *f, string name) {
   for (int i = 0; i < npar; ++i) {
-    if (fLimit[i]) {
-      cout << "initFunc::" << name << "> limiting par " << i << " from " << fLimitLo[i] << " .. " << fLimitHi[i] << endl;
-      f->SetParLimits(i, fLimitLo[i], fLimitHi[i]); 
+    if (fFix[i]) {
+      if (fVerbose) cout << "initFunc::" << name << "> fixing par " << i << " to " << fLimitLo[i] << endl;
+      f->FixParameter(i, fLimitLo[i]);
     } else {
-      f->ReleaseParameter(i);
+      if (fLimit[i]) {
+	if (fVerbose) cout << "initFunc::" << name << "> limiting par " << i << " from " << fLimitLo[i] << " .. " << fLimitHi[i] << endl;
+	f->SetParLimits(i, fLimitLo[i], fLimitHi[i]); 
+      } else {
+	if (fVerbose) cout << "initFunc::" << name << "> releasing par " << i << endl;
+	f->ReleaseParameter(i);
+      }
     }
   }
 }
-
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol0(double lo, double hi) {
@@ -675,7 +751,8 @@ TF1* initFunc::expoBsBlind(TH1 *h) {
   }
   TF1 *f = (TF1*)gROOT->FindObject("iF_expobsblind"); 
   if (f) delete f; 
-  f = new TF1("iF_expobsblind", iF_expo_BsBlind, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 2);
+  int npar(2);
+  f = new TF1("iF_expobsblind", iF_expo_BsBlind, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("offset", "slope"); 			   
   
   int lbin(1), hbin(h->GetNbinsX()+1), EDG(4), NB(EDG+1); 
@@ -705,80 +782,60 @@ TF1* initFunc::expoBsBlind(TH1 *h) {
     }
     cout << "initFunc::expoBsBlind: using default parameters for function initialization!" << endl;
   } 
-
   bool loStats = (h->GetSumOfWeights() < 10); 
-    
-  cout << "fLo: " << fLo << " fHi: " << fHi << " dx = " << dx << endl;
-  cout << "ylo: " << ylo << " yhi: " << yhi << " log: " << TMath::Log(yhi) << " .. " << TMath::Log(ylo) << endl;
-  cout << "p0:  " << p0  << " p1:  " << p1 << endl;
-
+  if (fVerbose) {
+    cout << "fLo: " << fLo << " fHi: " << fHi << " dx = " << dx << endl;
+    cout << "ylo: " << ylo << " yhi: " << yhi << " log: " << TMath::Log(yhi) << " .. " << TMath::Log(ylo) << endl;
+    cout << "p0:  " << p0  << " p1:  " << p1 << endl;
+  }
+  
   f->SetParameters(p0, p1); 
-
-  if (fLimit[0]) {
-    f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
-  } else if (loStats) {
-    f->SetParLimits(0, 10., 100.); 
-  }
-
-  if (fLimit[1]) {
-    f->SetParLimits(1, fLimitLo[1], fLimitHi[1]); 
-  } else if (loStats) {
-    f->SetParLimits(1, -10., -0.5); 
-  }
-
+  applyLimits(npar, f, "expoBsBlind"); 
   return f; 
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol0(TH1 *h) {
-
   if (0 == h) {
     cout << "empty histogram pointer" << endl;
     return 0; 
   }
   TF1 *f = new TF1("f1", iF_pol0, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 1);
   f->SetParNames("constant"); 			   
-
   int lbin(1), hbin(h->GetNbinsX()), EDG(4), NB(EDG+1); 
   if (fLo < fHi) {
     lbin = h->FindBin(fLo); 
     hbin = h->FindBin(fHi); 
   }
-  
-  double ylo = h->Integral(lbin, lbin+EDG)/NB; 
+  double ylo = h->Integral(lbin, lbin+EDG)/NB;
   double yhi = h->Integral(hbin-EDG, hbin)/NB;
   double p0 = 0.5*(yhi+ylo);
-  f->SetParameter(0, p0); 
-    
-  return f; 
 
+  f->SetParameter(0, p0);
+  return f; 
 }
 
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol0BsBlind(TH1 *h) {
-
   if (0 == h) {
     cout << "empty histogram pointer" << endl;
     return 0; 
   }
   TF1 *f = new TF1("f1", iF_pol0_BsBlind, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 1);
   f->SetParNames("constant"); 			   
-  
   int lbin(1), hbin(h->GetNbinsX()), EDG(4), NB(EDG+1); 
   if (fLo < fHi) {
     lbin = h->FindBin(fLo); 
     hbin = h->FindBin(fHi); 
   }
-  
   double ylo = h->Integral(lbin, lbin+EDG)/NB; 
   double yhi = h->Integral(hbin-EDG, hbin)/NB;
   double p0 = 0.5*(yhi+ylo);
-  f->SetParameter(0, p0); 
-    
-  return f; 
 
+  f->SetParameter(0, p0); 
+  return f; 
 }
 
 // ----------------------------------------------------------------------
@@ -786,13 +843,11 @@ TF1* initFunc::crystalBall(TH1 *h, double peak, double sigma, double alpha, doub
   int npar(5); 
   TF1 *f = new TF1("f1", iF_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("peak", "sigma", "crossover", "tail", "normalization"); 			   
-
   int lbin(1), hbin(h->GetNbinsX()+1); 
   if (fLo < fHi) {
     lbin = h->FindBin(fLo); 
     hbin = h->FindBin(fHi); 
   }
-  
   double g0 = h->Integral(lbin, hbin)*h->GetBinWidth(1);  
 
   f->SetParameters(peak, sigma, alpha, tailLength, g0); 
@@ -812,11 +867,9 @@ TF1* initFunc::pol1CrystalBall(TH1 *h, double peak, double sigma, double alpha, 
     lbin = h->FindBin(fLo); 
     hbin = h->FindBin(fHi); 
   }
-  
   double p0, p1; 
   initPol1(p0, p1, h);
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
-
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);  
 
   f->SetParameters(peak, sigma, alpha, tailLength, g0, p0, p1); 
@@ -888,7 +941,6 @@ TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
   double p0, p1; 
   initPol1(p0, p1, h);
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
-
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);  
 
   f->SetParameters(g0, peak, sigma, p0, p1); 
@@ -914,7 +966,6 @@ TF1* initFunc::pol1Gauss(TH1 *h, double peak, double sigma) {
   double p0, p1; 
   initPol1(p0, p1, h);
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
-
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);  
 
   f->SetParameters(g0, peak, sigma, p0, p1); 
@@ -938,7 +989,6 @@ TF1* initFunc::pol2local(TH1 *h, double width) {
   double xtop     = h->GetBinCenter(ytopbin);
   double slope    = (ytop-maxVal)/(xtop-maxPlace)/(xtop-maxPlace);
   f->SetParameters(maxVal, slope, maxPlace); 
-  cout << "pol2local initialized to " << maxVal << " " << slope << " " << maxPlace << endl;
   f->SetLineWidth(2);
   return f; 
 }
@@ -948,9 +998,10 @@ TF1* initFunc::pol2local(TH1 *h, double width) {
 // ----------------------------------------------------------------------
 TF1* initFunc::expoGauss(TH1 *h, double peak, double sigma) {
 
+  int npar(5); 
   TF1 *f = (TF1*)gROOT->FindObject("iF_expo_Gauss"); 
   if (f) delete f; 
-  f = new TF1("iF_expo_Gauss", iF_expo_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 5);
+  f = new TF1("iF_expo_Gauss", iF_expo_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("area", "peak", "sigma", "const", "exp"); 			   
   //  f->SetLineColor(kBlue); 
   f->SetLineWidth(2); 
@@ -968,48 +1019,14 @@ TF1* initFunc::expoGauss(TH1 *h, double peak, double sigma) {
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);  
   g0 = 10.;
 
-  cout << "A: " << A << " g0: " << g0 << " peak = " << peak << " sigma = " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
+  if (fVerbose) cout << "A: " << A << " g0: " << g0
+		     << " peak = " << peak << " sigma = " << sigma
+		     << " p0: " << p0 << " p1: " << p1
+		     << endl;
 
   f->SetParameters(g0, peak, sigma, p0, p1); 
-
-  f->ReleaseParameter(0);     
-  if (fLimit[0]) {
-    cout << "initFunc::expoGauss> limiting par 0 from " << fLimitLo[0] << " .. " << fLimitHi[0] << endl;
-    f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
-  } else {
-    f->SetParLimits(0, 0., 1.e7); 
-  }
-
-  f->ReleaseParameter(1);
-  if (fLimit[1]) {
-    cout << "initFunc::expoGauss> limiting par 1 from " << fLimitLo[1] << " .. " << fLimitHi[1] << endl;
-    f->SetParLimits(1, fLimitLo[1], fLimitHi[1]); 
-  } else {
-    f->SetParLimits(1, 5.2, 5.45); 
-  }
-
-  f->ReleaseParameter(2); 
-  if (fLimit[2]) {
-    cout << "initFunc::expoGauss> limiting par 2 from " << fLimitLo[2] << " .. " << fLimitHi[2] << endl;
-    f->SetParLimits(2, fLimitLo[2], fLimitHi[2]); 
-  } else {
-    f->SetParLimits(2, 0.010, 0.080); 
-  }
-
-  f->ReleaseParameter(3);     
-  if (fLimit[3]) {
-    cout << "initFunc::expoGauss> limiting par 3 from " << fLimitLo[3] << " .. " << fLimitHi[3] << endl;
-    f->SetParLimits(3, fLimitLo[3], fLimitHi[3]); 
-  }
-
-  f->ReleaseParameter(4);     
-  if (fLimit[4]) {
-    cout << "initFunc::expoGauss> limiting par 4 from " << fLimitLo[4] << " .. " << fLimitHi[4] << endl;
-    f->SetParLimits(4, fLimitLo[4], fLimitHi[4]); 
-  }
-
+  applyLimits(npar, f, "expoGauss"); 
   return f; 
-
 }
 
 
@@ -1041,10 +1058,14 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
   double e2(1.15), e2Min(1.05),  e2Max(1.25);
 
 
-  cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1 << endl;
+  if (fVerbose) cout << "A: " << A << " g0: " << g0
+		     << " e0: " << e0 << " e1: " << e1 << " e2: " << e2
+		     << " p0: " << p0 << " p1: " << p1
+		     << endl;
 
   f->SetParameters(g0, peak, sigma, p0, p1, e0, e1, e2, 0.05*g0); 
 
+  // -- FIXME: remove hard-coded limits!
   f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7); 
   f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45); 
   f->ReleaseParameter(2);     f->SetParLimits(2, 0.3*sigma, 1.3*sigma); 
@@ -1054,10 +1075,6 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
   f->ReleaseParameter(6);     f->SetParLimits(6, e1Min, e1Max); 
   f->ReleaseParameter(7);     f->SetParLimits(7, e2Min, e2Max); 
   f->ReleaseParameter(8);     //f->SetParLimits(8, 0, 0.05*g0); 
-
-  //        RooRealVar a1("a1","a1",5.14,5.13,5.15);
-  //        RooRealVar a2("a2","a2",0.07,0.06,0.075);
-  //        RooRealVar a3("a3","a3",1.112,1.,1.2);
 
   return f; 
 
@@ -1074,7 +1091,7 @@ TF1* initFunc::expoErrGaussLandau(TH1 *h, double peak, double sigma, double prec
   f->SetParName(9, "mpvl");
   f->SetParName(10, "sigl");
   //f->SetParName(11, "consl");
- //  f->SetLineColor(kBlue); 
+  //  f->SetLineColor(kBlue); 
   f->SetLineWidth(2); 
 
   int lbin(1), hbin(h->GetNbinsX()+1); 
@@ -1094,11 +1111,14 @@ TF1* initFunc::expoErrGaussLandau(TH1 *h, double peak, double sigma, double prec
   double e1(0.075),  e1Min(0.050), e1Max(0.100);
   double e2(1.15), e2Min(1.05),  e2Max(1.25);
 
-
-  cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1 << endl;
+  if (fVerbose) cout << "A: " << A << " g0: " << g0
+		     << " e0: " << e0 << " e1: " << e1 << " e2: " << e2
+		     << " p0: " << p0 << " p1: " << p1
+		     << endl;
 
   f->SetParameters(g0, peak, sigma, p0, p1, e0, e1, e2, 0.05*g0); 
 
+  // -- FIXME: remove hard-coded limits!
   // for the landau
   // Fix the mpv and sigma to the fit values from the Bu2JpisPi for the ENDCAP channel
   f->FixParameter(9, 5.349);   // landau mpv 
@@ -1143,25 +1163,21 @@ TF1* initFunc::expoErrgauss2c(TH1 *h, double peak, double sigma1, double sigma2,
 
   double A = p0*(TMath::Exp(p1*fHi) - TMath::Exp(p1*fLo));
   double H = h->Integral(lbin, hbin)*h->GetBinWidth(1);
-
   double g0 = (H - A);  
 
-  //   double e0(preco),  e0Min(preco-0.001), e0Max(preco+0.001); 
-  //   double e1(0.075),  e1Min(0.050), e1Max(0.100);
-  //   double e2(1.15), e2Min(1.05),  e2Max(1.25);
-  
   // -- new version with values from DK 2012/01/26: 5.146,0.055,1.00
   double e0(preco),  e0Min(preco-0.010), e0Max(preco+0.010); 
   double e1(0.055),  e1Min(0.045), e1Max(0.065);
   double e2(1.00), e2Min(0.8),  e2Max(1.2);
-
-
-  cout << "fLo = " << fLo << " fHi = " << fHi << endl;
-  cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1
-       << " H: " << H << endl;
-
+  
+  if (fVerbose) {
+    cout << "fLo = " << fLo << " fHi = " << fHi << endl;
+    cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1
+	 << " H: " << H << endl;
+  }
   f->SetParameters(g0, peak, sigma1, 0.2, sigma2, p0, p1, e0, e1, e2, 0.05*g0); 
 
+  // -- FIXME: remove hard-coded limits!?
   if (fLimit[0]) {
     cout << "initFunc::expoErrgauss2c> limiting par 0 from " << fLimitLo[0] << " .. " << fLimitHi[0] << endl;
     f->SetParLimits(0, fLimitLo[0], fLimitHi[0]); 
@@ -1238,25 +1254,7 @@ TF1* initFunc::expoErrgauss2c(TH1 *h, double peak, double sigma1, double sigma2,
   } else {
     //    f->SetParLimits(10, e2Min, e2Max); 
   }
-
-
-  //   f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7); 
-  //   f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45); 
-  //   f->ReleaseParameter(2);     f->SetParLimits(2, 0.2*sigma1, 1.5*sigma1); 
-  //   f->ReleaseParameter(3);     
-  //   f->ReleaseParameter(4);     f->SetParLimits(4, 0.5*sigma2, 2.0*sigma2); 
-  //   f->ReleaseParameter(5);     
-  //   f->ReleaseParameter(6);     
-  //   f->ReleaseParameter(7);     f->SetParLimits(7, e0Min, e0Max); 
-  //   f->ReleaseParameter(8);     f->SetParLimits(8, e1Min, e1Max); 
-  //   f->ReleaseParameter(9);     f->SetParLimits(9, e2Min, e2Max); 
-  //   f->ReleaseParameter(10);
-  //   //  f->ReleaseParameter(10);    //if (fBgFractionLo > 0) f->SetParLimits(10, fBgFractionLo*g0, fBgFractionHi*g0); 
-  //   //   f->FixParameter(8, e1);
-  //   //   f->FixParameter(9, e2);
-
   return f; 
-
 }
 
 
@@ -1291,11 +1289,15 @@ TF1* initFunc::expoErrgauss2(TH1 *h, double peak1, double sigma1, double peak2, 
   double e2(1.00), e2Min(0.8*e2),  e2Max(1.2*e2);
 
 
-  cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1 << endl;
+  if (fVerbose)  cout << "A: " << A << " g0: " << g0
+		      << " e0: " << e0 << " e1: " << e1 << " e2: " << e2
+		      << " p0: " << p0 << " p1: " << p1
+		      << endl;
   
   f->SetParameters(g0, peak1, sigma1, 0.2, peak2, sigma2, p0, p1, e0, e1, e2); 
   f->SetParameter(11,  0.05*g0); 
 
+  // -- FIXME: remove hardcoded par limits!
   f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7); 
   f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45); 
   f->ReleaseParameter(2);     f->SetParLimits(2, 0.2*sigma1, 1.5*sigma1); 
@@ -1352,7 +1354,10 @@ TF1* initFunc::expoErrgauss2f(TH1 *h, double peak1, double sigma1, double peak2,
   double e1(0.050), e1Min(0.8*e1),      e1Max(1.2*e1);
   double e2(1.00),  e2Min(0.8*e2),      e2Max(1.2*e2);
 
-  cout << "A: " << A << " g0: " << g0 << " e0: " << e0 << " e1: " << e1 << " e2: " << e2 << " p0: " << p0 << " p1: " << p1 << endl;
+  if (fVerbose) cout << "A: " << A << " g0: " << g0
+		     << " e0: " << e0 << " e1: " << e1 << " e2: " << e2
+		     << " p0: " << p0 << " p1: " << p1
+		     << endl;
   
   f->SetParameters(g0, peak1, sigma1, 0.1, peak2, sigma2, p0, p1, e0, e1, e2); 
   f->SetParameter(11,  0.05*g0); 
@@ -1621,6 +1626,7 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
 
 }
 
+
 // ----------------------------------------------------------------------
 // Uses the usuall Landau from ROOT
 TF1* initFunc::land(TH1 *h, double mpv, double sigma) {
@@ -1646,6 +1652,8 @@ TF1* initFunc::land(TH1 *h, double mpv, double sigma) {
   return f; 
 
 }
+
+
 // ----------------------------------------------------------------------
 // Simpler analytical "landau"
 TF1* initFunc::landsimp(TH1 *h, double mpv, double sigma) {
@@ -1667,8 +1675,30 @@ TF1* initFunc::landsimp(TH1 *h, double mpv, double sigma) {
   f->ReleaseParameter(0);     f->SetParLimits(0, 5.0, 5.5); 
   f->ReleaseParameter(1);     f->SetParLimits(1, 0., 0.1); 
   f->ReleaseParameter(2);     f->SetParLimits(2, 0., 1e7); 
-
   return f; 
-
 }
 
+
+// ----------------------------------------------------------------------
+TF1* initFunc::phiKK(TH1 *h) {
+  int npar(6);
+  TF1 *f = (TF1*)gROOT->FindObject("iF_phiKK"); 
+  if (f) delete f; 
+  f = new TF1("iF_phiKK", iF_argus_gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("const", "peak", "sigma", "normalization", "exponential", "endpoint"); 			   
+  f->SetLineWidth(2); 
+
+  int lbin = h->FindBin(2.*MKAON); 
+  int hbin = h->GetNbinsX()+1;
+  
+  fixPar(5, -2.*MKAON);
+  f->SetParameter(3, 10.); 
+  f->SetParameter(4, 10.); 
+
+  f->SetParameter(0, 10.); 
+  f->SetParameter(1, 1.02); 
+  f->SetParameter(2, 0.01); 
+
+  applyLimits(npar, f, "phiKK"); 
+  return f; 
+}

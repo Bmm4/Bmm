@@ -18,6 +18,7 @@ public:
 
   void resetLimits(); 
   void limitPar(int ipar, double lo, double hi); 
+  void fixPar(int ipar, double fix); 
   void applyLimits(int npar, TF1 *f, std::string name);
 
   // -- background functions
@@ -48,12 +49,12 @@ public:
   TF1* expoGauss(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
   TF1* expoErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14); 
-  TF1* expoErrgauss2c(TH1 *h, double peak = 5.3, double sigma1 = 0.04, double sigma2 = 0.1, double preco = 5.14); 
   TF1* expoErrgauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double peak2 = 5.3, double sigma2 = 0.1, double preco = 5.14); 
-  TF1* pol1ErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14); 
-
+  TF1* expoErrgauss2c(TH1 *h, double peak = 5.3, double sigma1 = 0.04, double sigma2 = 0.1, double preco = 5.14); 
   TF1* expoErrgauss2f(TH1 *h, double peak = 5.3, double sigma1 = 0.04, double peak2 = 5.425, double sigma2 = 0.079, double fraction = -1.,
 		      double preco = -1.); 
+  TF1* pol1ErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14); 
+
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1CrystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.); 
@@ -62,11 +63,14 @@ public:
   TF1* pol1BsBlind(TH1 *h); 
   TF1* expoBsBlind(TH1 *h); 
 
-  // Added to include landaus
+  // -- Added to include landau functions
   TF1* land(TH1 *h, double peak=5.3, double sigma=0.04); 
   TF1* landsimp(TH1 *h, double peak=5.3, double sigma=0.04); 
   TF1* expoErrgauss2Landau(TH1 *h, double peak = 5.3, double sigma = 0.04, double peak2 = 5.3, double sigma2 = 0.1, double preco = 5.14); 
   TF1* expoErrGaussLandau(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14); 
+
+  // -- Specific models
+  TF1* phiKK(TH1 *h); 
 
 
   void initPol0(double &p0, TH1 *h);
@@ -76,8 +80,9 @@ public:
   double fLo, fHi;
   double fBgFractionLo, fBgFractionHi; 
   double fLimitLo[20], fLimitHi[20]; 
-  bool   fLimit[20];
-
+  bool   fLimit[20], fFix[20];
+  bool   fVerbose;
+  
 private: 
 
   ClassDef(initFunc,1) //Testing initFunc
