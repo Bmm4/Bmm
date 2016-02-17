@@ -76,6 +76,8 @@ plotClass::plotClass(string dir,  string files, string setup) {
     fStampCms = "L = 20 fb^{-1} (#sqrt{s} = 8 TeV)";
   } 
 
+  fIF = new initFunc(); 
+  
 }
 
 // ----------------------------------------------------------------------

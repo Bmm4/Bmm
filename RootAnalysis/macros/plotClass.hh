@@ -32,6 +32,7 @@
 #include "common/selpoint.hh"
 #include "common/AnalysisCuts.hh"
 #include "common/PidTable.hh"
+#include "common/initFunc.hh"
 
 #include "redTreeData.hh"
 
@@ -198,7 +199,8 @@ public :
   std::map<std::string, dataset*> fDS; 
   // -- current dataset for analysis
   std::string fCds; 
-
+  initFunc *fIF;
+  
   // -- Display utilities
   std::string fStampString, fStampCms;
   int fFont; 
