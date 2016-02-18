@@ -15,6 +15,7 @@ extern TAna01Event *gHFEvent;
 // ----------------------------------------------------------------------
 HFDiTracks::HFDiTracks(const edm::ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
+  fLeadingTrackPt(iConfig.getUntrackedParameter<double>("leadingTrackPt", -1.0)),
   fTrack1Mass(iConfig.getUntrackedParameter<double>("track1Mass", MMUON)),
   fTrack2Mass(iConfig.getUntrackedParameter<double>("track2Mass", MMUON)),
   fMassLow(iConfig.getUntrackedParameter<double>("massLow", 0.0)),
@@ -30,6 +31,7 @@ void HFDiTracks::dumpConfiguration() {
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFDiTracks constructor" << endl;
   HFVirtualDecay::dumpConfiguration();
+  cout << "---  leadingTrackPt:           " << fLeadingTrackPt << endl;
   cout << "---  track1Mass:               " << fTrack1Mass << endl;
   cout << "---  track2Mass:               " << fTrack2Mass << endl;
   cout << "---  massLow:                  " << fMassLow << endl;
@@ -52,7 +54,7 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     return;
   }
 	
-  std::vector<int> trkList;
+  std::vector<int> trkList, ltrkList;
   std::vector<int> muonList;
 	
   if (fNbrMuons > 0 || fCloseToMuons) {
@@ -66,19 +68,38 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
       fListBuilder->setCloseTracks(&muonList);
     }
     trkList = fListBuilder->getTrackList();
+    // -- second list with leading track pt cut
+    if (fLeadingTrackPt > 0.) {
+      fListBuilder->setMinPt(fLeadingTrackPt);
+      if (fCloseToMuons) {
+	fListBuilder->setMaxDocaToTracks(fMaxDoca);
+	fListBuilder->setCloseTracks(&muonList);
+      }
+      ltrkList = fListBuilder->getTrackList();
+    }
   }
 	
-  HFTwoParticleCombinatoricsNew a(fTracksHandle,fVerbose);
-  HFTwoParticleCombinatoricsSet candSet = a.combine( (fNbrMuons < 1 ? trkList : muonList), fTrack1Mass,
-						     (fNbrMuons < 2 ? trkList : muonList), fTrack2Mass,
-						     fMassLow, fMassHigh,
-						     TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
-	
+  HFTwoParticleCombinatoricsNew a(fTracksHandle, fVerbose);
+  HFTwoParticleCombinatoricsSet candSet;
+  if (fNbrMuons < 1) {
+    candSet = a.combine((fLeadingTrackPt > 0.? ltrkList: trkList), fTrack1Mass,
+			trkList, fTrack2Mass,
+			fMassLow, fMassHigh,
+			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
+  } else if (fNbrMuons < 2) {
+    candSet = a.combine(muonList, fTrack1Mass,
+			trkList, fTrack2Mass,
+			fMassLow, fMassHigh,
+			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
+  } else {
+    candSet = a.combine(muonList, fTrack1Mass,
+			muonList, fTrack2Mass,
+			fMassLow, fMassHigh,
+			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
+  } 
   if (fVerbose > 0) cout << "==>HFDiTracks> candidate list size: " << candSet.size() << endl;
 	
   for (HFTwoParticleCombinatoricsNew::iterator trkIt = candSet.begin(); trkIt != candSet.end(); ++trkIt) {
-		
-    // -- Vertexing, with Kinematic Particles
     HFDecayTree theTree(fType, true, 0, false);
     theTree.addTrack(trkIt->first, idFromMass(fTrack1Mass));
     theTree.addTrack(trkIt->second, idFromMass(fTrack2Mass));
