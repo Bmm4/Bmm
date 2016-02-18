@@ -59,13 +59,12 @@ void candAnaFake::candAnalysis() {
   if (skip) return; 
 
   if (310 == TRUTHCAND) {
-    // root [172] events->Draw("m", "0.45<m&&m<0.55&&fls3d>15&&maxdoca<0.005&&flxy<4&&pvips<5&&pvlips<1&&alpha<0.008", "samep")
+    // see bmm4.org::160217a
+    //    if (fCandA > 0.01)        skip = true; 
     if (fCandFLxy > 4.0)      skip = true; 
-    if (fCandFLSxy < 15.0)    skip = true; 
-    if (fCandFLS3d < 15.0)    skip = true; 
-    if (fCandA > 0.01)        skip = true; 
+    if (fCandFLSxy < 10.0)    skip = true; 
     if (fCandPvIpS > 5.0)     skip = true; 
-    if (fCandPvLipS > 1.0)    skip = true;
+
     // -- calculate Lambda mass
     TLorentzVector pr, pi, la;
     pr.SetPtEtaPhiM(fpMuon1->fPlab.Perp(), fpMuon1->fPlab.Eta(), fpMuon1->fPlab.Phi(), MPROTON); 
@@ -74,6 +73,9 @@ void candAnaFake::candAnalysis() {
     double mla = la.M();
     if (TMath::Abs(mla - MLAMBDA_0) < 0.006) skip = true; 
   } else if (333 == TRUTHCAND) {
+    // see bmm4.org::160217a
+    if (fCandFLxy > 1.0)      skip = true; 
+    if (fCandFLSxy < 1.0)    skip = true; 
   } else if (3122 == TRUTHCAND) {
     // root [227] events->Draw("m", "1.0<m&&m<1.2&&fls3d>15&&flxy<4&&maxdoca<0.005&&pvips<5", "")
     if (fCandFLxy > 4.0)   skip = true; 
