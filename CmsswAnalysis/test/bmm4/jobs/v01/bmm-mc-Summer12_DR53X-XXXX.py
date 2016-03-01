@@ -24,6 +24,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
+#process.GlobalTag = GlobalTag(process.GlobalTag, '76X_mcRun2_asymptotic_v12', '')
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
