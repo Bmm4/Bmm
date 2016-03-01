@@ -768,14 +768,11 @@ void TAna01Event::dump() {
   for (int i = 0; i < fnCandidates; ++i) {
     pCand = getCand(i);
     pCand->dump();
+    for (int j = pCand->fSig1; j <= pCand->fSig2; ++j) {
+      pTrk = getSigTrack(j);
+      cout << "  "; pTrk->dump();
+    }
   }
-
-  cout << "sig tracks:" << endl;
-  for (int i = 0; i < fnSigTracks; ++i) {
-    pTrk = getSigTrack(i);
-    pTrk->dump();
-  }
-
 
   cout << endl;
 }
