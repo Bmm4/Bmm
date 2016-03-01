@@ -40,8 +40,11 @@ void TAnaCand::clear() {
 
 
 void TAnaCand::dump() {
-  cout << Form("Cand: idx = %3d m = %5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f ", fIndex, fMass, fPlab.Perp(), fPlab.Phi(), fPlab.Eta()) << endl;
-  cout << "daughter cands: " << fDau1 << " .. " << fDau2  << " sig tracks: " << fSig1 << " .. " << fSig2 << endl;
+  cout << Form("Cand: idx=%3d type=%d m=%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%4.3f pvips=%4.3f",
+	       fIndex, fType, fMass, fPlab.Perp(), fPlab.Phi(), fPlab.Eta(), fMaxDoca, (fPvIP3dE>0.?fPvIP3d/fPvIP3dE:-1.))
+       << endl;
+
+  cout << "mother cand: " << fMom << " daughter cands: " << fDau1 << " .. " << fDau2  << " sig tracks: " << fSig1 << " .. " << fSig2 << endl;
   fVtx.dump();
 }
 
