@@ -28,10 +28,16 @@ echo "--> Running grid job wrapper"
 # ----------------------------------------------------------------------
 echo "--> Environment"
 date
+echo "--> hostname"
 hostname
+echo "--> cat /proc/cpuinfo"
 cat /proc/cpuinfo
+echo "--> uname -a"
 uname -a
+echo "--> df -kl"
 df -kl 
+echo "--> printenv"
+printenv
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
