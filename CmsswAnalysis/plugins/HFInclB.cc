@@ -103,9 +103,7 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
   }
 
   // -- loop over muons, build close-track list for each
-  int pv0(-2), pv1(-2); 
-  double pv0Lip(-2.), pv1Lip(-2.);
-  double pv0LipE(-2.), pv1LipE(-2.);
+  int pv0(-2); 
   vector<int> oneMuon; 
   vector<int> trkList;
   for (unsigned int im = 0; im < muonList.size(); ++im) {
@@ -117,9 +115,7 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
     trkList.clear();
     trkList = fListBuilder->getTrackList(); 
 
-    pv0 = pv1 = -2; 
-    pv0Lip = pv1Lip = -2.;
-    pv0LipE = pv1LipE = -2.;
+    pv0 = -2; 
 
     reco::TrackBaseRef mTrackView(fTracksHandle, muonList[im]);
     reco::Track tM(*mTrackView);
@@ -151,12 +147,8 @@ void HFInclB::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	theTree.addTrack(trkList[it], 11);
       }
       fSequentialFitter->doFit(&theTree);
-      fSequentialFitter->pvIndices(pv0, pv1); 
-      fSequentialFitter->pvLip(pv0Lip, pv1Lip); 
-      fSequentialFitter->pvLipE(pv0LipE, pv1LipE); 
-      if (printout) cout << "--> PV choices: pv0 = " << pv0  << " with lip/lipE = " << pv0Lip << "/" << pv0LipE 
-			 << " pv1 = " << pv1  << " with lip/lipE = " << pv1Lip << "/" << pv1LipE 
-			 << endl;
+      pv0 = theTree.getAnaCand()->fPvIdx; 
+      if (printout) cout << "--> PV choices: pv0 = " << pv0  << endl;
     } else {
       if (fVertexCollection.size() < 2) {
 	pv0 = 0; 

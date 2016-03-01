@@ -128,16 +128,16 @@ void HFBd2DstarPi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 			
       HFDecayTree theTree(300000 + fType, true, MB_0, false, -1.0, true);
       theTree.addTrack(iPionFast,211); // add the fast pion to the B0 candidate
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "300000 maxdoca"));
 			
       HFDecayTreeIterator iterator = theTree.addDecayTree(300001 + fType, false, MDSTARPLUS, false); // D*-
       iterator->addTrack(iPionSlow,211); // add the slow pion to the D*+ candidate
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300001 maxdoca"));
 			
       iterator = iterator->addDecayTree(300002 + fType, true, MD0, false); // D0
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300002 maxdoca"));
 			
       fSequentialFitter->doFit(&theTree);
     }

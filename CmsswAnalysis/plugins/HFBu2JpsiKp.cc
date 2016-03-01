@@ -58,6 +58,8 @@ void HFBu2JpsiKp::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
+  const double MB0(4.8), MB1(6.0), MJPSI0(3.0), MJPSI1(3.2);
+  cout << "=== HFBu2JpsiKp ===================================================================" << endl;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 
   try {
@@ -67,7 +69,7 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  fListBuilder->setMinPt(fMuonPt); // work with muon pt
+  fListBuilder->setMinPt(fMuonPt); 
   vector<int> muonList = fListBuilder->getMuonList();
   if (muonList.size() < static_cast<unsigned int>(fPsiMuons)) return; // not enough muons
 	
@@ -84,7 +86,9 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
   if (fVerbose > 0) cout << "==>HFBu2JpsiKp> J/psi list size: " << psiList.size() << endl;
 
   // -- Build J/psi + track
+  TAnaCand *pCand(0); 
   TLorentzVector psi, cpsi, m1, m2, ka, bu;
+  HFDecayTree theTree(300521, true, MBPLUS, false, -1.0, true);
   for (HFTwoParticleCombinatoricsNew::iterator psiIt = psiList.begin(); psiIt != psiList.end(); ++psiIt) {
     int iMuon1 = psiIt->first; 
     int iMuon2 = psiIt->second; 
@@ -120,44 +124,47 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       //        clear(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false); 
 
       // -- sequential fit: J/Psi kaon
-      HFDecayTree theTree(300521, true, MBPLUS, false, -1.0, true);
+      cout << "fitting 300521 (m = " << bu.M() << ") with tracks " << iMuon1 << " " << iMuon2 << " " << *trkIt << endl;
+      theTree.clear(300521, true, MBPLUS, false, -1.0, true);
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false);
-      iterator->addTrack(iMuon1,13);
-      iterator->addTrack(iMuon2,13);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addTrack(iMuon1, 13);
+      iterator->addTrack(iMuon2, 13);
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV),  -1., fMaxDoca, "300443 maxdoca"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV),  MJPSI0,   MJPSI1, "300443 J/psi mass"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.pt),      &(iterator->fTV.ptV), fDimuonPt,     1.e9, "300443 pt"));
 
-      theTree.addTrack(*trkIt,321);
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      theTree.addTrack(*trkIt, 321);
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),  -1., fMaxDoca, "300521 maxdoca"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV),     MB0,      MB1, "300521 B+ mass"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV), fFlsxy,     1.e9, "300521 flsxy"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV), -1,       fPvIpS, "300521 pvips"));
 
-      if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit without mass constraint" << endl;
       fSequentialFitter->doFit(&theTree);
-
-      // -- sequential fit: (mass-constrained) J/Psi kaon
+      pCand = theTree.getAnaCand();
+      if (0 == pCand) continue;
+      
+      // -- sequential fit: (mass-constrained) J/Psi kaon WILL NOT BE FILLED INTO T1!
       theTree.clear(400521, true, MBPLUS, false, -1.0, true);
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
-      iterator->addTrack(iMuon1,13);
-      iterator->addTrack(iMuon2,13);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addTrack(iMuon1, 13);
+      iterator->addTrack(iMuon2, 13);
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400443 maxdoca"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MJPSI0,   MJPSI1, "400443 J/psi mass"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.pt),      &(iterator->fTV.ptV), fDimuonPt,     1.e9, "300443 pt"));
       if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit with mass constraint" << endl;
 
-      theTree.addTrack(*trkIt,321);
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      theTree.addTrack(*trkIt, 321);
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),  -1., fMaxDoca, "400521 maxdoca"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV),     MB0,      MB1, "400521 B+ mass"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV), fFlsxy,     1.e9, "400521 flsxy"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV), -1,       fPvIpS, "400521 pvips"));
+      // -- the following is never true, therefore the 400521 candidate will not be filled into the T1 tree
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.zero),    &(theTree.fTV.zeroV),      1.,       2., "400521 zero"));
 
       fSequentialFitter->doFit(&theTree);
-      if (fVerbose > 5) cout << "==>HFBu2JpsiKp> done with fitting for track " << *trkIt << endl;
-
-      // -- global fit: J/Psi kaon ????????
-      theTree.clear(500521, true, MBPLUS, false, -1.0, true);
-      iterator = theTree.addDecayTree(500443, false, MJPSI, false);
-      iterator->addTrack(iMuon1,13,true);
-      iterator->addTrack(iMuon2,13,true);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-
-      theTree.addTrack(*trkIt,321,false);
-      theTree.set_mass_tracks(MJPSI);
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-
-      fSequentialFitter->doFit(&theTree);
+      // -- but we store its relevant information into the unconstrained candidate, saved above
+      pCand->fDouble1 = theTree.fTV.mass;
+      pCand->fDouble2 = theTree.fTV.masserr;
     }
   }
 }

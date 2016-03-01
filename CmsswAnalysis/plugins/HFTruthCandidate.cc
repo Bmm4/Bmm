@@ -9,6 +9,7 @@
 //          3e6 + 81 (=fType)    special cases for complex samples with sequential kinematic fit
 //
 //
+// 2016/02/28 Urs Langenegger      removed all node cuts(!?)
 // 2016/02/11 Urs Langenegger      migrate to "consumes"
 // stone age  Urs Langenegger      first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -411,7 +412,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl; 
 	theTree.addTrack(IDX, ID);
       }
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
       aSeq.doFit(&theTree);
 
 
@@ -423,7 +423,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl; 
 	theTree2.addTrack(IDX, ID);
       }
-      theTree2.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
       aSeq.doFit(&theTree2);
 
       // -- special case for the normalization sample
@@ -438,7 +437,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 13);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
@@ -450,7 +448,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    theTree3.addTrack(IDX, 321); // assign the kaon mass!
 	  }
 	}
-	theTree3.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit for Bu2JpsiKp" << endl;
 	aSeq.doFit(&theTree3);
@@ -468,7 +465,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 13);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	iterator = theTree4.addDecayTree(300333, false, MPHI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
@@ -481,8 +477,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 321); // assign the kaon mass! do we ever get here?
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-	theTree4.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi" << endl;
 	aSeq.doFit(&theTree4);
@@ -502,7 +496,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 13);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
@@ -515,8 +508,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 211); // assign the pion mass!
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-	theTree7.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
@@ -536,7 +527,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 13);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
@@ -550,7 +540,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 //		  theTree5.addTrack(IDX, 321); // assign the kaon mass!
 //	  }
 	}
-	theTree5.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bu2JpsiK of Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree5);
@@ -569,7 +558,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 13);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	iterator = theTree6.addDecayTree(300333, false, MPHI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
@@ -582,8 +570,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(IDX, 321);
 	  }
 	}
-	iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-	theTree6.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
 
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi of Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree6);
@@ -613,16 +599,13 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
           
           HFDecayTree theTree(3000000 + fType, true, MB_0, false, -1.0, true);
           theTree.addTrack(iPion2,211); // add the fast pion to the B0 candidate
-          theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
           
           HFDecayTreeIterator iterator = theTree.addDecayTree(300031, false, MDSTARPLUS, false); // D*-
           iterator->addTrack(iPion1,211); // add the slow pion to the D*+ candidate
-          iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
           
           iterator = iterator->addDecayTree(300032, true, MD0, false); // D0
           iterator->addTrack(iKaon,321);
           iterator->addTrack(iPion,211);
-          iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
           
           aSeq.doFit(&theTree);
         }

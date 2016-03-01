@@ -44,6 +44,7 @@ void HFDiTracks::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  cout << "=== HFDiTracks ===================================================================" << endl;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
   try {
@@ -100,10 +101,16 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if (fVerbose > 0) cout << "==>HFDiTracks> candidate list size: " << candSet.size() << endl;
 	
   for (HFTwoParticleCombinatoricsNew::iterator trkIt = candSet.begin(); trkIt != candSet.end(); ++trkIt) {
+    cout << "fitting tracks " << trkIt->first << " " << trkIt->second << endl;
     HFDecayTree theTree(fType, true, 0, false);
     theTree.addTrack(trkIt->first, idFromMass(fTrack1Mass));
     theTree.addTrack(trkIt->second, idFromMass(fTrack2Mass));
-    theTree.setNodeCut(RefCountedHFNodeCut(new HFPvWeightCut(fMaxDoca,fPvWeight)));
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),   -1.,  fMaxDoca, Form("ditracks maxdoca %d", fType))); 
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), fMassLow, fMassHigh, Form("ditracks mass %d", fType)));
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pt),      &(theTree.fTV.ptV),    fCandPt,      999., Form("ditracks pt %d", fType))); 
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flxy),    &(theTree.fTV.flxyV),      -1.,     fFlxy, Form("ditracks flxy %d", fType)));
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV),  fFlsxy,      1.e9, Form("ditracks flsxy %d", fType)));
+    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV),     -1.,    fPvIpS, Form("ditracks pvips %d", fType)));
 		
     fSequentialFitter->doFit(&theTree);
   }

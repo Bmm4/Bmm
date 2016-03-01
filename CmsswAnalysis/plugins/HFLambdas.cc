@@ -35,51 +35,6 @@ using std::make_pair;
 using namespace edm;
 using namespace reco;
 
-class HFLambdaCut : public HFMaxDocaCut
-{
-public:
-    HFLambdaCut(double maxPAngle = 3.2, HFNodeCut *lambdaCut = NULL, double docaCut = 1E7, double maxVtxChi2 = 10000.0) :
-        HFMaxDocaCut(docaCut), fLambdaCut(lambdaCut), fMaxPAngle(maxPAngle), fMaxVtxChi2(maxVtxChi2) {}
-    virtual bool operator()();
-
-protected:
-    HFNodeCut *fLambdaCut; // cross reference for pointing angle calculation!
-    double fMaxPAngle; // max pointing angle (in radians)
-    double fMaxVtxChi2; // max chi2 of vertex fit
-};
-
-bool HFLambdaCut::operator()()
-{
-    bool result = HFMaxDocaCut::operator()();
-
-    if(result && fLambdaCut)
-    {
-
-        // check the pointing angle
-        const double pAngle = fLambdaCut->fPtCand.Angle(fLambdaCut->fVtxPos - this->fVtxPos);
-        result = (pAngle < fMaxPAngle && fVtxChi2 < fMaxVtxChi2);
-    }
-
-    return result;
-}
-
-class HFV0Cut : public HFNodeCut
-{
-public:
-    HFV0Cut(double maxVtxChi2, double minD3, double maxDoca) :
-        fCutVtxChi2(maxVtxChi2), fCutD3(minD3), fCutMaxDoca(maxDoca) {};
-    virtual bool operator()();
-
-protected:
-    double fCutVtxChi2;
-    double fCutD3;
-    double fCutMaxDoca;
-};
-
-bool HFV0Cut::operator()()
-{
-    return ((fVtxChi2 < fCutVtxChi2) && (fVtxPos.Mag() > fCutD3) && (fMaxDoca < fCutMaxDoca));
-}
 
 HFLambdas::HFLambdas(const ParameterSet& iConfig) :
     fVerbose(iConfig.getUntrackedParameter<int>("verbose",0)),
@@ -405,10 +360,6 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
             {
                 theTree.addTrack(iMuon1,13);
                 theTree.addTrack(iMuon2,13);
-		if (fUseAnalysisValuesForEff)
-		    theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-		else
-		    theTree.setNodeCut(RefCountedHFNodeCut(new HFV0Cut(fEffMaxChi2, 0, fEffMaxDoca)));
                 aSeq.doFit(&theTree);
             }
         }
@@ -459,14 +410,12 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
             iterator = theTree.addDecayTree(700443+V0Cand, true, MJPSI, false); // vertexing but no mass constraint...
             iterator->addTrack(iMuon1,13);
             iterator->addTrack(iMuon2,13);
-            iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             iterator = theTree.addDecayTree(703122+V0Cand, true, MLAMBDA_0, false); // Lambda0 with vertexing
             iterator->addTrack(iPion,211);
             iterator->addTrack(iProton,2212);
-            iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-
-            theTree.setNodeCut(RefCountedHFNodeCut(new HFLambdaCut(fPAngle, &(*iterator->getNodeCut()), fMaxDoca, fMaxVtxChi2)));
+	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             aSeq.doFit(&theTree);
 
@@ -512,17 +461,14 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
             iterator = theTree.addDecayTree(920443+V0Cand, false, MJPSI, false);
             iterator->addTrack(iMuon1,13,true);
             iterator->addTrack(iMuon2,13,true);
-            iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             iterator = theTree.addDecayTree(923122+V0Cand, true, MLAMBDA_0, true);
             iterator->addTrack(iPion,211,false);
             iterator->addTrack(iProton,2212,false);
-            iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
 	    theTree.set_mass_tracks(MJPSI);
-            theTree.setNodeCut(RefCountedHFNodeCut(new HFLambdaCut(fPAngle, &(*iterator->getNodeCut()), fMaxDoca,
-			   fMaxVtxChi2*4))); // this node has 4 dof and not 1. *4 is on the safe side
-
             aSeq.doFit(&theTree);
         }
 
@@ -570,14 +516,13 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                 iterator = theTree.addDecayTree(700443, true, MJPSI, false); // vertexing but no mass constraint...
                 iterator->addTrack(iMuon1,13);
                 iterator->addTrack(iMuon2,13);
-                iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
                 iterator = theTree.addDecayTree(700310, true, MKSHORT, false); // Lambda0 with vertexing
                 iterator->addTrack(iPion1,211);
                 iterator->addTrack(iPion2,211);
-                iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
-                theTree.setNodeCut(RefCountedHFNodeCut(new HFLambdaCut(fPAngle, &(*iterator->getNodeCut()), fMaxDoca, fMaxVtxChi2)));
 
                 aSeq.doFit(&theTree);
 
@@ -623,17 +568,14 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                 iterator = theTree.addDecayTree(920443, false, MJPSI, false);
                 iterator->addTrack(iMuon1,13,true);
                 iterator->addTrack(iMuon2,13,true);
-                iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
                 iterator = theTree.addDecayTree(920310, true, MKSHORT, true);
                 iterator->addTrack(iPion1,211,false);
                 iterator->addTrack(iPion2,211,false);
-                iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
 		theTree.set_mass_tracks(MJPSI);
-                theTree.setNodeCut(RefCountedHFNodeCut(new HFLambdaCut(fPAngle, &(*iterator->getNodeCut()), fMaxDoca,
-				fMaxVtxChi2*4))); // this node has 4 dof and not 1. *4 is on the safe side
-
                 aSeq.doFit(&theTree);
             }      // K0List
         }         // fUseV0producer
@@ -663,9 +605,7 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                     theTree.addTrack(iPion,211);
                     theTree.addTrack(iProton,2212);
 		    if (fUseAnalysisValuesForEff)
-			theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-		    else
-			theTree.setNodeCut(RefCountedHFNodeCut(new HFV0Cut(fEffMaxChi2, fEffMin3d, fEffMaxDoca)));
+		      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
                     aSeq.doFit(&theTree);
                 }
             }
@@ -691,9 +631,7 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                     theTree.addTrack(iPion1,211);
                     theTree.addTrack(iPion2,211);
 		    if (fUseAnalysisValuesForEff)
-			theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-		    else
-			theTree.setNodeCut(RefCountedHFNodeCut(new HFV0Cut(fEffMaxChi2, fEffMin3d, fEffMaxDoca)));
+		      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
                     aSeq.doFit(&theTree);
                 }
             }

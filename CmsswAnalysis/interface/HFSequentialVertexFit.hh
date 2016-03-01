@@ -1,10 +1,3 @@
-/*
- *  HFSequentialVertexFit.h
- *
- *  Created by Christoph Naegeli on 29.4.10.
- *
- */
-
 #ifndef GUARD_HFSEQUENTIALVERTEXFIT_H
 #define GUARD_HFSEQUENTIALVERTEXFIT_H
 
@@ -26,9 +19,10 @@
 
 #include <vector>
 
+
+
 class HFSequentialVertexFit {
 public:
-  
   HFSequentialVertexFit(edm::Handle<edm::View<reco::Track> > hTracks, 
 			const reco::MuonCollection* muons, 
 			const TransientTrackBuilder *TTB, 
@@ -40,12 +34,11 @@ public:
   virtual ~HFSequentialVertexFit();
   
   void doFit(HFDecayTree *tree);
-  void pvIndices(int &pv0, int &pv1) {pv0 = fPvIx; pv1 = fPvIx2;}
-  void pvLip(double &pv0, double &pv1) {pv0 = fPvLip; pv1 = fPvLip2;}
-  void pvLipE(double &pv0, double &pv1) {pv0 = fPvLipE; pv1 = fPvLipE2;}
+  void setPvW8(double x) {fPvW8 = x;}
   
 private:
   bool fitTree(HFDecayTree *tree);
+  void calculateStuff(HFDecayTree *tree, VertexState *);
   void saveTree(HFDecayTree *tree);
   
   double getMaxDoca(std::vector<RefCountedKinematicParticle> &kinParticles);
@@ -59,13 +52,8 @@ private:
 
 
   // to create a covariance matrix for error propagation
-  typedef ROOT::Math::SMatrix<double,3,3,ROOT::Math::MatRepSym<double,3> > cov33_t;
-  typedef ROOT::Math::SMatrix<double,6,6,ROOT::Math::MatRepSym<double,6> > cov66_t;
-  typedef ROOT::Math::SMatrix<double,7,7,ROOT::Math::MatRepSym<double,7> > cov77_t;
-  typedef ROOT::Math::SMatrix<double,9,9,ROOT::Math::MatRepSym<double,9> > cov99_t;
   cov99_t makeCovarianceMatrix(cov33_t cov_vtx1, cov77_t cov_vtx2);
   cov33_t GlobalError2SMatrix_33(GlobalError);
-  typedef ROOT::Math::SVector<double,9> jac9_t;
 
   jac9_t makeJacobianVector3d(const AlgebraicVector3 &vtx1, const AlgebraicVector3 &vtx2, const AlgebraicVector3 &momentum);
   jac9_t makeJacobianVector3d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
@@ -77,19 +65,17 @@ private:
 			      const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   jac9_t makeJacobianVector2d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   
-private: // instance variables
-  int fVerbose;
-  const TransientTrackBuilder* fpTTB;
+private:
+  int                                  fVerbose;
+  const TransientTrackBuilder         *fpTTB;
   edm::Handle<edm::View<reco::Track> > fhTracks;
-  edm::Handle<reco::VertexCollection> fPVCollection;
-  const reco::MuonCollection *fMuons;
-  const MagneticField* magneticField;
-  reco::BeamSpot fBeamSpot;
-  bool removeCandTracksFromVtx_;
-  // -- variables for PV choice
-  int fPvIx, fPvIx2; 
-  double fPvLip, fPvLip2;   
-  double fPvLipE, fPvLipE2; 
+  edm::Handle<reco::VertexCollection>  fPVCollection;
+  const reco::MuonCollection          *fMuons;
+  const MagneticField                 *fMagneticField;
+  reco::BeamSpot                       fBeamSpot;
+  bool                                 fRemoveCandTracksFromVtx;
+
+  double           fPvW8; 
 };
 
 #endif

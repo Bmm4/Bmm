@@ -33,6 +33,14 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fMuonQualityString(iConfig.getUntrackedParameter<std::string>("muonQualityString",std::string("AllGlobalMuons"))),
   fTrackPt(iConfig.getUntrackedParameter<double>("trackPt", 3.0)),
   fMuonPt(iConfig.getUntrackedParameter<double>("muonPt", 1.0)),
+  fChi2(iConfig.getUntrackedParameter<double>("chi2", 100.)),
+  fCandPt(iConfig.getUntrackedParameter<double>("candpt", -1.)),
+  fDimuonPt(iConfig.getUntrackedParameter<double>("dimuonpt", -1.)),
+  fPvIpS(iConfig.getUntrackedParameter<double>("pvips", 99999.0)),
+  fFlsxy(iConfig.getUntrackedParameter<double>("flsxy", 3.0)),
+  fFlxy(iConfig.getUntrackedParameter<double>("flxy", 9999.0)),
+  fFls3d(iConfig.getUntrackedParameter<double>("fls3d", -1.0)),
+  fMassE(iConfig.getUntrackedParameter<double>("masserr", 9999.0)),
   fDeltaR(iConfig.getUntrackedParameter<double>("deltaR", 99.0)),
   fMaxDoca(iConfig.getUntrackedParameter<double>("maxDoca", 0.2)),
   fMaxD0(iConfig.getUntrackedParameter<double>("maxD0", 999.)),
@@ -60,6 +68,15 @@ void HFVirtualDecay::dumpConfiguration() {
 	
   cout << "---  trackPt                     " << fTrackPt << endl;
   cout << "---  muonPt                      " << fMuonPt << endl;
+  cout << "---  chi2                        " << fChi2 << endl;
+  cout << "---  candpt                      " << fCandPt << endl;
+  cout << "---  dimuonpt                    " << fDimuonPt << endl;
+  cout << "---  pvips                       " << fPvIpS << endl;
+  cout << "---  flsxy                       " << fFlsxy << endl;
+  cout << "---  flxy                        " << fFlxy << endl;
+  cout << "---  fls3d                       " << fFls3d << endl;
+  cout << "---  masserr                     " << fMassE << endl;
+
   cout << "---  deltaR                      " << fDeltaR << endl;
   cout << "---  maxDoca                     " << fMaxDoca << endl;
   cout << "---  maxD0                       " << fMaxD0 << endl;
@@ -133,4 +150,5 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
 	
   // -- construct the sequential vertex fitter
   fSequentialFitter.reset(new HFSequentialVertexFit(fTracksHandle, fMuonCollection, fTTB.product(), hVertexCollection, fMagneticField, fBeamSpot, fVerbose));
+  fSequentialFitter->setPvW8(fPvWeight); 
 }

@@ -38,6 +38,7 @@ void HFBd2JpsiKstar::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  const double MB0(4.8), MB1(6.0), MJPSI0(3.0), MJPSI1(3.2), MKSTAR0(0.6), MKSTAR1(1.2);
   using namespace std;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
@@ -113,10 +114,10 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (psi.DeltaR(pi) > fDeltaR) continue;
 
       kstar = ka + pi;
-      if ((TMath::Abs(kstar.M() - MKSTAR) > fKstarWindow)) continue;
+      //use better cut (no smearing) on kin tree below  if ((TMath::Abs(kstar.M() - MKSTAR) > fKstarWindow)) continue;
 
       b0 = psi + kstar; 
-      if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
+      //use better cut (no smearing) on kin tree below  if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
 
       // -- sequential fit: J/Psi kaon + pion
       HFDecayTree theTree(300511, true, MB_0, false, -1.0, true);
@@ -124,14 +125,20 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false); // Don't use kinematic particle for the Psi
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),  &(iterator->fTV.massV), MJPSI0, MJPSI1, "300443 J/psi mass"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300443 maxdoca"));
 			
       iterator = theTree.addDecayTree(300313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300313 maxdoca"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MKSTAR0, MKSTAR1, "300313 phi mass"));
 			
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      // theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "300521 maxdoca"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), MB0, MB1, "300521 B0 mass"));
 			
       fSequentialFitter->doFit(&theTree);
 			
@@ -140,14 +147,19 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400443 maxdoca"));
 			
       iterator = theTree.addDecayTree(400313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400313 maxdoca"));
+      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MKSTAR0, MKSTAR1, "400313 phi mass"));
 			
-      theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      //theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "400521 maxdoca"));
+      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), MB0, MB1, "400521 B0 mass"));
 			
       fSequentialFitter->doFit(&theTree);
 

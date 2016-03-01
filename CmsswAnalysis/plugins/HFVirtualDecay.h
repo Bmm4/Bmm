@@ -47,6 +47,14 @@ class HFVirtualDecay : public edm::EDAnalyzer {
 		
   double fTrackPt;
   double fMuonPt;
+  double fChi2;
+  double fCandPt;
+  double fDimuonPt;
+  double fPvIpS;
+  double fFlsxy;
+  double fFlxy;
+  double fFls3d;
+  double fMassE;
   double fDeltaR;
   double fMaxDoca;
   double fMaxD0;
