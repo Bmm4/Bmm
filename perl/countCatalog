@@ -1,0 +1,37 @@
+#! /usr/bin/env perl
+
+# Usage:  countCatalog catalog.file
+# ------
+#
+# 2016/03/02   First version
+#              
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the 
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+use Getopt::Std;
+getopts('agj');
+
+my $totalCnt = 0; 
+foreach $file (@ARGV) {
+    my $cnt = &countEvents($file); 
+    print "$file: $cnt \n";
+    $totalCnt += $cnt; 
+}
+print "Total number of events: $totalCnt \n";
+
+
+
+# ----------------------------------------------------------------------
+sub countEvents() {
+    my $count = 0; 
+    ($ifile) = @_;
+    open(IN, $ifile); 
+    while (<IN>) {
+	($bla, $num) = split(/ /, $_);
+	$count += $num; 
+    }
+    return $count; 
+}
