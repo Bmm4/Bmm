@@ -11,6 +11,7 @@
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 
 // STL
+#include <iostream>
 #include <set>
 #include <map>
 #include <vector>
@@ -19,6 +20,9 @@
 // ROOT
 #include <TVector3.h>
 
+class HFDecayTree;
+typedef bool (HFDecayTree::*pMemFn)(void);
+#define CALL_MEMBER_FN(object,ptrToMember) ((object).*(ptrToMember))
 
 // ----------------------------------------------------------------------
 struct track_entry_t {
@@ -59,36 +63,42 @@ typedef ROOT::Math::SVector<double,9> jac9_t;
 // - used for node cuts (HFSimpleCuts), together with the flag that the variables were filled and are valid (V) to use
 // - that depend on two vertices (flight length and pointing angle)
 // - that are used in the choice of the PV
-struct treeVariables {
+class treeVariables {
+public:
+  treeVariables() {}; 
+  ~treeVariables() {}; 
   bool valid; 
   // -- this is always zero to allow failing candidates (avoid saving them, e.g. when only computing the mass-constrained version)
   double zero; 
   bool zeroV; 
   // -- variables and flags for node cuts
-  void setMass(double x) {mass = x; massV = true;}
+  void setMass(double x) {
+    mass = x;
+    //    std::cout << "setting mass " << x << " for treeVariables = " << this << " &m = " << &mass << std::endl;
+  }
   double mass; 
-  bool   massV; // valid?
-  void setPt(double x) {pt = x; ptV = true;}
+  double massLo, massHi;
+  void setPt(double x) {pt = x;}
   double pt; 
-  bool   ptV;
-  void setMassE(double x) {masserr = x; masserrV = true;}
+  double ptLo, ptHi;
+  void setMassE(double x) {masserr = x;}
   double masserr; 
-  bool   masserrV; 
-  void setChi2(double x) {chi2 = x; chi2V = true;}
+  void setChi2(double x) {chi2 = x;}
   double chi2; 
-  bool   chi2V; 
-  void setPvips(double x) {pvips = x; pvipsV = true;}
+  double chi2Lo, chi2Hi; 
+  void setPvips(double x) {pvips = x;}
   double pvips; 
-  bool   pvipsV;
-  void setMaxDoca(double x) {maxDoca = x; maxDocaV = true;}
-  void setMinDoca(double x) {minDoca = x; minDocaV = true;}
-  double maxDoca, minDoca; 
-  bool   maxDocaV, minDocaV; 
-  void setFlxy(double x)  {flxy  = x; flxyV  = true;}
-  void setFlsxy(double x) {flsxy = x; flsxyV = true;}
-  void setFls3d(double x) {fls3d = x; fls3dV = true;}
-  double flxy,  flsxy,  fls3d; 
-  bool   flxyV, flsxyV, fls3dV;
+  double pvipsLo, pvipsHi;
+  void setMaxDoca(double x) {maxDoca = x;}
+  void setMinDoca(double x) {minDoca = x;}
+  double maxDoca, maxDocaLo, maxDocaHi;
+  double minDoca, minDocaLo, minDocaHi;
+  void setFlxy(double x)  {flxy  = x;}
+  void setFlsxy(double x) {flsxy = x;}
+  void setFls3d(double x) {fls3d = x;}
+  double flxy,  flxyLo,  flxyHi; 
+  double flsxy, flsxyLo, flsxyHi; 
+  double fls3d, fls3dLo, fls3dHi; 
   int    pvIx, pvIx2;
   // -- PV choice
   ImpactParameters pvImpParams, pvImpParams2nd;   
@@ -105,8 +115,11 @@ struct treeVariables {
 // ----------------------------------------------------------------------
 class HFSimpleCut {
 public:
-  HFSimpleCut(double *var, bool *val, double loCut, double hiCut, std::string name = "unset"): fVar(var), fVal(val), fLoCut(loCut), fHiCut(hiCut), fName(name) { }
+  HFSimpleCut(double *var, bool *val, double loCut, double hiCut, std::string name = "unset"):
+    fVar(var), fVal(val), fLoCut(loCut), fHiCut(hiCut), fName(name) { }
+  HFSimpleCut() {clear();}
   int pass() {return ((*fVal)? ((fLoCut < (*fVar)) && ((*fVar) < fHiCut)): -1); }
+  void clear() {fVar = 0; fVal = 0; fLoCut = fHiCut = 0.; fName = "unset"; }
   double *fVar;
   bool   *fVal; // valid?
   double fLoCut, fHiCut; 
@@ -122,7 +135,54 @@ class HFDecayTree {
 public:
   HFDecayTree(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
   virtual ~HFDecayTree() { delete fpKinTree;}
-		
+
+  // -- NodeCuts
+  void addNodeCut(bool (HFDecayTree::*)(), double lo, double hi, const char *name = ""); 
+  bool passAllCuts();
+  bool passMass()    {
+    // std::cout << "passMass " << fTV.massLo << " < " << fTV.mass << " < " << fTV.massHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.massLo < fTV.mass) && (fTV.mass < fTV.massHi));
+  }
+  bool passPt()      {
+    // std::cout << "passPt " << fTV.ptLo << " < " << fTV.pt << " < " << fTV.ptHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.ptLo < fTV.pt) && (fTV.pt < fTV.ptHi));
+  }
+  bool passMaxDoca() {
+    // std::cout << "passMaxDoca " << fTV.maxDocaLo << " < " << fTV.maxDoca << " < " << fTV.maxDocaHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.maxDocaLo < fTV.maxDoca) && (fTV.maxDoca < fTV.maxDocaHi));
+  }
+  bool passPvips()   {
+    // std::cout << "passPvips " << fTV.pvipsLo << " < " << fTV.pvips << " < " << fTV.pvipsHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.pvipsLo < fTV.pvips) && (fTV.pvips < fTV.pvipsHi));
+  }
+  bool passFlsxy()   {
+    // std::cout << "passFlsxy " << fTV.flsxyLo << " < " << fTV.flsxy << " < " << fTV.flsxyHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.flsxyLo < fTV.flsxy) && (fTV.flsxy < fTV.flsxyHi));
+  }
+  bool passFlxy()    {
+    // std::cout << "passPt " << fTV.flxyLo << " < " << fTV.flxy << " < " << fTV.flxyHi
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return ((fTV.flxyLo  < fTV.flxy)  && (fTV.flxy  < fTV.flxyHi));
+  }
+  bool passNever()   {
+    // std::cout << "passNever"
+    // 	      << " for tree " << particleID() << " at " << this
+    // 	      << std::endl;
+    return false;
+  }
+
+  
   // Constructing the tree structure: add a track with a given type and massFit
   void addTrack(int trackIx, int trackID, bool massFit = true); 
 
@@ -180,15 +240,11 @@ public:
   void set_maxDoca(double maxDoca) { fMaxDoca = maxDoca; };
   void set_minDoca(double minDoca) { fMinDoca = minDoca; };
   void set_daughtersToPV(bool daughtersToPV) { fDaughtersToPV = daughtersToPV; }
-
-  // HFSimpleCuts
-  void addSimpleCut(HFSimpleCut s);
-  HFSimpleCut* getSimpleCut(int i);
-  unsigned int nSimpleCuts() {return fSimpleCuts.size();}
-  bool passSimpleCuts();
+  
   void clearTreeVariables();
   treeVariables fTV; 
   TAnaVertex fAnaVertex;
+  double readBackMass() {return fTV.mass;}
   
 private:
   double fParticleID; // if == 0, then no TAnaCandidate should be created.
@@ -208,7 +264,9 @@ private:
   std::vector<HFDecayTree> fSubVertices;
   RefCountedKinematicTree *fpKinTree;
   TAnaCand *fpAnaCand;
-  std::vector<HFSimpleCut> fSimpleCuts;
+  std::vector<bool (HFDecayTree::*)()> fNodeCuts;
+  std::vector<std::string>             fNodeCutNames;
+  void        *fTVLocation;
 };
 
 #endif

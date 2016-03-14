@@ -38,6 +38,8 @@ public:
   
 private:
   bool fitTree(HFDecayTree *tree);
+  bool passAllCuts(HFDecayTree *tree);
+  void calculateAll(HFDecayTree *tree);
   void calculateStuff(HFDecayTree *tree, VertexState *);
   void saveTree(HFDecayTree *tree);
   
