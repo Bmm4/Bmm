@@ -158,6 +158,7 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     char line[20]; 
     sprintf(line, "%7d", fEvent);
     cout << "HFSkipEvents: " << line
+	 << " " << iEvent.id().event()
 	 << " result: " << (result? "true ":"false")
 	 << " PV: " << (goodPv?1:0) << "(" << goodVertices << ")"
 	 << " Tk: " << (goodTk?1:0) << "(" << goodTracks << ")"
