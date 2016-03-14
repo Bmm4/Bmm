@@ -18,8 +18,7 @@ class HFDiTracks : public HFVirtualDecay {
   double fLeadingTrackPt; 
   double fTrack1Mass;
   double fTrack2Mass;
-  double fMassLow;
-  double fMassHigh;
+  double fExtra;
   
   int    fNbrMuons;
   bool   fCloseToMuons;

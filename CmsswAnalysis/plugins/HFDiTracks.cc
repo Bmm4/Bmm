@@ -18,12 +18,11 @@ HFDiTracks::HFDiTracks(const edm::ParameterSet& iConfig) :
   fLeadingTrackPt(iConfig.getUntrackedParameter<double>("leadingTrackPt", -1.0)),
   fTrack1Mass(iConfig.getUntrackedParameter<double>("track1Mass", MMUON)),
   fTrack2Mass(iConfig.getUntrackedParameter<double>("track2Mass", MMUON)),
-  fMassLow(iConfig.getUntrackedParameter<double>("massLow", 0.0)),
-  fMassHigh(iConfig.getUntrackedParameter<double>("massHigh", 12.0)),
+  fExtra(iConfig.getUntrackedParameter<double>("extra", 0.3)),
   fNbrMuons(iConfig.getUntrackedParameter<int>("nbrMuons",2)),
   fCloseToMuons(iConfig.getUntrackedParameter<bool>("closeToMuons",false)) {
   dumpConfiguration();
-} // HFDiTracks()
+}
 
 
 // ----------------------------------------------------------------------
@@ -34,17 +33,15 @@ void HFDiTracks::dumpConfiguration() {
   cout << "---  leadingTrackPt:           " << fLeadingTrackPt << endl;
   cout << "---  track1Mass:               " << fTrack1Mass << endl;
   cout << "---  track2Mass:               " << fTrack2Mass << endl;
-  cout << "---  massLow:                  " << fMassLow << endl;
-  cout << "---  massHigh:                 " << fMassHigh << endl;
   cout << "---  nbrMuons:                 " << fNbrMuons << endl;
   cout << "---  closeToMuons:             " << fCloseToMuons << endl;
   cout << "----------------------------------------------------------------------" << endl;
-} // dumpConfiguration()
+}
 
 
 // ----------------------------------------------------------------------
 void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  cout << "=== HFDiTracks ===================================================================" << endl;
+  //  cout << "=== HFDiTracks ===================================================================" << endl;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
   try {
@@ -85,32 +82,31 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
   if (fNbrMuons < 1) {
     candSet = a.combine((fLeadingTrackPt > 0.? ltrkList: trkList), fTrack1Mass,
 			trkList, fTrack2Mass,
-			fMassLow, fMassHigh,
+			fCandLo - fExtra, fCandHi + fExtra,
 			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
   } else if (fNbrMuons < 2) {
     candSet = a.combine(muonList, fTrack1Mass,
 			trkList, fTrack2Mass,
-			fMassLow, fMassHigh,
+			fCandLo - fExtra, fCandHi + fExtra,
 			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
   } else {
     candSet = a.combine(muonList, fTrack1Mass,
 			muonList, fTrack2Mass,
-			fMassLow, fMassHigh,
+			fCandLo - fExtra, fCandHi + fExtra,
 			TMath::Abs(fTrack1Mass - fTrack2Mass) < 0.0001);
   } 
   if (fVerbose > 0) cout << "==>HFDiTracks> candidate list size: " << candSet.size() << endl;
 	
   for (HFTwoParticleCombinatoricsNew::iterator trkIt = candSet.begin(); trkIt != candSet.end(); ++trkIt) {
-    cout << "fitting tracks " << trkIt->first << " " << trkIt->second << endl;
     HFDecayTree theTree(fType, true, 0, false);
     theTree.addTrack(trkIt->first, idFromMass(fTrack1Mass));
     theTree.addTrack(trkIt->second, idFromMass(fTrack2Mass));
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),   -1.,  fMaxDoca, Form("ditracks maxdoca %d", fType))); 
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), fMassLow, fMassHigh, Form("ditracks mass %d", fType)));
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pt),      &(theTree.fTV.ptV),    fCandPt,      999., Form("ditracks pt %d", fType))); 
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flxy),    &(theTree.fTV.flxyV),      -1.,     fFlxy, Form("ditracks flxy %d", fType)));
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV),  fFlsxy,      1.e9, Form("ditracks flsxy %d", fType)));
-    theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV),     -1.,    fPvIpS, Form("ditracks pvips %d", fType)));
+    theTree.addNodeCut(&HFDecayTree::passMaxDoca,   -1., fMaxDoca, "maxdoca");
+    theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,   fCandHi, "mass");
+    theTree.addNodeCut(&HFDecayTree::passPt,    fCandPt,     1.e9, "pt"); 
+    theTree.addNodeCut(&HFDecayTree::passFlxy,      -1.,    fFlxy, "flxy");
+    theTree.addNodeCut(&HFDecayTree::passFlsxy,  fFlsxy,     1.e9, "flsxy");
+    theTree.addNodeCut(&HFDecayTree::passPvips,      -1,   fPvIpS, "pvips");
 		
     fSequentialFitter->doFit(&theTree);
   }

@@ -40,6 +40,7 @@ void HFBd2DstarPi::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HFBd2DstarPi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  const double MDSTAR0(1.9), MDSTAR1(2.2), MD00(1.8), MD01(2.0), MB0(4.8), MB1(6.0);
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
   try {
@@ -125,20 +126,25 @@ void HFBd2DstarPi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 	     << iKaon << " " << iPion << " " << iPionSlow << " " << iPionFast
 	     << endl;
       }
-			
+
+      // FIXME: review this tree construction!
       HFDecayTree theTree(300000 + fType, true, MB_0, false, -1.0, true);
       theTree.addTrack(iPionFast,211); // add the fast pion to the B0 candidate
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "300000 maxdoca"));
+      theTree.addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      theTree.addNodeCut(&HFDecayTree::passMass, MB0,  MB1, "mass");			
 			
       HFDecayTreeIterator iterator = theTree.addDecayTree(300001 + fType, false, MDSTARPLUS, false); // D*-
       iterator->addTrack(iPionSlow,211); // add the slow pion to the D*+ candidate
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300001 maxdoca"));
-			
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      iterator->addNodeCut(&HFDecayTree::passMass, MDSTAR0,  MDSTAR1, "mass");			
+
       iterator = iterator->addDecayTree(300002 + fType, true, MD0, false); // D0
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300002 maxdoca"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,     -1., fMaxDoca, "maxdoca"); 
+      iterator->addNodeCut(&HFDecayTree::passMass,       MD00,     MD01,    "mass");
 			
+
       fSequentialFitter->doFit(&theTree);
     }
   }

@@ -35,6 +35,8 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fMuonPt(iConfig.getUntrackedParameter<double>("muonPt", 1.0)),
   fChi2(iConfig.getUntrackedParameter<double>("chi2", 100.)),
   fCandPt(iConfig.getUntrackedParameter<double>("candpt", -1.)),
+  fCandLo(iConfig.getUntrackedParameter<double>("candlo", -1.)),
+  fCandHi(iConfig.getUntrackedParameter<double>("candhi", -1.)),
   fDimuonPt(iConfig.getUntrackedParameter<double>("dimuonpt", -1.)),
   fPvIpS(iConfig.getUntrackedParameter<double>("pvips", 99999.0)),
   fFlsxy(iConfig.getUntrackedParameter<double>("flsxy", 3.0)),

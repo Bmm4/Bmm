@@ -13,7 +13,7 @@ class HFBu2JpsiKp : public HFVirtualDecay {
   virtual void dumpConfiguration();
   
   int           fPsiMuons;
-  double        fPsiWindow, fBuWindow;
+  double        fPsiLo, fPsiHi;
 };
 
 #endif

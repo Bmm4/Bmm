@@ -39,8 +39,8 @@ using namespace edm;
 HFBu2JpsiKp::HFBu2JpsiKp(const ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
   fPsiMuons(iConfig.getUntrackedParameter<int>("psiMuons", 2)),
-  fPsiWindow(iConfig.getUntrackedParameter<double>("psiWindow", 0.3)),
-  fBuWindow(iConfig.getUntrackedParameter<double>("BuWindow", 0.8)) {
+  fPsiLo(iConfig.getUntrackedParameter<double>("psiLo", 2.8)),
+  fPsiHi(iConfig.getUntrackedParameter<double>("psiHi", 3.3)) {
   dumpConfiguration();
 }
 
@@ -51,15 +51,13 @@ void HFBu2JpsiKp::dumpConfiguration() {
   cout << "--- HFBu2JpsiKp configuration" << endl;
   HFVirtualDecay::dumpConfiguration();
   cout << "---  psiMuons:                 " << fPsiMuons << endl;
-  cout << "---  psiWindow:                " << fPsiWindow << endl;
-  cout << "---  BuWindow:                " << fBuWindow << endl;
+  cout << "---  psiLo:                    " << fPsiLo << endl;
+  cout << "---  psiHi:                    " << fPsiHi << endl;
   cout << "----------------------------------------------------------------------" << endl;
 } // dumpConfiguration()
 
 // ----------------------------------------------------------------------
 void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
-  const double MB0(4.8), MB1(6.0), MJPSI0(3.0), MJPSI1(3.2);
-  cout << "=== HFBu2JpsiKp ===================================================================" << endl;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 
   try {
@@ -81,12 +79,13 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
   HFTwoParticleCombinatoricsNew a(fTracksHandle,fVerbose);
   HFTwoParticleCombinatoricsSet psiList = a.combine( (fPsiMuons < 1 ? trkList : muonList), MMUON,
 						     (fPsiMuons < 2 ? trkList : muonList), MMUON,
-						     MJPSI - fPsiWindow, MJPSI + fPsiWindow, 1 );
+						     fPsiLo-0.2, fPsiHi+0.2, 1 );
 
   if (fVerbose > 0) cout << "==>HFBu2JpsiKp> J/psi list size: " << psiList.size() << endl;
 
   // -- Build J/psi + track
   TAnaCand *pCand(0); 
+  double mass(0.1); 
   TLorentzVector psi, cpsi, m1, m2, ka, bu;
   HFDecayTree theTree(300521, true, MBPLUS, false, -1.0, true);
   for (HFTwoParticleCombinatoricsNew::iterator psiIt = psiList.begin(); psiIt != psiList.end(); ++psiIt) {
@@ -103,41 +102,47 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
     if (tMuon2.pt() < fMuonPt)  continue;
     m2.SetPtEtaPhiM(tMuon2.pt(), tMuon2.eta(), tMuon2.phi(), MMUON); 
 
+    if ((fMaxD0 < 90.) && (tMuon1.d0() > fMaxD0)) continue;
+    if ((fMaxDz < 90.) && (tMuon1.dz() > fMaxDz)) continue;
+    if ((fMaxD0 < 90.) && (tMuon2.d0() > fMaxD0)) continue;
+    if ((fMaxDz < 90.) && (tMuon2.dz() > fMaxDz)) continue;
+    
     psi = m1 + m2; 
-    if ((TMath::Abs(psi.M() - MJPSI) > fPsiWindow)) continue;
 		
     for (vector<int>::const_iterator trkIt = trkList.begin(); trkIt != trkList.end(); ++trkIt) {
       if (*trkIt == iMuon1 || *trkIt == iMuon2) continue; 
       TrackBaseRef rTrackView(fTracksHandle, *trkIt);
       Track tKaon(*rTrackView);
-      if (tKaon.d0() > fMaxD0) continue;
-      if (tKaon.dz() > fMaxDz) continue;
+      if ((fMaxD0 < 90.) && (tKaon.d0() > fMaxD0)) continue;
+      if ((fMaxDz < 90.) && (tKaon.dz() > fMaxDz)) continue;
       if (tKaon.pt() < fTrackPt) continue;
       ka.SetXYZM(tKaon.px(), tKaon.py(), tKaon.pz(), MKAON); 
-      if (psi.DeltaR(ka) > fDeltaR) continue; 
-
+      if ((fDeltaR < 90.) && (psi.DeltaR(ka) > fDeltaR)) continue; 
+    
       bu = ka + psi; 
-      if (TMath::Abs(bu.M() - MBPLUS) > fBuWindow) continue;
+      mass = bu.M();
+      
+      if (mass < (fCandLo-0.3)) continue;
+      if (mass > (fCandHi+0.3)) continue;
 
       // HFDecayTree:
       // addDecayTree(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
       //        clear(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false); 
 
       // -- sequential fit: J/Psi kaon
-      cout << "fitting 300521 (m = " << bu.M() << ") with tracks " << iMuon1 << " " << iMuon2 << " " << *trkIt << endl;
       theTree.clear(300521, true, MBPLUS, false, -1.0, true);
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false);
       iterator->addTrack(iMuon1, 13);
       iterator->addTrack(iMuon2, 13);
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV),  -1., fMaxDoca, "300443 maxdoca"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV),  MJPSI0,   MJPSI1, "300443 J/psi mass"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.pt),      &(iterator->fTV.ptV), fDimuonPt,     1.e9, "300443 pt"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,     -1., fMaxDoca, "maxdoca"); 
+      iterator->addNodeCut(&HFDecayTree::passMass,     fPsiLo,   fPsiHi,    "mass");
+      iterator->addNodeCut(&HFDecayTree::passPt,    fDimuonPt,     1.e9,      "pt"); 
 
       theTree.addTrack(*trkIt, 321);
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),  -1., fMaxDoca, "300521 maxdoca"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV),     MB0,      MB1, "300521 B+ mass"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV), fFlsxy,     1.e9, "300521 flsxy"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV), -1,       fPvIpS, "300521 pvips"));
+      theTree.addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
+      theTree.addNodeCut(&HFDecayTree::passFlsxy, fFlsxy,     1.e9, "flsxy");
+      theTree.addNodeCut(&HFDecayTree::passPvips,     -1,   fPvIpS, "pvips");
 
       fSequentialFitter->doFit(&theTree);
       pCand = theTree.getAnaCand();
@@ -148,18 +153,16 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1, 13);
       iterator->addTrack(iMuon2, 13);
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400443 maxdoca"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MJPSI0,   MJPSI1, "400443 J/psi mass"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.pt),      &(iterator->fTV.ptV), fDimuonPt,     1.e9, "300443 pt"));
-      if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit with mass constraint" << endl;
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,     -1., fMaxDoca, "maxdoca"); 
+      iterator->addNodeCut(&HFDecayTree::passMass,     fPsiLo,   fPsiHi,    "mass");
+      iterator->addNodeCut(&HFDecayTree::passPt,    fDimuonPt,     1.e9,      "pt"); 
 
       theTree.addTrack(*trkIt, 321);
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV),  -1., fMaxDoca, "400521 maxdoca"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV),     MB0,      MB1, "400521 B+ mass"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.flsxy),   &(theTree.fTV.flsxyV), fFlsxy,     1.e9, "400521 flsxy"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.pvips),   &(theTree.fTV.pvipsV), -1,       fPvIpS, "400521 pvips"));
-      // -- the following is never true, therefore the 400521 candidate will not be filled into the T1 tree
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.zero),    &(theTree.fTV.zeroV),      1.,       2., "400521 zero"));
+      theTree.addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
+      theTree.addNodeCut(&HFDecayTree::passFlsxy, fFlsxy,     1.e9, "flsxy");
+      theTree.addNodeCut(&HFDecayTree::passPvips,     -1,   fPvIpS, "pvips");
+      theTree.addNodeCut(&HFDecayTree::passNever,     1.,       1., "never");
 
       fSequentialFitter->doFit(&theTree);
       // -- but we store its relevant information into the unconstrained candidate, saved above

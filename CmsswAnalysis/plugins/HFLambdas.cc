@@ -410,12 +410,12 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
             iterator = theTree.addDecayTree(700443+V0Cand, true, MJPSI, false); // vertexing but no mass constraint...
             iterator->addTrack(iMuon1,13);
             iterator->addTrack(iMuon2,13);
-	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+	    // iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             iterator = theTree.addDecayTree(703122+V0Cand, true, MLAMBDA_0, false); // Lambda0 with vertexing
             iterator->addTrack(iPion,211);
             iterator->addTrack(iProton,2212);
-	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+	    // iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             aSeq.doFit(&theTree);
 
@@ -461,12 +461,12 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
             iterator = theTree.addDecayTree(920443+V0Cand, false, MJPSI, false);
             iterator->addTrack(iMuon1,13,true);
             iterator->addTrack(iMuon2,13,true);
-	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+	    // iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
             iterator = theTree.addDecayTree(923122+V0Cand, true, MLAMBDA_0, true);
             iterator->addTrack(iPion,211,false);
             iterator->addTrack(iProton,2212,false);
-	    iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+	    // iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
 	    theTree.set_mass_tracks(MJPSI);
             aSeq.doFit(&theTree);
@@ -516,12 +516,12 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                 iterator = theTree.addDecayTree(700443, true, MJPSI, false); // vertexing but no mass constraint...
                 iterator->addTrack(iMuon1,13);
                 iterator->addTrack(iMuon2,13);
-		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		// iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
                 iterator = theTree.addDecayTree(700310, true, MKSHORT, false); // Lambda0 with vertexing
                 iterator->addTrack(iPion1,211);
                 iterator->addTrack(iPion2,211);
-		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		// iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
 
                 aSeq.doFit(&theTree);
@@ -568,12 +568,12 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                 iterator = theTree.addDecayTree(920443, false, MJPSI, false);
                 iterator->addTrack(iMuon1,13,true);
                 iterator->addTrack(iMuon2,13,true);
-		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		// iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
                 iterator = theTree.addDecayTree(920310, true, MKSHORT, true);
                 iterator->addTrack(iPion1,211,false);
                 iterator->addTrack(iPion2,211,false);
-		iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		// iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
 
 		theTree.set_mass_tracks(MJPSI);
                 aSeq.doFit(&theTree);
@@ -605,7 +605,7 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                     theTree.addTrack(iPion,211);
                     theTree.addTrack(iProton,2212);
 		    if (fUseAnalysisValuesForEff)
-		      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		      // theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
                     aSeq.doFit(&theTree);
                 }
             }
@@ -631,7 +631,7 @@ void HFLambdas::analyze(const Event& iEvent, const EventSetup& iSetup)
                     theTree.addTrack(iPion1,211);
                     theTree.addTrack(iPion2,211);
 		    if (fUseAnalysisValuesForEff)
-		      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
+		      // theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "700443 maxdoca"));
                     aSeq.doFit(&theTree);
                 }
             }

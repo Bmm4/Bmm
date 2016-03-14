@@ -5,15 +5,15 @@
 
 // ----------------------------------------------------------------------
 class HFBs2JpsiPhi : public HFVirtualDecay {
-	public:
-		explicit HFBs2JpsiPhi(const edm::ParameterSet&);
-
-	protected:
-		virtual void analyze(const edm::Event&, const edm::EventSetup&);
-		virtual void dumpConfiguration();
-		
-		int           fPsiMuons;
-		double        fPsiWindow, fPhiWindow, fBsWindow;
+ public:
+  explicit HFBs2JpsiPhi(const edm::ParameterSet&);
+  
+ protected:
+  virtual void analyze(const edm::Event&, const edm::EventSetup&);
+  virtual void dumpConfiguration();
+  
+  int           fPsiMuons;
+  double        fPsiLo, fPsiHi, fPhiLo, fPhiHi;
 };
 
 #endif

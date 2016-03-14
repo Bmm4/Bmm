@@ -16,7 +16,8 @@ extern TAna01Event *gHFEvent;
 HFBd2JpsiKstar::HFBd2JpsiKstar(const edm::ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
   fPsiMuons(iConfig.getUntrackedParameter<int>("psiMuons", 2)),
-  fPsiWindow(iConfig.getUntrackedParameter<double>("psiWindow", 0.3)),
+  fPsiLo(iConfig.getUntrackedParameter<double>("psiLo", 2.8)),
+  fPsiHi(iConfig.getUntrackedParameter<double>("psiHi", 3.3)),
   fBdWindow(iConfig.getUntrackedParameter<double>("BdWindow", 0.8)), 
   fKstarWindow(iConfig.getUntrackedParameter<double>("kstarWindow", 0.2)){
   dumpConfiguration();
@@ -29,8 +30,9 @@ void HFBd2JpsiKstar::dumpConfiguration() {
   cout << "--- HFBd2JpsiKstar configuration" << endl;
   HFVirtualDecay::dumpConfiguration();
   cout << "---  psiMuons:                 " << fPsiMuons << endl;
-  cout << "---  psiWindow:                " << fPsiWindow << endl;
-  cout << "---  kstarWindow:                 " << fKstarWindow << endl;
+  cout << "---  psiLo:                    " << fPsiLo << endl;
+  cout << "---  psiHi:                    " << fPsiHi << endl;
+  cout << "---  kstarWindow:              " << fKstarWindow << endl;
   cout << "---  BdWindow:                 " << fBdWindow << endl;
   cout << "----------------------------------------------------------------------" << endl;
 } // dumpConfiguration()
@@ -38,7 +40,6 @@ void HFBd2JpsiKstar::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  const double MB0(4.8), MB1(6.0), MJPSI0(3.0), MJPSI1(3.2), MKSTAR0(0.6), MKSTAR1(1.2);
   using namespace std;
   typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
 	
@@ -61,7 +62,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   HFTwoParticleCombinatoricsNew a(fTracksHandle,fVerbose);
   HFTwoParticleCombinatoricsSet psiList = a.combine( (fPsiMuons < 1 ? trkList : muonList),MMUON,
 						     (fPsiMuons < 2 ? trkList : muonList),MMUON,
-						     MJPSI-fPsiWindow,MJPSI+fPsiWindow, 1);
+						     fPsiLo-0.2, fPsiHi+0.2, 1);
   
   //////adapted  by jmonroy 8-7-2015 
 
@@ -89,7 +90,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     m2.SetPtEtaPhiM(tMuon2.pt(), tMuon2.eta(), tMuon2.phi(), MMUON);
 		
     psi = m1 + m2;
-    if ((TMath::Abs(psi.M() - MJPSI) > fPsiWindow)) continue;
+    //    if ((TMath::Abs(psi.M() - MJPSI) > fPsiWindow)) continue; // this is taken care of already with the psiList setup
 		
 
     for (HFTwoParticleCombinatoricsNew::iterator kstarIt = kstarList.begin(); kstarIt != kstarList.end(); ++kstarIt) {
@@ -114,10 +115,10 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (psi.DeltaR(pi) > fDeltaR) continue;
 
       kstar = ka + pi;
-      //use better cut (no smearing) on kin tree below  if ((TMath::Abs(kstar.M() - MKSTAR) > fKstarWindow)) continue;
+      if ((TMath::Abs(kstar.M() - MKSTAR) > fKstarWindow)) continue;
 
       b0 = psi + kstar; 
-      //use better cut (no smearing) on kin tree below  if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
+      if (TMath::Abs(b0.M() - MB_0) > fBdWindow) continue;
 
       // -- sequential fit: J/Psi kaon + pion
       HFDecayTree theTree(300511, true, MB_0, false, -1.0, true);
@@ -125,20 +126,18 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       HFDecayTreeIterator iterator = theTree.addDecayTree(300443, false, MJPSI, false); // Don't use kinematic particle for the Psi
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
-      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),  &(iterator->fTV.massV), MJPSI0, MJPSI1, "300443 J/psi mass"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300443 maxdoca"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,     -1., fMaxDoca, "maxdoca"); 
+      iterator->addNodeCut(&HFDecayTree::passMass,     fPsiLo,   fPsiHi,    "mass");
+      iterator->addNodeCut(&HFDecayTree::passPt,    fDimuonPt,     1.e9,      "pt"); 
 			
       iterator = theTree.addDecayTree(300313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "300313 maxdoca"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MKSTAR0, MKSTAR1, "300313 phi mass"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      iterator->addNodeCut(&HFDecayTree::passMass, MKSTAR-fKstarWindow,  MKSTAR+fKstarWindow,    "mass");
 			
-      // theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "300521 maxdoca"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), MB0, MB1, "300521 B0 mass"));
+      theTree.addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
 			
       fSequentialFitter->doFit(&theTree);
 			
@@ -147,19 +146,18 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1,13);
       iterator->addTrack(iMuon2,13);
-      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400443 maxdoca"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,     -1., fMaxDoca, "maxdoca"); 
+      iterator->addNodeCut(&HFDecayTree::passMass,     fPsiLo,   fPsiHi,    "mass");
+      iterator->addNodeCut(&HFDecayTree::passPt,    fDimuonPt,     1.e9,      "pt"); 
 			
       iterator = theTree.addDecayTree(400313, false, MKSTAR, false);
       iterator->addTrack(iKaon,321);
       iterator->addTrack(iPion,211);
-      //iterator->setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.maxDoca), &(iterator->fTV.maxDocaV), -1., fMaxDoca, "400313 maxdoca"));
-      iterator->addSimpleCut(HFSimpleCut(&(iterator->fTV.mass),    &(iterator->fTV.massV), MKSTAR0, MKSTAR1, "400313 phi mass"));
+      iterator->addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      iterator->addNodeCut(&HFDecayTree::passMass, MKSTAR-fKstarWindow,  MKSTAR+fKstarWindow,    "mass");
 			
-      //theTree.setNodeCut(RefCountedHFNodeCut(new HFMaxDocaCut(fMaxDoca)));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.maxDoca), &(theTree.fTV.maxDocaV), -1., fMaxDoca, "400521 maxdoca"));
-      theTree.addSimpleCut(HFSimpleCut(&(theTree.fTV.mass),    &(theTree.fTV.massV), MB0, MB1, "400521 B0 mass"));
+      theTree.addNodeCut(&HFDecayTree::passMaxDoca,  -1., fMaxDoca, "maxdoca");
+      theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
 			
       fSequentialFitter->doFit(&theTree);
 
