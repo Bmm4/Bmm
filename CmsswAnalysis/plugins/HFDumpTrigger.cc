@@ -226,7 +226,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
 	  muonTrigger = muonTrigger 
 	    || (lookAt && // accumulate if several passed HLTs
-		(!(validTriggerNamesT.Contains("Multiplicity")) && // ignore
+		(!(validTriggerNamesT.Contains("Multi")) && // ignore
 		 !(validTriggerNamesT.Contains("L1simulation_step")) && //ignore
 		 !(validTriggerNamesT.Contains("noMu")) && // ignore those
 		 !(validTriggerNamesT.Contains("AlCa")) ));
