@@ -2,7 +2,7 @@
 //
 // HFDumpTrigger
 // ------------
-//
+// 2016/03/22 Danek Kotlinski      modify TTrgObjv2 to include all modules in the path
 // 2016/01/22 Urs Langenegger      migrate to "consumes"
 // 2016/01/13 Danek Kotlinski      L1 work
 // 2015/10/01 Urs Langenegger      all primary datasets and triggers
@@ -122,14 +122,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
   Handle<TriggerResults> hHLTresults;
   bool hltF = true;
-  //int selected=0;  // to store the right trigger objects
-  //string selectedObj[10];
-  //int selectedObjIndex[10];
-  bool muonTrigger = false, muonLabels = false, muonObjects=false, l3muon=false;  
-  int countSelectedMuonObjects=0, countMuonLabels=0;
-  //int countL1Modules=0, countL2Modules=0, countL3Modules=0, countLNoModules=0;
+  bool muonTrigger = false, muonObjects=false, l3muon=false;  
+  int countSelectedMuonObjects=0, countLabels=0;
   int lastModuleIndex=-1;
-  //int lastModuleLevel=-1;
   string lastModuleLabel="";
   string lastModuleType="";
   const int TEMP_SIZE = 100;
@@ -154,7 +149,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     cout<<"Error!! No TriggerEvent with label " << fTriggerEventLabel << endl;
     return;
   }
-
 
   if (hltF) {
     const TriggerNames &trigName = iEvent.triggerNames(*hHLTresults);
@@ -207,33 +201,31 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	     << endl;
       }
 
-      // Find L3 Muon modules 
-      // Do only for passed HLT
-      if(result) {
-
+      if(result) {  // Do only for passed HLT
 	if (fVerbose > 2) 
 	  cout<<" passed "<<validTriggerNames[it]<<" "
 	      <<moduleLabels.size()<<" "
 	      <<moduleIndex<<" Index "<<index<<" "<<it<<" "<<triggerIndex<<endl;
 
-	bool lookAt = 
-	  (validTriggerNamesT.Contains("mu")) ||
-	  (validTriggerNamesT.Contains("Mu")) ||
-	  (validTriggerNamesT.Contains("MU"));  // select only muon triggers
-
+	// bool lookAt = 
+	//   (validTriggerNamesT.Contains("mu")) ||
+	//   (validTriggerNamesT.Contains("Mu")) ||
+	//   (validTriggerNamesT.Contains("MU"));  // select only muon triggers
 	//if(lookAt || fVerbose>98) {   // store only mu
-	if(1||lookAt || fVerbose>98) {   // try to store all
+	if(1) {  // store all, does not cost much space 
 
+	  bool isMuon = 
+	    (validTriggerNamesT.Contains("mu")) ||
+	    (validTriggerNamesT.Contains("Mu")) ||
+	    (validTriggerNamesT.Contains("MU"));  // select only muon triggers
 	  muonTrigger = muonTrigger 
-	    || (lookAt && // accumulate if several passed HLTs
+	    || (isMuon && // accumulate if several passed HLTs
 		(!(validTriggerNamesT.Contains("Multiplicity")) && // ignore
 		 !(validTriggerNamesT.Contains("L1simulation_step")) && //ignore
 		 !(validTriggerNamesT.Contains("noMu")) && // ignore those
 		 !(validTriggerNamesT.Contains("AlCa")) ));
-
 	  
 	  lastModuleIndex=-1;
-	  //lastModuleLevel=-1;
 	  lastModuleLabel="";
 	  lastModuleType="";
 	  int numMuons = 0;
@@ -261,22 +253,16 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	      //bool muLabel = (moduleLabelT.Contains("mu") ||
 	      //	      moduleLabelT.Contains("Mu")) ||
 	      //!moduleLabelT.Contains("MuonNo");
-	      bool muLabel = true;  // override to save all modules, is it a big increae?
-	      if( (n>0) && muLabel) {
-
-		countMuonLabels++;
-		muonLabels = muonLabels || muLabel; // accumulate if several hlts
-		if(fVerbose>11) 
-		  cout<<j<<" label "<<moduleLabel<<" type "<<type<<" index "
-		      <<filterIndex<<" "<< n  << " accepted TRIGGER objects found: " << endl;
-
+	      //bool muLabel = true;  // override to save all modules, is it a big increae?
+	      //if( (n>0) && muLabel) {
+	      if(n>0) { // save all modules, not a big increae.
+		countLabels++;
 		muonObjects = true;
-
 		lastModuleIndex = filterIndex;
 		lastModuleLabel = moduleLabel;
 		lastModuleType  = type;
 
-		// loop over muons
+		// loop over objects 
 		numMuons=0;
 		const trigger::TriggerObjectCollection& TOC = triggerSummary->getObjects();
 		for (size_type i=0; i!=n; ++i) {
@@ -324,23 +310,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 				
 	      } // end if n>0
 	    }  // end if
-
-	    // do we still need this? maybe keep it for the trigger confirmation 
-	    // if(type == "HLTMuonDimuonL3Filter") {
-	    //   if(selected<10) {
-	    // 	selectedObj[selected] = moduleLabels[j];
-	    // 	selectedObjIndex[selected] = j+1;
-	    // 	selected++;
-	    //   } else {
-	    // 	cout<<"ERROR: array too small "<<selected<<endl;
-	    //   }
-	    // } // if type
-
-
 	  } // for j, modul loop
 
-
-	  // save only the final module 
+	  // save only the final module (OLD OPTION)
 	  // load the trigger information to TrgObjv2
 	  // TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
 	  // pTO->fHltPath  = validTriggerNames[it];
@@ -357,22 +329,18 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  //   lastMuonIndex[m]=-1;
 	  // }
 
-
 	} // if mu
       } // if hlt passed
 
-      //  cout << " Last active module - label/type: "
-      //   << moduleLabels[moduleIndex] << "/" << fHltConfig.moduleType(moduleLabels[moduleIndex])
-      //   << endl;
-
-      if ( moduleIndex < moduleLabels.size() && fHltConfig.moduleType(moduleLabels[moduleIndex]) == "HLTPrescaler" ){
+      // Do we need this?
+      if ( moduleIndex < moduleLabels.size() && 
+	   fHltConfig.moduleType(moduleLabels[moduleIndex]) == "HLTPrescaler" ){
 	if (fVerbose > 99) cout << " HLTPrescaler  " << endl;
 	int tmp = gHFEvent->fHLTError[index];
 	gHFEvent->fHLTError[index] = (tmp<<2);
 	gHFEvent->fHLTError[index] |= 1;
       }
 
-      // cout << "gHFEvent->fHLTError[index] = " << gHFEvent->fHLTError[index] << endl;
       if ( (gHFEvent->fHLTError[index] & 1)  && (fVerbose > 99) )
 	cout << " Last active module type =  " << fHltConfig.moduleType(moduleLabels[moduleIndex]) << endl;
 
@@ -480,46 +448,11 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   
   if (fVerbose > 0)  {
     cout<<" for event "<< fNevt
-	<< " muon trigger "<<muonTrigger<<" modules "<<muonLabels
-	<<" muon objects "<<muonObjects<<" labels"<<countMuonLabels<<" selected "
+	<< " muon trigger "<<muonTrigger
+	<<" muon objects "<<muonObjects<<" labels"<<countLabels<<" selected "
 	<<countSelectedMuonObjects<<" l3muon "<<l3muon<<endl;
-    //<<" L1 "<<countL1Modules<<" L2 "<<countL2Modules<<" L3 "<<countL3Modules<<" LNo "
-    //<<countLNoModules<<" : "<<" objects "<<countMuonObjects<<" "
 
     if(fVerbose >1) {
-
-      // TESTING
-      // cout<<" my trigger summary "<<muonTrigObjects.size()<<endl;
-      // for(imto=muonTrigObjects.begin(); imto!=muonTrigObjects.end();++imto) {
-      // 	int hltIndex = imto->hltIndex;
-      // 	string hltPath = imto->hltPath;
-      // 	int lastModuleIndex = imto->lastModuleIndex;
-      // 	int lastModuleLevel = imto->lastModuleLevel;
-      // 	string lastModuleLabel = imto->lastModuleLabel;
-      // 	string lastModuleType = imto->lastModuleType;
-      // 	vector<int> muonIndex = imto->muonIndex;
-      // 	vector<int> muonID= imto->muonID;
-      // 	vector<float> muonPt = imto->muonPt;
-      // 	vector<float> muonEta = imto->muonEta;
-      // 	vector<float> muonPhi = imto->muonPhi;
-      // 	int numOfMuons = muonIndex.size();
-      // 	//if(fVerbose>9 || numOfMuons>2) {
-      // 	  cout<<" hlt "<<hltPath<<" index "<<hltIndex
-      // 	      <<" last module index "<<lastModuleIndex<<" label "
-      // 	      <<lastModuleLabel<<" type "<<lastModuleType<<" level "
-      // 	      <<lastModuleLevel<<" num of muons "<<numOfMuons
-      // 	      <<endl;
-      // 	  for(int i=0;i<numOfMuons;++i) {
-      // 	    cout<<"muon "<<i<<" index,id,pt,eta,phi "<<muonIndex[i]<<","
-      // 		<<muonID[i]<<","<<muonPt[i]<<","
-      // 		<<muonEta[i]<<","<<muonPhi[i]<<endl;
-      // 	  } // for 
-      // 	  //} // if 
-      // } // for
-      //}
-      
-      
-      
       cout<<" stored objects "<<gHFEvent->nTrgObjv2()<<" "<<gHFEvent->nTrgObj()<<endl;
       for(int i=0; i<gHFEvent->nTrgObjv2();++i) {
 	TTrgObjv2 *pTO = gHFEvent->getTrgObjv2(i);
@@ -541,59 +474,35 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       }
     } // fVerbose
 
-    // if (fVerbose > 99)  {
-    //   cout<<"Selected HLT modules "<<selected<<endl;
-    //   for(int i=0; i<selected; ++i) {
-    // 	cout<<selectedObj[i]<<" "<<selectedObjIndex[i]<<endl;
-    // 	if(selectedObjIndex[i]!=0) cout<<" found non matched selected object "<<selectedObj[i]<<endl;
-    //   }
-    // }   
-
   } // verbose?
 
-
   // Check trigger information consistenct 
-  if(muonTrigger && 
-     (muonTrigger&&muonLabels&&muonObjects) != 
-     (muonTrigger||muonLabels||muonObjects) ) {
-    cout<<" Inconsistent muon trigger information evt= "<<fNevt
-	<< " muon trigger "<<muonTrigger<<" modules "<<muonLabels
-	<<" muon objects "<<muonObjects<<" labels"<<countMuonLabels<<" selected "
-	<<countSelectedMuonObjects<<" l3muon "<<l3muon<<endl;
-    //<<" L1 "<<countL1Modules<<" L2 "<<countL2Modules<<" L3 "<<countL3Modules<<" LNo "
-    //<<countLNoModules<<" : "<<" l3muon "<<l3muon
-    //<<" objects "<<muonFilterObjects
-    //<<" num of mu filter objects selected "<<countSelectedMuonObjects
-    //	<<endl;
-
-    // cout<<" my trigger summary "<<muonTrigObjects.size()<<endl; 
-    // for(imto=muonTrigObjects.begin(); imto!=muonTrigObjects.end();++imto) {
-    //   int hltIndex = imto->hltIndex;
-    //   string hltPath = imto->hltPath;
-    //   int lastModuleIndex = imto->lastModuleIndex;
-    //   int lastModuleLevel = imto->lastModuleLevel;
-    //   string lastModuleLabel = imto->lastModuleLabel;
-    //   string lastModuleType = imto->lastModuleType;
-    //   vector<int> muonIndex = imto->muonIndex;
-    //   vector<int> muonID= imto->muonID;
-    //   vector<float> muonPt = imto->muonPt;
-    //   vector<float> muonEta = imto->muonEta;
-    //   vector<float> muonPhi = imto->muonPhi;
-    //   int numOfMuons = muonIndex.size();
-
-    //   cout<<" hlt "<<hltPath<<" index "<<hltIndex
-    // 	  <<" last module index "<<lastModuleIndex<<" label "
-    // 	  <<lastModuleLabel<<" type "<<lastModuleType<<" level "
-    // 	  <<lastModuleLevel<<" num of muons "<<numOfMuons
-    // 	  <<endl;
-    //   for(int i=0;i<numOfMuons;++i) {
-    // 	cout<<"muon "<<i<<" index,id,pt,eta,phi "<<muonIndex[i]<<","
-    // 	    <<muonID[i]<<","<<muonPt[i]<<","
-    // 	    <<muonEta[i]<<","<<muonPhi[i]<<endl;
-    //   } // for 
-    // } // for
-
-  } // end if
+  // cout<<" my trigger summary "<<muonTrigObjects.size()<<endl; 
+  // for(imto=muonTrigObjects.begin(); imto!=muonTrigObjects.end();++imto) {
+  //   int hltIndex = imto->hltIndex;
+  //   string hltPath = imto->hltPath;
+  //   int lastModuleIndex = imto->lastModuleIndex;
+  //   int lastModuleLevel = imto->lastModuleLevel;
+  //   string lastModuleLabel = imto->lastModuleLabel;
+  //   string lastModuleType = imto->lastModuleType;
+  //   vector<int> muonIndex = imto->muonIndex;
+  //   vector<int> muonID= imto->muonID;
+  //   vector<float> muonPt = imto->muonPt;
+  //   vector<float> muonEta = imto->muonEta;
+  //   vector<float> muonPhi = imto->muonPhi;
+  //   int numOfMuons = muonIndex.size();
+  
+  //   cout<<" hlt "<<hltPath<<" index "<<hltIndex
+  // 	  <<" last module index "<<lastModuleIndex<<" label "
+  // 	  <<lastModuleLabel<<" type "<<lastModuleType<<" level "
+  // 	  <<lastModuleLevel<<" num of muons "<<numOfMuons
+  // 	  <<endl;
+  //   for(int i=0;i<numOfMuons;++i) {
+  // 	cout<<"muon "<<i<<" index,id,pt,eta,phi "<<muonIndex[i]<<","
+  // 	    <<muonID[i]<<","<<muonPt[i]<<","
+  // 	    <<muonEta[i]<<","<<muonPhi[i]<<endl;
+  //   } // for 
+  // } // for
   
 } // the end
 
