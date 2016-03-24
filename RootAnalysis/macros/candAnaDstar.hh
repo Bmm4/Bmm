@@ -42,9 +42,10 @@ public:
   int         doTest(TAnaCand *pC, int mode =-1); 
   int         getJpsi(int &idx1, int &idx2);
   bool        matchToTriggeredMuon(TAnaTrack *pt, int &idx);
-  int         doMuonTriggerMatching(TAnaCand *pC, int mode=0); // match all offline muons 
-  double      doTriggerMatchingTest(TAnaTrack *pt, int trig = 0); // match a single track to HLT
-
+  int         doMuonTriggerMatching(void); // match all offline muons to hlt muons 
+  double      doTriggerMatchingTest(int &idx, int trig = 0); // match a single track to HLT
+  double      findBestMatchingTrack(TLorentzVector,int,int &); // match trigger track to all reco tracks
+ 
 private:
   TTree * tree;
 

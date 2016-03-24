@@ -130,14 +130,24 @@ public:
   // match the 2 muons from the dimuon to HLT
   virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); 
   // match a single track to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false, bool muonsOnly=true); 
+  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false, 
+                                        bool muonsOnly=true, bool anyModule=false); 
   // To return the full deltaR not just a bool
-  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false, bool muonsOnly=true); 
+  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,  
+                                        bool muonsOnly=true, bool anyModule=false); 
+
   // match the 2 muons from the dimuon to HLT
   virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-				    bool muonsOnly=true, bool matchPt=true); 
+                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
+  virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch=true,
+                                    bool matchPt=true, bool anyModule=true); 
+  //virtual bool        doTriggerVeto_old(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
+  //                                bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
+  virtual bool        doTriggerVetoDouble(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
+                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
 
   virtual void        print1();
+
   
   
   std::string fName; 
