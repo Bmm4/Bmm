@@ -43,13 +43,13 @@ muonDump = cms.EDAnalyzer(
     propM1 = cms.PSet(
         useStation2 = cms.bool(False), 
         useTrack = cms.string("tracker"),
-        useState = cms.string("atVertex"),  # in AOD
+        useState = cms.string("atVertex"),  # in AOD; this is for matching to other tracks?
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
     ),
     propM2 = cms.PSet(
         useStation2 = cms.bool(True), 
         useTrack = cms.string("tracker"),
-        useState = cms.string("atVertex"),  # in AOD
+        useState = cms.string("outermost"), # in AOD; this is for matching to the L1 muon!
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
     )
 )
