@@ -80,6 +80,11 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
+  if (1236 == fVerbose) {
+    play3();
+    return;
+  }
+
   if(fVerbose>0) {
     cout<<"---------------------------------------------------"<<endl;
     cout<<" event "<<fEvt<<" run "<<fRun<<" cands "<<fpEvt->nCands()<<" verbose "
@@ -1282,6 +1287,7 @@ void candAna::bookHist() {
 
   h11 = new TH1D("tm_eta", "tight muon eta", 50, -2.5, 2.5); 
   h11 = new TH1D("bm_eta", "BDT muon eta", 50, -2.5, 2.5); 
+
 
   h11 = new TH1D("l1pt",  "(pT(L3) - pT(L1))/(pT(L3)", 40, -2., 2.); 
   h11 = new TH1D("l1pt_10_11",  "(pT(L3) - pT(L1))/(pT(L3) for 10 < pT < 11", 40, -2., 2.); 
@@ -4285,6 +4291,292 @@ double candAna::matchToMuon(TAnaTrack *pt, bool skipSame) {
   return dRMin;
 }
 
+
+// ----------------------------------------------------------------------
+void candAna::play3() {
+
+  if (!fJSON) return;
+  cout << "Evt: " << fEvt << " ----------------------------------------------------------------------" << endl;
+  static int first(1);
+  if (first) {
+    first = 0;
+    fHistDir->cd(); 
+    
+    vector<string> particles;
+    particles.push_back("bu"); 
+    particles.push_back("bs"); 
+    particles.push_back("ks"); 
+    particles.push_back("mm"); 
+    particles.push_back("dstar"); 
+
+    for (unsigned int i = 0; i < particles.size(); ++i) {
+      new TH1D(Form("%sflsxy", particles[i].c_str()), Form("%s flsxy", particles[i].c_str()), 100, 0., 50.); 
+      if ("ks" == particles[i]) {
+	new TH1D(Form("%smass", particles[i].c_str()),  Form("%s mass", particles[i].c_str()), 100, 0.4, 0.6);
+      } else if ("dstar" == particles[i]) {
+	new TH1D(Form("%smass", particles[i].c_str()),  Form("%s mass", particles[i].c_str()), 100, 1.8, 2.2);
+	new TH1D(Form("%sdm", particles[i].c_str()),  Form("%s dm", particles[i].c_str()), 100, 0.13, 0.16);
+	new TH1D(Form("%smd0", particles[i].c_str()),  Form("%s md0", particles[i].c_str()), 100, 1.6, 2.0);
+      } else if ("bs" == particles[i]) {
+	new TH1D(Form("%smass", particles[i].c_str()),  Form("%s mass", particles[i].c_str()), 100, 4.8, 6.0);
+      } else if ("mm" == particles[i]) {
+	new TH1D(Form("%smass", particles[i].c_str()),  Form("%s mass", particles[i].c_str()), 100, 4.2, 6.7);
+      } else if ("bu" == particles[i]) {
+	new TH1D(Form("%smass", particles[i].c_str()),  Form("%s mass", particles[i].c_str()), 100, 4.8, 6.0);
+      }
+      new TH1D(Form("%schi2", particles[i].c_str()),  Form("%schi2", particles[i].c_str()), 100, 0., 20.); 
+      new TH1D(Form("%sschi2", particles[i].c_str()),  Form("%sschi2", particles[i].c_str()), 100, 0., 20.); 
+      new TH1D(Form("%spvips", particles[i].c_str()), Form("%spvips", particles[i].c_str()), 100, 0., 5.); 
+      new TH1D(Form("%sfls3d", particles[i].c_str()), Form("%sfls3d", particles[i].c_str()), 100, 0., 50.); 
+      new TH1D(Form("%salpha", particles[i].c_str()), Form("%salpha", particles[i].c_str()), 100, 0., .4); 
+      new TH1D(Form("%sdocatrk", particles[i].c_str()), Form("%sdocatrk", particles[i].c_str()), 100, 0., .1); 
+      new TH1D(Form("%stip", particles[i].c_str()),   Form("%stip", particles[i].c_str()), 100, 0., .02); 
+      new TH1D(Form("%slip", particles[i].c_str()),   Form("%slip", particles[i].c_str()), 100, -0.02, .02); 
+      new TH1D(Form("%spvw8", particles[i].c_str()),   Form("%spvw8", particles[i].c_str()), 100, 0., 1.0); 
+    }
+  }
+
+  
+  TAnaCand *pCand(0), *sCand(0);
+  // cout << "----------------------------------------------------------------------" << endl;
+  // cout << "-- Event " << fEvt << endl;
+  // cout << "----------------------------------------------------------------------" << endl;
+  
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    pCand = fpEvt->getCand(iC);
+
+    double PvAveW8(0.);
+    if (pCand->fPvIdx > -1 && pCand->fPvIdx < fpEvt->nPV()) {
+      TAnaVertex *pv = fpEvt->getPV(pCand->fPvIdx); 
+      PvAveW8 = ((pv->fNdof+2.)/2.)/pv->getNtracks();
+    }
+    
+    if (300521 == pCand->fType) {
+      if (pCand->fMaxDoca > 0.06) continue; 
+      if (pCand->fPvIP3d/pCand->fPvIP3dE > 5) continue;
+      if (pCand->fVtx.fDxy/pCand->fVtx.fDxyE < 3) continue;
+      if ((pCand->fMass < 4.8) || (pCand->fMass > 6.0)) continue;
+      sCand = fpEvt->getCand(pCand->fDau1);
+      if (sCand->fMaxDoca > 0.06) continue; 
+      if ((sCand->fMass < 2.9) || (sCand->fMass > 3.2)) continue;
+      if (sCand->fPlab.Perp() < 6.9) continue; 
+
+      ((TH1D*)fHistDir->Get("buflsxy"))->Fill(pCand->fVtx.fDxy/pCand->fVtx.fDxyE);
+      ((TH1D*)fHistDir->Get("bumass"))->Fill(pCand->fMass);
+      ((TH1D*)fHistDir->Get("bupvips"))->Fill(pCand->fPvIP3d/pCand->fPvIP3dE);
+      ((TH1D*)fHistDir->Get("buchi2"))->Fill(pCand->fVtx.fChi2/pCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("buschi2"))->Fill(sCand->fVtx.fChi2/sCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("bufls3d"))->Fill(pCand->fVtx.fD3d/pCand->fVtx.fD3dE);
+      ((TH1D*)fHistDir->Get("bualpha"))->Fill(pCand->fAlpha);
+      ((TH1D*)fHistDir->Get("budocatrk"))->Fill(pCand->fNstTracks[0].second.first);
+      ((TH1D*)fHistDir->Get("butip"))->Fill(pCand->fPvTip);
+      ((TH1D*)fHistDir->Get("bulip"))->Fill(pCand->fPvLip);
+      ((TH1D*)fHistDir->Get("bupvw8"))->Fill(PvAveW8);
+
+    } else if (300531 == pCand->fType) {
+      if (pCand->fMaxDoca > 0.06) continue; 
+      if (pCand->fPvIP3d/pCand->fPvIP3dE > 5) continue;
+      if (pCand->fVtx.fDxy/pCand->fVtx.fDxyE < 2.5) continue;
+      if (pCand->fVtx.fChi2 > 10.0) continue;
+      if ((pCand->fMass < 4.8) || (pCand->fMass > 6.0)) continue;
+      sCand = fpEvt->getCand(pCand->fDau1);
+      if (sCand->fMaxDoca > 0.06) continue; 
+      if ((sCand->fMass < 2.9) || (sCand->fMass > 3.2)) continue;
+      if (sCand->fPlab.Perp() < 6.9) continue; 
+      double schi2 = pCand->fVtx.fChi2/pCand->fVtx.fNdof;
+      sCand = fpEvt->getCand(pCand->fDau2);
+      if ((sCand->fMass < 0.98) || (sCand->fMass > 1.06)) continue;
+
+      ((TH1D*)fHistDir->Get("bsflsxy"))->Fill(pCand->fVtx.fDxy/pCand->fVtx.fDxyE);
+      ((TH1D*)fHistDir->Get("bsmass"))->Fill(pCand->fMass);
+      ((TH1D*)fHistDir->Get("bspvips"))->Fill(pCand->fPvIP3d/pCand->fPvIP3dE);
+      ((TH1D*)fHistDir->Get("bschi2"))->Fill(pCand->fVtx.fChi2/pCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("bsschi2"))->Fill(schi2);
+      ((TH1D*)fHistDir->Get("bsfls3d"))->Fill(pCand->fVtx.fD3d/pCand->fVtx.fD3dE);
+      ((TH1D*)fHistDir->Get("bsalpha"))->Fill(pCand->fAlpha);
+      ((TH1D*)fHistDir->Get("bsdocatrk"))->Fill(pCand->fNstTracks[0].second.first);
+      ((TH1D*)fHistDir->Get("bstip"))->Fill(pCand->fPvTip);
+      ((TH1D*)fHistDir->Get("bslip"))->Fill(pCand->fPvLip);
+      ((TH1D*)fHistDir->Get("bspvw8"))->Fill(PvAveW8);
+    } else if (11310 == pCand->fType) {
+      if (pCand->fMaxDoca > 0.1) continue; 
+      if (pCand->fPvIP3d/pCand->fPvIP3dE > 5) continue;
+      if (pCand->fVtx.fDxy/pCand->fVtx.fDxyE < 5.) continue;
+      if (pCand->fVtx.fDxy > 4.) continue;
+      if (pCand->fVtx.fChi2 > 20.) continue;
+      if ((pCand->fMass < 0.44) || (pCand->fMass > 0.56)) continue;
+      double pt1 = fpEvt->getSigTrack(pCand->fSig1)->fPlab.Perp();
+      double pt2 = fpEvt->getSigTrack(pCand->fSig2)->fPlab.Perp();
+      if (pt2 > pt1) {
+	double pt0 = pt1;
+	pt1 = pt2;
+	pt2 = pt0;
+      }
+      if (pt1 < 3.5) continue;
+      if (pt2 < 2.5) continue;
+
+      ((TH1D*)fHistDir->Get("ksflsxy"))->Fill(pCand->fVtx.fDxy/pCand->fVtx.fDxyE);
+      ((TH1D*)fHistDir->Get("ksmass"))->Fill(pCand->fMass);
+      ((TH1D*)fHistDir->Get("kspvips"))->Fill(pCand->fPvIP3d/pCand->fPvIP3dE);
+      ((TH1D*)fHistDir->Get("kschi2"))->Fill(pCand->fVtx.fChi2/pCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("ksfls3d"))->Fill(pCand->fVtx.fD3d/pCand->fVtx.fD3dE);
+      ((TH1D*)fHistDir->Get("ksalpha"))->Fill(pCand->fAlpha);
+      ((TH1D*)fHistDir->Get("ksdocatrk"))->Fill(pCand->fNstTracks[0].second.first);
+      ((TH1D*)fHistDir->Get("kstip"))->Fill(pCand->fPvTip);
+      ((TH1D*)fHistDir->Get("kslip"))->Fill(pCand->fPvLip);
+      ((TH1D*)fHistDir->Get("kspvw8"))->Fill(PvAveW8);
+
+      cout << Form("==> Cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f eta=%+4.3f f=%+4.3f maxdoca=%5.4f",
+		   pCand->fIndex, pCand->fType, pCand->fMass, pCand->fMassE,
+		   pCand->fPlab.Perp(), pCand->fPlab.Eta(), pCand->fPlab.Phi(), pCand->fMaxDoca) << endl;
+      cout << "daughter cands: " << pCand->fDau1 << " .. " << pCand->fDau2
+	   << " sig tracks: ";
+      if (pCand->fSig1 > -1) cout << fpEvt->getSigTrack(pCand->fSig1)->fIndex;
+      if (pCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(pCand->fSig2)->fIndex;
+      cout << " pt= " << pt1 << "/" << pt2; 
+      cout << " flxy=" << pCand->fVtx.fDxy << " flsxy=" << pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
+      cout << " pvips= " << pCand->fPvIP3d/pCand->fPvIP3dE;
+      cout << endl;
+      pCand->fVtx.dump();
+      cout << " referring to PV " << pCand->fPvIdx << " at "
+	   << fpEvt->getPV(pCand->fPvIdx)->fPoint.X() << "/" 
+	   << fpEvt->getPV(pCand->fPvIdx)->fPoint.Y() << "/" 
+	   << fpEvt->getPV(pCand->fPvIdx)->fPoint.Z()
+	   << " with pvw8 = " << ((fpEvt->getPV(pCand->fPvIdx)->fNdof+2.)/2.)/fpEvt->getPV(pCand->fPvIdx)->getNtracks()
+	   << endl;
+      // fPvNtrk = pv->getNtracks();
+      // fPvNdof = pv->fNdof;
+
+      
+      // sCand = fpEvt->getCand(pCand->fDau1);
+      // cout << Form("=> J/psi cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%5.4f",
+      // 		   sCand->fIndex, sCand->fType, sCand->fMass, sCand->fMassE, 
+      // 		   sCand->fPlab.Perp(), sCand->fPlab.Phi(), sCand->fPlab.Eta(), sCand->fMaxDoca) << endl;
+      // cout << " sig tracks: ";
+      // if (sCand->fSig1 > -1) cout << fpEvt->getSigTrack(sCand->fSig1)->fIndex;
+      // if (sCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(sCand->fSig2)->fIndex;
+      // cout << " flxy=" << sCand->fVtx.fDxy << " flsxy=" << sCand->fVtx.fDxy/sCand->fVtx.fDxyE;
+      // cout << " pvips= " << sCand->fPvIP3d/sCand->fPvIP3dE;
+      // cout << endl;
+      // sCand->fVtx.dump();
+      
+      // sCand = fpEvt->getCand(pCand->fDau2);
+      // cout << Form("=> phi cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%5.4f",
+      // 		   sCand->fIndex, sCand->fType, sCand->fMass, sCand->fMassE, 
+      // 		   sCand->fPlab.Perp(), sCand->fPlab.Phi(), sCand->fPlab.Eta(), sCand->fMaxDoca) << endl;
+      // cout << " sig tracks: ";
+      // if (sCand->fSig1 > -1) cout << fpEvt->getSigTrack(sCand->fSig1)->fIndex;
+      // if (sCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(sCand->fSig2)->fIndex;
+      // cout << " flxy=" << sCand->fVtx.fDxy << " flsxy=" << sCand->fVtx.fDxy/sCand->fVtx.fDxyE;
+      // cout << " pvips= " << sCand->fPvIP3d/sCand->fPvIP3dE;
+      // cout << endl;
+      // sCand->fVtx.dump();
+
+    } else if (1313 == pCand->fType) {
+      if (pCand->fPlab.Perp() < 5.0) continue; 
+      if (pCand->fMaxDoca > 0.06) continue; 
+      if (pCand->fPvIP3d/pCand->fPvIP3dE > 5) continue;
+      if (pCand->fVtx.fDxy/pCand->fVtx.fDxyE < 2.5) continue;
+      if ((pCand->fMass < 4.2) || (pCand->fMass > 6.7)) continue;
+      double pt1 = fpEvt->getSigTrack(pCand->fSig1)->fPlab.Perp();
+      double pt2 = fpEvt->getSigTrack(pCand->fSig2)->fPlab.Perp();
+      if (pt2 > pt1) {
+	double pt0 = pt1;
+	pt1 = pt2;
+	pt2 = pt0;
+      }
+      if (pt1 < 4.0) continue;
+      if (pt2 < 4.0) continue;
+      ((TH1D*)fHistDir->Get("mmflsxy"))->Fill(pCand->fVtx.fDxy/pCand->fVtx.fDxyE);
+      ((TH1D*)fHistDir->Get("mmmass"))->Fill(pCand->fMass);
+      ((TH1D*)fHistDir->Get("mmpvips"))->Fill(pCand->fPvIP3d/pCand->fPvIP3dE);
+      ((TH1D*)fHistDir->Get("mmchi2"))->Fill(pCand->fVtx.fChi2/pCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("mmfls3d"))->Fill(pCand->fVtx.fD3d/pCand->fVtx.fD3dE);
+      ((TH1D*)fHistDir->Get("mmalpha"))->Fill(pCand->fAlpha);
+      ((TH1D*)fHistDir->Get("mmdocatrk"))->Fill(pCand->fNstTracks[0].second.first);
+      ((TH1D*)fHistDir->Get("mmtip"))->Fill(pCand->fPvTip);
+      ((TH1D*)fHistDir->Get("mmlip"))->Fill(pCand->fPvLip);
+      ((TH1D*)fHistDir->Get("mmpvw8"))->Fill(PvAveW8);
+    } else if (300054 == pCand->fType) {
+      if (fEvt == 32579099) {
+	sCand = fpEvt->getCand(pCand->fDau1);  // D0 candidate 
+	double dm = pCand->fMass - sCand->fMass;
+	cout << "dm = " << dm << endl;
+	cout << Form("Cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f eta=%+4.3f f=%+4.3f maxdoca=%5.4f",
+		     pCand->fIndex, pCand->fType, pCand->fMass, pCand->fMassE,
+		     pCand->fPlab.Perp(), pCand->fPlab.Eta(), pCand->fPlab.Phi(), pCand->fMaxDoca) << endl;
+	cout << "daughter cands: " << pCand->fDau1 << " .. " << pCand->fDau2
+	     << " sig tracks: ";
+	if (pCand->fSig1 > -1) cout << fpEvt->getSigTrack(pCand->fSig1)->fIndex;
+	if (pCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(pCand->fSig2)->fIndex;
+	cout << " flxy=" << pCand->fVtx.fDxy << " flsxy=" << pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
+	cout << " pvips= " << pCand->fPvIP3d/pCand->fPvIP3dE;
+	cout << endl;
+	pCand->fVtx.dump();
+	cout << " referring to PV " << pCand->fPvIdx << " at "
+	     << fpEvt->getPV(pCand->fPvIdx)->fPoint.X() << "/" 
+	     << fpEvt->getPV(pCand->fPvIdx)->fPoint.Y() << "/" 
+	     << fpEvt->getPV(pCand->fPvIdx)->fPoint.Z()
+	     << endl;
+	cout << Form(" D0 cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%5.4f",
+		     sCand->fIndex, sCand->fType, sCand->fMass, sCand->fMassE, 
+		     sCand->fPlab.Perp(), sCand->fPlab.Phi(), sCand->fPlab.Eta(), sCand->fMaxDoca) << endl;
+	cout << " sig tracks: ";
+	if (sCand->fSig1 > -1) cout << fpEvt->getSigTrack(sCand->fSig1)->fIndex;
+	if (sCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(sCand->fSig2)->fIndex;
+	cout << " flxy=" << sCand->fVtx.fDxy << " flsxy=" << sCand->fVtx.fDxy/sCand->fVtx.fDxyE;
+	cout << " pvips= " << sCand->fPvIP3d/sCand->fPvIP3dE;
+	cout << endl;
+	sCand->fVtx.dump();
+      }
+      if (pCand->fMaxDoca > 0.1) continue; 
+      if ((pCand->fMass < 1.9) || (pCand->fMass > 2.2)) continue;
+      sCand = fpEvt->getCand(pCand->fDau1);  // D0 candidate 
+      if ((sCand->fMass < 1.75) || (sCand->fMass > 2.0)) continue;
+      double dm = pCand->fMass - sCand->fMass;
+      if (dm > 0.17) continue; 
+      ((TH1D*)fHistDir->Get("dstarflsxy"))->Fill(pCand->fVtx.fDxy/pCand->fVtx.fDxyE);
+      ((TH1D*)fHistDir->Get("dstarmass"))->Fill(pCand->fMass);
+      ((TH1D*)fHistDir->Get("dstardm"))->Fill(dm);
+      ((TH1D*)fHistDir->Get("dstarmd0"))->Fill(sCand->fMass);
+      ((TH1D*)fHistDir->Get("dstarpvips"))->Fill(pCand->fPvIP3d/pCand->fPvIP3dE);
+      ((TH1D*)fHistDir->Get("dstarchi2"))->Fill(pCand->fVtx.fChi2/pCand->fVtx.fNdof);
+      ((TH1D*)fHistDir->Get("dstarfls3d"))->Fill(pCand->fVtx.fD3d/pCand->fVtx.fD3dE);
+      ((TH1D*)fHistDir->Get("dstaralpha"))->Fill(pCand->fAlpha);
+      ((TH1D*)fHistDir->Get("dstardocatrk"))->Fill(pCand->fNstTracks[0].second.first);
+      ((TH1D*)fHistDir->Get("dstartip"))->Fill(pCand->fPvTip);
+      ((TH1D*)fHistDir->Get("dstarlip"))->Fill(pCand->fPvLip);
+      ((TH1D*)fHistDir->Get("dstarpvw8"))->Fill(PvAveW8);
+
+      cout << "===> event " << fEvt << "  ";
+      cout << Form("Cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%5.4f",
+		   pCand->fIndex, pCand->fType, pCand->fMass, pCand->fMassE,
+		   pCand->fPlab.Perp(), pCand->fPlab.Phi(), pCand->fPlab.Eta(), pCand->fMaxDoca) << endl;
+      cout << "daughter cands: " << pCand->fDau1 << " .. " << pCand->fDau2
+	   << " sig tracks: ";
+      if (pCand->fSig1 > -1) cout << fpEvt->getSigTrack(pCand->fSig1)->fIndex;
+      if (pCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(pCand->fSig2)->fIndex;
+      cout << " flxy=" << pCand->fVtx.fDxy << " flsxy=" << pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
+      cout << " pvips= " << pCand->fPvIP3d/pCand->fPvIP3dE;
+      cout << endl;
+      pCand->fVtx.dump();
+      cout << Form(" D0 cand: idx=%3d type=%d m=%5.3f+/-%5.3f, pT=%6.2f f=%+4.3f eta=%+4.3f maxdoca=%5.4f",
+		   sCand->fIndex, sCand->fType, sCand->fMass, sCand->fMassE, 
+		   sCand->fPlab.Perp(), sCand->fPlab.Phi(), sCand->fPlab.Eta(), sCand->fMaxDoca) << endl;
+      cout << " sig tracks: ";
+      if (sCand->fSig1 > -1) cout << fpEvt->getSigTrack(sCand->fSig1)->fIndex;
+      if (sCand->fSig2 > -1) cout << " .. " << fpEvt->getSigTrack(sCand->fSig2)->fIndex;
+      cout << endl;      
+    } else if (300443 == pCand->fType) {
+    } else if (300333 == pCand->fType) {
+    } else if (400521 == pCand->fType) {
+    } else if (400531 == pCand->fType) {
+    } else if (400443 == pCand->fType) {
+    } else if (400333 == pCand->fType) {
+    } else {
+    }
+  }   
+}
 
 
 // ----------------------------------------------------------------------

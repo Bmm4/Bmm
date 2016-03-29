@@ -127,6 +127,7 @@ public:
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual void        play(); 
   virtual void        play2(); 
+  virtual void        play3(); 
   // match the 2 muons from the dimuon to HLT
   virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); 
   // match a single track to HLT
