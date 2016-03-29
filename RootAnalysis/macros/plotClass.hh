@@ -115,7 +115,8 @@ public :
   void           replaceAll(std::string &sInput, const std::string &oldString, const std::string &newString);
   void           newLegend(double x1, double y1, double x2, double y2, std::string title = "");
   void           makeCanvas(int i = 3);
-  
+  void           setItalic();
+  void           setRoman();
 
   // -- histograms
   std::map<std::string, TH1*> fHists;

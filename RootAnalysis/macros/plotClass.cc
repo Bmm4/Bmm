@@ -1430,6 +1430,14 @@ void plotClass::printCuts(ostream &OUT) {
   OUT.flush();
 }
 
+void plotClass::setItalic() {
+  tl->SetTextFont(52);
+}
+void plotClass::setRoman() {
+  tl->SetTextFont(42);
+}
+
+
 #include "plotClass.icc"
 
 
