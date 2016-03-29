@@ -46,7 +46,6 @@ HFBu2JpsiKp::HFBu2JpsiKp(const ParameterSet& iConfig) :
 
 // ----------------------------------------------------------------------
 void HFBu2JpsiKp::dumpConfiguration() {
-  using namespace std;
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFBu2JpsiKp configuration" << endl;
   HFVirtualDecay::dumpConfiguration();
@@ -54,7 +53,8 @@ void HFBu2JpsiKp::dumpConfiguration() {
   cout << "---  psiLo:                    " << fPsiLo << endl;
   cout << "---  psiHi:                    " << fPsiHi << endl;
   cout << "----------------------------------------------------------------------" << endl;
-} // dumpConfiguration()
+}
+
 
 // ----------------------------------------------------------------------
 void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
