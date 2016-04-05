@@ -1,0 +1,60 @@
+#!/usr/bin/env perl
+
+#
+# fillCustomInfoInpuFile -t file-XXXX.py  -f filenames.txt
+#
+# This is useful for creating a set of python files, putting ONE inputfile into the  _customInfo['inputFile'] field
+#
+#
+# History   
+# -------   
+#           16/04/05  First shot		       
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the 
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+
+@args = @ARGV; 
+use Getopt::Std;
+getopts('f:t:');
+
+if ($opt_t) {
+    open(IN, "$opt_t") || die "cannot open $opt_t\n";
+    @in = <IN>;
+    close IN; 
+} else {
+    die "need a template py file!\n";
+}
+
+
+if ($opt_f) {
+    @tmp = split(/\//, $opt_f); 
+    $catalogName = pop(@tmp); 
+
+    open(IN, "$opt_f") || die "cannot open $opt_f\n";
+    @afiles = <IN>;
+    grep(s/\n//, @afiles); 
+    close IN; 
+    @files = grep(/\/store\//, @afiles);
+} else {
+    die "need dbs txt file with all the filenames\n";
+}
+
+$icnt = 0; 
+foreach $file (@afiles) {
+    ($newname = $opt_t) =~ s/\.py//g;
+    $scnt = sprintf("-%04i", $icnt);
+    $newname = $newname . "$scnt" . ".py"; 
+    print "create $newname\n";
+    open(OUT, ">$newname");
+    foreach $line (@in) {
+	if ($line =~ /_customInfo\[\'inputFile\'\s*\]=/) {
+	    $line = "_customInfo['inputFile' ]= ['$file']\n";
+	}
+	print OUT $line; 
+    }
+    close(OUT); 
+    $icnt++;
+}
