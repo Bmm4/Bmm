@@ -49,7 +49,7 @@ plotWork::~plotWork() {
 void plotWork::makeAll(int bitmask) {
 
   if (bitmask & 0x1) {
-    prodSummary("signal_filter");
+    prodSummary("bdmm_official");
   }
 
 }
@@ -78,8 +78,12 @@ void plotWork::prodSummary(string ds1, int year) {
   static const double aparticles[] = {511, 521, 531, 5122};
   vector<int> particles(aparticles, aparticles + sizeof(aparticles)/sizeof(aparticles[0]));
 
-  fDS[ds1]->cd("");
-
+  if (fDS[ds1]) {
+    fDS[ds1]->cd("");
+  } else {
+    cout << "fDS[" << ds1 << "] not found" << endl;
+    return;
+  }
   // -- Masses
   cout << "Masses" << endl;
   cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
@@ -199,7 +203,7 @@ void plotWork::prodSummary(string ds1, int year) {
   tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L521)/tE));
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gPad->SaveAs("t521.pdf");
+  savePad("t521.pdf");
 
   h = ((TH1D*)gFile->Get("t511"));
   f = (TF1*)h->GetFunction("expo");
@@ -217,7 +221,7 @@ void plotWork::prodSummary(string ds1, int year) {
   tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L511)/tE));
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gPad->SaveAs("t511.pdf");
+  savePad("t511.pdf");
 
   h = ((TH1D*)gFile->Get("t531"));
   f = (TF1*)h->GetFunction("expo");
@@ -235,7 +239,7 @@ void plotWork::prodSummary(string ds1, int year) {
   tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L531)/tE));
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gPad->SaveAs("t531.pdf");
+  savePad("t531.pdf");
 
   h = ((TH1D*)gFile->Get("t5122"));
   f = (TF1*)h->GetFunction("expo");
@@ -253,7 +257,7 @@ void plotWork::prodSummary(string ds1, int year) {
   tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L5122)/tE));
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
-  gPad->SaveAs("t5122.pdf");
+  savePad("t5122.pdf");
 
 
 }
@@ -582,14 +586,17 @@ void plotWork::loadFiles(string afiles) {
       ds->fSize = 1;
       ds->fWidth = 2;
 
-      string filter = "acc";
-      if (string::npos != stype.find("filter")) filter = "filter";
+      string filter = "";
+      if (string::npos != stype.find("acc")) filter = "_acc";
+
+      string prod = "";
+      if (string::npos != stype.find("official")) filter = "_official";
 
       // -------------------------
       // -- genAnalysis files below
       // -------------------------
       if (string::npos != stype.find("bdmm,")) {
-        sname = "bdmm_" + filter;
+        sname = "bdmm" + filter + prod;
         sdecay = "bdmm";
 	ds->fColor = kBlue-7;
 	ds->fSymbol = 24;
@@ -599,7 +606,7 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      cout << "  inserting as " << sname << " and " << sdecay << endl;
+      cout << "  inserting as name ->" << sname << "<- and decay = " << sdecay << endl;
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
       ds->fName   = sdecay;
@@ -616,9 +623,6 @@ void plotWork::loadFiles(string afiles) {
   is.close();
   cout << "Summary: " << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << "===> " << it->first << endl;
-    cout << "       " << it->second->fName << endl;
-    cout << "       " << it->second->fF->GetName() << endl;
-    cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
+    cout << "===>" << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }

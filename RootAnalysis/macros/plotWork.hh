@@ -14,36 +14,36 @@ public :
 
   void   setCuts(std::string cuts);
 
-  // -- Main analysis methods 
+  // -- Main analysis methods
   void   loadFiles(std::string afiles);
   void   makeAll(int bitmask = 0);
   void   bookHist(int mode);
 
   // -- validate gen production
-  void   prodSummary(string ds1 = "bdmm_filter", int year = 2014);
+  void   prodSummary(string ds1, int year = 2014);
 
   // -- code for loops
-  void   loopFunction1(); 
+  void   loopFunction1();
 
 
-  void   setupTree(TTree *t); 
+  void   setupTree(TTree *t);
 
-  void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0); 
-  void   candAnalysis(); 
+  void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
+  void   candAnalysis();
 
-private: 
+private:
 
   TTree* fTree;
 
-  struct redTreeData fb; 
+  struct redTreeData fb;
 
 
   bool fGoodCand;
   double PTLO;
 
-  
+
   // ----------------------------------------------------------------------
-  ClassDef(plotWork,1) 
+  ClassDef(plotWork,1)
 
 };
 

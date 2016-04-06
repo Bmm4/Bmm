@@ -19,65 +19,65 @@
 
 ClassImp(plotClass)
 
-using namespace std; 
+using namespace std;
 
 // ----------------------------------------------------------------------
 plotClass::plotClass(string dir,  string files, string setup) {
 
   gStyle->SetHatchesSpacing(2);
 
-  fDBX = true; 
+  fDBX = true;
   fDoUseBDT = false;
   fVerbose = true;
 
-  fDirectory = dir; 
+  fDirectory = dir;
   fSetup = "A";
-  fSuffix = setup; 
-  
+  fSuffix = setup;
+
 
   delete gRandom;
   gRandom = (TRandom*) new TRandom3;
 
-  fEpsilon = 0.00001; 
-  fLumi = 20.; 
+  fEpsilon = 0.00001;
+  fLumi = 20.;
 
   legg = 0;
   c0 = c1 = c2 = c3 = c4 = c5 =0;
   tl = new TLatex();
   box = new TBox();
   pa = new TArrow();
-  pl = new TLine(); 
+  pl = new TLine();
   legge = 0;
 
   fAccPt = 3.5;
   fAccEtaGen = 2.5;
   fAccEtaRec = 2.4;
 
-  c0 = (TCanvas*)gROOT->FindObject("c0"); 
+  c0 = (TCanvas*)gROOT->FindObject("c0");
   if (!c0) c0 = new TCanvas("c0","--c0--",0,0,656,700);
 
   fHistFile = 0; // this must be opened in a derived class!
 
   fStampString = "preliminary";
   if (fDoUseBDT) {
-    fStampString = "BDT preliminary"; 
+    fStampString = "BDT preliminary";
   } else {
-    fStampString = "CNC preliminary"; 
+    fStampString = "CNC preliminary";
   }
   fStampCms = "BMM4";
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
-    fYear = 2011; 
+    fYear = 2011;
     fStampCms = "L = 5 fb^{-1} (#sqrt{s} = 7 TeV)";
-  } 
+  }
   if (string::npos != sfiles.find("2012")) {
-    fYear = 2012; 
+    fYear = 2012;
     fStampCms = "L = 20 fb^{-1} (#sqrt{s} = 8 TeV)";
-  } 
+  }
 
-  fIF = new initFunc(); 
-  
+  fIF = new initFunc();
+
 }
 
 // ----------------------------------------------------------------------
@@ -87,7 +87,7 @@ plotClass::~plotClass() {
 // ----------------------------------------------------------------------
 // see http://root.cern.ch/phpBB3/viewtopic.php?f=3&t=15054
 void plotClass::closeHistFile() {
-  fHistFile->Write(); 
+  fHistFile->Write();
 }
 
 // ----------------------------------------------------------------------
@@ -116,36 +116,36 @@ void plotClass::treeAnalysis() {
 
 // ----------------------------------------------------------------------
 void plotClass::normHist(TH1 *h, string ds, int method) {
-  double scale(1.); 
+  double scale(1.);
   string smethod("");
   // -- normalize to 1
   if (method == UNITY) {
-    smethod = "unity"; 
-    scale = (h->Integral() > 0 ? 1./h->Integral() : 1.); 
+    smethod = "unity";
+    scale = (h->Integral() > 0 ? 1./h->Integral() : 1.);
     setTitles(h, h->GetXaxis()->GetTitle(), "normalized to 1", 1.1, 1.5);
   } else if (method == SOMETHING) {
-    smethod = "something"; 
-    scale = fNorm * (h->Integral() > 0 ? fNorm/h->Integral() : 1.); 
+    smethod = "something";
+    scale = fNorm * (h->Integral() > 0 ? fNorm/h->Integral() : 1.);
     setTitles(h, h->GetXaxis()->GetTitle(), "weighted events", 1.1, 1.5);
   } else if (method == XSECTION) {
-    smethod = "xsection"; 
+    smethod = "xsection";
     // -- normalize to EFFECTIVE xsec*bf (EFFECTIVE to account for cuts)
     //    the cross section is known for ds
     //    ds corresponds to know lumi
-    //    
+    //
     //    n = xsec * L
     //    "integral" over histogram should be EFFECTIVE xsec
-    scale = (h->Integral() > 0 ? fDS[ds]->fXsec*fDS[ds]->fBf/h->Integral() : 1.); 
+    scale = (h->Integral() > 0 ? fDS[ds]->fXsec*fDS[ds]->fBf/h->Integral() : 1.);
     setTitles(h, h->GetXaxis()->GetTitle(), "pb");
   } else if (method == LUMI) {
-    smethod = "lumi"; 
+    smethod = "lumi";
     // -- normalize to xsec*bf
     //    n = xsec * L
     //    "integral" over histogram should be events expected in fLumi
-    scale = (h->Integral() > 0 ? fLumi/fDS[ds]->fLumi : 1.); 
+    scale = (h->Integral() > 0 ? fLumi/fDS[ds]->fLumi : 1.);
     setTitles(h, h->GetXaxis()->GetTitle(), Form("events in %4.0f/fb", fLumi));
   } else if (method == NONORM) {
-    smethod = "nonorm"; 
+    smethod = "nonorm";
     scale = 1.;
   } else {
     scale = 1.;
@@ -153,10 +153,10 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
 
   cout << "==>plotClass:  normHist scaling by " << scale << ", based on method " << smethod << endl;
 
-  double c(0.), e(0.); 
+  double c(0.), e(0.);
   for (int i = 0; i <= h->GetNbinsX(); ++i) {
-    c = h->GetBinContent(i); 
-    e = h->GetBinError(i); 
+    c = h->GetBinContent(i);
+    e = h->GetBinError(i);
     h->SetBinContent(i, c*scale);
     h->SetBinError(i, e*scale);
   }
@@ -176,24 +176,24 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
   showOverflow(h2);
   if (h3) showOverflow(h3);
 
-  normHist(h1, f1, method); 
-  normHist(h2, f2, method); 
-  if (h3) normHist(h3, f3, method); 
+  normHist(h1, f1, method);
+  normHist(h2, f2, method);
+  if (h3) normHist(h3, f3, method);
   double ymin(0.0001);
-  double h1max(h1->GetBinContent(h1->GetMaximumBin())); 
-  double h2max(h2->GetBinContent(h2->GetMaximumBin())); 
-  double h3max(h3->GetBinContent(h3->GetMaximumBin())); 
+  double h1max(h1->GetBinContent(h1->GetMaximumBin()));
+  double h2max(h2->GetBinContent(h2->GetMaximumBin()));
+  double h3max(h3->GetBinContent(h3->GetMaximumBin()));
   double hmax(h1max);
   int imax(1);
   if (h2max > h1max) {
-    hmax = h2max; 
+    hmax = h2max;
     imax = 2;
   }
   if (h3max > h2max) {
-    hmax = h3max; 
+    hmax = h3max;
     imax = 3;
   }
-  hmax *= 1.2; 
+  hmax *= 1.2;
   if (verbose)  {
     cout << "hmax = " << hmax << " from imax = " << imax;
     if (1 == imax) cout << " bin " << h1->GetMaximumBin() << " with maximum " << h1->GetBinContent(h1->GetMaximumBin()) << endl;
@@ -201,9 +201,9 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
     if (3 == imax) cout << " bin " << h3->GetMaximumBin() << " with maximum " << h3->GetBinContent(h3->GetMaximumBin()) << endl;
   }
   if (loga) {
-    gPad->SetLogy(1); 
+    gPad->SetLogy(1);
     hmax *= 2.;
-    double hmin(h1->GetMinimum(ymin)); 
+    double hmin(h1->GetMinimum(ymin));
     if (verbose) cout << "hmin1 = " << hmin << endl;
     if (h2->GetMinimum(ymin) < hmin) {
       hmin = h2->GetMinimum(ymin);
@@ -213,41 +213,41 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
       hmin = h3->GetMinimum(ymin);
       if (verbose) cout << "hmin3 = " << hmin << endl;
     }
-    h1->SetMinimum(0.1*hmin); 
+    h1->SetMinimum(0.1*hmin);
     if (verbose) cout << "hmin = " << hmin << endl;
   } else {
-    gPad->SetLogy(0); 
-    h1->SetMinimum(0.); 
+    gPad->SetLogy(0);
+    h1->SetMinimum(0.);
   }
-  
-  h1->SetMaximum(hmax); 
 
-  h1->DrawCopy("hist"); 
+  h1->SetMaximum(hmax);
+
+  h1->DrawCopy("hist");
   h2->DrawCopy("histsame");
   if (h3) h3->DrawCopy("histsame");
 
   if (legend) {
-    newLegend(xleg, yleg, xleg+0.25, yleg+0.15); 
+    newLegend(xleg, yleg, xleg+0.25, yleg+0.15);
     legg->SetTextSize(0.03);
-    string text; 
-    text = fDS[f1]->fName.c_str(); 
+    string text;
+    text = fDS[f1]->fName.c_str();
     if (fDBX) {
-      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f1]->fName.c_str(), h1->GetMean(), h1->GetMeanError(), h1->GetRMS()); 
+      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f1]->fName.c_str(), h1->GetMean(), h1->GetMeanError(), h1->GetRMS());
     }
-    legg->AddEntry(h1, text.c_str(), "f"); 
+    legg->AddEntry(h1, text.c_str(), "f");
 
-    text = fDS[f2]->fName.c_str(); 
+    text = fDS[f2]->fName.c_str();
     if (fDBX) {
-      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f2]->fName.c_str(), h2->GetMean(), h2->GetMeanError(), h2->GetRMS()); 
+      text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f2]->fName.c_str(), h2->GetMean(), h2->GetMeanError(), h2->GetRMS());
     }
-    legg->AddEntry(h2, text.c_str(), "f"); 
+    legg->AddEntry(h2, text.c_str(), "f");
 
     if (h3) {
-      text = fDS[f3]->fName.c_str(); 
+      text = fDS[f3]->fName.c_str();
       if (fDBX) {
-	text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f3]->fName.c_str(), h3->GetMean(), h3->GetMeanError(), h3->GetRMS()); 
+	text = Form("%s: %4.3f#pm%4.3f, %4.3f", fDS[f3]->fName.c_str(), h3->GetMean(), h3->GetMeanError(), h3->GetRMS());
       }
-      legg->AddEntry(h3, text.c_str(), "f"); 
+      legg->AddEntry(h3, text.c_str(), "f");
     }
 
     legg->Draw();
@@ -262,21 +262,21 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
 }
 
 // ----------------------------------------------------------------------
-void plotClass::overlay(string h1name, string f1, string h2name, string f2, string h3name, string f3, int method, bool loga, 
+void plotClass::overlay(string h1name, string f1, string h2name, string f2, string h3name, string f3, int method, bool loga,
 			bool legend, double xleg, double yleg) {
 
   cout << h1name << " from " << f1 << " vs. " << h2name << " from " << f2 << " vs. " << h3name << " from " << f3 << endl;
 
-  TH1D *h1 = fDS[f1]->getHist(Form("%s", h1name.c_str()), true); 
-  TH1D *h2 = fDS[f2]->getHist(Form("%s", h2name.c_str()), true); 
-  TH1D *h3(0); 
+  TH1D *h1 = fDS[f1]->getHist(Form("%s", h1name.c_str()), true);
+  TH1D *h2 = fDS[f2]->getHist(Form("%s", h2name.c_str()), true);
+  TH1D *h3(0);
   if (h3name != "") {
-    h3 = fDS[f3]->getHist(Form("%s", h3name.c_str()), true); 
+    h3 = fDS[f3]->getHist(Form("%s", h3name.c_str()), true);
   } else {
-    h3= 0; 
+    h3= 0;
   }
 
-  overlay(h1, f1, h2, f2, h3, f3, method, loga, legend, xleg, yleg); 
+  overlay(h1, f1, h2, f2, h3, f3, method, loga, legend, xleg, yleg);
 }
 
 
@@ -292,33 +292,33 @@ void plotClass::loopFunction2() {
 // ----------------------------------------------------------------------
 void plotClass::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries); 
+  int nbegin(0), nend(nentries);
   if (nevts > 0 && nentries > nevts) {
     nentries = nevts;
-    nbegin = 0; 
+    nbegin = 0;
     nend = nevts;
   }
   if (nevts > 0 && nstart > 0) {
     nentries = nstart + nevts;
-    nbegin = nstart; 
+    nbegin = nstart;
     if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts; 
+      nend = nstart + nevts;
     } else {
       nend = t->GetEntries();
     }
   }
-  
-  nentries = nend - nstart; 
-  
-  int step(1000000); 
-  if (nentries < 5000000)  step = 500000; 
-  if (nentries < 1000000)  step = 100000; 
-  if (nentries < 100000)   step = 10000; 
-  if (nentries < 10000)    step = 1000; 
-  if (nentries < 1000)     step = 100; 
-  if (2 == ifunc)          step = 10000; 
-  cout << "==> plotClass::loopOverTree> loop over dataset " << fCds << " in file " 
-       << t->GetDirectory()->GetName() 
+
+  nentries = nend - nstart;
+
+  int step(1000000);
+  if (nentries < 5000000)  step = 500000;
+  if (nentries < 1000000)  step = 100000;
+  if (nentries < 100000)   step = 10000;
+  if (nentries < 10000)    step = 1000;
+  if (nentries < 1000)     step = 100;
+  if (2 == ifunc)          step = 10000;
+  cout << "==> plotClass::loopOverTree> loop over dataset " << fCds << " in file "
+       << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"  << " looping from  " << nbegin << " .. " << nend
        << endl;
 
@@ -343,9 +343,9 @@ void plotClass::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 void plotClass::setupTree(TTree *t, string mode) {
 
   if (string::npos != mode.find("Mc")) {
-    fIsMC = true; 
+    fIsMC = true;
   } else {
-    fIsMC = false; 
+    fIsMC = false;
   }
 
   t->SetBranchAddress("pt", &fb.pt);
@@ -432,7 +432,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m1trigm",  &fb.m1trigm);
   t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
   t->SetBranchAddress("m1tmid",   &fb.m1tmid);
- 
+
   t->SetBranchAddress("m2id",     &fb.m2id);
   t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
   t->SetBranchAddress("m2trigm",  &fb.m2trigm);
@@ -501,29 +501,29 @@ void plotClass::setupTree(TTree *t, string mode) {
 // ----------------------------------------------------------------------
 void plotClass::candAnalysis(int mode) {
 
-  cuts *pCuts(0); 
-  fChan = detChan(fb.m1eta, fb.m2eta); 
+  cuts *pCuts(0);
+  fChan = detChan(fb.m1eta, fb.m2eta);
   if (fChan < 0) {
-    //    cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt 
+    //    cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
     //    << " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     return;
   }
-  pCuts = fCuts[fChan]; 
+  pCuts = fCuts[fChan];
 
-  bool bp2jpsikp(false), bs2jpsiphi(false); 
-  if (10 == mode)  bp2jpsikp = true; 
-  if (20 == mode)  bs2jpsiphi = true; 
+  bool bp2jpsikp(false), bs2jpsiphi(false);
+  if (10 == mode)  bp2jpsikp = true;
+  if (20 == mode)  bs2jpsiphi = true;
 
   // -- reset all
-  fBDT = -99.; 
+  fBDT = -99.;
   fGoodHLT = fGoodMuonsID = false;
-  fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;   
+  fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
   fGoodCloseTrack = fGoodIso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
 
   fGoodJpsiCuts = true;
 
-  fGoodAcceptance = true; 
-  fGoodBdtPt      = true; 
+  fGoodAcceptance = true;
+  fGoodBdtPt      = true;
   fGoodMuonsPt    = true;
   fGoodMuonsEta   = true;
   fGoodTracks     = fb.gtqual;
@@ -533,100 +533,100 @@ void plotClass::candAnalysis(int mode) {
   fIsCowboy = fb.cb;
 
   if (fIsMC) {
-    if (fb.g1pt < fAccPt) fGoodAcceptance = false; 
-    if (fb.g2pt < fAccPt) fGoodAcceptance = false; 
-    if (TMath::Abs(fb.g1eta) > 2.5) fGoodAcceptance = false; 
-    if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false; 
+    if (fb.g1pt < fAccPt) fGoodAcceptance = false;
+    if (fb.g2pt < fAccPt) fGoodAcceptance = false;
+    if (TMath::Abs(fb.g1eta) > 2.5) fGoodAcceptance = false;
+    if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false;
   } else {
     if (!fb.json) {
       return;
     }
   }
 
-  if (fb.m1pt < fAccPt) fGoodAcceptance = false; 
-  if (fb.m2pt < fAccPt) fGoodAcceptance = false; 
-  if (0 == fb.m1gt)  fGoodAcceptance = false; 
-  if (0 == fb.m2gt)  fGoodAcceptance = false; 
+  if (fb.m1pt < fAccPt) fGoodAcceptance = false;
+  if (fb.m2pt < fAccPt) fGoodAcceptance = false;
+  if (0 == fb.m1gt)  fGoodAcceptance = false;
+  if (0 == fb.m2gt)  fGoodAcceptance = false;
 
   if (fb.m1pt < pCuts->bdtpt) {
-    fGoodBdtPt = false; 
+    fGoodBdtPt = false;
   }
   if (fb.m2pt < pCuts->bdtpt) {
-    fGoodBdtPt = false; 
+    fGoodBdtPt = false;
   }
 
   if (fb.m1pt < pCuts->m1pt) {
-    fGoodMuonsPt = false; 
+    fGoodMuonsPt = false;
   }
   if (fb.m2pt < pCuts->m2pt) {
-    fGoodMuonsPt = false; 
+    fGoodMuonsPt = false;
   }
   if (TMath::Abs(fb.m1eta) > 2.4) {
-    fGoodAcceptance = false; 
+    fGoodAcceptance = false;
   }
   if (TMath::Abs(fb.m2eta) > 2.4) {
-    fGoodAcceptance = false; 
+    fGoodAcceptance = false;
   }
 
   if (TMath::Abs(fb.m1eta) > pCuts->m1eta) {
-    fGoodMuonsEta = false; 
+    fGoodMuonsEta = false;
   }
 
   if (TMath::Abs(fb.m2eta) > pCuts->m2eta) {
-    fGoodMuonsEta = false; 
+    fGoodMuonsEta = false;
   }
-  
+
   if (bp2jpsikp) {
     if (fIsMC) {
       // gen-level cuts for Bu2JpsiKp
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
-      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false; 
-      if (fb.g3pt < 0.4) fGoodAcceptance = false; 
+      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false;
+      if (fb.g3pt < 0.4) fGoodAcceptance = false;
     }
     if (TMath::Abs(fb.k1eta) > 2.4) {
-      fGoodAcceptance = false; 
-      fGoodTracksEta = false; 
+      fGoodAcceptance = false;
+      fGoodTracksEta = false;
     }
     if (fb.k1pt < 0.5) {
-      fGoodAcceptance = false; 
-      fGoodTracksPt = false; 
+      fGoodAcceptance = false;
+      fGoodTracksPt = false;
     }
-    if (0 == fb.k1gt)  fGoodAcceptance = false; 
+    if (0 == fb.k1gt)  fGoodAcceptance = false;
   }
-  
+
   if (bs2jpsiphi) {
     if (fIsMC) {
-      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false; 
-      if (TMath::Abs(fb.g4eta) > 2.5) fGoodAcceptance = false; 
+      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false;
+      if (TMath::Abs(fb.g4eta) > 2.5) fGoodAcceptance = false;
       // gen-level cuts for Bs2JpsiPhi
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
-      if (fb.g3pt < 0.4) fGoodAcceptance = false; 
-      if (fb.g4pt < 0.4) fGoodAcceptance = false; 
+      if (fb.g3pt < 0.4) fGoodAcceptance = false;
+      if (fb.g4pt < 0.4) fGoodAcceptance = false;
     }
     if (TMath::Abs(fb.k1eta) > 2.4) {
-      fGoodAcceptance = false; 
-      fGoodTracksEta = false; 
+      fGoodAcceptance = false;
+      fGoodTracksEta = false;
     }
     if (TMath::Abs(fb.k2eta) > 2.4) {
-      fGoodAcceptance = false; 
-      fGoodTracksEta = false; 
+      fGoodAcceptance = false;
+      fGoodTracksEta = false;
     }
     if (fb.k1pt < 0.5) {
-      fGoodAcceptance = false; 
-      fGoodTracksPt = false; 
+      fGoodAcceptance = false;
+      fGoodTracksPt = false;
     }
     if (fb.k2pt < 0.5) {
-      fGoodAcceptance = false; 
-      fGoodTracksPt = false; 
+      fGoodAcceptance = false;
+      fGoodTracksPt = false;
     }
-    if (0 == fb.k1gt)  fGoodAcceptance = false; 
-    if (0 == fb.k2gt)  fGoodAcceptance = false; 
+    if (0 == fb.k1gt)  fGoodAcceptance = false;
+    if (0 == fb.k2gt)  fGoodAcceptance = false;
 
-    if (fb.dr   > 0.3) fGoodJpsiCuts = false; 
-    if (fb.mkk  < 0.995) fGoodJpsiCuts = false; 
-    if (fb.mkk  > 1.045) fGoodJpsiCuts = false; 
+    if (fb.dr   > 0.3) fGoodJpsiCuts = false;
+    if (fb.mkk  < 0.995) fGoodJpsiCuts = false;
+    if (fb.mkk  > 1.045) fGoodJpsiCuts = false;
   }
 
   if (bs2jpsiphi || bp2jpsikp) {
@@ -634,11 +634,11 @@ void plotClass::candAnalysis(int mode) {
     if (fb.mpsi < 3.0) fGoodJpsiCuts = false;
     if (fb.psipt < 7.0) fGoodJpsiCuts = false;
   } else {
-    fGoodJpsiCuts = true; 
+    fGoodJpsiCuts = true;
   }
 
   if (fDoUseBDT) {
-    if (fGoodAcceptance 
+    if (fGoodAcceptance
         && fGoodTracks
         && fGoodTracksPt
         && fGoodTracksEta
@@ -646,9 +646,9 @@ void plotClass::candAnalysis(int mode) {
         && fGoodMuonsEta
         && fGoodJpsiCuts
         ) {
-      calcBDT(); 
-      fb.bdt = fBDT; 
-    } 
+      calcBDT();
+      fb.bdt = fBDT;
+    }
 //     else {
 //       cout << "acceptance:    " << fGoodAcceptance  << endl;
 //       cout << "goodtracks:    " << fGoodTracks  << endl;
@@ -664,18 +664,18 @@ void plotClass::candAnalysis(int mode) {
 
   fW8 = 1.;
   fW8MmuID = fW8Mtrig = fW8DmuID = fW8Dtrig = -1.;
-  double w1(-1.), w2(-1.); 
-  
+  double w1(-1.), w2(-1.);
+
   if (fIsMC) {
-    PidTable *pT, *pT1, *pT2; 
+    PidTable *pT, *pT1, *pT2;
 
     // -- Weights with data PidTables
     if (fIsCowboy) {
-      pT  = fptCbM; 
+      pT  = fptCbM;
       pT1 = fptCbT1;
       pT2 = fptCbT2;
     } else {
-      pT  = fptSgM; 
+      pT  = fptSgM;
       pT1 = fptSgT1;
       pT2 = fptSgT2;
     }
@@ -685,30 +685,30 @@ void plotClass::candAnalysis(int mode) {
 
     w1       = pT->effD(fb.m1pt, am1eta, fb.m1phi);
     w2       = pT->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8DmuID = w1*w2; 
-    
+    fW8DmuID = w1*w2;
+
     w1       = pT1->effD(fb.m1pt, am1eta, fb.m1phi) * pT2->effD(fb.m1pt, am1eta, fb.m1phi);
     w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8Dtrig = w1*w2; 
+    fW8Dtrig = w1*w2;
 
     // -- Weights with MC PidTables
     if (fIsCowboy) {
-      pT  = fptCbMMC; 
+      pT  = fptCbMMC;
       pT1 = fptCbT1MC;
       pT2 = fptCbT2MC;
     } else {
-      pT  = fptSgMMC; 
+      pT  = fptSgMMC;
       pT1 = fptSgT1MC;
       pT2 = fptSgT2MC;
     }
 
     w1       = pT->effD(fb.m1pt, am1eta, fb.m1phi);
     w2       = pT->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8MmuID = w1*w2; 
-    
+    fW8MmuID = w1*w2;
+
     w1       = pT1->effD(fb.m1pt, am1eta, fb.m1phi) * pT2->effD(fb.m1pt, am1eta, fb.m1phi);
     w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8Mtrig = w1*w2; 
+    fW8Mtrig = w1*w2;
 
     if (98 == mode) {
       w1 = w2 = -1.;
@@ -738,54 +738,54 @@ void plotClass::candAnalysis(int mode) {
       if ( 2212 == fb.g2id) w2 = fptFakePosProtons->effD(fb.m2pt, am2eta, 1.);
       if (-2212 == fb.g2id) w2 = fptFakeNegProtons->effD(fb.m2pt, am2eta, 1.);
 
-      fW8MisId = w1*w2; 
+      fW8MisId = w1*w2;
     }
 
   }
-  
-  fGoodQ          = (fb.m1q*fb.m2q < 0); 
-  fGoodPvAveW8    = (fb.pvw8 > 0.7);
-  fGoodMaxDoca    = (TMath::Abs(fb.maxdoca) < pCuts->maxdoca); 
-  fGoodIp         = (TMath::Abs(fb.pvip) < pCuts->pvip); 
-  fGoodIpS        = (TMath::Abs(fb.pvips) < pCuts->pvips); 
 
-  fGoodLip        = (TMath::Abs(fb.pvlip) < pCuts->pvlip); 
-  fGoodLipS       = (TMath::Abs(fb.pvlips) < pCuts->pvlips); 
-  
+  fGoodQ          = (fb.m1q*fb.m2q < 0);
+  fGoodPvAveW8    = (fb.pvw8 > 0.7);
+  fGoodMaxDoca    = (TMath::Abs(fb.maxdoca) < pCuts->maxdoca);
+  fGoodIp         = (TMath::Abs(fb.pvip) < pCuts->pvip);
+  fGoodIpS        = (TMath::Abs(fb.pvips) < pCuts->pvips);
+
+  fGoodLip        = (TMath::Abs(fb.pvlip) < pCuts->pvlip);
+  fGoodLipS       = (TMath::Abs(fb.pvlips) < pCuts->pvlips);
+
   fGoodPt         = (fb.pt > pCuts->pt);
-  fGoodEta        = ((fb.eta > -24.0) && (fb.eta < 24.0)); 
-  fGoodAlpha      = (fb.alpha < pCuts->alpha); 
+  fGoodEta        = ((fb.eta > -24.0) && (fb.eta < 24.0));
+  fGoodAlpha      = (fb.alpha < pCuts->alpha);
   fGoodChi2       = (fb.chi2/fb.dof < pCuts->chi2dof);
   fGoodFLS        = (fb.fls3d > pCuts->fls3d);
   if (TMath::IsNaN(fb.fls3d)) fGoodFLS = false;
-  
-  fGoodCloseTrack = (fb.closetrk < pCuts->closetrk); 
-  fGoodIso        = (fb.iso > pCuts->iso); 
+
+  fGoodCloseTrack = (fb.closetrk < pCuts->closetrk);
+  fGoodIso        = (fb.iso > pCuts->iso);
   fGoodDocaTrk    = (fb.docatrk > pCuts->docatrk);
-  fGoodLastCut    = true; 
+  fGoodLastCut    = true;
 
   fGoodBDT        = (fBDT > pCuts->bdt);
   fGoodHLT        = fb.hlt && fb.hltm2;
 
   // -- no trigger matching for rare decays!
-  if (98 == mode) fGoodHLT = fb.hlt; 
+  if (98 == mode) fGoodHLT = fb.hlt;
 
-  fPreselection   = ((fBDT > 0.) && fGoodHLT && fGoodMuonsID ); 
+  fPreselection   = ((fBDT > 0.) && fGoodHLT && fGoodMuonsID );
 
 // -- use this for the signal overlays used after unblinding...
-//   fPreselection = (fb.hlt && fb.hltm2 
-//                 && fGoodMuonsID 
+//   fPreselection = (fb.hlt && fb.hltm2
+//                 && fGoodMuonsID
 //                 && fGoodQ
-//                 && fGoodPvAveW8 
+//                 && fGoodPvAveW8
 //                 && fGoodTracks
 //                 && fGoodTracksPt
 //                 && fGoodTracksEta
 //                 && fGoodBdtPt
 //                 && fGoodMuonsEta
 //                 && fGoodJpsiCuts
-//                 && (fBDT > fCuts[fChan]->bdt)); 
+//                 && (fBDT > fCuts[fChan]->bdt));
 
-  fAnaCuts.update(); 
+  fAnaCuts.update();
 
 }
 
@@ -793,9 +793,9 @@ void plotClass::candAnalysis(int mode) {
 // ----------------------------------------------------------------------
 int plotClass::detChan(double m1eta, double m2eta) {
   // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-  if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0; 
-  if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1; 
-  return -1; 
+  if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
+  if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
+  return -1;
 }
 
 
@@ -803,17 +803,17 @@ int plotClass::detChan(double m1eta, double m2eta) {
 TTree* plotClass::getTree(string ds, string dir) {
   TTree *t(0);
   if (!dir.compare("")) {
-    t = (TTree*)fDS[ds]->fF->Get("events"); 
+    t = (TTree*)fDS[ds]->fF->Get("events");
   } else {
-    t = (TTree*)fDS[ds]->fF->Get(Form("%s/events", dir.c_str())); 
+    t = (TTree*)fDS[ds]->fF->Get(Form("%s/events", dir.c_str()));
   }
-  return t; 
+  return t;
 }
 
 // ----------------------------------------------------------------------
 TFile* plotClass::loadFile(string file) {
   TFile *f = TFile::Open(file.c_str());
-  return f; 
+  return f;
 }
 
 
@@ -831,20 +831,20 @@ void plotClass::replaceAll(string &sInput, const string &oldString, const string
 void plotClass::newLegend(double x1, double y1, double x2, double y2, string title) {
   //  if (legg) delete legg;
   legg = new TLegend(x1, y1, x2, y2, title.c_str());
-  legg->SetFillStyle(0); 
-  legg->SetBorderSize(0); 
-  legg->SetTextSize(0.04);  
-  legg->SetFillColor(0); 
-  legg->SetTextFont(42); 
+  legg->SetFillStyle(0);
+  legg->SetBorderSize(0);
+  legg->SetTextSize(0.04);
+  legg->SetFillColor(0);
+  legg->SetTextFont(42);
 }
 
 // ----------------------------------------------------------------------
 void plotClass::makeCanvas(int i) {
-  if (i & 16) { 
+  if (i & 16) {
     c5 = new TCanvas("c5", "c5", 210,   0, 800, 900);
     c5->ToggleEventStatus();
   }
-  if (i & 8) { 
+  if (i & 8) {
     c4 = new TCanvas("c4", "c4", 210,   0, 800, 600);
     c4->ToggleEventStatus();
   }
@@ -857,7 +857,7 @@ void plotClass::makeCanvas(int i) {
     c1 = new TCanvas("c1", "c1", 20,  60, 1000, 400);
     c1->ToggleEventStatus();
   }
-  if (i & 2) { 
+  if (i & 2) {
     c2 = new TCanvas("c2", "c2", 300, 200, 400, 800);
     c2->ToggleEventStatus();
   }
@@ -870,7 +870,7 @@ void plotClass::calcBDT() {
 
   if (!preselection(fb, fChan)) return;
 
-  //??  if (5 == mode && 5.2 < mass && mass < 5.45 && fb.iso < 0.7) continue; 
+  //??  if (5 == mode && 5.2 < mass && mass < 5.45 && fb.iso < 0.7) continue;
   //  if (rejectInvIso && 5.2 < fb.m && fb.m < 5.45 && fb.iso < 0.7) return;
   //   if (fb.pt > 100) return;
   //   if (fb.pt < 6) return;
@@ -879,44 +879,44 @@ void plotClass::calcBDT() {
   //   if (fb.fl3d > 1.5) return;
   //   if (fb.m > 5.9) return;
   //   if (fb.m < 4.9) return;
-  
+
   //   if (!fb.hlt) return;
   //   if (!fb.gmuid) return;
-  
-  frd.pt = fb.pt; 
-  frd.eta = fb.eta; 
-  frd.m1eta = fb.m1eta; 
-  frd.m2eta = fb.m2eta; 
-  frd.m1pt = fb.m1pt; 
+
+  frd.pt = fb.pt;
+  frd.eta = fb.eta;
+  frd.m1eta = fb.m1eta;
+  frd.m2eta = fb.m2eta;
+  frd.m1pt = fb.m1pt;
   frd.m2pt = fb.m2pt;
-  frd.fls3d = fb.fls3d; 
-  frd.alpha = fb.alpha; 
+  frd.fls3d = fb.fls3d;
+  frd.alpha = fb.alpha;
   frd.maxdoca = fb.maxdoca;
-  frd.pvip = fb.pvip; 
-  frd.pvips = fb.pvips; 
-  frd.iso = fb.iso; 
-  frd.docatrk = fb.docatrk; 
-  frd.chi2dof = fb.chi2dof; 
-  frd.closetrk = fb.closetrk; 
+  frd.pvip = fb.pvip;
+  frd.pvips = fb.pvips;
+  frd.iso = fb.iso;
+  frd.docatrk = fb.docatrk;
+  frd.chi2dof = fb.chi2dof;
+  frd.closetrk = fb.closetrk;
 
-  frd.m1iso = fb.m1iso; 
-  frd.m2iso = fb.m2iso; 
+  frd.m1iso = fb.m1iso;
+  frd.m2iso = fb.m2iso;
 
-  frd.closetrks1 = fb.closetrks1; 
-  frd.closetrks2 = fb.closetrks2; 
-  frd.closetrks3 = fb.closetrks3; 
+  frd.closetrks1 = fb.closetrks1;
+  frd.closetrks2 = fb.closetrks2;
+  frd.closetrks3 = fb.closetrks3;
 
-  frd.pvlip2  = fb.pvlip2; 
-  frd.pvlips2 = fb.pvlips2; 
-  
-  frd.m  = fb.m; 
+  frd.pvlip2  = fb.pvlip2;
+  frd.pvlips2 = fb.pvlips2;
+
+  frd.m  = fb.m;
   int remainder = TMath::Abs(fb.evt%3);
   if (0 == remainder) {
-    fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT"); 
+    fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT");
   } else if (1 == remainder) {
-    fBDT   = fReaderEvents1[fChan]->EvaluateMVA("BDT"); 
+    fBDT   = fReaderEvents1[fChan]->EvaluateMVA("BDT");
   } else if (2 == remainder) {
-    fBDT   = fReaderEvents2[fChan]->EvaluateMVA("BDT"); 
+    fBDT   = fReaderEvents2[fChan]->EvaluateMVA("BDT");
   } else {
     cout << "all hell break loose" << endl;
   }
@@ -926,7 +926,7 @@ void plotClass::calcBDT() {
 // ----------------------------------------------------------------------
 TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
   TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
-  
+
   TString dir    = "weights/";
   TString methodNameprefix = "BDT";
   //  TString methodName = TString(fBdt) + TString(" method");
@@ -934,27 +934,27 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
   TString weightfile = xmlFile;
 
   // -- read in variables from weight file
-  vector<string> allLines; 
+  vector<string> allLines;
   char  buffer[2000];
   cout << "setupReader, open file " << weightfile << endl;
-  ifstream is(weightfile); 
+  ifstream is(weightfile);
   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
-  int nvars(-1); 
+  int nvars(-1);
   string::size_type m1, m2;
-  string stype; 
+  string stype;
   cout << "  read " << allLines.size() << " lines " << endl;
   for (unsigned int i = 0; i < allLines.size(); ++i) {
     // -- parse and add variables
     if (string::npos != allLines[i].find("Variables NVar")) {
-      m1 = allLines[i].find("=\""); 
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2); 
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
       cout << "  " << stype << " variables" << endl;
       nvars = atoi(stype.c_str());
       if (-1 == nvars) continue;
       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-        m1 = allLines[j].find("Expression=\"")+10; 
+        m1 = allLines[j].find("Expression=\"")+10;
         m2 = allLines[j].find("\" Label=\"");
-        stype = allLines[j].substr(m1+2, m2-m1-2); 
+        stype = allLines[j].substr(m1+2, m2-m1-2);
         //      cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
         if (stype == "m1pt") {
           cout << "  adding m1pt" << endl;
@@ -1056,24 +1056,24 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
       break;
     }
   }
-  
-  nvars = -1; 
+
+  nvars = -1;
   for (unsigned int i = 0; i < allLines.size(); ++i) {
     // -- parse and add spectators
     if (string::npos != allLines[i].find("Spectators NSpec")) {
-      m1 = allLines[i].find("=\""); 
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2); 
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
       //      cout << "==> " << stype << endl;
       nvars = atoi(stype.c_str());
       if (-1 == nvars) continue;
       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-        m1 = allLines[j].find("Expression=\"")+10; 
+        m1 = allLines[j].find("Expression=\"")+10;
         m2 = allLines[j].find("\" Label=\"");
-        stype = allLines[j].substr(m1+2, m2-m1-2); 
+        stype = allLines[j].substr(m1+2, m2-m1-2);
         cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
         if (stype == "m") {
           cout << "  adding m as spectator" << endl;
-          reader->AddSpectator( "m", &rd.m);  
+          reader->AddSpectator( "m", &rd.m);
         }
       }
       break;
@@ -1081,15 +1081,15 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
   }
 
   // --- Book the MVA methods
-  reader->BookMVA("BDT", weightfile); 
-  return reader; 
+  reader->BookMVA("BDT", weightfile);
+  return reader;
 }
 
 
 // ----------------------------------------------------------------------
 void plotClass::readCuts(string filename) {
   cout << "==> plotClass: Reading " << filename << " for cut settings" << endl;
-  vector<string> cutLines; 
+  vector<string> cutLines;
   char  buffer[200];
   ifstream is(filename.c_str());
   while (is.getline(buffer, 200, '\n')) {
@@ -1101,12 +1101,12 @@ void plotClass::readCuts(string filename) {
   int dump(1), ok(0);
 
   cuts *a = 0;
-  
+
   fCuts.clear();
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
-    sprintf(buffer, "%s", cutLines[i].c_str()); 
-    
+    sprintf(buffer, "%s", cutLines[i].c_str());
+
     ok = 0;
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
@@ -1115,11 +1115,11 @@ void plotClass::readCuts(string filename) {
     if (!strcmp(CutName, "index")) {
       ok = 1;
       if (dump) cout << "index:            " << CutValue << endl;
-      if (a) fCuts.push_back(a); 
-      a = new cuts; 
-      a->index = static_cast<int>(CutValue); 
+      if (a) fCuts.push_back(a);
+      a = new cuts;
+      a->index = static_cast<int>(CutValue);
     }
-    
+
     if (!strcmp(CutName, "mBdLo")) {
       a->mBdLo = CutValue; ok = 1;
       if (dump) cout << "mBdLo:            " << CutValue << endl;
@@ -1321,24 +1321,24 @@ void plotClass::readCuts(string filename) {
     }
 
     sscanf(buffer, "%s %s", CutName, XmlName);
-    string ctmp = CutName; 
+    string ctmp = CutName;
     string sXmlName;
-    replaceAll(ctmp, " ", ""); 
+    replaceAll(ctmp, " ", "");
     if (!strcmp(ctmp.c_str(), "xml")) {
-      a->xmlFile = XmlName; ok = 1; 
-      sXmlName = "weights/" + a->xmlFile + "-Events0_BDT.weights.xml"; 
-      //      fReaderEvents0.push_back(setupReader(sXmlName, frd)); 
-      TMVA::Reader *ar = setupReader(sXmlName, frd); 
+      a->xmlFile = XmlName; ok = 1;
+      sXmlName = "weights/" + a->xmlFile + "-Events0_BDT.weights.xml";
+      //      fReaderEvents0.push_back(setupReader(sXmlName, frd));
+      TMVA::Reader *ar = setupReader(sXmlName, frd);
       fReaderEvents0[a->index] = ar;
       if (dump) cout << "xml:                   " << sXmlName << endl;
-      sXmlName = "weights/" + a->xmlFile + "-Events1_BDT.weights.xml"; 
-      //      fReaderEvents1.push_back(setupReader(sXmlName, frd)); 
-      ar = setupReader(sXmlName, frd); 
+      sXmlName = "weights/" + a->xmlFile + "-Events1_BDT.weights.xml";
+      //      fReaderEvents1.push_back(setupReader(sXmlName, frd));
+      ar = setupReader(sXmlName, frd);
       fReaderEvents1[a->index] = ar;
       if (dump) cout << "xml:                   " << sXmlName << endl;
-      sXmlName = "weights/" + a->xmlFile + "-Events2_BDT.weights.xml"; 
-      //      fReaderEvents2.push_back(setupReader(sXmlName, frd)); 
-      ar = setupReader(sXmlName, frd); 
+      sXmlName = "weights/" + a->xmlFile + "-Events2_BDT.weights.xml";
+      //      fReaderEvents2.push_back(setupReader(sXmlName, frd));
+      ar = setupReader(sXmlName, frd);
       fReaderEvents2[a->index] = ar;
       if (dump) cout << "xml:                   " << sXmlName << endl;
     }
@@ -1346,10 +1346,10 @@ void plotClass::readCuts(string filename) {
     if (!ok) cout << "==> what about " << CutName << endl;
   }
 
-  if (a) fCuts.push_back(a); 
+  if (a) fCuts.push_back(a);
 
   cout << "==> finished reading cut setting, fCuts.size() =  " << fCuts.size() << endl;
-  
+
 }
 
 
@@ -1360,7 +1360,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << "----------------------------------------------------------------------" << endl;
   cout << "printCuts ... fCuts.size() = " << fCuts.size() << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i) {
-    cuts *a = fCuts[i]; 
+    cuts *a = fCuts[i];
     OUT << "# -- channel " << a->index << endl;
     OUT << "index    " << a->index << endl;
     fTEX << "% ----------------------------------------------------------------------" << endl;
@@ -1381,7 +1381,7 @@ void plotClass::printCuts(ostream &OUT) {
     OUT << "mBsHi    " << Form("%4.3f", a->mBsHi) << endl;
     fTEX <<  Form("\\vdef{%s:mBsLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBsLo) << endl;
     fTEX <<  Form("\\vdef{%s:mBsHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBsHi) << endl;
- 
+
     OUT << "etaMin   " << Form("%3.1f", a->etaMin) << endl;
     OUT << "etaMax   " << Form("%3.1f", a->etaMax) << endl;
     fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->etaMin) << endl;
@@ -1430,14 +1430,23 @@ void plotClass::printCuts(ostream &OUT) {
   OUT.flush();
 }
 
+
+// ----------------------------------------------------------------------
 void plotClass::setItalic() {
   tl->SetTextFont(52);
 }
+
+
+// ----------------------------------------------------------------------
 void plotClass::setRoman() {
   tl->SetTextFont(42);
 }
 
 
+// ----------------------------------------------------------------------
+void plotClass::savePad(string name) {
+  gPad->SaveAs(Form("%s/%s", fDirectory.c_str(), name.c_str()));
+}
+
+
 #include "plotClass.icc"
-
-
