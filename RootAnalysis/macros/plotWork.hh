@@ -20,9 +20,9 @@ public :
   void   bookHist(int mode);
 
   // -- validate gen production
-  void   prodValidation(std::string hist = "pt531", 
-			std::string ds1 = "inelastic_nofilter", std::string ds2 = "pythia6_nofilter", std::string ds3 = "", 
-			bool log = false, bool legend = false, double xleg = 0.4, double yleg = 0.6); 
+  void   prodSummary(string ds1 = "bdmm_filter", int year = 2014);
+
+  // -- code for loops
   void   loopFunction1(); 
 
 

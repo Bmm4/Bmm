@@ -20,20 +20,20 @@
 
 ClassImp(plotWork)
 
-using namespace std; 
+using namespace std;
 
 // ----------------------------------------------------------------------
 plotWork::plotWork(string dir,  string files, string setup): plotClass(dir, files, setup) {
   loadFiles(files);
 
   if (setup == "") {
-    fHistFileName = Form("%s/plotWork.root", dir.c_str()); 
+    fHistFileName = Form("%s/plotWork.root", dir.c_str());
   } else {
-    fHistFileName = Form("%s/plotWork-%s.root", dir.c_str(), setup.c_str()); 
+    fHistFileName = Form("%s/plotWork-%s.root", dir.c_str(), setup.c_str());
   }
 
-  fTexFileName = fHistFileName; 
-  replaceAll(fTexFileName, ".root", ".tex"); 
+  fTexFileName = fHistFileName;
+  replaceAll(fTexFileName, ".root", ".tex");
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
 
 }
@@ -49,14 +49,7 @@ plotWork::~plotWork() {
 void plotWork::makeAll(int bitmask) {
 
   if (bitmask & 0x1) {
-    prodValidation("all", "default_nofilter", "inelastic_nofilter", "pythia6_nofilter"); 
-    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "pythia6_etaptfilter"); 
-    prodValidation("all", "default_etaptfilter", "inelastic_etaptfilter", "hardqcd8_etaptfilter");
-    prodValidation("all", "default_nofilter", "pythia6_nofilter", "noevtgen_nofilter");
-    prodValidation("all", "default_etaptfilter", "pythia6_etaptfilter", "noevtgen_etaptfilter");
-  } else if (bitmask & 0x2) {
-    prodValidation("all", "default_etaptfilter", "nophotos_etaptfilter", "nophotonnoevtgen_etaptfilter");
-    prodValidation("tau", "default_etaptfilter", "dgs_etaptfilter",      "dgs0_etaptfilter");
+    prodSummary("signal_filter");
   }
 
 }
@@ -64,49 +57,207 @@ void plotWork::makeAll(int bitmask) {
 
 
 // ----------------------------------------------------------------------
-void plotWork::prodValidation(string hist, string ds1, string ds2, string ds3, bool loga, bool legend, double xleg, double yleg) {
-  cout << endl << "==>prodValidation: " << hist << " ds: " << ds1 << " vs. " << ds2 << " vs. " << ds3 << endl;  
+void plotWork::prodSummary(string ds1, int year) {
+  static double M511(0.), M521(0.), M531(0.), M541(0.), M5122(0.);
+  static double L511(0.), L521(0.), L531(0.), L541(0.), L5122(0.);
 
-  if ("all" == hist) {
-    zone(2,2, c0); 
-    
-    vector<int> particles = defVector(1, 531); 
+  if (2014 == year) {
+    M511 = 5.27958;
+    M521 = 5.27926;
+    M531 = 5.36677;
+    M541 = 6.2756;
+    M5122= 5.6195;
 
-    for (unsigned int i = 0; i< particles.size(); ++i) {
-      cout << "loop: " << particles[i] << endl;
-      c0->cd(1);
-      prodValidation(Form("pt%d", particles[i]), ds1, ds2, ds3, true, true, 0.4, 0.75);     
-      c0->cd(2);
-      prodValidation(Form("cpt%d", particles[i]), ds1, ds2, ds3, false, true, 0.4, 0.75); 
-      c0->cd(3);
-      prodValidation(Form("eta%d", particles[i]), ds1, ds2, ds3, false); 
-      c0->cd(4);
-      prodValidation(Form("iso%d", particles[i]), ds1, ds2, ds3, false); 
-      c0->SaveAs(Form("%s/prodValidation-%d-%s-%s-%s.pdf", fDirectory.c_str(), particles[i], ds1.c_str(), ds2.c_str(), ds3.c_str())); 
-    }
-    return;
-  } else if ("tau" == hist) {
-    zone(2,2, c0); 
-    vector<int> particles = defVector(1, 531); 
-    for (unsigned int i = 0; i< particles.size(); ++i) {
-      cout << "loop: " << particles[i] << endl;
-      c0->cd(1);
-      prodValidation(Form("t%d", particles[i]), ds1, ds2, ds3, true, true, 0.4, 0.75);     
-      c0->cd(2);
-      prodValidation(Form("tpos%d", particles[i]), ds1, ds2, ds3, true, true, 0.4, 0.75); 
-      c0->cd(3);
-      prodValidation(Form("tneg%d", particles[i]), ds1, ds2, ds3, true, true, 0.4, 0.75); 
-      c0->SaveAs(Form("%s/tauValidation-%d-%s-%s-%s.pdf", fDirectory.c_str(), particles[i], ds1.c_str(), ds2.c_str(), ds3.c_str())); 
-    }
-    return;
+    L511 = 455.4;
+    L521 = 491.1;
+    L531 = 453.3;
+    L541 = 135.5;
+    L5122= 435;
   }
 
-  overlay(Form("%s", hist.c_str()), ds1, 
-	  Form("%s", hist.c_str()), ds2, 
-	  (ds3 != ""? Form("%s", hist.c_str()) : ""), ds3, 
-	  UNITY, loga, legend, xleg, yleg); 
+  static const double aparticles[] = {511, 521, 531, 5122};
+  vector<int> particles(aparticles, aparticles + sizeof(aparticles)/sizeof(aparticles[0]));
+
+  fDS[ds1]->cd("");
+
+  // -- Masses
+  cout << "Masses" << endl;
+  cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
+	       ((TH1D*)gFile->Get("m511"))->GetMean(),
+	       M511,
+	       ((TH1D*)gFile->Get("m511"))->GetMean() - M511
+	       )
+       << endl;
+
+  cout << Form("B+: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
+	       ((TH1D*)gFile->Get("m521"))->GetMean(),
+	       M521,
+	       ((TH1D*)gFile->Get("m521"))->GetMean() - M521
+	       )
+       << endl;
+
+  cout << Form("Bs: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
+	       ((TH1D*)gFile->Get("m531"))->GetMean(),
+	       M531,
+	       ((TH1D*)gFile->Get("m531"))->GetMean() - M531
+	       )
+       << endl;
+
+  cout << Form("Lb: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
+	       ((TH1D*)gFile->Get("m5122"))->GetMean(),
+	       M5122,
+	       ((TH1D*)gFile->Get("m5122"))->GetMean() - M5122
+	       )
+       << endl;
+
+  if (((TH1D*)gFile->Get("m541"))->GetEntries() > 1)
+    cout << Form("Bc: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)",
+		 ((TH1D*)gFile->Get("m541"))->GetMean(),
+		 M541,
+		 ((TH1D*)gFile->Get("m541"))->GetMean() - M541
+		 )
+	 << endl;
+
+
+
+  // -- Lifetimes
+  cout << "Lifetime" << endl;
+  double t(1.), tE(1.), chi2(0);
+  int ndf(0);
+  TH1D *h = (TH1D*)gFile->Get("t521");
+  TF1 *f(0);
+  gStyle->SetOptFit(1);
+  if (h->GetEntries() > 100) {
+    h->Fit("expo", "lq");
+    //      gPad->SaveAs("t521.pdf");
+    f = (TF1*)h->GetFunction("expo");
+    chi2 = f->GetChisquare()/f->GetNDF();
+    t    = -1./f->GetParameter(1);
+    tE   = -t*f->GetParError(1)/f->GetParameter(1);
+    cout << Form("B+: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L521, (t-L521)/tE, chi2) << endl;
+  }
+  h = (TH1D*)gFile->Get("t511");
+  if (h->GetEntries() > 100) {
+    h->Fit("expo", "ql");
+    //      gPad->SaveAs("t511.pdf");
+    f = (TF1*)h->GetFunction("expo");
+    chi2 = f->GetChisquare()/f->GetNDF();
+    t    = -1./f->GetParameter(1);
+    tE   = -t*f->GetParError(1)/f->GetParameter(1);
+    cout << Form("B0: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L511, (t-L511)/tE, chi2) << endl;
+  }
+
+  h = (TH1D*)gFile->Get("t531");
+  if (h->GetEntries() > 100) {
+    h->Fit("expo", "ql");
+    //      gPad->SaveAs("t531.pdf");
+    f = (TF1*)h->GetFunction("expo");
+    chi2 = f->GetChisquare()/f->GetNDF();
+    t    = -1./f->GetParameter(1);
+    tE   = -t*f->GetParError(1)/f->GetParameter(1);
+    cout << Form("Bs: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L531, (t-L531)/tE, chi2) << endl;
+  }
+
+  h = (TH1D*)gFile->Get("t5122");
+  if (h->GetEntries() > 100) {
+    h->Fit("expo", "ql");
+    //      gPad->SaveAs("t5122.pdf");
+    f = (TF1*)h->GetFunction("expo");
+    chi2 = f->GetChisquare()/f->GetNDF();
+    t    = -1./f->GetParameter(1);
+    tE   = -t*f->GetParError(1)/f->GetParameter(1);
+    cout << Form("Lb: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L5122, (t-L5122)/tE, chi2) << endl;
+  }
+
+  h = (TH1D*)gFile->Get("t541");
+  if (h->GetEntries() > 100) {
+    h->Fit("expo", "ql");
+    //      gPad->SaveAs("t541.pdf");
+    f = (TF1*)h->GetFunction("expo");
+    chi2 = f->GetChisquare()/f->GetNDF();
+    t    = -1./f->GetParameter(1);
+    tE   = -t*f->GetParError(1)/f->GetParameter(1);
+    cout << Form("Bc: %4.2f+/-%4.2f (PDG = %4.2f, pull = %+4.2f, chi2 = %4.1f)", t, tE, L541, (t-L541)/tE, chi2) << endl;
+  }
+
+  //  -- save at the end to remove the intermittent root printout
+  tl->SetTextSize(0.03);
+  gPad->SetLogy(1);
+  h = ((TH1D*)gFile->Get("t521"));
+  f = (TF1*)h->GetFunction("expo");
+  chi2 = f->GetChisquare();
+  ndf  = f->GetNDF();
+  t    = -1./f->GetParameter(1);
+  tE   = -t*f->GetParError(1)/f->GetParameter(1);
+  h->SetTitle("");
+  setTitles(h, "c#tau [#mum]", "Entries/bin");
+  h->Draw();
+  setItalic(); tl->DrawLatexNDC(0.2, 0.45, "B^{+}"); setRoman();
+  tl->DrawLatexNDC(0.2, 0.40, Form("#chi^{2}/ndf")); tl->DrawLatexNDC(0.3, 0.40, Form("= %3.1f/%d", chi2, ndf));
+  tl->DrawLatexNDC(0.2, 0.35, Form("#tau(fit)"));    tl->DrawLatexNDC(0.3, 0.35, Form("= %5.2f #pm %5.2f", t, tE));
+  tl->DrawLatexNDC(0.2, 0.30, Form("#tau(pdg)"));    tl->DrawLatexNDC(0.3, 0.30, Form("= %5.2f ", L521));
+  tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L521)/tE));
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gPad->SaveAs("t521.pdf");
+
+  h = ((TH1D*)gFile->Get("t511"));
+  f = (TF1*)h->GetFunction("expo");
+  chi2 = f->GetChisquare();
+  ndf  = f->GetNDF();
+  t    = -1./f->GetParameter(1);
+  tE   = -t*f->GetParError(1)/f->GetParameter(1);
+  h->SetTitle("");
+  setTitles(h, "c#tau [#mum]", "Entries/bin");
+  h->Draw();
+  setItalic(); tl->DrawLatexNDC(0.2, 0.45, "B^{0}"); setRoman();
+  tl->DrawLatexNDC(0.2, 0.40, Form("#chi^{2}/ndf")); tl->DrawLatexNDC(0.3, 0.40, Form("= %3.1f/%d", chi2, ndf));
+  tl->DrawLatexNDC(0.2, 0.35, Form("#tau(fit)"));    tl->DrawLatexNDC(0.3, 0.35, Form("= %5.2f #pm %5.2f", t, tE));
+  tl->DrawLatexNDC(0.2, 0.30, Form("#tau(pdg)"));    tl->DrawLatexNDC(0.3, 0.30, Form("= %5.2f ", L511));
+  tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L511)/tE));
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gPad->SaveAs("t511.pdf");
+
+  h = ((TH1D*)gFile->Get("t531"));
+  f = (TF1*)h->GetFunction("expo");
+  chi2 = f->GetChisquare();
+  ndf  = f->GetNDF();
+  t    = -1./f->GetParameter(1);
+  tE   = -t*f->GetParError(1)/f->GetParameter(1);
+  h->SetTitle("");
+  setTitles(h, "c#tau [#mum]", "Entries/bin");
+  h->Draw();
+  setItalic(); tl->DrawLatexNDC(0.2, 0.45, "B_{s}"); setRoman();
+  tl->DrawLatexNDC(0.2, 0.40, Form("#chi^{2}/ndf")); tl->DrawLatexNDC(0.3, 0.40, Form("= %3.1f/%d", chi2, ndf));
+  tl->DrawLatexNDC(0.2, 0.35, Form("#tau(fit)"));    tl->DrawLatexNDC(0.3, 0.35, Form("= %5.2f #pm %5.2f", t, tE));
+  tl->DrawLatexNDC(0.2, 0.30, Form("#tau(pdg)"));    tl->DrawLatexNDC(0.3, 0.30, Form("= %5.2f ", L531));
+  tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L531)/tE));
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gPad->SaveAs("t531.pdf");
+
+  h = ((TH1D*)gFile->Get("t5122"));
+  f = (TF1*)h->GetFunction("expo");
+  chi2 = f->GetChisquare();
+  ndf  = f->GetNDF();
+  t    = -1./f->GetParameter(1);
+  tE   = -t*f->GetParError(1)/f->GetParameter(1);
+  h->SetTitle("");
+  setTitles(h, "c#tau [#mum]", "Entries/bin");
+  h->Draw();
+  setItalic(); tl->DrawLatexNDC(0.2, 0.45, "#Lambda_{b}"); setRoman();
+  tl->DrawLatexNDC(0.2, 0.40, Form("#chi^{2}/ndf")); tl->DrawLatexNDC(0.3, 0.40, Form("= %3.1f/%d", chi2, ndf));
+  tl->DrawLatexNDC(0.2, 0.35, Form("#tau(fit)"));    tl->DrawLatexNDC(0.3, 0.35, Form("= %5.2f #pm %5.2f", t, tE));
+  tl->DrawLatexNDC(0.2, 0.30, Form("#tau(pdg)"));    tl->DrawLatexNDC(0.3, 0.30, Form("= %5.2f ", L5122));
+  tl->DrawLatexNDC(0.2, 0.25, Form("pull"));         tl->DrawLatexNDC(0.3, 0.25, Form("= %+5.2f ", (t-L5122)/tE));
+  gStyle->SetOptStat(0);
+  gStyle->SetOptFit(0);
+  gPad->SaveAs("t5122.pdf");
+
 
 }
+
 
 
 // ----------------------------------------------------------------------
@@ -123,41 +274,41 @@ void plotWork::bookHist(int mode) {
 
 // ----------------------------------------------------------------------
 void plotWork::candAnalysis() {
-  fGoodCand = true; 
+  fGoodCand = true;
 }
 
 
 // ----------------------------------------------------------------------
 void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries); 
+  int nbegin(0), nend(nentries);
   if (nevts > 0 && nentries > nevts) {
     nentries = nevts;
-    nbegin = 0; 
+    nbegin = 0;
     nend = nevts;
   }
   if (nevts > 0 && nstart > 0) {
     nentries = nstart + nevts;
-    nbegin = nstart; 
+    nbegin = nstart;
     if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts; 
+      nend = nstart + nevts;
     } else {
       nend = t->GetEntries();
     }
   }
-  
-  nentries = nend - nstart; 
-  
-  int step(1000000); 
-  if (nentries < 5000000)  step = 500000; 
-  if (nentries < 1000000)  step = 100000; 
-  if (nentries < 100000)   step = 10000; 
-  if (nentries < 10000)    step = 1000; 
-  if (nentries < 1000)     step = 100; 
-  step = 500000; 
-  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file " 
-       << t->GetDirectory()->GetName() 
-       << " with " << nentries << " entries" 
+
+  nentries = nend - nstart;
+
+  int step(1000000);
+  if (nentries < 5000000)  step = 500000;
+  if (nentries < 1000000)  step = 100000;
+  if (nentries < 100000)   step = 10000;
+  if (nentries < 10000)    step = 1000;
+  if (nentries < 1000)     step = 100;
+  step = 500000;
+  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file "
+       << t->GetDirectory()->GetName()
+       << " with " << nentries << " entries"
        << endl;
 
   // -- setup loopfunction through pointer to member functions
@@ -169,7 +320,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   for (int jentry = nbegin; jentry < nend; jentry++) {
     t->GetEntry(jentry);
     if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-   
+
     candAnalysis();
     (this->*pF)();
   }
@@ -180,9 +331,9 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 // ----------------------------------------------------------------------
 void plotWork::setupTree(TTree *t) {
   if (string::npos != fCds.find("Mc")) {
-    fIsMC = true; 
+    fIsMC = true;
   } else {
-    fIsMC = false; 
+    fIsMC = false;
   }
 
   t->SetBranchAddress("pt", &fb.pt);
@@ -269,7 +420,7 @@ void plotWork::setupTree(TTree *t) {
   t->SetBranchAddress("m1trigm",  &fb.m1trigm);
   t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
   t->SetBranchAddress("m1tmid",   &fb.m1tmid);
- 
+
   t->SetBranchAddress("m2id",     &fb.m2id);
   t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
   t->SetBranchAddress("m2trigm",  &fb.m2trigm);
@@ -342,14 +493,14 @@ void plotWork::setCuts(string cuts) {
   string token, name, sval;
 
   while (getline(ss, token, ',')) {
-    
-    string::size_type m1 = token.find("="); 
+
+    string::size_type m1 = token.find("=");
     name = token.substr(0, m1);
     sval = token.substr(m1+1);
 
     if (string::npos != name.find("PTLO")) {
-      float val; 
-      val = atof(sval.c_str()); 
+      float val;
+      val = atof(sval.c_str());
       PTLO = val;
     }
 
@@ -359,7 +510,7 @@ void plotWork::setCuts(string cuts) {
 
 // ----------------------------------------------------------------------
 void plotWork::loadFiles(string afiles) {
-  
+
   string files = fDirectory + string("/") + afiles;
   cout << "==> Loading files listed in " << files << endl;
 
@@ -368,197 +519,98 @@ void plotWork::loadFiles(string afiles) {
   while (is.getline(buffer, 1000, '\n')) {
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
-    
-    string sbuffer = string(buffer); 
-    replaceAll(sbuffer, " ", ""); 
-    replaceAll(sbuffer, "\t", ""); 
+
+    string sbuffer = string(buffer);
+    replaceAll(sbuffer, " ", "");
+    replaceAll(sbuffer, "\t", "");
     if (sbuffer.size() < 1) continue;
 
-    string::size_type m1 = sbuffer.find("lumi="); 
-    string stype = sbuffer.substr(5, m1-5); 
+    string::size_type m1 = sbuffer.find("lumi=");
+    string stype = sbuffer.substr(5, m1-5);
 
-    string::size_type m2 = sbuffer.find("file="); 
-    string slumi = sbuffer.substr(m1+5, m2-m1-6); 
-    string sfile = sbuffer.substr(m2+5); 
-    string sname, sdecay; 
+    string::size_type m2 = sbuffer.find("file=");
+    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string sfile = sbuffer.substr(m2+5);
+    string sname, sdecay;
 
     cout << "stype: ->" << stype << "<-" << endl;
 
-    TFile *pF(0); 
+    TFile *pF(0);
     if (string::npos != stype.find("data")) {
       // -- DATA
-      pF = loadFile(sfile); 
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
+      pF = loadFile(sfile);
+
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
 
       if (string::npos != stype.find("bmm")) {
-        sname = "data_bmm"; 
-        sdecay = "bmm"; 
-	ds->fColor = kBlack; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "data_bmm";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
+	ds->fFillStyle = 3365;
       }
 
       if (string::npos != stype.find("bu2jpsik")) {
-        sname = "data_bu2jpsik"; 
-        sdecay = "bu2jpsik"; 
-	ds->fColor = kBlack; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "data_bu2jpsik";
+        sdecay = "bu2jpsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
+	ds->fFillStyle = 3365;
       }
 
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
     } else {
       // -- MC
-      pF = loadFile(sfile); 
+      pF = loadFile(sfile);
       cout << "  " << sfile << ": " << pF << endl;
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
 
-      string filter = "nofilter"; 
-      if (string::npos != stype.find("etaptfilter")) filter = "etaptfilter";
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
 
-      if (string::npos != stype.find("bu2jpsik")) {
-        sname = "bu2jpsik_" + filter; 
-        sdecay = "bu2jpsik"; 
-	ds->fColor = kBlue-7; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      }
+      string filter = "acc";
+      if (string::npos != stype.find("filter")) filter = "filter";
 
       // -------------------------
-      // -- genAnalyis files below
+      // -- genAnalysis files below
       // -------------------------
-      if (string::npos != stype.find("default,")) {
-        sname = "default_" + filter; 
-        sdecay = "default"; 
-	ds->fColor = kBlue-7; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+      if (string::npos != stype.find("bdmm,")) {
+        sname = "bdmm_" + filter;
+        sdecay = "bdmm";
+	ds->fColor = kBlue-7;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      } 
-
-      if (string::npos != stype.find("inelastic,")) {
-        sname = "inelastic_" + filter; 
-        sdecay = "inelastic"; 
-	ds->fColor = kMagenta-1; 
-	ds->fSymbol = 25; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      } 
-
-      if (string::npos != stype.find("hardqcd8,")) {
-        sname = "hardqcd8_" + filter; 
-        sdecay = "hardqcd8"; 
-	ds->fColor = kRed-2; 
-	ds->fSymbol = 30; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      } 
-
-      if (string::npos != stype.find("msel1,")) {
-        sname = "pythia6_" + filter; 
-        sdecay = "pythia6"; 
-	ds->fColor = kGreen+3; 
-	ds->fSymbol = 26; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      } 
-
-      if (string::npos != stype.find("noevtgen,")) {
-        sname = "noevtgen_" + filter; 
-        sdecay = "noevtgen"; 
-	ds->fColor = kYellow+2; 
-	ds->fSymbol = 28; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
-      } 
-
-      if (string::npos != stype.find("dgs0,")) {
-        sname = "dgs0_" + filter; 
-        sdecay = "dgs0"; 
-	ds->fColor = kGreen+3; 
-	ds->fSymbol = 28; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-      } 
-      
-      if (string::npos != stype.find("dgs,")) {
-        sname = "dgs_" + filter; 
-        sdecay = "dgs"; 
-	ds->fColor = kRed+2; 
-	ds->fSymbol = 28; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-      } 
-
-      if (string::npos != stype.find("nophotos,")) {
-        sname = "nophotos_" + filter; 
-        sdecay = "nophotos"; 
-	ds->fColor = kGreen+3; 
-	ds->fSymbol = 28; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
-      } 
-
-      if (string::npos != stype.find("nophotonnoevtgen,")) {
-        sname = "nophotonnoevtgen_" + filter; 
-        sdecay = "nophotonnoevtgen"; 
-	ds->fColor = kRed+2; 
-	ds->fSymbol = 28; 
-	ds->fF      = pF; 
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
+	ds->fFillStyle = 3365;
       }
-      
+
       cout << "  inserting as " << sname << " and " << sdecay << endl;
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
 
-    } 
-    
-    
+    }
+
+
   }
 
   is.close();
@@ -570,4 +622,3 @@ void plotWork::loadFiles(string afiles) {
     cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }
-
