@@ -41,7 +41,7 @@ void genAnalysis::eventProcessing() {
   if (0) fpEvt->dumpGenBlock(); 
 
   if (0) yVsEta();
-  if (0) genB();
+  if (1) genB();
   if (0) printBdecays();
   if (0) bbbarCrossSection();
 
@@ -126,11 +126,6 @@ void genAnalysis::yVsEta() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::endAnalysis() {
-  cout << "==> B+ mass: " << f521Mass << endl;
-  cout << "==> B0 mass: " << f511Mass << endl;
-  cout << "==> Bs mass: " << f531Mass << endl;
-  cout << "==> Bc mass: " << f541Mass << endl;
-  cout << "==> Lb mass: " << f5122Mass << endl;
   compare2PDG(0, 2014, true);
 }
 
@@ -513,28 +508,28 @@ void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
   if (finalize) {
     // -- Masses
     cout << "Masses" << endl;
-    cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+    cout << Form("B0: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)", 
 		 ((TH1D*)fpHistFile->Get("m511"))->GetMean(), 
 		 M511, 
 		 ((TH1D*)fpHistFile->Get("m511"))->GetMean() - M511
 		 ) 
 	 << endl;
 
-    cout << Form("B+: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+    cout << Form("B+: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)", 
 		 ((TH1D*)fpHistFile->Get("m521"))->GetMean(), 
 		 M521, 
 		 ((TH1D*)fpHistFile->Get("m521"))->GetMean() - M521
 		 ) 
 	 << endl;
 
-    cout << Form("Bs: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+    cout << Form("Bs: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)", 
 		 ((TH1D*)fpHistFile->Get("m531"))->GetMean(), 
 		 M531, 
 		 ((TH1D*)fpHistFile->Get("m531"))->GetMean() - M531
 		 ) 
 	 << endl;
 
-    cout << Form("Lb: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+    cout << Form("Lb: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)", 
 		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean(), 
 		 M5122, 
 		 ((TH1D*)fpHistFile->Get("m5122"))->GetMean() - M5122
@@ -542,7 +537,7 @@ void genAnalysis::compare2PDG(TGenCand *pCand, int year, bool finalize) {
 	 << endl;
 
     if (((TH1D*)fpHistFile->Get("m541"))->GetEntries() > 1) 
-      cout << Form("Bc: %6.5f (PDG = %6.5f, diff = %+6.5f)", 
+      cout << Form("Bc: %6.5f (PDG = %6.5f, diff = %+6.5f GeV)", 
 		   ((TH1D*)fpHistFile->Get("m541"))->GetMean(), 
 		   M541, 
 		   ((TH1D*)fpHistFile->Get("m541"))->GetMean() - M541
