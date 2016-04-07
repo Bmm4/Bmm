@@ -269,6 +269,7 @@ void candAna::candAnalysis() {
   
   if (fpCand->fPvIdx > -1 && fpCand->fPvIdx < fpEvt->nPV()) {
     TAnaVertex *pv = fpEvt->getPV(fpCand->fPvIdx); 
+    fPvIdx = fpCand->fPvIdx; 
     fPvX = pv->fPoint.X(); 
     fPvY = pv->fPoint.Y(); 
     fPvZ = pv->fPoint.Z(); 
@@ -276,6 +277,7 @@ void candAna::candAnalysis() {
     fPvNdof = pv->fNdof;
     fPvAveW8 = ((fPvNdof+2.)/2.)/fPvNtrk;
   } else {
+    fPvIdx = -99;
     fPvX = -99.;
     fPvY = -99.;
     fPvZ = -99.;
@@ -1457,6 +1459,8 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("pr",      &fGenBpartial,       "pr/I"); 
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
+  t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
+  t->Branch("pvz",     &fPvZ,               "pvz/D");
   t->Branch("pvn",     &fPvN,               "pvn/I");
   t->Branch("cb",      &fCowboy,            "cb/O");
   t->Branch("rr",      &fRunRange,          "rr/I");
