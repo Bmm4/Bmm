@@ -36,9 +36,35 @@
 #include "DataFormats/MuonReco/interface/MuonFwd.h"
 #include "DataFormats/MuonDetId/interface/MuonSubdetId.h"
 
+#include "DataFormats/Math/interface/deltaR.h"
+
+
+#include "DataFormats/GeometrySurface/interface/Cylinder.h"
+#include "DataFormats/GeometrySurface/interface/Plane.h"
+#include "DataFormats/MuonReco/interface/MuonEnergy.h"
+#include "DataFormats/MuonReco/interface/MuonTime.h"
+#include "CondFormats/AlignmentRecord/interface/TrackerSurfaceDeformationRcd.h"
+
+
+
+// Transient tracks (for extrapolations)
+#include "TrackingTools/TransientTrack/interface/TransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TrackTransientTrack.h"
+#include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
+#include "TrackingTools/GeomPropagators/interface/Propagator.h"
+#include "TrackingTools/PatternTools/interface/Trajectory.h"
+#include "TrackingTools/Records/interface/TransientTrackRecord.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateOnSurface.h"
+#include "TrackingTools/TrajectoryState/interface/TrajectoryStateTransform.h"
+#include "TrackingTools/Records/interface/TrackingComponentsRecord.h"
+#include "TrackingTools/TrajectoryState/interface/FreeTrajectoryState.h"
+
+
 #include "TH1.h"
 #include "TFile.h"
 #include "TDirectory.h"
+#include "TString.h"
+#include "TRegexp.h"
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
@@ -63,342 +89,291 @@ using namespace trigger;
 
 // ----------------------------------------------------------------------
 HFDebug::HFDebug(const edm::ParameterSet& iConfig):
-  fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
-  fNevt(0),  
-
-  fTracksLabel(iConfig.getUntrackedParameter<edm::InputTag>("tracksLabel", edm::InputTag("generalTracks"))),
-  fTokenTrack(consumes<View<Track> >(fTracksLabel)), 
-
-  fL1MuonsLabel(iConfig.getUntrackedParameter<InputTag>("L1MuonsLabel")),
-
-  fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
-
+  HFVirtualDecay(iConfig),
   fTriggerEventLabel(iConfig.getUntrackedParameter<InputTag>("TriggerEventLabel")),
   fTokenTriggerEvent(consumes<TriggerEvent>(fTriggerEventLabel)), 
-
+  
   fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel")),
-  fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)),
-
-  fHltPrescaleProvider(iConfig, consumesCollector(), *this),
-
-  fL1MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l1muonsLabel", edm::InputTag("hltL1extraParticles"))),
-  fL2MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l2muonsLabel", edm::InputTag("hltL2MuonCandidates"))),
-  fL3MuonsNewLabel(iConfig.getUntrackedParameter<edm::InputTag>("l3muonsLabel", edm::InputTag("hltL3MuonCandidates"))) {  
-
-  cout << "----------------------------------------------------------------------" << endl;
-  cout << "--- HFDebug constructor" << endl;
-  cout << "--- Verbose                     : " << fVerbose << endl;
-  cout << "--- HLT process name            : " << fHLTProcessName << endl;
-  cout << "--- L1 Muons Label              : " << fL1MuonsLabel << endl;
-  cout << "--- HLTResultsLabel             : " << fHLTResultsLabel << endl;
-  cout << "--- Trigger Event Label         : " << fTriggerEventLabel << endl;
-  cout << "----------------------------------------------------------------------" << endl;
-
-
-  l1extramuToken_  = consumes<l1extra::L1MuonParticleCollection>(fL1MuonsNewLabel); 
-  MuCandTag2Token_ = consumes<reco::RecoChargedCandidateCollection>(fL2MuonsNewLabel);
-  MuCandTag3Token_ = consumes<reco::RecoChargedCandidateCollection>(fL3MuonsNewLabel);
+  fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)), 
+  fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
+  fTriggerNames(iConfig.getParameter<std::vector<std::string> > ("triggerNames"))
+{
+  dumpConfiguration(); 
 }
 
 
 // ----------------------------------------------------------------------
 HFDebug::~HFDebug() {
-  
+}
+
+
+// ----------------------------------------------------------------------
+void HFDebug::dumpConfiguration() {
+  cout << "----------------------------------------------------------------------" << endl;
+  cout << "--- HFDebug configuration" << endl;
+  cout << "--- HLT process name            : " << fHLTProcessName << endl;
+  cout << "--- HLTResultsLabel             : " << fHLTResultsLabel << endl;
+  cout << "--- Trigger Event Label         : " << fTriggerEventLabel << endl;
+  HFVirtualDecay::dumpConfiguration();
+  cout << "----------------------------------------------------------------------" << endl;
 }
 
 
 // ----------------------------------------------------------------------
 void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-
-  fNevt++;
-
-  cout << "======================================================================" << endl;
-  stringstream evtstring;
-  evtstring << "run: " << iEvent.id().run()
-	    << " event: " << iEvent.id().event()
-	    << " LS: " <<  iEvent.luminosityBlock();
-  cout << evtstring.str() << endl;
-  cout << "======================================================================" << endl;
-
-  
-  // ----------------------------------------------------------------------
-  // -- tracks
-  // ----------------------------------------------------------------------
+  if (1) cout << "--- HFDebug -------------------------------------------------------------------" << endl;
+  float pig = TMath::Pi(); 
   try {
-    iEvent.getByToken(fTokenTrack, fTracksHandle);
-    fTracksHandle.isValid();
-  } catch(cms::Exception&){
-    cout << "could not get tracks, giving up" << endl;
+    HFVirtualDecay::analyze(iEvent,iSetup);
+  } catch(HFSetupException e) {
+    cout << "==>HFDebug> " << e.fMsg << endl;
     return;
   }
-
-  int i(0), hiPurity(0);
-  for (View<reco::Track>::const_iterator itTrack = fTracksHandle->begin(); itTrack != fTracksHandle->end(); ++itTrack) {
-
-    reco::TrackBase::TrackQuality trackQualityhighPur = reco::TrackBase::qualityByName("highPurity");
-    if (itTrack->quality(trackQualityhighPur)) {
-      hiPurity = 1;
-    } else {
-      hiPurity = 0;
-    }
-
-    cout << Form("%3d", i) << " track p/t = "
-	 << itTrack->pt() << ", " << itTrack->eta() << ", " << itTrack->phi()
-	 << " algo = " << itTrack->algo()
-	 << " high purity = " << hiPurity
-	 << endl;
-    ++i; 
-  }
-
-    
   
-  // ----------------------------------------------------------------------
-  // -- HLT results
-  // ----------------------------------------------------------------------
-  vector<string> validTriggerNames;
-  if (fValidHLTConfig) validTriggerNames = fHltConfig.triggerNames();
-  else cerr << "==> HFDebug: No valid Trigger configuration!!!" << endl;
-  //can assert?!  fHltConfig.dump("PrescaleTable");
-
-  if (validTriggerNames.size() < 1) {
-    cout << "==>HFDebug: NO valid trigger names returned by HLT config provided!!??" << endl;
-    return;
-  }
-
-  Handle<TriggerResults> hHLTresults;
-  bool hltF = true;
-
+  // -- get trigger information
+  Handle<TriggerResults> triggerResults;
   try {
-    iEvent.getByToken(fTokenTriggerResults, hHLTresults);
+    iEvent.getByToken(fTokenTriggerResults, triggerResults);
+    triggerResults.isValid();
   } catch (cms::Exception &ex) {
-    if (fVerbose > 0) cout << "==>HFDebug> Triggerresults  " << fHLTResultsLabel.encode() << " not found " << endl;
-    hltF = false;
+    if (fVerbose > 0) cout << "==>HFDumpTrigger> Triggerresults  " << fHLTResultsLabel.encode() << " not found " << endl;
     return;
   }
   
-  Handle<trigger::TriggerEvent> triggerSummary;
-  hltF = true;
+  Handle<trigger::TriggerEvent> triggerEvent;
   try {
-    iEvent.getByToken(fTokenTriggerEvent, triggerSummary);
-    hltF = true;
+    iEvent.getByToken(fTokenTriggerEvent, triggerEvent);
+    triggerEvent.isValid();
   } catch (const cms::Exception& e) {
-    hltF = false;
-    cout<<"Error!! No TriggerEvent with label " << fTriggerEventLabel << endl;
+    cout << "Error!! No TriggerEvent with label " << fTriggerEventLabel << endl;
     return;
   }
-
-  if (!hltF) return;
+  const trigger::TriggerObjectCollection triggerObjects = triggerEvent->getObjects();
   
-  const TriggerNames &trigName = iEvent.triggerNames(*hHLTresults);
-  cout << "hHLTresults->size() = " << hHLTresults->size() << " and HLT accept = " << gHFEvent->fHLTDecision << endl;
   
-  unsigned int index(999); 
-  bool wasrun(false), result(false);
-  int prescale(1); 
-  int psSet = -1;
-  psSet = fHltPrescaleProvider.prescaleSet(iEvent, iSetup);
+  iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAny", fPropagatorAlong);
+  iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAnyOpposite", fPropagatorOpposite);
   
-  // Loop over all HLT-paths
-  for (unsigned int it = 0; it < validTriggerNames.size(); ++it) {
-    index    = trigName.triggerIndex(validTriggerNames[it]); 
-    const unsigned int triggerIndex = fHltConfig.triggerIndex(validTriggerNames[it]); //dk
-    if(index!=triggerIndex) cout<<" something wrong 1 "<<index<<" "<<triggerIndex<<endl;
-    
-    if (index >= hHLTresults->size())
-      continue;
-    
-    TString validTriggerNamesT = TString(validTriggerNames[it]);
-    result   = hHLTresults->accept(index);
-    wasrun   = hHLTresults->wasrun(index);
-    if (psSet > -1) {
-      prescale = fHltConfig.prescaleValue(psSet, validTriggerNames[it]);
-    } else {
-      //	cout << "==>HFDebug> error in prescale set!?" << endl;
-      prescale = 0;
-    }
-    
-    const vector<string>& moduleLabels(fHltConfig.moduleLabels(index));
-    const unsigned int moduleIndex(hHLTresults->index(index));
-    
-    cout << "--- new HLT path " << evtstring.str() << " ------------" << endl;
-    cout << validTriggerNames[it] << " result = " << result << " "
-	 << " prescale = " << prescale
-	 << " wasrun = " << wasrun
-	 << " moduleLabels.size() = "  << moduleLabels.size()
-	 << " moduleIndex = "  << moduleIndex
-	 << " triggerIndex = " << triggerIndex
-	 << " sizeFilters = " << triggerSummary->sizeFilters()
-	 << endl;
-    
-    // loop over all modules 
-    for (unsigned int j=0;j<=moduleIndex;j++) {
-      const string& moduleLabel = moduleLabels[j]; 
-      const string& type = fHltConfig.moduleType(moduleLabel);
-      const unsigned int filterIndex = triggerSummary->filterIndex(InputTag(moduleLabel,"","HLT"));
-      cout << "-> " << j << " label " << moduleLabel << " type " << type << " index "
-	   << filterIndex
-	   << endl;
-      
-      if (filterIndex < triggerSummary->sizeFilters()) {
-	
-	const trigger::Vids& VIDS (triggerSummary->filterIds(filterIndex));
-	const trigger::Keys& KEYS(triggerSummary->filterKeys(filterIndex));
-	const size_type nI(VIDS.size());
-	const size_type nK(KEYS.size());
-	assert(nI==nK);
-	const size_type n(max(nI,nK));
-	
-	cout << "   " << j << " label " << moduleLabel << " type " << type << " index "
-	     << filterIndex << " " << n << " accepted TRIGGER objects found: "
-	     << endl;
-	
-	const trigger::TriggerObjectCollection& TOC = triggerSummary->getObjects();
-	for (size_type i=0; i!=n; ++i) {
-	  const trigger::TriggerObject& TO=TOC[KEYS[i]];
-	  cout << "   " << i << " " << VIDS[i] << "/" << KEYS[i] << ": "
-	       << TO.id() << " " << TO.pt() << " " << TO.eta() << " " 
-	       << TO.phi() << " " << TO.mass()<< endl;                                                                 
-	} 
-      } 
-    } // for j, modul loop
-  } 
-
+  
   // -- HLT L1 muon candidates
   string L1NameCollection("hltL1extraParticles");
   trigger::size_type Index(0);
-  Index = triggerSummary->collectionIndex(edm::InputTag(L1NameCollection, "", fTriggerEventLabel.process()));
-  
-  if (Index < triggerSummary->sizeCollections()) {
+  Index = triggerEvent->collectionIndex(edm::InputTag(L1NameCollection, "", fTriggerEventLabel.process()));
+  vector<TVector3> l1p3; 
+  TVector3 x; 
+  if (Index < triggerEvent->sizeCollections()) {
     TString label = TString(L1NameCollection.c_str());
-    const trigger::Keys& Keys(triggerSummary->collectionKeys());
+    const trigger::Keys& Keys(triggerEvent->collectionKeys());
     const trigger::size_type n0 (Index == 0? 0 : Keys.at(Index-1));
     const trigger::size_type n1 (Keys.at(Index));
     for (trigger::size_type i = n0; i != n1; ++i) {
-      const trigger::TriggerObject& obj( triggerSummary->getObjects().at(i) );
-      cout << "===> L1: " << i << " id: " << obj.id() 
-	   << " m = " << obj.mass() << " pT,eta,phi = " << obj.pt() << "," 
-	   <<  obj.eta() << "," << obj.phi()
+      const trigger::TriggerObject& obj(triggerEvent->getObjects().at(i) );
+      cout << "===> L1:   "
+	   << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f",
+		   i, obj.id(), obj.mass(), obj.pt(), obj.eta(), obj.phi())
 	   << " label = " << label
 	   << endl;
-      
-      TTrgObj *pTO = gHFEvent->addTrgObj();
-      pTO->fP.SetPtEtaPhiE(obj.pt(), 
-			   obj.eta(), 
-			   obj.phi(), 
-			   obj.energy()
-			   ); 
-      pTO->fID     = obj.id(); 
-      pTO->fLabel  = label;
-      
-    } 
-    cout << "===> Found L1 trigger collection -> " << L1NameCollection << " " << (n1-n0)
-	 << endl;
+      x.SetPtEtaPhi(obj.pt(), obj.eta(), obj.phi());
+      l1p3.push_back(x);
+    }
   }
-
   // -- HLT L2 muon candidates 
   string L2NameCollection("hltL2MuonCandidates");
-  Index = triggerSummary->collectionIndex(edm::InputTag(L2NameCollection, "", fTriggerEventLabel.process()));
+  Index = triggerEvent->collectionIndex(edm::InputTag(L2NameCollection, "", fTriggerEventLabel.process()));
   
-  if (Index < triggerSummary->sizeCollections()) {
+  if (Index < triggerEvent->sizeCollections()) {
     TString label = TString(L2NameCollection.c_str());
-    const trigger::Keys& Keys(triggerSummary->collectionKeys());
+    const trigger::Keys& Keys(triggerEvent->collectionKeys());
     const trigger::size_type n0 (Index == 0? 0 : Keys.at(Index-1));
     const trigger::size_type n1 (Keys.at(Index));
     for (trigger::size_type i = n0; i != n1; ++i) {
-      const trigger::TriggerObject& obj( triggerSummary->getObjects().at(i) );
-      if(fVerbose>10) 
-	cout << "===> L2: " << i << " id: " << obj.id() << " m = " 
-	     << obj.mass() << " pT,eta,phi = " << obj.pt() << "," 
-	     <<  obj.eta() << "," << obj.phi()
-	     << " label = " << label
-	     << endl;
-      
-      TTrgObj *pTO = gHFEvent->addTrgObj();
-      pTO->fP.SetPtEtaPhiE(obj.pt(), 
-			   obj.eta(), 
-			   obj.phi(), 
-			   obj.energy()
-			   ); 
-      pTO->fID     = obj.id(); 
-      pTO->fLabel  = label;
+      const trigger::TriggerObject& obj( triggerEvent->getObjects().at(i) );
+      cout << "===> L2:   "
+	   << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f",
+		   i, obj.id(), obj.mass(), obj.pt(), obj.eta(), obj.phi())
+	   << " label = " << label
+	   << endl;
+
+      x.SetPtEtaPhi(obj.pt(), obj.eta(), obj.phi());
+      for (unsigned int i = 0; i < l1p3.size(); ++i) {
+	((TH1D*)gHFFile->Get("df2"))->Fill(l1p3[i].DeltaPhi(x));
+	((TH1D*)gHFFile->Get("de2"))->Fill(l1p3[i].Eta() - x.Eta());
+	((TH1D*)gHFFile->Get("dr2"))->Fill(l1p3[i].DeltaR(x));
+      }
+
     }
-    cout << "===> Found L2 trigger collection -> " << L2NameCollection << " " 
-	 << (n1-n0)
-	 << endl;
   }
   
   // -- HLT L3 muon candidates
   string L3NameCollection("hltL3MuonCandidates");
-  Index = triggerSummary->collectionIndex(edm::InputTag(L3NameCollection, "", fTriggerEventLabel.process()));
-  if (Index < triggerSummary->sizeCollections()) {
+  Index = triggerEvent->collectionIndex(edm::InputTag(L3NameCollection, "", fTriggerEventLabel.process()));
+  if (Index < triggerEvent->sizeCollections()) {
     TString label = TString(L3NameCollection.c_str());
-    const trigger::Keys& Keys(triggerSummary->collectionKeys());
+    const trigger::Keys& Keys(triggerEvent->collectionKeys());
     const trigger::size_type n0 (Index == 0? 0 : Keys.at(Index-1));
     const trigger::size_type n1 (Keys.at(Index));
     for (trigger::size_type i = n0; i != n1; ++i) {
-      const trigger::TriggerObject& obj( triggerSummary->getObjects().at(i) );
-      cout << "===> L3: " << i << " id: " << obj.id() << " m = " 
-	   << obj.mass() << " pT,eta,phi = " << obj.pt() << "," 
-	   <<  obj.eta() << "," << obj.phi()
+      const trigger::TriggerObject& obj( triggerEvent->getObjects().at(i) );
+      cout << "===> L3:   "
+	   << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f",
+		   i, obj.id(), obj.mass(), obj.pt(), obj.eta(), obj.phi())
 	   << " label = " << label
 	   << endl;
-      
-      TTrgObj *pTO = gHFEvent->addTrgObj();
-      pTO->fP.SetPtEtaPhiE(obj.pt(), 
-			   obj.eta(), 
-			   obj.phi(), 
-			   obj.energy()
-			   ); 
-      pTO->fID     = obj.id(); 
-      pTO->fLabel  = label;
-      
     }
-    cout << "===> Found L3 trigger collection -> " << L3NameCollection << " " 
-	 << (n1-n0)
-	 << endl;
   }
-
-
-  // -- new setup, based on
-  // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/interface/HLTAnalyzer.h
-  // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/src/HLTAnalyzer.cc
-  // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/src/HLTMuon.cc
-  // https://github.com/cms-sw/cmssw/blob/CMSSW_8_0_X/HLTrigger/HLTanalyzers/python/HLTAnalyser_cfi.py
-  /*  
-  Handle<l1extra::L1MuonParticleCollection> l1extmu; // hltL1extraParticles
-  Handle<RecoChargedCandidateCollection> mucands2, mucands3; // hltL2MuonCandidates hltL3MuonCandidates
-
-  try {
-    iEvent.getByToken(l1extramuToken_, l1extmu);
-  } catch (cms::Exception &ex) {
-    if (fVerbose > 0) cout << "==>HFDebug> l1extra::L1MuonParticleCollection  " << fHLTResultsLabel.encode() << " not found " << endl;
-    return;
-  }
-
-  try {
-    iEvent.getByToken(MuCandTag2Token_, mucands2);
-  } catch (cms::Exception &ex) {
-    if (fVerbose > 0) cout << "==>HFDebug> RecoChargedCandidateCollection  " << fL3MuonsNewLabel.encode() << " not found " << endl;
-    return;
-  }
-
-  typedef reco::RecoChargedCandidateCollection::const_iterator cand;
-  int idx(0); 
-  //  reco::RecoChargedCandidateCollection myMucands2 = ;
-  for (cand i = (*mucands2).begin(); i != (*mucands2).end(); i++) {
-    reco::TrackRef tk = i->get<reco::TrackRef>();
-    cout << "L2 " << idx << " pt = " << tk->pt() << " eta = " << tk->eta() << " phi = " <<  tk->phi() << endl;
-  }
-
   
-  try {
-    iEvent.getByToken(MuCandTag2Token_, mucands3);
-  } catch (cms::Exception &ex) {
-    if (fVerbose > 0) cout << "==>HFDebug> RecoChargedCandidateCollection  " << fL3MuonsNewLabel.encode() << " not found " << endl;
-    return;
-  }
-  */
+  // -- Extrapolation
+  double triggerMaxDeltaR(0.1);
+  for (MuonCollection::const_iterator imu = fMuonCollection->begin(); imu != fMuonCollection->end(); ++imu) {
+    if (imu->pt() < 5) continue;
+    bool isSA = (!imu->isGlobalMuon() && imu->isStandAloneMuon() && !imu->isTrackerMuon());
+    bool isTR = (!imu->isGlobalMuon() && imu->isTrackerMuon() && !imu->isStandAloneMuon());
+    bool isGL = (imu->isGlobalMuon());//&&!(imu->isStandAloneMuon())&&!(imu->isTrackerMuon()));
+    bool isTRSA  = (!imu->isGlobalMuon() && imu->isStandAloneMuon()&&imu->isTrackerMuon());
+    
+    double matchDeltaR = 9999.;
+    int hasTriggered = 0;
+    
+    matchDeltaR = matchTrigger(fTriggerIndices, triggerObjects, triggerEvent, (*imu));
+    if (matchDeltaR < triggerMaxDeltaR) hasTriggered = 1;
+    if (hasTriggered) {
+      cout << "muon " << imu-fMuonCollection->begin() << " with pT = " << imu->pt();
+      if (isSA)   cout << " STA muon" << endl;
+      if (isTR)   cout << " TRA muon" << endl;
+      if (isGL)   cout << " GLB muon" << endl;
+      if (isTRSA) cout << " STA and TRA muon" << endl;
+      cout << " triggered, matchDeltaR = " << matchDeltaR << endl;
+    } else {
+      cout << " NOT trigger matched"  << endl;
+    }
+    
+    if (isSA || isGL){
+    } else {
+      cout << " skipping muon with pt/eta/phi = " << imu->pt() << "/" << imu->eta() << "/" << imu->phi() << endl;
+      continue;
+    }
+    TrackRef tr_mu  = imu->outerTrack();  
+    if (isSA)   cout << " STA muon ";
+    if (isGL)   cout << " GLB muon ";
+    cout << " muon pt = " << imu->pt() << endl;
 
+    double ptX(0.), etaX(0.), phiX(0.); 
+    TrajectoryStateOnSurface tsos = cylExtrapTrkSam(tr_mu, 500);  // track at MB2 radius - extrapolation
+    if (tsos.isValid()) {
+      double xx = tsos.globalPosition().x();
+      double yy = tsos.globalPosition().y();
+      double zz = tsos.globalPosition().z();
+      double rr = sqrt(xx*xx + yy*yy);
+      double cosphi = xx/rr;
+      double eta0   = tsos.globalPosition().eta();
+      double phi0   = tsos.globalPosition().phi();
+      double phi(0.); 
+      if (yy>=0) 
+	phi = acos(cosphi);
+      else
+	phi = 2*pig-acos(cosphi);
+      // cout << " at MB2: pt = " << imu->pt() << " eta0 = " << eta0 << "phi =  " << phi << " phi0 = " << phi0 
+      // 	   << " x/y/r = " << xx << " " << yy << " " << rr << " cosphi = " << cosphi
+      // 	   << endl;
+      if (TMath::Abs(zz) < 790) {
+	cout << "===> MB2:  "
+	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
+		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
+	     << " phi = " << phi 
+	     << " z = " << tsos.globalPosition().z()
+	     << " r = " << rr
+	     << endl;
+	etaX = eta0; 
+	phiX = phi0; 
+	ptX  = tr_mu->pt();
+      }
+    }
+    
+    tsos = surfExtrapTrkSam(tr_mu, 790);   // track at ME2+ plane - extrapolation
+    if (tsos.isValid()) {
+      double xx = tsos.globalPosition().x();
+      double yy = tsos.globalPosition().y();
+      double rr = sqrt(xx*xx + yy*yy);
+      double cosphi = xx/rr;
+      double eta0   = tsos.globalPosition().eta();
+      double phi0   = tsos.globalPosition().phi();
+      double phi(0.); 
+      if (yy >= 0) 
+	phi = acos(cosphi);
+      else
+	phi = 2*pig-acos(cosphi);	
+      
+      if ((tr_mu->eta() > 0) && (rr < 500)) {
+	cout << "===> ME2+: "
+	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
+		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
+	     << " phi = " << phi 
+	     << " z = " << tsos.globalPosition().z()
+	     << " r = " << rr
+	     << endl;
+	etaX = eta0; 
+	phiX = phi0; 
+	ptX  = tr_mu->pt();
+      }
+    }
+
+    tsos = surfExtrapTrkSam(tr_mu, -790);   // track at ME2- plane - extrapolation
+    if (tsos.isValid()) {
+      double xx = tsos.globalPosition().x();
+      double yy = tsos.globalPosition().y();
+      double rr = sqrt(xx*xx + yy*yy);
+      double cosphi = xx/rr;
+      double eta0   = tsos.globalPosition().eta();
+      double phi0   = tsos.globalPosition().phi();
+      double phi(0.); 
+      if (yy>=0) 
+	phi = acos(cosphi);
+      else
+	phi = 2*pig-acos(cosphi);
+      if ((tr_mu->eta() < 0) && (rr < 500)) {
+	cout << "===> ME2-: "
+	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
+		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
+	     << " phi = " << phi 
+	     << " z = " << tsos.globalPosition().z()
+	     << " r = " << rr
+	     << endl;
+	etaX = eta0; 
+	phiX = phi0; 
+	ptX  = tr_mu->pt();
+      }
+    }
+
+    TVector3 xpp3;
+    xpp3.SetPtEtaPhi(ptX, etaX, phiX); 
+    int idx = imu->innerTrack().index(); 
+    for (int im = 0; im < gHFEvent->nMuons(); ++im) {
+      TAnaMuon *pm = gHFEvent->getMuon(im);
+      TVector3 hfdm;
+      if (pm->fIndex == idx) {
+	hfdm.SetPtEtaPhi(pm->fOuterPlab.Perp(), pm->fPositionAtM2.Eta(), pm->fPositionAtM2.Phi());
+	cout << "     HFDM:                         " 
+	     << Form(" outer:  %6.3f/%+5.4f/%+5.4f", pm->fOuterPlab.Perp(), pm->fOuterPlab.Eta(), pm->fOuterPlab.Phi())
+	     << Form("  expol: %6.3f/%+5.4f/%+5.4f", pm->fOuterPlab.Perp(), pm->fPositionAtM2.Eta(), pm->fPositionAtM2.Phi())
+	     << endl;
+
+	for (unsigned int i = 0; i < l1p3.size(); ++i) {
+	  ((TH1D*)gHFFile->Get("df0"))->Fill(l1p3[i].DeltaPhi(xpp3));
+	  ((TH1D*)gHFFile->Get("df1"))->Fill(l1p3[i].DeltaPhi(hfdm)); 
+
+	  ((TH1D*)gHFFile->Get("de0"))->Fill(l1p3[i].Eta() - etaX);
+	  ((TH1D*)gHFFile->Get("de1"))->Fill(l1p3[i].Eta() - pm->fPositionAtM2.Eta()); 
+	  
+	  ((TH1D*)gHFFile->Get("dr0"))->Fill(l1p3[i].DeltaR(xpp3));
+	  ((TH1D*)gHFFile->Get("dr1"))->Fill(l1p3[i].DeltaR(hfdm)); 
+	  
+	}
+	
+      }
+    }
+    
+  }
+  
   
   
 } 
@@ -406,59 +381,156 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 // ----------------------------------------------------------------------
 void  HFDebug::beginRun(const Run &run, const EventSetup &iSetup) {
-  bool hasChanged;
-  fValidHLTConfig = fHltConfig.init(run,iSetup,fHLTProcessName,hasChanged);
-  cout << fHltConfig.tableName() << endl;
-  vector<string> pds = fHltConfig.datasetNames();
   
+  bool changed = true;
+  if (!fHltConfig.init(run, iSetup, fHLTProcessName, changed)) {
+    // if you can't initialize hlt configuration, crash!
+    cout << "Error: didn't find process" << fHLTProcessName << endl;
+    assert(false);
+  }
+
+  bool enableWildcard = true;
+  for (size_t iTrig = 0; iTrig < fTriggerNames.size(); ++iTrig) { 
+    // prepare for regular expression (with wildcards) functionality:
+    TString tNameTmp = TString(fTriggerNames[iTrig]);
+    TRegexp tNamePattern = TRegexp(tNameTmp, enableWildcard);
+    int tIndex = -1;
+    // find the trigger index:
+    for (unsigned ipath = 0; ipath < fHltConfig.size(); ++ipath) {
+      // use TString since it provides reg exp functionality:
+      TString tmpName = TString(fHltConfig.triggerName(ipath));
+      if (tmpName.Contains(tNamePattern)) {
+	tIndex = int(ipath);
+	fTriggerIndices.push_back(tIndex);
+      }
+    }
+    if (tIndex < 0) { // if can't find trigger path at all, give warning:
+      std::cout << "Warning: Could not find trigger" << fTriggerNames[iTrig] << std::endl;
+      //assert(false);
+    }
+  } // end for triggerNames
+
   TDirectory *pDir = gDirectory; 
   gHFFile->cd();
-  TH1D *h1 = new TH1D(Form("pd_run%d", run.run()), fHltConfig.tableName().c_str(), pds.size(), 0., pds.size()); 
+  TH1D *h1 = new TH1D("dr0", "dr0", 100, 0.0, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("dr1", "dr1", 100,  0.0, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("dr2", "dr2", 100,  0.0, 1.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("de0", "de0", 100, -0.5, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("de1", "de1", 100, -0.5, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("de2", "de2", 100, -0.5, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("df0", "df0", 100, -0.5, 0.5); 
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("df1", "df1", 100, -0.5, 0.5); 
   h1->SetDirectory(gHFFile); 
-
-  for (unsigned int i = 0; i < pds.size(); ++i) {
-    cout << "   " << pds[i] << endl;
-    h1->GetXaxis()->SetBinLabel(i+1, pds[i].c_str()); 
-  }
-
-  h1->Write();
-  delete h1; 
-
-
-  for (unsigned int ipd = 0; ipd < pds.size(); ++ipd) {
-    vector<string> pdTriggers = fHltConfig.datasetContent(pds[ipd]);
-    cout << "  --> pd: " << pds[ipd] << endl;
-    h1 = new TH1D(Form("triggers_%s_run%d", pds[ipd].c_str(), run.run()), 
-		  Form("triggers_%s_run%d (%s)", pds[ipd].c_str(), run.run(), fHltConfig.tableName().c_str()), 
-		  pdTriggers.size(), 0., pdTriggers.size()); 
-    h1->SetDirectory(gHFFile); 
-    for (unsigned int it = 0; it < pdTriggers.size(); ++it) {
-      cout << "           " << pdTriggers[it] << endl;
-      h1->GetXaxis()->SetBinLabel(it+1, pdTriggers[it].c_str()); 
-    }
-    h1->Write();
-    delete h1; 
-  }
-  
-  pDir->cd(); 
-
+  h1 = new TH1D("df2", "df2", 100, -1.0, 1.0); 
+  h1->SetDirectory(gHFFile); 
+  pDir->cd();
 
 }
+
 
 // ----------------------------------------------------------------------
 void HFDebug::endRun(Run const&, EventSetup const&) {
-  fValidHLTConfig = false;
-} // HFDebug::endRun()
+} 
+
 
 // ----------------------------------------------------------------------
 void  HFDebug::beginJob() {
-
 }
+
 
 // ----------------------------------------------------------------------
 void  HFDebug::endJob() {
-
 }
+
+
+// ----------------------------------------------------------------------
+double HFDebug::matchTrigger(vector<int> &trigIndices, const TriggerObjectCollection &trigObjs, 
+			      Handle<TriggerEvent>  &triggerEvent, const Muon &mu) {
+  double matchDeltaR = 9999;
+
+  int iIdx(-1), iObj(-1); 
+  for(size_t iTrigIndex = 0; iTrigIndex < trigIndices.size(); ++iTrigIndex) {
+    int triggerIndex = trigIndices[iTrigIndex];
+    const std::vector<std::string> moduleLabels(fHltConfig.moduleLabels(triggerIndex));
+    // find index of the last module:
+    const unsigned moduleIndex = fHltConfig.size(triggerIndex)-2;
+    // find index of HLT trigger name:
+    const unsigned hltFilterIndex = triggerEvent->filterIndex(edm::InputTag(moduleLabels[moduleIndex], "", fHLTProcessName));
+    
+    if (hltFilterIndex < triggerEvent->sizeFilters()) {
+      const trigger::Keys triggerKeys(triggerEvent->filterKeys(hltFilterIndex));
+      const trigger::Vids triggerVids(triggerEvent->filterIds(hltFilterIndex));
+
+      const unsigned nTriggers = triggerVids.size();
+      for (size_t iTrig = 0; iTrig < nTriggers; ++iTrig) {
+        // loop over all trigger objects:
+        const trigger::TriggerObject trigObject = trigObjs[triggerKeys[iTrig]];
+	
+        double dRtmp = deltaR( mu, trigObject );
+
+        if (dRtmp < matchDeltaR) {
+          matchDeltaR = dRtmp;
+	  iIdx = iTrigIndex; 
+	  iObj = iTrig;
+        }
+
+      } // loop over different trigger objects
+    } // if trigger is in event (should apply hltFilter with used trigger...)
+  } // loop over muon candidates
+  if (matchDeltaR < 0.1) {
+    cout << " matched to iIdx = " << iIdx << " with name = " << fTriggerNames[iIdx] << endl;
+    cout << " matched to iObj = " << iObj << endl;
+  }
+  return matchDeltaR;
+}
+
+
+// ----------------------------------------------------------------------
+// to get the track position info at a particular rho
+TrajectoryStateOnSurface HFDebug::cylExtrapTrkSam(reco::TrackRef track, double rho) {
+  Cylinder::PositionType pos(0, 0, 0);
+  Cylinder::RotationType rot;
+  Cylinder::CylinderPointer myCylinder = Cylinder::build(pos, rot, rho);
+  FreeTrajectoryState recoStart = freeTrajStateMuon(track);
+  TrajectoryStateOnSurface recoProp;
+  recoProp = fPropagatorAlong->propagate(recoStart, *myCylinder);
+  if (!recoProp.isValid()) {
+    recoProp = fPropagatorOpposite->propagate(recoStart, *myCylinder);
+  }
+  return recoProp;
+}
+
+// ----------------------------------------------------------------------
+// to get track position at a particular (xy) plane given its z
+TrajectoryStateOnSurface HFDebug::surfExtrapTrkSam(reco::TrackRef track, double z) {
+  Plane::PositionType pos(0, 0, z);
+  Plane::RotationType rot;
+  Plane::PlanePointer myPlane = Plane::build(pos, rot);
+  FreeTrajectoryState recoStart = freeTrajStateMuon(track);
+  TrajectoryStateOnSurface recoProp;
+  recoProp = fPropagatorAlong->propagate(recoStart, *myPlane);
+  if (!recoProp.isValid()) {
+    recoProp = fPropagatorOpposite->propagate(recoStart, *myPlane);
+  }
+  return recoProp;
+}
+
+
+// ----------------------------------------------------------------------
+FreeTrajectoryState HFDebug::freeTrajStateMuon(reco::TrackRef track) {
+  GlobalPoint  innerPoint(track->innerPosition().x(), track->innerPosition().y(),  track->innerPosition().z());
+  GlobalVector innerVec  (track->innerMomentum().x(),  track->innerMomentum().y(),  track->innerMomentum().z());  
+  FreeTrajectoryState recoStart(innerPoint, innerVec, track->charge(), fMagneticField);
+  return recoStart;
+}
+
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HFDebug);
