@@ -1,9 +1,7 @@
 TYPE          1000080
 TRUTH             531
-#BRECOTYPE     3000068 
-#BRECOTRUTH        521
-BRECOTYPE     3000069 
-BRECOTRUTH        511
+BRECOTYPE     3000068 
+BRECOTRUTH        521
 NOPRESELECTION      1
 # -- trigger
 +input cuts/triggerBs.cuts
