@@ -1,7 +1,8 @@
 #!/usr/bin/env perl
 
-# Usage:       run [-C] [-D dest] -c grid.csh -t tarfile -m {debug|local|grid|batch} -r {pattern1%pattern2} [-x 'bin/runTreeReaders -r bmmReader -C cuts/bla.cuts'] *
-# ------
+# Usage:       run [-C] [-D dest] -c grid.csh -t tarfile -m {debug|local|grid|batch} [-b] -r {pattern1%pattern2} 
+# ------           [-x 'bin/runTreeReaders -r bmmReader -C cuts/bla.cuts'] *
+#
 #              submit to grid all jobs specified in the command line
 #
 # Examples:    cd Bs2MuMu/test/Winter01/production/Bs2MuMu
@@ -23,6 +24,7 @@
 # Assumptions: jobs are serialized a la asd_asd-asd-10000.py, the numbering is at the end, separated with -
 # ------------ is run in directory where the py files reside! ??? IS THIS TRUE ???
 #
+# 2016/04/05   added -b to run local jobs in the background
 # 2013/01/21   changed default transfer method from srmcp to lcg-cp also for grid jobs
 # 2010/12/10   bug fix: remove $https from jobs.list only for grid jobs
 # 2010/06/18   added new option to control the CMSSW version
@@ -47,7 +49,7 @@
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
-getopts('Cc:dD:l:m:q:r:R:t:v:x:');
+getopts('bCc:dD:l:m:q:r:R:t:v:x:');
 
 # -- User setup
 my $user  = $ENV{'USER'};
@@ -200,7 +202,11 @@ foreach $jobfile (@ARGV) {
 	if ($opt_d) {
 	    print("./$job.csh >& local.log\n");
 	} else {
-	    system("./$job.csh >& local.log");
+	    if ($opt_b) {
+		system("./$job.csh >& local.log &");
+	    } else {
+		system("./$job.csh >& local.log");
+	    }		
 	}	    
     } elsif ($opt_m eq "batch") {
 	print "batch submission: $job\n";
