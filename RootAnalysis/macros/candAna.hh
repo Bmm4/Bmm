@@ -240,7 +240,7 @@ public:
   bool    fMu1OtherVtx, fMu2OtherVtx;
   double  fMu1XpDist, fMu2XpDist;
   double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8; 
-  int     fPvN;
+  int     fPvN, fPvIdx;
   double  fCandPt, fCandP, fCandTau, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu; 
   double  fCandCosA, fCandA;
   double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca; 
