@@ -56,6 +56,9 @@ void candAnaRecoil::evtAnalysis(TAna01Event *evt) {
       continue;
     }
 
+    if (fVerbose > 2) cout << "  taking candidate at " << iC << " which is of type " << pCand->fType << endl;
+
+
     fillNoCand = false; 
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(3);
     fpBreco = pCand;
@@ -119,11 +122,17 @@ void candAnaRecoil::candAnalysis() {
   ((TH1D*)fHistDir->Get("m"))->Fill(fpCand->fMass);
   ((TH1D*)fHistDir->Get("mrecoil"))->Fill(fpBreco->fMass);
   
-  fBrecoMass = fpBreco->fMass;
-  fBrecoPt   = fpBreco->fPlab.Perp();
-  fBrecoEta  = fpBreco->fPlab.Eta();
-  fBrecoPhi  = fpBreco->fPlab.Phi();
-
+  fBrecoMass  = fpBreco->fMass;
+  fBrecoPt    = fpBreco->fPlab.Perp();
+  fBrecoEta   = fpBreco->fPlab.Eta();
+  fBrecoPhi   = fpBreco->fPlab.Phi();
+  if (fpBreco->fPvIdx > -1 && fpBreco->fPvIdx < fpEvt->nPV()) {
+    fBrecoPvIdx = fpBreco->fPvIdx;
+    fBrecoPvZ   = fpEvt->getPV(fBrecoPvIdx)->fPoint.Z();
+  } else {
+    fBrecoPvIdx = -99; 
+    fBrecoPvZ   = -99.;
+  }
   // -- histogram the PV to which they are associated
   ((TH2D*)fHistDir->Get("candPv"))->Fill(fpBreco->fPvIdx, fpCand->fPvIdx);
   
@@ -412,10 +421,12 @@ void candAnaRecoil::readCuts(string filename, int dump) {
 // ----------------------------------------------------------------------
 void candAnaRecoil::moreReducedTree(TTree *t) {
   // -- Additional reduced tree variables
-  t->Branch("mbreco",   &fBrecoMass, "mbreco/D");
-  t->Branch("ptbreco",  &fBrecoPt,   "ptbreco/D");
-  t->Branch("etabreco", &fBrecoEta,  "etabreco/D");
-  t->Branch("phibreco", &fBrecoPhi,  "phibreco/D");
+  t->Branch("mbreco",     &fBrecoMass,    "mbreco/D");
+  t->Branch("ptbreco",    &fBrecoPt,      "ptbreco/D");
+  t->Branch("etabreco",   &fBrecoEta,     "etabreco/D");
+  t->Branch("phibreco",   &fBrecoPhi,     "phibreco/D");
+  t->Branch("pvidxbreco", &fBrecoPvIdx,   "pvidxbreco/I");
+  t->Branch("pvzbreco",   &fBrecoPvZ,     "pvzbreco/D");
   t->Branch("m1ptbreco",  &fMu1BrecoPt,   "m1ptbreco/D");
   t->Branch("m1etabreco", &fMu1BrecoEta,  "m1etabreco/D");
   t->Branch("m1phibreco", &fMu1BrecoPhi,  "m1phibreco/D");

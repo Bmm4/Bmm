@@ -40,8 +40,8 @@ public:
 
   int         BRECOTYPE, BRECOTRUTH; 
 
-  double      fBrecoMass, fBrecoPt, fBrecoEta, fBrecoPhi;
-
+  double      fBrecoMass, fBrecoPt, fBrecoEta, fBrecoPhi, fBrecoPvZ;
+  int         fBrecoPvIdx;
   double      fMu1BrecoPt, fMu1BrecoEta, fMu1BrecoPhi, fMu2BrecoPt, fMu2BrecoEta, fMu2BrecoPhi;
   
   TAnaCand    *fpBreco; 
