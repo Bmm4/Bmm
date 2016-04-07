@@ -62,7 +62,7 @@ struct cuts {
   double m1pt, m2pt, m1eta, m2eta;
   double iso, chi2dof, alpha, fls3d, docatrk;
   double closetrk, pvlip, pvlips;
-  double bdtpt, bdt, bdtMax;
+  double bdtPt, bdtMin, bdtMax;
   double maxdoca, pvlip2, pvlips2;
   double pvip, pvips;
 };
@@ -72,7 +72,10 @@ struct cuts {
 class plotClass: public TObject {
 
 public :
-                 plotClass(std::string dir = "hpt0", std::string files = "plotLq.files", std::string setup = "m");
+  plotClass(std::string dir = "hpt0",
+	    std::string files = "plotLq.files",
+	    std::string cuts = "plotClass.cut",
+	    std::string setup = "m");
   virtual        ~plotClass();
   void           closeHistFile();
   virtual void   readCuts(std:: string filename);

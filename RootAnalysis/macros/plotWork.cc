@@ -11,6 +11,7 @@
 #include "TRandom3.h"
 #include "TString.h"
 #include "TCanvas.h"
+#include "TLorentzVector.h"
 #include "TPad.h"
 #include "TF1.h"
 #include "TFitResult.h"
@@ -23,7 +24,7 @@ ClassImp(plotWork)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotWork::plotWork(string dir,  string files, string setup): plotClass(dir, files, setup) {
+plotWork::plotWork(string dir,  string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
   loadFiles(files);
 
   if (setup == "") {
@@ -35,6 +36,45 @@ plotWork::plotWork(string dir,  string files, string setup): plotClass(dir, file
   fTexFileName = fHistFileName;
   replaceAll(fTexFileName, ".root", ".tex");
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
+  fTEX.open(fTexFileName.c_str(), ios::app);
+
+
+  if (cuts == "") {
+    cout << "==> no cuts provided!?" << endl;
+  } else {
+    cout << Form("==> reading cuts/%s", cuts.c_str()) << endl;
+    readCuts(Form("cuts/%s", cuts.c_str()));
+    printCuts(cout);
+  }
+
+  fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
+  fAnaCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
+  fAnaCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
+  fAnaCuts.addCut("fGoodMuonsEta", "#eta_{#mu}", fGoodMuonsEta);
+  fAnaCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
+  fAnaCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
+  fAnaCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
+
+  fAnaCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+  fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
+  fAnaCuts.addCut("fGoodIp", "IP", fGoodIp);
+  fAnaCuts.addCut("fGoodIpS", "IPS", fGoodIpS);
+  fAnaCuts.addCut("fGoodLip", "LIP", fGoodLip);
+  fAnaCuts.addCut("fGoodLipS", "LIPS", fGoodLipS);
+  fAnaCuts.addCut("fGoodMaxDoca", "MAXDOCA", fGoodMaxDoca);
+  fAnaCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
+  fAnaCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
+  fAnaCuts.addCut("fGoodAlpha", "#alpha", fGoodAlpha);
+  fAnaCuts.addCut("fGoodFLS", "l/#sigma(l)", fGoodFLS);
+  fAnaCuts.addCut("fGoodChi2", "#chi^{2}", fGoodChi2);
+  fAnaCuts.addCut("fGoodIso", "I_{trk}", fGoodIso);
+  fAnaCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
+  fAnaCuts.addCut("fGoodDocaTrk", "d_{ca}(trk)", fGoodDocaTrk);
+  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
+  fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
+
+
+  fChan = 0;
 
 }
 
@@ -49,14 +89,213 @@ plotWork::~plotWork() {
 void plotWork::makeAll(int bitmask) {
 
   if (bitmask & 0x1) {
-    prodSummary("bdmm_official");
   }
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::privateVsOfficial(string mode) {
+  MASSMIN = 4.5;
+  MASSMAX = 6.5;
+  string dir("candAnaMuMu");
+  if (string::npos != mode.find("bdmm")) {
+    fSetup = "SgMc";
+    fIsSignal = true;
+    BGLBOXMIN = 4.80;
+    BGLBOXMAX = 5.20;
+    SIGBOXMIN = 5.20;
+    SIGBOXMAX = 5.45;
+    BGHBOXMIN = 5.45;
+    BGHBOXMAX = 6.00;
+  }
+
+  if (string::npos != mode.find("bujpsikp")) {
+    BGLBOXMIN = 5.00;
+    BGLBOXMAX = 5.18;
+    SIGBOXMIN = 5.23;
+    SIGBOXMAX = 5.33;
+    BGHBOXMIN = 5.40;
+    BGHBOXMAX = 5.50;
+  }
+
+  if (string::npos != mode.find("bsjpsiphi")) {
+    BGLBOXMIN = 5.10;
+    BGLBOXMAX = 5.29;
+    SIGBOXMIN = 5.34;
+    SIGBOXMAX = 5.40;
+    BGHBOXMIN = 5.45;
+    BGHBOXMAX = 5.70;
+  }
+
+  TTree *t(0);
+  string lmode = mode;
+  t = getTree(lmode, dir);
+  setupTree(t, fSetup);
+  fOffset = 0;
+  bookDistributions(lmode);
+  loopOverTree(t, 1, 900);
+
+  lmode = mode + "_official";
+  t = getTree(lmode, dir);
+  setupTree(t, fSetup);
+  fOffset = 1;
+  bookDistributions(lmode);
+  loopOverTree(t, 1, 900);
+
+  fpMuon1Pt[0]->hPresel[2]->Draw("e");
+  fpMuon1Pt[1]->hPresel[2]->Scale(fpMuon1Pt[0]->hPresel[2]->GetSumOfWeights()/fpMuon1Pt[1]->hPresel[2]->GetSumOfWeights());
+  fpMuon1Pt[1]->hPresel[2]->Draw("samehist");
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::loopFunction1() {
+
+  double mass = fb.cm;
+  if (fIsMC) mass = fb.m;
+  if (fIsSignal) mass = fb.m;
+
+  TLorentzVector a;
+  a.SetPtEtaPhiM(fb.pt,fb.eta,fb.phi,mass);
+
+  cout << "m = " << mass << " m1pt = " << fb.m1pt << " fOffset = " << fOffset << endl;
+  fpMuon1Pt[fOffset]->fill(fb.m1pt, mass);
+  fpMuon2Pt[fOffset]->fill(fb.m2pt, mass);
+
+  fpMuonsEta[fOffset]->fill(fb.m1eta, mass);
+  fpMuonsEta[fOffset]->fill(fb.m2eta, mass);
+  fpPt[fOffset]->fill(fb.pt, mass);
+  fpP[fOffset]->fill(a.P(), mass);
+  fpPz[fOffset]->fill(a.Pz(), mass);
+  fpEta[fOffset]->fill(fb.eta, mass);
+  fpAlpha[fOffset]->fill(fb.alpha, mass);
+
+  fpIso[fOffset]->fill(fb.iso, mass);
+  fpCloseTrk[fOffset]->fill(fb.closetrk, mass);
+  fpDocaTrk[fOffset]->fill(fb.docatrk, mass);
+
+  fpChi2Dof[fOffset]->fill(fb.chi2/fb.dof, mass);
+  fpPChi2Dof[fOffset]->fill(fb.pchi2dof, mass);
+
+  fpFLS3d[fOffset]->fill(fb.fls3d, mass);
+  fpFL3d[fOffset]->fill(fb.fl3d, mass);
+  fpFL3dE[fOffset]->fill(fb.fl3dE, mass);
+
+  fpMaxDoca[fOffset]->fill(fb.maxdoca, mass);
+  fpIp[fOffset]->fill(fb.pvip, mass);
+  fpIpS[fOffset]->fill(fb.pvips, mass);
+  fpPvZ[fOffset]->fill(fb.pvz, mass);
+  fpPvN[fOffset]->fill(fb.pvn, mass);
+  fpPvAveW8[fOffset]->fill(fb.pvw8, mass);
+
 
 }
 
 
 
 // ----------------------------------------------------------------------
+void plotWork::bookDistributions(string mode) {
+  string name = Form("%s_%s_", fSetup.c_str(), mode.c_str());
+  fpMuon1Pt[fOffset]   = bookDistribution(Form("%smuon1pt", name.c_str()), "p_{T, #mu1} [GeV]", "fGoodMuonsPt", 60, 0., 30.);
+  fpMuon2Pt[fOffset]   = bookDistribution(Form("%smuon2pt", name.c_str()), "p_{T, #mu2} [GeV]", "fGoodMuonsPt", 40, 0., 20.);
+  fpMuonsEta[fOffset]  = bookDistribution(Form("%smuonseta", name.c_str()), "#eta_{#mu}", "fGoodMuonsEta", 40, -2.5, 2.5);
+  fpPt[fOffset]        = bookDistribution(Form("%spt", name.c_str()), "p_{T}(B) [GeV]", "fGoodPt", 60, 0., 60.);
+  fpP[fOffset]         = bookDistribution(Form("%sp", name.c_str()), "p(B) [GeV]", "fGoodPt", 50, 0., 100.);
+  fpPz[fOffset]        = bookDistribution(Form("%spz", name.c_str()), "p_{z}(B) [GeV]", "fGoodPt", 50, 0., 100.);
+  fpEta[fOffset]       = bookDistribution(Form("%seta", name.c_str()), "#eta(B)", "fGoodEta", 40, -2.5, 2.5);
+  fpAlpha[fOffset]     = bookDistribution(Form("%salpha", name.c_str()), "#alpha_{3D}", "fGoodAlpha", 50, 0., 0.1);
+  fpIso[fOffset]       = bookDistribution(Form("%siso", name.c_str()),  "isolation", "fGoodIso", 52, 0., 1.04);
+  fpCloseTrk[fOffset]  = bookDistribution(Form("%sclosetrk", name.c_str()),  "N_{trk}^{close}", "fGoodCloseTrack", 10, 0., 10.);
+  fpDocaTrk[fOffset]   = bookDistribution(Form("%sdocatrk", name.c_str()), "d_{ca}^{0} [cm]", "fGoodDocaTrk", 50, 0., 0.20);
+
+  fpChi2Dof[fOffset]   = bookDistribution(Form("%schi2dof", name.c_str()),  "#chi^{2}/dof", "fGoodChi2", 40, 0., 4.);
+  fpPChi2Dof[fOffset]  = bookDistribution(Form("%spchi2dof", name.c_str()),  "P(#chi^{2},dof)", "fGoodChi2", 50, 0., 1.0);
+
+  fpFLS3d[fOffset]     = bookDistribution(Form("%sfls3d", name.c_str()), "l_{3D}/#sigma(l_{3D})", "fGoodFLS", 60, 0., 120.);
+  fpFL3d[fOffset]      = bookDistribution(Form("%sfl3d", name.c_str()),  "l_{3D} [cm]", "fGoodFLS", 60, 0., 1.5);
+  fpFL3dE[fOffset]     = bookDistribution(Form("%sfl3de", name.c_str()), "#sigma(l_{3D}) [cm]", "fGoodFLS", 50, 0., 0.05);
+
+  fpMaxDoca[fOffset]   = bookDistribution(Form("%smaxdoca", name.c_str()), "d^{max} [cm]", "fGoodMaxDoca", 60, 0., 0.03);
+  fpIp[fOffset]        = bookDistribution(Form("%sip", name.c_str()), "#delta_{3D} [cm]", "fGoodIp", 50, 0., 0.015);
+  fpIpS[fOffset]       = bookDistribution(Form("%sips", name.c_str()), "#delta_{3D}/#sigma(#delta_{3D})", "fGoodIpS", 50, 0., 4);
+
+  fpPvZ[fOffset]       = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", 40, -20., 20.);
+  fpPvN[fOffset]       = bookDistribution(Form("%spvn", name.c_str()), "N(PV) ", "fGoodHLT", 40, 0., 40.);
+  fpPvAveW8[fOffset]   = bookDistribution(Form("%spvavew8", name.c_str()), "<w^{PV}>", "fGoodPvAveW8", 50, 0.5, 1.);
+
+
+}
+
+
+
+// ----------------------------------------------------------------------
+AnalysisDistribution* plotWork::bookDistribution(string hn, string ht, string hc, int nbins, double lo, double hi) {
+  AnalysisDistribution *p = new AnalysisDistribution(hn.c_str(), ht.c_str(), nbins, lo, hi);
+  if (hn == "SgMc_bdmm_muon1pt") p->fVerbose = 1;
+  p->setSigWindow(SIGBOXMIN, SIGBOXMAX);
+  p->setBg1Window(BGLBOXMIN, BGLBOXMAX);
+  p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
+  p->setAnalysisCuts(&fAnaCuts, hc.c_str());
+  p->setPreselCut(&fPreselection);
+
+  return p;
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
+  int nentries = Int_t(t->GetEntries());
+  int nbegin(0), nend(nentries);
+  if (nevts > 0 && nentries > nevts) {
+    nentries = nevts;
+    nbegin = 0;
+    nend = nevts;
+  }
+  if (nevts > 0 && nstart > 0) {
+    nentries = nstart + nevts;
+    nbegin = nstart;
+    if (nstart + nevts < t->GetEntries()) {
+      nend = nstart + nevts;
+    } else {
+      nend = t->GetEntries();
+    }
+  }
+
+  nentries = nend - nstart;
+
+  int step(1000000);
+  if (nentries < 5000000)  step = 500000;
+  if (nentries < 1000000)  step = 100000;
+  if (nentries < 100000)   step = 10000;
+  if (nentries < 10000)    step = 1000;
+  if (nentries < 1000)     step = 100;
+  step = 500000;
+  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file "
+       << t->GetDirectory()->GetName()
+       << " with " << nentries << " entries"
+       << endl;
+
+  // -- setup loopfunction through pointer to member functions
+  //    (this is the reason why this function is NOT in plotClass!)
+  void (plotWork::*pF)(void);
+  if (ifunc == 1) pF = &plotWork::loopFunction1;
+
+  // -- the real loop starts here
+  for (int jentry = nbegin; jentry < nend; jentry++) {
+    t->GetEntry(jentry);
+    if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
+
+    candAnalysis(0);
+    (this->*pF)();
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
+// NOTE: This works with the output of genAnalysis!!!!
 void plotWork::prodSummary(string ds1, int year) {
   static double M511(0.), M521(0.), M531(0.), M541(0.), M5122(0.);
   static double L511(0.), L521(0.), L531(0.), L541(0.), L5122(0.);
@@ -258,234 +497,6 @@ void plotWork::prodSummary(string ds1, int year) {
   gStyle->SetOptStat(0);
   gStyle->SetOptFit(0);
   savePad("t5122.pdf");
-
-
-}
-
-
-
-// ----------------------------------------------------------------------
-void plotWork::loopFunction1() {
-
-}
-
-// ----------------------------------------------------------------------
-void plotWork::bookHist(int mode) {
-
-}
-
-
-
-// ----------------------------------------------------------------------
-void plotWork::candAnalysis() {
-  fGoodCand = true;
-}
-
-
-// ----------------------------------------------------------------------
-void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
-  int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries);
-  if (nevts > 0 && nentries > nevts) {
-    nentries = nevts;
-    nbegin = 0;
-    nend = nevts;
-  }
-  if (nevts > 0 && nstart > 0) {
-    nentries = nstart + nevts;
-    nbegin = nstart;
-    if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts;
-    } else {
-      nend = t->GetEntries();
-    }
-  }
-
-  nentries = nend - nstart;
-
-  int step(1000000);
-  if (nentries < 5000000)  step = 500000;
-  if (nentries < 1000000)  step = 100000;
-  if (nentries < 100000)   step = 10000;
-  if (nentries < 10000)    step = 1000;
-  if (nentries < 1000)     step = 100;
-  step = 500000;
-  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file "
-       << t->GetDirectory()->GetName()
-       << " with " << nentries << " entries"
-       << endl;
-
-  // -- setup loopfunction through pointer to member functions
-  //    (this is the reason why this function is NOT in plotClass!)
-  void (plotWork::*pF)(void);
-  if (ifunc == 1) pF = &plotWork::loopFunction1;
-
-  // -- the real loop starts here
-  for (int jentry = nbegin; jentry < nend; jentry++) {
-    t->GetEntry(jentry);
-    if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-
-    candAnalysis();
-    (this->*pF)();
-  }
-
-}
-
-
-// ----------------------------------------------------------------------
-void plotWork::setupTree(TTree *t) {
-  if (string::npos != fCds.find("Mc")) {
-    fIsMC = true;
-  } else {
-    fIsMC = false;
-  }
-
-  t->SetBranchAddress("pt", &fb.pt);
-  t->SetBranchAddress("q", &fb.q);
-
-  t->SetBranchAddress("tau", &fb.tau);
-  t->SetBranchAddress("gtau", &fb.gtau);
-
-  t->SetBranchAddress("bdt",&fb.bdt);
-  t->SetBranchAddress("bdt",&fb.bdt);
-  t->SetBranchAddress("lip",&fb.lip);
-  t->SetBranchAddress("lipE",&fb.lipE);
-  t->SetBranchAddress("tip",&fb.tip);
-  t->SetBranchAddress("tipE",&fb.tipE);
-
-  t->SetBranchAddress("closetrk",&fb.closetrk);
-  t->SetBranchAddress("pvlip",   &fb.pvlip);
-  t->SetBranchAddress("pvlips",  &fb.pvlips);
-  t->SetBranchAddress("pvlip2",  &fb.pvlip2);
-  t->SetBranchAddress("pvlips2", &fb.pvlips2);
-  t->SetBranchAddress("maxdoca", &fb.maxdoca);
-  t->SetBranchAddress("pvip",    &fb.pvip);
-  t->SetBranchAddress("pvips",   &fb.pvips);
-  t->SetBranchAddress("pvip3d",  &fb.pvip3d);
-  t->SetBranchAddress("pvips3d", &fb.pvips3d);
-  t->SetBranchAddress("pvw8",    &fb.pvw8);
-
-  t->SetBranchAddress("m1pix",    &fb.m1pix);
-  t->SetBranchAddress("m2pix",    &fb.m2pix);
-  t->SetBranchAddress("m1bpix",   &fb.m1bpix);
-  t->SetBranchAddress("m2bpix",   &fb.m2bpix);
-  t->SetBranchAddress("m1bpixl1", &fb.m1bpixl1);
-  t->SetBranchAddress("m2bpixl1", &fb.m2bpixl1);
-
-  t->SetBranchAddress("rr",     &fb.rr);
-  t->SetBranchAddress("pvn",    &fb.pvn);
-  t->SetBranchAddress("run",    &fb.run);
-  t->SetBranchAddress("evt",    &fb.evt);
-  t->SetBranchAddress("hlt",    &fb.hlt);
-  t->SetBranchAddress("hltm",   &fb.hltm);
-  t->SetBranchAddress("hltm2",  &fb.hltm2);
-  t->SetBranchAddress("ls",     &fb.ls);
-  t->SetBranchAddress("cb",     &fb.cb);
-  t->SetBranchAddress("json",   &fb.json);
-  t->SetBranchAddress("gmuid",  &fb.gmuid);
-  t->SetBranchAddress("gmutmid", &fb.gmutmid);
-  t->SetBranchAddress("gmumvaid", &fb.gmumvaid);
-  t->SetBranchAddress("gtqual", &fb.gtqual);
-  t->SetBranchAddress("tm",     &fb.tm);
-  t->SetBranchAddress("procid", &fb.procid);
-  t->SetBranchAddress("m",      &fb.m);
-  t->SetBranchAddress("m3",     &fb.m3);
-  t->SetBranchAddress("m4",     &fb.m4);
-  t->SetBranchAddress("me",     &fb.me);
-  t->SetBranchAddress("cm",     &fb.cm);
-  t->SetBranchAddress("pt",     &fb.pt);
-  t->SetBranchAddress("phi",    &fb.phi);
-  t->SetBranchAddress("eta",    &fb.eta);
-  t->SetBranchAddress("cosa",   &fb.cosa);
-  t->SetBranchAddress("alpha",  &fb.alpha);
-  t->SetBranchAddress("iso",    &fb.iso);
-  t->SetBranchAddress("chi2",   &fb.chi2);
-  t->SetBranchAddress("dof",    &fb.dof);
-  t->SetBranchAddress("prob",   &fb.pchi2dof);
-  t->SetBranchAddress("chi2dof",&fb.chi2dof);
-  t->SetBranchAddress("flsxy",  &fb.flsxy);
-  t->SetBranchAddress("fls3d",  &fb.fls3d);
-  t->SetBranchAddress("fl3d",   &fb.fl3d);
-  t->SetBranchAddress("fl3dE",  &fb.fl3dE);
-  t->SetBranchAddress("m1pt",   &fb.m1pt);
-  t->SetBranchAddress("m1gt",   &fb.m1gt);
-  t->SetBranchAddress("m1eta",  &fb.m1eta);
-  t->SetBranchAddress("m1phi",  &fb.m1phi);
-  t->SetBranchAddress("m1q",    &fb.m1q);
-  t->SetBranchAddress("m2pt",   &fb.m2pt);
-  t->SetBranchAddress("m2gt",   &fb.m2gt);
-  t->SetBranchAddress("m2eta",  &fb.m2eta);
-  t->SetBranchAddress("m2phi",  &fb.m2phi);
-  t->SetBranchAddress("m2q",    &fb.m2q);
-  t->SetBranchAddress("docatrk",&fb.docatrk);
-
-  t->SetBranchAddress("m1id",     &fb.m1id);
-  t->SetBranchAddress("m1rmvaid", &fb.m1rmvaid);
-  t->SetBranchAddress("m1trigm",  &fb.m1trigm);
-  t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
-  t->SetBranchAddress("m1tmid",   &fb.m1tmid);
-
-  t->SetBranchAddress("m2id",     &fb.m2id);
-  t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
-  t->SetBranchAddress("m2trigm",  &fb.m2trigm);
-  t->SetBranchAddress("m2rmvabdt",&fb.m2rmvabdt);
-  t->SetBranchAddress("m2tmid",   &fb.m2tmid);
-
-
-  t->SetBranchAddress("m1iso",     &fb.m1iso);
-  t->SetBranchAddress("m2iso",     &fb.m2iso);
-  t->SetBranchAddress("closetrks1",&fb.closetrks1);
-  t->SetBranchAddress("closetrks2",&fb.closetrks2);
-  t->SetBranchAddress("closetrks3",&fb.closetrks3);
-  t->SetBranchAddress("othervtx",  &fb.othervtx);
-  t->SetBranchAddress("pvdchi2",   &fb.pvdchi2);
-
-  t->SetBranchAddress("g1pt",   &fb.g1pt);
-  t->SetBranchAddress("g2pt",   &fb.g2pt);
-  t->SetBranchAddress("g1eta",  &fb.g1eta);
-  t->SetBranchAddress("g2eta",  &fb.g2eta);
-  t->SetBranchAddress("g1id",   &fb.g1id);
-  t->SetBranchAddress("g2id",   &fb.g2id);
-  if (string::npos != fCds.find("No")) {
-    if (string::npos != fCds.find("Mc")) {
-      t->SetBranchAddress("g3pt", &fb.g3pt);
-      t->SetBranchAddress("g3eta",&fb.g3eta);
-    }
-    t->SetBranchAddress("kpt",  &fb.k1pt);
-    t->SetBranchAddress("kgt",  &fb.k1gt);
-    t->SetBranchAddress("keta", &fb.k1eta);
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt",&fb.psipt); //FIXME
-  }
-
-  if (string::npos != fCds.find("Cs")) {
-    if (string::npos != fCds.find("Mc")) {
-      t->SetBranchAddress("g3pt", &fb.g3pt);
-      t->SetBranchAddress("g3eta",&fb.g3eta);
-      t->SetBranchAddress("g4pt", &fb.g4pt);
-      t->SetBranchAddress("g4eta",&fb.g4eta);
-    }
-    t->SetBranchAddress("psipt",&fb.psipt);   //FIXME
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("mkk",  &fb.mkk);
-    t->SetBranchAddress("dr",   &fb.dr);
-    t->SetBranchAddress("k1pt", &fb.k1pt);
-    t->SetBranchAddress("k1gt", &fb.k1gt);
-    t->SetBranchAddress("k1eta",&fb.k1eta);
-    t->SetBranchAddress("k2pt", &fb.k2pt);
-    t->SetBranchAddress("k2gt", &fb.k2gt);
-    t->SetBranchAddress("k2eta",&fb.k2eta);
-  } else {
-    fb.mkk = 999.;
-    fb.dr = 999.;
-  }
-
-  if (string::npos != fCds.find("DstarPi")) {
-    t->SetBranchAddress("md0",&fb.md0);
-    t->SetBranchAddress("dm",&fb.dm);
-    t->SetBranchAddress("ptd0",&fb.ptd0);
-  }
-
 }
 
 
@@ -537,7 +548,7 @@ void plotWork::loadFiles(string afiles) {
     string sfile = sbuffer.substr(m2+5);
     string sname, sdecay;
 
-    cout << "stype: ->" << stype << "<-" << endl;
+    //    cout << "stype: ->" << stype << "<-" << endl;
 
     TFile *pF(0);
     if (string::npos != stype.find("data")) {
@@ -580,7 +591,7 @@ void plotWork::loadFiles(string afiles) {
     } else {
       // -- MC
       pF = loadFile(sfile);
-      cout << "  " << sfile << ": " << pF << endl;
+      //      cout << "  " << sfile << ": " << pF << endl;
 
       dataset *ds = new dataset();
       ds->fSize = 1;
@@ -606,7 +617,7 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      cout << "  inserting as name ->" << sname << "<- and decay = " << sdecay << endl;
+      //      cout << "  inserting as name ->" << sname << "<- and decay = " << sdecay << endl;
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
       ds->fName   = sdecay;
@@ -621,8 +632,8 @@ void plotWork::loadFiles(string afiles) {
   }
 
   is.close();
-  cout << "Summary: " << endl;
+  cout << "Summary of files loaded: " << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << "===>" << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
+    cout << "    " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }

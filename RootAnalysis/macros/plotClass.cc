@@ -22,7 +22,7 @@ ClassImp(plotClass)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotClass::plotClass(string dir,  string files, string setup) {
+plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   gStyle->SetHatchesSpacing(2);
 
@@ -355,7 +355,6 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("gtau", &fb.gtau);
 
   t->SetBranchAddress("bdt",&fb.bdt);
-  t->SetBranchAddress("bdt",&fb.bdt);
   t->SetBranchAddress("lip",&fb.lip);
   t->SetBranchAddress("lipE",&fb.lipE);
   t->SetBranchAddress("tip",&fb.tip);
@@ -372,6 +371,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("pvip3d",  &fb.pvip3d);
   t->SetBranchAddress("pvips3d", &fb.pvips3d);
   t->SetBranchAddress("pvw8",    &fb.pvw8);
+  t->SetBranchAddress("pvz",     &fb.pvz);
 
   t->SetBranchAddress("m1pix",    &fb.m1pix);
   t->SetBranchAddress("m2pix",    &fb.m2pix);
@@ -380,13 +380,12 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m1bpixl1", &fb.m1bpixl1);
   t->SetBranchAddress("m2bpixl1", &fb.m2bpixl1);
 
- t->SetBranchAddress("rr",     &fb.rr);
+  t->SetBranchAddress("rr",     &fb.rr);
   t->SetBranchAddress("pvn",    &fb.pvn);
   t->SetBranchAddress("run",    &fb.run);
   t->SetBranchAddress("evt",    &fb.evt);
   t->SetBranchAddress("hlt",    &fb.hlt);
   t->SetBranchAddress("hltm",   &fb.hltm);
-  t->SetBranchAddress("hltm2",  &fb.hltm2);
   t->SetBranchAddress("ls",     &fb.ls);
   t->SetBranchAddress("cb",     &fb.cb);
   t->SetBranchAddress("json",   &fb.json);
@@ -462,7 +461,6 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kgt",  &fb.k1gt);
     t->SetBranchAddress("keta", &fb.k1eta);
     t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt",&fb.psipt); //FIXME
   }
 
   if (string::npos != mode.find("Cs")) {
@@ -472,7 +470,6 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g4pt", &fb.g4pt);
       t->SetBranchAddress("g4eta",&fb.g4eta);
     }
-    t->SetBranchAddress("psipt",&fb.psipt);   //FIXME
     t->SetBranchAddress("mpsi", &fb.mpsi);
     t->SetBranchAddress("mkk",  &fb.mkk);
     t->SetBranchAddress("dr",   &fb.dr);
@@ -504,8 +501,8 @@ void plotClass::candAnalysis(int mode) {
   cuts *pCuts(0);
   fChan = detChan(fb.m1eta, fb.m2eta);
   if (fChan < 0) {
-    //    cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
-    //    << " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
+    if (1) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
+		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     return;
   }
   pCuts = fCuts[fChan];
@@ -539,6 +536,7 @@ void plotClass::candAnalysis(int mode) {
     if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false;
   } else {
     if (!fb.json) {
+      if (1) cout << "json failure" << endl;
       return;
     }
   }
@@ -548,12 +546,12 @@ void plotClass::candAnalysis(int mode) {
   if (0 == fb.m1gt)  fGoodAcceptance = false;
   if (0 == fb.m2gt)  fGoodAcceptance = false;
 
-  if (fb.m1pt < pCuts->bdtpt) {
-    fGoodBdtPt = false;
-  }
-  if (fb.m2pt < pCuts->bdtpt) {
-    fGoodBdtPt = false;
-  }
+  // if (fb.m1pt < pCuts->bdtPt) {
+  //   fGoodBdtPt = false;
+  // }
+  // if (fb.m2pt < pCuts->bdtPt) {
+  //   fGoodBdtPt = false;
+  // }
 
   if (fb.m1pt < pCuts->m1pt) {
     fGoodMuonsPt = false;
@@ -764,26 +762,14 @@ void plotClass::candAnalysis(int mode) {
   fGoodDocaTrk    = (fb.docatrk > pCuts->docatrk);
   fGoodLastCut    = true;
 
-  fGoodBDT        = (fBDT > pCuts->bdt);
-  fGoodHLT        = fb.hlt && fb.hltm2;
+  fGoodBDT        = (fBDT > pCuts->bdtMin);
+  fGoodHLT        = fb.hlt && fb.hltm;
 
   // -- no trigger matching for rare decays!
   if (98 == mode) fGoodHLT = fb.hlt;
 
-  fPreselection   = ((fBDT > 0.) && fGoodHLT && fGoodMuonsID );
-
-// -- use this for the signal overlays used after unblinding...
-//   fPreselection = (fb.hlt && fb.hltm2
-//                 && fGoodMuonsID
-//                 && fGoodQ
-//                 && fGoodPvAveW8
-//                 && fGoodTracks
-//                 && fGoodTracksPt
-//                 && fGoodTracksEta
-//                 && fGoodBdtPt
-//                 && fGoodMuonsEta
-//                 && fGoodJpsiCuts
-//                 && (fBDT > fCuts[fChan]->bdt));
+  cout << "HLT: " << fGoodHLT << endl;
+  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta);
 
   fAnaCuts.update();
 
@@ -925,12 +911,10 @@ void plotClass::calcBDT() {
 
 // ----------------------------------------------------------------------
 TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
-  TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
+  TMVA::Reader *reader = new TMVA::Reader( "!Color:Silent" );
 
   TString dir    = "weights/";
   TString methodNameprefix = "BDT";
-  //  TString methodName = TString(fBdt) + TString(" method");
-  //  TString weightfile = dir + fBdt + "_" + methodNameprefix + TString(".weights.xml");
   TString weightfile = xmlFile;
 
   // -- read in variables from weight file
@@ -942,13 +926,12 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
   int nvars(-1);
   string::size_type m1, m2;
   string stype;
-  cout << "  read " << allLines.size() << " lines " << endl;
+  cout << "adding variables: ";
   for (unsigned int i = 0; i < allLines.size(); ++i) {
     // -- parse and add variables
     if (string::npos != allLines[i].find("Variables NVar")) {
       m1 = allLines[i].find("=\"");
       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      cout << "  " << stype << " variables" << endl;
       nvars = atoi(stype.c_str());
       if (-1 == nvars) continue;
       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
@@ -957,105 +940,106 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
         stype = allLines[j].substr(m1+2, m2-m1-2);
         //      cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
         if (stype == "m1pt") {
-          cout << "  adding m1pt" << endl;
+          cout << " m1pt";
           reader->AddVariable( "m1pt", &rd.m1pt);
         }
         if (stype == "m2pt") {
-          cout << "  adding m2pt" << endl;
+          cout << " m2pt";
           reader->AddVariable( "m2pt", &rd.m2pt);
         }
         if (stype == "m1eta") {
-          cout << "  adding m1eta" << endl;
+          cout << " m1eta";
           reader->AddVariable( "m1eta", &rd.m1eta);
         }
         if (stype == "m2eta") {
           reader->AddVariable( "m2eta", &rd.m2eta);
-          cout << "  adding m2eta" << endl;
+          cout << " m2eta";
         }
         if (stype == "pt") {
-          cout << "  adding pt" << endl;
+          cout << " pt";
           reader->AddVariable( "pt", &rd.pt);
         }
         if (stype == "eta") {
-          cout << "  adding eta" << endl;
+          cout << " eta";
           reader->AddVariable( "eta", &rd.eta);
         }
         if (stype == "fls3d") {
-          cout << "  adding fls3d" << endl;
+          cout << " fls3d";
           reader->AddVariable( "fls3d", &rd.fls3d);
         }
         if (stype == "alpha") {
-          cout << "  adding alpha" << endl;
+          cout << " alpha";
           reader->AddVariable( "alpha", &rd.alpha);
         }
         if (stype == "maxdoca") {
-          cout << "  adding maxdoca" << endl;
+          cout << " maxdoca";
           reader->AddVariable( "maxdoca", &rd.maxdoca);
         }
         if (stype == "pvip") {
-          cout << "  adding pvip" << endl;
+          cout << " pvip";
           reader->AddVariable( "pvip", &rd.pvip);
         }
         if (stype == "pvips") {
-          cout << "  adding pvips" << endl;
+          cout << " pvips";
           reader->AddVariable( "pvips", &rd.pvips);
         }
         if (stype == "iso") {
-          cout << "  adding iso" << endl;
+          cout << " iso";
           reader->AddVariable( "iso", &rd.iso);
         }
         if (stype == "docatrk") {
-          cout << "  adding docatrk" << endl;
+          cout << " docatrk";
           reader->AddVariable( "docatrk", &rd.docatrk);
         }
         if (stype == "closetrk") {
-          cout << "  adding closetrk" << endl;
+          cout << " closetrk";
           reader->AddVariable( "closetrk", &rd.closetrk);
         }
         if (stype == "chi2dof") {
-          cout << "  adding chi2dof" << endl;
+          cout << " chi2dof";
           reader->AddVariable( "chi2dof", &rd.chi2dof);
         }
         if (stype == "closetrks1") {
-          cout << "  adding closetrks1" << endl;
+          cout << " closetrks1";
           reader->AddVariable( "closetrks1", &rd.closetrks1);
         }
         if (stype == "closetrks2") {
-          cout << "  adding closetrks2" << endl;
+          cout << " closetrks2";
           reader->AddVariable( "closetrks2", &rd.closetrks2);
         }
         if (stype == "closetrks3") {
-          cout << "  adding closetrks3" << endl;
+          cout << " closetrks3";
           reader->AddVariable( "closetrks3", &rd.closetrks3);
         }
         if (stype == "m1iso") {
-          cout << "  adding m1iso" << endl;
+          cout << " m1iso";
           reader->AddVariable( "m1iso", &rd.m1iso);
         }
         if (stype == "m2iso") {
-          cout << "  adding m2iso" << endl;
+          cout << " m2iso";
           reader->AddVariable( "m2iso", &rd.m2iso);
         }
         if (stype == "othervtx") {
-          cout << "  adding othervtx" << endl;
+          cout << " othervtx";
           reader->AddVariable( "othervtx", &rd.othervtx);
         }
         if (stype == "pvdchi2") {
-          cout << "  adding pvdchi2" << endl;
+          cout << " pvdchi2";
           reader->AddVariable( "pvdchi2", &rd.pvdchi2);
         }
         if (stype == "pvlip2") {
-          cout << "  adding pvlip2" << endl;
+          cout << " pvlip2";
           reader->AddVariable( "pvlip2", &rd.pvlip2);
         }
         if (stype == "pvlips2") {
-          cout << "  adding pvlips2" << endl;
+          cout << " pvlips2";
           reader->AddVariable( "pvlips2", &rd.pvlips2);
         }
       }
       break;
     }
   }
+  cout << endl;
 
   nvars = -1;
   for (unsigned int i = 0; i < allLines.size(); ++i) {
@@ -1070,9 +1054,9 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
         m1 = allLines[j].find("Expression=\"")+10;
         m2 = allLines[j].find("\" Label=\"");
         stype = allLines[j].substr(m1+2, m2-m1-2);
-        cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+	//        cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
         if (stype == "m") {
-          cout << "  adding m as spectator" << endl;
+	  // cout << "  adding m as spectator" << endl;
           reader->AddSpectator( "m", &rd.m);
         }
       }
@@ -1098,7 +1082,7 @@ void plotClass::readCuts(string filename) {
 
   char CutName[100], XmlName[1000];
   float CutValue;
-  int dump(1), ok(0);
+  int dump(0), ok(0);
 
   cuts *a = 0;
 
@@ -1122,82 +1106,82 @@ void plotClass::readCuts(string filename) {
 
     if (!strcmp(CutName, "mBdLo")) {
       a->mBdLo = CutValue; ok = 1;
-      if (dump) cout << "mBdLo:            " << CutValue << endl;
+      if (dump) cout << "mBdLo:                " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "bdtpt")) {
-      a->bdtpt = CutValue; ok = 1;
-      if (dump) cout << "bdtpt:              " << CutValue << endl;
+    if (!strcmp(CutName, "bdtPt")) {
+      a->bdtPt = CutValue; ok = 1;
+      if (dump) cout << "bdtPt:                " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "bdt")) {
-      a->bdt = CutValue; ok = 1;
-      if (dump) cout << "bdt:              " << CutValue << endl;
+    if (!strcmp(CutName, "bdtMin")) {
+      a->bdtMin = CutValue; ok = 1;
+      if (dump) cout << "bdtMin:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "bdtMax")) {
       a->bdtMax = CutValue; ok = 1;
-      if (dump) cout << "bdtMax:           " << CutValue << endl;
+      if (dump) cout << "bdtMax:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "mBdHi")) {
       a->mBdHi = CutValue; ok = 1;
-      if (dump) cout << "mBdHi:            " << CutValue << endl;
+      if (dump) cout << "mBdHi:                " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "mBsLo")) {
       a->mBsLo = CutValue; ok = 1;
-      if (dump) cout << "mBsLo:            " << CutValue << endl;
+      if (dump) cout << "mBsLo:                " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "mBsHi")) {
       a->mBsHi = CutValue; ok = 1;
-      if (dump) cout << "mBsHi:            " << CutValue << endl;
+      if (dump) cout << "mBsHi:                " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "etaMin")) {
       a->etaMin = CutValue; ok = 1;
-      if (dump) cout << "etaMin:           " << CutValue << endl;
+      if (dump) cout << "etaMin:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "etaMax")) {
       a->etaMax = CutValue; ok = 1;
-      if (dump) cout << "etaMax:           " << CutValue << endl;
+      if (dump) cout << "etaMax:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "pt")) {
       a->pt = CutValue; ok = 1;
-      if (dump) cout << "pt:               " << CutValue << endl;
+      if (dump) cout << "pt:                   " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "m1pt")) {
       a->m1pt = CutValue; ok = 1;
-      if (dump) cout << "m1pt:               " << CutValue << endl;
+      if (dump) cout << "m1pt:                 " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "m2pt")) {
       a->m2pt = CutValue; ok = 1;
-      if (dump) cout << "m2pt:               " << CutValue << endl;
+      if (dump) cout << "m2pt:                 " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "m1eta")) {
       a->m1eta = CutValue; ok = 1;
-      if (dump) cout << "m1eta:               " << CutValue << endl;
+      if (dump) cout << "m1eta:                 " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "m2eta")) {
       a->m2eta = CutValue; ok = 1;
-      if (dump) cout << "m2eta:               " << CutValue << endl;
+      if (dump) cout << "m2eta:                 " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "iso")) {
       a->iso = CutValue; ok = 1;
-      if (dump) cout << "iso:                 " << CutValue << endl;
+      if (dump) cout << "iso:                   " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "chi2dof")) {
       a->chi2dof = CutValue; ok = 1;
-      if (dump) cout << "chi2dof:             " << CutValue << endl;
+      if (dump) cout << "chi2dof:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "alpha")) {
@@ -1215,75 +1199,26 @@ void plotClass::readCuts(string filename) {
       if (dump) cout << "docatrk:               " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "closetrk")) {
-      a->closetrk = static_cast<int>(CutValue); ok = 1;
-      if (dump) cout << "closetrk:              " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvlip")) {
-      a->pvlip = CutValue; ok = 1;
-      if (dump) cout << "pvlip:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "etaMax")) {
-      a->etaMax = CutValue; ok = 1;
-      if (dump) cout << "etaMax:           " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pt")) {
-      a->pt = CutValue; ok = 1;
-      if (dump) cout << "pt:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m1pt")) {
-      a->m1pt = CutValue; ok = 1;
-      if (dump) cout << "m1pt:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m2pt")) {
-      a->m2pt = CutValue; ok = 1;
-      if (dump) cout << "m2pt:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m1eta")) {
-      a->m1eta = CutValue; ok = 1;
-      if (dump) cout << "m1eta:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m2eta")) {
-      a->m2eta = CutValue; ok = 1;
-      if (dump) cout << "m2eta:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "iso")) {
-      a->iso = CutValue; ok = 1;
-      if (dump) cout << "iso:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "chi2dof")) {
-      a->chi2dof = CutValue; ok = 1;
-      if (dump) cout << "chi2dof:             " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "alpha")) {
-      a->alpha = CutValue; ok = 1;
-      if (dump) cout << "alpha:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "fls3d")) {
-      a->fls3d = CutValue; ok = 1;
-      if (dump) cout << "fls3d:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "docatrk")) {
-      a->docatrk = CutValue; ok = 1;
-      if (dump) cout << "docatrk:               " << CutValue << endl;
+    if (!strcmp(CutName, "maxdoca")) {
+      a->maxdoca = CutValue; ok = 1;
+      if (dump) cout << "maxdoca:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "closetrk")) {
       a->closetrk = static_cast<int>(CutValue); ok = 1;
       if (dump) cout << "closetrk:              " << CutValue << endl;
     }
+
+    if (!strcmp(CutName, "pvip")) {
+      a->pvip = CutValue; ok = 1;
+      if (dump) cout << "pvip:                  " << CutValue << endl;
+    }
+
+    if (!strcmp(CutName, "pvips")) {
+      a->pvips = CutValue; ok = 1;
+      if (dump) cout << "pvips:                 " << CutValue << endl;
+    }
+
 
     if (!strcmp(CutName, "pvlip")) {
       a->pvlip = CutValue; ok = 1;
@@ -1297,28 +1232,15 @@ void plotClass::readCuts(string filename) {
 
     if (!strcmp(CutName, "pvlip2")) {
       a->pvlip2 = CutValue; ok = 1;
-      if (dump) cout << "pvlip2:                 " << CutValue << endl;
+      if (dump) cout << "pvlip2:                " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "pvlips2")) {
       a->pvlips2 = CutValue; ok = 1;
-      if (dump) cout << "pvlips2:                 " << CutValue << endl;
+      if (dump) cout << "pvlips2:               " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "maxdoca")) {
-      a->maxdoca = CutValue; ok = 1;
-      if (dump) cout << "maxdoca:                 " << CutValue << endl;
-    }
 
-    if (!strcmp(CutName, "pvip")) {
-      a->pvip = CutValue; ok = 1;
-      if (dump) cout << "pvip:                    " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvips")) {
-      a->pvips = CutValue; ok = 1;
-      if (dump) cout << "pvips:                   " << CutValue << endl;
-    }
 
     sscanf(buffer, "%s %s", CutName, XmlName);
     string ctmp = CutName;
@@ -1330,17 +1252,14 @@ void plotClass::readCuts(string filename) {
       //      fReaderEvents0.push_back(setupReader(sXmlName, frd));
       TMVA::Reader *ar = setupReader(sXmlName, frd);
       fReaderEvents0[a->index] = ar;
-      if (dump) cout << "xml:                   " << sXmlName << endl;
       sXmlName = "weights/" + a->xmlFile + "-Events1_BDT.weights.xml";
       //      fReaderEvents1.push_back(setupReader(sXmlName, frd));
       ar = setupReader(sXmlName, frd);
       fReaderEvents1[a->index] = ar;
-      if (dump) cout << "xml:                   " << sXmlName << endl;
       sXmlName = "weights/" + a->xmlFile + "-Events2_BDT.weights.xml";
       //      fReaderEvents2.push_back(setupReader(sXmlName, frd));
       ar = setupReader(sXmlName, frd);
       fReaderEvents2[a->index] = ar;
-      if (dump) cout << "xml:                   " << sXmlName << endl;
     }
 
     if (!ok) cout << "==> what about " << CutName << endl;
@@ -1358,77 +1277,205 @@ void plotClass::readCuts(string filename) {
 void plotClass::printCuts(ostream &OUT) {
 
   OUT << "----------------------------------------------------------------------" << endl;
-  cout << "printCuts ... fCuts.size() = " << fCuts.size() << endl;
+  OUT << "channel    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  OUT << Form("%10d", fCuts[i]->index);
+  OUT << endl;
+
+  OUT << "mBdLo      ";
   for (unsigned int i = 0; i < fCuts.size(); ++i) {
-    cuts *a = fCuts[i];
-    OUT << "# -- channel " << a->index << endl;
-    OUT << "index    " << a->index << endl;
-    fTEX << "% ----------------------------------------------------------------------" << endl;
-    fTEX << "% -- Cuts for channel " << a->index << endl;
-
-    OUT << "xml      " << Form("%s", a->xmlFile.c_str()) << endl;
-    OUT << "bdt      " << Form("%4.3f", a->bdt) << endl;
-    OUT << "bdtMax   " << Form("%4.3f", a->bdtMax) << endl;
-    fTEX <<  Form("\\vdef{%s:bdt:%d}     {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->bdt) << endl;
-    fTEX <<  Form("\\vdef{%s:bdtMax:%d}  {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->bdtMax) << endl;
-
-    OUT << "mBdLo    " << Form("%4.3f", a->mBdLo) << endl;
-    OUT << "mBdHi    " << Form("%4.3f", a->mBdHi) << endl;
-    fTEX <<  Form("\\vdef{%s:mBdLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBdLo) << endl;
-    fTEX <<  Form("\\vdef{%s:mBdHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBdHi) << endl;
-
-    OUT << "mBsLo    " << Form("%4.3f", a->mBsLo) << endl;
-    OUT << "mBsHi    " << Form("%4.3f", a->mBsHi) << endl;
-    fTEX <<  Form("\\vdef{%s:mBsLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBsLo) << endl;
-    fTEX <<  Form("\\vdef{%s:mBsHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->mBsHi) << endl;
-
-    OUT << "etaMin   " << Form("%3.1f", a->etaMin) << endl;
-    OUT << "etaMax   " << Form("%3.1f", a->etaMax) << endl;
-    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->etaMin) << endl;
-    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->etaMax) << endl;
-
-    OUT << "pt       " << Form("%3.1f", a->pt) << endl;
-    fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->pt) << endl;
-    OUT << "m1pt     " << a->m1pt << endl;
-    fTEX <<  Form("\\vdef{%s:m1pt:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->m1pt) << endl;
-    OUT << "m2pt     " << a->m2pt << endl;
-    fTEX <<  Form("\\vdef{%s:m2pt:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->m2pt) << endl;
-    OUT << "m1eta    " << a->m1eta << endl;
-    fTEX <<  Form("\\vdef{%s:m1eta:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->m1eta) << endl;
-    OUT << "m2eta    " << a->m2eta << endl;
-    fTEX <<  Form("\\vdef{%s:m2eta:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->m2eta) << endl;
-
-    OUT << "iso      " << a->iso << endl;
-    fTEX <<  Form("\\vdef{%s:iso:%d}   {\\ensuremath{{%3.2f } } }", fSuffix.c_str(), a->index, a->iso) << endl;
-    OUT << "chi2dof  " << a->chi2dof << endl;
-    fTEX <<  Form("\\vdef{%s:chi2dof:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->chi2dof) << endl;
-    OUT << "alpha    " << a->alpha << endl;
-    fTEX <<  Form("\\vdef{%s:alpha:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->alpha) << endl;
-    OUT << "fls3d    " << a->fls3d << endl;
-    fTEX <<  Form("\\vdef{%s:fls3d:%d}   {\\ensuremath{{%3.1f } } }", fSuffix.c_str(), a->index, a->fls3d) << endl;
-    OUT << "docatrk  " << a->docatrk << endl;
-    fTEX <<  Form("\\vdef{%s:docatrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->docatrk) << endl;
-
-    OUT << "closetrk " << a->closetrk << endl;
-    fTEX <<  Form("\\vdef{%s:closetrk:%d}   {\\ensuremath{{%d } } }", fSuffix.c_str(), a->index, static_cast<int>(a->closetrk)) << endl;
-    OUT << "pvlip    " << a->pvlip << endl;
-    fTEX <<  Form("\\vdef{%s:pvlip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvlip) << endl;
-    OUT << "pvlips   " << a->pvlips << endl;
-    fTEX <<  Form("\\vdef{%s:pvlips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvlips) << endl;
-    OUT << "pvlip2   " << a->pvlip2 << endl;
-    fTEX <<  Form("\\vdef{%s:pvlip2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvlip2) << endl;
-    OUT << "pvlips2  " << a->pvlips2 << endl;
-    fTEX <<  Form("\\vdef{%s:pvlips2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvlips2) << endl;
-    OUT << "maxdoca  " << a->maxdoca << endl;
-    fTEX <<  Form("\\vdef{%s:maxdoca:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->maxdoca) << endl;
-    OUT << "pvip     " << a->pvip << endl;
-    fTEX <<  Form("\\vdef{%s:pvip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvip) << endl;
-    OUT << "pvips    " << a->pvips << endl;
-    fTEX <<  Form("\\vdef{%s:pvips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), a->index, a->pvips) << endl;
-
+    OUT << Form("%10.3f", fCuts[i]->mBdLo);
+    fTEX << Form("\\vdef{%s:mBdLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBdLo) << endl;
   }
+  OUT << endl;
+
+  OUT << "mBdHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i) {
+    OUT << Form("%10.3f", fCuts[i]->mBdHi);
+    fTEX << Form("\\vdef{%s:mBdHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBdHi) << endl;
+  }
+  OUT << endl;
+
+  OUT << "mBsLo      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBsLo);
+    fTEX <<  Form("\\vdef{%s:mBsLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBsLo) << endl;
+  }
+  OUT << endl;
+
+  OUT << "mBsHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBsHi);
+    fTEX <<  Form("\\vdef{%s:mBsHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBsHi) << endl;
+  }
+  OUT << endl;
+
+  OUT << "etaMin     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMin);
+    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
+  }
+  OUT << endl;
+
+  OUT << "etaMax     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMax);
+    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMax) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pt         ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pt);
+    fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
+  }
+  OUT << endl;
+
+  OUT << "m1pt       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m1pt);
+    fTEX <<  Form("\\vdef{%s:m1pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1pt) << endl;
+  }
+  OUT << endl;
+
+  OUT << "m2pt       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m2pt);
+    fTEX <<  Form("\\vdef{%s:m2pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2pt) << endl;
+  }
+  OUT << endl;
+
+  OUT << "m1eta      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m1eta);
+    fTEX <<  Form("\\vdef{%s:m1eta:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1eta) << endl;
+  }
+  OUT << endl;
+
+  OUT << "m2eta      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m2eta);
+    fTEX <<  Form("\\vdef{%s:m2eta:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2eta) << endl;
+  }
+  OUT << endl;
+
+  OUT << "iso        ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->iso);
+    fTEX <<  Form("\\vdef{%s:iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->iso) << endl;
+  }
+  OUT << endl;
+
+  OUT << "chi2dof    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->chi2dof);
+    fTEX <<  Form("\\vdef{%s:chi2dof:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->chi2dof) << endl;
+  }
+  OUT << endl;
+
+  OUT << "alpha      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->alpha);
+    fTEX <<  Form("\\vdef{%s:alpha:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->alpha) << endl;
+  }
+  OUT << endl;
+
+  OUT << "fls3d      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->fls3d);
+    fTEX <<  Form("\\vdef{%s:fls3d:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->fls3d) << endl;
+  }
+  OUT << endl;
+
+  OUT << "docatrk    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->docatrk);
+    fTEX <<  Form("\\vdef{%s:docatrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->docatrk) << endl;
+  }
+  OUT << endl;
+
+  OUT << "closetrk   ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrk);
+    fTEX <<  Form("\\vdef{%s:closetrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrk) << endl;
+  }
+  OUT << endl;
+
+  OUT << "maxdoca    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->maxdoca);
+    fTEX <<  Form("\\vdef{%s:maxdoca:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->maxdoca) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvip       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvip);
+    fTEX <<  Form("\\vdef{%s:pvip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvip) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvips      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvips);
+    fTEX <<  Form("\\vdef{%s:pvips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvips) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvlip      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlip);
+    fTEX <<  Form("\\vdef{%s:pvlip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvlips     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlips);
+    fTEX <<  Form("\\vdef{%s:pvlips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvlip2     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlip2);
+    fTEX <<  Form("\\vdef{%s:pvlip2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip2) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pvlips2    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlips2);
+    fTEX <<  Form("\\vdef{%s:pvlips2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips2) << endl;
+  }
+  OUT << endl;
+
+  OUT << "bdtMin     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtMin);
+    fTEX <<  Form("\\vdef{%s:bdtMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMin) << endl;
+  }
+  OUT << endl;
+
+  OUT << "bdtMax     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtMax);
+    fTEX <<  Form("\\vdef{%s:bdtMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMax) << endl;
+  }
+  OUT << endl;
+
+  OUT << "xmlFile    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
+    fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
+  }
+  OUT << endl;
+
+
   OUT.flush();
+
+  return;
 }
+
 
 
 // ----------------------------------------------------------------------
