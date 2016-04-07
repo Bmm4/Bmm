@@ -219,13 +219,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	    (validTriggerNamesT.Contains("Mu")) ||
 	    (validTriggerNamesT.Contains("MU"));  // select only muon triggers
 	  muonTrigger = muonTrigger 
-<<<<<<< HEAD
-	    || (lookAt && // accumulate if several passed HLTs
-		(!(validTriggerNamesT.Contains("Multi")) && // ignore
-=======
 	    || (isMuon && // accumulate if several passed HLTs
 		(!(validTriggerNamesT.Contains("Multiplicity")) && // ignore
->>>>>>> efb7f20d6639c30aa8353fbe00975d57bc597cd2
 		 !(validTriggerNamesT.Contains("L1simulation_step")) && //ignore
 		 !(validTriggerNamesT.Contains("noMu")) && // ignore those
 		 !(validTriggerNamesT.Contains("AlCa")) ));
@@ -564,6 +559,7 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup) {
 
 }
 
+
 // ----------------------------------------------------------------------
 void HFDumpTrigger::endRun(Run const&, EventSetup const&) {
   fValidHLTConfig = false;
@@ -579,4 +575,10 @@ void  HFDumpTrigger::endJob() {
 
 }
 
-// 
+// ----------------------------------------------------------------------
+void HFDumpTrigger::resetRun(bool changed) {
+ 
+}
+
+//define this as a plug-in
+DEFINE_FWK_MODULE(HFDumpTrigger);
