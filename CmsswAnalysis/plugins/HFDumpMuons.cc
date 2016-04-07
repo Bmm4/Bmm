@@ -110,7 +110,7 @@ void HFDumpMuons::beginRun(const Run& iRun, const EventSetup& iSetup) {
 
 // ----------------------------------------------------------------------
 void HFDumpMuons::analyze(const Event& iEvent, const EventSetup& iSetup) {
-  if (1) cout << "--- HFDumpMuons -------------------------------------------------------------------" << endl;
+  if (0) cout << "--- HFDumpMuons -------------------------------------------------------------------" << endl;
 
   if (fVerbose > 0) cout << "==>HFDumpMuons> new event " << endl;
 
@@ -239,10 +239,10 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     }
     if (prop_M2.isValid()) {
       pM->fPositionAtM2.SetXYZ(prop_M2.globalPosition().x(), prop_M2.globalPosition().y(), prop_M2.globalPosition().z());
-      cout << "===> M2:   "
-	   << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
-		   1, 3, 0.105, rm.pt(), rm.eta(), rm.phi(), rm.pt(), prop_M2.globalPosition().eta(), static_cast<float>(prop_M2.globalPosition().phi()))
-	   << endl;
+      if (0) cout << "===> M2:   "
+		  << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
+			  1, 3, 0.105, rm.pt(), rm.eta(), rm.phi(), rm.pt(), prop_M2.globalPosition().eta(), static_cast<float>(prop_M2.globalPosition().phi()))
+		  << endl;
 
     }
 
