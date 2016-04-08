@@ -2,19 +2,19 @@
 
 
 # ----------------------------------------------------------------------
-# example submission: 
+# example submission:
 # -------------------
 # run -t $BMMBASE/../150701.tar.gz -m batch -c ../../prod.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/cmsRun/v00/Summer12_DR53X%SITE T3_CH_PSI' test.py
 # ----------------------------------------------------------------------
 
-setenv CMSSW       
-setenv SCRAM_ARCH  
-setenv SRMCP       
+setenv CMSSW
+setenv SCRAM_ARCH
+setenv SRMCP
 
 setenv JOB
 setenv FILE1    $JOB.root
 setenv STORAGE1
-setenv PFNS 
+setenv PFNS
 setenv SITE
 
 echo "========================"
@@ -31,7 +31,7 @@ date
 hostname
 cat /proc/cpuinfo
 uname -a
-df -kl 
+df -kl
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
@@ -64,8 +64,8 @@ date
 tar zxf ../../$JOB.tar.gz
 cd Bmm/RootAnalysis/rootio
 make -j8 all links
-cd - 
-scramv1 b 
+cd -
+scramv1 b
 mv ../../$JOB.py .
 
 
@@ -80,7 +80,7 @@ echo "cmsRun $JOB.py "
 cmsRun $JOB.py |& tee $JOB.log
 date
 pwd
-ls -rtl 
+ls -rtl
 
 setenv ROOTFILE `ls *.root`
 
@@ -95,12 +95,12 @@ echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
 # -- switch to data_replica.py
 ls `pwd`/$FILE1 > dr.list
-echo "--> cat dr.list: " 
+echo "--> cat dr.list: "
 cat dr.list
-echo "--> AM running data_replica.py: " 
-/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE1"
+echo "--> AM running data_replica.py: "
+/mnt/t3nfs01/data01/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE1"
 
-echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1" 
+echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 

@@ -2,26 +2,26 @@
 
 
 # ----------------------------------------------------------------------
-# example submission: 
+# example submission:
 # -------------------
 # $BMMBASE/perl/run -t ../../../digireco.tar.gz -m local -c $BMMBASE/CmsswAnalysis/test/bmm4/prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2MuMu_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2MuMu_EtaPtFilter%SITE T3_CH_PSI' PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_step1-40000
 #
-# Note: this script does NOT use the (py) file with which it is submitted, 
+# Note: this script does NOT use the (py) file with which it is submitted,
 #       it uses step2.py and step3.py which should be in the digireco.tar.gz file.
 # ----------------------------------------------------------------------
 
-setenv CMSSW       
-setenv SCRAM_ARCH  
-setenv SRMCP       
+setenv CMSSW
+setenv SCRAM_ARCH
+setenv SRMCP
 
-setenv JOB      
-setenv STORAGE1 
-setenv STORAGE2 
+setenv JOB
+setenv STORAGE1
+setenv STORAGE2
 setenv FILE1    $STORAGE1/$JOB.root
 setenv FILE2    file:./$JOB:s/step1/step2/.root
 setenv FILE3    $JOB:s/step1/step3/.root
-setenv PFNS     
-setenv SITE     
+setenv PFNS
+setenv SITE
 
 echo "========================"
 echo "====> SGE  wrapper <===="
@@ -29,9 +29,9 @@ echo "========================"
 
 echo "--> Running SGE digi-reco job wrapper"
 echo $JOB
-echo $FILE1 
+echo $FILE1
 echo $FILE2
-echo $FILE3 
+echo $FILE3
 echo $STORAGE1
 echo $STORAGE2
 
@@ -42,7 +42,7 @@ echo "--> Environment"
 date
 hostname
 uname -a
-df -kl 
+df -kl
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
@@ -89,12 +89,12 @@ echo "cmsRun step2.py "
 cmsRun step2.py |& tee step2.log
 date
 pwd
-ls -rtl 
+ls -rtl
 echo "cmsRun step3.py "
 cmsRun step3.py |& tee step3.log
 date
 pwd
-ls -rtl 
+ls -rtl
 
 # ----------------------------------------------------------------------
 # -- Save Output to SE
@@ -106,12 +106,12 @@ echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
 lcg-del -b -D srmv2 -l "$PFNS/$STORAGE2/$FILE3"
 # -- switch to data_replica.py
 ls `pwd`/$FILE3 > dr.list
-echo "--> cat dr.list: " 
+echo "--> cat dr.list: "
 cat dr.list
-echo "--> AM running data_replica.py: " 
-/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE2"
+echo "--> AM running data_replica.py: "
+/mnt/t3nfs01/data01/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE2"
 
-echo "--> lcg-ls : $PFNS/$STORAGE2/$FILE3" 
+echo "--> lcg-ls : $PFNS/$STORAGE2/$FILE3"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
 lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
 
