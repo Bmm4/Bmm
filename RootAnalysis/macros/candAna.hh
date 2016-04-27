@@ -15,18 +15,18 @@
 
 
 struct isoNumbers {
-  double iso; 
-  int    pvTracks; 
-  int    clTracks; 
-  int    Tracks; 
+  double iso;
+  int    pvTracks;
+  int    clTracks;
+  int    Tracks;
 };
 
 // -- TMVA related
 #include "TMVA/Reader.h"
 struct readerData {
   float pt, eta, m1eta, m2eta, m1pt, m2pt;
-  float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk; 
-  float closetrks1, closetrks2, closetrks3; 
+  float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
+  float closetrks1, closetrks2, closetrks3;
   float m1iso, m2iso, pvdchi2, othervtx;
   float pvlip2, pvlips2;
   float m;
@@ -38,19 +38,19 @@ struct muonData {
   float validMuonHits, glbNChi2;
   int   nMatchedStations, validPixelHits, validPixelHits2, trkLayerWithHits;
   // -- Luca's additional variables
-  float trkValidFract; 
-  float pt, eta; 
+  float trkValidFract;
+  float pt, eta;
   float segComp, chi2LocMom, chi2LocPos, glbTrackProb;
   float NTrkVHits, NTrkEHitsOut;
   // -- Mario's and other additional variables
   float kink;
-  float dpt, dptrel, deta, dphi, dr; 
+  float dpt, dptrel, deta, dphi, dr;
 };
 
 struct mvaMuonIDData {
   // -- Luca's original setup
-  float trkValidFract, glbNChi2; 
-  float pt, eta; 
+  float trkValidFract, glbNChi2;
+  float pt, eta;
   float segComp, chi2LocMom, chi2LocPos, glbTrackProb;
   float NTrkVHits, NTrkEHitsOut;
   // -- new/additional setup
@@ -58,12 +58,12 @@ struct mvaMuonIDData {
   float kink, dpt, dptrel, dphi, deta, dr;
 };
 
-class TTree; 
-class TDirectory; 
+class TTree;
+class TDirectory;
 
 // ----------------------------------------------------------------------
 class candAna {
-  
+
 public:
   candAna(bmmReader *pReader, std::string name, std::string cutsFile);
   virtual ~candAna();
@@ -74,15 +74,15 @@ public:
   virtual void        efficiencyCalculation();
   virtual void        setupReducedTree(TTree *);
   virtual void        setupMuonIdTree(TTree *);
-  
+
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
   virtual void        muScaleCorrectedMasses();
   virtual void        runRange();
-  virtual void        genMatch(); 
-  virtual void        recoMatch(); 
-  virtual void        candMatch(); 
+  virtual void        genMatch();
+  virtual void        recoMatch();
+  virtual void        candMatch();
   virtual void        triggerSelection();
   virtual void        fillCandidateHistograms(int offset);
   virtual void        fillRedTreeData();
@@ -93,7 +93,7 @@ public:
   virtual TMVA::Reader* setupMuonMvaReader(std::string xmlFile, mvaMuonIDData &rd);
   virtual void        calcBDT();
   virtual int         detChan(double m1eta, double m2eta);
-    
+
   virtual void        bookHist();
 
   virtual void        basicCuts();
@@ -114,67 +114,67 @@ public:
 
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
 
-  virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9); 
-  virtual std::pair<int, int> nCloseTracks(TAnaCand*, double dca, double dcaS, double pt = 0.5); 
-  virtual double      isoMuon(TAnaCand *, TAnaMuon *); 
-  virtual void        xpDistMuons(); 
+  virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9);
+  virtual std::pair<int, int> nCloseTracks(TAnaCand*, double dca, double dcaS, double pt = 0.5);
+  virtual double      isoMuon(TAnaCand *, TAnaMuon *);
+  virtual void        xpDistMuons();
   virtual void        findAllTrackIndices(TAnaCand* pCand, std::map<int,int> *indices);
 
   virtual TAnaCand*   osCand(TAnaCand *pC);
-  virtual double      osIsolation(TAnaCand *pC, double r = 1.0, double ptmin = 0.9); 
-  virtual int         osMuon(TAnaCand *pC, double r = 1.0); 
+  virtual double      osIsolation(TAnaCand *pC, double r = 1.0, double ptmin = 0.9);
+  virtual int         osMuon(TAnaCand *pC, double r = 1.0);
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
-  virtual void        play(); 
-  virtual void        play2(); 
-  virtual void        play3(); 
+  virtual void        play();
+  virtual void        play2();
+  virtual void        play3();
   // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2); 
+  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
   // match a single track to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false, 
-                                        bool muonsOnly=true, bool anyModule=false); 
+  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
+                                        bool muonsOnly=true, bool anyModule=false);
   // To return the full deltaR not just a bool
-  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,  
-                                        bool muonsOnly=true, bool anyModule=false); 
+  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
+                                        bool muonsOnly=true, bool anyModule=false);
 
   // match the 2 muons from the dimuon to HLT
   virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
+                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
   virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch=true,
-                                    bool matchPt=true, bool anyModule=true); 
+                                    bool matchPt=true, bool anyModule=true);
   //virtual bool        doTriggerVeto_old(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-  //                                bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
+  //                                bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
   virtual bool        doTriggerVetoDouble(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true); 
+                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
 
   virtual void        print1();
 
-  
-  
-  std::string fName; 
-  std::string fCutFile; 
-  TDirectory *fHistDir; 
-  bmmReader *fpReader; 
-  TTree *fTree, *fAmsTree; 
+
+
+  std::string fName;
+  std::string fCutFile;
+  TDirectory *fHistDir;
+  bmmReader *fpReader;
+  TTree *fTree, *fAmsTree;
   TAna01Event *fpEvt;
   TAnaCand *fpCand, *fpOsCand;
-  int fCandIdx; 
+  int fCandIdx;
 
   int fVerbose;
   int fIsMC;
 
   Long64_t fRun, fEvt;
   int fLS;
-  int fEvent; 
+  int fEvent;
   int fRunRange;
   int fYear;
 
-  double       MASSMIN,   MASSMAX; 
-  double       SIGBOXMIN, SIGBOXMAX; 
-  double       BGLBOXMIN, BGLBOXMAX; 
-  double       BGHBOXMIN, BGHBOXMAX; 
-  
-  double 
+  double       MASSMIN,   MASSMAX;
+  double       SIGBOXMIN, SIGBOXMAX;
+  double       BGLBOXMIN, BGLBOXMAX;
+  double       BGHBOXMIN, BGHBOXMAX;
+
+  double
   CANDPTLO, CANDETALO, CANDETAHI
     , CANDCOSALPHA, CANDALPHA
     , CANDFLS3D, CANDFLSXY, CANDVTXCHI2
@@ -187,43 +187,43 @@ public:
     , MUETALO, MUETAHI, MUIP
     , MUBDT
     ;
-  
+
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, IGNORETRIGGER, NOPRESELECTION;
 
   std::map<std::string, pair<int, int> > HLTRANGE;
   string DSNAME; // data set name
 
-  bool fBarrel, fWideMass; 
-  AnalysisCuts fAnaCuts; 
+  bool fBarrel, fWideMass;
+  AnalysisCuts fAnaCuts;
 
   // -- TM
-  int     fGenBTmi; 
-  int     fGenM1Tmi, fGenM2Tmi, fNGenPhotons; 
-  int     fRecM1Tmi, fRecM2Tmi; 
-  int     fCandTmi; 
-  int     fGenBpartial; 
+  int     fGenBTmi;
+  int     fGenM1Tmi, fGenM2Tmi, fNGenPhotons;
+  int     fRecM1Tmi, fRecM2Tmi;
+  int     fCandTmi;
+  int     fGenBpartial;
   int     fProcessType;
-  double  fGenLifeTime, fGenMass; 
+  double  fGenLifeTime, fGenMass;
 
   // -- BDT
-  std::vector<TMVA::Reader*> fReaderEvents0; 
-  std::vector<TMVA::Reader*> fReaderEvents1; 
-  std::vector<TMVA::Reader*> fReaderEvents2; 
-  double  fBDT; 
-  readerData frd; 
+  std::vector<TMVA::Reader*> fReaderEvents0;
+  std::vector<TMVA::Reader*> fReaderEvents1;
+  std::vector<TMVA::Reader*> fReaderEvents2;
+  double  fBDT;
+  readerData frd;
 
-  TMVA::Reader *fMvaMuonID; 
-  mvaMuonIDData mrd; 
-  double  fMu1BDT, fMu2BDT, fMu1rBDT, fMu2rBDT; 
+  TMVA::Reader *fMvaMuonID;
+  mvaMuonIDData mrd;
+  double  fMu1BDT, fMu2BDT, fMu1rBDT, fMu2rBDT;
 
-  muonData fMuonData; 
-  muonData fMu1Data, fMu2Data; 
+  muonData fMuonData;
+  muonData fMu1Data, fMu2Data;
 
   // -- variables for reduced tree, they are from fpCand
   bool    fJSON, fCowboy;
-  int     fCandTM, fCandType; 
+  int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
-  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1TmId, fMu2TmId;
+  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
   bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId;
   double  fMu1TrigM, fMu2TrigM;
 
@@ -231,47 +231,47 @@ public:
   double  fHltMu1Pt, fHltMu1Eta, fHltMu1Phi, fHltMu2Pt, fHltMu2Eta, fHltMu2Phi;
   double  fMu1Pt, fMu1Eta, fMu1Phi, fMu2Pt, fMu2Eta, fMu2Phi;
   double  fMu1PtGen, fMu2PtGen, fMu1EtaGen, fMu2EtaGen, fMu1PhiGen, fMu2PhiGen;
-  int     fMu1GenID, fMu2GenID; 
+  int     fMu1GenID, fMu2GenID;
   double  fMu1PtNrf, fMu2PtNrf, fMu1EtaNrf, fMu2EtaNrf; // "now refitted"
   int     fMu1TrkLayer, fMu1Pix, fMu1BPix, fMu1BPixL1, fMu2TrkLayer, fMu2Pix, fMu2BPix, fMu2BPixL1;
-  double  fMu1W8Mu, fMu1W8Tr, fMu2W8Mu, fMu2W8Tr; 
-  double  fMu1Iso, fMu2Iso; 
+  double  fMu1W8Mu, fMu1W8Tr, fMu2W8Mu, fMu2W8Tr;
+  double  fMu1Iso, fMu2Iso;
   double  fMu1VtxProb, fMu2VtxProb;
   bool    fMu1OtherVtx, fMu2OtherVtx;
   double  fMu1XpDist, fMu2XpDist;
-  double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8; 
+  double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8;
   int     fPvN, fPvIdx;
-  double  fCandPt, fCandP, fCandTau, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu; 
+  double  fCandPt, fCandP, fCandTau, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
   double  fCandCosA, fCandA;
-  double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca; 
-  double  f2MChi2,   f2MDof,   f2MProb,   f2MFL3d,   f2MFL3dE,   f2MFLS3d,   f2MFLSxy; 
+  double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca;
+  double  f2MChi2,   f2MDof,   f2MProb,   f2MFL3d,   f2MFL3dE,   f2MFLS3d,   f2MFLSxy;
   double  fCandIso;
-  int     fCandIsoTrk, fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk; 
-  double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE; 
+  int     fCandIsoTrk, fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk;
+  double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE;
   double  fCandPvTip, fCandPvTipE, fCandPvTipS, fCandPvLip, fCandPvLipE, fCandPvLipS, fCandPvIp, fCandPvIpE, fCandPvIpS;
-  double  fCandPvIp3D, fCandPvIpE3D, fCandPvIpS3D; 
-  double  fCandPvLip2, fCandPvLipS2, fCandPvLip12, fCandPvLipE12, fCandPvLipS12; 
-  double  fCandPvDeltaChi2; 
-  double  fCandOtherVtx; 
+  double  fCandPvIp3D, fCandPvIpE3D, fCandPvIpS3D;
+  double  fCandPvLip2, fCandPvLipS2, fCandPvLip12, fCandPvLipE12, fCandPvLipS12;
+  double  fCandPvDeltaChi2;
+  double  fCandOtherVtx;
 
   double  fOsMuonPt, fOsMuonPtRel, fOsIso, fOsRelIso, fOsMuonDeltaR;
 
-  int     fChan; 
+  int     fChan;
 
   // -- another reduced tree
   TTree       *fEffTree;
   bool fETm1gt, fETm2gt, fETm1id, fETm1tmid, fETm1mvaid, fETm2id, fETm2tmid, fETm2mvaid;
-  int fETm1q, fETm2q; 
-  float fETgpt, fETgeta; 
+  int fETm1q, fETm2q;
+  float fETgpt, fETgeta;
   float fETcandMass;
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
   float fETm2pt, fETm2eta, fETg2pt, fETg2eta;
 
-  bool    fGoodEffCand; 
+  bool    fGoodEffCand;
 
   TTree       *fMuonIdTree;
 
-  TAnaTrack *fpMuon1, *fpMuon2; 
+  TAnaTrack *fpMuon1, *fpMuon2;
 
   // -- isolation study
   isoNumbers fIsoR03Pt03, fIsoR03Pt05, fIsoR03Pt07, fIsoR03Pt09, fIsoR03Pt11;
@@ -283,11 +283,11 @@ public:
 
   string  fHLTPath;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
-  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS; 
-  bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS; 
-  bool    fGoodDocaTrk, fGoodLastCut; 
+  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS;
+  bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
+  bool    fGoodDocaTrk, fGoodLastCut;
 
-  bool    fPreselection; 
+  bool    fPreselection;
   bool    fBadEvent;
   int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
