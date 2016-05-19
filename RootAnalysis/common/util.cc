@@ -19,23 +19,23 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 void setMaximum(double scale, TH1 *h1, TH1 *h2) {
-  double m(-99.), m1(-99.), m2(-99.); 
-  if (0 != h1) m1 = h1->GetMaximum(); 
-  if (0 != h2) m2 = h2->GetMaximum(); 
+  double m(-99.), m1(-99.), m2(-99.);
+  if (0 != h1) m1 = h1->GetMaximum();
+  if (0 != h2) m2 = h2->GetMaximum();
 
   m = (m1 > m2? m1: m2);
-  if (0 != h1) h1->SetMaximum(scale*m); 
-  if (0 != h2) h2->SetMaximum(scale*m); 
+  if (0 != h1) h1->SetMaximum(scale*m);
+  if (0 != h2) h2->SetMaximum(scale*m);
 }
 
 
 // ----------------------------------------------------------------------
-void setTitles(TH1 *h, const char *sx, const char *sy, float size, 
+void setTitles(TH1 *h, const char *sx, const char *sy, float size,
 	       float xoff, float yoff, float lsize, int font) {
   if (h == 0) {
     cout << " Histogram not defined" << endl;
   } else {
-    h->SetXTitle(sx);                  h->SetYTitle(sy); 
+    h->SetXTitle(sx);                  h->SetYTitle(sy);
     h->SetTitleOffset(xoff, "x");      h->SetTitleOffset(yoff, "y");
     h->SetTitleSize(size, "x");        h->SetTitleSize(size, "y");
     h->SetLabelSize(lsize, "x");       h->SetLabelSize(lsize, "y");
@@ -46,23 +46,50 @@ void setTitles(TH1 *h, const char *sx, const char *sy, float size,
 }
 
 // ----------------------------------------------------------------------
+void setTitles(TH1 *hold, TH1* hnew) {
+  hnew->SetXTitle(hold->GetXaxis()->GetTitle());
+  cout << "new x title: " << hnew->GetXaxis()->GetTitle() << endl;
+  hnew->SetYTitle(hold->GetYaxis()->GetTitle());
+
+  hnew->SetTitleOffset(hold->GetTitleOffset("X"), "x");
+  hnew->SetTitleOffset(hold->GetTitleOffset("Y"), "y");
+
+  hnew->SetTitleSize(hold->GetTitleSize("X"), "x");
+  hnew->SetTitleSize(hold->GetTitleSize("Y"), "y");
+
+  hnew->GetXaxis()->SetTitleFont(hold->GetTitleFont("X"));
+  hnew->GetYaxis()->SetTitleFont(hold->GetTitleFont("Y"));
+
+  hnew->SetLabelSize(hold->GetLabelSize("X"), "x");
+  hnew->SetLabelSize(hold->GetLabelSize("Y"), "y");
+
+  hnew->SetLabelFont(hold->GetLabelFont("X"), "x");
+  hnew->SetLabelFont(hold->GetLabelFont("Y"), "y");
+
+  hnew->SetNdivisions(508, "X");
+
+}
+
+
+
+// ----------------------------------------------------------------------
 void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
   h->SetLineColor(color);   h->SetLineWidth(static_cast<Width_t>(width));
-  h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size); 
-  h->SetStats(kFALSE); 
+  h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size);
+  h->SetStats(kFALSE);
   h->SetFillStyle(0); h->SetFillColor(color);
 }
 
 // ----------------------------------------------------------------------
 void setHist(TH1 *h, dataset *ds) {
-  if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth); 
-  if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth); 
+  if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth);
+  if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth);
 }
 
 // ----------------------------------------------------------------------
 void setGraph(TGraph *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
   h->SetLineColor(color);   h->SetLineWidth(static_cast<Width_t>(width));
-  h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size); 
+  h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size);
 }
 
 
@@ -93,20 +120,20 @@ void setFilledHist(TH1 *h, Int_t color, Int_t fillcolor, Int_t fillstyle, Int_t 
   // Note: 3004, 3005 are crosshatches
   // ----- 1000       is solid
   //       kYellow    comes out gray on bw printers
-  h->SetLineColor(color);     h->SetLineWidth(width);   
+  h->SetLineColor(color);     h->SetLineWidth(width);
   h->SetFillStyle(fillstyle); h->SetFillColor(fillcolor);
 }
 
 
 // ----------------------------------------------------------------------
 void printNonZero(TH1 *h) {
-  double con(0.), min(0.), max(0.); 
+  double con(0.), min(0.), max(0.);
   for (Int_t i = 0; i <= h->GetNbinsX()+1; ++i) {
-    con = h->GetBinContent(i); 
+    con = h->GetBinContent(i);
     if (con > 0.) {
       min = h->GetBinLowEdge(i);
       max = min + h->GetBinWidth(i);
-      cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":" 
+      cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << Form(" %12.3f", con) << " +/- " << Form("%12.3f", h->GetBinError(i))
            << endl;
     }
@@ -116,9 +143,9 @@ void printNonZero(TH1 *h) {
 
 // ----------------------------------------------------------------------
 void stampAndSave(TCanvas *fC, const char *s) {
-  fC->cd(); 
+  fC->cd();
   TLatex tl;
-  TString filename(gFile->GetName()); Int_t index = filename.Index(".root"); filename.Remove(index);  
+  TString filename(gFile->GetName()); Int_t index = filename.Index(".root"); filename.Remove(index);
   TString psname = filename + TString(s);
   double oldA = tl.GetTextAngle();
   double oldS= tl.GetTextSize();
@@ -131,7 +158,7 @@ void stampAndSave(TCanvas *fC, const char *s) {
 
 // ----------------------------------------------------------------------
 void shrinkPad(double b, double l, double r, double t) {
-  gPad->SetBottomMargin(b); 
+  gPad->SetBottomMargin(b);
   gPad->SetLeftMargin(l);
   gPad->SetRightMargin(r);
   gPad->SetTopMargin(t);
@@ -140,7 +167,7 @@ void shrinkPad(double b, double l, double r, double t) {
 // ----------------------------------------------------------------------
 void zone(int x, int y, TCanvas *c) {
   if (c == 0) {
-    c = (TCanvas*)gROOT->FindObject("c0"); 
+    c = (TCanvas*)gROOT->FindObject("c0");
     if (c == 0) {
       cout << "TCanvas c0 not found. Creating my own version." << endl;
       c = new TCanvas("c0","--c0--",356,0,656,700);
@@ -154,7 +181,7 @@ void zone(int x, int y, TCanvas *c) {
 
 // ----------------------------------------------------------------------
 int wait() {
-  cout << " Continue [<RET>|q]?  "; 
+  cout << " Continue [<RET>|q]?  ";
   char x;
   x = getchar();
   if ((x == 'q') || (x == 'Q')) return 1;
@@ -216,7 +243,7 @@ double dBF(double n, double nE, double N, double NE, double e, double eE) {
   double e2 = e*e;
   double N2 = N*N;
 
-  double dbdn2 = 1./(e2*N2); 
+  double dbdn2 = 1./(e2*N2);
   double dbde2 = (n2)/(e2*e2*N2);
   double dbdN2 = (n2)/(e2*N2*N2);
 
@@ -277,9 +304,9 @@ void babar(double xpos, double ypos, double scale, int prel) {
 
 // ----------------------------------------------------------------------
 TH1D *unmix(TH1D *rightSign, TH1D *wrongSign, double chid) {
-  TH1D *prompt = new TH1D(*rightSign); prompt->SetName("prompt"); prompt->Reset(); 
+  TH1D *prompt = new TH1D(*rightSign); prompt->SetName("prompt"); prompt->Reset();
   prompt->Add(rightSign, wrongSign, (1. - chid) / (1. - 2.*chid), -chid / (1.-2.*chid));
-  return prompt; 
+  return prompt;
 }
 
 
@@ -295,7 +322,7 @@ double chi2Test(TH1 *h1, TH1 *h2, double& chi2, double& ndof, int constrain) {
     cout << "chi2Test: Number of bins not the same" << endl;
     return -99.;
   }
-  double df = nbins - 1 - constrain; 
+  double df = nbins - 1 - constrain;
   double chsq(0.), a1(0.), a2(0.);
   for (int i = 1; i <= nbins; ++i) {
     a1 = h1->GetBinContent(i);
@@ -322,7 +349,7 @@ double chi2TestErr(TH1 *h1, TH1 *h2, double& chi2, double& ndof, int constrain) 
     cout << "chi2Test: Number of bins not the same" << endl;
     return -99.;
   }
-  double df = nbins - 1 - constrain; 
+  double df = nbins - 1 - constrain;
   double chsq(0.), a1(0.), a2(0.), e1(0.), e2(0.);
   for (int i = 1; i <= nbins; ++i) {
     a1 = h1->GetBinContent(i);
@@ -342,15 +369,15 @@ double chi2TestErr(TH1 *h1, TH1 *h2, double& chi2, double& ndof, int constrain) 
   ndof = df;
   return gamma;
 }
-    
+
 // ----------------------------------------------------------------------
 void average(double &av, double &error, int n, double *val, double *verr) {
 
-  double e(0.), w8(0.), sumW8(0.), sumAve(0.); 
+  double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (int i = 0; i < n; ++i) {
     //    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
 
-    // -- calculate mean and error 
+    // -- calculate mean and error
     e = verr[i];
     if (e > 0.) {
       w8 = 1./(e*e);
@@ -385,7 +412,7 @@ void replaceAll(string &str, const string &from, const string &to) {
 // ----------------------------------------------------------------------
 bool isBeautyMesonWeak(int i) {
   return (5 == TMath::Abs(i)/100);
-} 
+}
 
 // ----------------------------------------------------------------------
 bool isBeautyBaryonWeak(int i) {
@@ -393,14 +420,14 @@ bool isBeautyBaryonWeak(int i) {
   if (5132 == TMath::Abs(i)) return true;
   if (5232 == TMath::Abs(i)) return true;
   if (5332 == TMath::Abs(i)) return true;
-  return false; 
-} 
+  return false;
+}
 
 
 // ----------------------------------------------------------------------
 bool isCharmMesonWeak(int i) {
   return (4 == TMath::Abs(i)/100);
-} 
+}
 
 // ----------------------------------------------------------------------
 bool isCharmBaryonWeak(int i) {
@@ -408,39 +435,39 @@ bool isCharmBaryonWeak(int i) {
   if (4132 == TMath::Abs(i)) return true;
   if (4232 == TMath::Abs(i)) return true;
   if (4332 == TMath::Abs(i)) return true;
-  return false; 
-} 
+  return false;
+}
 
 
 // ----------------------------------------------------------------------
 bool isBeautyMeson(int i) {
   int rest = (TMath::Abs(i)%1000);
-  return (rest > 499 && rest < 600);  
-} 
+  return (rest > 499 && rest < 600);
+}
 
 // ----------------------------------------------------------------------
 bool isBeautyBaryon(int i) {
   int rest = (TMath::Abs(i)%1000);
-  return (rest > 4999 && rest < 6000);  
-} 
+  return (rest > 4999 && rest < 6000);
+}
 
 // ----------------------------------------------------------------------
 bool isCharmMeson(int i) {
   int rest = (TMath::Abs(i)%1000);
-  return (rest > 399 && rest < 500);  
-} 
+  return (rest > 399 && rest < 500);
+}
 
 // ----------------------------------------------------------------------
 bool isCharmBaryon(int i) {
   int rest = (TMath::Abs(i)%1000);
-  return (rest > 3999 && rest < 5000);  
-} 
+  return (rest > 3999 && rest < 5000);
+}
 
 // ----------------------------------------------------------------------
 bool isLightMeson(int i) {
   int rest = (TMath::Abs(i)%1000);
-  return (rest > 99 && rest < 400);  
-} 
+  return (rest > 99 && rest < 400);
+}
 
 // ----------------------------------------------------------------------
 bool isStableCharged(int i) {
@@ -466,11 +493,11 @@ void showOverflow(TH1 *h) {
 vector<int> defVector(int n, ...) {
   va_list vl;
   va_start(vl, n);
-  vector<int> vect; 
+  vector<int> vect;
   int a(0);
   for (int i = 0; i < n; ++i) {
     a = va_arg(vl, int);
-    vect.push_back(a); 
+    vect.push_back(a);
   }
   va_end(vl);
   return vect;
@@ -479,8 +506,8 @@ vector<int> defVector(int n, ...) {
 
 // ----------------------------------------------------------------------
 string formatTex(double n, string name, int digits, int sgn) {
-  
-  char line[200]; 
+
+  char line[200];
   if ( TMath::IsNaN(n) ) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
   } else if (0 == digits ) {
@@ -508,14 +535,14 @@ string formatTex(double n, string name, int digits, int sgn) {
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+f } } }", name.c_str(), n);
   }
 
-  return string(line); 
+  return string(line);
 }
 
 // ----------------------------------------------------------------------
 string formatTex(double n, string name, string tag) {
-  
-  char line[200]; 
-  
+
+  char line[200];
+
   if (TMath::IsNaN(n) ) {
     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str(), tag.c_str());
     //   } else if ( n > 1.e10) {
@@ -537,8 +564,8 @@ string formatTex(double n, string name, string tag) {
   } else {
     sprintf(line, "\\vdef{%s:%s}   {\\ensuremath{{0.0 } } }", name.c_str(), tag.c_str());
   }
-  
-  string result(line); 
+
+  string result(line);
   return result;
 }
 
@@ -546,20 +573,20 @@ string formatTex(double n, string name, string tag) {
 void stamp(double x1, string text1, double x2, string text2, TLatex *tl) {
   double size(-1.);
   if (0 == tl) {
-    tl = new TLatex(); 
+    tl = new TLatex();
   } else {
-    size = tl->GetTextSize(); 
+    size = tl->GetTextSize();
   }
 
   cout << "stamp() > " << x1 << " " << text1 << " " << x2 << " " << text2 << endl;
-  tl->SetNDC(kTRUE); 
-  tl->SetTextSize(0.05); 
-  tl->DrawLatex(x1, 0.91, text1.c_str());   
-  tl->DrawLatex(x2, 0.91, text2.c_str()); 
+  tl->SetNDC(kTRUE);
+  tl->SetTextSize(0.05);
+  tl->DrawLatex(x1, 0.91, text1.c_str());
+  tl->DrawLatex(x2, 0.91, text2.c_str());
   if (size < 0) {
     // ??
   } else {
-    tl->SetTextSize(size); 
+    tl->SetTextSize(size);
   }
 }
 
@@ -581,7 +608,7 @@ void rmPath(string &sInput) {
 // ----------------------------------------------------------------------
 vector<string> glob(string basedir, string basename) {
   cout << "Looking in " << basedir << " for " << basename << endl;
-  vector<string> lof; 
+  vector<string> lof;
   TString fname;
   const char *file;
   TSystem *lunix = gSystem; //new TUnixSystem();
@@ -591,6 +618,6 @@ vector<string> glob(string basedir, string basename) {
     if (fname.Contains(basename.c_str())) {
       lof.push_back(string(fname));
     }
-  }  
-  return lof; 
+  }
+  return lof;
 }
