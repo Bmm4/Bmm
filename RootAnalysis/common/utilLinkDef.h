@@ -22,6 +22,7 @@
 #pragma link C++ function colors();
 
 #pragma link C++ function setTitles(TH1*,const char*,const char*,float,float,float,float,int);
+#pragma link C++ function setTitles(TH1*,TH1*);
 #pragma link C++ function setHist(TH1*,int,int,double,double);
 #pragma link C++ function setHist(TH1*,dataset*);
 #pragma link C++ function setGraph(TGraph*,int,int,double,double);
@@ -30,7 +31,7 @@
 #pragma link C++ function showOverflow(TH1 *);
 #pragma link C++ function unmix(TH1D *, TH1D *, double);
 
-// #pragma link C++ function scanParameter(int, int, TMinuit &, void (*func)(int &, double *, double &, double *, int)); 
+// #pragma link C++ function scanParameter(int, int, TMinuit &, void (*func)(int &, double *, double &, double *, int));
 
 #pragma link C++ function chi2Prob(double, double);
 #pragma link C++ function chi2Test(TH1*, TH1*, double&, double&, int);
@@ -72,4 +73,3 @@
 
 
 #endif
-
