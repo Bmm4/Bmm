@@ -2,15 +2,15 @@ my $version = "v01";
 my $dataset = "bla";
 
 # -- define jobs and catalog splitting into py files and jobs
-#%catalogs = (); 
+#%catalogs = ();
 tie %catalogs, "Tie::IxHash";
 %jobs = ();
 tie %jobs, "Tie::IxHash";
 
-# -- did not manage to do this with refs, so do it with a function: 
+# -- did not manage to do this with refs, so do it with a function:
 sub runCommand() {
     return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/$dataset%SITE T3_CH_PSI' ";
-}   
+}
 
 
 # -- BMM jobs
@@ -59,6 +59,7 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil0 -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil1 -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil2 -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BdToKPi-2GM -s $version -n 200 -l;  \ \n";
 
 # -- NEW official MC
 $dataset = "RunIIFall15DR76";
