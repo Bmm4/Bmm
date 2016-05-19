@@ -13,16 +13,17 @@ public:
   TFile* getFile() {return fF;}
   TH1D*  getHist(std::string name, bool clone = true);
   TH2D*  getHist2(std::string name, bool clone = true);
+  void   setHistStyle(TH1 *);
 
-  TFile *fF; 
+  TFile *fF;
   std::string fName, fFullName;
   // -- decay/process specifics
   double fXsec, fBf, fMass, fLambda;
   // -- generation information
   double fFilterEff, fLumi;
   // -- display
-  int fColor, fLcolor, fFcolor, fSymbol, fFillStyle; 
-  double fSize, fWidth; 
+  int fColor, fLcolor, fFcolor, fSymbol, fFillStyle;
+  double fSize, fWidth;
 
   int fNclone;
 };
