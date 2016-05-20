@@ -303,12 +303,15 @@ sub createPyFilesPerRun() {
 		}
 		# -- substitute files and skipevents and nevents
 		elsif ($in[$l] =~ /POOLSOURCE/) {
+		    @bla = @{$runList{$run}->{FILELIST}};
 		    print OUT "process.source = cms.Source(\n";
 		    print OUT "    \"PoolSource\",\n";
-#old		    print OUT "  fileNames = cms.untracked.vstring(\n";
-		    print OUT "    fileNames = cms.untracked.vstring( *(\n";
+		    if ($#bla == 0) {
+			print OUT "  fileNames = cms.untracked.vstring(\n";
+		    } else {
+			print OUT "    fileNames = cms.untracked.vstring( *(\n";
+		    }
 
-		    @bla = @{$runList{$run}->{FILELIST}};
 		    for ($ij = 0; $ij <= $#bla; $ij++) {
 			if ($ij < $#bla) {
 			    print OUT "        \"$bla[$ij]\",\n";
@@ -318,14 +321,20 @@ sub createPyFilesPerRun() {
 		    }
 
 		    if ($skipevents > 0) {
-#old			print OUT " ),\n";
-			print OUT "    ) ),\n";
+			if ($#bla == 0) {
+			    print OUT " ),\n";
+			} else {
+			    print OUT "    ) ),\n";
+			}
 			print OUT "    skipEvents = cms.untracked.uint32(";
 			print OUT $skipevents;
 			print OUT ")\n";
 		    } else {
-#old			print OUT " )\n";
-			print OUT "    ) )\n";
+			if ($#bla == 0) {
+			    print OUT " )\n";
+			} else {
+			    print OUT "    ) )\n";
+			}
 		    }
 
 		    print OUT ")\n";
@@ -430,8 +439,11 @@ sub createPyFilesPerBlock() {
 		elsif ($in[$l] =~ /POOLSOURCE/) {
 		    print OUT "process.source = cms.Source(\n";
 		    print OUT " \"PoolSource\",\n";
-#old		    print OUT "  fileNames = cms.untracked.vstring(\n";
-		    print OUT "  fileNames = cms.untracked.vstring( *(\n";
+		    if ($#fList == 0) {
+			print OUT "  fileNames = cms.untracked.vstring(\n";
+		    } else {
+			print OUT "  fileNames = cms.untracked.vstring( *(\n";
+		    }
 		    for ($ij = 0; $ij <= $#fList; $ij++) {
 			if ($ij < $#fList) {
 			    print OUT "         \"$fList[$ij]\",\n";
@@ -440,8 +452,11 @@ sub createPyFilesPerBlock() {
 			}
 		    }
 
-#old		    print OUT " )\n";
-		    print OUT "  ) )\n";
+		    if ($#fList == 0) {
+			print OUT " )\n";
+		    } else {
+			print OUT "  ) )\n";
+		    }
 
 		    print OUT ")\n";
 		    print OUT "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )\n";
@@ -514,8 +529,11 @@ sub createPyFilesWithoutEvents() {
 		elsif ($in[$l] =~ /POOLSOURCE/) {
 		    print OUT "process.source = cms.Source(\n";
 		    print OUT " \"PoolSource\",\n";
-#old		    print OUT "  fileNames = cms.untracked.vstring(\n";
-		    print OUT "  fileNames = cms.untracked.vstring( *(\n";
+		    if ($#fList == 0) {
+			print OUT "  fileNames = cms.untracked.vstring(\n";
+		    } else {
+			print OUT "  fileNames = cms.untracked.vstring( *(\n";
+		    }
 		    for ($ij = 0; $ij <= $#fList; $ij++) {
 			if ($ij < $#fList) {
 			    print OUT "         \"$fList[$ij]\",\n";
@@ -524,8 +542,11 @@ sub createPyFilesWithoutEvents() {
 			}
 		    }
 
-#old 		    print OUT " )\n";
-		    print OUT "  ) )\n";
+		    if ($#fList == 0) {
+			print OUT " )\n";
+		    } else {
+			print OUT "  ) )\n";
+		    }
 
 		    print OUT ")\n";
 		    print OUT "process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )\n";
