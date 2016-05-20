@@ -331,7 +331,7 @@ sub createPyFilesPerRun() {
 			print OUT ")\n";
 		    } else {
 			if ($#bla == 0) {
-			    print OUT " )\n";
+			    print OUT "  )\n";
 			} else {
 			    print OUT "    ) )\n";
 			}
@@ -453,7 +453,7 @@ sub createPyFilesPerBlock() {
 		    }
 
 		    if ($#fList == 0) {
-			print OUT " )\n";
+			print OUT "  )\n";
 		    } else {
 			print OUT "  ) )\n";
 		    }
@@ -543,7 +543,7 @@ sub createPyFilesWithoutEvents() {
 		    }
 
 		    if ($#fList == 0) {
-			print OUT " )\n";
+			print OUT "  )\n";
 		    } else {
 			print OUT "  ) )\n";
 		    }
