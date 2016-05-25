@@ -25,10 +25,12 @@ TRIGRANGE    HLT_DoubleMu4_Dimuon7_Bs_Forward_v3(1:99999999)
 TRIGRANGE    HLT_DoubleMu3_4_Dimuon5_Bs_Central_v4(1:99999999)
 TRIGRANGE    HLT_DoubleMu3p5_4_Dimuon5_Bs_Central_v4(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Dimuon7_Bs_Forward_v4(1:99999999)
-TRIGRANGE    HLT_DoubleMu3_4_Dimuon5_Bs_Central_v5(1:99999999) 
-TRIGRANGE    HLT_DoubleMu3p5_4_Dimuon5_Bs_Central_v5(1:99999999) 
+TRIGRANGE    HLT_DoubleMu3_4_Dimuon5_Bs_Central_v5(1:99999999)
+TRIGRANGE    HLT_DoubleMu3p5_4_Dimuon5_Bs_Central_v5(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Dimuon7_Bs_Forward_v5(1:99999999)
+# 2015/2016:
 TRIGRANGE    HLT_DoubleMu4_3_Bs_v1(1:99999999)
+TRIGRANGE    HLT_DoubleMu4_3_Bs_v2(1:99999999)
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks
