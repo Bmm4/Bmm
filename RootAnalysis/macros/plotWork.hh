@@ -24,7 +24,7 @@ public :
 
   // -- validate gen/mc production
   void   prodSummary(string ds1, int year = 2014);
-  void   privateVsOfficial(string mode = "bdmm");
+  void   privateVsOfficial(string mode = "bdmm", int nevt = -1);
   void   bookDistributions(std::string sample);
   AnalysisDistribution* bookDistribution(std::string hn, std::string ht, std::string hc, int nbins, double lo, double hi);
 
