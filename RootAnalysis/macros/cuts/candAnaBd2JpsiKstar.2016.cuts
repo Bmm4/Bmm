@@ -1,0 +1,20 @@
+TYPE           300511
+TRUTHCAND         511
+NOPRESELECTION      1
+#
+# -- trigger
++input cuts/triggerDisplacedJpsi.cuts
+# -- boxes
++input cuts/boxes.Bd2JpsiKstar.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.cuts
+# -- candidate
++input cuts/candidate.cuts
+# -- bdt input
+# no input cuts/bdt.2012.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
+# -- kstar cuts
++input cuts/kstar.cuts
