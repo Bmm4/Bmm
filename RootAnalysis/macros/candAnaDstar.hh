@@ -43,9 +43,15 @@ public:
   int         getJpsi(int &idx1, int &idx2);
   bool        matchToTriggeredMuon(TAnaTrack *pt, int &idx);
   int         doMuonTriggerMatching(void); // match all offline muons to hlt muons 
-  double      doTriggerMatchingTest(int &idx, int trig = 0); // match a single track to HLT
+  double      doTriggerMatchingTest(int &idx, int muon, int trig = 0); // match a single track to HLT
   double      findBestMatchingTrack(TLorentzVector,int,int &); // match trigger track to all reco tracks
- 
+  int         getHLTId(TString); // get the id (integer) from the HLT name 
+  void        dumpAll(); // print everything
+  bool        doTriggerMatchingForDs(double &dr1, double &dr2); // match hlt muons to offline 
+  bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
+			    bool matchPt, bool anyModule, float drCut, int histoOffset=0); 
+  bool        analyzeHltInfo(bool allTrigClean=false);
+
 private:
   TTree * tree;
 
@@ -64,10 +70,14 @@ private:
   bool fveto;
   double fmva1, fmva2; // MVA
   // test
-  float fmatch1dr1, fmatch2dr1,fmatch1dr2, fmatch2dr2,fmatch1dr3, fmatch2dr3,fmatch1dr4, fmatch2dr4;
-  bool fb1, fb2, fb3;
-
+  float fmatch1dr1, fmatch2dr1,fmatch1dr2, fmatch2dr2,fmatch1dr3, fmatch2dr3,
+    fmatch1dr4, fmatch2dr4, fmatch1dr5, fmatch2dr5;
+  bool fmatchTrigs, fb2, fb3,fb4,fb5,fb6,fb7,fb8,fb9;
+  bool ftmp1,ftmp2,ftmp3,ftmp4,ftmp5,ftmp6,ftmp7,ftmp8,ftmp9; 
+  int fitmp1, fitmp2, fitmp3, fitmp4, fitmp5;
+ 
   vector<int> hltMatchedMuons;
+  vector<int> hltInfo;
 
 };
 
