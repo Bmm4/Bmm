@@ -340,7 +340,8 @@ void candAna::candAnalysis() {
   fCandPvIpS3D  = fpCand->fPvIP3d/fpCand->fPvIP3dE;
   if (TMath::IsNaN(fCandPvIpS3D)) fCandPvIpS3D = -1.;
 
-  fCandM2 = constrainedMass();
+  //old  fCandM2 = constrainedMass();
+  fCandM2 = fpCand->fDouble1;
 
   // -- new variables
   fCandPvDeltaChi2 = fpCand->fDeltaChi2;
@@ -406,6 +407,7 @@ void candAna::candAnalysis() {
 
   fpMuon1 = p1;
   fpMuon2 = p2;
+
   muScaleCorrectedMasses();
 
   fMu1TrkLayer  = fpReader->numberOfTrackerLayers(p1);
@@ -998,7 +1000,7 @@ void candAna::triggerSelection() {
 
   // Check L1, not really used
   if( (fVerbose>9) || (fVerbose == -31)) {
-    cout << "--------------------  L1" << endl;
+    cout << "--------------------  L1: " << endl;
     for (int i = 0; i < NL1T; ++i) {
       result = wasRun = error = false;
       a = fpEvt->fL1TNames[i];
@@ -1006,9 +1008,9 @@ void candAna::triggerSelection() {
       result = fpEvt->fL1TResult[i];
       error  = fpEvt->fL1TMask[i];
       //if (a.Contains("Mu")) {
-      if (result) {
+      //      if (result) {
 	cout << a <<  " mask: " << error << " result: " << result << " ps: " << ps << endl;
-      }
+	//      }
     }
   }
 
@@ -1097,6 +1099,8 @@ void candAna::triggerSelection() {
 	fHLTPath = a.Data();
 	isMuonTrigger = a.Contains("Mu") || a.Contains("mu") || a.Contains("MU");
 	//if(ps!=1) cout<<"prescale not one "<<a.Data()<<" "<<ps<<endl;
+
+	continue;
 
 	bool foundHltObject = false;
 	int countModules=0, lastIndex=-1;
