@@ -12,7 +12,7 @@ class plotWork: public plotClass {
 public :
   plotWork(std::string dir = "results",
 	   std::string files = "plotWork.files",
-	   std::string cuts = "plotClass.cuts",
+	   std::string cuts = "plotClass.2016.cuts",
 	   std::string setup = "default");
   virtual        ~plotWork();
 

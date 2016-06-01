@@ -24,7 +24,7 @@ ClassImp(plotWork)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotWork::plotWork(string dir,  string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotWork::plotWork(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
   loadFiles(files);
 
   if (setup == "") {
@@ -328,7 +328,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
     t->GetEntry(jentry);
     if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
 
-    candAnalysis(0);
+    candAnalysis();
     (this->*pF)();
   }
 
