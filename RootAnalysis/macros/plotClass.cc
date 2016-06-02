@@ -593,8 +593,12 @@ void plotClass::candAnalysis(/*int mode*/) {
     if (TMath::Abs(fb.g1eta) > 2.5) fGoodAcceptance = false;
     if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false;
   } else {
+    static int runComplained(-1);
     if (!fb.json) {
-      if (0) cout << "json failure" << endl;
+      if (fb.run != runComplained) {
+	cout << "json failure for run " << fb.run << " LS " << fb.ls << endl;
+	runComplained = fb.run;
+      }
       return;
     }
   }
