@@ -1338,6 +1338,18 @@ void plotReducedOverlays::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds));
       }
 
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarData";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
     } else {
       // -- MC
       pF = loadFile(sfile);
@@ -1361,6 +1373,18 @@ void plotReducedOverlays::loadFiles(string afiles) {
       if (string::npos != stype.find("bspsiphi")) {
         sname = "bspsiphiMc";
         sdecay = "bspsiphi";
+	ds->fColor = kRed-7;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarMc";
+        sdecay = "bdpsikstar";
 	ds->fColor = kRed-7;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
