@@ -75,6 +75,8 @@ public:
   virtual void        setupReducedTree(TTree *);
   virtual void        setupMuonIdTree(TTree *);
 
+  virtual bool        tis(TAnaCand *pC);
+  virtual int         matchTrgObj2Trk(TVector3 t);
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -131,14 +133,14 @@ public:
   // match the 2 muons from the dimuon to HLT
   virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
   // match a single track to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false, 
-					bool muonsOnly=true, bool anyModule=false); 
+  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
+					bool muonsOnly=true, bool anyModule=false);
   // To return the full deltaR not just a bool
-  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,  
-                                        bool muonsOnly=true, bool anyModule=false); 
+  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
+                                        bool muonsOnly=true, bool anyModule=false);
   // Veto track too close to a trigger object
   virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
-				    bool matchPt, bool anyModule, float drCut, int histoOffset=0); 
+				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
   virtual void        print1();
 
 
@@ -277,7 +279,7 @@ public:
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
-  bool    fGoodDocaTrk, fGoodLastCut;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS;
 
   bool    fPreselection;
   bool    fBadEvent;
