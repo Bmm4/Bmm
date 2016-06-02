@@ -1220,7 +1220,7 @@ void candAna::triggerSelection() {
    } // end for
 
     // print the hlt object map
-    for(map<unsigned int, unsigned int, less<unsigned int>>::iterator iter=hltObjMap.begin();
+    for(map<unsigned int, unsigned int, less<unsigned int> >::iterator iter=hltObjMap.begin();
 	iter!=hltObjMap.end(); ++iter) {
       cout<<hex<<iter->first<<" "<<iter->second<<" "<<dec<<endl;
     }
@@ -3465,7 +3465,7 @@ bool candAna::doTriggerMatching(TAnaTrack *fp1, TAnaTrack *fp2) { // call the no
   tlvMu1.SetPtEtaPhiM(fp1->fPlab.Perp(),fp1->fPlab.Eta(),fp1->fPlab.Phi(),MMUON); // assume a muon
   tlvMu2.SetPtEtaPhiM(fp2->fPlab.Perp(),fp2->fPlab.Eta(),fp2->fPlab.Phi(),MMUON); // assume a muon
 
-  map<unsigned int, unsigned int, less<unsigned int>>::iterator  ix;
+  map<unsigned int, unsigned int, less<unsigned int> >::iterator  ix;
   for(int i=0; i!=fpEvt->nTrgObjv2(); i++) { // loop over all objects
     pTO = fpEvt->getTrgObjv2(i);
     int hltIndex = pTO->fHltIndex;
@@ -3619,7 +3619,7 @@ double candAna::doTriggerMatchingR(TAnaTrack *fp1, bool anyTrig, bool muonsOnly,
   tlvMu1.SetPtEtaPhiM(fp1->fPlab.Perp(),fp1->fPlab.Eta(),fp1->fPlab.Phi(),MMUON); // assume a muon
 
   //cout<<" size "<<hltObjMap.size()<<endl;
-  map<unsigned int, unsigned int, less<unsigned int>>::iterator  ix;
+  map<unsigned int, unsigned int, less<unsigned int> >::iterator  ix;
   for(int i=0; i!=fpEvt->nTrgObjv2(); i++) { // loop over all objects
     pTO = fpEvt->getTrgObjv2(i);
     int hltIndex = pTO->fHltIndex;
