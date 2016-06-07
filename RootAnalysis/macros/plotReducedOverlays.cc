@@ -53,49 +53,51 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
 
   fDoList.clear();
   fDoList.push_back("muon1pt");
-  fDoList.push_back("muon2pt");
+  if (0) {
+    fDoList.push_back("muon2pt");
 
-  fDoList.push_back("muonseta");
-  fDoList.push_back("pt");
-  fDoList.push_back("p");
-  fDoList.push_back("pz");
-  fDoList.push_back("eta");
-  fDoList.push_back("alpha");
+    fDoList.push_back("muonseta");
+    fDoList.push_back("pt");
+    fDoList.push_back("p");
+    fDoList.push_back("pz");
+    fDoList.push_back("eta");
+    fDoList.push_back("alpha");
 
-  fDoList.push_back("iso");
-  fDoList.push_back("closetrk");
-  fDoList.push_back("docatrk");
+    fDoList.push_back("iso");
+    fDoList.push_back("closetrk");
+    fDoList.push_back("docatrk");
 
-  fDoList.push_back("chi2dof");
-  fDoList.push_back("pchi2dof");
-  fDoList.push_back("fls3d");
-  fDoList.push_back("fl3d");
-  fDoList.push_back("fl3de");
+    fDoList.push_back("chi2dof");
+    fDoList.push_back("pchi2dof");
+    fDoList.push_back("fls3d");
+    fDoList.push_back("fl3d");
+    fDoList.push_back("fl3de");
 
-  fDoList.push_back("maxdoca");
-  fDoList.push_back("ip");
-  fDoList.push_back("ips");
-  fDoList.push_back("pvn");
-  fDoList.push_back("pvavew8");
+    fDoList.push_back("maxdoca");
+    fDoList.push_back("ip");
+    fDoList.push_back("ips");
+    fDoList.push_back("pvn");
+    fDoList.push_back("pvavew8");
 
-  fDoList.push_back("lip");
-  fDoList.push_back("lips");
+    fDoList.push_back("lip");
+    fDoList.push_back("lips");
 
-  fDoList.push_back("lip2");
-  fDoList.push_back("lips2");
+    fDoList.push_back("lip2");
+    fDoList.push_back("lips2");
 
-  fDoList.push_back("m1iso");
-  fDoList.push_back("m2iso");
-  fDoList.push_back("othervtx");
-  fDoList.push_back("pvdchi2");
-  fDoList.push_back("closetrks1");
-  fDoList.push_back("closetrks2");
-  fDoList.push_back("closetrks3");
+    fDoList.push_back("m1iso");
+    fDoList.push_back("m2iso");
+    fDoList.push_back("othervtx");
+    fDoList.push_back("pvdchi2");
+    fDoList.push_back("closetrks1");
+    fDoList.push_back("closetrks2");
+    fDoList.push_back("closetrks3");
+  }
 
   fChannelList.clear();
   fChannelList.push_back("0");
-  fChannelList.push_back("1");
-  fChannelList.push_back("2");
+  // fChannelList.push_back("1");
+  // fChannelList.push_back("2");
 
   // fChannelList.push_back("0lopu");
   // fChannelList.push_back("1lopu");
@@ -847,8 +849,127 @@ void plotReducedOverlays::systematics(string sample1, string sample2, int chan) 
 }
 
 
+
+
 // ----------------------------------------------------------------------
 void plotReducedOverlays::overlay(string sample1, string sample2, string selection, string what) {
+
+  gStyle->SetOptTitle(0);
+  c0->cd();
+  shrinkPad(0.15, 0.18);
+
+  string ds1 = sample1.substr(sample1.find("_")+1);
+  string ds2 = sample2.substr(sample2.find("_")+1);
+
+  TH1D *h1(0), *h2(0);
+  string n1, n2;
+  bool restricted = (what != "");
+  bool doLegend(true);
+  bool leftLegend(false);
+  for (unsigned int i = 0; i < fDoList.size(); ++i) {
+    if (restricted) {
+      if (string::npos == fDoList[i].find(what)) continue;
+    }
+    n1 =  Form("sbs_%s_%s%s", sample1.c_str(), fDoList[i].c_str(), selection.c_str());
+    n2 =  Form("sbs_%s_%s%s", sample2.c_str(), fDoList[i].c_str(), selection.c_str());
+    if (string::npos != fDoList[i].find("eta")) doLegend = false; else doLegend = true;
+    if (string::npos != fDoList[i].find("bdt")) leftLegend = true; else leftLegend = false;
+    h1 = (TH1D*)gDirectory->Get(n1.c_str());
+    cout << "n1: " << n1 << " -> " << h1 << endl;
+    h2 = (TH1D*)gDirectory->Get(n2.c_str());
+    cout << "n2: " << n2 << " -> " << h2 << endl;
+    if (0 == h1 || 0 == h2) {
+      cout << "  histograms not found" << endl;
+      continue;
+    }
+    if (h2->GetSumOfWeights() > 0) h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
+
+    cout << "setHist for " << ds1 << " and " << ds2 << endl;
+    setHist(h1, fDS[ds1]);
+    setHist(h2, fDS[ds2]);
+
+    overlayAndRatio(c0, h1, h2);
+
+    if (doLegend) {
+      if (leftLegend) {
+	newLegend(0.21, 0.7, 0.41, 0.85);
+      } else {
+	newLegend(0.50, 0.7, 0.75, 0.85);
+      }
+
+      char loption1[100], loption2[100];
+      string header, h1string, h2string;
+      if (string::npos != sample1.find("bspsiphi") && string::npos != sample2.find("bspsiphi")) header = "B_{s} #rightarrow J/#psi #phi";
+      else if (string::npos != sample1.find("bupsik") && string::npos != sample2.find("bupsik")) header = "B^{+} #rightarrow J/#psi K^{+}";
+      else if (string::npos != sample1.find("bdpsikstar") && string::npos != sample2.find("bdpsikstar")) header = "B^{0} #rightarrow J/#psi K^{*}";
+      else if (string::npos != sample1.find("mm") && string::npos != sample2.find("mm")) header = "Dimuon";
+      else header = "Zoge am Boge";
+
+      if (string::npos != sample1.find("Mc")) {
+	sprintf(loption1, "f");
+	if (string::npos != sample1.find("Sg")) {
+	  h1string = "B_{s} #rightarrow #mu^{+} #mu^{-} (MC)";
+      } else {
+	  h1string = "MC simulation";
+	}
+      } else if (string::npos != sample1.find("Data")) {
+	sprintf(loption1, "p");
+	if (string::npos != sample1.find("mm")) {
+	  h1string = "data sidebands";
+	} else {
+	  h1string = "data";
+	}
+      } else {
+	h1string = "??";
+      }
+
+      if (string::npos != sample2.find("Mc")) {
+	sprintf(loption2, "f");
+	if (string::npos != sample2.find("bdmm")) {
+	  h2string = "B^{0} #rightarrow #mu^{+} #mu^{-}";
+	} else if (string::npos != sample2.find("bsmm")) {
+	  h2string = "B^{0}_{s} #rightarrow #mu^{+} #mu^{-}";
+	} else {
+	  h2string = "MC simulation";
+	}
+      } else if (string::npos != sample2.find("Data")) {
+	sprintf(loption2, "p");
+	if (string::npos != sample2.find("bmm")) {
+	  h2string = "data sidebands";
+	} else {
+	  h2string = "data";
+	}
+      } else {
+	h2string = "??";
+      }
+
+      legg->SetHeader(header.c_str());
+      legg->AddEntry(h1, h1string.c_str(), loption1);
+      legg->AddEntry(h2, h2string.c_str(), loption2);
+
+      legg->Draw();
+    }
+
+    stamp(0.18, fStampCms, fStampString, 0.4, fStampLumi);
+
+    if (1) {
+      TLatex ll;
+      ll.SetTextAngle(90.);
+      ll.SetTextSize(0.03);
+      ll.DrawLatexNDC(0.93, 0.17, Form("%s/%s/%s/%s", sample1.c_str(), sample2.c_str(), selection.c_str(), fDoList[i].c_str()));
+    }
+
+    c0->Modified();
+    c0->Update();
+    c0->SaveAs(Form("%s/overlay_%s_%s_%s_%s.pdf",
+		    fDirectory.c_str(), sample1.c_str(), sample2.c_str(), fDoList[i].c_str(), selection.c_str()));
+  }
+
+
+}
+
+// ----------------------------------------------------------------------
+void plotReducedOverlays::overlayOld(string sample1, string sample2, string selection, string what) {
 
   gStyle->SetOptTitle(0);
   c0->cd();
@@ -1419,4 +1540,102 @@ void plotReducedOverlays::loadFiles(string afiles) {
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
+}
+
+
+// ----------------------------------------------------------------------
+void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
+  bool drawGrid(true);
+  bool fitRatio(false);
+
+  c->SetBottomMargin(0.);
+  c->Clear();
+
+  // -- Upper plot
+  double splity(0.3);
+  c->cd();
+  TPad *pad1 = new TPad("pad1", "pad1", 0.0, splity, 1.0, 1.0);
+  pad1->SetBottomMargin(0.);
+  if (drawGrid) pad1->SetGridx();
+  pad1->Draw();
+  pad1->cd();
+
+  h1->SetTitle("");
+  h1->SetMinimum(0.01);
+  h1->SetStats(0);
+  h1->SetLineColor(kBlue);
+  h1->Draw();
+  h2->SetLineColor(kRed);
+  h2->Draw("same");
+
+  // -- Lower plot
+  c->cd();
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0., 1, splity);
+  pad2->SetTopMargin(0);
+  pad2->SetBottomMargin(0.35);
+  pad2->Draw();
+  if (drawGrid) pad2->SetGridy();
+  if (drawGrid) pad2->SetGridx();
+  pad2->cd();
+
+  TH1D *hr = (TH1D*)h1->Clone("hr");
+  hr->SetLineColor(kBlack);
+  hr->SetMinimum(0.801);
+  hr->SetMaximum(1.199);
+  hr->Sumw2();
+  hr->SetStats(0);
+  hr->Divide(h2);
+  hr->SetMarkerStyle(24);
+  //  hr->Draw("e0"); // this will draw error bars if the marker is out of range
+  hr->Draw("e0");
+  pl->DrawLine(hr->GetBinLowEdge(1), 1., hr->GetBinLowEdge(hr->GetNbinsX()), 1.0);
+
+
+  if (fitRatio) {
+    hr->Fit("pol1", "q");
+    tl->SetTextAngle(90.);
+    double ts(tl->GetTextSize());
+    tl->SetTextSize(0.09);
+    tl->SetTextColor(kRed);
+    tl->DrawLatexNDC(0.91, 0.3, Form("p1 = %+4.3f #pm %4.3f",
+				      hr->GetFunction("pol1")->GetParameter(1),
+				      hr->GetFunction("pol1")->GetParError(1)));
+    tl->SetTextSize(ts);
+    tl->SetTextColor(kBlack);
+    tl->SetTextAngle(0.);
+  }
+
+  // h1 settings
+  h1->SetLineColor(kBlue+1);
+  h1->SetLineWidth(2);
+
+  double psize = 0.07;
+  double pratio = (1-splity)/splity;
+  h1->GetYaxis()->SetTitleSize(psize);
+  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleOffset(1.55);
+
+  h1->GetYaxis()->SetLabelSize(psize);
+  h1->GetXaxis()->SetLabelSize(psize);
+
+
+  // h2 settings
+  h2->SetLineColor(kRed+1);
+  h2->SetLineWidth(2);
+
+  // hr settings
+  hr->SetTitle("");
+  hr->GetXaxis()->SetTitle("bla [GeV]");
+  hr->GetXaxis()->SetTitleOffset(1.0);
+  hr->GetYaxis()->SetTitle("ratio");
+  hr->GetYaxis()->SetTitleOffset(0.4);
+  hr->GetYaxis()->CenterTitle();
+
+  hr->GetYaxis()->SetNdivisions(204);
+  hr->GetYaxis()->SetTitleFont(42);
+  hr->GetXaxis()->SetTitleFont(42);
+  hr->GetYaxis()->SetTitleSize(pratio*psize);
+  hr->GetXaxis()->SetTitleSize(pratio*psize);
+  hr->GetYaxis()->SetLabelSize(pratio*psize);
+  hr->GetXaxis()->SetLabelSize(pratio*psize);
 }

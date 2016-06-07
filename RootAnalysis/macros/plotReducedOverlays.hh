@@ -90,6 +90,8 @@ public:
   void fillDistributions();  void fillDistributions0();
   void sbsDistributions(std::string sample, std::string selection = "Presel", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
+  void overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2);
+  void overlayOld(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void sbsSingleFile(string file1, string sample1 = "NoData", string channel = "B", string selection = "Presel");
   void overlay2Files(std::string file1, std::string sample1,
 		     std::string file2, std::string sample2,
