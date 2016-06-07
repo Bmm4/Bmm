@@ -8,42 +8,46 @@
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p -s Summer15_private
 #
-# -- submit cmsRun jobs 
+# -- submit cmsRun jobs
 #  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -t $BMMBASE../../150826bmm4.tar.gz -s Summer15_private
 #
 # -- generate checked chains and split them
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p 
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p -s bmm-v01-Run2015B__Charmonium__PromptReco-v1
 #
-# -- submit runBmm jobs 
+# -- submit runBmm jobs
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -h 
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -h
 #
 #
 # ----------------------------------------------------------------------
 
-use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('cdhlo:ps:t:x:');
+getopts('cdhlo:pq:s:t:x:');
 
 my $dir        = ".";
 if ($opt_o) {
     $dir = $opt_o;
 }
 
+if (!$opt_q) {
+    $opt_q = "all.q";
+}
+
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
 
 # ----------------------------------------------------------------------
-# -- read in (and eval) configuration: 
+# -- read in (and eval) configuration:
 #      $runCommand
 #      %jobs
 #      %catalogs
 open(IN, "$dir/runAll.jobs") || die "Cannot read $dir/runAll.jobs";
 while (<IN>) {
-    $gProgram .= "  ".$_; 
+    $gProgram .= "  ".$_;
 }
 eval $gProgram;
 
@@ -51,7 +55,7 @@ eval $gProgram;
 if ($opt_h) {
     foreach $j (keys %jobs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
-	$command = &srmHadd($j); 
+	$command = &srmHadd($j);
 	print "$command\n";
 	if (!$opt_d) {
 	    system("$command");
@@ -66,12 +70,12 @@ if ($opt_p) {
     foreach $j (keys %catalogs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	if (-d "jobs") {
-	    chdir("jobs"); 
+	    chdir("jobs");
 	} else {
 	    if (-d "$j") {
 		chdir("$j");
 	    } else {
-		mkdir("$j"); 
+		mkdir("$j");
 		chdir("$j");
 	    }
 	}
@@ -82,8 +86,8 @@ if ($opt_p) {
 	}
 	chdir("..");
     }
-    
-    exit(0); 
+
+    exit(0);
 }
 
 
@@ -92,7 +96,7 @@ if ($opt_p) {
 foreach $j (keys %jobs) {
     if ($opt_s && !($j =~ /$opt_s/)) {next;}
     if ($opt_c) {
-	$jobs{$j} =~/-o\s*(.*)\s-/; $rootfile = $1;  
+	$jobs{$j} =~/-o\s*(.*)\s-/; $rootfile = $1;
 	if (-e $rootfile) {
 	    $size = -s $rootfile;
 	    print "$rootfile with size $size exists already, do not resubmit \n";
@@ -113,9 +117,9 @@ foreach $j (keys %jobs) {
 	    system($command);
 	}
     } else {
-	# -- for CONDOR setups: 
+	# -- for CONDOR setups:
 	if (0) {
-	    &createCondorScript($j); 
+	    &createCondorScript($j);
 	    $command = "export JOB='$runCommand $jobs{$j} $opt_x'; export LOG=$j; condor_submit condor-$j.txt";
 	    print "$command\n";
 	    if (!$opt_d) {
@@ -123,7 +127,7 @@ foreach $j (keys %jobs) {
 		unlink("condor-$j.txt");
 	    }
 	}
-	
+
 	# -- for SGE at PSI
 	if (1) {
 	    print "$jobs{$j}\n";
