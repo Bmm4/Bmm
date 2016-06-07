@@ -82,6 +82,14 @@ void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
 
 // ----------------------------------------------------------------------
 void setHist(TH1 *h, dataset *ds) {
+  if (0 == ds) {
+    cout << "no valid dataset specified" << endl;
+    return;
+  }
+  if (0 == h) {
+    cout << "no valid histogram specified" << endl;
+    return;
+  }
   if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth);
   if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth);
 }
