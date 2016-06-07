@@ -1754,7 +1754,7 @@ void plotClass::setTdrStyle() {
   // tdrStyle->SetTimeOffset(Double_t toffset);
   // tdrStyle->SetHistMinimumZero(kTRUE);
 
-  tdrStyle->SetHatchesLineWidth(5);
+  tdrStyle->SetHatchesLineWidth(1);
   tdrStyle->SetHatchesSpacing(0.05);
 
   tdrStyle->cd();
