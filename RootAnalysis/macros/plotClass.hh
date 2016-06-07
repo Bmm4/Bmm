@@ -116,6 +116,7 @@ public :
 
 
   // -- display utilities
+  void           setTdrStyle();
   void           cd(std::string dataset, std::string dir = "");
   void           replaceAll(std::string &sInput, const std::string &oldString, const std::string &newString);
   void           newLegend(double x1, double y1, double x2, double y2, std::string title = "");
@@ -209,7 +210,7 @@ public :
   initFunc *fIF;
 
   // -- Display utilities
-  std::string fStampString, fStampCms;
+  std::string fStampString, fStampCms, fStampLumi;
   int fFont;
   double fSize;
   TCanvas *c0, *c1, *c2, *c3, *c4, *c5;
