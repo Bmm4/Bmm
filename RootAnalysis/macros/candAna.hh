@@ -127,6 +127,7 @@ public:
   virtual int         osMuon(TAnaCand *pC, double r = 1.0);
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
+  virtual void        triggerEff(std::string ref, std::string os, int mode);
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
@@ -149,7 +150,7 @@ public:
   std::string fCutFile;
   TDirectory *fHistDir;
   bmmReader *fpReader;
-  TTree *fTree, *fAmsTree;
+  TTree *fTree;
   TAna01Event *fpEvt;
   TAnaCand *fpCand, *fpOsCand;
   int fCandIdx;
@@ -260,6 +261,7 @@ public:
   float fETcandMass;
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
   float fETm2pt, fETm2eta, fETg2pt, fETg2eta;
+  float fETgtau, fETtau;
 
   bool    fGoodEffCand;
 
