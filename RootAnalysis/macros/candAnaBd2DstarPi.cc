@@ -127,6 +127,10 @@ void candAnaBd2DstarPi::moreBasicCuts() {
 // ----------------------------------------------------------------------
 void candAnaBd2DstarPi::genMatch() {
 
+}
+
+// ----------------------------------------------------------------------
+void candAnaBd2DstarPi::genMatchOld() {
 
 }
 

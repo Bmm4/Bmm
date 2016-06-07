@@ -20,7 +20,7 @@
 #include "candAna.hh"
 
 class candAnaHh : public candAna {
-  
+
 public:
   candAnaHh(bmmReader *pReader, std::string name, std::string cutsFile);
   ~candAnaHh();
@@ -28,26 +28,27 @@ public:
   void        candAnalysis();
   void        hhAnalysis();
   void        efficiencyCalculation();
-  
-  void        processType(); 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+
+  void        processType();
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        bookHist();
   void        readCuts(string filename, int dump);
-  
+
   void        evtAnalysis(TAna01Event *evt);
   bool        anaMC(TAna01Event *evt);
 
   //void        moreBasicCuts();
 
-  int         truthMatch(TAnaCand *pC, int verbose = 0); 
-  void        dumpHFTruthCand(TAnaCand *pC); 
-  void        dumpHFHhCand(TAnaCand *pC); 
+  int         truthMatch(TAnaCand *pC, int verbose = 0);
+  void        dumpHFTruthCand(TAnaCand *pC);
+  void        dumpHFHhCand(TAnaCand *pC);
 
   // match the 2 muons from the dimuon to HLT
-  //bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=false); 
+  //bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=false);
 
 private:
   TTree * tree;
@@ -59,7 +60,7 @@ private:
   float fiso[10], fperp1[10], fperp2[10];
   float fm1[10],fm2[10],fm3[10],fm4[10];
 
-  // Additional variables 
+  // Additional variables
   int MUON_VETO;
   double HH_MLO, HH_MHI;
 

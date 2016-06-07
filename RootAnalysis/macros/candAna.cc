@@ -934,6 +934,11 @@ void candAna::genMatch() {
   cout << "candAna::genMatch()  wrong function" << endl;
 }
 
+// ----------------------------------------------------------------------
+void candAna::genMatchOld() {
+  cout << "candAna::genMatchOld()  wrong function" << endl;
+}
+
 
 // ----------------------------------------------------------------------
 void candAna::recoMatch() {

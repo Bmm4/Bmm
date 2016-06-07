@@ -59,10 +59,6 @@ void candAnaMuMu::genMatch() {
 
   TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0);
   bool goodMatch(false);
-  //  cout << "Event " << fEvent << endl;
-//   if (fEvent == 1263) {
-//  fpEvt->dumpGenBlock();
-//   }
   for (int i = 0; i < fpEvt->nGenT(); ++i) {
     pC = fpEvt->getGenT(i);
     if (TRUTHCAND == TMath::Abs(pC->fID)) {
@@ -71,9 +67,96 @@ void candAnaMuMu::genMatch() {
       for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
 	pC = fpEvt->getGenTWithIndex(id);
 	//	cout << "dau1 = " << pB->fDau1 << " dau2 = " << pB->fDau2 << " pC: " << pC << endl;
-// 	if (fEvent == 1263) {
-// 	  exit(0);
-// 	}
+	if (id1 == TMath::Abs(pC->fID) || id2 == TMath::Abs(pC->fID)) {
+	  if (0 == pM1) {
+	    pM1 = fpEvt->getGenTWithIndex(id);
+	  } else {
+	    pM2 = fpEvt->getGenTWithIndex(id);
+	  }
+	}
+      }
+      if (0 != pM1 && 0 != pM2) {
+	goodMatch = true;
+	fNGenPhotons = pB->fDau2 - pB->fDau1 - 1;
+	if (fVerbose > 10) {
+	  cout << "found gen match for B gen idx = " << pB->fNumber << endl;
+	}
+	break;
+      }
+    }
+  }
+
+
+  fGenBTmi = -1;
+  if (goodMatch) {
+    fGenBTmi = pB->fNumber;
+    double m = pB->fP.Mag();
+    double p = pB->fP.P();
+    // mother pointer
+    TGenCand *pM = fpEvt->getGenTWithIndex(pB->fMom1);
+    // use the mother if it has the same PDGID (it oscillated)
+    if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
+    double x = (pM1->fV - pM->fV).Mag();
+    fGenLifeTime = x*m/p/TMath::Ccgs();
+
+    if (pM1->fP.Perp() > pM2->fP.Perp()) {
+      fMu1GenID = pM1->fID;
+      fMu2GenID = pM2->fID;
+      fGenM1Tmi = pM1->fNumber;
+      fGenM2Tmi = pM2->fNumber;
+    } else {
+      fMu1GenID = pM2->fID;
+      fMu2GenID = pM1->fID;
+      fGenM1Tmi = pM2->fNumber;
+      fGenM2Tmi = pM1->fNumber;
+    }
+  } else {
+    fGenM1Tmi = -1;
+    fGenM2Tmi = -1;
+  }
+
+  if (fVerbose > 10) {
+    cout << "fGenM1Tmi = " << fGenM1Tmi << endl;
+    cout << "fGenM2Tmi = " << fGenM2Tmi << endl;
+
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
+void candAnaMuMu::genMatchOld() {
+  fGenM1Tmi = fGenM2Tmi = -1;
+  fNGenPhotons = 0;
+
+  int id1(13), id2(13);
+
+  // -- modifications for rare backgrounds
+  if (1000082 == TYPE) {id1 = 321; id2 = 321;}
+  if (1000083 == TYPE) {id1 = 321; id2 = 211;}
+  if (1000084 == TYPE) {id1 = 211; id2 = 211;}
+  if (1000085 == TYPE) {id1 = 211; id2 = 13;}
+  if (1000086 == TYPE) {id1 = 321; id2 = 13;}
+
+  if (1000091 == TYPE) {id1 = 211; id2 = 211;}
+  if (1000092 == TYPE) {id1 = 321; id2 = 211;}
+  if (1000093 == TYPE) {id1 = 321; id2 = 321;}
+  if (1000095 == TYPE) {id1 = 211; id2 = 13;}
+  if (1000098 == TYPE) {id1 = 211; id2 = 211;}
+
+  if (1000060 == TYPE) {id1 = 2212; id2 = 211;}
+  if (1000061 == TYPE) {id1 = 2212; id2 = 321;}
+  if (1000062 == TYPE) {id1 = 2212; id2 = 13;}
+
+  TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0);
+  bool goodMatch(false);
+  for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    pC = fpEvt->getGenT(i);
+    if (TRUTHCAND == TMath::Abs(pC->fID)) {
+      pM1 = pM2 = 0;
+      pB = pC;
+      for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	pC = fpEvt->getGenTWithIndex(id);
 	if (id1 == TMath::Abs(pC->fID) || id2 == TMath::Abs(pC->fID)) {
 	  if (0 == pM1) {
 	    pM1 = fpEvt->getGenTWithIndex(id);

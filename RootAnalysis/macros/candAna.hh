@@ -83,6 +83,7 @@ public:
   virtual void        muScaleCorrectedMasses();
   virtual void        runRange();
   virtual void        genMatch();
+  virtual void        genMatchOld();
   virtual void        recoMatch();
   virtual void        candMatch();
   virtual void        triggerSelection();

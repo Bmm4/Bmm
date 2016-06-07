@@ -206,6 +206,110 @@ void candAnaBd2JpsiKstar::genMatch() {
   fGenM1Tmi = fGenM2Tmi = fGenKTmi = -1;
   fNGenPhotons = 0;
 
+  TGenCand *pC(0), *pB(0), *pPsi(0), *pKstar(0), *pM1(0), *pM2(0), *pK(0), *pPi(0), *pTmp(0);
+  int ngamma(0);
+  bool goodMatch(false);
+  for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    pC = fpEvt->getGenT(i);
+    if (511 == TMath::Abs(pC->fID)) {
+      pB = pC;
+      ngamma = 0;
+      for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	pC = fpEvt->getGenTWithIndex(id);
+	if (22 == TMath::Abs(pC->fID)) ++ngamma;
+	if (443 == TMath::Abs(pC->fID)) {
+	  pPsi = pC;
+	  pM1 = pM2 = 0;
+	  for (int idd = pPsi->fDau1; idd <= pPsi->fDau2; ++idd) {
+	    pC = fpEvt->getGenTWithIndex(idd);
+	    if (22 == TMath::Abs(pC->fID)) ++ngamma;
+	    if (13 == TMath::Abs(pC->fID)) {
+	      if (0 == pM1) {
+		pM1 = fpEvt->getGenTWithIndex(idd);
+	      } else {
+		pM2 = fpEvt->getGenTWithIndex(idd);
+	      }
+	    }
+	  }
+	} else if (313 == TMath::Abs(pC->fID)) {
+	  pKstar = fpEvt->getGenTWithIndex(id);
+	  pK = pPi = 0;
+	  for (int idd = pKstar->fDau1; idd <= pKstar->fDau2; ++idd) {
+	    pC = fpEvt->getGenTWithIndex(idd);
+	    if (22 == TMath::Abs(pC->fID)) ++ngamma;
+	    if (321 == TMath::Abs(pC->fID)) {
+	      pK = fpEvt->getGenTWithIndex(idd);
+	    }
+	    if (211 == TMath::Abs(pC->fID)) {
+	      pPi = fpEvt->getGenTWithIndex(idd);
+	    }
+	  }
+	}
+      }
+      if (0 != pM1 && 0 != pM2 && 0 != pK && 0 != pPi && pPsi != 0 && pKstar != 0 && (pPsi->fMom1 == pKstar->fMom1)) {
+	// -- check that there are no other direct daughters than J/psi K (plus possibly photons)
+	int nDaughters(0);
+	for (int ij = 0; ij < fpEvt->nGenT(); ++ij) {
+	  pTmp = fpEvt->getGenT(ij);
+	  if (pTmp->fMom1 == pB->fNumber) {
+	    if (pTmp->fID != 22) ++nDaughters;
+	  }
+	}
+	if (2 == nDaughters) {
+	  goodMatch = true;
+	  fNGenPhotons = ngamma;
+	  break;
+	}
+      }
+    }
+  }
+
+  if (!goodMatch) {
+    if (fVerbose > 2) cout << "No matched signal decay found" << endl;
+    return;
+  }
+
+  fGenBTmi = -1;
+  fKaGenID = -99999;
+  fPiGenID = -99999;
+  if (goodMatch) {
+    fMu1GenID = pM1->fID;
+    fMu2GenID = pM2->fID;
+    fKaGenID = pK->fID;
+    fPiGenID = pPi->fID;
+    fGenBTmi = pB->fNumber;
+    double m = pB->fP.Mag();
+    double p = pB->fP.P();
+    // mother pointer
+    TGenCand *pM = fpEvt->getGenTWithIndex(pB->fMom1);
+    // use the mother if it has the same PDGID (it oscillated)
+    if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
+    double x = (pM1->fV - pM->fV).Mag();
+    fGenLifeTime = x*m/p/TMath::Ccgs();
+    if (pM1->fP.Perp() > pM2->fP.Perp()) {
+      fGenM1Tmi = pM1->fNumber;
+      fGenM2Tmi = pM2->fNumber;
+    } else {
+      fGenM1Tmi = pM2->fNumber;
+      fGenM2Tmi = pM1->fNumber;
+    }
+    fGenKTmi = pK->fNumber;
+    fGenPiTmi = pPi->fNumber;
+  } else {
+    fGenM1Tmi = -1;
+    fGenM2Tmi = -1;
+    fGenKTmi = -1;
+    fGenPiTmi = -1;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void candAnaBd2JpsiKstar::genMatchOld() {
+
+  fGenM1Tmi = fGenM2Tmi = fGenKTmi = -1;
+  fNGenPhotons = 0;
+
   TGenCand *pC(0), *pB(0), *pPsi(0), *pKstar(0), *pM1(0), *pM2(0), *pK(0), *pPi(0);
   int nb(0), ngamma(0);
   bool goodMatch(false);
@@ -288,6 +392,7 @@ void candAnaBd2JpsiKstar::genMatch() {
       fGenM1Tmi = pM2->fNumber;
       fGenM2Tmi = pM1->fNumber;
     }
+    // the code below is wrong!
     if (pK->fP.Perp() > pPi->fP.Perp()) {
       fGenKTmi = pK->fNumber;
       fGenPiTmi = pPi->fNumber;
@@ -300,27 +405,6 @@ void candAnaBd2JpsiKstar::genMatch() {
     fGenM2Tmi = -1;
     fGenKTmi = -1;
     fGenPiTmi = -1;
-  }
-
-
-  // -- check that only one reco track is matched to each gen particle
-  //    else skip the *event*!
-  TSimpleTrack *pT(0);
-  int cntM1(0), cntM2(0), cntK(0), cntPi(0);
-  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i);
-    if (fGenM1Tmi > -1 && fGenM1Tmi == pT->getGenIndex()) ++cntM1;
-    if (fGenM2Tmi > -1 && fGenM2Tmi == pT->getGenIndex()) ++cntM2;
-    if (fGenKTmi > -1 && fGenKTmi == pT->getGenIndex()) ++cntK;
-    if (fGenPiTmi > -1 && fGenPiTmi == pT->getGenIndex()) ++cntPi;
-  }
-
-  static int cntBadEvents = 0;
-  if (cntM1 > 1 || cntM2 > 1 || cntK > 1 || cntPi > 1) {
-    cout << "BAD BAD event: multiple reco tracks matched to the same gen particle! " << ++cntBadEvents
-	 << ": " << cntM1 << " .. " << cntM2 << " .. " << cntK << " .. " << cntPi
-	 << " (gen-reco matches) " << endl;
-    fBadEvent = true;
   }
 
 }

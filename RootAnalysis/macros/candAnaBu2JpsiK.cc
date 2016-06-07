@@ -147,7 +147,108 @@ void candAnaBu2JpsiK::moreBasicCuts() {
 
 
 // ----------------------------------------------------------------------
+// -- version for PYTHIA8 and new-style EvtGen daughter insertion
 void candAnaBu2JpsiK::genMatch() {
+
+  fGenM1Tmi = fGenM2Tmi = fGenK1Tmi = -1;
+  fNGenPhotons = 0;
+
+  TGenCand *pC(0), *pM1(0), *pM2(0), *pK(0), *pB(0), *pPsi(0), *pTmp(0);
+  int nb(0), nphotons(0);
+  bool goodMatch(false);
+  for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    pC = fpEvt->getGenT(i);
+    if (521 == TMath::Abs(pC->fID)) {
+      // cout << " found B+ " << TYPE << endl;
+      pB = pC;
+      nb = 0;
+      for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	pC = fpEvt->getGenTWithIndex(id);
+	if (443 == TMath::Abs(pC->fID)) {
+	  // cout << " found JPsi " << endl;
+	  ++nb;
+	  pPsi = pC;
+	  pM1 = pM2 = 0;
+	  for (int idd = pPsi->fDau1; idd <= pPsi->fDau2; ++idd) {
+	    pC = fpEvt->getGenTWithIndex(idd);
+	    if (22 == TMath::Abs(pC->fID)) ++nphotons;
+	    if (13 == TMath::Abs(pC->fID)) {
+	      if (0 == pM1) {
+		pM1 = fpEvt->getGenTWithIndex(idd);
+	      } else {
+		pM2 = fpEvt->getGenTWithIndex(idd);
+	      }
+	      // cout << " mu " << pM1 << " " << pM2 << endl;
+	    }
+	  }
+	} else if ((211 == TMath::Abs(pC->fID)) && (66 == (TYPE%1000))) {
+	  // Bu2JpsiPi
+	  ++nb;
+	  pK = fpEvt->getGenTWithIndex(id);
+	} else if (321 == TMath::Abs(pC->fID)) {
+	  ++nb;
+	  pK = fpEvt->getGenTWithIndex(id);
+	} else 	if (22 == TMath::Abs(pC->fID)) {
+	  ++nphotons;
+	} else {
+	  ++nb;
+	}
+      }
+      if (0 != pM1 && 0 != pM2 && 0 != pK && (pPsi->fMom1 == pK->fMom1)) {
+	// -- check that there are no other direct daughters than J/psi K (plus possibly photons)
+	int nDaughters(0);
+	for (int ij = 0; ij < fpEvt->nGenT(); ++ij) {
+	  pTmp = fpEvt->getGenT(ij);
+	  if (pTmp->fMom1 == pB->fNumber) {
+	    if (pTmp->fID != 22) ++nDaughters;
+	  }
+	}
+	if (2 == nDaughters) {
+	  goodMatch = true;
+	  fNGenPhotons = nphotons;
+	  break;
+	}
+      }
+    }
+  }
+
+  fGenBTmi = -1;
+  if (goodMatch) {
+    fMu1GenID = pM1->fID;
+    fMu2GenID = pM2->fID;
+    fKGenID = pK->fID;
+    fGenBTmi = pB->fNumber;
+    double m = pB->fP.Mag();
+    double p = pB->fP.P();
+    // Meson pointer
+    TGenCand *pM = pB;
+    double x = (pM1->fV - pM->fV).Mag();
+    fGenLifeTime = x*m/p/TMath::Ccgs();
+    if (pM1->fP.Perp() > pM2->fP.Perp()) {
+      fGenM1Tmi = pM1->fNumber;
+      fGenM2Tmi = pM2->fNumber;
+    } else {
+      fGenM1Tmi = pM2->fNumber;
+      fGenM2Tmi = pM1->fNumber;
+    }
+    fGenK1Tmi = pK->fNumber;
+  } else {
+    fGenM1Tmi = -1;
+    fGenM2Tmi = -1;
+    fGenK1Tmi = -1;
+  }
+
+  if (fVerbose > 10) {
+    cout << "fGenM1Tmi = " << fGenM1Tmi << endl;
+    cout << "fGenM2Tmi = " << fGenM2Tmi << endl;
+    cout << "fGenK1Tmi = " << fGenK1Tmi << endl;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+// -- version for PYTHIA6 and old-style EvtGen daughter insertion
+void candAnaBu2JpsiK::genMatchOld() {
 
   fGenM1Tmi = fGenM2Tmi = fGenK1Tmi = -1;
   fNGenPhotons = 0;
@@ -239,6 +340,7 @@ void candAnaBu2JpsiK::genMatch() {
     cout << "fGenK1Tmi = " << fGenK1Tmi << endl;
   }
 }
+
 
 
 // ----------------------------------------------------------------------
@@ -337,7 +439,6 @@ void candAnaBu2JpsiK::bookHist() {
   candAna::bookHist();
 
   moreReducedTree(fTree);
-  moreReducedTree(fAmsTree);
 
   // -- Additional effTree variables
   fEffTree->Branch("k1pt",   &fETk1pt,            "k1pt/F");

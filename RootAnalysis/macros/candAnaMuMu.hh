@@ -20,19 +20,20 @@
 #include "candAna.hh"
 
 class candAnaMuMu : public candAna {
-  
+
 public:
   candAnaMuMu(bmmReader *pReader, std::string name, std::string cutsFile);
   virtual ~candAnaMuMu();
 
   void        candAnalysis();
   void        efficiencyCalculation();
-  
-  void        processType(); 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+
+  void        processType();
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        bookHist();
   void        readCuts(string filename, int dump);
 };
