@@ -74,7 +74,7 @@ void setTitles(TH1 *hold, TH1* hnew) {
 
 // ----------------------------------------------------------------------
 void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
-  h->SetLineColor(color);   h->SetLineWidth(static_cast<Width_t>(width));
+  h->SetLineColor(color);   h->SetLineWidth(width);
   h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size);
   h->SetStats(kFALSE);
   h->SetFillStyle(0); h->SetFillColor(color);
@@ -93,6 +93,16 @@ void setHist(TH1 *h, dataset *ds) {
   if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth);
   if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth);
 }
+
+// ----------------------------------------------------------------------
+void setFilledHist(TH1 *h, Int_t color, Int_t fillcolor, Int_t fillstyle, double width) {
+  // Note: 3004, 3005 are crosshatches
+  // ----- 1000       is solid
+  //       kYellow    comes out gray on bw printers
+  h->SetLineColor(color);     h->SetLineWidth(width);
+  h->SetFillStyle(fillstyle); h->SetFillColor(fillcolor);
+}
+
 
 // ----------------------------------------------------------------------
 void setGraph(TGraph *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
@@ -120,16 +130,6 @@ void colors(int i) {
     a = new TColor(639, 0.99, 0.00, 0.00, "darkred");
   }
   if (0) cout << a << endl;
-}
-
-
-// ----------------------------------------------------------------------
-void setFilledHist(TH1 *h, Int_t color, Int_t fillcolor, Int_t fillstyle, Int_t width) {
-  // Note: 3004, 3005 are crosshatches
-  // ----- 1000       is solid
-  //       kYellow    comes out gray on bw printers
-  h->SetLineColor(color);     h->SetLineWidth(width);
-  h->SetFillStyle(fillstyle); h->SetFillColor(fillcolor);
 }
 
 
