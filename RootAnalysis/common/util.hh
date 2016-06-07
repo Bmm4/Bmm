@@ -55,7 +55,7 @@ void setTitles(TH1 *hold, TH1* hnew);
 void setHist(TH1 *h, int color = kBlack, int symbol = 20, double size = 1., double width = 2.);
 void setHist(TH1 *h, dataset *ds);
 void setGraph(TGraph *g, int color = kBlack, int symbol = 20, double size = 1., double width = 2.);
-void setFilledHist(TH1 *h, int lcol = kBlack, int fcol = kYellow, int fstyle = 1000, int width = 1);
+void setFilledHist(TH1 *h, int lcol = kBlack, int fcol = kYellow, int fstyle = 1000, double width = 1);
 void setMaximum(double scale = 1.2, TH1 *h1 = 0, TH1 *h2 = 0);
 void showOverflow(TH1 *h);
 

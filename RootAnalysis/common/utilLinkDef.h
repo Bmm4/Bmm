@@ -26,7 +26,7 @@
 #pragma link C++ function setHist(TH1*,int,int,double,double);
 #pragma link C++ function setHist(TH1*,dataset*);
 #pragma link C++ function setGraph(TGraph*,int,int,double,double);
-#pragma link C++ function setFilledHist(TH1 *,int,int,int,int);
+#pragma link C++ function setFilledHist(TH1 *,int,int,int,double);
 #pragma link C++ function setMaximum(double, TH1 *, TH1 *);
 #pragma link C++ function showOverflow(TH1 *);
 #pragma link C++ function unmix(TH1D *, TH1D *, double);
