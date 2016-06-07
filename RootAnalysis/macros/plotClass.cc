@@ -24,6 +24,8 @@ using namespace std;
 // ----------------------------------------------------------------------
 plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
+  setTdrStyle();
+
   gStyle->SetHatchesSpacing(2);
 
   fDBX = true;
@@ -31,9 +33,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVerbose = true;
 
   fDirectory = dir;
-  fSetup = "A";
+  fSetup = setup;
   fSuffix = setup;
-
+  fMode = UNSET;
 
   delete gRandom;
   gRandom = (TRandom*) new TRandom3;
@@ -60,28 +62,90 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   fStampString = "preliminary";
   if (fDoUseBDT) {
-    fStampString = "BDT preliminary";
+    fStampString = "BDT";
   } else {
-    fStampString = "CNC preliminary";
+    fStampString = "CNC";
   }
   fStampCms = "BMM4";
+  fStampLumi = "2016 data";
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
     fYear = 2011;
-    fStampCms = "L = 5 fb^{-1} (#sqrt{s} = 7 TeV)";
+    fStampLumi = "L = 5 fb^{-1} (#sqrt{s} = 7 TeV)";
   }
   if (string::npos != sfiles.find("2012")) {
     fYear = 2012;
-    fStampCms = "L = 20 fb^{-1} (#sqrt{s} = 8 TeV)";
+    fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 8 TeV)";
+  }
+  if (string::npos != sfiles.find("2015")) {
+    fYear = 2015;
+    fStampLumi = "L = 2.5 fb^{-1} (#sqrt{s} = 13 TeV)";
+  }
+  if (string::npos != sfiles.find("2016")) {
+    fYear = 2016;
+    fStampLumi = "L = some fb^{-1} (#sqrt{s} = 13 TeV)";
   }
 
   fIF = new initFunc();
+
+  if (1) {
+    int year(2012);
+    string directory("../common/pidtables/");
+    string name("");
+    name = directory + Form("%d-kaonPosFakeRate-mvaMuon.dat", year); fptFakePosKaons     = new PidTable(Form(name.c_str()));
+    name = directory + Form("%d-kaonNegFakeRate-mvaMuon.dat", year); fptFakeNegKaons     = new PidTable(Form(name.c_str()));
+    name = directory + Form("%d-pionPosFakeRate-mvaMuon.dat", year); fptFakePosPions     = new PidTable(Form(name.c_str()));
+    name = directory + Form("%d-pionNegFakeRate-mvaMuon.dat", year); fptFakeNegPions     = new PidTable(Form(name.c_str()));
+    name = directory + Form("%d-protonPosFakeRate-mvaMuon.dat", year); fptFakePosProtons = new PidTable(Form(name.c_str()));
+    name = directory + Form("%d-protonNegFakeRate-mvaMuon.dat", year); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+
+    name = directory + Form("%d-L1L2_data_all.dat", year);        fptT1     = new PidTable(name.c_str());
+    name = directory + Form("%d-L3_data_all.dat", year);          fptT2     = new PidTable(name.c_str());
+    name = directory + Form("%d-MuonID_data_all.dat", year);      fptM      = new PidTable(name.c_str());
+  }
+
+  fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
+  fAnaCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
+  fAnaCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
+  fAnaCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
+  fAnaCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
+  fAnaCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
+
+  fAnaCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+  fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
+  fAnaCuts.addCut("fGoodIp", "IP", fGoodIp);
+  fAnaCuts.addCut("fGoodIpS", "IPS", fGoodIpS);
+  fAnaCuts.addCut("fGoodLip", "LIP", fGoodLip);
+  fAnaCuts.addCut("fGoodLipS", "LIPS", fGoodLipS);
+  fAnaCuts.addCut("fGoodMaxDoca", "MAXDOCA", fGoodMaxDoca);
+  fAnaCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
+  fAnaCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
+  fAnaCuts.addCut("fGoodAlpha", "#alpha", fGoodAlpha);
+  fAnaCuts.addCut("fGoodFLS", "l/#sigma(l)", fGoodFLS);
+  fAnaCuts.addCut("fGoodChi2", "#chi^{2}", fGoodChi2);
+  fAnaCuts.addCut("fGoodIso", "I_{trk}", fGoodIso);
+  fAnaCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
+  fAnaCuts.addCut("fGoodDocaTrk", "d_{ca}(trk)", fGoodDocaTrk);
+  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
+  fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
+
+  // -- initialize cuts
+  cout << "===> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
+  readCuts(Form("%s", cuts.c_str()));
+  fNchan = fCuts.size();
+
+
+
 
 }
 
 // ----------------------------------------------------------------------
 plotClass::~plotClass() {
+}
+
+// ----------------------------------------------------------------------
+void plotClass::init() {
 }
 
 // ----------------------------------------------------------------------
@@ -122,11 +186,11 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
   if (method == UNITY) {
     smethod = "unity";
     scale = (h->Integral() > 0 ? 1./h->Integral() : 1.);
-    setTitles(h, h->GetXaxis()->GetTitle(), "normalized to 1", 1.1, 1.5);
+    h->GetYaxis()->SetTitle("normalized to 1");
   } else if (method == SOMETHING) {
     smethod = "something";
     scale = fNorm * (h->Integral() > 0 ? fNorm/h->Integral() : 1.);
-    setTitles(h, h->GetXaxis()->GetTitle(), "weighted events", 1.1, 1.5);
+    h->GetYaxis()->SetTitle("weighted events");
   } else if (method == XSECTION) {
     smethod = "xsection";
     // -- normalize to EFFECTIVE xsec*bf (EFFECTIVE to account for cuts)
@@ -136,14 +200,14 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
     //    n = xsec * L
     //    "integral" over histogram should be EFFECTIVE xsec
     scale = (h->Integral() > 0 ? fDS[ds]->fXsec*fDS[ds]->fBf/h->Integral() : 1.);
-    setTitles(h, h->GetXaxis()->GetTitle(), "pb");
+    h->GetYaxis()->SetTitle("pb");
   } else if (method == LUMI) {
     smethod = "lumi";
     // -- normalize to xsec*bf
     //    n = xsec * L
     //    "integral" over histogram should be events expected in fLumi
     scale = (h->Integral() > 0 ? fLumi/fDS[ds]->fLumi : 1.);
-    setTitles(h, h->GetXaxis()->GetTitle(), Form("events in %4.0f/fb", fLumi));
+    h->GetYaxis()->SetTitle(Form("events in %4.0f/fb", fLumi));
   } else if (method == NONORM) {
     smethod = "nonorm";
     scale = 1.;
@@ -164,11 +228,6 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::overlayAll() {
-}
-
-
-// ----------------------------------------------------------------------
 void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool loga, bool legend, double xleg, double yleg) {
   const bool verbose(false);
 
@@ -182,7 +241,7 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
   double ymin(0.0001);
   double h1max(h1->GetBinContent(h1->GetMaximumBin()));
   double h2max(h2->GetBinContent(h2->GetMaximumBin()));
-  double h3max(h3->GetBinContent(h3->GetMaximumBin()));
+  double h3max(h3?h3->GetBinContent(h3->GetMaximumBin()):-1);
   double hmax(h1max);
   int imax(1);
   if (h2max > h1max) {
@@ -222,7 +281,8 @@ void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string 
 
   h1->SetMaximum(hmax);
 
-  h1->DrawCopy("hist");
+  TH1* h0 = h1->DrawCopy("hist");
+  setTitles(h1, h0);
   h2->DrawCopy("histsame");
   if (h3) h3->DrawCopy("histsame");
 
@@ -273,7 +333,7 @@ void plotClass::overlay(string h1name, string f1, string h2name, string f2, stri
   if (h3name != "") {
     h3 = fDS[f3]->getHist(Form("%s", h3name.c_str()), true);
   } else {
-    h3= 0;
+    h3 = 0;
   }
 
   overlay(h1, f1, h2, f2, h3, f3, method, loga, legend, xleg, yleg);
@@ -431,12 +491,14 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m1trigm",  &fb.m1trigm);
   t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
   t->SetBranchAddress("m1tmid",   &fb.m1tmid);
+  t->SetBranchAddress("m1gmid",   &fb.m1gmid);
 
   t->SetBranchAddress("m2id",     &fb.m2id);
   t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
   t->SetBranchAddress("m2trigm",  &fb.m2trigm);
   t->SetBranchAddress("m2rmvabdt",&fb.m2rmvabdt);
   t->SetBranchAddress("m2tmid",   &fb.m2tmid);
+  t->SetBranchAddress("m2gmid",   &fb.m2gmid);
 
   t->SetBranchAddress("m1iso",     &fb.m1iso);
   t->SetBranchAddress("m2iso",     &fb.m2iso);
@@ -452,7 +514,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("g2eta",  &fb.g2eta);
   t->SetBranchAddress("g1id",   &fb.g1id);
   t->SetBranchAddress("g2id",   &fb.g2id);
-  if (string::npos != mode.find("No")) {
+  if (string::npos != mode.find("bupsik")) {
     if (string::npos != mode.find("Mc")) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
       t->SetBranchAddress("g3eta",&fb.g3eta);
@@ -461,9 +523,10 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kgt",  &fb.k1gt);
     t->SetBranchAddress("keta", &fb.k1eta);
     t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
   }
 
-  if (string::npos != mode.find("Cs")) {
+  if (string::npos != mode.find("bspsiphi")) {
     if (string::npos != mode.find("Mc")) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
       t->SetBranchAddress("g3eta",&fb.g3eta);
@@ -471,6 +534,7 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g4eta",&fb.g4eta);
     }
     t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("mkk",  &fb.mkk);
     t->SetBranchAddress("dr",   &fb.dr);
     t->SetBranchAddress("k1pt", &fb.k1pt);
@@ -484,7 +548,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     fb.dr = 999.;
   }
 
-  if (string::npos != mode.find("DstarPi")) {
+  if (string::npos != mode.find("dstarpi")) {
     t->SetBranchAddress("md0",&fb.md0);
     t->SetBranchAddress("dm",&fb.dm);
     t->SetBranchAddress("ptd0",&fb.ptd0);
@@ -496,20 +560,25 @@ void plotClass::setupTree(TTree *t, string mode) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::candAnalysis(int mode) {
+void plotClass::candAnalysis(/*int mode*/) {
 
   cuts *pCuts(0);
   fChan = detChan(fb.m1eta, fb.m2eta);
   if (fChan < 0) {
-    if (1) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
+    if (0) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
+    fBDT = -99.;
+    fGoodHLT = fGoodMuonsID = false;
+    fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
+    fGoodCloseTrack = fGoodIso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+    fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
     return;
   }
   pCuts = fCuts[fChan];
 
   bool bp2jpsikp(false), bs2jpsiphi(false);
-  if (10 == mode)  bp2jpsikp = true;
-  if (20 == mode)  bs2jpsiphi = true;
+  if (BU2JPSIKP == fMode)  bp2jpsikp = true;
+  if (BS2JPSIPHI == fMode)  bs2jpsiphi = true;
 
   // -- reset all
   fBDT = -99.;
@@ -535,8 +604,12 @@ void plotClass::candAnalysis(int mode) {
     if (TMath::Abs(fb.g1eta) > 2.5) fGoodAcceptance = false;
     if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false;
   } else {
+    static int runComplained(-1);
     if (!fb.json) {
-      if (1) cout << "json failure" << endl;
+      if (fb.run != runComplained) {
+	cout << "json failure for run " << fb.run << " LS " << fb.ls << endl;
+	runComplained = fb.run;
+      }
       return;
     }
   }
@@ -566,13 +639,8 @@ void plotClass::candAnalysis(int mode) {
     fGoodAcceptance = false;
   }
 
-  if (TMath::Abs(fb.m1eta) > pCuts->m1eta) {
-    fGoodMuonsEta = false;
-  }
-
-  if (TMath::Abs(fb.m2eta) > pCuts->m2eta) {
-    fGoodMuonsEta = false;
-  }
+  // -- by virtue of having a fChan this is true
+  fGoodMuonsEta = true;
 
   if (bp2jpsikp) {
     if (fIsMC) {
@@ -658,7 +726,7 @@ void plotClass::candAnalysis(int mode) {
 //     }
   }
 
-  fGoodMuonsID  = fb.gmuid;
+  fGoodMuonsID  = fb.m1gmid && fb.m2gmid;
 
   fW8 = 1.;
   fW8MmuID = fW8Mtrig = fW8DmuID = fW8Dtrig = -1.;
@@ -668,15 +736,20 @@ void plotClass::candAnalysis(int mode) {
     PidTable *pT, *pT1, *pT2;
 
     // -- Weights with data PidTables
-    if (fIsCowboy) {
-      pT  = fptCbM;
-      pT1 = fptCbT1;
-      pT2 = fptCbT2;
-    } else {
-      pT  = fptSgM;
-      pT1 = fptSgT1;
-      pT2 = fptSgT2;
-    }
+    // if (fIsCowboy) {
+    //   pT  = fptCbM;
+    //   pT1 = fptCbT1;
+    //   pT2 = fptCbT2;
+    // } else {
+    //   pT  = fptSgM;
+    //   pT1 = fptSgT1;
+    //   pT2 = fptSgT2;
+    // }
+
+    pT  = fptM;
+    pT1 = fptT1;
+    pT2 = fptT2;
+
 
     double am1eta = TMath::Abs(fb.m1eta);
     double am2eta = TMath::Abs(fb.m2eta);
@@ -690,15 +763,18 @@ void plotClass::candAnalysis(int mode) {
     fW8Dtrig = w1*w2;
 
     // -- Weights with MC PidTables
-    if (fIsCowboy) {
-      pT  = fptCbMMC;
-      pT1 = fptCbT1MC;
-      pT2 = fptCbT2MC;
-    } else {
-      pT  = fptSgMMC;
-      pT1 = fptSgT1MC;
-      pT2 = fptSgT2MC;
-    }
+    // if (fIsCowboy) {
+    //   pT  = fptCbMMC;
+    //   pT1 = fptCbT1MC;
+    //   pT2 = fptCbT2MC;
+    // } else {
+    //   pT  = fptSgMMC;
+    //   pT1 = fptSgT1MC;
+    //   pT2 = fptSgT2MC;
+    // }
+    pT  = fptM;
+    pT1 = fptT1;
+    pT2 = fptT2;
 
     w1       = pT->effD(fb.m1pt, am1eta, fb.m1phi);
     w2       = pT->effD(fb.m2pt, am2eta, fb.m2phi);
@@ -708,7 +784,7 @@ void plotClass::candAnalysis(int mode) {
     w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
     fW8Mtrig = w1*w2;
 
-    if (98 == mode) {
+    if (RARE == fMode) {
       w1 = w2 = -1.;
       // -- track 1
       if (  13 == fb.g1id) w1 = pT->effD(fb.m1pt, am1eta, 1.);
@@ -751,7 +827,7 @@ void plotClass::candAnalysis(int mode) {
   fGoodLipS       = (TMath::Abs(fb.pvlips) < pCuts->pvlips);
 
   fGoodPt         = (fb.pt > pCuts->pt);
-  fGoodEta        = ((fb.eta > -24.0) && (fb.eta < 24.0));
+  fGoodEta        = ((fb.eta > -2.40) && (fb.eta < 2.40));
   fGoodAlpha      = (fb.alpha < pCuts->alpha);
   fGoodChi2       = (fb.chi2/fb.dof < pCuts->chi2dof);
   fGoodFLS        = (fb.fls3d > pCuts->fls3d);
@@ -762,14 +838,30 @@ void plotClass::candAnalysis(int mode) {
   fGoodDocaTrk    = (fb.docatrk > pCuts->docatrk);
   fGoodLastCut    = true;
 
-  fGoodBDT        = (fBDT > pCuts->bdtMin);
-  fGoodHLT        = fb.hlt && fb.hltm;
+  //FIXME  fGoodBDT        = (fBDT > pCuts->bdtMin);
+  fGoodBDT        = true;
+  //FIXME  fGoodHLT        = fb.hlt &&fb.hltm;
+  fGoodHLT        = fb.hlt;
 
   // -- no trigger matching for rare decays!
-  if (98 == mode) fGoodHLT = fb.hlt;
+  if (RARE == fMode) fGoodHLT = fb.hlt;
 
-  cout << "HLT: " << fGoodHLT << endl;
-  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta);
+  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && (fb.alpha < 0.2) && (fb.fls3d > 5));
+  if (bs2jpsiphi || bp2jpsikp) {
+    fPreselection = fPreselection && fGoodJpsiCuts;
+
+    if (!fGoodJpsiCuts) {
+      //      cout << "dr: " << fb.dr  << " mkk: " << fb.mkk << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt << endl;
+    }
+  }
+
+  if (!fPreselection) {
+    if (0)     cout << "HLT: " << fGoodHLT << " muons: " << fGoodMuonsID << " muonspt: " << fGoodMuonsPt << " muonseta: " << fGoodMuonsEta
+		    << " a: " << fb.alpha << " fls3d: " << fb.fls3d
+		    << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt
+		    << " dr: " << fb.dr  << " mkk: " << fb.mkk
+		    << endl;
+  }
 
   fAnaCuts.update();
 
@@ -779,9 +871,29 @@ void plotClass::candAnalysis(int mode) {
 // ----------------------------------------------------------------------
 int plotClass::detChan(double m1eta, double m2eta) {
   // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-  if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
-  if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
-  return -1;
+  //old   if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
+  //old   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
+
+
+  double m1 = TMath::Abs(m1eta);
+  double m2 = TMath::Abs(m2eta);
+
+  int im1(-1), im2(-1);
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
+      im1 = ichan;
+      break;
+    }
+  }
+
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m2 > fCuts[ichan]->metaMin) && (m2 < fCuts[ichan]->metaMax)) {
+      im2 = ichan;
+      break;
+    }
+  }
+  if ((im1 < 0) || (im2 < 0)) return -1;
+  return (im1>im2?im1:im2);
 }
 
 
@@ -793,6 +905,7 @@ TTree* plotClass::getTree(string ds, string dir) {
   } else {
     t = (TTree*)fDS[ds]->fF->Get(Form("%s/events", dir.c_str()));
   }
+  cout << "plotClass::getTree(" << ds << ", " << dir << "): " << t << endl;
   return t;
 }
 
@@ -1164,14 +1277,14 @@ void plotClass::readCuts(string filename) {
       if (dump) cout << "m2pt:                 " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "m1eta")) {
-      a->m1eta = CutValue; ok = 1;
-      if (dump) cout << "m1eta:                 " << CutValue << endl;
+    if (!strcmp(CutName, "metaMin")) {
+      a->metaMin = CutValue; ok = 1;
+      if (dump) cout << "metaMin:              " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "m2eta")) {
-      a->m2eta = CutValue; ok = 1;
-      if (dump) cout << "m2eta:                 " << CutValue << endl;
+    if (!strcmp(CutName, "metaMax")) {
+      a->metaMax = CutValue; ok = 1;
+      if (dump) cout << "metaMax:                 " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "iso")) {
@@ -1344,17 +1457,17 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "m1eta      ";
+  OUT << "metaMin    ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->m1eta);
-    fTEX <<  Form("\\vdef{%s:m1eta:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1eta) << endl;
+    OUT << Form("%10.3f", fCuts[i]->metaMin);
+    fTEX <<  Form("\\vdef{%s:metaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMin) << endl;
   }
   OUT << endl;
 
-  OUT << "m2eta      ";
+  OUT << "metaMax    ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->m2eta);
-    fTEX <<  Form("\\vdef{%s:m2eta:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2eta) << endl;
+    OUT << Form("%10.3f", fCuts[i]->metaMax);
+    fTEX <<  Form("\\vdef{%s:metaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMax) << endl;
   }
   OUT << endl;
 
@@ -1496,4 +1609,154 @@ void plotClass::savePad(string name) {
 }
 
 
-#include "plotClass.icc"
+// ----------------------------------------------------------------------
+void plotClass::loadFiles(string name) {
+  cout << "wrong function call " << endl;
+  return;
+}
+
+
+// ----------------------------------------------------------------------
+// downloaded on 2016/06/6 from https://ghm.web.cern.ch/ghm/plots/
+void plotClass::setTdrStyle() {
+
+  TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
+
+  // For the canvas:
+  tdrStyle->SetCanvasBorderMode(0);
+  tdrStyle->SetCanvasColor(kWhite);
+  tdrStyle->SetCanvasDefH(600); //Height of canvas
+  tdrStyle->SetCanvasDefW(600); //Width of canvas
+  tdrStyle->SetCanvasDefX(0);   //POsition on screen
+  tdrStyle->SetCanvasDefY(0);
+
+  // For the Pad:
+  tdrStyle->SetPadBorderMode(0);
+  // tdrStyle->SetPadBorderSize(Width_t size = 1);
+  tdrStyle->SetPadColor(kWhite);
+  tdrStyle->SetPadGridX(false);
+  tdrStyle->SetPadGridY(false);
+  tdrStyle->SetGridColor(0);
+  tdrStyle->SetGridStyle(3);
+  tdrStyle->SetGridWidth(1);
+
+  // For the frame:
+  tdrStyle->SetFrameBorderMode(0);
+  tdrStyle->SetFrameBorderSize(1);
+  tdrStyle->SetFrameFillColor(0);
+  tdrStyle->SetFrameFillStyle(0);
+  tdrStyle->SetFrameLineColor(1);
+  tdrStyle->SetFrameLineStyle(1);
+  tdrStyle->SetFrameLineWidth(1);
+
+  // For the histo:
+  // tdrStyle->SetHistFillColor(1);
+  // tdrStyle->SetHistFillStyle(0);
+  tdrStyle->SetHistLineColor(1);
+  tdrStyle->SetHistLineStyle(0);
+  tdrStyle->SetHistLineWidth(1);
+  // tdrStyle->SetLegoInnerR(Float_t rad = 0.5);
+  // tdrStyle->SetNumberContours(Int_t number = 20);
+
+  tdrStyle->SetEndErrorSize(2);
+  // tdrStyle->SetErrorMarker(20);
+  //tdrStyle->SetErrorX(0.);
+
+  tdrStyle->SetMarkerStyle(20);
+
+  //For the fit/function:
+  tdrStyle->SetOptFit(1);
+  tdrStyle->SetFitFormat("5.4g");
+  tdrStyle->SetFuncColor(2);
+  tdrStyle->SetFuncStyle(1);
+  tdrStyle->SetFuncWidth(1);
+
+  //For the date:
+  tdrStyle->SetOptDate(0);
+  // tdrStyle->SetDateX(Float_t x = 0.01);
+  // tdrStyle->SetDateY(Float_t y = 0.01);
+
+  // For the statistics box:
+  tdrStyle->SetOptFile(0);
+  tdrStyle->SetOptStat(0); // To display the mean and RMS:   SetOptStat("mr");
+  tdrStyle->SetStatColor(kWhite);
+  tdrStyle->SetStatFont(42);
+  tdrStyle->SetStatFontSize(0.025);
+  tdrStyle->SetStatTextColor(1);
+  tdrStyle->SetStatFormat("6.4g");
+  tdrStyle->SetStatBorderSize(1);
+  tdrStyle->SetStatH(0.1);
+  tdrStyle->SetStatW(0.15);
+  // tdrStyle->SetStatStyle(Style_t style = 1001);
+  // tdrStyle->SetStatX(Float_t x = 0);
+  // tdrStyle->SetStatY(Float_t y = 0);
+
+  // Margins:
+  tdrStyle->SetPadTopMargin(0.05);
+  tdrStyle->SetPadBottomMargin(0.13);
+  tdrStyle->SetPadLeftMargin(0.16);
+  tdrStyle->SetPadRightMargin(0.02);
+
+  // For the Global title:
+  tdrStyle->SetOptTitle(0);
+  tdrStyle->SetTitleFont(42);
+  tdrStyle->SetTitleColor(1);
+  tdrStyle->SetTitleTextColor(1);
+  tdrStyle->SetTitleFillColor(10);
+  tdrStyle->SetTitleFontSize(0.05);
+  // tdrStyle->SetTitleH(0); // Set the height of the title box
+  // tdrStyle->SetTitleW(0); // Set the width of the title box
+  // tdrStyle->SetTitleX(0); // Set the position of the title box
+  // tdrStyle->SetTitleY(0.985); // Set the position of the title box
+  // tdrStyle->SetTitleStyle(Style_t style = 1001);
+  // tdrStyle->SetTitleBorderSize(2);
+
+  // For the axis titles:
+  tdrStyle->SetTitleColor(1, "XYZ");
+  tdrStyle->SetTitleFont(42, "XYZ");
+  tdrStyle->SetTitleSize(0.06, "XYZ");
+  // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
+  // tdrStyle->SetTitleYSize(Float_t size = 0.02);
+  tdrStyle->SetTitleXOffset(0.9);
+  tdrStyle->SetTitleYOffset(1.25);
+  // tdrStyle->SetTitleOffset(1.1, "Y"); // Another way to set the Offset
+
+  // For the axis labels:
+  tdrStyle->SetLabelColor(1, "XYZ");
+  tdrStyle->SetLabelFont(42, "XYZ");
+  tdrStyle->SetLabelOffset(0.007, "XYZ");
+  tdrStyle->SetLabelSize(0.05, "XYZ");
+
+  // For the axis:
+  tdrStyle->SetAxisColor(1, "XYZ");
+  tdrStyle->SetStripDecimals(kTRUE);
+  tdrStyle->SetTickLength(0.03, "XYZ");
+  tdrStyle->SetNdivisions(510, "XYZ");
+  tdrStyle->SetPadTickX(1);  // To get tick marks on the opposite side of the frame
+  tdrStyle->SetPadTickY(1);
+
+  // Change for log plots:
+  tdrStyle->SetOptLogx(0);
+  tdrStyle->SetOptLogy(0);
+  tdrStyle->SetOptLogz(0);
+
+  // Postscript options:
+  tdrStyle->SetPaperSize(20.,20.);
+  // tdrStyle->SetLineScalePS(Float_t scale = 3);
+  // tdrStyle->SetLineStyleString(Int_t i, const char* text);
+  // tdrStyle->SetHeaderPS(const char* header);
+  // tdrStyle->SetTitlePS(const char* pstitle);
+
+  // tdrStyle->SetBarOffset(Float_t baroff = 0.5);
+  // tdrStyle->SetBarWidth(Float_t barwidth = 0.5);
+  // tdrStyle->SetPaintTextFormat(const char* format = "g");
+  // tdrStyle->SetPalette(Int_t ncolors = 0, Int_t* colors = 0);
+  // tdrStyle->SetTimeOffset(Double_t toffset);
+  // tdrStyle->SetHistMinimumZero(kTRUE);
+
+  tdrStyle->SetHatchesLineWidth(5);
+  tdrStyle->SetHatchesSpacing(0.05);
+
+  tdrStyle->cd();
+
+}

@@ -20,7 +20,7 @@
 #include "candAna.hh"
 
 class candAnaBd2DstarPi : public candAna {
-  
+
 public:
   candAnaBd2DstarPi(bmmReader *pReader, std::string name, std::string cutsFile);
   ~candAnaBd2DstarPi();
@@ -30,17 +30,18 @@ public:
   void        moreBasicCuts();
   void        moreReducedTree(TTree *);
 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        readCuts(string filename, int dump);
   void        bookHist();
   void        fillCandidateHistograms(int offset);
 
 
   // -- Additional variables and cuts for Bd -> Dstar pi
-  int               D0TYPE, DSTARTYPE; 
+  int               D0TYPE, DSTARTYPE;
   double            MD0LO, MD0HI, DELTAR, DELTAM;
   double            fDeltaR, fMD0, fMDs, fDeltaM;
   bool              fGoodDeltaR, fGoodMD0, fGoodMDs, fGoodDeltaM;

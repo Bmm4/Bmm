@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+
+# ----------------------------------------------------------------------
+#
+# Usage: checkJobs -p pattern [-n] tmp-*/*.log
+# -----
+#
+#          -p  grep for pattern in file
+#          -n  print node if pattern found
+#
+# Examples: Check that an outputfile was written and sort according to wn:
+#           $BMMBASE/perl/checkJobs -p ONLINE -n tmp-*/*.log | sort
+#
+# ----------------------------------------------------------------------
+
+use Getopt::Std;
+getopts('np:');
+
+foreach $file (@ARGV) {
+    open(IN, "$file") || die "Cannot read $dir/runAll.jobs";
+    @in = <IN>;
+    close(IN);
+    if ($opt_n) {
+	@node = grep(/JOB ran over queue\@host =/, @in);
+	($bla, $node) = split(/=/, $node[0]);
+	chop($node);
+    }
+    @foundPattern = grep(/$opt_p/, @in);
+    if ($#foundPattern > -1) {
+	print "$node $opt_p found ($file)";
+    } else {
+	print "$node $opt_p NOT found ($file)";
+    }
+    print "\n";
+}

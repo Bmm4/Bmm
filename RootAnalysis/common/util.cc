@@ -82,6 +82,14 @@ void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
 
 // ----------------------------------------------------------------------
 void setHist(TH1 *h, dataset *ds) {
+  if (0 == ds) {
+    cout << "no valid dataset specified" << endl;
+    return;
+  }
+  if (0 == h) {
+    cout << "no valid histogram specified" << endl;
+    return;
+  }
   if (ds->fColor > -1) setHist(h, ds->fColor, ds->fSymbol, ds->fSize, ds->fWidth);
   if (ds->fFillStyle > -1) setFilledHist(h, ds->fColor, ds->fFcolor, ds->fFillStyle, ds->fWidth);
 }
@@ -570,24 +578,89 @@ string formatTex(double n, string name, string tag) {
 }
 
 // ----------------------------------------------------------------------
-void stamp(double x1, string text1, double x2, string text2, TLatex *tl) {
-  double size(-1.);
-  if (0 == tl) {
-    tl = new TLatex();
-  } else {
-    size = tl->GetTextSize();
-  }
+void stamp(double x1, string text1, string text1a, double x2, string text2, int iPosX) {
 
-  cout << "stamp() > " << x1 << " " << text1 << " " << x2 << " " << text2 << endl;
+  TLatex *tl = new TLatex();
   tl->SetNDC(kTRUE);
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(x1, 0.91, text1.c_str());
-  tl->DrawLatex(x2, 0.91, text2.c_str());
-  if (size < 0) {
-    // ??
-  } else {
-    tl->SetTextSize(size);
+
+  float cmsTextFont   = 61;  // default is helvetic-bold
+  float extraTextFont = 52;  // default is helvetica-italics
+
+  // text sizes and text offsets with respect to the top frame
+  // in unit of the top margin size
+  float lumiTextSize     = 0.6;
+  float lumiTextOffset   = 0.2;
+  float cmsTextSize      = 0.75;
+
+  // -- this seems better (at least for our working plots)
+  lumiTextSize     = 0.5;
+  lumiTextOffset   = 0.16;
+  cmsTextSize      = 0.60;
+
+  float relPosX    = 0.045;
+  float relPosY    = 0.035;
+  float relExtraDY = 1.2;
+
+  // ratio of "CMS" and extra text size
+  float extraOverCmsTextSize  = 0.76;
+
+  //  float H = gPad->GetWh();
+  //  float W = gPad->GetWw();
+  float l = gPad->GetLeftMargin();
+  float t = gPad->GetTopMargin();
+  float r = gPad->GetRightMargin();
+  float b = gPad->GetBottomMargin();
+
+  float extraTextSize = extraOverCmsTextSize*cmsTextSize;
+
+  int alignY_=3;
+  int alignX_=2;
+  if( iPosX/10==0 ) alignX_=1;
+  if( iPosX==0    ) alignX_=1;
+  if( iPosX==0    ) alignY_=1;
+  if( iPosX/10==1 ) alignX_=1;
+  if( iPosX/10==2 ) alignX_=2;
+  if( iPosX/10==3 ) alignX_=3;
+  //if( iPosX == 0  ) relPosX = 0.12;
+  int align_ = 10*alignX_ + alignY_;
+
+  float posX_(0);
+  if (iPosX%10 <= 1)  {
+    posX_ = l + relPosX*(1-l-r);
+  } else if (iPosX%10 == 2) {
+    posX_ = l + 0.5*(1-l-r);
+  } else if (iPosX%10 == 3) {
+    posX_ = 1 - r - relPosX*(1-l-r);
   }
+  float posY_ = 1 - t - relPosY*(1-t-b);
+
+  // -- "CMS"
+  tl->SetTextFont(cmsTextFont);
+  tl->SetTextSize(cmsTextSize*t);
+  tl->SetTextAlign(align_);
+  tl->DrawLatex(posX_, posY_, text1.c_str());
+  cout << "stamp() > " << posX_ << " " << posY_ << " " << text1 << endl;
+  // -- text below "CMS"
+  tl->SetTextFont(extraTextFont);
+  tl->SetTextAlign(align_);
+  tl->SetTextSize(extraTextSize*t);
+  tl->DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t, text1a.c_str());
+  cout << "stamp() > " << posX_ << " " << posY_- relExtraDY*cmsTextSize*t << " " << text1a << endl;
+  // -- luminosity
+  tl->SetTextFont(42);
+  tl->SetTextAlign(31);
+  tl->SetTextSize(lumiTextSize*t);
+  tl->DrawLatex(1-r, 1-t+lumiTextOffset*t, text2.c_str());
+  cout << "stamp() > " << 1-r << " " << 1-t+lumiTextOffset*t << " " << text2 << endl;
+
+
+
+  // tl->SetNDC(kTRUE);
+  // tl->SetTextSize(0.05);
+  // tl->DrawLatex(x1, 0.91, text1.c_str());
+  // tl->DrawLatex(x2, 0.91, text2.c_str());
+
+
 }
 
 

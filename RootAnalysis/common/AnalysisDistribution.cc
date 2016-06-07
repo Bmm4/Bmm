@@ -358,9 +358,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     h->Draw();
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   } else {
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
@@ -402,9 +402,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -414,7 +414,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 // ----------------------------------------------------------------------
 TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, const char *cut, double preco) {
 
-  //  cout << "fVerbose: " << fVerbose << endl;
+  cout << "fVerbose: " << fVerbose << endl;
 
   TCanvas *c0(0);
   if (fVerbose > 0) {
@@ -511,9 +511,9 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
     h->Draw();
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   } else {
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
@@ -556,9 +556,9 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -642,9 +642,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
   if (fVerbose > 0) {
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   TFitResultPtr r;
@@ -681,9 +681,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     h->Draw();
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   } else {
     gStyle->SetOptTitle(1);
     c0 = (TCanvas*)gROOT->FindObject("c1");
@@ -726,9 +726,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -829,9 +829,9 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     h->Draw();
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   } else {
     gStyle->SetOptTitle(1);
     c0 = (TCanvas*)gROOT->FindObject("c1");
@@ -874,9 +874,9 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s-%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -908,10 +908,12 @@ void AnalysisDistribution::fill(double value, double mass) {
   if (fVerbose > 0) {
     cout << "value: " << value
 	 << " mass: " << mass
+	 << " mBin: " << mBin
 	 << " fCutIdx: " << fCutIdx
 	 << " nm: " << fpAnaCuts->nMinus1CutsTrue(fCutIdx)
 	 << " si: " << fpAnaCuts->singleCutTrue(fCutIdx)
 	 << " presel: " << (*fpPreselCutTrue? 1 : 0)
+	 << " this: " << this
 	 << endl;
   }
 

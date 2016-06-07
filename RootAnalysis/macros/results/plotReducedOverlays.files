@@ -1,0 +1,12 @@
+# -- B+
+type=bupsik,data     lumi=1. file=/scratch/ursl/bmm4/v01/bmm-prompt-Run2016B-PromptReco-v01.root
+type=bupsik,mc       lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BuToJpsiKp-v01.root
+# -- Bs
+type=bspsiphi,data   lumi=1. file=/scratch/ursl/bmm4/v01/bmm-prompt-Run2016B-PromptReco-v01.root
+type=bspsiphi,mc     lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BsToJpsiPhi-v01.root
+# -- B0
+type=bdpsikstar,data lumi=1. file=/scratch/ursl/bmm4/v01/bmm-prompt-Run2016B-PromptReco-v01.root
+type=bdpsikstar,mc   lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToJpsiKstar-v01.root
+# -- dimuons
+type=bmm,data        lumi=1. file=/scratch/ursl/bmm4/v01/bmm-prompt-Run2016B-PromptReco-v01.root
+type=bdmm,mc         lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root

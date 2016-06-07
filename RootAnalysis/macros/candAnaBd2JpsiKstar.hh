@@ -21,7 +21,7 @@
 #include "candAna.hh"
 
 class candAnaBd2JpsiKstar : public candAna {
-  
+
 public:
   candAnaBd2JpsiKstar(bmmReader *pReader, std::string name, std::string cutsFile);
   virtual ~candAnaBd2JpsiKstar();
@@ -31,15 +31,16 @@ public:
   void        moreBasicCuts();
   void        moreReducedTree(TTree *);
 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        readCuts(string filename, int dump);
   void        bookHist();
   void        fillCandidateHistograms(int offset);
 
-  int          JPSITYPE; 
+  int          JPSITYPE;
   double       JPSIMASSLO, JPSIMASSHI;
 
   double       fKaonPt, fKaonEta, fKaonPhi;
@@ -62,12 +63,12 @@ public:
 
   double       fKaPt, fKaEta, fKaPhi;
   double       fPiPt, fPiEta, fPiPhi;
-  double       fKstarPt, fKstarEta, fKstarPhi; 
+  double       fKstarPt, fKstarEta, fKstarPhi;
   bool         fKaMissid, fPiMissid, fKaMuMatch, fPiMuMatch;
-  // tests d.k.   
-  bool         fKaMissid2, fKaMuMatch2; 
+  // tests d.k.
+  bool         fKaMissid2, fKaMuMatch2;
   float        fKaMuMatchR, fKaMuMatchR2, fKaMuMatchR3, fKaMuMatchR4, fKaMuMatchR5;
-  bool         fPiMissid2, fPiMuMatch2; 
+  bool         fPiMissid2, fPiMuMatch2;
   float        fPiMuMatchR, fPiMuMatchR2, fPiMuMatchR3, fPiMuMatchR4, fPiMuMatchR5;
 
 
@@ -75,21 +76,21 @@ public:
   double       fPiPtNrf, fPiEtaNrf;
 
   double       fKaPtGen, fKaEtaGen, fPiPtGen, fPiEtaGen;
-  int          fKaGenID, fPiGenID; 
+  int          fKaGenID, fPiGenID;
   int          fKaTkQuality, fPiTkQuality;
 
-  // -- TM 
-  int                     fGenKTmi, fGenPiTmi; 
-  int                     fRecKTmi, fRecPiTmi; 
-  
+  // -- TM
+  int                     fGenKTmi, fGenPiTmi;
+  int                     fRecKTmi, fRecPiTmi;
+
   // -- effTree
   float fETkpt, fETketa, fETg3pt, fETg3eta;
   float fETpipt, fETpieta, fETg4pt, fETg4eta;
-  int   fETkq,  fETpiq; 
+  int   fETkq,  fETpiq;
   bool  fETkgt, fETpigt;
 
   // -- Additional variables and cuts for Bd -> J/psi Kstar
-  int               KSTARTYPE; 
+  int               KSTARTYPE;
   double            MKPILO, MKPIHI, DELTAR;
   double            fDeltaR, fMKPI;
   bool              fGoodDeltaR, fGoodMKPI;

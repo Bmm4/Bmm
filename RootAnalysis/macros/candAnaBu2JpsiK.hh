@@ -20,7 +20,7 @@
 #include "candAna.hh"
 
 class candAnaBu2JpsiK : public candAna {
-  
+
 public:
   candAnaBu2JpsiK(bmmReader *pReader, std::string name, std::string cutsFile);
   virtual ~candAnaBu2JpsiK();
@@ -30,38 +30,39 @@ public:
   void        moreBasicCuts();
   void        moreReducedTree(TTree *);
 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        readCuts(string filename, int dump);
   void        bookHist();
   void        fillCandidateHistograms(int offset);
 
-  
-  int          JPSITYPE; 
+
+  int          JPSITYPE;
   double       JPSIMASSLO, JPSIMASSHI;
 
   double       fKaonPt, fKaonEta, fKaonPhi;
   double       fKPtGen, fKEtaGen;
-  int          fKGenID; 
+  int          fKGenID;
   double       fKaonPtNrf, fKaonEtaNrf;
   int          fKaonTkQuality;
   double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi;
 
   bool         fGoodJpsiMass;
   bool         fKa1Missid, fKa1MuMatch;
-  //bool         fKa1Missid2, fKa1MuMatch2; 
+  //bool         fKa1Missid2, fKa1MuMatch2;
   float        fKa1MuMatchR, fKa1MuMatchR2;
 
 
   // -- TM
-  int          fGenK1Tmi; 
-  int          fRecK1Tmi; 
+  int          fGenK1Tmi;
+  int          fRecK1Tmi;
 
   // -- effTree
   float fETk1pt, fETk1eta, fETg3pt, fETg3eta;
-  int   fETk1q; 
+  int   fETk1q;
   bool  fETk1gt;
 
 };

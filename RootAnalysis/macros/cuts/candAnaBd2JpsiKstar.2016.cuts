@@ -1,13 +1,11 @@
-TYPE           300521
-TRUTHCAND         521
+TYPE           300511
+TRUTHCAND         511
 NOPRESELECTION      1
 #
-#DSNAME       Charmonium
-#DSNAME       DoubleMuon
 # -- trigger
 +input cuts/triggerDisplacedJpsi.cuts
 # -- boxes
-+input cuts/boxes.Bu2JpsiK.cuts
++input cuts/boxes.Bd2JpsiKstar.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
@@ -15,6 +13,8 @@ NOPRESELECTION      1
 # -- candidate
 +input cuts/candidate.cuts
 # -- bdt input
-#no input cuts/bdt.2012.cuts
+# no input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
+# -- kstar cuts
++input cuts/kstar.cuts

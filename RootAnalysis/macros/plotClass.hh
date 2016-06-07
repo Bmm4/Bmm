@@ -59,7 +59,7 @@ struct cuts {
   std::string xmlFile;
   double mBdLo, mBdHi, mBsLo, mBsHi;
   double etaMin, etaMax, pt;
-  double m1pt, m2pt, m1eta, m2eta;
+  double m1pt, m2pt, metaMin, metaMax;
   double iso, chi2dof, alpha, fls3d, docatrk;
   double closetrk, pvlip, pvlips;
   double bdtPt, bdtMin, bdtMax;
@@ -72,11 +72,25 @@ struct cuts {
 class plotClass: public TObject {
 
 public :
-  plotClass(std::string dir = "hpt0",
-	    std::string files = "plotLq.files",
-	    std::string cuts = "plotClass.cut",
+  plotClass(std::string dir = "results",
+	    std::string files = "plotClass.files",
+	    std::string cuts = "plotClass.2016.cuts",
 	    std::string setup = "m");
   virtual        ~plotClass();
+
+  enum MODE {UNSET, BMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI};
+
+  // -- stuff to run over the tree from any derived class
+  TTree*         getTree(std::string ds, std::string dir = "");
+  virtual void   setupTree(TTree *t, std::string mode = "");
+  virtual void   candAnalysis(/*int mode*/);
+  virtual void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
+  virtual void   loopFunction1();
+  virtual void   loopFunction2();
+
+  // -- physics utilities
+  int            detChan(double m1eta, double m2eta);
+
   void           closeHistFile();
   virtual void   readCuts(std:: string filename);
   virtual void   printCuts(ostream &OUT);
@@ -86,11 +100,11 @@ public :
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
+  virtual void   init();
   virtual void   treeAnalysis();
 
   // -- overlays and normalizing histograms
   void           normHist(TH1 *, std::string ds="", int method = NONORM);
-  virtual void   overlayAll();
 
   // -- overlay 3
   void           overlay(TH1* h1, std::string f1, TH1 *h2, std::string f2, TH1* h3 = 0, std::string f3 = "",
@@ -100,20 +114,9 @@ public :
 
   virtual void   bookHist(std::string name);
 
-  // -- stuff to run over the tree from any derived class
-  TTree*         getTree(std::string ds, std::string dir = "");
-  virtual void   setupTree(TTree *t, std::string mode = "");
-  virtual void   candAnalysis(int mode);
-  virtual void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
-  virtual void   loopFunction1();
-  virtual void   loopFunction2();
-
-
-  // -- physics utilities
-  int            detChan(double m1eta, double m2eta);
-
 
   // -- display utilities
+  void           setTdrStyle();
   void           cd(std::string dataset, std::string dir = "");
   void           replaceAll(std::string &sInput, const std::string &oldString, const std::string &newString);
   void           newLegend(double x1, double y1, double x2, double y2, std::string title = "");
@@ -207,7 +210,7 @@ public :
   initFunc *fIF;
 
   // -- Display utilities
-  std::string fStampString, fStampCms;
+  std::string fStampString, fStampCms, fStampLumi;
   int fFont;
   double fSize;
   TCanvas *c0, *c1, *c2, *c3, *c4, *c5;
@@ -218,6 +221,7 @@ public :
   TLegend *legg;
   TLegendEntry *legge;
 
+  enum MODE fMode;
 
   // ----------------------------------------------------------------------
   ClassDef(plotClass,1)

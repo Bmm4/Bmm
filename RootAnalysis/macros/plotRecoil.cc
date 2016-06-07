@@ -20,20 +20,20 @@
 
 ClassImp(plotRecoil)
 
-using namespace std; 
+using namespace std;
 
 // ----------------------------------------------------------------------
-plotRecoil::plotRecoil(string dir,  string files, string setup): plotClass(dir, files, setup) {
+plotRecoil::plotRecoil(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
   loadFiles(files);
 
   if (setup == "") {
-    fHistFileName = Form("%s/plotRecoil.root", dir.c_str()); 
+    fHistFileName = Form("%s/plotRecoil.root", dir.c_str());
   } else {
-    fHistFileName = Form("%s/plotRecoil-%s.root", dir.c_str(), setup.c_str()); 
+    fHistFileName = Form("%s/plotRecoil-%s.root", dir.c_str(), setup.c_str());
   }
 
-  fTexFileName = fHistFileName; 
-  replaceAll(fTexFileName, ".root", ".tex"); 
+  fTexFileName = fHistFileName;
+  replaceAll(fTexFileName, ".root", ".tex");
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
 
 }
@@ -56,7 +56,7 @@ void plotRecoil::makeAll(int bitmask) {
 // ----------------------------------------------------------------------
 void plotRecoil::recoil0() {
 
-  
+
 }
 
 
@@ -75,41 +75,41 @@ void plotRecoil::bookHist(int mode) {
 
 // ----------------------------------------------------------------------
 void plotRecoil::candAnalysis() {
-  fGoodCand = true; 
+  fGoodCand = true;
 }
 
 
 // ----------------------------------------------------------------------
 void plotRecoil::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries); 
+  int nbegin(0), nend(nentries);
   if (nevts > 0 && nentries > nevts) {
     nentries = nevts;
-    nbegin = 0; 
+    nbegin = 0;
     nend = nevts;
   }
   if (nevts > 0 && nstart > 0) {
     nentries = nstart + nevts;
-    nbegin = nstart; 
+    nbegin = nstart;
     if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts; 
+      nend = nstart + nevts;
     } else {
       nend = t->GetEntries();
     }
   }
-  
-  nentries = nend - nstart; 
-  
-  int step(1000000); 
-  if (nentries < 5000000)  step = 500000; 
-  if (nentries < 1000000)  step = 100000; 
-  if (nentries < 100000)   step = 10000; 
-  if (nentries < 10000)    step = 1000; 
-  if (nentries < 1000)     step = 100; 
-  step = 500000; 
-  cout << "==> plotRecoil::loopOverTree> loop over dataset " << fCds << " in file " 
-       << t->GetDirectory()->GetName() 
-       << " with " << nentries << " entries" 
+
+  nentries = nend - nstart;
+
+  int step(1000000);
+  if (nentries < 5000000)  step = 500000;
+  if (nentries < 1000000)  step = 100000;
+  if (nentries < 100000)   step = 10000;
+  if (nentries < 10000)    step = 1000;
+  if (nentries < 1000)     step = 100;
+  step = 500000;
+  cout << "==> plotRecoil::loopOverTree> loop over dataset " << fCds << " in file "
+       << t->GetDirectory()->GetName()
+       << " with " << nentries << " entries"
        << endl;
 
   // -- setup loopfunction through pointer to member functions
@@ -121,7 +121,7 @@ void plotRecoil::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   for (int jentry = nbegin; jentry < nend; jentry++) {
     t->GetEntry(jentry);
     if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-   
+
     candAnalysis();
     (this->*pF)();
   }
@@ -143,14 +143,14 @@ void plotRecoil::setCuts(string cuts) {
   string token, name, sval;
 
   while (getline(ss, token, ',')) {
-    
-    string::size_type m1 = token.find("="); 
+
+    string::size_type m1 = token.find("=");
     name = token.substr(0, m1);
     sval = token.substr(m1+1);
 
     if (string::npos != name.find("PTLO")) {
-      float val; 
-      val = atof(sval.c_str()); 
+      float val;
+      val = atof(sval.c_str());
       PTLO = val;
     }
 
@@ -160,7 +160,7 @@ void plotRecoil::setCuts(string cuts) {
 
 // ----------------------------------------------------------------------
 void plotRecoil::loadFiles(string afiles) {
-  
+
   string files = fDirectory + string("/") + afiles;
   cout << "==> Loading files listed in " << files << endl;
 
@@ -169,82 +169,82 @@ void plotRecoil::loadFiles(string afiles) {
   while (is.getline(buffer, 1000, '\n')) {
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
-    
-    string sbuffer = string(buffer); 
-    replaceAll(sbuffer, " ", ""); 
-    replaceAll(sbuffer, "\t", ""); 
+
+    string sbuffer = string(buffer);
+    replaceAll(sbuffer, " ", "");
+    replaceAll(sbuffer, "\t", "");
     if (sbuffer.size() < 1) continue;
 
-    string::size_type m1 = sbuffer.find("lumi="); 
-    string stype = sbuffer.substr(5, m1-5); 
+    string::size_type m1 = sbuffer.find("lumi=");
+    string stype = sbuffer.substr(5, m1-5);
 
-    string::size_type m2 = sbuffer.find("file="); 
-    string slumi = sbuffer.substr(m1+5, m2-m1-6); 
-    string sfile = sbuffer.substr(m2+5); 
-    string sname, sdecay; 
+    string::size_type m2 = sbuffer.find("file=");
+    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string sfile = sbuffer.substr(m2+5);
+    string sname, sdecay;
 
     cout << "stype: ->" << stype << "<-" << endl;
 
-    TFile *pF(0); 
+    TFile *pF(0);
     if (string::npos != stype.find("data")) {
       // -- DATA
-      pF = loadFile(sfile); 
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
+      pF = loadFile(sfile);
+
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
 
       if (string::npos != stype.find("recoil0")) {
-        sname = "data_bmm"; 
-        sdecay = "bmm"; 
-	ds->fColor = kBlack; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "data_bmm";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3356; 
+	ds->fFillStyle = 3356;
       }
 
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
     } else {
       // -- MC
-      pF = loadFile(sfile); 
+      pF = loadFile(sfile);
       cout << "  " << sfile << ": " << pF << endl;
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
+
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
 
       if (string::npos != stype.find("recoil0")) {
-        sname = "recoil0"; 
-        sdecay = "recoil0"; 
-	ds->fColor = kBlue-7; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "recoil0";
+        sdecay = "recoil0";
+	ds->fColor = kBlue-7;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
+	ds->fFillStyle = 3365;
       }
 
-  
+
       cout << "  inserting as " << sname << " and " << sdecay << endl;
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
 
-    } 
-    
-    
+    }
+
+
   }
 
   is.close();
@@ -256,4 +256,3 @@ void plotRecoil::loadFiles(string afiles) {
     cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }
-

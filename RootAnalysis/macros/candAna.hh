@@ -75,12 +75,15 @@ public:
   virtual void        setupReducedTree(TTree *);
   virtual void        setupMuonIdTree(TTree *);
 
+  virtual bool        tis(TAnaCand *pC);
+  virtual int         matchTrgObj2Trk(TVector3 t);
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
   virtual void        muScaleCorrectedMasses();
   virtual void        runRange();
   virtual void        genMatch();
+  virtual void        genMatchOld();
   virtual void        recoMatch();
   virtual void        candMatch();
   virtual void        triggerSelection();
@@ -125,6 +128,7 @@ public:
   virtual int         osMuon(TAnaCand *pC, double r = 1.0);
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
+  virtual void        triggerEff(std::string ref, std::string os, int mode);
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
@@ -132,21 +136,13 @@ public:
   virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
   // match a single track to HLT
   virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
-                                        bool muonsOnly=true, bool anyModule=false);
+					bool muonsOnly=true, bool anyModule=false);
   // To return the full deltaR not just a bool
   virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
                                         bool muonsOnly=true, bool anyModule=false);
-
-  // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerVeto(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
-  virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch=true,
-                                    bool matchPt=true, bool anyModule=true);
-  //virtual bool        doTriggerVeto_old(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-  //                                bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
-  virtual bool        doTriggerVetoDouble(TAnaTrack *pt1, TAnaTrack *pt2, bool singleMatch=true,
-                                    bool muonsOnly=true, bool matchPt=true, bool anyModule=true);
-
+  // Veto track too close to a trigger object
+  virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
+				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
   virtual void        print1();
 
 
@@ -155,7 +151,7 @@ public:
   std::string fCutFile;
   TDirectory *fHistDir;
   bmmReader *fpReader;
-  TTree *fTree, *fAmsTree;
+  TTree *fTree;
   TAna01Event *fpEvt;
   TAnaCand *fpCand, *fpOsCand;
   int fCandIdx;
@@ -266,6 +262,7 @@ public:
   float fETcandMass;
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
   float fETm2pt, fETm2eta, fETg2pt, fETg2eta;
+  float fETgtau, fETtau;
 
   bool    fGoodEffCand;
 
@@ -285,15 +282,15 @@ public:
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
-  bool    fGoodDocaTrk, fGoodLastCut;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS;
 
   bool    fPreselection;
   bool    fBadEvent;
   int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
+  map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
 
   struct redTreeData fRTD;
-
 };
 
 #endif //  CANDANA_H

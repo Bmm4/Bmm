@@ -24,7 +24,7 @@ ClassImp(plotWork)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotWork::plotWork(string dir,  string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotWork::plotWork(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
   loadFiles(files);
 
   if (setup == "") {
@@ -95,7 +95,7 @@ void plotWork::makeAll(int bitmask) {
 
 
 // ----------------------------------------------------------------------
-void plotWork::privateVsOfficial(string mode) {
+void plotWork::privateVsOfficial(string mode, int nevt) {
   MASSMIN = 4.5;
   MASSMAX = 6.5;
   string dir("candAnaMuMu");
@@ -130,23 +130,66 @@ void plotWork::privateVsOfficial(string mode) {
 
   TTree *t(0);
   string lmode = mode;
+  fDS[lmode]->fName = "private";
   t = getTree(lmode, dir);
   setupTree(t, fSetup);
   fOffset = 0;
   bookDistributions(lmode);
-  loopOverTree(t, 1, 900);
+  int nevents(-1);
+  if (nevt > -1) nevents = nevt;
+  loopOverTree(t, 1, nevents);
 
   lmode = mode + "_official";
+  fDS[lmode]->fName = "official";
+  fDS[lmode]->fColor = kRed+2;
+  fDS[lmode]->fLcolor = kRed+2;
+  fDS[lmode]->fFcolor = kRed+2;
+  fDS[lmode]->fFillStyle = 3356;
   t = getTree(lmode, dir);
   setupTree(t, fSetup);
   fOffset = 1;
   bookDistributions(lmode);
-  loopOverTree(t, 1, 900);
+  loopOverTree(t, 1, nevents);
 
-  fpMuon1Pt[0]->hPresel[2]->Draw("e");
-  fpMuon1Pt[1]->hPresel[2]->Scale(fpMuon1Pt[0]->hPresel[2]->GetSumOfWeights()/fpMuon1Pt[1]->hPresel[2]->GetSumOfWeights());
-  fpMuon1Pt[1]->hPresel[2]->Draw("samehist");
+  // a0->hPresel[2]->Draw("e");
+  // a1->hPresel[2]->Scale(a0->hPresel[2]->GetSumOfWeights()/a1->hPresel[2]->GetSumOfWeights());
+  // a1->hPresel[2]->Draw("samehist");
 
+  //  gStyle->SetOptTitle(0);
+
+
+  TH1* h0 = fpMuon1Pt[0]->hPresel[2];
+  TH1* h1 = fpMuon1Pt[1]->hPresel[2];  h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-m1pt-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpMuon2Pt[0]->hPresel[2];  h1 = fpMuon2Pt[1]->hPresel[2];  h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-m2pt-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpPt[0]->hPresel[2];  h1 = fpPt[1]->hPresel[2]; h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-pt-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpIso[0]->hPresel[2];  h1 = fpIso[1]->hPresel[2]; h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-iso-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpFLS3d[0]->hPresel[2];  h1 = fpFLS3d[1]->hPresel[2]; h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-fls3d-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpIpS[0]->hPresel[2];  h1 = fpIpS[1]->hPresel[2]; h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-ips-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpIp[0]->hPresel[2];  h1 = fpIp[1]->hPresel[2];  h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-ip-%s-%s.pdf", mode.c_str(), lmode.c_str()));
+
+  h0 = fpPvN[0]->hPresel[2];  h1 = fpPvN[1]->hPresel[2]; h0->SetTitle("");
+  fDS[mode]->setHistStyle(h0);  fDS[lmode]->setHistStyle(h1);   overlay(h0, mode, h1, lmode, 0, "", UNITY, false, true, 0.4, 0.7);
+  savePad(Form("mcval-pvn-%s-%s.pdf", mode.c_str(), lmode.c_str()));
 }
 
 
@@ -160,7 +203,6 @@ void plotWork::loopFunction1() {
   TLorentzVector a;
   a.SetPtEtaPhiM(fb.pt,fb.eta,fb.phi,mass);
 
-  cout << "m = " << mass << " m1pt = " << fb.m1pt << " fOffset = " << fOffset << endl;
   fpMuon1Pt[fOffset]->fill(fb.m1pt, mass);
   fpMuon2Pt[fOffset]->fill(fb.m2pt, mass);
 
@@ -218,7 +260,7 @@ void plotWork::bookDistributions(string mode) {
   fpFL3dE[fOffset]     = bookDistribution(Form("%sfl3de", name.c_str()), "#sigma(l_{3D}) [cm]", "fGoodFLS", 50, 0., 0.05);
 
   fpMaxDoca[fOffset]   = bookDistribution(Form("%smaxdoca", name.c_str()), "d^{max} [cm]", "fGoodMaxDoca", 60, 0., 0.03);
-  fpIp[fOffset]        = bookDistribution(Form("%sip", name.c_str()), "#delta_{3D} [cm]", "fGoodIp", 50, 0., 0.015);
+  fpIp[fOffset]        = bookDistribution(Form("%sip", name.c_str()), "#delta_{3D} [cm]", "fGoodIp", 50, 0., 0.020);
   fpIpS[fOffset]       = bookDistribution(Form("%sips", name.c_str()), "#delta_{3D}/#sigma(#delta_{3D})", "fGoodIpS", 50, 0., 4);
 
   fpPvZ[fOffset]       = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", 40, -20., 20.);
@@ -233,7 +275,6 @@ void plotWork::bookDistributions(string mode) {
 // ----------------------------------------------------------------------
 AnalysisDistribution* plotWork::bookDistribution(string hn, string ht, string hc, int nbins, double lo, double hi) {
   AnalysisDistribution *p = new AnalysisDistribution(hn.c_str(), ht.c_str(), nbins, lo, hi);
-  if (hn == "SgMc_bdmm_muon1pt") p->fVerbose = 1;
   p->setSigWindow(SIGBOXMIN, SIGBOXMAX);
   p->setBg1Window(BGLBOXMIN, BGLBOXMAX);
   p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
@@ -287,7 +328,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
     t->GetEntry(jentry);
     if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
 
-    candAnalysis(0);
+    candAnalysis();
     (this->*pF)();
   }
 

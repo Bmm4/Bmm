@@ -20,7 +20,7 @@
 #include "candAna.hh"
 
 class candAnaFake : public candAna {
-  
+
 public:
   candAnaFake(bmmReader *pReader, std::string name, std::string cutsFile);
   ~candAnaFake();
@@ -28,22 +28,23 @@ public:
   void        candAnalysis();
   // void        hhAnalysis();
   void        efficiencyCalculation();
-  
-  void        processType(); 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+
+  void        processType();
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        bookHist();
   void        readCuts(string filename, int dump);
-  
+
   void        evtAnalysis(TAna01Event *evt);
   bool        anaMC(TAna01Event *evt);
 
 
-  int         truthMatch(TAnaCand *pC, int verbose = 0); 
-  void        dumpHFTruthCand(TAnaCand *pC); 
-  // void        dumpHFHhCand(TAnaCand *pC); 
+  int         truthMatch(TAnaCand *pC, int verbose = 0);
+  void        dumpHFTruthCand(TAnaCand *pC);
+  // void        dumpHFHhCand(TAnaCand *pC);
 
 
 private:

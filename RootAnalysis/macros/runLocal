@@ -1,0 +1,28 @@
+#!/usr/bin/env perl
+
+use File::Basename;
+
+use Getopt::Std;
+getopts('s:');
+
+if ($opt_s eq "data") {
+    @data = `ls chains/v01/bmm-prompt-Run2016B-PromptReco-v01/cbmm-prompt-Run2016B-PromptReco-v01-*`;
+    foreach $f (@data) {
+	chop($f);
+	my($file, $dir, $ext) = fileparse($f);
+	print "$file\n";
+
+	system("bin/runBmm -C cuts/bmmReader.2016 -b 1 -c $f -o /scratch/ursl/bmm4/v01/$file.root 1> local-Run2016B-$file.log 2> local-Run2016B-$file.log &");
+
+    }
+}
+
+if ($opt_s eq "mc") {
+    system("bin/runBmm -C cuts/bmmReader.mix-Bd2MuMu -m -c chains/v01/bmm-mc-Summer15_private-BdToMuMu-v01/cbmm-mc-Summer15_private-BdToMuMu-v01 -o /scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root 1> local-BdToMuMu.log 2> local-BdToMuMu.log &");
+
+    system("bin/runBmm -C cuts/bmmReader.mix-Bd2JpsiKstar -m -c chains/v01/bmm-mc-Summer15_private-BdToJpsiKstar-v01/cbmm-mc-Summer15_private-BdToJpsiKstar-v01 -o /scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToJpsiKstar-v01.root 1> local-BdToJpsiKstar.log 2> local-BdToJpsiKstar.log &");
+
+    system("bin/runBmm -C cuts/bmmReader.mix-Bu2JpsiK -m -c chains/v01/bmm-mc-Summer15_private-BuToJpsiKp-v01/cbmm-mc-Summer15_private-BuToJpsiKp-v01 -o /scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BuToJpsiKp-v01.root 1> local-BuToJpsiKp.log 2> local-BuToJpsiKp.log &");
+
+    system("bin/runBmm -C cuts/bmmReader.mix-Bs2JpsiPhi -m -c chains/v01/bmm-mc-Summer15_private-BsToJpsiPhi-v01/cbmm-mc-Summer15_private-BsToJpsiPhi-v01 -o /scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BsToJpsiPhi-v01.root 1> local-BsToJpsiPhi.log 2> local-BsToJpsiPhi.log &");
+}

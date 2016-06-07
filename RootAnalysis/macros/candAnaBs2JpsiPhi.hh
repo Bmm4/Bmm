@@ -21,7 +21,7 @@
 #include "candAna.hh"
 
 class candAnaBs2JpsiPhi : public candAna {
-  
+
 public:
   candAnaBs2JpsiPhi(bmmReader *pReader, std::string name, std::string cutsFile);
   virtual ~candAnaBs2JpsiPhi();
@@ -31,15 +31,16 @@ public:
   void        moreBasicCuts();
   void        moreReducedTree(TTree *);
 
-  void        genMatch(); 
-  void        recoMatch(); 
-  void        candMatch(); 
-  
+  void        genMatch();
+  void        genMatchOld();
+  void        recoMatch();
+  void        candMatch();
+
   void        readCuts(string filename, int dump);
   void        bookHist();
   void        fillCandidateHistograms(int offset);
 
-  int          JPSITYPE; 
+  int          JPSITYPE;
   double       JPSIMASSLO, JPSIMASSHI;
 
   double       fKaonPt, fKaonEta, fKaonPhi;
@@ -53,12 +54,12 @@ public:
 
   double       fKa1Pt, fKa1Eta, fKa1Phi;
   double       fKa2Pt, fKa2Eta, fKa2Phi;
-  double       fPhiPt, fPhiEta, fPhiPhi; 
+  double       fPhiPt, fPhiEta, fPhiPhi;
   bool         fKa1Missid, fKa2Missid, fKa1MuMatch, fKa2MuMatch;
-  // tests d.k.   
-  //bool         fKa1Missid2, fKa1MuMatch2; 
+  // tests d.k.
+  //bool         fKa1Missid2, fKa1MuMatch2;
   float        fKa1MuMatchR, fKa1MuMatchR2; // fKa1MuMatchR3, fKa1MuMatchR4, fKa1MuMatchR5;
-  //bool         fKa2Missid2, fKa2MuMatch2; 
+  //bool         fKa2Missid2, fKa2MuMatch2;
   float        fKa2MuMatchR, fKa2MuMatchR2; // fKa2MuMatchR3, fKa2MuMatchR4, fKa2MuMatchR5;
 
 
@@ -66,21 +67,21 @@ public:
   double       fKa2PtNrf, fKa2EtaNrf;
 
   double       fKa1PtGen, fKa1EtaGen, fKa2PtGen, fKa2EtaGen;
-  int          fKa1GenID, fKa2GenID; 
+  int          fKa1GenID, fKa2GenID;
   int          fKa1TkQuality, fKa2TkQuality;
 
-  // -- TM 
-  int                     fGenK1Tmi, fGenK2Tmi; 
-  int                     fRecK1Tmi, fRecK2Tmi; 
-  
+  // -- TM
+  int                     fGenK1Tmi, fGenK2Tmi;
+  int                     fRecK1Tmi, fRecK2Tmi;
+
   // -- effTree
   float fETk1pt, fETk1eta, fETg3pt, fETg3eta;
   float fETk2pt, fETk2eta, fETg4pt, fETg4eta;
-  int   fETk1q,  fETk2q; 
+  int   fETk1q,  fETk2q;
   bool  fETk1gt, fETk2gt;
 
   // -- Additional variables and cuts for Bs -> J/psi phi
-  int               PHITYPE; 
+  int               PHITYPE;
   double            MKKLO, MKKHI, DELTAR;
   double            fDeltaR, fMKK;
   bool              fGoodDeltaR, fGoodMKK;

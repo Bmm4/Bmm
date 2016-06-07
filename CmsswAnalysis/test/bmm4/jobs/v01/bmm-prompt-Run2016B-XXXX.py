@@ -13,7 +13,6 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 # ----------------------------------------------------------------------
 # -- Database configuration
 process.load("CondCore.CondDB.CondDB_cfi")
-
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 #process.load("Configuration.StandardSequences.Geometry_cff")

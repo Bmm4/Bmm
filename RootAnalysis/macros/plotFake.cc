@@ -20,20 +20,20 @@
 
 ClassImp(plotFake)
 
-using namespace std; 
+using namespace std;
 
 // ----------------------------------------------------------------------
-plotFake::plotFake(string dir,  string files, string setup): plotClass(dir, files, setup) {
+plotFake::plotFake(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
   loadFiles(files);
 
   if (setup == "") {
-    fHistFileName = Form("%s/plotFake.root", dir.c_str()); 
+    fHistFileName = Form("%s/plotFake.root", dir.c_str());
   } else {
-    fHistFileName = Form("%s/plotFake-%s.root", dir.c_str(), setup.c_str()); 
+    fHistFileName = Form("%s/plotFake-%s.root", dir.c_str(), setup.c_str());
   }
 
-  fTexFileName = fHistFileName; 
-  replaceAll(fTexFileName, ".root", ".tex"); 
+  fTexFileName = fHistFileName;
+  replaceAll(fTexFileName, ".root", ".tex");
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
 
 }
@@ -53,20 +53,20 @@ void plotFake::makeAll(int bitmask) {
 // ----------------------------------------------------------------------
 void plotFake::fakeRate(string var, string dataset, string particle) {
 
-  tl->SetNDC(kTRUE); 
-  
+  tl->SetNDC(kTRUE);
+
   c0->Clear();
   //  c0->Divide(4, 4);
   c0->Divide(2, 3);
-  int ipad(0); 
+  int ipad(0);
 
   vector<string> mode;
-  mode.push_back("nmu"); 
-  //  mode.push_back("muo"); 
+  mode.push_back("nmu");
+  //  mode.push_back("muo");
 
-  map<string, TH1D*> hmode; 
-  
-  vector<string> histos; 
+  map<string, TH1D*> hmode;
+
+  vector<string> histos;
   if (particle == "pion") {
     histos.push_back(Form("candAnaFake310/%s1", var.c_str()));
     histos.push_back(Form("candAnaFake310/%s2", var.c_str()));
@@ -78,28 +78,28 @@ void plotFake::fakeRate(string var, string dataset, string particle) {
   } else {
     cout << "particle " << particle << " not known, returning" << endl;
   }
-  
-  // -- get "default" to properly initialize results histograms 
-  string hname = histos[0] + mode[0]; 
+
+  // -- get "default" to properly initialize results histograms
+  string hname = histos[0] + mode[0];
   TH2D *h2 = fDS[dataset]->getHist2(hname, false);
 
   for (unsigned int imode = 0; imode < mode.size(); ++imode) {
     hname = particle + "_" + mode[imode];
     TH1D *hr = new TH1D(hname.c_str(), hname.c_str(), h2->GetNbinsX(), h2->GetXaxis()->GetXbins()->GetArray());
     hr->Sumw2();
-    hmode[hname] = hr; 
+    hmode[hname] = hr;
     for (unsigned int ihist = 0; ihist < histos.size(); ++ihist) {
-      hname = histos[ihist] + mode[imode]; 
+      hname = histos[ihist] + mode[imode];
       cout << "====> getting " << hname << " from dataset " << dataset << endl;
       TH2D *h2 = fDS[dataset]->getHist2(hname, false);
-      int nbins(h2->GetNbinsX()); 
+      int nbins(h2->GetNbinsX());
       cout << "x bins: " << nbins  << endl;
-      TH1D *h1(0); 
+      TH1D *h1(0);
       //      for (int i = 1; i <= nbins; ++i) {
       for (int i = 2; i <= 3; ++i) {
 	c0->cd(++ipad);
 	h1 = h2->ProjectionY(Form("hist%dpt%d", ihist, i), i, i);
-	h1->SetTitle(Form("hist%dpt%d %s", ihist, i, h1->GetTitle())); 
+	h1->SetTitle(Form("hist%dpt%d %s", ihist, i, h1->GetTitle()));
 	if (string::npos != hname.find("Fake310")) {
 	  fitKs(h1);
 	} else if (string::npos != hname.find("Fake333")) {
@@ -107,9 +107,9 @@ void plotFake::fakeRate(string var, string dataset, string particle) {
 	} else if (string::npos != hname.find("Fake3122")) {
 	  fitLambda(h1);
 	}
-	tl->DrawLatex(0.2, 0.7, Form("%4.2f#pm%4.2f", fYield, fYieldE)); 
-	hr->SetBinContent(i, hr->GetBinContent(i) + fYield); 
-	hr->SetBinError(i, TMath::Sqrt(hr->GetBinError(i)*hr->GetBinError(i) + fYieldE*fYieldE)); 
+	tl->DrawLatex(0.2, 0.7, Form("%4.2f#pm%4.2f", fYield, fYieldE));
+	hr->SetBinContent(i, hr->GetBinContent(i) + fYield);
+	hr->SetBinError(i, TMath::Sqrt(hr->GetBinError(i)*hr->GetBinError(i) + fYieldE*fYieldE));
       }
       c0->cd(++ipad);
       h2->Draw("colz");
@@ -128,35 +128,35 @@ void plotFake::fakeRate(string var, string dataset, string particle) {
 
 // ----------------------------------------------------------------------
 void plotFake::fitKs(TH1D *h) {
-  fIF->fVerbose = false; 
-  fIF->resetLimits(); 
-  fIF->limitPar(1, 0.495, 0.503); 
-  fIF->limitPar(2, 0.004, 0.008); 
-  TF1* f1 = fIF->pol0gauss(h, 0.498, 0.006); 
+  fIF->fVerbose = false;
+  fIF->resetLimits();
+  fIF->limitPar(1, 0.495, 0.503);
+  fIF->limitPar(2, 0.004, 0.008);
+  TF1* f1 = fIF->pol0gauss(h, 0.498, 0.006);
   f1->FixParameter(4, 0.);
-  TFitResultPtr r = h->Fit(f1, "lsq", "e"); 
-  double bwidth = h->GetBinWidth(h->FindBin(1)); 
-  double peak = f1->GetParameter(1); 
-  double sigma = f1->GetParameter(2); 
+  TFitResultPtr r = h->Fit(f1, "lsq", "e");
+  double bwidth = h->GetBinWidth(h->FindBin(1));
+  double peak = f1->GetParameter(1);
+  double sigma = f1->GetParameter(2);
   double xmin = peak - 2.*sigma;
   double xmax = peak + 2.*sigma;
   double aintegral  = f1->Integral(xmin, xmax)/bwidth;
   // -- (slight?) overestimate of signal integral error by including the background
   double fintegralE = f1->IntegralError(xmin, xmax, r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray())/bwidth;
   // -- now set constant of pol0 to zero and integrate over signal only
-  f1->SetParameter(3, 0.); 
+  f1->SetParameter(3, 0.);
   double fintegral  = f1->Integral(xmin, xmax)/bwidth;
   if (fintegral > 0) {
     double err1 = f1->GetParError(0)/f1->GetParameter(0);
     double err2 = f1->GetParError(2)/f1->GetParameter(2);
-    double errT = TMath::Sqrt(err1*err1 + err2*err2); 
-    fYieldE = errT*fintegral; 
-    fYieldE = fintegralE; 
+    double errT = TMath::Sqrt(err1*err1 + err2*err2);
+    fYieldE = errT*fintegral;
+    fYieldE = fintegralE;
     fYield  = fintegral;
   } else {
     double fallbackXmin(0.485);
     double fallbackXmax(0.511);
-    int nsgbins = h->FindBin(fallbackXmax) - h->FindBin(fallbackXmin) + 1; 
+    int nsgbins = h->FindBin(fallbackXmax) - h->FindBin(fallbackXmin) + 1;
     double sg = h->Integral(h->FindBin(fallbackXmin), h->FindBin(fallbackXmax));
     int nbgbins = h->FindBin(fallbackXmax) - 1 - 1 + 1;
     nbgbins    += h->GetNbinsX() - (h->FindBin(fallbackXmax) + 1) + 1;
@@ -171,19 +171,19 @@ void plotFake::fitKs(TH1D *h) {
 
 // ----------------------------------------------------------------------
 void plotFake::fitPhi(TH1D *h) {
-  fIF->fVerbose = true; 
-  fIF->resetLimits(); 
-  fIF->limitPar(1, 1.01, 1.03); 
-  fIF->limitPar(2, 0.002, 0.005); 
-  fIF->limitPar(3, 0.001, 0.150); 
-  fIF->limitPar(4, 0.0051, 0.030); 
+  fIF->fVerbose = true;
+  fIF->resetLimits();
+  fIF->limitPar(1, 1.01, 1.03);
+  fIF->limitPar(2, 0.002, 0.005);
+  fIF->limitPar(3, 0.001, 0.150);
+  fIF->limitPar(4, 0.0051, 0.030);
 
-  TF1 *f1 = fIF->phiKK(h); 
-  h->Fit(f1, "l", "e"); 
+  TF1 *f1 = fIF->phiKK(h);
+  h->Fit(f1, "l", "e");
 
-  TF1 *f2 = fIF->argus(h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1)); 
-  f2->SetLineColor(kBlue); 
-  f2->SetLineStyle(kDashed); 
+  TF1 *f2 = fIF->argus(h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1));
+  f2->SetLineColor(kBlue);
+  f2->SetLineStyle(kDashed);
   f2->SetParameter(0, f1->GetParameter(5));
   f2->SetParameter(1, f1->GetParameter(6));
   f2->SetParameter(2, f1->GetParameter(7));
@@ -211,41 +211,41 @@ void plotFake::bookHist(int mode) {
 
 // ----------------------------------------------------------------------
 void plotFake::candAnalysis() {
-  fGoodCand = true; 
+  fGoodCand = true;
 }
 
 
 // ----------------------------------------------------------------------
 void plotFake::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries); 
+  int nbegin(0), nend(nentries);
   if (nevts > 0 && nentries > nevts) {
     nentries = nevts;
-    nbegin = 0; 
+    nbegin = 0;
     nend = nevts;
   }
   if (nevts > 0 && nstart > 0) {
     nentries = nstart + nevts;
-    nbegin = nstart; 
+    nbegin = nstart;
     if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts; 
+      nend = nstart + nevts;
     } else {
       nend = t->GetEntries();
     }
   }
-  
-  nentries = nend - nstart; 
-  
-  int step(1000000); 
-  if (nentries < 5000000)  step = 500000; 
-  if (nentries < 1000000)  step = 100000; 
-  if (nentries < 100000)   step = 10000; 
-  if (nentries < 10000)    step = 1000; 
-  if (nentries < 1000)     step = 100; 
-  step = 500000; 
-  cout << "==> plotFake::loopOverTree> loop over dataset " << fCds << " in file " 
-       << t->GetDirectory()->GetName() 
-       << " with " << nentries << " entries" 
+
+  nentries = nend - nstart;
+
+  int step(1000000);
+  if (nentries < 5000000)  step = 500000;
+  if (nentries < 1000000)  step = 100000;
+  if (nentries < 100000)   step = 10000;
+  if (nentries < 10000)    step = 1000;
+  if (nentries < 1000)     step = 100;
+  step = 500000;
+  cout << "==> plotFake::loopOverTree> loop over dataset " << fCds << " in file "
+       << t->GetDirectory()->GetName()
+       << " with " << nentries << " entries"
        << endl;
 
   // -- setup loopfunction through pointer to member functions
@@ -257,7 +257,7 @@ void plotFake::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   for (int jentry = nbegin; jentry < nend; jentry++) {
     t->GetEntry(jentry);
     if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-   
+
     candAnalysis();
     (this->*pF)();
   }
@@ -268,9 +268,9 @@ void plotFake::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 // ----------------------------------------------------------------------
 void plotFake::setupTree(TTree *t) {
   if (string::npos != fCds.find("Mc")) {
-    fIsMC = true; 
+    fIsMC = true;
   } else {
-    fIsMC = false; 
+    fIsMC = false;
   }
 
   t->SetBranchAddress("pt", &fb.pt);
@@ -357,7 +357,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("m1trigm",  &fb.m1trigm);
   t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
   t->SetBranchAddress("m1tmid",   &fb.m1tmid);
- 
+
   t->SetBranchAddress("m2id",     &fb.m2id);
   t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
   t->SetBranchAddress("m2trigm",  &fb.m2trigm);
@@ -430,14 +430,14 @@ void plotFake::setCuts(string cuts) {
   string token, name, sval;
 
   while (getline(ss, token, ',')) {
-    
-    string::size_type m1 = token.find("="); 
+
+    string::size_type m1 = token.find("=");
     name = token.substr(0, m1);
     sval = token.substr(m1+1);
 
     if (string::npos != name.find("PTLO")) {
-      float val; 
-      val = atof(sval.c_str()); 
+      float val;
+      val = atof(sval.c_str());
       PTLO = val;
     }
 
@@ -447,7 +447,7 @@ void plotFake::setCuts(string cuts) {
 
 // ----------------------------------------------------------------------
 void plotFake::loadFiles(string afiles) {
-  
+
   string files = fDirectory + string("/") + afiles;
   cout << "==> Loading files listed in " << files << endl;
 
@@ -456,84 +456,84 @@ void plotFake::loadFiles(string afiles) {
   while (is.getline(buffer, 1000, '\n')) {
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
-    
-    string sbuffer = string(buffer); 
-    replaceAll(sbuffer, " ", ""); 
-    replaceAll(sbuffer, "\t", ""); 
+
+    string sbuffer = string(buffer);
+    replaceAll(sbuffer, " ", "");
+    replaceAll(sbuffer, "\t", "");
     if (sbuffer.size() < 1) continue;
 
-    string::size_type m1 = sbuffer.find("lumi="); 
-    string stype = sbuffer.substr(5, m1-5); 
+    string::size_type m1 = sbuffer.find("lumi=");
+    string stype = sbuffer.substr(5, m1-5);
 
-    string::size_type m2 = sbuffer.find("file="); 
-    string slumi = sbuffer.substr(m1+5, m2-m1-6); 
-    string sfile = sbuffer.substr(m2+5); 
-    string sname, sdecay; 
+    string::size_type m2 = sbuffer.find("file=");
+    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string sfile = sbuffer.substr(m2+5);
+    string sname, sdecay;
 
     cout << "stype: ->" << stype << "<-" << endl;
 
-    TFile *pF(0); 
+    TFile *pF(0);
     if (string::npos != stype.find("data")) {
       // -- DATA
-      pF = loadFile(sfile); 
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
+      pF = loadFile(sfile);
+
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
 
       if (string::npos != stype.find("charmonium")) {
-        sname = "data_charmonium"; 
-        sdecay = "bmm"; 
-	ds->fColor = kBlack; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "data_charmonium";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
+	ds->fFillStyle = 3365;
       }
 
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
     } else {
       // -- MC
-      pF = loadFile(sfile); 
+      pF = loadFile(sfile);
       cout << "  " << sfile << ": " << pF << endl;
-      
-      dataset *ds = new dataset(); 
-      ds->fSize = 1; 
-      ds->fWidth = 2; 
 
-      string filter = "nofilter"; 
+      dataset *ds = new dataset();
+      ds->fSize = 1;
+      ds->fWidth = 2;
+
+      string filter = "nofilter";
       if (string::npos != stype.find("etaptfilter")) filter = "etaptfilter";
 
       if (string::npos != stype.find("bu2jpsik")) {
-        sname = "bu2jpsik_" + filter; 
-        sdecay = "bu2jpsik"; 
-	ds->fColor = kBlue-7; 
-	ds->fSymbol = 24; 
-	ds->fF      = pF; 
+        sname = "bu2jpsik_" + filter;
+        sdecay = "bu2jpsik";
+	ds->fColor = kBlue-7;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3365; 
+	ds->fFillStyle = 3365;
       }
 
       cout << "  inserting as " << sname << " and " << sdecay << endl;
-      ds->fLcolor = ds->fColor; 
-      ds->fFcolor = ds->fColor; 
-      ds->fName   = sdecay; 
-      ds->fFullName = sname; 
-      fDS.insert(make_pair(sname, ds)); 
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      fDS.insert(make_pair(sname, ds));
 
 
 
-    } 
-    
-    
+    }
+
+
   }
 
   is.close();
@@ -545,4 +545,3 @@ void plotFake::loadFiles(string afiles) {
     cout << "       " << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
 }
-

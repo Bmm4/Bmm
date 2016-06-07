@@ -1,7 +1,9 @@
-TYPE          1000092
-#TYPE          1313
-TRUTHCAND         511
-TRIGRANGE    NOTRIGGER
+TYPE             1313
+TRUTHCAND         531
+NOPRESELECTION      1
+DSNAME     Charmonium
+# -- trigger
++input cuts/triggerBs.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks
