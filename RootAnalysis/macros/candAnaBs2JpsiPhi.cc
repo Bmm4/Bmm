@@ -10,10 +10,10 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBs2JpsiPhi::candAnaBs2JpsiPhi(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
-  fGenK1Tmi = fGenK2Tmi = fRecK1Tmi = fRecK2Tmi = -1; 
-  BLIND = 0; 
+  fGenK1Tmi = fGenK2Tmi = fRecK1Tmi = fRecK2Tmi = -1;
+  BLIND = 0;
   cout << "==> candAnaBs2JpsiPhi: name = " << name << ", reading cutsfile " << cutsFile << endl;
-  readCuts(cutsFile, 1); 
+  readCuts(cutsFile, 1);
 }
 
 
@@ -29,19 +29,19 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   if (0 == fpCand) return;
 
   // -- Check for J/psi mass
-  TAnaCand *pD = 0; 
-  fGoodJpsiMass = false; 
-  double chi2(0.), ndof(0.); 
+  TAnaCand *pD = 0;
+  fGoodJpsiMass = false;
+  double chi2(0.), ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
     if (i < 0) break;
-    pD = fpEvt->getCand(i); 
+    pD = fpEvt->getCand(i);
     //    cout << "i = " << i << " pD = " << pD << endl;
     if (pD->fType == JPSITYPE) {
       if ((JPSIMASSLO < pD->fMass) && (pD->fMass < JPSIMASSHI)) fGoodJpsiMass = true;
       fJpsiMass = pD->fMass;
       fJpsiPt   = pD->fPlab.Perp();
       fJpsiEta  = pD->fPlab.Eta();
-      fJpsiPhi  = pD->fPlab.Phi(); 
+      fJpsiPhi  = pD->fPlab.Phi();
 
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
@@ -51,67 +51,67 @@ void candAnaBs2JpsiPhi::candAnalysis() {
       fMKK     = pD->fMass;
       fPhiPt   = pD->fPlab.Perp();
       fPhiEta  = pD->fPlab.Eta();
-      fPhiPhi  = pD->fPlab.Phi(); 
+      fPhiPhi  = pD->fPlab.Phi();
     }
   }
 
 
   // -- Get Kaons
-  TAnaTrack *p0; 
+  TAnaTrack *p0;
   TAnaTrack *p1(0);
-  TAnaTrack *p2(0); 
-  
+  TAnaTrack *p2(0);
+
   for (int it = fpCand->fSig1; it <= fpCand->fSig2; ++it) {
-    p0 = fpEvt->getSigTrack(it);     
+    p0 = fpEvt->getSigTrack(it);
     if (TMath::Abs(p0->fMCID) != 321) continue;
     if (0 == p1) {
-      p1 = p0; 
+      p1 = p0;
     } else {
-      p2 = p0; 
+      p2 = p0;
     }
   }
 
   if (0 == p1) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 1 found " << endl;
-    return; 
+    return;
   }
   if (0 == p2) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 2 found " << endl;
-    return; 
+    return;
   }
- 
-  fKa1Pt        = p1->fRefPlab.Perp(); 
-  fKa1Eta       = p1->fRefPlab.Eta(); 
-  fKa1Phi       = p1->fRefPlab.Phi(); 
+
+  fKa1Pt        = p1->fRefPlab.Perp();
+  fKa1Eta       = p1->fRefPlab.Eta();
+  fKa1Phi       = p1->fRefPlab.Phi();
   fKa1TkQuality = highPurity(p1);
   fKa1PtNrf     = p1->fPlab.Perp();
   fKa1EtaNrf    = p1->fPlab.Eta();
 
-  fKa2Pt        = p2->fRefPlab.Perp(); 
-  fKa2Eta       = p2->fRefPlab.Eta(); 
-  fKa2Phi       = p2->fRefPlab.Phi(); 
+  fKa2Pt        = p2->fRefPlab.Perp();
+  fKa2Eta       = p2->fRefPlab.Eta();
+  fKa2Phi       = p2->fRefPlab.Phi();
   fKa2TkQuality = highPurity(p2);
   fKa2PtNrf     = p2->fPlab.Perp();
   fKa2EtaNrf    = p2->fPlab.Eta();
 
-  fKa1Missid = tightMuon(p1);  // true for tight  muons 
+  fKa1Missid = tightMuon(p1);  // true for tight  muons
   fKa2Missid = tightMuon(p2);
-  //fKa1Missid2 = mvaMuon(p1,mva);  // true for tight  muons 
-  //fKa2Missid2 = mvaMuon(p2,mva);  // true for tight  muons 
+  //fKa1Missid2 = mvaMuon(p1,mva);  // true for tight  muons
+  //fKa2Missid2 = mvaMuon(p2,mva);  // true for tight  muons
 
-  fKa1MuMatch = doTriggerMatching(p1,false,false); // see if it matches HLT muon 
-  fKa2MuMatch = doTriggerMatching(p2,false,false); // see if it matches HLT muon 
+  fKa1MuMatch = doTriggerMatching(p1,false,false); // see if it matches HLT muon
+  fKa2MuMatch = doTriggerMatching(p2,false,false); // see if it matches HLT muon
 
-  // use this for trigger bias, non-muon can also participate in an trigger 
-  fKa1MuMatchR = doTriggerMatchingR(p1,false,false); // see if it matches HLT muon 
-  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,false); // see if it matches HLT muon 
-  fKa2MuMatchR = doTriggerMatchingR(p2,false,false); // see if it matches HLT muon 
-  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,false); // see if it matches HLT muon 
+  // use this for trigger bias, non-muon can also participate in an trigger
+  fKa1MuMatchR = doTriggerMatchingR(p1,false,false); // see if it matches HLT muon
+  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,false); // see if it matches HLT muon
+  fKa2MuMatchR = doTriggerMatchingR(p2,false,false); // see if it matches HLT muon
+  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,false); // see if it matches HLT muon
   // use this for testing, to match only to muons
-  fKa1MuMatchR = doTriggerMatchingR(p1,false,true); // see if it matches HLT muon 
-  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,true); // see if it matches HLT muon 
-  fKa2MuMatchR = doTriggerMatchingR(p2,false,true); // see if it matches HLT muon 
-  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,true); // see if it matches HLT muon 
+  fKa1MuMatchR = doTriggerMatchingR(p1,false,true); // see if it matches HLT muon
+  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,true); // see if it matches HLT muon
+  fKa2MuMatchR = doTriggerMatchingR(p2,false,true); // see if it matches HLT muon
+  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,true); // see if it matches HLT muon
 
   if (fCandTmi > -1) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
@@ -127,33 +127,33 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     fKa2EtaGen    = -99.;
   }
 
-  fDeltaR  = p1->fPlab.DeltaR(p2->fPlab); 
+  fDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
 
-  TLorentzVector ka1, ka2; 
-  ka1.SetPtEtaPhiM(fKa1Pt, fKa1Eta, fKa1Phi, MKAON); 
-  ka2.SetPtEtaPhiM(fKa2Pt, fKa2Eta, fKa2Phi, MKAON); 
+  TLorentzVector ka1, ka2;
+  ka1.SetPtEtaPhiM(fKa1Pt, fKa1Eta, fKa1Phi, MKAON);
+  ka2.SetPtEtaPhiM(fKa2Pt, fKa2Eta, fKa2Phi, MKAON);
 
-  TLorentzVector phiCand = ka1 + ka2; 
+  TLorentzVector phiCand = ka1 + ka2;
   fMKK     = phiCand.M();
   fPhiPt   = phiCand.Pt();
   fPhiEta  = phiCand.Eta();
   fPhiPhi  = phiCand.Phi();
 
   fGoodDeltaR = (fDeltaR < DELTAR);
-  fGoodMKK    = ((MKKLO < fMKK ) && (fMKK < MKKHI)); 
-  
+  fGoodMKK    = ((MKKLO < fMKK ) && (fMKK < MKKHI));
+
   candAna::candAnalysis();
 
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR; 
+  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR;
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandTau     = fCandFL3d*MBPLUS/fCandP/TMath::Ccgs();
-  fCandChi2    = chi2; 
+  fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
-  
-  
+
+
   if(0) { // misid test d.k.
 
     TVector3 muonMom1 = fpMuon1->fPlab;
@@ -166,7 +166,7 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR5 = dR2;}
     //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR5 = dR1;}
 
-    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) ) 
+    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) )
       cout<<" Kaon1 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p1->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
 
     trackMom = p2->fPlab;  // test track momentum
@@ -176,76 +176,76 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     //if(dR1<dR2) { fKa2MuMatchR4 = dR1; fKa2MuMatchR5 = dR2;}
     //else        { fKa2MuMatchR4 = dR2; fKa2MuMatchR5 = dR1;}
 
-    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) ) 
+    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) )
       cout<<" Kaon2 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p2->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
 
-  } // end special test 
+  } // end special test
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
-  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4); 
+  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
 }
 
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::moreBasicCuts() {
   cout << "   candAnaBs2JpsiPhi: more basic cuts" << endl;
-  fAnaCuts.addCut("fGoodJpsiMass", "m(J/psi)", fGoodJpsiMass); 
-  fAnaCuts.addCut("fGoodDeltaR", "Delta R(KK)", fGoodDeltaR); 
-  fAnaCuts.addCut("fGoodMKK", "m(KK) [GeV]", fGoodMKK); 
+  fAnaCuts.addCut("fGoodJpsiMass", "m(J/psi)", fGoodJpsiMass);
+  fAnaCuts.addCut("fGoodDeltaR", "Delta R(KK)", fGoodDeltaR);
+  fAnaCuts.addCut("fGoodMKK", "m(KK) [GeV]", fGoodMKK);
 }
 
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::genMatch() {
-  
-  fGenM1Tmi = fGenM2Tmi = fGenK1Tmi = -1; 
-  fNGenPhotons = 0; 
 
-  TGenCand *pC(0), *pB(0), *pPsi(0), *pPhi(0), *pM1(0), *pM2(0), *pK1(0), *pK2(0); 
-  int nb(0), ngamma(0); 
-  bool goodMatch(false); 
+  fGenM1Tmi = fGenM2Tmi = fGenK1Tmi = -1;
+  fNGenPhotons = 0;
+
+  TGenCand *pC(0), *pB(0), *pPsi(0), *pPhi(0), *pM1(0), *pM2(0), *pK1(0), *pK2(0);
+  int nb(0), ngamma(0);
+  bool goodMatch(false);
   for (int i = 0; i < fpEvt->nGenT(); ++i) {
-    pC = fpEvt->getGenT(i); 
+    pC = fpEvt->getGenT(i);
     if (531 == TMath::Abs(pC->fID)) {
       pB = pC;
-      nb = pB->fDau2 - pB->fDau1 + 1; 
+      nb = pB->fDau2 - pB->fDau1 + 1;
       if (nb > 2) continue; // skip B decays where more than J/psi and phi came from B
-      ngamma = 0; 
+      ngamma = 0;
       for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
-	pC = fpEvt->getGenTWithIndex(id); 
+	pC = fpEvt->getGenTWithIndex(id);
 	if (22 == TMath::Abs(pC->fID)) ++ngamma;
 	if (443 == TMath::Abs(pC->fID)) {
-	  pPsi = pC; 
+	  pPsi = pC;
 	  pM1 = pM2 = 0;
 	  for (int idd = pPsi->fDau1; idd <= pPsi->fDau2; ++idd) {
-	    pC = fpEvt->getGenTWithIndex(idd); 
+	    pC = fpEvt->getGenTWithIndex(idd);
 	    if (22 == TMath::Abs(pC->fID)) ++ngamma;
 	    if (13 == TMath::Abs(pC->fID)) {
 	      if (0 == pM1) {
-		pM1 = fpEvt->getGenTWithIndex(idd); 
+		pM1 = fpEvt->getGenTWithIndex(idd);
 	      } else {
-		pM2 = fpEvt->getGenTWithIndex(idd); 
+		pM2 = fpEvt->getGenTWithIndex(idd);
 	      }
 	    }
 	  }
 	} else if (333 == TMath::Abs(pC->fID)) {
-	  pPhi = fpEvt->getGenTWithIndex(id); 
+	  pPhi = fpEvt->getGenTWithIndex(id);
 	  pK1 = pK2 = 0;
 	  for (int idd = pPhi->fDau1; idd <= pPhi->fDau2; ++idd) {
-	    pC = fpEvt->getGenTWithIndex(idd); 
+	    pC = fpEvt->getGenTWithIndex(idd);
 	    if (22 == TMath::Abs(pC->fID)) ++ngamma;
 	    if (321 == TMath::Abs(pC->fID)) {
 	      if (0 == pK1) {
-		pK1 = fpEvt->getGenTWithIndex(idd); 
+		pK1 = fpEvt->getGenTWithIndex(idd);
 	      } else {
-		pK2 = fpEvt->getGenTWithIndex(idd); 
+		pK2 = fpEvt->getGenTWithIndex(idd);
 	      }
 	    }
 	  }
 	}
       }
-      if (0 != pM1 && 0 != pM2 && 0 != pK1 && 0 != pK2 
+      if (0 != pM1 && 0 != pM2 && 0 != pK1 && 0 != pK2
 	  && (pPsi->fMom1 == pPhi->fMom1)
 	  ) {
-	goodMatch = true; 
+	goodMatch = true;
 	fNGenPhotons = ngamma;
 	break;
       }
@@ -257,63 +257,63 @@ void candAnaBs2JpsiPhi::genMatch() {
     return;
   }
 
-  fGenBTmi = -1; 
-  fKa1GenID = -99999; 
-  fKa2GenID = -99999; 
+  fGenBTmi = -1;
+  fKa1GenID = -99999;
+  fKa2GenID = -99999;
   if (goodMatch) {
     fMu1GenID = pM1->fID;
     fMu2GenID = pM2->fID;
     fKa1GenID = pK1->fID;
     fKa2GenID = pK2->fID;
-    fGenBTmi = pB->fNumber; 
+    fGenBTmi = pB->fNumber;
     double m = pB->fP.Mag();
     double p = pB->fP.P();
     // Meson pointer
-    TGenCand *pM = fpEvt->getGenTWithIndex(pB->fMom1); 
+    TGenCand *pM = fpEvt->getGenTWithIndex(pB->fMom1);
     // the meson is the original except if it oscillated
     if (531 != TMath::Abs(pM->fID)) pM = pB;
-    double x = (pM1->fV - pM->fV).Mag(); 
+    double x = (pM1->fV - pM->fV).Mag();
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
-      fGenM1Tmi = pM1->fNumber; 
-      fGenM2Tmi = pM2->fNumber; 
+      fGenM1Tmi = pM1->fNumber;
+      fGenM2Tmi = pM2->fNumber;
     } else {
-      fGenM1Tmi = pM2->fNumber; 
-      fGenM2Tmi = pM1->fNumber; 
+      fGenM1Tmi = pM2->fNumber;
+      fGenM2Tmi = pM1->fNumber;
     }
     if (pK1->fP.Perp() > pK2->fP.Perp()) {
-      fGenK1Tmi = pK1->fNumber; 
-      fGenK2Tmi = pK2->fNumber; 
+      fGenK1Tmi = pK1->fNumber;
+      fGenK2Tmi = pK2->fNumber;
     } else {
-      fGenK1Tmi = pK2->fNumber; 
-      fGenK2Tmi = pK1->fNumber; 
+      fGenK1Tmi = pK2->fNumber;
+      fGenK2Tmi = pK1->fNumber;
     }
   } else {
-    fGenM1Tmi = -1; 
-    fGenM2Tmi = -1; 
-    fGenK1Tmi = -1;  
-    fGenK2Tmi = -1;  
+    fGenM1Tmi = -1;
+    fGenM2Tmi = -1;
+    fGenK1Tmi = -1;
+    fGenK2Tmi = -1;
   }
 
 
   // -- check that only one reco track is matched to each gen particle
   //    else skip the *event*!
   TSimpleTrack *pT(0);
-  int cntM1(0), cntM2(0), cntK1(0), cntK2(0); 
+  int cntM1(0), cntM2(0), cntK1(0), cntK2(0);
   for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i); 
+    pT = fpEvt->getSimpleTrack(i);
     if (fGenM1Tmi > -1 && fGenM1Tmi == pT->getGenIndex()) ++cntM1;
     if (fGenM2Tmi > -1 && fGenM2Tmi == pT->getGenIndex()) ++cntM2;
     if (fGenK1Tmi > -1 && fGenK1Tmi == pT->getGenIndex()) ++cntK1;
     if (fGenK2Tmi > -1 && fGenK2Tmi == pT->getGenIndex()) ++cntK2;
   }
 
-  static int cntBadEvents = 0; 
+  static int cntBadEvents = 0;
   if (cntM1 > 1 || cntM2 > 1 || cntK1 > 1 || cntK2 > 1) {
-    cout << "BAD BAD event: multiple reco tracks matched to the same gen particle! " << ++cntBadEvents 
+    cout << "BAD BAD event: multiple reco tracks matched to the same gen particle! " << ++cntBadEvents
 	 << ": " << cntM1 << " .. " << cntM2 << " .. " << cntK1 << " .. " << cntK2
 	 << " (gen-reco matches) " << endl;
-    fBadEvent = true; 
+    fBadEvent = true;
   }
 
 }
@@ -322,30 +322,30 @@ void candAnaBs2JpsiPhi::genMatch() {
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::recoMatch() {
 
-  fRecM1Tmi = fRecM2Tmi = fRecK1Tmi = fRecK2Tmi =-1; 
+  fRecM1Tmi = fRecM2Tmi = fRecK1Tmi = fRecK2Tmi =-1;
   TSimpleTrack *pT(0);
   for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i); 
+    pT = fpEvt->getSimpleTrack(i);
     if (pT->getGenIndex() < 0) continue;
 
     // -- muon 1
     if (fGenM1Tmi > -1 && pT->getGenIndex() == fGenM1Tmi) {
-      fRecM1Tmi = i; 
+      fRecM1Tmi = i;
     }
 
     // -- muon 2
     if (fGenM2Tmi > -1 && pT->getGenIndex() == fGenM2Tmi) {
-      fRecM2Tmi = i; 
+      fRecM2Tmi = i;
     }
 
     // -- kaon 1
     if (fGenK1Tmi > -1 && pT->getGenIndex() == fGenK1Tmi) {
-      fRecK1Tmi = i; 
+      fRecK1Tmi = i;
     }
 
     // -- kaon 2
     if (fGenK2Tmi > -1 && pT->getGenIndex() == fGenK2Tmi) {
-      fRecK2Tmi = i; 
+      fRecK2Tmi = i;
     }
 
     // -- skip rest if all matches found
@@ -366,43 +366,43 @@ void candAnaBs2JpsiPhi::recoMatch() {
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::candMatch() {
 
-  fCandTmi = -1;   
-  int idx(-1), type(-1); 
-  int d1Matched(0), d2Matched(0), d3Matched(0), d4Matched(0); 
+  fCandTmi = -1;
+  int idx(-1), type(-1);
+  int d1Matched(0), d2Matched(0), d3Matched(0), d4Matched(0);
   TAnaCand *pCand(0);
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    pCand = fpEvt->getCand(iC); 
+    pCand = fpEvt->getCand(iC);
     if (TYPE != pCand->fType) continue;
-    
-    d1Matched = d2Matched = d3Matched = d4Matched = 0; 
+
+    d1Matched = d2Matched = d3Matched = d4Matched = 0;
     for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
-      idx = fpEvt->getSigTrack(i)->fIndex; 
+      idx = fpEvt->getSigTrack(i)->fIndex;
       type = TMath::Abs(fpEvt->getSigTrack(i)->fMCID);
       //       if (fGenM1Tmi > -1) cout << "  --> " << idx << " " << fRecM1Tmi << " " << fRecM2Tmi << " " << fRecK1Tmi << endl;
       if (fVerbose > 10) {
 	cout << idx << " " << fRecM1Tmi << " " << fRecM2Tmi << " " << fRecK1Tmi << endl;
       }
       if (fRecM1Tmi > -1 && type == 13 && idx == fRecM1Tmi) {
-	d1Matched = 1; 
+	d1Matched = 1;
       }
       if (fRecM2Tmi > -1 && type == 13 && idx == fRecM2Tmi) {
-	d2Matched = 1; 
+	d2Matched = 1;
       }
       if (fRecK1Tmi > -1 && type == 321 && idx == fRecK1Tmi) {
-	d3Matched = 1; 
+	d3Matched = 1;
       }
       if (fRecK2Tmi > -1 && type == 321 && idx == fRecK2Tmi) {
-	d4Matched = 1; 
+	d4Matched = 1;
       }
     }
-    
+
     if (d1Matched && d2Matched && d3Matched && d4Matched) {
       fCandTmi = iC;
       break;
     }
   }
   if (fVerbose > 10) {
-    cout << "fCandTmi = " << fCandTmi << " matched to rec tracks " << fRecM1Tmi << " " << fRecM2Tmi << " " << fRecK1Tmi  << " " << fRecK2Tmi 
+    cout << "fCandTmi = " << fCandTmi << " matched to rec tracks " << fRecM1Tmi << " " << fRecM2Tmi << " " << fRecK1Tmi  << " " << fRecK2Tmi
 	 << endl;
   }
 
@@ -415,7 +415,6 @@ void candAnaBs2JpsiPhi::bookHist() {
   candAna::bookHist();
 
   moreReducedTree(fTree);
-  moreReducedTree(fAmsTree);
 
   // -- Additional effTree variables
   fEffTree->Branch("k1pt",   &fETk1pt,            "k1pt/F");
@@ -490,7 +489,7 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
 
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::fillCandidateHistograms(int offset) {
-  candAna::fillCandidateHistograms(offset); 
+  candAna::fillCandidateHistograms(offset);
 }
 
 
@@ -499,162 +498,162 @@ void candAnaBs2JpsiPhi::efficiencyCalculation() {
 
   fGoodEffCand = false;
 
-  // -- gen level 
-  TGenCand *pB(0), *pM1(0), *pM2(0), *pK1(0), *pK2(0); 
+  // -- gen level
+  TGenCand *pB(0), *pM1(0), *pM2(0), *pK1(0), *pK2(0);
   if (-1 == fGenM1Tmi || -1 == fGenM2Tmi || -1 == fGenK1Tmi || -1 == fGenK2Tmi) {
     if (fVerbose > 2 ) cout << "--------------------> No matched signal decay found" << endl;
     return;
   }
-  pB  = fpEvt->getGenTWithIndex(fGenBTmi); 
-  pM1 = fpEvt->getGenTWithIndex(fGenM1Tmi); 
-  pM2 = fpEvt->getGenTWithIndex(fGenM2Tmi); 
-  pK1 = fpEvt->getGenTWithIndex(fGenK1Tmi); 
-  pK2 = fpEvt->getGenTWithIndex(fGenK2Tmi); 
+  pB  = fpEvt->getGenTWithIndex(fGenBTmi);
+  pM1 = fpEvt->getGenTWithIndex(fGenM1Tmi);
+  pM2 = fpEvt->getGenTWithIndex(fGenM2Tmi);
+  pK1 = fpEvt->getGenTWithIndex(fGenK1Tmi);
+  pK2 = fpEvt->getGenTWithIndex(fGenK2Tmi);
 
   // -- reco level
-  TSimpleTrack *prM1(0), *prM2(0), *prK1(0), *prK2(0); 
-  double bla(0); 
-  int m1Matched(0), m2Matched(0), k1Matched(0), k2Matched(0), m1ID(0), m1tmID(0), m1mvaID(0), m2ID(0), m2tmID(0), m2mvaID(0), 
+  TSimpleTrack *prM1(0), *prM2(0), *prK1(0), *prK2(0);
+  double bla(0);
+  int m1Matched(0), m2Matched(0), k1Matched(0), k2Matched(0), m1ID(0), m1tmID(0), m1mvaID(0), m2ID(0), m2tmID(0), m2mvaID(0),
     m1GT(0), m2GT(0), k1GT(0), k2GT(0);
   if (fRecM1Tmi > -1) {
-    m1Matched = 1; 
-    prM1 = fpEvt->getSimpleTrack(fRecM1Tmi); 
-    if (tightMuon(prM1)) m1tmID = 1; 
-    if (mvaMuon(prM1, bla)) m1mvaID = 1; 
+    m1Matched = 1;
+    prM1 = fpEvt->getSimpleTrack(fRecM1Tmi);
+    if (tightMuon(prM1)) m1tmID = 1;
+    if (mvaMuon(prM1, bla)) m1mvaID = 1;
     if (prM1->getHighPurity()) {
-      m1GT = 1; 
+      m1GT = 1;
     } else {
       m1GT = 0;
     }
   }
 
   if (fRecM2Tmi > -1) {
-    m2Matched = 1; 
-    prM2 = fpEvt->getSimpleTrack(fRecM2Tmi); 
-    if (tightMuon(prM2)) m2tmID = 1; 
-    if (mvaMuon(prM2, bla)) m2mvaID = 1; 
+    m2Matched = 1;
+    prM2 = fpEvt->getSimpleTrack(fRecM2Tmi);
+    if (tightMuon(prM2)) m2tmID = 1;
+    if (mvaMuon(prM2, bla)) m2mvaID = 1;
     if (prM2->getHighPurity()) {
-      m2GT = 1; 
+      m2GT = 1;
     } else {
       m2GT = 0;
     }
-  } 
+  }
 
   if (fRecK1Tmi > -1) {
-    k1Matched = 1; 
-    prK1 = fpEvt->getSimpleTrack(fRecK1Tmi); 
+    k1Matched = 1;
+    prK1 = fpEvt->getSimpleTrack(fRecK1Tmi);
     if (prK1->getHighPurity()) {
-      k1GT = 1; 
+      k1GT = 1;
     } else {
       k1GT = 0;
     }
-  } 
+  }
 
   if (fRecK2Tmi > -1) {
-    k2Matched = 1; 
-    prK2 = fpEvt->getSimpleTrack(fRecK2Tmi); 
+    k2Matched = 1;
+    prK2 = fpEvt->getSimpleTrack(fRecK2Tmi);
     if (prK2->getHighPurity()) {
-      k2GT = 1; 
+      k2GT = 1;
     } else {
       k2GT = 0;
     }
-  } 
+  }
 
-  // -- cand level 
+  // -- cand level
   TAnaCand *pCand(0);
   if (fCandTmi > -1) {
     pCand = fpEvt->getCand(fCandTmi);
   }
 
-  m1ID = m1tmID; 
-  m2ID = m2tmID; 
+  m1ID = m1tmID;
+  m2ID = m2tmID;
 
   // -- EffTree filling for all events with a signal decay
-  fETgpt   = pB->fP.Perp(); 
-  fETgeta  = pB->fP.Eta(); 
-  fETg1pt  = pM1->fP.Perp(); 
-  fETg1eta = pM1->fP.Eta(); 
-  fETg2pt  = pM2->fP.Perp(); 
-  fETg2eta = pM2->fP.Eta(); 
-  fETg3pt  = pK1->fP.Perp(); 
-  fETg3eta = pK1->fP.Eta(); 
-  fETg4pt  = pK2->fP.Perp(); 
-  fETg4eta = pK2->fP.Eta(); 
+  fETgpt   = pB->fP.Perp();
+  fETgeta  = pB->fP.Eta();
+  fETg1pt  = pM1->fP.Perp();
+  fETg1eta = pM1->fP.Eta();
+  fETg2pt  = pM2->fP.Perp();
+  fETg2eta = pM2->fP.Eta();
+  fETg3pt  = pK1->fP.Perp();
+  fETg3eta = pK1->fP.Eta();
+  fETg4pt  = pK2->fP.Perp();
+  fETg4eta = pK2->fP.Eta();
   if (m1Matched) {
-    fETm1pt  = prM1->getP().Perp(); 
-    fETm1eta = prM1->getP().Eta(); 
+    fETm1pt  = prM1->getP().Perp();
+    fETm1eta = prM1->getP().Eta();
     fETm1q   = prM1->getCharge();
-    fETm1gt  = (m1GT>0?true:false); 
+    fETm1gt  = (m1GT>0?true:false);
     fETm1id  = (m1ID>0?true:false);
     fETm1tmid  = (m1tmID>0?true:false);
     fETm1mvaid = (m1mvaID>0?true:false);
   } else {
-    fETm1pt  = -99.; 
-    fETm1eta = -99.; 
+    fETm1pt  = -99.;
+    fETm1eta = -99.;
     fETm1q   = -99;
-    fETm1gt  = false; 
+    fETm1gt  = false;
     fETm1id  = false;
     fETm1tmid  = false;
     fETm1mvaid = false;
   }
   if (m2Matched) {
-    fETm2pt  = prM2->getP().Perp(); 
-    fETm2eta = prM2->getP().Eta(); 
+    fETm2pt  = prM2->getP().Perp();
+    fETm2eta = prM2->getP().Eta();
     fETm2q   = prM2->getCharge();
-    fETm2gt  = (m2GT>0?true:false); 
+    fETm2gt  = (m2GT>0?true:false);
     fETm2id  = (m2ID>0?true:false);
     fETm2tmid  = (m2tmID>0?true:false);
     fETm2mvaid = (m2mvaID>0?true:false);
   } else {
-    fETm2pt  = -99.; 
-    fETm2eta = -99.; 
+    fETm2pt  = -99.;
+    fETm2eta = -99.;
     fETm2q   = -99;
-    fETm2gt  = false; 
+    fETm2gt  = false;
     fETm2id  = false;
     fETm2tmid  = false;
     fETm2mvaid = false;
   }
   if (k1Matched) {
-    fETk1pt  = prK1->getP().Perp(); 
-    fETk1eta = prK1->getP().Eta(); 
+    fETk1pt  = prK1->getP().Perp();
+    fETk1eta = prK1->getP().Eta();
     fETk1q   = prK1->getCharge();
-    fETk1gt  = (k1GT>0?true:false); 
+    fETk1gt  = (k1GT>0?true:false);
   } else {
-    fETk1pt  = -99.; 
-    fETk1eta = -99.; 
+    fETk1pt  = -99.;
+    fETk1eta = -99.;
     fETk1q   = -99;
-    fETk1gt  = false; 
+    fETk1gt  = false;
   }
   if (k2Matched) {
-    fETk2pt  = prK2->getP().Perp(); 
-    fETk2eta = prK2->getP().Eta(); 
+    fETk2pt  = prK2->getP().Perp();
+    fETk2eta = prK2->getP().Eta();
     fETk2q   = prK2->getCharge();
-    fETk2gt  = (k2GT>0?true:false); 
+    fETk2gt  = (k2GT>0?true:false);
   } else {
-    fETk2pt  = -99.; 
-    fETk2eta = -99.; 
+    fETk2pt  = -99.;
+    fETk2eta = -99.;
     fETk2q   = -99;
-    fETk2gt  = false; 
+    fETk2gt  = false;
   }
   if (pCand) {
-    fETcandMass = pCand->fMass; 
+    fETcandMass = pCand->fMass;
   } else {
     fETcandMass = -99.;
   }
 
-  fEffTree->Fill(); 
+  fEffTree->Fill();
 
 }
 
 
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
-  candAna::readCuts(filename, dump); 
+  candAna::readCuts(filename, dump);
 
   fCutFile = filename;
 
   if (dump) cout << "==> candAnaBs2JpsiPhi: Reading " << fCutFile << " for cut settings" << endl;
-  vector<string> cutLines; 
+  vector<string> cutLines;
   readFile(fCutFile, cutLines);
 
   char CutName[100];
@@ -664,12 +663,12 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
   fHistDir->cd();
   TH1D *hcuts = (TH1D*)fHistDir->Get("hcuts");
   hcuts->GetXaxis()->SetBinLabel(200, fCutFile.c_str());
-  int ibin; 
-  string cstring = "B cand"; 
+  int ibin;
+  string cstring = "B cand";
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
-    sprintf(buffer, "%s", cutLines[i].c_str()); 
-    
+    sprintf(buffer, "%s", cutLines[i].c_str());
+
     if (buffer[0] == '#') {continue;}
     if (buffer[0] == '/') {continue;}
     sscanf(buffer, "%s %f", CutName, &CutValue);
@@ -683,7 +682,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "JPSIMASSLO")) {
-      JPSIMASSLO = CutValue; 
+      JPSIMASSLO = CutValue;
       if (dump) cout << "JPSIMASSLO:      " << JPSIMASSLO << endl;
       ibin = 211;
       hcuts->SetBinContent(ibin, JPSIMASSLO);
@@ -691,7 +690,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "JPSIMASSHI")) {
-      JPSIMASSHI = CutValue; 
+      JPSIMASSHI = CutValue;
       if (dump) cout << "JPSIMASSLO:      " << JPSIMASSHI << endl;
       ibin = 212;
       hcuts->SetBinContent(ibin, JPSIMASSHI);
@@ -699,7 +698,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "PHITYPE")) {
-      PHITYPE = static_cast<int>(CutValue); 
+      PHITYPE = static_cast<int>(CutValue);
       if (dump) cout << "PHITYPE:      " << PHITYPE << endl;
       ibin = 213;
       hcuts->SetBinContent(ibin, PHITYPE);
@@ -707,7 +706,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "MKKLO")) {
-      MKKLO = CutValue; 
+      MKKLO = CutValue;
       if (dump) cout << "MKKLO:           " << MKKLO << endl;
       ibin = 300;
       hcuts->SetBinContent(ibin, MKKLO);
@@ -715,7 +714,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
     if (!strcmp(CutName, "MKKHI")) {
-      MKKHI = CutValue; 
+      MKKHI = CutValue;
       if (dump) cout << "MKKHI:           " << MKKHI << endl;
       ibin = 300;
       hcuts->SetBinContent(ibin, MKKHI);
@@ -731,7 +730,7 @@ void candAnaBs2JpsiPhi::readCuts(string filename, int dump) {
     }
 
 
-    
+
   }
 
 }
