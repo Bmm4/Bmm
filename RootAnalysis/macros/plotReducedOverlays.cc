@@ -205,9 +205,9 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
 	signalE = cE/c*signal;
       }
       tl->SetTextSize(0.025);
-      tl->DrawLatexNDC(0.55, 0.70, Form("Signal: %5.1f #pm %5.1f", signal, signalE));
-      tl->DrawLatexNDC(0.55, 0.66, Form("Mass:   %5.4f #pm %5.4f GeV", f1->GetParameter(1), f1->GetParError(1)));
-      tl->DrawLatexNDC(0.55, 0.62, Form("Width:  %5.4f #pm %5.4f GeV", f1->GetParameter(2), f1->GetParError(2)));
+      tl->DrawLatexNDC(0.55, 0.70, Form("Signal: %5.1f  #pm %5.1f", signal, signalE));
+      tl->DrawLatexNDC(0.55, 0.66, Form("Mass:   %5.4f  #pm %5.4f GeV", f1->GetParameter(1), f1->GetParError(1)));
+      tl->DrawLatexNDC(0.55, 0.62, Form("Width:  %5.4f  #pm %5.4f GeV", f1->GetParameter(2), f1->GetParError(2)));
     } else {
       h->Draw("hist");
     }
@@ -216,6 +216,8 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
     tl->DrawLatexNDC(0.55, 0.80, header.c_str());
     tl->SetTextSize(0.025);
     tl->DrawLatexNDC(0.55, 0.75, Form("%2.1f < #eta(#mu_{f}) < %2.1f", fCuts[i]->metaMin, fCuts[i]->metaMax));
+
+    stamp(0., fStampCms, fStampString, 0., fStampLumi);
 
     c0->SaveAs(Form("%s/mass_ad%d_%s_%s.pdf", fDirectory.c_str(), i, sample.c_str(), selection.c_str()));
   }
@@ -848,12 +850,6 @@ void plotReducedOverlays::systematics(string sample1, string sample2, int chan) 
 // ----------------------------------------------------------------------
 void plotReducedOverlays::overlay(string sample1, string sample2, string selection, string what) {
 
-  if (fDoUseBDT) {
-    fStampString = "BDT";
-  } else {
-    fStampString = "CNC";
-  }
-
   gStyle->SetOptTitle(0);
   c0->cd();
   shrinkPad(0.15, 0.18);
@@ -969,7 +965,7 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
       legg->Draw();
     }
 
-    stamp(0.18, fStampString, 0.4, fStampCms);
+    stamp(0.18, fStampCms, fStampString, 0.4, fStampLumi);
 
     if (1) {
       TLatex ll;
