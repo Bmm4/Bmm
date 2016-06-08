@@ -1,5 +1,3 @@
 candAnaDstar  cuts/candAnaDstar.2012.cuts
 #
 JSON          ../common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt
-#PDTRIGGER     ../common/pd
-

@@ -28,7 +28,7 @@
 
 #define DR      57.29577951
 
-class PidTable; 
+class PidTable;
 class candAna;
 
 class bmmReader : public treeReader01 {
@@ -48,9 +48,8 @@ public:
 
   std::vector<candAna*> lCandAnalysis;
 
-
-  int fProcessType; 
-  int fYear; 
+  int fProcessType;
+  int fYear;
 };
 
 #endif

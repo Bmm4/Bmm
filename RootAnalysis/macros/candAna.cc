@@ -1771,16 +1771,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: Ignore preselection :: %i", CutName, NOPRESELECTION));
     }
 
-    if (!strcmp(CutName, "DSNAME")) {
-      char dsname[100];
-      sscanf(buffer, "%s %s", CutName, dsname);
-      DSNAME = string(dsname);
-      if (dump) cout << "DSNAME    " << DSNAME << endl;
-      ibin = 7;
-      hcuts->SetBinContent(ibin, 1.);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: DS name :: %s", CutName, dsname));
-    }
-
     if (!strcmp(CutName, "CANDPTLO")) {
       CANDPTLO = CutValue;
       if (dump) cout << "CANDPTLO:           " << CANDPTLO << " GeV" << endl;
@@ -3740,7 +3730,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 // -- search for a PD trigger that has no overlap with the tracks of the candidate
 bool candAna::tis(TAnaCand *pC) {
   bool result(false);
-  int verbose(0);
+  int verbose(1);
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
@@ -3759,7 +3749,7 @@ bool candAna::tis(TAnaCand *pC) {
   if (nhlt < 2) verbose = 0;
 
   if (verbose) {
-    cout << "==> candidate tracks" << endl;
+    cout << "==> candidate " << pC->fType << " tracks" << endl;
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       cout << "muon = " << fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()
 	   << " " << Form(" %4d ", sigIdx[i])
@@ -3830,12 +3820,13 @@ bool candAna::tis(TAnaCand *pC) {
       }
     }
     if (verbose) {
-      if (!overlap) cout << " NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      if (!overlap) {
+	result = true;
+	cout << " NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      }
       cout << endl;
     }
   }
-
-
 
   return result;
 }

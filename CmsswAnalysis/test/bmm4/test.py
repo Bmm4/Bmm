@@ -26,7 +26,7 @@ from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 #CMSSW_5_3_12_patch3: 
 #CMSSW_7_0_7_patch1:  process.GlobalTag.globaltag = "START70_V7A::All"
 
-process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run1_mc', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 
 
 # ----------------------------------------------------------------------
@@ -34,12 +34,13 @@ process.source = cms.Source(
  "PoolSource",
   fileNames = cms.untracked.vstring(
 #      "/store/user/ursl/files/Summer12_DR53X/BuToJPsiK_K2MuPtEtaEtaFilter_8TeV-pythia6-evtgen-0000.root"
-#      "/store/data/Run2015B/MuOnia/AOD/PromptReco-v1/000/251/168/00000/04916A37-CF26-E511-8DCD-02163E013406.root"
-        "/store/relval/CMSSW_7_3_0_pre2/RelValBsToMuMu_13/GEN-SIM-RECO/MCRUN2_73_V1-v1/00000/7CA64471-C16B-E411-BB89-02163E00F463.root"
+#      "/store/user/ursl/bmm4/prod/aodsim/76x/test/MuonGun_step3-40000.root"
+        "file:/scratch/ursl/MuonGun_step1-40000/CMSSW_7_6_1/src/MuonGun_step3-40000.root"
+#        "file:/shome/ursl/bmm4/prod/CMSSW_7_6_1/src/MuonGun_step3-40001.root"
 
  )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(-1) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
@@ -74,11 +75,12 @@ process.genDump = cms.EDAnalyzer(
     )
 
 
+process.muonDump.verbose = cms.untracked.int32(1)
+
+
 # ----------------------------------------------------------------------
 process.p = cms.Path(
 #    process.genDump*
     process.recoStuffSequence*
-    process.bmmSequence*
-    process.truthBmmSequence*
     process.tree
 )
