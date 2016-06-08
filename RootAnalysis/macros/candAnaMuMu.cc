@@ -380,7 +380,7 @@ void candAnaMuMu::efficiencyCalculation() {
   }
   if (pCand) {
     fETcandMass = pCand->fMass;
-    fETtau      = fCandTau;
+    fETtau      = pCand->fVtx.fD3d/pCand->fVtx.fD3dE*MBS/pCand->fPlab.Mag()/TMath::Ccgs();
   } else {
     fETcandMass = -99.;
     fETtau      = -99.;

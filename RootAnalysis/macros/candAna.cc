@@ -1390,7 +1390,7 @@ void candAna::bookHist() {
 
   fEffTree->Branch("gpt",    &fETgpt,             "gpt/F");
   fEffTree->Branch("geta",   &fETgeta,            "geta/F");
-  fEffTree->Branch("gtau",   &fGenLifeTime,       "gtau/D");
+  fEffTree->Branch("gtau",   &fETgtau,            "gtau/F");
 
   fEffTree->Branch("m1pt",   &fETm1pt,            "m1pt/F");
   fEffTree->Branch("g1pt",   &fETg1pt,            "g1pt/F");
@@ -1413,6 +1413,7 @@ void candAna::bookHist() {
   fEffTree->Branch("m2mvaid",&fETm2mvaid,         "m2mvaid/O");
 
   fEffTree->Branch("m",      &fETcandMass,        "m/F");
+  fEffTree->Branch("tau",    &fETtau,             "tau/F");
 
 
   // -- Analysis distributions
