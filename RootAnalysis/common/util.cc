@@ -578,6 +578,8 @@ string formatTex(double n, string name, string tag) {
 }
 
 // ----------------------------------------------------------------------
+// -- based on the code downloaded on 216/06/07 from the pubcomm twiki
+//    (fails miserably with the top margin does not adhere to GHM's expectation)
 void stamp(double x1, string text1, string text1a, double x2, string text2, int iPosX) {
 
   TLatex *tl = new TLatex();
@@ -639,19 +641,19 @@ void stamp(double x1, string text1, string text1a, double x2, string text2, int 
   tl->SetTextSize(cmsTextSize*t);
   tl->SetTextAlign(align_);
   tl->DrawLatex(posX_, posY_, text1.c_str());
-  cout << "stamp() > " << posX_ << " " << posY_ << " " << text1 << endl;
+  //  cout << "stamp() > " << posX_ << " " << posY_ << " " << text1 << endl;
   // -- text below "CMS"
   tl->SetTextFont(extraTextFont);
   tl->SetTextAlign(align_);
   tl->SetTextSize(extraTextSize*t);
   tl->DrawLatex(posX_, posY_- relExtraDY*cmsTextSize*t, text1a.c_str());
-  cout << "stamp() > " << posX_ << " " << posY_- relExtraDY*cmsTextSize*t << " " << text1a << endl;
+  //  cout << "stamp() > " << posX_ << " " << posY_- relExtraDY*cmsTextSize*t << " " << text1a << endl;
   // -- luminosity
   tl->SetTextFont(42);
   tl->SetTextAlign(31);
   tl->SetTextSize(lumiTextSize*t);
   tl->DrawLatex(1-r, 1-t+lumiTextOffset*t, text2.c_str());
-  cout << "stamp() > " << 1-r << " " << 1-t+lumiTextOffset*t << " " << text2 << endl;
+  //  cout << "stamp() > " << 1-r << " " << 1-t+lumiTextOffset*t << " " << text2 << endl;
 
 
 
