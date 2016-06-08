@@ -269,6 +269,7 @@ void plotReducedOverlays::makeOverlay(string sample1, string sample2, string sel
   cout << " opened " << endl;
 
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
+    cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), sample1.c_str()) << endl;
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), sample1.c_str()), selection);
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), sample2.c_str()), selection);
 
@@ -1425,7 +1426,6 @@ void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
   hr->SetLineColor(kBlack);
   hr->SetMinimum(0.4);
   hr->SetMaximum(1.6);
-  hr->Sumw2();
   hr->SetStats(0);
   hr->Divide(h2);
   hr->SetMarkerStyle(24);
