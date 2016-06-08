@@ -86,8 +86,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   if (fVerbose>0) {
     cout << "======================================================================" << endl;
-    cout << " event " << fEvt << " run " << fRun << " cands " << fpEvt->nCands() << " verbose "
-	 << fVerbose << " MC " << fIsMC << endl;
+    cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
+	 << fVerbose << " MC: " << fIsMC << endl;
   }
 
   if (fIsMC) {
@@ -211,7 +211,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       } else {
 
 	if (fPreselection) {
-	  if (fVerbose > 9)
+	  if (1 || fVerbose > 9)
 	    cout << " filling this cand into the tree"
 		 <<" cand "<<fpCand->fType<<" run "<<fRun<<" ls "<<fLS<<" event "<<fEvt<<" json "<<fJSON
 		 <<" hlt "<<fGoodHLT<<" matched "<<fHLTmatch<<endl;
@@ -1769,16 +1769,6 @@ void candAna::readCuts(string fileName, int dump) {
       ibin = 6;
       hcuts->SetBinContent(ibin, NOPRESELECTION);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: Ignore preselection :: %i", CutName, NOPRESELECTION));
-    }
-
-    if (!strcmp(CutName, "DSNAME")) {
-      char dsname[100];
-      sscanf(buffer, "%s %s", CutName, dsname);
-      DSNAME = string(dsname);
-      if (dump) cout << "DSNAME    " << DSNAME << endl;
-      ibin = 7;
-      hcuts->SetBinContent(ibin, 1.);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: DS name :: %s", CutName, dsname));
     }
 
     if (!strcmp(CutName, "CANDPTLO")) {
@@ -3740,7 +3730,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 // -- search for a PD trigger that has no overlap with the tracks of the candidate
 bool candAna::tis(TAnaCand *pC) {
   bool result(false);
-  int verbose(0);
+  int verbose(1);
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
@@ -3751,7 +3741,7 @@ bool candAna::tis(TAnaCand *pC) {
   int nhlt(0);
   for (int i = 0; i < NHLT; ++i) {
     if (fpEvt->fHLTResult[i]) {
-      //      cout << "event triggered by " << fpEvt->fHLTNames[i] << endl;
+      if (verbose) cout << "   " << fpEvt->fHLTNames[i] << endl;
       ++nhlt;
     }
   }
@@ -3759,7 +3749,7 @@ bool candAna::tis(TAnaCand *pC) {
   if (nhlt < 2) verbose = 0;
 
   if (verbose) {
-    cout << "==> candidate tracks" << endl;
+    cout << "==> in DS = " << DSNAME << ", candidate " <<  pC->fType << " with tracks " << endl;
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       cout << "muon = " << fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()
 	   << " " << Form(" %4d ", sigIdx[i])
@@ -3771,7 +3761,7 @@ bool candAna::tis(TAnaCand *pC) {
     }
   }
 
-  // -- get list of PD triggers from histogram  triggers_Charmonium_run273730
+  // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
   TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
   if (!ht) return false;
   string hltPath("nada");
@@ -3788,7 +3778,7 @@ bool candAna::tis(TAnaCand *pC) {
 	vector<int> muonID = pTO->fID;
 	vector<TLorentzVector> muonP = pTO->fP;
 	int num = muonIndex.size();
-	if (verbose) cout << "  " << pTO->fType << " .. " << pTO->fLabel << " .. " << pTO->fHltPath << " with n(particles) = " << num << endl;
+	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
 	// -- skip L1 and L2 objects (bad resolution for matching)
 	if (pTO->fType.Contains("L1T")) continue;
 	if (pTO->fType.Contains("L2")) continue;
@@ -3830,7 +3820,10 @@ bool candAna::tis(TAnaCand *pC) {
       }
     }
     if (verbose) {
-      if (!overlap) cout << " NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      if (!overlap) {
+	result = true;
+	cout << " NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      }
       cout << endl;
     }
   }
