@@ -4,3 +4,4 @@ candAnaBs2JpsiPhi cuts/candAnaBs2JpsiPhi.2016.cuts
 candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.2016.cuts
 #
 JSON             ../common/json/Cert_271036-273730_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+DSNAME       Charmonium
