@@ -3402,6 +3402,9 @@ void candAna::fillRedTreeData() {
   fRTD.m1eta     = fMu1Eta;
   fRTD.m2eta     = fMu2Eta;
 
+  fRTD.m1q       = fMu1Q;
+  fRTD.m2q       = fMu2Q;
+
   fRTD.pvip      = fCandPvIp;
   fRTD.pvips     = fCandPvIpS;
 
