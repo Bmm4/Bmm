@@ -42,7 +42,7 @@ public:
   virtual int        loop(int nevents = 1, int start = -1);
   virtual TFile*     getFile() {return fpChain->GetCurrentFile();}
   virtual void       eventProcessing();
-  virtual void       initVariables(); 
+  virtual void       initVariables();
   virtual void       fillHist();
   virtual bool       goodRun();
   virtual void       setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
@@ -68,7 +68,7 @@ protected:
   TString      fChainFileName; // the name of the chain file
   TString      fCutFile;       // contains file with the cut definitions
 
-  TAna01Event *fpEvt; 
+  TAna01Event *fpEvt;
 
   // -- Pre-filled variables
   int          fNentries;      // number of events in chain; filled in treeReader01::treeReader01()
@@ -78,25 +78,25 @@ protected:
   int          fLS;            // current lumi section; filled in treeReader01::loop()
 
 
-  // -- Histogram pointers 
+  // -- Histogram pointers
   TTree       *fTree;
 
   // -- Pointer to JSON class
-  JSON *fpJSON; 
+  JSON *fpJSON;
 
   // -- Pointer to JSON class
-  PdTrigger *fpPdTrigger; 
+  PdTrigger *fpPdTrigger;
 
   // -- Cut values
-  double 
+  double
       PTLO
     , PTHI
     , ETALO
-    , ETAHI   
+    , ETAHI
     ;
   int TYPE;
-  int BLIND; 
-  std::string JSONFILE, PDTRIGGER;
+  int BLIND;
+  std::string JSONFILE, DSNAME;
   bool fForceJson;
 
   int fIsMC;

@@ -544,6 +544,7 @@ void candAnaBu2JpsiK::efficiencyCalculation() {
 
   // -- EffTree filling for all events with a signal decay
   fETgpt   = pB->fP.Perp();
+  fETgtau  = fGenLifeTime;
   fETgeta  = pB->fP.Eta();
   fETg1pt  = pM1->fP.Perp();
   fETg1eta = pM1->fP.Eta();
@@ -598,8 +599,10 @@ void candAnaBu2JpsiK::efficiencyCalculation() {
   }
   if (pCand) {
     fETcandMass = pCand->fMass;
+    fETtau      = pCand->fVtx.fD3d/pCand->fVtx.fD3dE*MBS/pCand->fPlab.Mag()/TMath::Ccgs();
   } else {
     fETcandMass = -99.;
+    fETtau      = -99.;
   }
 
   fEffTree->Fill();

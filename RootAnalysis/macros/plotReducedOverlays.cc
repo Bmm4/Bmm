@@ -53,7 +53,7 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
 
   fDoList.clear();
   fDoList.push_back("muon1pt");
-  if (0) {
+  if (1) {
     fDoList.push_back("muon2pt");
 
     fDoList.push_back("muonseta");
@@ -136,9 +136,11 @@ void plotReducedOverlays::makeAll(string selection) {
   makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
   makeSampleOverlay("bmmData", "bdmmMc", "Presel");
   makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
+  makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
 
   plotMass("bspsiphiData", "Cu");
   plotMass("bupsikData", "Cu");
+  plotMass("bdpsikstarData", "Cu");
   plotMass("bmmData", "Presel");
 
 }
@@ -267,6 +269,7 @@ void plotReducedOverlays::makeOverlay(string sample1, string sample2, string sel
   cout << " opened " << endl;
 
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
+    cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), sample1.c_str()) << endl;
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), sample1.c_str()), selection);
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), sample2.c_str()), selection);
 
@@ -885,10 +888,11 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
     if (h2->GetSumOfWeights() > 0) h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
 
     cout << "setHist for " << ds1 << " and " << ds2 << endl;
-    setHist(h1, fDS[ds1]);
-    setHist(h2, fDS[ds2]);
 
     overlayAndRatio(c0, h1, h2);
+    setHist(h1, fDS[ds1]);
+    setHist(h2, fDS[ds2]);
+    setHist(h2, fDS[ds2]);
 
     if (doLegend) {
       if (leftLegend) {
@@ -956,7 +960,7 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
       TLatex ll;
       ll.SetTextAngle(90.);
       ll.SetTextSize(0.03);
-      ll.DrawLatexNDC(0.93, 0.17, Form("%s/%s/%s/%s", sample1.c_str(), sample2.c_str(), selection.c_str(), fDoList[i].c_str()));
+      ll.DrawLatexNDC(0.97, 0., Form("%s/%s/%s/%s", sample1.c_str(), sample2.c_str(), selection.c_str(), fDoList[i].c_str()));
     }
 
     c0->Modified();
@@ -1382,6 +1386,98 @@ AnalysisDistribution* plotReducedOverlays::bookSpecialDistribution(string hn, st
   return p;
 }
 
+// ----------------------------------------------------------------------
+void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
+  bool drawGrid(true);
+  bool fitRatio(false);
+
+  // -- Upper plot
+  double splity(0.3);
+  c->cd();
+  TPad *pad1 = new TPad("pad1", "pad1", 0.0, splity, 1.0, 1.0);
+  pad1->SetTopMargin(0.1);
+  pad1->SetBottomMargin(0.);
+  pad1->SetRightMargin(0.05);
+  if (drawGrid) pad1->SetGridx();
+  pad1->Draw();
+  pad1->cd();
+
+  h1->SetTitle("");
+  h1->SetMinimum(0.01);
+  double ymax = h1->GetMaximum();
+  if (h2->GetMaximum() > ymax) ymax = h2->GetMaximum();
+  h1->SetStats(0);
+  h1->Draw();
+  h2->Draw("same");
+  h1->SetMaximum(1.2*ymax);
+
+  // -- Lower plot
+  c->cd();
+  TPad *pad2 = new TPad("pad2", "pad2", 0, 0., 1.0, splity);
+  pad2->SetTopMargin(0.);
+  pad2->SetBottomMargin(0.4);
+  pad2->SetRightMargin(0.05);
+  pad2->Draw();
+  if (drawGrid) pad2->SetGridy();
+  if (drawGrid) pad2->SetGridx();
+  pad2->cd();
+
+  TH1D *hr = (TH1D*)h1->Clone("hr");
+  hr->SetLineColor(kBlack);
+  hr->SetMinimum(0.4);
+  hr->SetMaximum(1.6);
+  hr->SetStats(0);
+  hr->Divide(h2);
+  hr->SetMarkerStyle(24);
+  //  hr->Draw("e0"); // this will draw error bars if the marker is out of range
+  hr->Draw("e0");
+  pl->DrawLine(hr->GetBinLowEdge(1), 1., hr->GetBinLowEdge(hr->GetNbinsX()), 1.0);
+
+
+  if (fitRatio) {
+    hr->Fit("pol1", "q");
+    tl->SetTextAngle(90.);
+    double ts(tl->GetTextSize());
+    tl->SetTextSize(0.09);
+    tl->SetTextColor(kRed);
+    tl->DrawLatexNDC(0.91, 0.3, Form("p1 = %+4.3f #pm %4.3f",
+				      hr->GetFunction("pol1")->GetParameter(1),
+				      hr->GetFunction("pol1")->GetParError(1)));
+    tl->SetTextSize(ts);
+    tl->SetTextColor(kBlack);
+    tl->SetTextAngle(0.);
+  }
+
+  double psize = 0.07;
+  double pratio = (1-splity)/splity;
+  h1->GetYaxis()->SetTitleSize(psize);
+  h1->GetYaxis()->SetTitleFont(42);
+  h1->GetYaxis()->SetTitleOffset(1.55);
+
+  h1->GetYaxis()->SetLabelSize(psize);
+  h1->GetXaxis()->SetLabelSize(psize);
+
+
+  // hr settings
+  hr->SetTitle("");
+  hr->GetXaxis()->SetTitle(h1->GetXaxis()->GetTitle());
+  hr->GetXaxis()->SetTitleOffset(1.0);
+  hr->GetYaxis()->SetTitle("ratio");
+  hr->GetYaxis()->SetTitleOffset(0.4);
+  hr->GetYaxis()->CenterTitle();
+
+  hr->GetYaxis()->SetNdivisions(204);
+  hr->GetYaxis()->SetTitleFont(42);
+  hr->GetXaxis()->SetTitleFont(42);
+  hr->GetYaxis()->SetTitleSize(pratio*psize);
+  hr->GetXaxis()->SetTitleSize(pratio*psize);
+  hr->GetYaxis()->SetLabelSize(pratio*psize);
+  hr->GetXaxis()->SetLabelSize(pratio*psize);
+
+  pad1->cd();
+}
+
+
 
 
 // ----------------------------------------------------------------------
@@ -1411,19 +1507,19 @@ void plotReducedOverlays::loadFiles(string afiles) {
 
     TFile *pF(0);
     dataset *ds(0);
+
     if (string::npos != stype.find("data")) {
       // -- DATA
       pF = loadFile(sfile);
 
       ds = new dataset();
-      ds->fSize = 1;
+      ds->fSize = 1.2;
       ds->fWidth = 2;
-
       if (string::npos != stype.find("bmm")) {
         sname = "bmmData";
         sdecay = "bmm";
 	ds->fColor = kBlack;
-	ds->fSymbol = 24;
+	ds->fSymbol = 20;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -1435,7 +1531,7 @@ void plotReducedOverlays::loadFiles(string afiles) {
         sname = "bupsikData";
         sdecay = "bupsik";
 	ds->fColor = kBlack;
-	ds->fSymbol = 24;
+	ds->fSymbol = 20;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -1447,7 +1543,7 @@ void plotReducedOverlays::loadFiles(string afiles) {
         sname = "bspsiphiData";
         sdecay = "bspsiphi";
 	ds->fColor = kBlack;
-	ds->fSymbol = 24;
+	ds->fSymbol = 20;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -1459,7 +1555,7 @@ void plotReducedOverlays::loadFiles(string afiles) {
         sname = "bdpsikstarData";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlack;
-	ds->fSymbol = 24;
+	ds->fSymbol = 20;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
@@ -1472,25 +1568,26 @@ void plotReducedOverlays::loadFiles(string afiles) {
       pF = loadFile(sfile);
 
       ds = new dataset();
-      ds->fSize = 1;
-      ds->fWidth = 2;
+      ds->fSize = 0.1;
+      ds->fWidth = 2.;
 
       if (string::npos != stype.find("bupsik")) {
         sname = "bupsikMc";
         sdecay = "bupsik";
-	ds->fColor = kGreen-7;
+	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
+	ds->fWidth  = 2.;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
-	ds->fFillStyle = 3356;
+	ds->fFillStyle = 3354;
 	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bspsiphi")) {
         sname = "bspsiphiMc";
         sdecay = "bspsiphi";
-	ds->fColor = kRed-7;
+	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
@@ -1499,10 +1596,23 @@ void plotReducedOverlays::loadFiles(string afiles) {
 	fDS.insert(make_pair(sname, ds));
       }
 
+      if (string::npos != stype.find("bsmm")) {
+        sname = "bsmmMc";
+        sdecay = "bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+
       if (string::npos != stype.find("bdpsikstar")) {
         sname = "bdpsikstarMc";
         sdecay = "bdpsikstar";
-	ds->fColor = kRed-7;
+	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
@@ -1514,7 +1624,7 @@ void plotReducedOverlays::loadFiles(string afiles) {
       if (string::npos != stype.find("bdmm")) {
         sname = "bdmmMc";
         sdecay = "bdmm";
-	ds->fColor = kBlue-7;
+	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = 1.;
@@ -1524,7 +1634,6 @@ void plotReducedOverlays::loadFiles(string afiles) {
       }
 
     }
-
     ds->fLcolor = ds->fColor;
     ds->fFcolor = ds->fColor;
     ds->fName   = sdecay;
@@ -1540,102 +1649,4 @@ void plotReducedOverlays::loadFiles(string afiles) {
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
   }
-}
-
-
-// ----------------------------------------------------------------------
-void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
-  bool drawGrid(true);
-  bool fitRatio(false);
-
-  c->SetBottomMargin(0.);
-  c->Clear();
-
-  // -- Upper plot
-  double splity(0.3);
-  c->cd();
-  TPad *pad1 = new TPad("pad1", "pad1", 0.0, splity, 1.0, 1.0);
-  pad1->SetBottomMargin(0.);
-  if (drawGrid) pad1->SetGridx();
-  pad1->Draw();
-  pad1->cd();
-
-  h1->SetTitle("");
-  h1->SetMinimum(0.01);
-  h1->SetStats(0);
-  h1->SetLineColor(kBlue);
-  h1->Draw();
-  h2->SetLineColor(kRed);
-  h2->Draw("same");
-
-  // -- Lower plot
-  c->cd();
-  TPad *pad2 = new TPad("pad2", "pad2", 0, 0., 1, splity);
-  pad2->SetTopMargin(0);
-  pad2->SetBottomMargin(0.35);
-  pad2->Draw();
-  if (drawGrid) pad2->SetGridy();
-  if (drawGrid) pad2->SetGridx();
-  pad2->cd();
-
-  TH1D *hr = (TH1D*)h1->Clone("hr");
-  hr->SetLineColor(kBlack);
-  hr->SetMinimum(0.801);
-  hr->SetMaximum(1.199);
-  hr->Sumw2();
-  hr->SetStats(0);
-  hr->Divide(h2);
-  hr->SetMarkerStyle(24);
-  //  hr->Draw("e0"); // this will draw error bars if the marker is out of range
-  hr->Draw("e0");
-  pl->DrawLine(hr->GetBinLowEdge(1), 1., hr->GetBinLowEdge(hr->GetNbinsX()), 1.0);
-
-
-  if (fitRatio) {
-    hr->Fit("pol1", "q");
-    tl->SetTextAngle(90.);
-    double ts(tl->GetTextSize());
-    tl->SetTextSize(0.09);
-    tl->SetTextColor(kRed);
-    tl->DrawLatexNDC(0.91, 0.3, Form("p1 = %+4.3f #pm %4.3f",
-				      hr->GetFunction("pol1")->GetParameter(1),
-				      hr->GetFunction("pol1")->GetParError(1)));
-    tl->SetTextSize(ts);
-    tl->SetTextColor(kBlack);
-    tl->SetTextAngle(0.);
-  }
-
-  // h1 settings
-  h1->SetLineColor(kBlue+1);
-  h1->SetLineWidth(2);
-
-  double psize = 0.07;
-  double pratio = (1-splity)/splity;
-  h1->GetYaxis()->SetTitleSize(psize);
-  h1->GetYaxis()->SetTitleFont(42);
-  h1->GetYaxis()->SetTitleOffset(1.55);
-
-  h1->GetYaxis()->SetLabelSize(psize);
-  h1->GetXaxis()->SetLabelSize(psize);
-
-
-  // h2 settings
-  h2->SetLineColor(kRed+1);
-  h2->SetLineWidth(2);
-
-  // hr settings
-  hr->SetTitle("");
-  hr->GetXaxis()->SetTitle("bla [GeV]");
-  hr->GetXaxis()->SetTitleOffset(1.0);
-  hr->GetYaxis()->SetTitle("ratio");
-  hr->GetYaxis()->SetTitleOffset(0.4);
-  hr->GetYaxis()->CenterTitle();
-
-  hr->GetYaxis()->SetNdivisions(204);
-  hr->GetYaxis()->SetTitleFont(42);
-  hr->GetXaxis()->SetTitleFont(42);
-  hr->GetYaxis()->SetTitleSize(pratio*psize);
-  hr->GetXaxis()->SetTitleSize(pratio*psize);
-  hr->GetYaxis()->SetLabelSize(pratio*psize);
-  hr->GetXaxis()->SetLabelSize(pratio*psize);
 }

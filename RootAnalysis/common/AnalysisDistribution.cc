@@ -327,8 +327,8 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   if (fVerbose > 0) {
     c0->cd(3);
     hm->DrawCopy();
-//     hMassBGL->SetMinimum(0.);
-//     hMassBGL->SetMaximum(hm->GetMaximum());
+    //     hMassBGL->SetMinimum(0.);
+    //     hMassBGL->SetMaximum(hm->GetMaximum());
     hMassBGL->Draw("same");
     hMassBGH->Draw("same");
     hMassSG->Draw("same");
@@ -361,7 +361,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
-  } else {
+  }
+
+  if (0) {
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
       delete c0;
@@ -514,7 +516,9 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
 	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
-  } else {
+  }
+
+  if (0) {
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
       delete c0;
@@ -639,14 +643,6 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     f1->DrawCopy("");
   }
 
-  if (fVerbose > 0) {
-    TString fname = fControlPlotsFileName;
-    cout << "=========> "
-	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
-	 << endl;
-    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
-  }
-
   TFitResultPtr r;
   string fitstring = (fVerbose>0?"m":"qm");
   hm->Fit(f1, fitstring.c_str(), "", fMassLo, fMassHi);
@@ -684,7 +680,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
 	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
-  } else {
+  }
+
+  if (0) {
     gStyle->SetOptTitle(1);
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {

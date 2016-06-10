@@ -13,26 +13,26 @@ sub runCommand() {
 }
 
 
-# -- BMM jobs
-$dataset = "bmm2015B";
+# -- BMM data jobs
+$dataset = "bmmCharmonium2015B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 30000; ";
 
-$dataset = "bmm2015C";
+$dataset = "bmmCharmonium2015C";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015C-16Dec2015-v1 -s $version -e 30000; ";
 
-$dataset = "bmm2015D";
+$dataset = "bmmCharmonium2015D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 30000; ";
 
-$dataset = "bmm2016B";
+$dataset = "bmmCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Run2016B-PromptReco-v2 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Run2016B-PromptReco -s $version -r -e 30000; ";
 
-$dataset = "singleMuon2016B";
+$dataset = "bmmSingleMuon2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__SingleMuon__PromptReco/Run2016B-PromptReco-v2 -s $version -r -e 50000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__SingleMuon__PromptReco/Run2016B-PromptReco -s $version -r -e 50000; ";
 
 
 # -- fake rate jobs
