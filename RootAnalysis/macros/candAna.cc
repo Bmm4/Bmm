@@ -3733,7 +3733,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 // -- search for a PD trigger that has no overlap with the tracks of the candidate
 bool candAna::tis(TAnaCand *pC) {
   bool result(false);
-  int verbose(1);
+  int verbose(0);
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
