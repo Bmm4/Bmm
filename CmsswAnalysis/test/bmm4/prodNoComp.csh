@@ -38,6 +38,7 @@ echo "--> df -kl"
 df -kl
 echo "--> printenv"
 printenv
+limit coredumpsize 0
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
