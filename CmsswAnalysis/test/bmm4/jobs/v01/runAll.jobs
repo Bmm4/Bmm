@@ -9,7 +9,7 @@ tie %jobs, "Tie::IxHash";
 
 # -- did not manage to do this with refs, so do it with a function:
 sub runCommand() {
-    return "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/$dataset%SITE T3_CH_PSI' ";
+    return "$BMMBASE/perl/run -t $opt_t $opt_C -c $BMMBASE/CmsswAnalysis/test/bmm4/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/bmm4/cmsRun/$version/$dataset%SITE T3_CH_PSI' ";
 }
 
 
@@ -38,7 +38,7 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py
 # -- fake rate jobs
 $dataset = "dstarCharmoniumRun2015B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 20000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 100000; ";
 
 $dataset = "dstarCharmoniumRun2015C";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
@@ -46,7 +46,7 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.p
 
 $dataset = "dstarCharmoniumRun2015D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 500000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 100000; ";
 
 $dataset = "dstarCharmoniumRun2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q all.q *.py && cd - ";
