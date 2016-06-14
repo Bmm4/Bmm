@@ -2,19 +2,19 @@
 
 
 # ----------------------------------------------------------------------
-# example submission: 
+# example submission:
 # -------------------
 #  run -t ../../../../130131.tar.gz -m grid -D unl.edu -c ../osg.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/test%SITE T3_CH_PSI' osgtest.py
 # ----------------------------------------------------------------------
 
-setenv CMSSW       
-setenv SCRAM_ARCH  
-setenv SRMCP       
+setenv CMSSW
+setenv SCRAM_ARCH
+setenv SRMCP
 
-setenv JOB      
+setenv JOB
 setenv FILE1    $JOB.root
-setenv STORAGE1 
-setenv PFNS 
+setenv STORAGE1
+setenv PFNS
 setenv SITE
 
 echo "========================"
@@ -28,10 +28,18 @@ echo "--> Running grid job wrapper"
 # ----------------------------------------------------------------------
 echo "--> Environment"
 date
+echo "--> hostname"
 hostname
+echo "--> cat /proc/cpuinfo"
 cat /proc/cpuinfo
+echo "--> uname -a"
 uname -a
-df -kl 
+echo "--> df -kl"
+df -kl
+
+echo "--> printenv"
+printenv
+limit coredumpsize 0
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
@@ -45,6 +53,7 @@ which srmcp
 
 pwd
 echo "--> End of env testing"
+
 
 # BATCH START
 
@@ -78,7 +87,7 @@ echo "cmsRun $JOB.py "
 cmsRun $JOB.py |& tee $JOB.log
 date
 pwd
-ls -rtl 
+ls -rtl
 
 setenv LD_LIBRARY_PATH /lib64:${LD_LIBRARY_PATH}
 
@@ -97,12 +106,12 @@ lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
 
 # -- switch to data_replica.py
 ls `pwd`/$FILE1 > dr.list
-echo "--> cat dr.list: " 
+echo "--> cat dr.list: "
 cat dr.list
-echo "--> AM running data_replica.py: " 
+echo "--> AM running data_replica.py: "
 ./data_replica.py --from-site LOCAL --to-site $SITE dr.list  "$STORAGE1"
 
-echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1" 
+echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 
