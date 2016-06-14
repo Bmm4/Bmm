@@ -211,7 +211,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       } else {
 
 	if (fPreselection) {
-	  if (1 || fVerbose > 9)
+	  if (fVerbose > 9)
 	    cout << " filling this cand into the tree"
 		 <<" cand "<<fpCand->fType<<" run "<<fRun<<" ls "<<fLS<<" event "<<fEvt<<" json "<<fJSON
 		 <<" hlt "<<fGoodHLT<<" matched "<<fHLTmatch<<endl;
