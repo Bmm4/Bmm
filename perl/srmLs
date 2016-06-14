@@ -52,6 +52,7 @@ $postfix = substr($opt_x, index($opt_x, '/store'));
 #-rw-r--r--   1 2     2       2754352 Jun  3 20:53 BdToKPi_step3-59971.root
 @filelist = `gfal-ls -l $opt_x`;
 @filelist = grep(s/\ {1,99}/ /g, @filelist);
+@filelist = grep(s/\t//g, @filelist);
 foreach $line (@filelist) {
     @parts = split(/ /, $line);
     $line = $parts[4] . " " . $postfix . "/" . $parts[8];
