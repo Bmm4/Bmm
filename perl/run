@@ -57,7 +57,7 @@ my $user  = $ENV{'USER'};
 my $home  = $ENV{'HOME'};
 (my $uhome = $home) =~ s|[^/]+$||;
 $uhome .= "ursl";
-my $glite = "/$home/grid/glite.conf";
+my $glite = "$home/grid/glite.conf";
 my $qsub = "/gridware/sge/bin/lx24-amd64/qsub";
 
 
@@ -82,8 +82,8 @@ if ($opt_L) {
 }
 
 if (!-e "$glite") {
-    print "$glite does not exist, using /$uhome/grid/glite.conf\n";
-    $glite = "/$uhome/grid/glite.conf";
+    print "$glite does not exist, using $uhome/grid/glite.conf\n";
+    $glite = "$uhome/grid/glite.conf";
 }
 
 # -- replacements
