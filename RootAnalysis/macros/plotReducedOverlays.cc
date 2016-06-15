@@ -96,8 +96,8 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
 
   fChannelList.clear();
   fChannelList.push_back("0");
-  // fChannelList.push_back("1");
-  // fChannelList.push_back("2");
+  fChannelList.push_back("1");
+  fChannelList.push_back("2");
 
   // fChannelList.push_back("0lopu");
   // fChannelList.push_back("1lopu");
