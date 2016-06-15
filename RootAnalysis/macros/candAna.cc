@@ -3805,7 +3805,7 @@ bool candAna::tis(TAnaCand *pC) {
 
   }
 
-  if (verbose) cout << "==> determine a trigger with NO overlap to candidate tracks" << endl;
+  if (verbose) cout << "==> searching for non-overlapping trigger" << endl;
   map<string, set<int> >::iterator it;
   for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
     set<int>::iterator is;
@@ -3822,13 +3822,14 @@ bool candAna::tis(TAnaCand *pC) {
 	}
       }
     }
-    if (verbose) {
-      if (!overlap) {
-	result = true;
-	cout << " NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    if (!overlap) {
+      result = true;
+      if (verbose) {
+	cout << " TIS trigger: NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
       }
-      cout << endl;
     }
+    if (verbose) cout << endl;
+
   }
 
 
