@@ -665,22 +665,19 @@ void candAna::candAnalysis() {
   int pvidx = (fpCand->fPvIdx > -1? fpCand->fPvIdx : 0);
   // -- this is from the full candidate
   TAnaVertex sv = fpCand->fVtx;
-  // -- this is from the dimuon vertex
-  TAnaCand *pD;
-  TAnaVertex sv2m;
-  bool good2m(false);
-  //  cout << "looking at daughters " << fpCand->fDau1  << " .. " << fpCand->fDau2 << endl;
-  for (int id = fpCand->fDau1; id <= fpCand->fDau2; ++id) {
-    if (id < 0) break;
-    pD = fpEvt->getCand(id);
-    //    cout << "looking at daughter " <<  id << " with type = " << pD->fType << endl;
-    if (300443 == pD->fType) {
-      sv2m = pD->fVtx;
-      good2m = true;
-      //      cout << "  Found J/psi vertex" << endl;
-      break;
-    }
-  }
+  // // -- this is from the dimuon vertex
+  // TAnaCand *pD;
+  // TAnaVertex sv2m;
+  // bool good2m(false);
+  // for (int id = fpCand->fDau1; id <= fpCand->fDau2; ++id) {
+  //   if (id < 0) break;
+  //   pD = fpEvt->getCand(id);
+  //   if (300443 == pD->fType) {
+  //     sv2m = pD->fVtx;
+  //     good2m = true;
+  //     break;
+  //   }
+  // }
 
   // -- go back to original!
   sv = fpCand->fVtx;
@@ -728,32 +725,33 @@ void candAna::candAnalysis() {
   fOsMuonPtRel  = (osm > -1? fpEvt->getSimpleTrack(osm)->getP().Perp(fpCand->fPlab):-1);
   fOsMuonDeltaR =  (osm > -1? fpCand->fPlab.DeltaR(fpEvt->getSimpleTrack(osm)->getP()):-1.);
 
-//   if (301313 == fCandType)
-//     cout << fRun << " " << fEvt
-// 	 << " from PV = " << fpCand->fPvIdx << " with ntrk = " << fPvNtrk << " av w8 = " << fPvAveW8
-// 	 << " cand tracks mindoca = " << fpCand->fMinDoca << " maxdoca = " << fpCand->fMaxDoca << " and chi2/dof = " << fCandChi2/fCandDof
-// 	 << endl;
-
-  // -- dimuon vertex version
-  if (good2m) {
-    f2MChi2  = sv2m.fChi2;
-    f2MDof   = sv2m.fNdof;
-    f2MProb  = sv2m.fProb;
-    f2MFL3d  = sv2m.fD3d;
-    f2MFL3dE = sv2m.fD3dE;
-    f2MFLS3d = sv2m.fD3d/sv2m.fD3dE;
-    if (TMath::IsNaN(f2MFLS3d)) f2MFLS3d = -1.;
-    f2MFLSxy = sv2m.fDxy/sv2m.fDxyE;
-    if (TMath::IsNaN(f2MFLSxy)) f2MFLSxy = -1.;
-  } else {
-    f2MChi2  = -1.;
-    f2MDof   = -1;
-    f2MProb  = -1.;
-    f2MFL3d  = -1.;
-    f2MFL3dE = -1.;
-    f2MFLS3d = -1.;
-    f2MFLSxy = -1.;
-  }
+  // // -- dimuon vertex version
+  // if (good2m) {
+  //   fmmChi2    = sv2m.fChi2;
+  //   fmmDof     = sv2m.fNdof;
+  //   fmmProb    = sv2m.fProb;
+  //   fmmFL3d    = sv2m.fD3d;
+  //   fmmFL3dE   = sv2m.fD3dE;
+  //   fmmFLS3d   = sv2m.fD3d/sv2m.fD3dE;
+  //   if (TMath::IsNaN(fmmFLS3d)) fmmFLS3d = -1.;
+  //   fmmFLSxy   = sv2m.fDxy/sv2m.fDxyE;
+  //   if (TMath::IsNaN(fmmFLSxy)) fmmFLSxy = -1.;
+  //   // -- pD should be/is still pointing to the J/psi daughter IF good2m == true
+  //   fmmCosA    = TMath::Cos(pD->fAlpha);
+  //   fmmMaxDoca = pD->fMaxDoca;
+  //   fmmPt      = pD->fP.Perp();
+  // } else {
+  //   fmmChi2  = -1.;
+  //   fmmDof   = -1;
+  //   fmmProb  = -1.;
+  //   fmmFL3d  = -1.;
+  //   fmmFL3dE = -1.;
+  //   fmmFLS3d = -1.;
+  //   fmmFLSxy = -1.;
+  //   fmmCosA    = -1.;
+  //   fmmMaxDoca = -1.;
+  //   fmmPt      = -1.;
+  // }
 
   if (fpCand->fNstTracks.size() == 0) {
     //    cout << "HHHHEEEELLLLPPPP" << endl;
@@ -1619,6 +1617,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("hm2pt",  &fHltMu2Pt,  "hm2pt/D");
   t->Branch("hm2eta", &fHltMu2Eta, "hm2eta/D");
   t->Branch("hm2phi", &fHltMu2Phi, "hm2phi/D");
+
 
   // -- all muon variables for Marco
   t->Branch("m1bdt", &fMu1Data.mbdt, "m1bdt/F");
