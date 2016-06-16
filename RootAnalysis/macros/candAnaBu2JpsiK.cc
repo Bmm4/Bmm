@@ -97,6 +97,10 @@ void candAnaBu2JpsiK::candAnalysis() {
       fJpsiPt   = pD->fPlab.Perp();
       fJpsiEta  = pD->fPlab.Eta();
       fJpsiPhi  = pD->fPlab.Phi();
+      fJpsiCosA = TMath::Cos(pD->fAlpha);
+      fJpsiMaxDoca = pD->fMaxDoca;
+      fJpsiFLSxy   = pD->fVtx.fDxy/pD->fVtx.fDxyE;
+      fJpsiVtxProb = pD->fVtx.fProb;
 
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
@@ -455,12 +459,20 @@ void candAnaBu2JpsiK::bookHist() {
 // ----------------------------------------------------------------------
 void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   // -- Additional reduced tree variables
-  t->Branch("mpsi", &fJpsiMass,  "mpsi/D");
-  t->Branch("psipt",&fJpsiPt,    "psipt/D");
+  t->Branch("mpsi",        &fJpsiMass,    "mpsi/D");
+  t->Branch("psipt",       &fJpsiPt,      "psipt/D");
+  t->Branch("psieta",      &fJpsiEta,     "psieta/D");
+  t->Branch("psiphi",      &fJpsiPhi,     "psiphi/D");
+  t->Branch("psicosa",     &fJpsiCosA,    "psicosa/D");
+  t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
+  t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
+  t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+
   t->Branch("kpt",  &fKaonPt,    "kpt/D");
   t->Branch("keta", &fKaonEta,   "keta/D");
   t->Branch("kphi", &fKaonPhi,   "kphi/D");
   t->Branch("kgt",  &fKaonTkQuality,"kgt/I");
+
   t->Branch("t3pt", &fKaonPtNrf, "t3pt/D");
   t->Branch("t3eta",&fKaonEtaNrf,"t3eta/D");
   t->Branch("g3pt", &fKPtGen,    "g3pt/D");

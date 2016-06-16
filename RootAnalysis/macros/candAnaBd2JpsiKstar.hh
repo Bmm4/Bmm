@@ -48,15 +48,7 @@ public:
   double       fKaonPtNrf, fKaonEtaNrf;
   int          fKaonTkQuality;
 
-  /* *******added in analogy for Pion but needs to be checked ****
-
-    double       fPionPt, fPionEta, fPionPhi;
-    double       fPiPtGen, fPiEtaGen;
-    double       fPionPtNrf, fPionEtaNrf;
-    int          fPionTkQuality;
-
-   */
-  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi;
+  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi, fJpsiCosA, fJpsiMaxDoca, fJpsiFLSxy, fJpsiVtxProb;
 
   bool         fGoodJpsiMass;
 
