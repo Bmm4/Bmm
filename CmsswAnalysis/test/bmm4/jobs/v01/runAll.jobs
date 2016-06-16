@@ -28,7 +28,7 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py 
 
 $dataset = "bmmCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 50000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 60000; ";
 
 $dataset = "bmmSingleMuon2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
@@ -50,7 +50,7 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.p
 
 $dataset = "dstarCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 100000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 200000; ";
 
 
 # -- OLD MC
