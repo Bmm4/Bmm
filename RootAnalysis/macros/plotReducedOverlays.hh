@@ -30,6 +30,7 @@ struct adset {
     , *fpCloseTrkS1, *fpCloseTrkS2, *fpCloseTrkS3
     , *fpM1Iso, *fpM2Iso
     , *fpPvDchi2, *fpOtherVtx
+    , *fpTau
     , *fpLastCut
     ;
 
@@ -40,7 +41,7 @@ struct adset {
 class plotReducedOverlays: public plotClass {
 public:
   plotReducedOverlays(std::string dir = "results",
-		      std::string files = "plotReducedOverlays.files",
+		      std::string files = "plotReducedOverlays.2016.files",
 		      std::string cuts = "plotClass.2016.cuts",
 		      std::string setup = "");
   ~plotReducedOverlays();
@@ -52,7 +53,7 @@ public:
   virtual void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
 
-  void makeAll(std::string selection = "Presel");
+  void makeAll(std::string what = "all");
 
   /// run over sample with specified channel and selection and dump AD into rootfile
   void makeSample(std::string sample1,
@@ -73,6 +74,9 @@ public:
   void plotMass(std::string sample = "bupsikData", std::string selection = "Presel");
 
 
+  /// Validation of MC samples
+  void comparePrivateAndOfficial();
+
   /// I forgot what this is for
   void makeOverlay2Channels(std::string sample,
 			    std::string channel1,
@@ -86,8 +90,8 @@ public:
   void compareBsAndBp(std::string file = "2012/anaBmm.plotReducedOverlaysSystematics.2012.root");
 
   // --
-  void bookDistributions();  void bookDistributions0();
-  void fillDistributions();  void fillDistributions0();
+  void bookDistributions();
+  void fillDistributions();
   void sbsDistributions(std::string sample, std::string selection = "Presel", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2);
@@ -103,25 +107,6 @@ public:
 
 
   TDirectory *fHistDir;
-
-#define NAD 2
-  AnalysisDistribution
-  *fpMuonsEta[NAD], *fpMuon1Pt[NAD], *fpMuon2Pt[NAD]
-    , *fpPt[NAD], *fpP[NAD], *fpPz[NAD], *fpEta[NAD]
-    , *fpAlpha[NAD]
-    , *fpIso[NAD], *fpCloseTrk[NAD], *fpDocaTrk[NAD]
-    , *fpChi2Dof[NAD], *fpPChi2Dof[NAD]
-    , *fpFLS3d[NAD], *fpFL3d[NAD], *fpFL3dE[NAD]
-    , *fpMaxDoca[NAD], *fpIp[NAD], *fpIpS[NAD]
-    , *fpBDT[NAD]
-    , *fpBDTSel0[NAD], *fpBDTSel1[NAD], *fpBDTSel2[NAD]
-    , *fpPvZ[NAD], *fpPvN[NAD], *fpPvAveW8[NAD]
-    , *fpLip[NAD], *fpLipS[NAD], *fpLip2[NAD], *fpLipS2[NAD]
-    , *fpCloseTrkS1[NAD], *fpCloseTrkS2[NAD], *fpCloseTrkS3[NAD]
-    , *fpM1Iso[NAD], *fpM2Iso[NAD]
-    , *fpPvDchi2[NAD], *fpOtherVtx[NAD]
-    ;
-  int fOffset;
 
   std::string fChannel;
 

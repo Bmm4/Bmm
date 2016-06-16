@@ -98,6 +98,8 @@ public :
   virtual void   loadFiles(std::string afiles);
   TFile*         loadFile(std::string afiles);
 
+  void           changeSetup(std::string dir, std::string name, std::string setup);
+
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
   virtual void   init();

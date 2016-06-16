@@ -67,7 +67,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     fStampString = "CNC";
   }
   fStampCms = "BMM4";
-  fStampLumi = "2016 data";
+  fStampLumi = "2.2 fb^{-1}";
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
@@ -84,7 +84,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = some fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 2.2 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
 
   fIF = new initFunc();
@@ -134,15 +134,28 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   cout << "===> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
   readCuts(Form("%s", cuts.c_str()));
   fNchan = fCuts.size();
-
-
-
-
 }
 
 // ----------------------------------------------------------------------
 plotClass::~plotClass() {
 }
+
+
+// ----------------------------------------------------------------------
+void plotClass::changeSetup(string dir, string name, string setup) {
+  if (setup == "") {
+    fHistFileName = Form("%s/%s.%d.root", dir.c_str(), name.c_str(), fYear);
+    fNumbersFileName = fDirectory + Form("/%s.%d.txt", name.c_str(), fYear);
+  } else {
+    fHistFileName = Form("%s/%s-%s.%d.root", dir.c_str(), name.c_str(), setup.c_str(), fYear);
+    fNumbersFileName = fDirectory + Form("/%s.%s.%d.txt", name.c_str(), setup.c_str(), fYear);
+  }
+
+  fTexFileName = fNumbersFileName;
+  replaceAll(fTexFileName, ".txt", ".tex");
+  fTEX.open(fNumbersFileName.c_str(), ios::app);
+}
+
 
 // ----------------------------------------------------------------------
 void plotClass::init() {
@@ -410,6 +423,8 @@ void plotClass::setupTree(TTree *t, string mode) {
 
   t->SetBranchAddress("pt", &fb.pt);
   t->SetBranchAddress("q", &fb.q);
+
+  t->SetBranchAddress("tis", &fb.tis);
 
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("gtau", &fb.gtau);
@@ -1610,9 +1625,174 @@ void plotClass::savePad(string name) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::loadFiles(string name) {
-  cout << "wrong function call " << endl;
-  return;
+void plotClass::loadFiles(string afiles) {
+
+  string files = fDirectory + string("/") + afiles;
+  cout << "==> plotClass::loadFile loading files listed in " << files << endl;
+
+  char buffer[1000];
+  ifstream is(files.c_str());
+  while (is.getline(buffer, 1000, '\n')) {
+    if (buffer[0] == '#') {continue;}
+    if (buffer[0] == '/') {continue;}
+
+    string sbuffer = string(buffer);
+    replaceAll(sbuffer, " ", "");
+    replaceAll(sbuffer, "\t", "");
+    if (sbuffer.size() < 1) continue;
+
+    string::size_type m1 = sbuffer.find("lumi=");
+    string stype = sbuffer.substr(5, m1-5);
+
+    string::size_type m2 = sbuffer.find("file=");
+    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string sfile = sbuffer.substr(m2+5);
+    string sname, sdecay;
+
+    TFile *pF(0);
+    dataset *ds(0);
+
+    if (string::npos != stype.find("data")) {
+      // -- DATA
+      pF = loadFile(sfile);
+
+      ds = new dataset();
+      ds->fSize = 1.2;
+      ds->fWidth = 2;
+      if (string::npos != stype.find("bmm")) {
+        sname = "bmmData";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikData";
+        sdecay = "bupsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiData";
+        sdecay = "bspsiphi";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarData";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+    } else {
+      // -- MC
+      pF = loadFile(sfile);
+
+      ds = new dataset();
+      ds->fSize = 0.1;
+      ds->fWidth = 2.;
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikMc";
+        sdecay = "bupsik";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fWidth  = 2.;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3354;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiMc";
+        sdecay = "bspsiphi";
+	ds->fColor = kRed;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bsmm")) {
+        sname = "bsmmMc";
+        sdecay = "bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarMc";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+      if (string::npos != stype.find("bdmm")) {
+        sname = "bdmmMc";
+        sdecay = "bdmm";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	fDS.insert(make_pair(sname, ds));
+      }
+
+    }
+    ds->fLcolor = ds->fColor;
+    ds->fFcolor = ds->fColor;
+    ds->fName   = sdecay;
+    ds->fFullName = sname;
+    fDS.insert(make_pair(sname, ds));
+
+
+
+  }
+
+  is.close();
+
+  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+    cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
+  }
 }
 
 
