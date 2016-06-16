@@ -16,7 +16,11 @@ struct redTreeData {
   int isotrk, closetrk, closetrks1, closetrks2, closetrks3;
   double chi2, dof, chi2dof, pchi2dof, fls3d, fl3d, flxy, fl3dE, flsxy, docatrk, docatrkbdt, maxdoca, lip, lipE, tip, tipE;
 
+  // -- opposite side
   double osiso, osreliso, osmpt, osmptrel, osmdr;
+
+  // -- dimuon variables
+  double mmpt, mmcosa, mmflsxy, mmvtxp, mmmaxdoca;
 
   int m1q, m2q;
   double m1pt, m1eta, m1phi, m1ip, m1chi2;
