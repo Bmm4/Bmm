@@ -1,0 +1,5 @@
+# -- SingleMuon
+type=bupsik,data      lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+type=bspsiphi,data    lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+type=bdpsikstar,data  lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+type=bmm,data         lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
