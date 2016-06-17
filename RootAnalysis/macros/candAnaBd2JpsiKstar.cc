@@ -72,6 +72,10 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 
   for (int it = fpCand->fSig1; it <= fpCand->fSig2; ++it) {
     p0 = fpEvt->getSigTrack(it);
+    if (0 == p0) {
+      cout << "candAnaBd2JpsiKstar::candAnalysis problem with sigtrack?? " << endl;
+      return;
+    }
     if (321 == TMath::Abs(p0->fMCID)) {
       p1 = p0;
     }
