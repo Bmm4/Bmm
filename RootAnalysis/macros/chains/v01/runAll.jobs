@@ -90,7 +90,7 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # -----------------------------------------------
-$dataset = "dstarCharmoniumRun2015B";
+$dataset = "dstarCharmonium2015B";
 # -----------------------------------------------
 $mode = "dstar-data-$dataset-$version"; $pattern = "dstar-rereco";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
@@ -99,7 +99,7 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # -----------------------------------------------
-$dataset = "dstarCharmoniumRun2015C";
+$dataset = "dstarCharmonium2015C";
 # -----------------------------------------------
 $mode = "dstar-data-$dataset-$version"; $pattern = "dstar-rereco";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
@@ -108,7 +108,7 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # -----------------------------------------------
-$dataset = "dstarCharmoniumRun2015D";
+$dataset = "dstarCharmonium2015D";
 # -----------------------------------------------
 $mode = "dstar-data-$dataset-$version"; $pattern = "dstar-rereco";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
@@ -117,7 +117,7 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # -----------------------------------------------
-$dataset = "dstarCharmoniumRun2016B";
+$dataset = "dstarCharmonium2016B";
 # -----------------------------------------------
 $mode = "dstar-data-$dataset-$version"; $pattern = "dstar-prompt";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.2015' c$mode-*  && cd - ";
