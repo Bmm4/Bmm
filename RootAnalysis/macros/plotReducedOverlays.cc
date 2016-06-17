@@ -250,7 +250,6 @@ void plotReducedOverlays::sbsSingleFile(string file1, string sample1, string cha
   fChannel = channel;
 
   sbsDistributions(sample1, selection);
-  sbsDistributions(sample1, "HLT", "bdtMin");
 
   TDirectory *pD = gDirectory;
 
@@ -697,112 +696,109 @@ void plotReducedOverlays::allSystematics() {
 
 // ----------------------------------------------------------------------
 void plotReducedOverlays::systematics(string sample1, string sample2, int chan) {
-  gStyle->SetOptTitle(0);
-  zone(1);
-  c0->cd();
+  // gStyle->SetOptTitle(0);
+  // zone(1);
+  // c0->cd();
 
-  string sChan = (chan == 0? "B": "E");
+  // string sChan = (chan == 0? "B": "E");
 
-  double bdtCut = fCuts[chan]->bdtMin;
-  cout << "bdtCut = " << bdtCut << endl;
+  // string hfname  = fDirectory + "/anaBmm.plotReducedOverlaysSystematics." + fSuffix + ".root";
+  // cout << "fHistFile: " << hfname << endl;
+  // fHistFile = TFile::Open(hfname.c_str(), "");
 
-  string hfname  = fDirectory + "/anaBmm.plotReducedOverlaysSystematics." + fSuffix + ".root";
-  cout << "fHistFile: " << hfname << endl;
-  fHistFile = TFile::Open(hfname.c_str(), "");
+  // // -- extract here the means of the NPV distributions
+  // TH1D *hpv1 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_pvnPresel", sChan.c_str(), sample1.c_str()));
+  // TH1D *hpv2 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_pvnPresel", sChan.c_str(), sample2.c_str()));
 
-  // -- extract here the means of the NPV distributions
-  TH1D *hpv1 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_pvnPresel", sChan.c_str(), sample1.c_str()));
-  TH1D *hpv2 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_pvnPresel", sChan.c_str(), sample2.c_str()));
+  // if (string::npos != sample2.find("CsMc")) {
+  //   setHist(hpv2, kRed, 20, 1.5);
+  //   setFilledHist(hpv2, kRed, kRed, 3365);
+  // } else if (string::npos != sample2.find("SgMc")) {
+  //   setHist(hpv2, kRed, 20, 1.5);
+  //   setFilledHist(hpv2, kRed, kRed, 3344);
+  // } else {
+  //   setHist(hpv2, kBlue, 20, 1.5);
+  //   setFilledHist(hpv2, kBlue, kBlue, 3365);
+  // }
 
-  if (string::npos != sample2.find("CsMc")) {
-    setHist(hpv2, kRed, 20, 1.5);
-    setFilledHist(hpv2, kRed, kRed, 3365);
-  } else if (string::npos != sample2.find("SgMc")) {
-    setHist(hpv2, kRed, 20, 1.5);
-    setFilledHist(hpv2, kRed, kRed, 3344);
-  } else {
-    setHist(hpv2, kBlue, 20, 1.5);
-    setFilledHist(hpv2, kBlue, kBlue, 3365);
-  }
+  // shrinkPad(0.15, 0.18);
+  // hpv1->SetMinimum(0.);
+  // hpv1->Draw();
+  // hpv2->Scale(hpv1->GetSumOfWeights()/hpv2->GetSumOfWeights());
+  // hpv2->Draw("samehist");
+  // tl->DrawLatex(0.15, 0.92, Form("Data: %3.2f#pm%3.2f", hpv1->GetMean(), hpv1->GetMeanError()));
+  // tl->DrawLatex(0.6, 0.92, Form("MC: %3.2f#pm%3.2f", hpv2->GetMean(), hpv2->GetMeanError()));
 
-  shrinkPad(0.15, 0.18);
-  hpv1->SetMinimum(0.);
-  hpv1->Draw();
-  hpv2->Scale(hpv1->GetSumOfWeights()/hpv2->GetSumOfWeights());
-  hpv2->Draw("samehist");
-  tl->DrawLatex(0.15, 0.92, Form("Data: %3.2f#pm%3.2f", hpv1->GetMean(), hpv1->GetMeanError()));
-  tl->DrawLatex(0.6, 0.92, Form("MC: %3.2f#pm%3.2f", hpv2->GetMean(), hpv2->GetMeanError()));
-
-  c0->SaveAs(Form("%s/%s-systematics-npv_%s_%s_chan%d.pdf", fDirectory.c_str(), fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan));
+  // c0->SaveAs(Form("%s/%s-systematics-npv_%s_%s_chan%d.pdf", fDirectory.c_str(), fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan));
 
 
-  TH1D *h1 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_bdtHLT", sChan.c_str(), sample1.c_str()));
-  for (int i = 1; i <= h1->GetNbinsX(); ++i) if (h1->GetBinContent(i) < 0) h1->SetBinContent(i, -0.0001);
-  HistCutEfficiency a1(h1, bdtCut, 0);
-  double eps1 = a1.hiEff;
-  double eps1E = a1.hiErr;
-  cout << "eps1 = " << eps1 << " lo eff = " << a1.loEff << endl;
+  // TH1D *h1 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_bdtHLT", sChan.c_str(), sample1.c_str()));
+  // for (int i = 1; i <= h1->GetNbinsX(); ++i) if (h1->GetBinContent(i) < 0) h1->SetBinContent(i, -0.0001);
+  // // HistCutEfficiency a1(h1, bdtCut, 0);
+  // // double eps1 = a1.hiEff;
+  // // double eps1E = a1.hiErr;
+  // // cout << "eps1 = " << eps1 << " lo eff = " << a1.loEff << endl;
 
-  TH1D *h2 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_bdtHLT", sChan.c_str(), sample2.c_str()));
-  for (int i = 1; i <= h2->GetNbinsX(); ++i) if (h2->GetBinContent(i) < 0) h2->SetBinContent(i, -0.0001);
-  HistCutEfficiency a2(h2, bdtCut, 0);
-  double eps2 = a2.hiEff;
-  double eps2E = a2.hiErr;
+  // TH1D *h2 = (TH1D*)fHistFile->Get(Form("sbs_%s_%s_bdtHLT", sChan.c_str(), sample2.c_str()));
+  // for (int i = 1; i <= h2->GetNbinsX(); ++i) if (h2->GetBinContent(i) < 0) h2->SetBinContent(i, -0.0001);
+  // HistCutEfficiency a2(h2, bdtCut, 0);
+  // double eps2 = a2.hiEff;
+  // double eps2E = a2.hiErr;
 
-  cout << "eps2 = " << eps2 << " lo eff = " << a2.loEff << endl;
-  double deltaEps = eps1-eps2;
-  double adeltaEps = TMath::Abs(eps1-eps2);
-  double rdeltaEps = 2.*TMath::Abs(eps1-eps2)/(eps1+eps2);
+  // cout << "eps2 = " << eps2 << " lo eff = " << a2.loEff << endl;
+  // double deltaEps = eps1-eps2;
+  // double adeltaEps = TMath::Abs(eps1-eps2);
+  // double rdeltaEps = 2.*TMath::Abs(eps1-eps2)/(eps1+eps2);
 
-  fTEX << formatTex(fCuts[chan]->bdtMin, Form("%s:sysCutOnBdtchan%i:val", fSuffix.c_str(), chan), 3) << endl;
-  fTEX << formatTex(deltaEps, Form("%s:deltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
-  fTEX << formatTex(adeltaEps, Form("%s:absDeltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
-  fTEX << formatTex(rdeltaEps, Form("%s:relDeltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
+  // fTEX << formatTex(fCuts[chan]->bdtMin, Form("%s:sysCutOnBdtchan%i:val", fSuffix.c_str(), chan), 3) << endl;
+  // fTEX << formatTex(deltaEps, Form("%s:deltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
+  // fTEX << formatTex(adeltaEps, Form("%s:absDeltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
+  // fTEX << formatTex(rdeltaEps, Form("%s:relDeltaEps%s%schan%i:val", fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan), 3) << endl;
 
-  if (string::npos != sample2.find("CsMc")) {
-    setHist(h2, kRed, 20, 1.5);
-    setFilledHist(h2, kRed, kRed, 3365);
-  } else if (string::npos != sample2.find("SgMc")) {
-    setHist(h2, kRed, 20, 1.5);
-    setFilledHist(h2, kRed, kRed, 3344);
-  } else {
-    setHist(h2, kBlue, 20, 1.5);
-    setFilledHist(h2, kBlue, kBlue, 3365);
-  }
+  // if (string::npos != sample2.find("CsMc")) {
+  //   setHist(h2, kRed, 20, 1.5);
+  //   setFilledHist(h2, kRed, kRed, 3365);
+  // } else if (string::npos != sample2.find("SgMc")) {
+  //   setHist(h2, kRed, 20, 1.5);
+  //   setFilledHist(h2, kRed, kRed, 3344);
+  // } else {
+  //   setHist(h2, kBlue, 20, 1.5);
+  //   setFilledHist(h2, kBlue, kBlue, 3365);
+  // }
 
-  h1->SetMinimum(0.);
-  h1->SetMaximum(1.3*h1->GetMaximum());
-  h1->Draw("e");
-  gStyle->SetOptStat(0);
-  gStyle->SetOptTitle(0);
-  h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
-  h2->Draw("histsame");
+  // h1->SetMinimum(0.);
+  // h1->SetMaximum(1.3*h1->GetMaximum());
+  // h1->Draw("e");
+  // gStyle->SetOptStat(0);
+  // gStyle->SetOptTitle(0);
+  // h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
+  // h2->Draw("histsame");
 
-  newLegend(0.2, 0.77, 0.45, 0.87);
-  legg->SetTextSize(0.035);
-  string text1, text2;
-  if (string::npos != sample1.find("CsData")) text1 = "B_{s}^{0} #rightarrow J/#psi #phi (data)";
-  if (string::npos != sample1.find("NoData")) text1 = "B^{+} #rightarrow J/#psi K (data)";
-  if (string::npos != sample1.find("SgMc"))   text1 = "B_{s}^{0} #rightarrow #mu #mu (MC)";
+  // newLegend(0.2, 0.77, 0.45, 0.87);
+  // legg->SetTextSize(0.035);
+  // string text1, text2;
+  // if (string::npos != sample1.find("CsData")) text1 = "B_{s}^{0} #rightarrow J/#psi #phi (data)";
+  // if (string::npos != sample1.find("NoData")) text1 = "B^{+} #rightarrow J/#psi K (data)";
+  // if (string::npos != sample1.find("SgMc"))   text1 = "B_{s}^{0} #rightarrow #mu #mu (MC)";
 
-  if (string::npos != sample2.find("SgMc")) text2 = "B_{s}^{0} #rightarrow #mu #mu (MC)";
-  if (string::npos != sample2.find("CsMc")) text2 = "B_{s}^{0} #rightarrow J/#psi #phi (MC)";
-  if (string::npos != sample2.find("NoMc")) text2 = "B^{+} #rightarrow J/#psi K (MC)";
+  // if (string::npos != sample2.find("SgMc")) text2 = "B_{s}^{0} #rightarrow #mu #mu (MC)";
+  // if (string::npos != sample2.find("CsMc")) text2 = "B_{s}^{0} #rightarrow J/#psi #phi (MC)";
+  // if (string::npos != sample2.find("NoMc")) text2 = "B^{+} #rightarrow J/#psi K (MC)";
 
 
-  legg->AddEntry(h1, Form("#varepsilon = %4.3f#pm%4.3f, %s", eps1, eps1E, text1.c_str()), "p");
-  legg->AddEntry(h2, Form("#varepsilon = %4.3f#pm%4.3f, %s", eps2, eps2E, text2.c_str()), "f");
-  legg->Draw();
+  // legg->AddEntry(h1, Form("#varepsilon = %4.3f#pm%4.3f, %s", eps1, eps1E, text1.c_str()), "p");
+  // legg->AddEntry(h2, Form("#varepsilon = %4.3f#pm%4.3f, %s", eps2, eps2E, text2.c_str()), "f");
+  // legg->Draw();
 
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.21, 0.70, Form("rel difference: %4.3f", rdeltaEps));
-  tl->DrawLatex(0.21, 0.65, Form("b> %4.3f", bdtCut));
+  // tl->SetTextSize(0.035);
+  // tl->DrawLatex(0.21, 0.70, Form("rel difference: %4.3f", rdeltaEps));
+  // tl->DrawLatex(0.21, 0.65, Form("b> %4.3f", bdtCut));
 
-  double yhi = 0.3*h1->GetMaximum();
-  double ylo = 0.;
-  pa->DrawArrow(bdtCut, yhi, bdtCut, ylo);
+  // double yhi = 0.3*h1->GetMaximum();
+  // double ylo = 0.;
+  // pa->DrawArrow(bdtCut, yhi, bdtCut, ylo);
 
-  c0->SaveAs(Form("%s/%s-systematics_%s_%s_chan%d.pdf", fDirectory.c_str(), fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan));
+  // c0->SaveAs(Form("%s/%s-systematics_%s_%s_chan%d.pdf", fDirectory.c_str(), fSuffix.c_str(), sample1.c_str(), sample2.c_str(), chan));
 
 }
 
@@ -1397,7 +1393,6 @@ void plotReducedOverlays::loadFiles(string afiles) {
   string files = fDirectory + string("/") + afiles;
   cout << "==> plotReducedOverlays::loadFile loading files listed in " << files << endl;
 
-  bool readMoreFiles(false);
   char buffer[1000];
   ifstream is(files.c_str());
   while (is.getline(buffer, 1000, '\n')) {
@@ -1436,10 +1431,9 @@ void plotReducedOverlays::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
-    } else {
+    } else if (string::npos != stype.find("mc")) {
       // -- MC
       pF = loadFile(sfile);
 
@@ -1457,7 +1451,6 @@ void plotReducedOverlays::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
-	fDS.insert(make_pair(sname, ds));
       }
 
     }
@@ -1467,6 +1460,8 @@ void plotReducedOverlays::loadFiles(string afiles) {
       ds->fName   = sdecay;
       ds->fFullName = sname;
       fDS.insert(make_pair(sname, ds));
+    } else {
+      delete ds;
     }
 
 
@@ -1474,9 +1469,11 @@ void plotReducedOverlays::loadFiles(string afiles) {
 
   is.close();
 
-  if (readMoreFiles) {
-    for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-      cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
-    }
+  cout << "------------------------------------------------------------------------------------------" << endl;
+  cout << Form("%30s: %20s: ", "Dataset name", "decay mode name") << "Filename" << endl;
+  cout << "------------------------------------------------------------------------------------------" << endl;
+  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
   }
+  cout << "------------------------------------------------------------------------------------------" << endl;
 }

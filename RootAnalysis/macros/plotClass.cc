@@ -131,7 +131,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- initialize cuts
-  cout << "===> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
+  cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
   readCuts(Form("%s", cuts.c_str()));
   fNchan = fCuts.size();
 }
@@ -529,6 +529,15 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("g2eta",  &fb.g2eta);
   t->SetBranchAddress("g1id",   &fb.g1id);
   t->SetBranchAddress("g2id",   &fb.g2id);
+  if (string::npos != mode.find("psi")) {
+    t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
+    t->SetBranchAddress("psicosa", &fb.psicosa);
+    t->SetBranchAddress("psiprob", &fb.psiprob);
+    t->SetBranchAddress("psiflsxy", &fb.psiflsxy);
+    t->SetBranchAddress("psimaxdoca", &fb.psimaxdoca);
+
+  }
   if (string::npos != mode.find("bupsik")) {
     if (string::npos != mode.find("Mc")) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
@@ -537,8 +546,6 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kpt",  &fb.k1pt);
     t->SetBranchAddress("kgt",  &fb.k1gt);
     t->SetBranchAddress("keta", &fb.k1eta);
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt", &fb.psipt);
   }
 
   if (string::npos != mode.find("bspsiphi")) {
@@ -914,6 +921,10 @@ int plotClass::detChan(double m1eta, double m2eta) {
 
 // ----------------------------------------------------------------------
 TTree* plotClass::getTree(string ds, string dir) {
+  if (!fDS[ds]) {
+    cout << "xx> plotClass::getTree: dataset " << ds << " not found" << endl;
+    return 0;
+  }
   TTree *t(0);
   if (!dir.compare("")) {
     t = (TTree*)fDS[ds]->fF->Get("events");
@@ -1235,21 +1246,6 @@ void plotClass::readCuts(string filename) {
     if (!strcmp(CutName, "mBdLo")) {
       a->mBdLo = CutValue; ok = 1;
       if (dump) cout << "mBdLo:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "bdtPt")) {
-      a->bdtPt = CutValue; ok = 1;
-      if (dump) cout << "bdtPt:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "bdtMin")) {
-      a->bdtMin = CutValue; ok = 1;
-      if (dump) cout << "bdtMin:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "bdtMax")) {
-      a->bdtMax = CutValue; ok = 1;
-      if (dump) cout << "bdtMax:               " << CutValue << endl;
     }
 
     if (!strcmp(CutName, "mBdHi")) {
@@ -1577,20 +1573,6 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "bdtMin     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->bdtMin);
-    fTEX <<  Form("\\vdef{%s:bdtMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMin) << endl;
-  }
-  OUT << endl;
-
-  OUT << "bdtMax     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->bdtMax);
-    fTEX <<  Form("\\vdef{%s:bdtMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMax) << endl;
-  }
-  OUT << endl;
-
   OUT << "xmlFile    ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
@@ -1621,6 +1603,17 @@ void plotClass::setRoman() {
 // ----------------------------------------------------------------------
 void plotClass::savePad(string name) {
   gPad->SaveAs(Form("%s/%s", fDirectory.c_str(), name.c_str()));
+}
+
+
+
+// ----------------------------------------------------------------------
+void plotClass::insertDataset(std::string dsname, dataset *ds) {
+  if (fDS.find(dsname) != fDS.end()) {
+    cout << "######## Error: " << dsname  << " already present in fDS, NOT inserting again" << endl;
+  } else {
+    fDS.insert(make_pair(dsname, ds));
+  }
 }
 
 
@@ -1668,7 +1661,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bupsik")) {
@@ -1680,7 +1672,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bspsiphi")) {
@@ -1692,7 +1683,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bdpsikstar")) {
@@ -1704,10 +1694,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
-    } else {
+    } else if (string::npos != stype.find("mc")) {
       // -- MC
       pF = loadFile(sfile);
 
@@ -1725,7 +1714,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bspsiphi")) {
@@ -1737,7 +1725,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bsmm")) {
@@ -1749,7 +1736,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
 
@@ -1762,7 +1748,6 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
       if (string::npos != stype.find("bdmm")) {
@@ -1774,25 +1759,23 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
     }
-    ds->fLcolor = ds->fColor;
-    ds->fFcolor = ds->fColor;
-    ds->fName   = sdecay;
-    ds->fFullName = sname;
-    fDS.insert(make_pair(sname, ds));
-
+    if (ds) {
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      insertDataset(sname, ds);
+    } else {
+      delete ds;
+    }
 
 
   }
 
   is.close();
-
-  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
-  }
 }
 
 
