@@ -19,9 +19,6 @@ struct redTreeData {
   // -- opposite side
   double osiso, osreliso, osmpt, osmptrel, osmdr;
 
-  // -- dimuon variables
-  double mmpt, mmcosa, mmflsxy, mmvtxp, mmmaxdoca;
-
   int m1q, m2q;
   double m1pt, m1eta, m1phi, m1ip, m1chi2;
   double m2pt, m2eta, m2phi, m2ip, m2chi2;
@@ -40,8 +37,14 @@ struct redTreeData {
   int    g1id, g2id;
   double t1pt, t1eta, t2pt, t2eta, t3pt, t3eta, t4pt, t4eta;
 
+  // -- dimuon variables
   double mpsi, mkk;
-  double psipt, psieta, psiphi, phipt, phieta, phiphi, dr;
+  double psipt, psieta, psiphi;
+  double psicosa, psiflsxy, psiprob, psimaxdoca;
+
+  // -- other resonances
+  double phipt, phieta, phiphi, dr;
+
   double md0, dm, ptd0;
 
   double hm1pt, hm1eta, hm1phi, hm2pt, hm2eta, hm2phi;
