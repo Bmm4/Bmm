@@ -6,6 +6,7 @@
 
 #include "TROOT.h"
 #include "TStyle.h"
+#include "TKey.h"
 #include "TMath.h"
 #include "TPad.h"
 #include "TRandom3.h"
@@ -62,7 +63,18 @@ void plotWork::init() {
 void plotWork::makeAll(int bitmask) {
 
   if (bitmask & 0x1) {
+    runTisEfficiency("bupsikData");
+    runTisEfficiency("bspsiphiData");
+    runTisEfficiency("bdpsikstarData");
+    runTisEfficiency("bmmData");
+
+    runTisEfficiency("bupsikSingleMuon");
+    runTisEfficiency("bspsiphiSingleMuon");
+    runTisEfficiency("bdpsikstarSingleMuon");
+    runTisEfficiency("bmmSingleMuon");
   }
+
+  plotTisEfficiency("all");
 
 }
 
@@ -76,10 +88,68 @@ void plotWork::bookHist(string dsname) {
 }
 
 
+// ----------------------------------------------------------------------
+void plotWork::plotTisEfficiency(string dsname) {
+
+  // -- read histograms
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str());
+  cout << " opened " << endl;
+
+  vector<string> vds;
+
+  TIter next(fHistFile->GetListOfKeys());
+  TKey *key(0);
+  TH1D *hpass(0), *hnorm(0);
+  while ((key = (TKey*)next())) {
+    if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
+
+    if (TString(key->GetName()).Contains("_norm_")) {
+      string hname = key->GetName();
+      replaceAll(hname, "h_norm_", "");
+      vds.push_back(hname);
+    }
+  }
+
+  string name;
+  for (unsigned int i = 0; i < vds.size(); ++i) {
+    if (dsname != "all" && vds[i] != dsname) continue;
+    hpass = (TH1D*)(fHistFile->Get(Form("h_pass_%s", vds[i].c_str())));
+    hnorm = (TH1D*)(fHistFile->Get(Form("h_norm_%s", vds[i].c_str())));
+
+    hnorm->Draw();
+    hpass->Draw("samee");
+
+    name = vds[i];
+    replaceAll(name, "Data", " Charmonium");
+    replaceAll(name, "SingleMuon", " BLA");
+    replaceAll(name, "BLA", " SingleMuon");
+
+    tl->SetTextSize(0.03);
+    tl->DrawLatexNDC(0.16, 0.92, name.c_str());
+    tl->DrawLatexNDC(0.60, 0.92, Form("#varepsilon = %d/%d = %3.2f #pm %3.2f",
+				     static_cast<int>(hpass->GetSumOfWeights()),
+				     static_cast<int>(hnorm->GetSumOfWeights()),
+				     hpass->GetSumOfWeights()/hnorm->GetSumOfWeights(),
+				     dEff(static_cast<int>(hpass->GetSumOfWeights()),
+					  static_cast<int>(hnorm->GetSumOfWeights())
+					  ))
+		     );
+
+    savePad(Form("eff-%s.pdf", vds[i].c_str()));
+  }
+
+
+
+}
 
 
 // ----------------------------------------------------------------------
-void plotWork::tisEfficiency(string dsname) {
+void plotWork::runTisEfficiency(string dsname) {
+
+  if (string::npos != dsname.find("bupsik")) fMode = BU2JPSIKP;
+  if (string::npos != dsname.find("bspsiphi")) fMode = BS2JPSIPHI;
+  if (string::npos != dsname.find("bdpsikstar")) fMode = BD2JPSIKSTAR;
 
   // -- dump histograms
   cout << "fHistFile: " << fHistFileName;
@@ -124,17 +194,30 @@ void plotWork::loopFunction1() {
 
   if (!fGoodAlpha) return;
   if (!fGoodChi2) return;
-  if (!fGoodFLS) return;
 
   if (!fGoodCloseTrack) return;
   if (!fGoodIso) return;
   if (!fGoodDocaTrk) return;
 
   if (TMath::Abs(fb.flsxy) < 3.0) return;
+  if (TMath::Abs(fb.fls3d) < 10.0) return;
 
   if (TMath::Abs(fb.m1eta) > 1.6) return;
   if (TMath::Abs(fb.m2eta) > 1.6) return;
 
+  if (fb.m1pt < 4.0) return;
+  if (fb.m2pt < 3.0) return;
+
+
+  if ((fMode == BU2JPSIKP) || (fMode = BD2JPSIKSTAR) || (fMode = BS2JPSIPHI)) {
+    if (TMath::Abs(fb.mpsi) < 2.9) return;
+    if (TMath::Abs(fb.mpsi) > 3.3) return;
+
+    if (TMath::Abs(fb.psipt) < 6.9) return;
+    if (TMath::Abs(fb.psicosa) < 0.9) return;
+    if (TMath::Abs(fb.psiprob) < 0.1) return;
+    if (TMath::Abs(fb.psiflsxy) < 3) return;
+  }
 
   fpHnorm->Fill(fb.m);
 
@@ -407,7 +490,6 @@ void plotWork::loadFiles(string afiles) {
   string files = fDirectory + string("/") + afiles;
   cout << "==> plotWork::loadFile loading files listed in " << files << endl;
 
-  bool readMoreFiles(false);
   char buffer[1000];
   ifstream is(files.c_str());
   while (is.getline(buffer, 1000, '\n')) {
@@ -430,15 +512,48 @@ void plotWork::loadFiles(string afiles) {
     TFile *pF(0);
     dataset *ds(0);
 
-    if (string::npos != stype.find("data")) {
-      // -- DATA
+    if (string::npos != stype.find("SingleMuon")) {
+      // -- SingleMuon
       pF = loadFile(sfile);
 
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2;
-      if (string::npos != stype.find("XXX")) {
-        sname = "bdpsikstarData";
+      if (string::npos != stype.find("bmm")) {
+        sname = "bmmSingleMuon";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikSingleMuon";
+        sdecay = "bupsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiSingleMuon";
+        sdecay = "bspsiphi";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarSingleMuon";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
@@ -446,10 +561,9 @@ void plotWork::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
-	fDS.insert(make_pair(sname, ds));
       }
 
-    } else {
+    } else if (string::npos != stype.find("mc")) {
       // -- MC
       pF = loadFile(sfile);
 
@@ -467,26 +581,29 @@ void plotWork::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
-	fDS.insert(make_pair(sname, ds));
       }
 
     }
     if (sname != "nada") {
-      readMoreFiles = true;
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
       ds->fName   = sdecay;
       ds->fFullName = sname;
-      fDS.insert(make_pair(sname, ds));
+      insertDataset(sname, ds);
+    } else {
+      delete ds;
     }
 
 
   }
 
   is.close();
-  if (readMoreFiles) {
-    for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-      cout << it->first << ": " << it->second->fName << ", " << it->second->fF->GetName() << endl;
-    }
+
+  cout << "------------------------------------------------------------------------------------------" << endl;
+  cout << Form("%30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
+  cout << "------------------------------------------------------------------------------------------" << endl;
+  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
   }
+  cout << "------------------------------------------------------------------------------------------" << endl;
 }

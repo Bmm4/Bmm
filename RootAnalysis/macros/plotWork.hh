@@ -21,7 +21,10 @@ public :
   virtual void loadFiles(std::string afiles);
   virtual void makeAll(int bitmask = 0);
 
-  void tisEfficiency(std::string dsname);
+  void plotTisEfficiency(std::string dsname);
+  void runTisEfficiency(std::string dsname);
+
+
   void bookHist(std::string dsname);
   TH1D *fpHnorm, *fpHpass;
 
@@ -34,7 +37,6 @@ public :
   void   loopFunction1();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
-  //  void   candAnalysis();
 
 private:
 
