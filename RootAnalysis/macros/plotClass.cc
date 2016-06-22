@@ -84,8 +84,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = 2.2 fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 2.7 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
+  if (setup == "") fSuffix = Form("%d", fYear);
 
   fIF = new initFunc();
 
@@ -153,7 +154,7 @@ void plotClass::changeSetup(string dir, string name, string setup) {
 
   fTexFileName = fNumbersFileName;
   replaceAll(fTexFileName, ".txt", ".tex");
-  fTEX.open(fNumbersFileName.c_str(), ios::app);
+  fTEX.open(fTexFileName.c_str(), ios::app);
 }
 
 
@@ -1406,6 +1407,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "mBdLo      ";
+  fTEX << Form("\\vdef{%s:mBd:var}  {\\ensuremath{{m(\\Bz) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i) {
     OUT << Form("%10.3f", fCuts[i]->mBdLo);
     fTEX << Form("\\vdef{%s:mBdLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBdLo) << endl;
@@ -1420,6 +1422,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "mBsLo      ";
+  fTEX << Form("\\vdef{%s:mBs:var}  {\\ensuremath{{m(\\Bs) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->mBsLo);
     fTEX <<  Form("\\vdef{%s:mBsLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBsLo) << endl;
@@ -1434,6 +1437,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "etaMin     ";
+  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->etaMin);
     fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
@@ -1448,6 +1452,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pt         ";
+  fTEX << Form("\\vdef{%s:ptb:var}  {\\ensuremath{{\\ptb } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pt);
     fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
@@ -1455,6 +1460,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "m1pt       ";
+  fTEX << Form("\\vdef{%s:ptmuone:var}  {\\ensuremath{{\\ptmuone } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m1pt);
     fTEX <<  Form("\\vdef{%s:m1pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1pt) << endl;
@@ -1462,6 +1468,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "m2pt       ";
+  fTEX << Form("\\vdef{%s:ptmutwo:var}  {\\ensuremath{{\\ptmutwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m2pt);
     fTEX <<  Form("\\vdef{%s:m2pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2pt) << endl;
@@ -1469,6 +1476,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "metaMin    ";
+  fTEX << Form("\\vdef{%s:etamuf:var}  {\\ensuremath{{|\\eta(\\mu_f)| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->metaMin);
     fTEX <<  Form("\\vdef{%s:metaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMin) << endl;
@@ -1483,6 +1491,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "iso        ";
+  fTEX << Form("\\vdef{%s:iso:var}  {\\ensuremath{{\\iso } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->iso);
     fTEX <<  Form("\\vdef{%s:iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->iso) << endl;
@@ -1490,6 +1499,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "chi2dof    ";
+  fTEX << Form("\\vdef{%s:chidof:var}  {\\ensuremath{{\\chidof } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->chi2dof);
     fTEX <<  Form("\\vdef{%s:chi2dof:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->chi2dof) << endl;
@@ -1497,6 +1507,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "alpha      ";
+  fTEX << Form("\\vdef{%s:alpha:var}  {\\ensuremath{{\\alpha } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->alpha);
     fTEX <<  Form("\\vdef{%s:alpha:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->alpha) << endl;
@@ -1504,6 +1515,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "fls3d      ";
+  fTEX << Form("\\vdef{%s:fls:var}  {\\ensuremath{{\\fls } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->fls3d);
     fTEX <<  Form("\\vdef{%s:fls3d:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->fls3d) << endl;
@@ -1511,6 +1523,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "docatrk    ";
+  fTEX << Form("\\vdef{%s:docatrk:var}  {\\ensuremath{{\\docatrk } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->docatrk);
     fTEX <<  Form("\\vdef{%s:docatrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->docatrk) << endl;
@@ -1518,6 +1531,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "closetrk   ";
+  fTEX << Form("\\vdef{%s:closetrk:var}  {\\ensuremath{{\\closetrk } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrk);
     fTEX <<  Form("\\vdef{%s:closetrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrk) << endl;
@@ -1525,6 +1539,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "maxdoca    ";
+  fTEX << Form("\\vdef{%s:maxdoca:var}  {\\ensuremath{{\\maxdoca } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->maxdoca);
     fTEX <<  Form("\\vdef{%s:maxdoca:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->maxdoca) << endl;
@@ -1532,6 +1547,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvip       ";
+  fTEX << Form("\\vdef{%s:ip:var}  {\\ensuremath{{\\pvip } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvip);
     fTEX <<  Form("\\vdef{%s:pvip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvip) << endl;
@@ -1539,6 +1555,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvips      ";
+  fTEX << Form("\\vdef{%s:ips:var}  {\\ensuremath{{\\pvips } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvips);
     fTEX <<  Form("\\vdef{%s:pvips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvips) << endl;
@@ -1546,6 +1563,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlip      ";
+  fTEX << Form("\\vdef{%s:lip:var}  {\\ensuremath{{\\pvlip } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlip);
     fTEX <<  Form("\\vdef{%s:pvlip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip) << endl;
@@ -1553,6 +1571,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlips     ";
+  fTEX << Form("\\vdef{%s:lips:var}  {\\ensuremath{{\\pvlips } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlips);
     fTEX <<  Form("\\vdef{%s:pvlips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips) << endl;
@@ -1560,6 +1579,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlip2     ";
+  fTEX << Form("\\vdef{%s:liptwo:var}  {\\ensuremath{{\\pvliptwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlip2);
     fTEX <<  Form("\\vdef{%s:pvlip2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip2) << endl;
@@ -1567,18 +1587,19 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlips2    ";
+  fTEX << Form("\\vdef{%s:lipstwo:var}  {\\ensuremath{{\\pvlipstwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlips2);
     fTEX <<  Form("\\vdef{%s:pvlips2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips2) << endl;
   }
   OUT << endl;
 
-  OUT << "xmlFile    ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
-    fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
-  }
-  OUT << endl;
+  // OUT << "xmlFile    ";
+  // for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+  //   OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
+  //   fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
+  // }
+  // OUT << endl;
 
 
   OUT.flush();
