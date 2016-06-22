@@ -10,4 +10,4 @@ type=bdpsikstar,mc    lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_privat
 # -- dimuons
 type=bmm,data         lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmCharmonium2016B-v01.root
 type=bdmm,mc          lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root
-type=bdmm,mc,official lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root
+#type=bdmm,mc,official lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root
