@@ -126,6 +126,7 @@ void plotReducedOverlays::makeAll(string what) {
   if (what == "all") {
     init();
 
+    printCuts(cout);
     makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
     makeSampleOverlay("bmmData", "bdmmMc", "Presel");
     makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
@@ -133,6 +134,15 @@ void plotReducedOverlays::makeAll(string what) {
   }
 
   if (what == "plot") {
+    fTEX.close();
+    system(Form("/bin/rm -f %s", fTexFileName.c_str()));
+    fTEX.open(fTexFileName.c_str(), ios::app);
+    system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
+    system(Form("/bin/rm -f %s/sbsctrl_ad*_*.pdf", fDirectory.c_str()));
+    system(Form("/bin/rm -f %s/overlay_ad*_*.pdf", fDirectory.c_str()));
+    system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
+
+    printCuts(cout);
     makeOverlay("bspsiphiData", "bspsiphiMc", "Ao");
     makeOverlay("bmmData", "bdmmMc", "Presel");
     makeOverlay("bupsikData", "bupsikMc", "Ao");
@@ -229,7 +239,7 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
     tl->SetTextSize(0.05);
     tl->DrawLatexNDC(xPos, 0.80, header.c_str());
     tl->SetTextSize(0.025);
-    tl->DrawLatexNDC(xPos, 0.75, Form("%2.1f < #eta(#mu_{f}) < %2.1f", fCuts[i]->metaMin, fCuts[i]->metaMax));
+    tl->DrawLatexNDC(xPos, 0.75, Form("%2.1f < |#eta(#mu_{f})| < %2.1f", fCuts[i]->metaMin, fCuts[i]->metaMax));
 
     stamp(0., fStampCms, fStampString, 0., fStampLumi);
 
