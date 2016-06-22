@@ -3,5 +3,5 @@ candAnaBu2JpsiK     cuts/candAnaBu2JpsiK.2016.cuts
 candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.2016.cuts
 candAnaBs2JpsiPhi   cuts/candAnaBs2JpsiPhi.2016.cuts
 #
-JSON             ../common/json/Cert_271036-274443_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+JSON             ../common/json/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
 DSNAME           SingleMuon
