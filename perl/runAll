@@ -26,7 +26,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('Ccdhlo:pq:s:t:x:');
+getopts('Ccdhlmo:pq:s:t:x:');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -96,6 +96,29 @@ if ($opt_p) {
     exit(0);
 }
 
+
+# -- merge rootfiles
+if ($opt_m) {
+    foreach $j (keys %catalogs) {
+	if ($opt_s && !($j =~ /$opt_s/)) {next;}
+	if (-d "jobs") {
+	    chdir("jobs");
+	} else {
+	    if (-d "$j") {
+		chdir("$j");
+	    }
+	}
+
+	if (!$opt_d) {
+	    system("monSge");
+	}
+	chdir("..");
+    }
+
+    exit(0);
+
+
+}
 
 # ----------------------------------------------------------------------
 # -- submit the jobs
