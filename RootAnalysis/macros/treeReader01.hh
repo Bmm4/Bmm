@@ -22,6 +22,7 @@
 #include "rootio/TAnaVertex.hh"
 
 #include "common/JSON.hh"
+#include "common/Lumi.hh"
 #include "common/PdTrigger.hh"
 
 #define DR      57.29577951
@@ -55,6 +56,7 @@ public:
   virtual int        numberOfBPixLayer1Hits(TAnaTrack *t);
   virtual int        numberOfTrackerLayers(TAnaTrack *t);
   virtual void       setJSONFile(const char *name) {JSONFILE = name;}
+  virtual void       setLumiFile(const char *name) {LUMIFILE = name;}
   virtual void       forceJSON() {fForceJson = true;}
   virtual PdTrigger* pdTrigger() {return fpPdTrigger;}
 
@@ -81,11 +83,9 @@ protected:
   // -- Histogram pointers
   TTree       *fTree;
 
-  // -- Pointer to JSON class
   JSON *fpJSON;
-
-  // -- Pointer to JSON class
   PdTrigger *fpPdTrigger;
+  Lumi *fpLumi;
 
   // -- Cut values
   double
@@ -96,7 +96,7 @@ protected:
     ;
   int TYPE;
   int BLIND;
-  std::string JSONFILE, DSNAME;
+  std::string JSONFILE, DSNAME, LUMIFILE;
   bool fForceJson;
 
   int fIsMC;
