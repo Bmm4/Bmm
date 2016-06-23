@@ -164,6 +164,7 @@ public:
   int fEvent;
   int fRunRange;
   int fYear;
+  double fLumi;
 
   double       MASSMIN,   MASSMAX;
   double       SIGBOXMIN, SIGBOXMAX;

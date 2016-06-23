@@ -1463,9 +1463,10 @@ void candAna::setupMuonIdTree(TTree *t) {
 void candAna::setupReducedTree(TTree *t) {
 
   t->Branch("run",     &fRun,               "run/L");
-  t->Branch("json",    &fJSON,              "json/O");
   t->Branch("evt",     &fEvt,               "evt/L");
   t->Branch("ls",      &fLS,                "ls/I");
+  t->Branch("rlumi",   &fLumi,              "rlumi/D");
+  t->Branch("json",    &fJSON,              "json/O");
   t->Branch("tm",      &fCandTM,            "tm/I");
   t->Branch("pr",      &fGenBpartial,       "pr/I");
   t->Branch("procid",  &fProcessType,       "procid/I");

@@ -6,6 +6,7 @@ struct redTreeData {
   int ls, tm, pr, procid, pvn, rr;
   bool json, hlt, hltm, hltm2, cb, tis;
   double bdt, bdt2, pvw8, pvz;
+  double rlumi;
 
   bool gmuid, gmutmid, gmumvaid, gmupt, gmueta, gtqual, gtpt, gteta;
 

@@ -72,6 +72,17 @@ void bmmReader::eventProcessing() {
     fProcessType = -98;
   }
 
+  double rlumi(-1.);
+  if (!fIsMC && json) {
+    if (0 != fpLumi->contains(fRun)) {
+      rlumi = fpLumi->lumi(fRun);
+    } else {
+      if (fVerbose > 100) {
+	cout << "Run " << fRun << " has no lumi information" << endl;
+      }
+    }
+  }
+
   // -- fill a few basic histograms
   TSimpleTrack *pT(0);
   double x(0.);
@@ -94,6 +105,7 @@ void bmmReader::eventProcessing() {
     lCandAnalysis[i]->fRun         = fRun;
     lCandAnalysis[i]->fEvt         = fEvt;
     lCandAnalysis[i]->fLS          = fLS;
+    lCandAnalysis[i]->fLumi        = rlumi;
     lCandAnalysis[i]->DSNAME       = DSNAME;
     lCandAnalysis[i]->fEvent       = fEvent;
     lCandAnalysis[i]->fProcessType = fProcessType;
