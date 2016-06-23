@@ -65,6 +65,11 @@ double Lumi::lumi(int run) {
   return fMapRunLumi[run];
 }
 
+// ----------------------------------------------------------------------
+bool Lumi::contains(int run) {
+  return (fMapRunLumi.count(run) > 0);
+}
+
 
 // ----------------------------------------------------------------------
 void Lumi::print() {

@@ -27,6 +27,7 @@ public:
 
   void print();
   double lumi(int run);
+  bool contains(int run);
 
 private:
 
