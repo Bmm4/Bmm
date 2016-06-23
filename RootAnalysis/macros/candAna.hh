@@ -76,7 +76,7 @@ public:
   virtual void        setupMuonIdTree(TTree *);
 
   virtual bool        tis(TAnaCand *pC);
-  virtual int         matchTrgObj2Trk(TVector3 t);
+  virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -237,7 +237,7 @@ public:
   double  fMu1XpDist, fMu2XpDist;
   double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8;
   int     fPvN, fPvIdx;
-  double  fCandPt, fCandP, fCandTau, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
+  double  fCandPt, fCandP, fCandTau, fCandTauE, fCandTauxy, fCandTauxyE, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
   double  fCandCosA, fCandA;
   double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca;
   double  fCandIso;

@@ -153,7 +153,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
-  fCandTau     = fCandFL3d*MBPLUS/fCandP/TMath::Ccgs();
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
@@ -740,7 +739,7 @@ void candAnaBs2JpsiPhi::efficiencyCalculation() {
   }
   if (pCand) {
     fETcandMass = pCand->fMass;
-    fETtau      = pCand->fVtx.fD3d/pCand->fVtx.fD3dE*MBS/pCand->fPlab.Mag()/TMath::Ccgs();
+    fETtau      = pCand->fTau3d;
   } else {
     fETcandMass = -99.;
     fETtau      = -99.;
