@@ -29,7 +29,7 @@ echo "========================"
 echo "====> SGE  wrapper <===="
 echo "========================"
 
-echo "--> Running SGE digi-reco job wrapper"
+echo "--> Running SGE 8_0_11 gen-digi-reco job wrapper"
 echo $JOB
 echo $FILE1
 echo $FILE2
@@ -97,6 +97,8 @@ ls -rtl
 # -- Setup CMSSW for DIGIRECO
 # ----------------------------------------------------------------------
 echo "--> Setup CMSSW for DIGIRECO"
+# -- note the two spaces to avoid 'run' inserting its value for the variable
+setenv  SCRAM_ARCH  slc6_amd64_gcc493
 cd ../../
 pwd
 date
