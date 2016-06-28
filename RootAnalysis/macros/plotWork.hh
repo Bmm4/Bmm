@@ -11,52 +11,34 @@ class plotWork: public plotClass {
 
 public :
   plotWork(std::string dir = "results",
-	   std::string files = "plotWork.files",
+	   std::string files = "plotWork.2016.files",
 	   std::string cuts = "plotClass.2016.cuts",
-	   std::string setup = "default");
+	   std::string setup = "");
   virtual        ~plotWork();
 
-  void   setCuts(std::string cuts);
-
   // -- Main analysis methods
-  void   loadFiles(std::string afiles);
-  void   makeAll(int bitmask = 0);
+  virtual void init();
+  virtual void loadFiles(std::string afiles);
+  virtual void makeAll(int bitmask = 0);
 
-  // -- validate gen/mc production
-  void   prodSummary(string ds1, int year = 2014);
-  void   privateVsOfficial(string mode = "bdmm", int nevt = -1);
-  void   bookDistributions(std::string sample);
-  AnalysisDistribution* bookDistribution(std::string hn, std::string ht, std::string hc, int nbins, double lo, double hi);
+  void plotTisEfficiency(std::string dsname);
+  void runTisEfficiency(std::string dsname);
+
+
+  void bookHist(std::string dsname);
+  TH1D *fpHnorm, *fpHpass;
+
+
+  /// NOTE: This works with the output of genAnalysis!!!!
+  void prodSummary(string ds1, int year);
+
 
   // -- code for loops
   void   loopFunction1();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
-  //  void   candAnalysis();
 
 private:
-
-  TTree* fTree;
-
-#define NAD 2
-  AnalysisDistribution
-  *fpMuonsEta[NAD], *fpMuon1Pt[NAD], *fpMuon2Pt[NAD]
-    , *fpPt[NAD], *fpP[NAD], *fpPz[NAD], *fpEta[NAD]
-    , *fpAlpha[NAD]
-    , *fpIso[NAD], *fpCloseTrk[NAD], *fpDocaTrk[NAD]
-    , *fpChi2Dof[NAD], *fpPChi2Dof[NAD]
-    , *fpFLS3d[NAD], *fpFL3d[NAD], *fpFL3dE[NAD]
-    , *fpMaxDoca[NAD], *fpIp[NAD], *fpIpS[NAD]
-    , *fpPvZ[NAD], *fpPvN[NAD], *fpPvAveW8[NAD]
-    ;
-
-  int fOffset;
-  int fChanMode;
-
-
-
-  bool fGoodCand;
-  double PTLO;
 
 
   // ----------------------------------------------------------------------

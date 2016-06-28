@@ -47,7 +47,7 @@ public:
   double       fKPtGen, fKEtaGen;
   double       fKaonPtNrf, fKaonEtaNrf;
   int          fKaonTkQuality;
-  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi;
+  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi, fJpsiCosA, fJpsiMaxDoca, fJpsiFLSxy, fJpsiVtxProb;
 
   bool         fGoodJpsiMass;
 

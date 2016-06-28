@@ -76,7 +76,7 @@ public:
   virtual void        setupMuonIdTree(TTree *);
 
   virtual bool        tis(TAnaCand *pC);
-  virtual int         matchTrgObj2Trk(TVector3 t);
+  virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -164,6 +164,7 @@ public:
   int fEvent;
   int fRunRange;
   int fYear;
+  double fLumi;
 
   double       MASSMIN,   MASSMAX;
   double       SIGBOXMIN, SIGBOXMAX;
@@ -237,10 +238,9 @@ public:
   double  fMu1XpDist, fMu2XpDist;
   double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8;
   int     fPvN, fPvIdx;
-  double  fCandPt, fCandP, fCandTau, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
+  double  fCandPt, fCandP, fCandTau, fCandTauE, fCandTauxy, fCandTauxyE, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
   double  fCandCosA, fCandA;
   double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca;
-  double  f2MChi2,   f2MDof,   f2MProb,   f2MFL3d,   f2MFL3dE,   f2MFLS3d,   f2MFLSxy;
   double  fCandIso;
   int     fCandIsoTrk, fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk;
   double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE;
@@ -249,6 +249,9 @@ public:
   double  fCandPvLip2, fCandPvLipS2, fCandPvLip12, fCandPvLipE12, fCandPvLipS12;
   double  fCandPvDeltaChi2;
   double  fCandOtherVtx;
+  // NO: They are filled into the "Jpsi" variables in the derived classes!
+  // // -- dimuon variables
+  // double  fmmMass, fmmChi2, fmmDof, fmmProb, fmmFL3d, fmmFL3dE, fmmFLS3d, fmmFLSxy, fmmCosA, fmmMaxDoca;
 
   double  fOsMuonPt, fOsMuonPtRel, fOsIso, fOsRelIso, fOsMuonDeltaR;
 

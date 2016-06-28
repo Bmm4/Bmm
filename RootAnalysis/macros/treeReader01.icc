@@ -1,5 +1,5 @@
 // ======================================================================
-// -- This file contains general setup stuff 
+// -- This file contains general setup stuff
 // ======================================================================
 
 // ----------------------------------------------------------------------
@@ -8,9 +8,9 @@ treeReader01::treeReader01(TChain *chain, TString evtClassName) {
   if (chain == 0) {
     cout << "You need to pass a chain!" << endl;
   }
-  fpChain = chain; 
+  fpChain = chain;
   fNentries = chain->GetEntries();
-  fForceJson = false; 
+  fForceJson = false;
   init(evtClassName);
 }
 
@@ -67,7 +67,7 @@ void treeReader01::readCuts(TString filename, int dump) {
 
   TH1D *hcuts = new TH1D("hcuts", "", 1000, 0., 1000.);
   hcuts->GetXaxis()->SetBinLabel(1, fn.Data());
-  int ibin; 
+  int ibin;
 
   while (is.getline(buffer, 200, '\n')) {
     ok = 0;
@@ -81,12 +81,21 @@ void treeReader01::readCuts(TString filename, int dump) {
     }
 
     if (!strcmp(CutName, "JSON")) {
-      char json[1000]; ok = 1; 
+      char json[1000]; ok = 1;
       sscanf(buffer, "%s %s", CutName, json);
-      JSONFILE = string(json); ok = 1; 
+      JSONFILE = string(json); ok = 1;
       if (dump) cout << "JSON FILE:           " << JSONFILE << endl;
       ibin = 3;
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: JSON File :: %s", CutName, JSONFILE.c_str()));
+    }
+
+    if (!strcmp(CutName, "LUMI")) {
+      char lumi[1000]; ok = 1;
+      sscanf(buffer, "%s %s", CutName, lumi);
+      LUMIFILE = string(lumi); ok = 1;
+      if (dump) cout << "LUMI FILE:           " << LUMIFILE << endl;
+      ibin = 3;
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: LUMI File :: %s", CutName, LUMIFILE.c_str()));
     }
 
     if (!strcmp(CutName, "PTLO")) {
@@ -126,7 +135,7 @@ int treeReader01::loop(int nevents, int start) {
   int nb = 0, maxEvents(0);
 
   cout << "==> treeReader01: Chain has a total of " << fNentries << " events" << endl;
- 
+
   // -- Setup for restricted running (not yet foolproof, i.e. bugfree)
   if (nevents < 0) {
     maxEvents = fNentries;
@@ -135,7 +144,7 @@ int treeReader01::loop(int nevents, int start) {
     maxEvents = nevents;
   }
   if (start < 0) {
-    start = 0; 
+    start = 0;
   } else {
     cout << "==> treeReader01: Starting at event " << start << endl;
     if (maxEvents >  fNentries) {
@@ -148,47 +157,47 @@ int treeReader01::loop(int nevents, int start) {
   }
 
   // -- The main loop
-  int step(50000); 
-  if (maxEvents < 1000000) step = 10000; 
-  if (maxEvents < 100000)  step = 1000; 
-  if (maxEvents < 10000)   step = 500; 
-  if (maxEvents < 1000)    step = 100; 
+  int step(50000);
+  if (maxEvents < 1000000) step = 10000;
+  if (maxEvents < 100000)  step = 1000;
+  if (maxEvents < 10000)   step = 500;
+  if (maxEvents < 1000)    step = 100;
 
-  int treeNumber(0), oldTreeNumber(-1); 
+  int treeNumber(0), oldTreeNumber(-1);
 
   for (int jEvent = start; jEvent < maxEvents; ++jEvent) {
     treeNumber = fpChain->GetTreeNumber();
     if (treeNumber != oldTreeNumber) {
       cout << "    " << Form("      %8d", jEvent) << " " << fpChain->GetFile()->GetName() << endl;
-      oldTreeNumber = treeNumber; 
+      oldTreeNumber = treeNumber;
     }
 
     if (jEvent%step == 0) cout << Form(" .. Event %8d", jEvent);
 
-    fEvent = jEvent; 
-    fpEvt->Clear();                        
-    nb += fpChain->GetEvent(jEvent);          
-    
-    fEvt = static_cast<long int>(fpEvt->fEventNumber);		
+    fEvent = jEvent;
+    fpEvt->Clear();
+    nb += fpChain->GetEvent(jEvent);
+
+    fEvt = static_cast<long int>(fpEvt->fEventNumber);
     fRun = static_cast<long int>(fpEvt->fRunNumber);
     fLS  = fpEvt->fLumiSection;
 
     if (jEvent%step == 0) {
-      TTimeStamp ts; 
+      TTimeStamp ts;
       cout  << " (run: " << Form("%8ld", fRun)
 	    << ", event: " << Form("%10ld", fEvt)
 	    << ", ls: " << Form("%5d", fLS)
 	    << ", time now: " << ts.AsString("lc")
-	    << ")" << endl;	
+	    << ")" << endl;
     }
 
     if (fForceJson && !fpJSON->good(fRun, fLS)) {
        cout << "Skipping event from run = " << fRun << " LS = " << fLS << endl;
        continue;
-    }   
+    }
 
 
-    eventProcessing(); 
+    eventProcessing();
   }
   return 0;
 

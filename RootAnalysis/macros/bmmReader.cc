@@ -4,6 +4,7 @@
 
 #include "common/PidTable.hh"
 #include "common/HFMasses.hh"
+#include "common/util.hh"
 
 #include "candAna.hh"
 #include "candAnaMuMu.hh"
@@ -34,8 +35,14 @@ bmmReader::~bmmReader() {
 // ----------------------------------------------------------------------
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
-  fpJSON = new JSON(JSONFILE.c_str(), 1);
-  fpPdTrigger = new PdTrigger("unused", 1);
+  fpJSON = new JSON(JSONFILE.c_str(), fVerbose);
+  if (LUMIFILE == "") {
+    cout << "No LUMIFILE provided, deriving LUMIFILE from " << JSONFILE << endl;
+    LUMIFILE = JSONFILE;
+    replaceAll(LUMIFILE, "txt", "lumi");
+  }
+  fpLumi = new Lumi(LUMIFILE.c_str(), fVerbose);
+  fpPdTrigger = new PdTrigger("unused", fVerbose);
 }
 
 // ----------------------------------------------------------------------
@@ -65,6 +72,17 @@ void bmmReader::eventProcessing() {
     fProcessType = -98;
   }
 
+  double rlumi(-1.);
+  if (!fIsMC && json) {
+    if (0 != fpLumi->contains(fRun)) {
+      rlumi = fpLumi->lumi(fRun);
+    } else {
+      if (fVerbose > 100) {
+	cout << "Run " << fRun << " has no lumi information" << endl;
+      }
+    }
+  }
+
   // -- fill a few basic histograms
   TSimpleTrack *pT(0);
   double x(0.);
@@ -87,6 +105,7 @@ void bmmReader::eventProcessing() {
     lCandAnalysis[i]->fRun         = fRun;
     lCandAnalysis[i]->fEvt         = fEvt;
     lCandAnalysis[i]->fLS          = fLS;
+    lCandAnalysis[i]->fLumi        = rlumi;
     lCandAnalysis[i]->DSNAME       = DSNAME;
     lCandAnalysis[i]->fEvent       = fEvent;
     lCandAnalysis[i]->fProcessType = fProcessType;
@@ -162,14 +181,10 @@ void bmmReader::readCuts(TString filename, int dump) {
       lCandAnalysis.push_back(a);
     }
 
-    //////added by jmonroy
-
     if (!strcmp(className, "candAnaBd2JpsiKstar")) {
       candAna *a = new candAnaBd2JpsiKstar(this, "candAnaBd2JpsiKstar", cutFile);
       lCandAnalysis.push_back(a);
     }
-
-    //////////
 
     if (!strcmp(className, "candAnaDstar")) {
       candAna *a = new candAnaDstar(this, "candAnaDstar", cutFile);
@@ -204,6 +219,13 @@ void bmmReader::readCuts(TString filename, int dump) {
       sscanf(buffer, "%s %s", className, json);
       JSONFILE = string(json);
       if (dump) cout << "JSON FILE:           " << JSONFILE << endl;
+    }
+
+    if (!strcmp(className, "LUMI")) {
+      char lumi[1000];
+      sscanf(buffer, "%s %s", className, lumi);
+      LUMIFILE = string(lumi);
+      if (dump) cout << "LUMI FILE:           " << LUMIFILE << endl;
     }
 
     if (!strcmp(className, "DSNAME")) {

@@ -6,16 +6,18 @@ struct redTreeData {
   int ls, tm, pr, procid, pvn, rr;
   bool json, hlt, hltm, hltm2, cb, tis;
   double bdt, bdt2, pvw8, pvz;
+  double rlumi;
 
   bool gmuid, gmutmid, gmumvaid, gmupt, gmueta, gtqual, gtpt, gteta;
 
   double pvlip, pvlips, pvlip2, pvlips2, pvip, pvips, pvip3d, pvips3d;
 
   int q, type;
-  double pt, eta, phi, tau, m, me, cm, m3, m4, cosa, alpha, iso;
+  double pt, eta, phi, tau, taue, tauxy, tauxye, m, me, cm, m3, m4, cosa, alpha, iso;
   int isotrk, closetrk, closetrks1, closetrks2, closetrks3;
   double chi2, dof, chi2dof, pchi2dof, fls3d, fl3d, flxy, fl3dE, flsxy, docatrk, docatrkbdt, maxdoca, lip, lipE, tip, tipE;
 
+  // -- opposite side
   double osiso, osreliso, osmpt, osmptrel, osmdr;
 
   int m1q, m2q;
@@ -36,8 +38,14 @@ struct redTreeData {
   int    g1id, g2id;
   double t1pt, t1eta, t2pt, t2eta, t3pt, t3eta, t4pt, t4eta;
 
+  // -- dimuon variables
   double mpsi, mkk;
-  double psipt, psieta, psiphi, phipt, phieta, phiphi, dr;
+  double psipt, psieta, psiphi;
+  double psicosa, psiflsxy, psiprob, psimaxdoca;
+
+  // -- other resonances
+  double phipt, phieta, phiphi, dr;
+
   double md0, dm, ptd0;
 
   double hm1pt, hm1eta, hm1phi, hm2pt, hm2eta, hm2phi;

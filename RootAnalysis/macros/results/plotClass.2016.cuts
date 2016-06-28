@@ -45,7 +45,6 @@ docatrk  0.015
 closetrk 2
 pvip     0.008
 pvips     2.0
-bdtpt    4.0
 pvlip    100.
 pvlips   100.
 pvlip2   -100.
@@ -72,7 +71,6 @@ docatrk  0.015
 closetrk 2
 pvip     0.008
 pvips     2.0
-bdtpt    4.0
 pvlip    100.
 pvlips   100.
 pvlip2   -100.

@@ -644,7 +644,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
   }
 
   TFitResultPtr r;
-  string fitstring = (fVerbose>0?"m":"qm");
+  string fitstring = (fVerbose>0?"ls":"lsq");
   hm->Fit(f1, fitstring.c_str(), "", fMassLo, fMassHi);
   if (fVerbose > 0) {
     hm->DrawCopy();

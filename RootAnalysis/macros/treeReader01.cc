@@ -8,15 +8,16 @@ using namespace std;
 
 
 // ----------------------------------------------------------------------
-// Run with: ./runTreeReader01 -c chains/bg-test -D root 
-//           ./runTreeReader01 -f test.root 
+// Run with: ./runTreeReader01 -c chains/bg-test -D root
+//           ./runTreeReader01 -f test.root
 // ----------------------------------------------------------------------
 
 
 // ----------------------------------------------------------------------
 void treeReader01::startAnalysis() {
   cout << "treeReader01: startAnalysis: ..." << endl;
-  fpJSON = new JSON(JSONFILE.c_str()); 
+  fpJSON = new JSON(JSONFILE.c_str());
+  fpLumi = new Lumi(LUMIFILE.c_str());
 }
 
 // ----------------------------------------------------------------------
@@ -27,7 +28,7 @@ void treeReader01::endAnalysis() {
 
 // ----------------------------------------------------------------------
 bool treeReader01::goodRun() {
-  return true; 
+  return true;
 }
 
 
@@ -41,26 +42,26 @@ void treeReader01::eventProcessing() {
   cout << "Found " << fpEvt->nGenCands() << " gen cands in event" << endl;
   cout << "Found " << fpEvt->nSigTracks() << " sig tracks in event" << endl;
   cout << "Found " << fpEvt->nRecTracks() << " rec tracks in event" << endl;
-  ((TH1D*)fpHistFile->Get("h1"))->Fill(fpEvt->nRecTracks()); 
-  
+  ((TH1D*)fpHistFile->Get("h1"))->Fill(fpEvt->nRecTracks());
+
   cout << "------------------------------" << endl;
   ((TH1D*)fpHistFile->Get("h20"))->Fill(fpEvt->nRecTracks());
   for (int it = 0; it < fpEvt->nRecTracks(); ++it) {
     pTrack = fpEvt->getRecTrack(it);
-    ((TH1D*)fpHistFile->Get("h10"))->Fill(pTrack->fPlab.Perp()); 
-    cout << "R: "; pTrack->dump(); 
+    ((TH1D*)fpHistFile->Get("h10"))->Fill(pTrack->fPlab.Perp());
+    cout << "R: "; pTrack->dump();
   }
 
 
   cout << "------------------------------" << endl;
   for (int it = 0; it < fpEvt->nCands(); ++it) {
     pCand = fpEvt->getCand(it);
-    cout << "C: " << pCand->fType << " "; pCand->dump(); 
-    ((TH1D*)fpHistFile->Get("h100"))->Fill(pCand->fMass); 
+    cout << "C: " << pCand->fType << " "; pCand->dump();
+    ((TH1D*)fpHistFile->Get("h100"))->Fill(pCand->fMass);
   }
 
   fpHistFile->cd();
-  fillHist(); 
+  fillHist();
   fTree->Fill();
 
 }
@@ -79,7 +80,7 @@ void treeReader01::bookHist() {
   new TH1D("h1", "nTrk", 40, 0., 40.);
   new TH1D("h10", "pT", 40, 0., 20.);
   new TH1D("h20", "ntrk", 20, 0, 20.);
-  
+
   new TH1D("h100", "m", 40, 2.8, 3.4);
 
   // -- Reduced Tree
@@ -93,8 +94,11 @@ void treeReader01::bookHist() {
 void treeReader01::initVariables() {
   cout << "treeReader01: initVariables: ..." << endl;
 
-  fRun = -1; 
-  BLIND = 0; 
+  fRun = -1;
+  BLIND = 0;
+  JSONFILE = "";
+  LUMIFILE = "";
+  DSNAME = "";
 }
 
 // ----------------------------------------------------------------------
@@ -111,7 +115,7 @@ int  treeReader01::numberOfBPixLayers(TAnaTrack *pTrack) {
     else if( pat == 0x498 ) layer3 = true;
   }
   //cout<<dec<<endl;
-  
+
   int pixHits=0;
   if(layer1) {pixHits++;}
   if(layer2) {pixHits++;}
@@ -136,7 +140,7 @@ int  treeReader01::numberOfPixLayers(TAnaTrack *pTrack) {
     else if( pat == 0x510 ) disk2 = true;
   }
   //cout<<dec<<endl;
-  
+
   int pixHits=0;
   if(layer1) {pixHits++;}
   if(layer2) {pixHits++;}
@@ -151,7 +155,7 @@ int  treeReader01::numberOfPixLayers(TAnaTrack *pTrack) {
 // ----------------------------------------------------------------------
 int treeReader01::numberOfPixelHits(TAnaTrack *pTrack) {
   int hits = pTrack->fValidHits;
-  int pixhits(0); 
+  int pixhits(0);
   if(hits>20) hits=20; // pattern has only 20 locations
   for(int i =0; i<hits; ++i){
     unsigned int pat = pTrack->fHitPattern[i];
@@ -163,7 +167,7 @@ int treeReader01::numberOfPixelHits(TAnaTrack *pTrack) {
     else if( pat == 0x510 )  ++pixhits;
   }
   //cout<<dec<<endl;
-  
+
   return pixhits;
 }
 
@@ -216,47 +220,47 @@ int  treeReader01::numberOfBPixLayer1Hits(TAnaTrack *pTrack) {
 //      bad      = there were many bad strips within the ellipse = 3
 // ----------------------------------------------------------------------
 int  treeReader01::numberOfTrackerLayers(TAnaTrack *pTrack) {
-  bool pixl[3], tibl[4], tobl[6]; 
+  bool pixl[3], tibl[4], tobl[6];
   bool pixd[2], tidw[3], tecw[9];
 
-  for (int i = 0; i < 3; ++i) pixl[i] = false; 
-  for (int i = 0; i < 4; ++i) tibl[i] = false; 
-  for (int i = 0; i < 6; ++i) tobl[i] = false; 
+  for (int i = 0; i < 3; ++i) pixl[i] = false;
+  for (int i = 0; i < 4; ++i) tibl[i] = false;
+  for (int i = 0; i < 6; ++i) tobl[i] = false;
 
-  for (int i = 0; i < 2; ++i) pixd[i] = false; 
-  for (int i = 0; i < 3; ++i) tidw[i] = false; 
-  for (int i = 0; i < 9; ++i) tecw[i] = false; 
+  for (int i = 0; i < 2; ++i) pixd[i] = false;
+  for (int i = 0; i < 3; ++i) tidw[i] = false;
+  for (int i = 0; i < 9; ++i) tecw[i] = false;
 
   int hits = pTrack->fValidHits;
   if(hits>20) hits=20; // pattern has only 20 locations
   //  cout << "----------------------------------------------------------------------" << endl;
-  int hit(0), hitmask(3); 
-  int det(0), detpos(7), detmask(0); 
-  int lay(0), layerpos(3), layermask(0); 
+  int hit(0), hitmask(3);
+  int det(0), detpos(7), detmask(0);
+  int lay(0), layerpos(3), layermask(0);
   detmask = 0x7 << detpos;
   layermask = 0xf << layerpos;
   //  cout << "detmask = " << std::hex << detmask << " laymask = " << layermask << std::dec << endl;
   for(int i =0; i<hits; ++i){
     unsigned int pat = pTrack->fHitPattern[i];
-    
+
     hit = (pat & hitmask);
-    det = 0; 
-    det = (pat & detmask)>>detpos; 
-    lay = 0; 
-    lay = (pat & layermask)>>layerpos; 
+    det = 0;
+    det = (pat & detmask)>>detpos;
+    lay = 0;
+    lay = (pat & layermask)>>layerpos;
     //    lay = lay - 1; // FIXME this line is necessary to be correct. But you should use TAnaTrack::fNumberOfValidTrkHits anyway!
-    if ((1 == det) && (0 == hit)) pixl[lay] = true; 
-    if ((2 == det) && (0 == hit)) pixd[lay] = true; 
-	 	       	      
-    if ((3 == det) && (0 == hit)) tibl[lay] = true; 
-    if ((4 == det) && (0 == hit)) tidw[lay] = true; 
-	 	       	      
-    if ((5 == det) && (0 == hit)) tobl[lay] = true; 
-    if ((6 == det) && (0 == hit)) tecw[lay] = true; 
+    if ((1 == det) && (0 == hit)) pixl[lay] = true;
+    if ((2 == det) && (0 == hit)) pixd[lay] = true;
+
+    if ((3 == det) && (0 == hit)) tibl[lay] = true;
+    if ((4 == det) && (0 == hit)) tidw[lay] = true;
+
+    if ((5 == det) && (0 == hit)) tobl[lay] = true;
+    if ((6 == det) && (0 == hit)) tecw[lay] = true;
 
   }
-  
-  int trkHits(0); 
+
+  int trkHits(0);
   for (int i = 0; i < 3; ++i) {
     if (pixl[i]) {
       ++trkHits;
@@ -265,31 +269,31 @@ int  treeReader01::numberOfTrackerLayers(TAnaTrack *pTrack) {
 
   for (int i = 0; i < 4; ++i) {
     if (tibl[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 6; ++i) {
     if (tobl[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 2; ++i) {
     if (pixd[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 3; ++i) {
     if (tidw[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 9; ++i) {
     if (tecw[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
   return trkHits;

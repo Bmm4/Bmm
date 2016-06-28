@@ -1,3 +1,0 @@
-# -- signals
-type=bdmm,filter,official       lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-RunIIFall15DR76-BdToMuMu_BMuonFilter-v01.root
-type=bdmm,filter,private        lumi=1. file=/scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-BdToMuMu-v01.root

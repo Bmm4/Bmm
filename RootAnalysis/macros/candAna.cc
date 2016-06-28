@@ -203,7 +203,9 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
       }
 
-      if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX) {
+      if (BLIND
+	  && (fMu1MvaId && fMu2MvaId && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)
+	  ) {
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(30);
 	if(fVerbose>9)
 	  cout<<" blinded "<<BLIND<<" "<<fpCand->fMass<<" "<<SIGBOXMIN<<" "<<SIGBOXMAX<<endl;
@@ -665,22 +667,19 @@ void candAna::candAnalysis() {
   int pvidx = (fpCand->fPvIdx > -1? fpCand->fPvIdx : 0);
   // -- this is from the full candidate
   TAnaVertex sv = fpCand->fVtx;
-  // -- this is from the dimuon vertex
-  TAnaCand *pD;
-  TAnaVertex sv2m;
-  bool good2m(false);
-  //  cout << "looking at daughters " << fpCand->fDau1  << " .. " << fpCand->fDau2 << endl;
-  for (int id = fpCand->fDau1; id <= fpCand->fDau2; ++id) {
-    if (id < 0) break;
-    pD = fpEvt->getCand(id);
-    //    cout << "looking at daughter " <<  id << " with type = " << pD->fType << endl;
-    if (300443 == pD->fType) {
-      sv2m = pD->fVtx;
-      good2m = true;
-      //      cout << "  Found J/psi vertex" << endl;
-      break;
-    }
-  }
+  // // -- this is from the dimuon vertex
+  // TAnaCand *pD;
+  // TAnaVertex sv2m;
+  // bool good2m(false);
+  // for (int id = fpCand->fDau1; id <= fpCand->fDau2; ++id) {
+  //   if (id < 0) break;
+  //   pD = fpEvt->getCand(id);
+  //   if (300443 == pD->fType) {
+  //     sv2m = pD->fVtx;
+  //     good2m = true;
+  //     break;
+  //   }
+  // }
 
   // -- go back to original!
   sv = fpCand->fVtx;
@@ -717,7 +716,11 @@ void candAna::candAnalysis() {
   fCandFLSxy = sv.fDxy/sv.fDxyE;
   if (TMath::IsNaN(fCandFLSxy)) fCandFLSxy = -1.;
 
-  fCandTau   = fCandFL3d*MBS/fCandP/TMath::Ccgs();
+  fCandTau   = fpCand->fTau3d;
+  fCandTauE  = fpCand->fTau3dE;
+
+  fCandTauxy   = fpCand->fTauxy;
+  fCandTauxyE  = fpCand->fTauxyE;
 
   // -- variables for production mechanism studies
   //  fpOsCand      = osCand(fpCand);
@@ -728,32 +731,33 @@ void candAna::candAnalysis() {
   fOsMuonPtRel  = (osm > -1? fpEvt->getSimpleTrack(osm)->getP().Perp(fpCand->fPlab):-1);
   fOsMuonDeltaR =  (osm > -1? fpCand->fPlab.DeltaR(fpEvt->getSimpleTrack(osm)->getP()):-1.);
 
-//   if (301313 == fCandType)
-//     cout << fRun << " " << fEvt
-// 	 << " from PV = " << fpCand->fPvIdx << " with ntrk = " << fPvNtrk << " av w8 = " << fPvAveW8
-// 	 << " cand tracks mindoca = " << fpCand->fMinDoca << " maxdoca = " << fpCand->fMaxDoca << " and chi2/dof = " << fCandChi2/fCandDof
-// 	 << endl;
-
-  // -- dimuon vertex version
-  if (good2m) {
-    f2MChi2  = sv2m.fChi2;
-    f2MDof   = sv2m.fNdof;
-    f2MProb  = sv2m.fProb;
-    f2MFL3d  = sv2m.fD3d;
-    f2MFL3dE = sv2m.fD3dE;
-    f2MFLS3d = sv2m.fD3d/sv2m.fD3dE;
-    if (TMath::IsNaN(f2MFLS3d)) f2MFLS3d = -1.;
-    f2MFLSxy = sv2m.fDxy/sv2m.fDxyE;
-    if (TMath::IsNaN(f2MFLSxy)) f2MFLSxy = -1.;
-  } else {
-    f2MChi2  = -1.;
-    f2MDof   = -1;
-    f2MProb  = -1.;
-    f2MFL3d  = -1.;
-    f2MFL3dE = -1.;
-    f2MFLS3d = -1.;
-    f2MFLSxy = -1.;
-  }
+  // // -- dimuon vertex version
+  // if (good2m) {
+  //   fmmChi2    = sv2m.fChi2;
+  //   fmmDof     = sv2m.fNdof;
+  //   fmmProb    = sv2m.fProb;
+  //   fmmFL3d    = sv2m.fD3d;
+  //   fmmFL3dE   = sv2m.fD3dE;
+  //   fmmFLS3d   = sv2m.fD3d/sv2m.fD3dE;
+  //   if (TMath::IsNaN(fmmFLS3d)) fmmFLS3d = -1.;
+  //   fmmFLSxy   = sv2m.fDxy/sv2m.fDxyE;
+  //   if (TMath::IsNaN(fmmFLSxy)) fmmFLSxy = -1.;
+  //   // -- pD should be/is still pointing to the J/psi daughter IF good2m == true
+  //   fmmCosA    = TMath::Cos(pD->fAlpha);
+  //   fmmMaxDoca = pD->fMaxDoca;
+  //   fmmPt      = pD->fP.Perp();
+  // } else {
+  //   fmmChi2  = -1.;
+  //   fmmDof   = -1;
+  //   fmmProb  = -1.;
+  //   fmmFL3d  = -1.;
+  //   fmmFL3dE = -1.;
+  //   fmmFLS3d = -1.;
+  //   fmmFLSxy = -1.;
+  //   fmmCosA    = -1.;
+  //   fmmMaxDoca = -1.;
+  //   fmmPt      = -1.;
+  // }
 
   if (fpCand->fNstTracks.size() == 0) {
     //    cout << "HHHHEEEELLLLPPPP" << endl;
@@ -1294,6 +1298,8 @@ void candAna::bookHist() {
   (void)h11;
   h11 = new TH1D(Form("mon%s", fName.c_str()), Form("mon%s", fName.c_str()), 50, 0., 50.);
 
+  h11 = new TH1D(Form("dr_%s", fName.c_str()), Form("dr(track, trigger bject) %s", fName.c_str()), 501, -0.001, 0.5);
+
   h11 = new TH1D("tm_pt", "tight muon pT", 50, 0., 25.);
   h11 = new TH1D("bm_pt", "BDT muon pT", 50, 0., 25.);
 
@@ -1457,9 +1463,10 @@ void candAna::setupMuonIdTree(TTree *t) {
 void candAna::setupReducedTree(TTree *t) {
 
   t->Branch("run",     &fRun,               "run/L");
-  t->Branch("json",    &fJSON,              "json/O");
   t->Branch("evt",     &fEvt,               "evt/L");
   t->Branch("ls",      &fLS,                "ls/I");
+  t->Branch("rlumi",   &fLumi,              "rlumi/D");
+  t->Branch("json",    &fJSON,              "json/O");
   t->Branch("tm",      &fCandTM,            "tm/I");
   t->Branch("pr",      &fGenBpartial,       "pr/I");
   t->Branch("procid",  &fProcessType,       "procid/I");
@@ -1502,6 +1509,9 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("eta",     &fCandEta,           "eta/D");
   t->Branch("phi",     &fCandPhi,           "phi/D");
   t->Branch("tau",     &fCandTau,           "tau/D");
+  t->Branch("taue",    &fCandTauE,          "taue/D");
+  t->Branch("tauxy",   &fCandTauxy,         "tauxy/D");
+  t->Branch("tauxye",  &fCandTauxyE,        "tauxye/D");
   t->Branch("m",       &fCandM,             "m/D");
   t->Branch("me",      &fCandME,            "me/D");
   t->Branch("cm",      &fCandM2,            "cm/D");
@@ -1619,6 +1629,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("hm2pt",  &fHltMu2Pt,  "hm2pt/D");
   t->Branch("hm2eta", &fHltMu2Eta, "hm2eta/D");
   t->Branch("hm2phi", &fHltMu2Phi, "hm2phi/D");
+
 
   // -- all muon variables for Marco
   t->Branch("m1bdt", &fMu1Data.mbdt, "m1bdt/F");
@@ -3752,7 +3763,7 @@ bool candAna::tis(TAnaCand *pC) {
   if (nhlt < 2) verbose = 0;
 
   if (verbose) {
-    cout << "==> in DS = " << DSNAME << ", candidate " <<  pC->fType << " with tracks " << endl;
+    cout << "==> in DS = " << DSNAME << " HLT = " << fGoodHLT << ", JSON = " << fJSON << ", candidate " <<  pC->fType << " with tracks " << endl;
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       cout << "muon = " << fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()
 	   << " " << Form(" %4d ", sigIdx[i])
@@ -3771,6 +3782,7 @@ bool candAna::tis(TAnaCand *pC) {
   TTrgObjv2 *pTO(0);
   if (verbose) cout << "==> trigger objects for these paths" << endl;
   map<string, set<int> > trgTrkIdx;
+  TH1D *h1 = (TH1D*)(fHistDir->Get(Form("dr_%s", fName.c_str())));
   for (int i = 1; i <= ht->GetNbinsX(); ++i) {
     hltPath =  ht->GetXaxis()->GetBinLabel(i);
     // -- determine trigger objets for this path
@@ -3781,12 +3793,14 @@ bool candAna::tis(TAnaCand *pC) {
 	vector<int> muonID = pTO->fID;
 	vector<TLorentzVector> muonP = pTO->fP;
 	int num = muonIndex.size();
-	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
 	// -- skip L1 and L2 objects (bad resolution for matching)
 	if (pTO->fType.Contains("L1T")) continue;
 	if (pTO->fType.Contains("L2")) continue;
+	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
 	for (int j = 0; j < num; ++j) {
-	  int trkIdx = matchTrgObj2Trk(muonP[j].Vect());
+	  double dr(0.);
+	  int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	  h1->Fill(dr);
 	  if (trkIdx < 0) {
 	    if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
 	    continue;
@@ -3796,6 +3810,7 @@ bool candAna::tis(TAnaCand *pC) {
 			    << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
 			    << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
 			    << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			    << " with dr = " << dr
 			    << endl;
 	  trgTrkIdx[hltPath].insert(trkIdx);
 	}
@@ -3839,10 +3854,11 @@ bool candAna::tis(TAnaCand *pC) {
 
 
 // ----------------------------------------------------------------------
-int candAna::matchTrgObj2Trk(TVector3 t) {
+int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
   double dRthrsh(0.3), dRmin(99.);
   int dRminIdx(-1);
   TVector3 p3;
+  dr = -0.001;
   for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
     p3 = fpEvt->getSimpleTrack(i)->getP();
     double dR = p3.DeltaR(t);
@@ -3853,6 +3869,11 @@ int candAna::matchTrgObj2Trk(TVector3 t) {
       dRmin = dR;
       dRminIdx = i;
     }
+  }
+  if (dRmin < 98.) {
+    dr = dRmin;
+  } else {
+    dr = -0.001;
   }
   return dRminIdx;
 }

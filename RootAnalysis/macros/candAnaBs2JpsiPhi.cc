@@ -43,6 +43,11 @@ void candAnaBs2JpsiPhi::candAnalysis() {
       fJpsiEta  = pD->fPlab.Eta();
       fJpsiPhi  = pD->fPlab.Phi();
 
+      fJpsiCosA = TMath::Cos(pD->fAlpha);
+      fJpsiMaxDoca = pD->fMaxDoca;
+      fJpsiFLSxy   = pD->fVtx.fDxy/pD->fVtx.fDxyE;
+      fJpsiVtxProb = pD->fVtx.fProb;
+
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
     }
@@ -148,7 +153,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
-  fCandTau     = fCandFL3d*MBPLUS/fCandP/TMath::Ccgs();
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
@@ -528,15 +532,22 @@ void candAnaBs2JpsiPhi::bookHist() {
 void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
 
   // -- Additional reduced tree variables
-  t->Branch("mpsi",  &fJpsiMass, "mpsi/D");
-  t->Branch("psipt", &fJpsiPt,   "psipt/D");
-  t->Branch("psieta",&fJpsiEta,  "psieta/D");
-  t->Branch("psiphi",&fJpsiPhi,  "psiphi/D");
+  t->Branch("mpsi",        &fJpsiMass,    "mpsi/D");
+  t->Branch("psipt",       &fJpsiPt,      "psipt/D");
+  t->Branch("psieta",      &fJpsiEta,     "psieta/D");
+  t->Branch("psiphi",      &fJpsiPhi,     "psiphi/D");
+  t->Branch("psicosa",     &fJpsiCosA,    "psicosa/D");
+  t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
+  t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
+  t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+
   t->Branch("mkk",   &fMKK,      "mkk/D");
   t->Branch("phipt", &fPhiPt,    "phipt/D");
   t->Branch("phieta",&fPhiEta,   "phieta/D");
   t->Branch("phiphi",&fPhiPhi,   "phiphi/D");
   t->Branch("dr",    &fDeltaR,   "dr/D");
+
+
 
   t->Branch("k1pt",  &fKa1Pt,    "k1pt/D");
   t->Branch("k1eta", &fKa1Eta,   "k1eta/D");
@@ -728,7 +739,7 @@ void candAnaBs2JpsiPhi::efficiencyCalculation() {
   }
   if (pCand) {
     fETcandMass = pCand->fMass;
-    fETtau      = pCand->fVtx.fD3d/pCand->fVtx.fD3dE*MBS/pCand->fPlab.Mag()/TMath::Ccgs();
+    fETtau      = pCand->fTau3d;
   } else {
     fETcandMass = -99.;
     fETtau      = -99.;

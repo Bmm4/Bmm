@@ -62,7 +62,6 @@ struct cuts {
   double m1pt, m2pt, metaMin, metaMax;
   double iso, chi2dof, alpha, fls3d, docatrk;
   double closetrk, pvlip, pvlips;
-  double bdtPt, bdtMin, bdtMax;
   double maxdoca, pvlip2, pvlips2;
   double pvip, pvips;
 };
@@ -97,6 +96,9 @@ public :
 
   virtual void   loadFiles(std::string afiles);
   TFile*         loadFile(std::string afiles);
+
+  void           changeSetup(std::string dir, std::string name, std::string setup);
+  void           insertDataset(std::string dsname, dataset *);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);

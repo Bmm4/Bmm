@@ -37,16 +37,16 @@ int main(int argc, char *argv[]) {
   int processID = gSystem->GetPid();
   cout << "Running under process ID  " << processID << endl;
 
-  string progName  = argv[0]; 
-  string writeName, fileName, jsonName;
-  int file(0), json(0);
+  string progName  = argv[0];
+  string writeName, fileName;
+  int file(0);
   int dirspec(0);
   int nevents(-1), start(-1);
   int randomSeed(processID);
-  int verbose(-99); 
-  int blind(1); 
+  int verbose(-99);
+  int blind(1);
   int isMC(0);
-  int year(0); 
+  int year(0);
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -59,14 +59,14 @@ int main(int argc, char *argv[]) {
   string treeName("T1");
   string evtClassName("TAna01Event");
 
-  string readerName("bmmReader"); 
+  string readerName("bmmReader");
   TString histfile("");
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i],"-h")) {
 	cout << "List of arguments:" << endl;
-	cout << "-b {0,1}      run blind?" << endl; 
+	cout << "-b {0,1}      run blind?" << endl;
 	cout << "-c filename   chain definition file" << endl;
 	cout << "-C filename   file with cuts" << endl;
 	cout << "-D path       where to put the output" << endl;
@@ -87,9 +87,8 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-C"))  {cutFile    = string(argv[++i]);           }     // file with cuts
     if (!strcmp(argv[i],"-D"))  {dirName    = string(argv[++i]);  dirspec = 1; } // where to put the output
     if (!strcmp(argv[i],"-f"))  {fileName   = string(argv[++i]); file = 1; }     // single file instead of chain
-    if (!strcmp(argv[i],"-j"))  {jsonName   = string(argv[++i]); json = 1; }     // single file instead of chain
     if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
-    if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run 
+    if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run
     if (!strcmp(argv[i],"-r"))  {readerName = string(argv[++i]); }               // which tree reader class to run
     if (!strcmp(argv[i],"-s"))  {randomSeed = atoi(argv[++i]); }                 // set seed for random gen.
     if (!strcmp(argv[i],"-S"))  {start = atoi(argv[++i]); }                      // set start event number
@@ -159,7 +158,7 @@ int main(int argc, char *argv[]) {
   }
   string shistfile = histfile.Data();
   replaceAll(shistfile, "..", ".");
-  histfile = shistfile.c_str(); 
+  histfile = shistfile.c_str();
   cout << "Opening " << histfile.Data() << " for output histograms" << endl;
   cout << "Opening " << fileName.c_str() << " for input" << endl;
 
@@ -167,21 +166,21 @@ int main(int argc, char *argv[]) {
   // -- Set up chain
   TChain *chain = new TChain(TString(treeName));
   cout << "Chaining ... " << treeName << endl;
-  char pName[2000]; 
-  int nentries; 
+  char pName[2000];
+  int nentries;
   if (file == 0) {
     // -- non-trivial chain input
-    ifstream is(meta);  
-    while(meta.ReadLine(is) && (!meta.IsNull())){ 
+    ifstream is(meta);
+    while(meta.ReadLine(is) && (!meta.IsNull())){
       nentries = -1;
-      if (meta.Data()[0] == '#') continue; 
-      sscanf(meta.Data(), "%s %d", pName, &nentries); 
+      if (meta.Data()[0] == '#') continue;
+      sscanf(meta.Data(), "%s %d", pName, &nentries);
       if (nentries > -1) {
-        cout << pName << " -> " << nentries << " entries" << endl; 
-        chain->Add(pName, nentries); 
+        cout << pName << " -> " << nentries << " entries" << endl;
+        chain->Add(pName, nentries);
       } else {
         cout << meta << endl;
-        chain->Add(meta); 
+        chain->Add(meta);
       }
     }
     is.close();
@@ -193,7 +192,7 @@ int main(int argc, char *argv[]) {
   }
 
   // -- Now instantiate the tree-analysis class object, initialize, and run it ...
-  //treeReader01 *a = new bmm2Reader(chain, TString(evtClassName));  
+  //treeReader01 *a = new bmm2Reader(chain, TString(evtClassName));
   treeReader01 *a = NULL;
   if ("bmmReader" == readerName) {
     cout << "instantiating bmmReader" << endl;
@@ -204,18 +203,18 @@ int main(int argc, char *argv[]) {
   } else if ("skim" == readerName) {
     skimEvents(chain);
   }
-  
-  
+
+
   if (a) {
-    a->setYear(year); 
-    if (verbose > -99) a->setVerbosity(verbose); 
-    a->openHistFile(histfile); 
+    a->setYear(year);
+    if (verbose > -99) a->setVerbosity(verbose);
+    a->openHistFile(histfile);
 
     if (isMC) {
       a->setMC(1);
-      blind = 0; 
+      blind = 0;
     } else {
-      a->setMC(0); 
+      a->setMC(0);
     }
 
     cout << "blind? " << blind << endl;
@@ -223,20 +222,15 @@ int main(int argc, char *argv[]) {
 
     a->readCuts(cutFile.c_str(), 1);
     a->bookHist();
-    if (json) {
-      a->setJSONFile(jsonName.c_str()); 
-      a->forceJSON();
-    }
 
-
-    a->startAnalysis(); 
+    a->startAnalysis();
     a->loop(nevents, start);
     a->endAnalysis();
-    a->closeHistFile(); 
-  } 
+    a->closeHistFile();
+  }
 
   delete a; // so we can dump some information in the destructor
-  
+
   return 0;
 }
 
@@ -244,24 +238,24 @@ int main(int argc, char *argv[]) {
 
 // ----------------------------------------------------------------------
 void skimEvents(TChain *chain) {
-  int oldRun(-1), run(-1), evt(-1), ls(-1); 
-  vector<pair<int, int> > events; 
-  ifstream INS; 
-  string sline, bla; 
+  int oldRun(-1), run(-1), evt(-1), ls(-1);
+  vector<pair<int, int> > events;
+  ifstream INS;
+  string sline, bla;
   INS.open("skim.events");
   while (1) {
-    INS >> bla >> run >> bla >> evt; 
+    INS >> bla >> run >> bla >> evt;
     if (INS.eof()) break;
-    events.push_back(make_pair(run, evt)); 
+    events.push_back(make_pair(run, evt));
   }
-      
+
   INS.close();
 
   cout << "skim event list" << endl;
   cout << "----------------------------------------------------------------------" << endl;
   if (events.size() < 1) {
     cout << "no file ./skim.events found! exit(0)" << endl;
-    exit(0); 
+    exit(0);
   } else {
     for (unsigned int i = 0; i < events.size(); ++i) {
       cout << "run: " << events[i].first << " event: " << events[i].second << endl;
@@ -274,42 +268,42 @@ void skimEvents(TChain *chain) {
 
   TFile *newfile = new TFile("skimevents.root", "recreate");
   TTree *newtree = chain->CloneTree(0);
-  
-  int nb(0); 
+
+  int nb(0);
   cout << "chain entries: " << chain->GetEntries() << endl;
   for (int jEvent = 0; jEvent < chain->GetEntries(); ++jEvent) {
-    pEvt->Clear();                        
-    nb += chain->GetEvent(jEvent);          
-    
-    evt = static_cast<long int>(pEvt->fEventNumber);		
+    pEvt->Clear();
+    nb += chain->GetEvent(jEvent);
+
+    evt = static_cast<long int>(pEvt->fEventNumber);
     run = static_cast<long int>(pEvt->fRunNumber);
     ls = pEvt->fLumiSection;
-    
+
     if (run != oldRun) {
       cout << "new run: " << run << " (event " << jEvent << " in chain)" << endl;
       oldRun = run;
 
       // -- dump all pd histograms
-      TKey *key(0);   
+      TKey *key(0);
       TH1D *h(0);
-      string sname; 
+      string sname;
       string::size_type m1, m2;
-      string pd, lpd, hk; 
-      
+      string pd, lpd, hk;
+
       TIter next(chain->GetFile()->GetListOfKeys());
       vector<string> triggers;
       while ((key = (TKey*)next())) {
 	sname = key->GetName();
-	
+
 	if (string::npos == sname.find("triggers_")
 	    && string::npos == sname.find("pd_run")
 	    && string::npos == sname.find("_run")) continue;
-	
-	h = (TH1D*)chain->GetFile()->Get(sname.c_str()); 
+
+	h = (TH1D*)chain->GetFile()->Get(sname.c_str());
 	cout << sname << endl;
 	h->SetDirectory(newfile);
 	h->Write();
-	delete h; 
+	delete h;
       }
 
     }

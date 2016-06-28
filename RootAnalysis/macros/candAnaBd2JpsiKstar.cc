@@ -43,6 +43,11 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       fJpsiEta  = pD->fPlab.Eta();
       fJpsiPhi  = pD->fPlab.Phi();
 
+      fJpsiCosA = TMath::Cos(pD->fAlpha);
+      fJpsiMaxDoca = pD->fMaxDoca;
+      fJpsiFLSxy   = pD->fVtx.fDxy/pD->fVtx.fDxyE;
+      fJpsiVtxProb = pD->fVtx.fProb;
+
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
     }
@@ -67,6 +72,10 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 
   for (int it = fpCand->fSig1; it <= fpCand->fSig2; ++it) {
     p0 = fpEvt->getSigTrack(it);
+    if (0 == p0) {
+      cout << "candAnaBd2JpsiKstar::candAnalysis problem with sigtrack?? " << endl;
+      return;
+    }
     if (321 == TMath::Abs(p0->fMCID)) {
       p1 = p0;
     }
@@ -158,7 +167,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
-  fCandTau     = fCandFL3d*MBPLUS/fCandP/TMath::Ccgs();
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
@@ -529,10 +537,15 @@ void candAnaBd2JpsiKstar::bookHist() {
 void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
 
   // -- Additional reduced tree variables
-  t->Branch("mpsi",  &fJpsiMass, "mpsi/D");
-  t->Branch("psipt", &fJpsiPt,   "psipt/D");
-  t->Branch("psieta",&fJpsiEta,  "psieta/D");
-  t->Branch("psiphi",&fJpsiPhi,  "psiphi/D");
+  t->Branch("mpsi",        &fJpsiMass,    "mpsi/D");
+  t->Branch("psipt",       &fJpsiPt,      "psipt/D");
+  t->Branch("psieta",      &fJpsiEta,     "psieta/D");
+  t->Branch("psiphi",      &fJpsiPhi,     "psiphi/D");
+  t->Branch("psicosa",     &fJpsiCosA,    "psicosa/D");
+  t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
+  t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
+  t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+
   t->Branch("mkpi",   &fMKPI,      "mkpi/D");
   t->Branch("kstarpt", &fKstarPt,    "kstarpt/D");
   t->Branch("kstareta",&fKstarEta,   "kstareta/D");
@@ -744,7 +757,7 @@ void candAnaBd2JpsiKstar::efficiencyCalculation() {
   }
   if (pCand) {
     fETcandMass = pCand->fMass;
-    fETtau      = pCand->fVtx.fD3d/pCand->fVtx.fD3dE*MBS/pCand->fPlab.Mag()/TMath::Ccgs();
+    fETtau      = pCand->fTau3d;
   } else {
     fETcandMass = -99.;
     fETtau      = -99.;

@@ -11,10 +11,10 @@ ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 
 ifdef SCRAM_ARCH
   CXX         := $(shell scramv1 tool info gcc-cxxcompiler | grep CXX= | sed s/CXX=//)
-else 
+else
   ifdef CXXCOMPILER
     CXX         := $(CXXCOMPILER)
-  else 
+  else
     CXX         := c++
   endif
 endif
@@ -22,7 +22,7 @@ endif
 ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
 ifneq ($(findstring 6.,$(ROOT6)),)
 ROOT6         = "yes"
-else 
+else
 ROOT6         = "no"
 endif
 
@@ -37,7 +37,7 @@ EXTHEADERS    = -I..
 
 
 # -- Files
-CSTUFF = preselection.o 
+CSTUFF = preselection.o
 READER = treeReader01.o bmmReader.o genAnalysis.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
          candAnaBd2JpsiKstar.o candAnaRecoil.o candAnaFake.o \
@@ -47,7 +47,7 @@ DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
 DICTSOURCES = ${READER:.o=Dict.cc}
 
-#OTHERPCM = $(shell find ../rootio/lib/*.pcm ../common/lib/*.pcm) 
+#OTHERPCM = $(shell find ../rootio/lib/*.pcm ../common/lib/*.pcm)
 
 
 # -- Default rules
@@ -57,46 +57,47 @@ $(addprefix obj/,%.o) : %.cc %.hh %.icc
 $(addprefix obj/,%.o) : %.cc %.hh
 	$(CXX) $(CXXFLAGS) $(EXTHEADERS) -c $< -o $@
 
-$(addprefix obj/,%.o) : %.cc 
+$(addprefix obj/,%.o) : %.cc
 	$(CXX) $(CXXFLAGS) $(EXTHEADERS) -c $< -o $@
 
 %Dict.cc : %.hh %LinkDef.h
-	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^ 
+	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 endif
 
 %Dict.cc : %.hh
-	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $< 
+	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $<
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 endif
 
-$(addprefix lib/,%.pcm) :  
-	cd lib && ln -s $< && cd - 
+$(addprefix lib/,%.pcm) :
+	cd lib && ln -s $< && cd -
 
 
 # -- Targets
 all: vars prep lib bin
 
 lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so 
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libAnaClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
 
-bin: lib obj/runBmm.o
-	$(LD) $(LDFLAGS) -o bin/runBmm $(GLIBS) obj/runBmm.o lib/libAnaClasses.so lib/libAna00.so lib/libUtil.so 
+bin: lib obj/runBmm.o obj/runPlot.o
+	$(LD) $(LDFLAGS) -o bin/runBmm $(GLIBS) obj/runBmm.o lib/libAnaClasses.so lib/libAna00.so lib/libUtil.so
+	$(LD) $(LDFLAGS) -o bin/runPlot $(GLIBS) obj/runPlot.o lib/libAnaClasses.so lib/libAna00.so lib/libUtil.so
 
 # -- preparatory setup
-prep: 
+prep:
 	mkdir -p obj bin lib
-	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd - 
-	cd lib && /bin/ls -1 ../../rootio/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
-	cd lib && ln -f -s ../../common/lib/libUtil.so && cd - 
-	cd lib && /bin/ls -1 ../../common/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd - 
+	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd -
+	cd lib && /bin/ls -1 ../../rootio/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd -
+	cd lib && ln -f -s ../../common/lib/libUtil.so && cd -
+	cd lib && /bin/ls -1 ../../common/lib/*.pcm | perl -ne 'use File::Basename; chop; symlink($$_, basename($$_))' && cd -
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runBmm.o) 
-	rm -f $(DICTHEADERS)  $(DICTSOURCES) 
+	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runBmm.o)
+	rm -f $(DICTHEADERS)  $(DICTSOURCES)
 	rm -f bin/*
 	rm -f lib/*
 

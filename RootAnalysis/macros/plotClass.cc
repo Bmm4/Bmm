@@ -67,7 +67,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     fStampString = "CNC";
   }
   fStampCms = "BMM4";
-  fStampLumi = "2016 data";
+  fStampLumi = "2.2 fb^{-1}";
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
@@ -84,8 +84,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = some fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 2.7 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
+  if (setup == "") fSuffix = Form("%d", fYear);
 
   fIF = new initFunc();
 
@@ -131,18 +132,31 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- initialize cuts
-  cout << "===> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
+  cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
   readCuts(Form("%s", cuts.c_str()));
   fNchan = fCuts.size();
-
-
-
-
 }
 
 // ----------------------------------------------------------------------
 plotClass::~plotClass() {
 }
+
+
+// ----------------------------------------------------------------------
+void plotClass::changeSetup(string dir, string name, string setup) {
+  if (setup == "") {
+    fHistFileName = Form("%s/%s.%d.root", dir.c_str(), name.c_str(), fYear);
+    fNumbersFileName = fDirectory + Form("/%s.%d.txt", name.c_str(), fYear);
+  } else {
+    fHistFileName = Form("%s/%s-%s.%d.root", dir.c_str(), name.c_str(), setup.c_str(), fYear);
+    fNumbersFileName = fDirectory + Form("/%s.%s.%d.txt", name.c_str(), setup.c_str(), fYear);
+  }
+
+  fTexFileName = fNumbersFileName;
+  replaceAll(fTexFileName, ".txt", ".tex");
+  fTEX.open(fTexFileName.c_str(), ios::app);
+}
+
 
 // ----------------------------------------------------------------------
 void plotClass::init() {
@@ -411,6 +425,8 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("pt", &fb.pt);
   t->SetBranchAddress("q", &fb.q);
 
+  t->SetBranchAddress("tis", &fb.tis);
+
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("gtau", &fb.gtau);
 
@@ -514,6 +530,15 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("g2eta",  &fb.g2eta);
   t->SetBranchAddress("g1id",   &fb.g1id);
   t->SetBranchAddress("g2id",   &fb.g2id);
+  if (string::npos != mode.find("psi")) {
+    t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
+    t->SetBranchAddress("psicosa", &fb.psicosa);
+    t->SetBranchAddress("psiprob", &fb.psiprob);
+    t->SetBranchAddress("psiflsxy", &fb.psiflsxy);
+    t->SetBranchAddress("psimaxdoca", &fb.psimaxdoca);
+
+  }
   if (string::npos != mode.find("bupsik")) {
     if (string::npos != mode.find("Mc")) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
@@ -522,8 +547,6 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kpt",  &fb.k1pt);
     t->SetBranchAddress("kgt",  &fb.k1gt);
     t->SetBranchAddress("keta", &fb.k1eta);
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt", &fb.psipt);
   }
 
   if (string::npos != mode.find("bspsiphi")) {
@@ -899,6 +922,10 @@ int plotClass::detChan(double m1eta, double m2eta) {
 
 // ----------------------------------------------------------------------
 TTree* plotClass::getTree(string ds, string dir) {
+  if (!fDS[ds]) {
+    cout << "xx> plotClass::getTree: dataset " << ds << " not found" << endl;
+    return 0;
+  }
   TTree *t(0);
   if (!dir.compare("")) {
     t = (TTree*)fDS[ds]->fF->Get("events");
@@ -1222,21 +1249,6 @@ void plotClass::readCuts(string filename) {
       if (dump) cout << "mBdLo:                " << CutValue << endl;
     }
 
-    if (!strcmp(CutName, "bdtPt")) {
-      a->bdtPt = CutValue; ok = 1;
-      if (dump) cout << "bdtPt:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "bdtMin")) {
-      a->bdtMin = CutValue; ok = 1;
-      if (dump) cout << "bdtMin:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "bdtMax")) {
-      a->bdtMax = CutValue; ok = 1;
-      if (dump) cout << "bdtMax:               " << CutValue << endl;
-    }
-
     if (!strcmp(CutName, "mBdHi")) {
       a->mBdHi = CutValue; ok = 1;
       if (dump) cout << "mBdHi:                " << CutValue << endl;
@@ -1395,6 +1407,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "mBdLo      ";
+  fTEX << Form("\\vdef{%s:mBd:var}  {\\ensuremath{{m(\\Bz) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i) {
     OUT << Form("%10.3f", fCuts[i]->mBdLo);
     fTEX << Form("\\vdef{%s:mBdLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBdLo) << endl;
@@ -1409,6 +1422,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "mBsLo      ";
+  fTEX << Form("\\vdef{%s:mBs:var}  {\\ensuremath{{m(\\Bs) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->mBsLo);
     fTEX <<  Form("\\vdef{%s:mBsLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBsLo) << endl;
@@ -1423,6 +1437,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "etaMin     ";
+  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->etaMin);
     fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
@@ -1437,6 +1452,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pt         ";
+  fTEX << Form("\\vdef{%s:ptb:var}  {\\ensuremath{{\\ptb } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pt);
     fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
@@ -1444,6 +1460,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "m1pt       ";
+  fTEX << Form("\\vdef{%s:ptmuone:var}  {\\ensuremath{{\\ptmuone } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m1pt);
     fTEX <<  Form("\\vdef{%s:m1pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1pt) << endl;
@@ -1451,6 +1468,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "m2pt       ";
+  fTEX << Form("\\vdef{%s:ptmutwo:var}  {\\ensuremath{{\\ptmutwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m2pt);
     fTEX <<  Form("\\vdef{%s:m2pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2pt) << endl;
@@ -1458,6 +1476,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "metaMin    ";
+  fTEX << Form("\\vdef{%s:etamuf:var}  {\\ensuremath{{|\\eta(\\mu_f)| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->metaMin);
     fTEX <<  Form("\\vdef{%s:metaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMin) << endl;
@@ -1472,6 +1491,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "iso        ";
+  fTEX << Form("\\vdef{%s:iso:var}  {\\ensuremath{{\\iso } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->iso);
     fTEX <<  Form("\\vdef{%s:iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->iso) << endl;
@@ -1479,6 +1499,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "chi2dof    ";
+  fTEX << Form("\\vdef{%s:chidof:var}  {\\ensuremath{{\\chidof } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->chi2dof);
     fTEX <<  Form("\\vdef{%s:chi2dof:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->chi2dof) << endl;
@@ -1486,6 +1507,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "alpha      ";
+  fTEX << Form("\\vdef{%s:alpha:var}  {\\ensuremath{{\\alpha } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->alpha);
     fTEX <<  Form("\\vdef{%s:alpha:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->alpha) << endl;
@@ -1493,6 +1515,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "fls3d      ";
+  fTEX << Form("\\vdef{%s:fls:var}  {\\ensuremath{{\\fls } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->fls3d);
     fTEX <<  Form("\\vdef{%s:fls3d:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->fls3d) << endl;
@@ -1500,6 +1523,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "docatrk    ";
+  fTEX << Form("\\vdef{%s:docatrk:var}  {\\ensuremath{{\\docatrk } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->docatrk);
     fTEX <<  Form("\\vdef{%s:docatrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->docatrk) << endl;
@@ -1507,6 +1531,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "closetrk   ";
+  fTEX << Form("\\vdef{%s:closetrk:var}  {\\ensuremath{{\\closetrk } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrk);
     fTEX <<  Form("\\vdef{%s:closetrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrk) << endl;
@@ -1514,6 +1539,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "maxdoca    ";
+  fTEX << Form("\\vdef{%s:maxdoca:var}  {\\ensuremath{{\\maxdoca } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->maxdoca);
     fTEX <<  Form("\\vdef{%s:maxdoca:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->maxdoca) << endl;
@@ -1521,6 +1547,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvip       ";
+  fTEX << Form("\\vdef{%s:ip:var}  {\\ensuremath{{\\pvip } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvip);
     fTEX <<  Form("\\vdef{%s:pvip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvip) << endl;
@@ -1528,6 +1555,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvips      ";
+  fTEX << Form("\\vdef{%s:ips:var}  {\\ensuremath{{\\pvips } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvips);
     fTEX <<  Form("\\vdef{%s:pvips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvips) << endl;
@@ -1535,6 +1563,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlip      ";
+  fTEX << Form("\\vdef{%s:lip:var}  {\\ensuremath{{\\pvlip } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlip);
     fTEX <<  Form("\\vdef{%s:pvlip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip) << endl;
@@ -1542,6 +1571,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlips     ";
+  fTEX << Form("\\vdef{%s:lips:var}  {\\ensuremath{{\\pvlips } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlips);
     fTEX <<  Form("\\vdef{%s:pvlips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips) << endl;
@@ -1549,6 +1579,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlip2     ";
+  fTEX << Form("\\vdef{%s:liptwo:var}  {\\ensuremath{{\\pvliptwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlip2);
     fTEX <<  Form("\\vdef{%s:pvlip2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip2) << endl;
@@ -1556,32 +1587,19 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvlips2    ";
+  fTEX << Form("\\vdef{%s:lipstwo:var}  {\\ensuremath{{\\pvlipstwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvlips2);
     fTEX <<  Form("\\vdef{%s:pvlips2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips2) << endl;
   }
   OUT << endl;
 
-  OUT << "bdtMin     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->bdtMin);
-    fTEX <<  Form("\\vdef{%s:bdtMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMin) << endl;
-  }
-  OUT << endl;
-
-  OUT << "bdtMax     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->bdtMax);
-    fTEX <<  Form("\\vdef{%s:bdtMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtMax) << endl;
-  }
-  OUT << endl;
-
-  OUT << "xmlFile    ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
-    fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
-  }
-  OUT << endl;
+  // OUT << "xmlFile    ";
+  // for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+  //   OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
+  //   fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
+  // }
+  // OUT << endl;
 
 
   OUT.flush();
@@ -1609,10 +1627,176 @@ void plotClass::savePad(string name) {
 }
 
 
+
 // ----------------------------------------------------------------------
-void plotClass::loadFiles(string name) {
-  cout << "wrong function call " << endl;
-  return;
+void plotClass::insertDataset(std::string dsname, dataset *ds) {
+  if (fDS.find(dsname) != fDS.end()) {
+    cout << "######## Error: " << dsname  << " already present in fDS, NOT inserting again" << endl;
+  } else {
+    fDS.insert(make_pair(dsname, ds));
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void plotClass::loadFiles(string afiles) {
+
+  string files = fDirectory + string("/") + afiles;
+  cout << "==> plotClass::loadFile loading files listed in " << files << endl;
+
+  char buffer[1000];
+  ifstream is(files.c_str());
+  while (is.getline(buffer, 1000, '\n')) {
+    if (buffer[0] == '#') {continue;}
+    if (buffer[0] == '/') {continue;}
+
+    string sbuffer = string(buffer);
+    replaceAll(sbuffer, " ", "");
+    replaceAll(sbuffer, "\t", "");
+    if (sbuffer.size() < 1) continue;
+
+    string::size_type m1 = sbuffer.find("lumi=");
+    string stype = sbuffer.substr(5, m1-5);
+
+    string::size_type m2 = sbuffer.find("file=");
+    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string sfile = sbuffer.substr(m2+5);
+    string sname, sdecay;
+
+    TFile *pF(0);
+    dataset *ds(0);
+
+    if (string::npos != stype.find("data")) {
+      // -- DATA
+      pF = loadFile(sfile);
+
+      ds = new dataset();
+      ds->fSize = 1.2;
+      ds->fWidth = 2;
+      if (string::npos != stype.find("bmm")) {
+        sname = "bmmData";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikData";
+        sdecay = "bupsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiData";
+        sdecay = "bspsiphi";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarData";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+    } else if (string::npos != stype.find("mc")) {
+      // -- MC
+      pF = loadFile(sfile);
+
+      ds = new dataset();
+      ds->fSize = 0.1;
+      ds->fWidth = 2.;
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikMc";
+        sdecay = "bupsik";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fWidth  = 2.;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3354;
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiMc";
+        sdecay = "bspsiphi";
+	ds->fColor = kRed;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm")) {
+        sname = "bsmmMc";
+        sdecay = "bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarMc";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdmm")) {
+        sname = "bdmmMc";
+        sdecay = "bdmm";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+    }
+    if (ds) {
+      ds->fLcolor = ds->fColor;
+      ds->fFcolor = ds->fColor;
+      ds->fName   = sdecay;
+      ds->fFullName = sname;
+      insertDataset(sname, ds);
+    } else {
+      delete ds;
+    }
+
+
+  }
+
+  is.close();
 }
 
 
