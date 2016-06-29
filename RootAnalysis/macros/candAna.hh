@@ -76,7 +76,9 @@ public:
   virtual void        setupMuonIdTree(TTree *);
 
   virtual bool        tis(TAnaCand *pC);
+  virtual bool        refTrigger(TAnaCand *pC, std::string refTriggerPath);
   virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
+  virtual bool        triggerFired(std::string triggerPath);
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -285,7 +287,7 @@ public:
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
-  bool    fGoodDocaTrk, fGoodLastCut, fTIS;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fRefTrigger;
 
   bool    fPreselection;
   bool    fBadEvent;

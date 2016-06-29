@@ -84,7 +84,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  if (fVerbose>0) {
+  if (1 ||fVerbose>0) {
     cout << "======================================================================" << endl;
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
 	 << fVerbose << " MC: " << fIsMC << endl;
@@ -103,6 +103,18 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   triggerSelection();
   runRange();
+
+  // -- print HLT path(s) that fired
+  if (1) {
+    cout << "----------------------------------------------------------------------" << endl;
+    for (int i = 0; i < NHLT; ++i) {
+      if (fpEvt->fHLTResult[i]) {
+	cout << "   " << fpEvt->fHLTNames[i] << endl;
+      }
+    }
+
+  }
+
 
   TAnaCand *pCand(0);
   if (fVerbose == -66) { cout << "----------------------------------------------------------------------" << endl;}
@@ -195,23 +207,17 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
 
     } else {  // DATA
-
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
-
       if (NOPRESELECTION) {
 	fPreselection = true;
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
       }
-
       if (BLIND
-	  && (fMu1MvaId && fMu2MvaId && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)
+	  && (fMu1MvaId && fMu2MvaId)
+	  && (fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)
 	  ) {
-	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(30);
-	if(fVerbose>9)
-	  cout<<" blinded "<<BLIND<<" "<<fpCand->fMass<<" "<<SIGBOXMIN<<" "<<SIGBOXMAX<<endl;
-
+	if(fVerbose>9) cout<<" blinded "<<BLIND<<" "<<fpCand->fMass<<" "<<SIGBOXMIN<<" "<<SIGBOXMAX<<endl;
       } else {
-
 	if (fPreselection) {
 	  if (fVerbose > 9)
 	    cout << " filling this cand into the tree"
@@ -781,10 +787,6 @@ void candAna::candAnalysis() {
 
   }
 
-  fTIS = tis(fpCand);
-
-  fillRedTreeData();
-
   // if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
   //   calcBDT();
   // } else {
@@ -825,6 +827,13 @@ void candAna::candAnalysis() {
   fGoodLastCut    = true;
 
   fAnaCuts.update();
+
+
+  fTIS = tis(fpCand);
+  fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
+
+  fillRedTreeData();
+
 
   // danek
   //cout<<fGoodTracks<<" "<<fMu1TkQuality<<" "<<fMu2TkQuality<<" "<<fMu1GenID<<" "<<fMu2GenID<<" "<<fMu1TmId<<" "<<fMu2TmId<<" "
@@ -1472,6 +1481,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
   t->Branch("tis",     &fTIS,               "tis/O");
+  t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
   t->Branch("pvz",     &fPvZ,               "pvz/D");
   t->Branch("pvn",     &fPvN,               "pvn/I");
@@ -3739,31 +3749,20 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 }
 
 
-
 // ----------------------------------------------------------------------
-// -- search for a PD trigger that has no overlap with the tracks of the candidate
-bool candAna::tis(TAnaCand *pC) {
+// -- check whether the reftrigger's objects are matched to the candidate's tracks
+bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   bool result(false);
-  int verbose(0);
+  int verbose(1);
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
   getSigTracks(sigIdx, pC);
 
-  // -- print HLT path(s) that fired
-  if (verbose) cout << "==> fired HLT paths" << endl;
-  int nhlt(0);
-  for (int i = 0; i < NHLT; ++i) {
-    if (fpEvt->fHLTResult[i]) {
-      if (verbose) cout << "   " << fpEvt->fHLTNames[i] << endl;
-      ++nhlt;
-    }
-  }
-
-  if (nhlt < 2) verbose = 0;
-
   if (verbose) {
-    cout << "==> in DS = " << DSNAME << " HLT = " << fGoodHLT << ", JSON = " << fJSON << ", candidate " <<  pC->fType << " with tracks " << endl;
+    cout << "==> candAna::refTrigger> in DS = " << DSNAME
+	 << " HLT = " << fGoodHLT << ", JSON = " << fJSON
+	 << ", candidate " <<  pC->fType << " with tracks " << endl;
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       cout << "muon = " << fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()
 	   << " " << Form(" %4d ", sigIdx[i])
@@ -3775,16 +3774,83 @@ bool candAna::tis(TAnaCand *pC) {
     }
   }
 
+
+  // -- determine trigger objets for reference path
+  TTrgObjv2 *pTO(0);
+  set<int> trgTrkIdx;
+  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+    pTO = fpEvt->getTrgObjv2(i);
+    if (refTriggerPath == pTO->fHltPath) {
+      if (!triggerFired(refTriggerPath)) {
+	cout << "%^&^%&^%&%&^%&%&^%&^%&^%&^%&^%&  refTrigger in trigger objects, but not fired!" << endl;
+      }
+      vector<int> muonIndex = pTO->fIndex;
+      vector<int> muonID = pTO->fID;
+      vector<TLorentzVector> muonP = pTO->fP;
+      int num = muonIndex.size();
+      // -- skip L1 and L2 objects (bad resolution for matching)
+      if (pTO->fType.Contains("L1T")) continue;
+      if (pTO->fType.Contains("L1Filter")) continue;
+      if (pTO->fType.Contains("L2")) continue;
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
+      for (int j = 0; j < num; ++j) {
+	double dr(0.);
+	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	if (trkIdx < 0) {
+	  if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
+	  continue;
+	}
+	if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+			  << " matched to track idx " << trkIdx << " pt/eta/phi = "
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			  << " with dr = " << dr
+			  << endl;
+	trgTrkIdx.insert(trkIdx);
+      }
+
+    }
+  }
+
+  // -- now check that all objects of ref trigger are matched to the cand's muons
+  set<int>::iterator it;
+  int nmatch(0);
+  for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
+    for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+      if (*it == sigIdx[i]) {
+	++nmatch;
+	break;
+      }
+    }
+  }
+
+  if (verbose) cout << "REF TRIGGER nmatch = " << nmatch << endl;
+  result = (nmatch == 2);
+  return result;
+}
+
+
+// ----------------------------------------------------------------------
+// -- search for a PD trigger that has no overlap with the tracks of the candidate
+bool candAna::tis(TAnaCand *pC) {
+  bool result(false);
+  int verbose(0);
+
+  // -- get list of indices of tracks making up candidate
+  vector<int> sigIdx;
+  getSigTracks(sigIdx, pC);
+
   // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
   TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
   if (!ht) return false;
   string hltPath("nada");
   TTrgObjv2 *pTO(0);
-  if (verbose) cout << "==> trigger objects for these paths" << endl;
+  if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
   map<string, set<int> > trgTrkIdx;
   TH1D *h1 = (TH1D*)(fHistDir->Get(Form("dr_%s", fName.c_str())));
-  for (int i = 1; i <= ht->GetNbinsX(); ++i) {
-    hltPath =  ht->GetXaxis()->GetBinLabel(i);
+  for (int j = 1; j <= ht->GetNbinsX(); ++j) {
+    hltPath =  ht->GetXaxis()->GetBinLabel(j);
     // -- determine trigger objets for this path
     for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
       pTO = fpEvt->getTrgObjv2(i);
@@ -3794,6 +3860,7 @@ bool candAna::tis(TAnaCand *pC) {
 	vector<TLorentzVector> muonP = pTO->fP;
 	int num = muonIndex.size();
 	// -- skip L1 and L2 objects (bad resolution for matching)
+	if (pTO->fType.Contains("L1Filter")) continue;
 	if (pTO->fType.Contains("L1T")) continue;
 	if (pTO->fType.Contains("L2")) continue;
 	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
@@ -3827,13 +3894,12 @@ bool candAna::tis(TAnaCand *pC) {
     if (verbose) cout << it->first << " size = " << it->second.size() << ": ";
     bool overlap(false);
     for (is = it->second.begin(); is != it->second.end(); ++is) {
-      if (verbose) cout << *is << "  ";
-      if (!overlap) {
-	for (unsigned int i = 0; i < sigIdx.size(); ++i) {
-	  if (*is == sigIdx[i]) {
-	    overlap = true;
-	    break;
-	  }
+      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+	if (*is == sigIdx[i]) {
+	  if (verbose) cout << "(" << *is << ") ";
+	  overlap = true;
+	} else {
+	  if (verbose) cout << " " << *is << " ";
 	}
       }
     }
@@ -3878,6 +3944,18 @@ int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
   return dRminIdx;
 }
 
+
+// ----------------------------------------------------------------------
+bool candAna::triggerFired(std::string triggerPath) {
+  for (int i = 0; i < NHLT; ++i) {
+    if (fpEvt->fHLTResult[i]) {
+      if (fpEvt->fHLTNames[i] == triggerPath) {
+	return true;
+      }
+    }
+  }
+  return false;
+}
 
 
 // ----------------------------------------------------------------------
