@@ -164,8 +164,7 @@ int treeReader01::loop(int nevents, int start) {
   if (maxEvents < 1000)    step = 100;
 
   int treeNumber(0), oldTreeNumber(-1);
-
-  fpChain->GetFile();
+  fpChain->GetFile(); // without this, treeNumber initially will be -1.
   for (int jEvent = start; jEvent < maxEvents; ++jEvent) {
     treeNumber = fpChain->GetTreeNumber();
     if (treeNumber != oldTreeNumber) {
