@@ -84,7 +84,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  if (1 ||fVerbose>0) {
+  if (fVerbose>0) {
     cout << "======================================================================" << endl;
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
 	 << fVerbose << " MC: " << fIsMC << endl;
@@ -105,7 +105,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   runRange();
 
   // -- print HLT path(s) that fired
-  if (1) {
+  if (0) {
     cout << "----------------------------------------------------------------------" << endl;
     for (int i = 0; i < NHLT; ++i) {
       if (fpEvt->fHLTResult[i]) {
@@ -3753,7 +3753,7 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 // -- check whether the reftrigger's objects are matched to the candidate's tracks
 bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   bool result(false);
-  int verbose(1);
+  int verbose(0);
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
