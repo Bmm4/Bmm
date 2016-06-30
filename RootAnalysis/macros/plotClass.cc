@@ -1653,6 +1653,7 @@ void plotClass::insertDataset(std::string dsname, dataset *ds) {
   if (fDS.find(dsname) != fDS.end()) {
     cout << "######## Error: " << dsname  << " already present in fDS, NOT inserting again" << endl;
   } else {
+    cout << "     inserting: " << dsname  << " " << endl;
     fDS.insert(make_pair(dsname, ds));
   }
 }
@@ -1681,7 +1682,7 @@ void plotClass::loadFiles(string afiles) {
     string::size_type m2 = sbuffer.find("file=");
     string slumi = sbuffer.substr(m1+5, m2-m1-6);
     string sfile = sbuffer.substr(m2+5);
-    string sname, sdecay;
+    string sname("nada"), sdecay("nada");
 
     TFile *pF(0);
     dataset *ds(0);
@@ -1693,7 +1694,7 @@ void plotClass::loadFiles(string afiles) {
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2;
-      if (string::npos != stype.find("bmm")) {
+      if (string::npos != stype.find("bmm,")) {
         sname = "bmmData";
         sdecay = "bmm";
 	ds->fColor = kBlack;
@@ -1704,7 +1705,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bupsik")) {
+      if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikData";
         sdecay = "bupsik";
 	ds->fColor = kBlack;
@@ -1715,7 +1716,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bspsiphi")) {
+      if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiData";
         sdecay = "bspsiphi";
 	ds->fColor = kBlack;
@@ -1726,7 +1727,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bdpsikstar")) {
+      if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarData";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlack;
@@ -1745,7 +1746,7 @@ void plotClass::loadFiles(string afiles) {
       ds->fSize = 0.1;
       ds->fWidth = 2.;
 
-      if (string::npos != stype.find("bupsik")) {
+      if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikMc";
         sdecay = "bupsik";
 	ds->fColor = kGreen-2;
@@ -1757,7 +1758,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3354;
       }
 
-      if (string::npos != stype.find("bspsiphi")) {
+      if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiMc";
         sdecay = "bspsiphi";
 	ds->fColor = kRed;
@@ -1768,7 +1769,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm")) {
+      if (string::npos != stype.find("bsmm,")) {
         sname = "bsmmMc";
         sdecay = "bsmm";
 	ds->fColor = kGreen-2;
@@ -1780,7 +1781,7 @@ void plotClass::loadFiles(string afiles) {
       }
 
 
-      if (string::npos != stype.find("bdpsikstar")) {
+      if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlue;
@@ -1791,7 +1792,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bdmm")) {
+      if (string::npos != stype.find("bdmm,")) {
         sname = "bdmmMc";
         sdecay = "bdmm";
 	ds->fColor = kBlue;
@@ -1803,7 +1804,7 @@ void plotClass::loadFiles(string afiles) {
       }
 
     }
-    if (ds) {
+    if (sname != "nada") {
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
       ds->fName   = sdecay;
