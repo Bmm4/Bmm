@@ -21,9 +21,13 @@ public :
   virtual void loadFiles(std::string afiles);
   virtual void makeAll(int bitmask = 0);
 
+  // -- trigger efficiency studies
   void plotTisEfficiency(std::string dsname);
   void runTisEfficiency(std::string dsname);
 
+  void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
+  void efficiencyVariable(std::string var, std::string effvar = "hlt", std::string selection = "default",
+			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
 
   void bookHist(std::string dsname);
   TH1D *fpHnorm, *fpHpass;
@@ -35,6 +39,7 @@ public :
 
   // -- code for loops
   void   loopFunction1();
+  void   loopFunction2();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
@@ -43,6 +48,8 @@ private:
 
   // ----------------------------------------------------------------------
   ClassDef(plotWork,1)
+
+  int fRefTrigger;
 
 };
 

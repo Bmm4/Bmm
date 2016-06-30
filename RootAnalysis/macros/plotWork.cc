@@ -279,36 +279,42 @@ void plotWork::refTrgEfficiency(string selection, string dsname) {
 
 
 // ----------------------------------------------------------------------
-void plotWork::trgEfficiencyVariable(string var, double xmin, double xmax, int nbin, string selection, string dsname) {
+void plotWork::efficiencyVariable(string var, string effvar, string selection, int nbin, double xmin, double xmax, string dsname) {
+
   if (var == "all") {
-    trgEfficiencyVariable("m1pt",     0., 40., 20, selection, dsname);
-    trgEfficiencyVariable("m2pt",     0., 20., 20, selection, dsname);
-    trgEfficiencyVariable("m1eta",  -2.0, 2.0, 20, selection, dsname);
-    trgEfficiencyVariable("m2eta",  -2.0, 2.0, 20, selection, dsname);
-    trgEfficiencyVariable("pt",       0., 40., 20, selection, dsname);
-    trgEfficiencyVariable("eta",    -2.0, 2.0, 20, selection, dsname);
-    trgEfficiencyVariable("fls3d",    0., 100., 20, selection, dsname);
-    trgEfficiencyVariable("chi2dof",  0., 2.5, 20, selection, dsname);
-    trgEfficiencyVariable("iso",      0., 1.01, 20, selection, dsname);
-    trgEfficiencyVariable("m1iso",    0., 1.01, 20, selection, dsname);
-    trgEfficiencyVariable("m2iso",    0., 1.01, 20, selection, dsname);
-    trgEfficiencyVariable("closetrk", 0., 10., 10, selection, dsname);
-    trgEfficiencyVariable("docatrk",  0., 0.1,  20, selection, dsname);
-    trgEfficiencyVariable("pvip",     0., 0.01,  20, selection, dsname);
-    trgEfficiencyVariable("pvips",    0., 2.5,  20, selection, dsname);
-    trgEfficiencyVariable("maxdoca",  0., 0.08, 20, selection, dsname);
+    efficiencyVariable("m1pt",     effvar, selection, 20,   0.,  40., dsname);
+    efficiencyVariable("m2pt",     effvar, selection, 20,   0.,  20., dsname);
+    efficiencyVariable("m1eta",    effvar, selection, 20, -2.0,  2.0, dsname);
+    efficiencyVariable("m2eta",    effvar, selection, 20, -2.0,  2.0, dsname);
+    efficiencyVariable("pt",       effvar, selection, 20,   0.,  40., dsname);
+    efficiencyVariable("eta",      effvar, selection, 20, -2.0,  2.0, dsname);
+    efficiencyVariable("fls3d",    effvar, selection, 20,   0., 100., dsname);
+    efficiencyVariable("chi2dof",  effvar, selection, 20,   0.,  2.5, dsname);
+    efficiencyVariable("iso",      effvar, selection, 20,   0., 1.01, dsname);
+    efficiencyVariable("m1iso",    effvar, selection, 20,   0., 1.01, dsname);
+    efficiencyVariable("m2iso",    effvar, selection, 20,   0., 1.01, dsname);
+    efficiencyVariable("closetrk", effvar, selection, 10,   0.,  10., dsname);
+    efficiencyVariable("docatrk",  effvar, selection, 20,   0.,  0.1, dsname);
+    efficiencyVariable("pvip",     effvar, selection, 20,   0., 0.01, dsname);
+    efficiencyVariable("pvips",    effvar, selection, 20,   0.,  2.5, dsname);
+    efficiencyVariable("maxdoca",  effvar, selection, 20,   0., 0.08, dsname);
+    efficiencyVariable("alpha",    effvar, selection, 20,   0., 0.06, dsname);
     return;
   }
+
+  // -- dump histograms
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
 
   string dir("");
   if (string::npos != dsname.find("bupsik")) {
     if (selection == "default") {
       selection = "abs(m1eta)<1.6 && abs(m2eta)<1.6";
-      selection += "&& psimaxdoca<0.5 && mpsi>2.9 && mpsi<3.3 && psipt>6.9";
-      selection += "&& m1pt>4 && m2pt>4 && m1q*m2q<0";
-      selection += "&& fls3d>13 && alpha<0.05 && docatrk>0.015 && pvips<2 && pvip<0.008 && chi2dof<2.2";
+      selection += " && psimaxdoca<0.5 && mpsi>2.9 && mpsi<3.3 && psipt>6.9";
+      selection += " && m1pt>4 && m2pt>4 && m1q*m2q<0";
+      selection += " && fls3d>13 && alpha<0.05 && docatrk>0.015 && pvips<2 && pvip<0.008 && chi2dof<2.2";
     }
-
     dir = "candAnaBu2JpsiK";
   }
 
@@ -320,22 +326,31 @@ void plotWork::trgEfficiencyVariable(string var, double xmin, double xmax, int n
     return;
   }
 
-  TH1D *h1 = new TH1D(Form("h_mc"), Form("h_mc"), nbin, xmin, xmax); h1->Sumw2();
-  setTitles(h1, var.c_str(), "");
+  gStyle->SetHatchesLineWidth(2);
+
+  string normName = Form("effVar_%s_%s_%s_norm", fSample.c_str(), var.c_str(), effvar.c_str());
+  string passName = Form("effVar_%s_%s_%s_pass", fSample.c_str(), var.c_str(), effvar.c_str());
+  string effName  = Form("effVar_%s_%s_%s_eff", fSample.c_str(), var.c_str(), effvar.c_str());
+  TH1D *h1 = new TH1D(normName.c_str(), normName.c_str(), nbin, xmin, xmax);
+  h1->Sumw2();
+  setTitles(h1, fVarToTex[var].c_str(), "");
   setFilledHist(h1, kBlue, kYellow, 1000, 2);
-  TH1D *h2 = new TH1D(Form("h_mc_hlt"), Form("h_mc_hlt"), nbin, xmin, xmax); h2->Sumw2();
-  setFilledHist(h2, kBlue, kBlue, 1000, 2);
+  TH1D *h2 = new TH1D(passName.c_str(), passName.c_str(), nbin, xmin, xmax);
+  h2->Sumw2();
+  setFilledHist(h2, kBlue, kBlue, 3354, 2);
 
   // -- basic HLT efficiency derived from MC
   string tselection = selection;
-  t->Draw(Form("%s >> h_mc", var.c_str()), tselection.c_str());
-  tselection = selection + " && hlt";
-  t->Draw(Form("%s >> h_mc_hlt", var.c_str()), tselection.c_str());
+  t->Draw(Form("%s >> %s", var.c_str(), normName.c_str()), tselection.c_str());
+  cout << "==> " << var << " SEL histogram contents =        " << h1->Integral(1, h1->GetNbinsX()+1) << endl;
+  tselection = selection + " && " + effvar;
+  t->Draw(Form("%s >> %s", var.c_str(), passName.c_str()), tselection.c_str());
+  cout << "==> " << var << " SEL && " << effvar << " histogram contents = " << h2->Integral(1, h1->GetNbinsX()+1) << endl;
 
-  TH1D *h3 = (TH1D*)(h1->Clone("ratio")); h3->Reset();
+  TH1D *h3 = (TH1D*)(h1->Clone(effName.c_str())); h3->Reset();
   setHist(h3);
   h3->Divide(h2, h1, 1., 1., "b");
-  setTitles(h3, var.c_str(), "Efficiency");
+  setTitles(h3, fVarToTex[var].c_str(), "Efficiency");
 
   zone(1,2);
   h1->Draw("hist");
@@ -348,7 +363,13 @@ void plotWork::trgEfficiencyVariable(string var, double xmin, double xmax, int n
   h3->Draw("e");
 
   c0->cd();
-  savePad(Form("trgEfficiency_%s_%s.pdf", fSample.c_str(), var.c_str()));
+  savePad(Form("trgEfficiency_%s_%s_%s.pdf", fSample.c_str(), var.c_str(), effvar.c_str()));
+
+  h1->Write();
+  h2->Write();
+  h3->Write();
+  fHistFile->Close();
+
 }
 
 
