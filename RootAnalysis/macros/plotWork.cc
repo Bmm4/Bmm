@@ -713,7 +713,6 @@ void plotWork::loadFiles(string afiles) {
     if (string::npos != stype.find("SingleMuon")) {
       // -- SingleMuon
       pF = loadFile(sfile);
-
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2;
@@ -761,13 +760,74 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+    } else if (string::npos != stype.find("Charmonium")) {
+      // -- Charmonium
+      pF = loadFile(sfile);
+      ds = new dataset();
+      ds->fSize = 1.2;
+      ds->fWidth = 2;
+      if (string::npos != stype.find("bmm")) {
+        sname = "bmmCharmonium";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikCharmonium";
+        sdecay = "bupsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiCharmonium";
+        sdecay = "bspsiphi";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarCharmonium";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
     } else if (string::npos != stype.find("mc")) {
       // -- MC
       pF = loadFile(sfile);
-
       ds = new dataset();
-      ds->fSize = 0.1;
+      ds->fSize = 1.2;
       ds->fWidth = 2.;
+
+      if (string::npos != stype.find("bupsikBla,")) {
+        sname = "bupsikMcBla";
+        sdecay = "bupsik";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fWidth  = 2.;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3354;
+      }
 
       if (string::npos != stype.find("YYY")) {
         sname = "bupsikMc";
@@ -797,11 +857,16 @@ void plotWork::loadFiles(string afiles) {
 
   is.close();
 
+  int cnt(0);
   cout << "------------------------------------------------------------------------------------------" << endl;
-  cout << Form("%30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
+  cout << Form("   %30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
   cout << "------------------------------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
+    // cout << it->first << endl;
+    // cout << it->second->fName << endl;
+    // cout << it->second->fF->GetName() << endl;
+    cout << Form("%2d %30s: %20s: ", cnt, it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
+    ++cnt;
   }
   cout << "------------------------------------------------------------------------------------------" << endl;
 }
