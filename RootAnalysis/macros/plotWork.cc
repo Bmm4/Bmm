@@ -164,7 +164,11 @@ void plotWork::runTisEfficiency(string dsname) {
     cout << "tree for sample = " << fSample << " not found" << endl;
     return;
   }
-  bookHist(fSample);
+  //  bookHist(fSample);
+  fpHnorm = new TH1D(Form("h_%s_%s", "norm", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
+  fpHpass = new TH1D(Form("h_%s_%s", "pass", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
+
+
   setupTree(t, fSample);
   fCds = fSample;
   loopOverTree(t, 1);
@@ -174,6 +178,177 @@ void plotWork::runTisEfficiency(string dsname) {
   fpHpass->Write();
   fHistFile->Close();
 
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::refTrgEfficiency(string selection, string dsname) {
+
+  zone(2,2);
+
+  string dir = "candAnaBu2JpsiK";
+  fSample = dsname;
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  }
+
+  TH1D *h1 = new TH1D(Form("h_mc"), Form("h_mc"), 40, 4.8, 6.0);
+  TH1D *h2 = new TH1D(Form("h_mc_hlt"), Form("h_mc_hlt"), 40, 4.8, 6.0);
+
+  double nNorm(0.), nPass(0.), effMc(0.), effRt(0.), effMcE(0.), effRtE
+    (0.);
+  double mBp(5.28), sBp(0.05);
+
+  string fitopt("lm");
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = selection;
+  t->Draw("m >> h_mc", tselection.c_str());
+  tselection = selection + " && hlt";
+  t->Draw("m >> h_mc_hlt", tselection.c_str());
+
+  fIF->limitPar(1, 5.1, 5.5);
+  TF1 *f1 = fIF->pol1gauss2c(h1, mBp, sBp);
+  c0->cd(1);
+  h1->Fit(f1, fitopt.c_str());
+
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "MC");
+  savePad("h_mc.pdf");
+  delete f1;
+
+  c0->cd(2);
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h2, mBp, sBp);
+  h2->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nPass = f1->Integral(5.1, 5.4)/h2->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "MC && HLT");
+  savePad("h_mc_hlt.pdf");
+  delete f1;
+  effMc = nPass/nNorm;
+  effMcE = dEff(static_cast<int>(nPass), static_cast<int>(nNorm));
+  cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
+
+
+  // -- HLT efficiency derived from reference trigger
+  TH1D *h3 = new TH1D(Form("h_rt"), Form("h_rt"), 40, 4.8, 6.0);
+  TH1D *h4 = new TH1D(Form("h_rt_hlt"), Form("h_rt_hlt"), 40, 4.8, 6.0);
+
+  c0->cd(3);
+  tselection = selection + " && reftrg";
+  t->Draw("m >> h_rt", tselection.c_str());
+  tselection = selection + " && reftrg && hlt";
+  t->Draw("m >> h_rt_hlt", tselection.c_str());
+
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h3, mBp, sBp);
+  h3->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nNorm = f1->Integral(5.1, 5.4)/h3->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "ref trigger");
+  savePad("h_rt.pdf");
+  delete f1;
+
+  c0->cd(4);
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h4, mBp, sBp);
+  h4->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nPass = f1->Integral(5.1, 5.4)/h4->GetBinWidth(1);
+  effRt = nPass/nNorm;
+  effRtE = dEff(static_cast<int>(nPass), static_cast<int>(nNorm));
+  tl->DrawLatexNDC(0.2, 0.96, "ref trigger && HLT");
+  savePad("h_rt_hlt.pdf");
+  delete f1;
+  cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
+  cout << "==> cuts: " << selection << endl;
+  cout << "==> efficiencies: MC = " << Form("%4.2f +/- %4.2f", effMc, effMcE)
+       << "; ref trigger = " << Form("%4.2f +/- %4.2f", effRt, effRtE)
+       << endl;
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::trgEfficiencyVariable(string var, double xmin, double xmax, int nbin, string selection, string dsname) {
+  if (var == "all") {
+    trgEfficiencyVariable("m1pt",     0., 40., 20, selection, dsname);
+    trgEfficiencyVariable("m2pt",     0., 20., 20, selection, dsname);
+    trgEfficiencyVariable("m1eta",  -2.0, 2.0, 20, selection, dsname);
+    trgEfficiencyVariable("m2eta",  -2.0, 2.0, 20, selection, dsname);
+    trgEfficiencyVariable("pt",       0., 40., 20, selection, dsname);
+    trgEfficiencyVariable("eta",    -2.0, 2.0, 20, selection, dsname);
+    trgEfficiencyVariable("fls3d",    0., 100., 20, selection, dsname);
+    trgEfficiencyVariable("chi2dof",  0., 2.5, 20, selection, dsname);
+    trgEfficiencyVariable("iso",      0., 1.01, 20, selection, dsname);
+    trgEfficiencyVariable("m1iso",    0., 1.01, 20, selection, dsname);
+    trgEfficiencyVariable("m2iso",    0., 1.01, 20, selection, dsname);
+    trgEfficiencyVariable("closetrk", 0., 10., 10, selection, dsname);
+    trgEfficiencyVariable("docatrk",  0., 0.1,  20, selection, dsname);
+    trgEfficiencyVariable("pvip",     0., 0.01,  20, selection, dsname);
+    trgEfficiencyVariable("pvips",    0., 2.5,  20, selection, dsname);
+    trgEfficiencyVariable("maxdoca",  0., 0.08, 20, selection, dsname);
+    return;
+  }
+
+  string dir("");
+  if (string::npos != dsname.find("bupsik")) {
+    if (selection == "default") {
+      selection = "abs(m1eta)<1.6 && abs(m2eta)<1.6";
+      selection += "&& psimaxdoca<0.5 && mpsi>2.9 && mpsi<3.3 && psipt>6.9";
+      selection += "&& m1pt>4 && m2pt>4 && m1q*m2q<0";
+      selection += "&& fls3d>13 && alpha<0.05 && docatrk>0.015 && pvips<2 && pvip<0.008 && chi2dof<2.2";
+    }
+
+    dir = "candAnaBu2JpsiK";
+  }
+
+  fSample = dsname;
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  }
+
+  TH1D *h1 = new TH1D(Form("h_mc"), Form("h_mc"), nbin, xmin, xmax); h1->Sumw2();
+  setTitles(h1, var.c_str(), "");
+  setFilledHist(h1, kBlue, kYellow, 1000, 2);
+  TH1D *h2 = new TH1D(Form("h_mc_hlt"), Form("h_mc_hlt"), nbin, xmin, xmax); h2->Sumw2();
+  setFilledHist(h2, kBlue, kBlue, 1000, 2);
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = selection;
+  t->Draw(Form("%s >> h_mc", var.c_str()), tselection.c_str());
+  tselection = selection + " && hlt";
+  t->Draw(Form("%s >> h_mc_hlt", var.c_str()), tselection.c_str());
+
+  TH1D *h3 = (TH1D*)(h1->Clone("ratio")); h3->Reset();
+  setHist(h3);
+  h3->Divide(h2, h1, 1., 1., "b");
+  setTitles(h3, var.c_str(), "Efficiency");
+
+  zone(1,2);
+  h1->Draw("hist");
+  h2->Draw("histsame");
+  h1->Draw("axissame");
+
+  c0->cd(2);
+  h3->SetMinimum(0.);
+  h3->SetMaximum(1.);
+  h3->Draw("e");
+
+  c0->cd();
+  savePad(Form("trgEfficiency_%s_%s.pdf", fSample.c_str(), var.c_str()));
 }
 
 
@@ -226,7 +401,9 @@ void plotWork::loopFunction1() {
 
 }
 
-
+// ----------------------------------------------------------------------
+void plotWork::loopFunction2() {
+}
 
 // ----------------------------------------------------------------------
 void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
