@@ -1625,12 +1625,12 @@ void initFunc::initPol1(double &p0, double &p1, TH1 *h) {
 
   double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
-  double yhi = h->Integral(hbin-EDG, hbin)/NB;
-
-  //  cout << "ylo: " << ylo << " yhi: " << yhi << endl;
+  double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
 
   p1  = (yhi-ylo)/dx;
   p0  = ylo - p1*fLo;
+  cout << "ylo: " << ylo << " yhi: " << yhi << " dx = " << dx
+       << " p0: " << p0 << " p1: " << p1 << endl;
 }
 
 
