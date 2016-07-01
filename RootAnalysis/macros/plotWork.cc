@@ -447,6 +447,87 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
 }
 
 
+// ----------------------------------------------------------------------
+void plotWork::yieldStability(string dsname) {
+
+  // -- dump histograms
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+
+  fSample = dsname;
+  string dir = "candAnaBu2JpsiK";
+  if (string::npos != fSample.find("bmm")) {
+    dir = "candAnaMuMu";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    dir = "candAnaBd2JpsiKstar";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    dir = "candAnaBd2JpsiKstar";
+  }
+
+  // -- check whether there are any histograms pre-produced already
+  bool ok = fHistFile->cd(dir.c_str());
+  cout << "OK? " << ok << endl;
+  if (ok) {
+    TIter next(gDirectory->GetListOfKeys());
+    TKey *key(0);
+    TH1D *hHLT(0), *hRTR(0);
+    vector<string> vds;
+    while ((key = (TKey*)next())) {
+      if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
+      if (TString(key->GetName()).Contains("_HLT_")) {
+	string hname = key->GetName();
+	replaceAll(hname, "h_HLT_", "");
+	vds.push_back(hname);
+      }
+    }
+
+    if (vds.size() > 0) {
+      double mBp(5.28), sBp(0.04), stepBp(5.145);
+      fIF->fLo = 4.8;
+      fIF->fHi = 6.0;
+      for (unsigned int i = 0; i < vds.size(); ++i) {
+	cout << vds[i] << endl;
+	TH1D *h1 = (TH1D*)(gDirectory->Get(Form("h_HLT_%s", vds[i].c_str())));
+	TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
+	h1->Fit(f1, "l");
+	c0->Modified();
+	c0->Update();
+      }
+      return;
+    }
+  } else {
+    TDirectory *hDir = fHistFile->mkdir(dir.c_str());
+    fHistFile->cd(dir.c_str());
+    hDir = gDirectory;
+
+    TTree *t = getTree(fSample, dir);
+    if (0 == t) {
+      cout << "tree for sample = " << fSample << " not found" << endl;
+      return;
+    }
+    setupTree(t, fSample);
+    fCds = fSample;
+    loopOverTree(t, 2, 4e6);
+
+    cout << "writing output histograms" << endl;
+    for (map<int, TH1D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
+      it->second->Draw();
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+    for (map<int, TH1D*>::iterator it = fYieldRTR.begin(); it != fYieldRTR.end(); ++it) {
+      it->second->Draw();
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+  }
+
+  fHistFile->Close();
+}
+
+
 
 // ----------------------------------------------------------------------
 void plotWork::loopFunction1() {
@@ -498,7 +579,73 @@ void plotWork::loopFunction1() {
 
 // ----------------------------------------------------------------------
 void plotWork::loopFunction2() {
+
+
+  if (!fGoodMuonsID) return;
+
+  if (!fGoodQ) return;
+  if (!fGoodPvAveW8) return;
+  if (!fGoodMaxDoca) return;
+  if (!fGoodIp) return;
+  if (!fGoodIpS) return;
+
+  if (!fGoodLip) return;
+  if (!fGoodLipS) return;
+
+  if (!fGoodCloseTrack) return;
+  if (!fGoodIso) return;
+  if (!fGoodDocaTrk) return;
+
+  if (fb.fls3d < 5) return;
+  if (fb.chi2dof < 3.0) return;
+  if (fb.alpha < 0.1) return;
+
+  // if (!fGoodFLS) return;
+  // if (!fGoodAlpha) return;
+  // if (!fGoodChi2) return;
+
+
+  if (TMath::Abs(fb.flsxy) < 3.0) return;
+
+  if (TMath::Abs(fb.m1eta) > 1.6) return;
+  if (TMath::Abs(fb.m2eta) > 1.6) return;
+
+  if (fb.m1pt < 4.0) return;
+  if (fb.m2pt < 4.0) return;
+
+  double m = fb.m;
+  if ((fMode == BU2JPSIKP) || (fMode = BD2JPSIKSTAR) || (fMode = BS2JPSIPHI)) {
+    if (TMath::Abs(fb.mpsi) < 2.9) return;
+    if (TMath::Abs(fb.mpsi) > 3.3) return;
+
+    if (TMath::Abs(fb.psipt) < 6.9) return;
+    if (TMath::Abs(fb.psicosa) < 0.9) return;
+    if (TMath::Abs(fb.psiprob) < 0.1) return;
+    if (TMath::Abs(fb.psiflsxy) < 3) return;
+    m = fb.cm;
+  }
+
+
+  if (0 == fYieldHLT.count(fb.run)) {
+    TH1D *h = new TH1D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("h_HLT_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    fYieldHLT.insert(make_pair(fb.run, h));
+
+    h = new TH1D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("h_RTR_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    fYieldRTR.insert(make_pair(fb.run, h));
+  }
+
+
+  if (fb.hlt) {
+    fYieldHLT[fb.run]->Fill(m);
+  }
+
+  if (fb.reftrg) {
+    fYieldRTR[fb.run]->Fill(m);
+  }
+
 }
+
+
 
 // ----------------------------------------------------------------------
 void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
@@ -537,6 +684,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   //    (this is the reason why this function is NOT in plotClass!)
   void (plotWork::*pF)(void);
   if (ifunc == 1) pF = &plotWork::loopFunction1;
+  if (ifunc == 2) pF = &plotWork::loopFunction2;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {

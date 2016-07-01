@@ -21,6 +21,9 @@ public :
   virtual void loadFiles(std::string afiles);
   virtual void makeAll(int bitmask = 0);
 
+  // -- yield stability
+  void yieldStability(std::string dsname);
+
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
   void plotTisEfficiency(std::string dsname);
@@ -30,10 +33,9 @@ public :
   void efficiencyVariable(std::string var, std::string effvar = "hlt", int iselection = 10,
 			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
 
+
   std::string removeVarFromSelection(std::string var, std::string selection);
   void bookHist(std::string dsname);
-  TH1D *fpHnorm, *fpHpass;
-
 
   /// NOTE: This works with the output of genAnalysis!!!!
   void prodSummary(string ds1, int year);
@@ -50,6 +52,10 @@ private:
 
   // ----------------------------------------------------------------------
   ClassDef(plotWork,1)
+
+  TH1D *fpHnorm, *fpHpass;
+
+  std::map<int, TH1D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
 
