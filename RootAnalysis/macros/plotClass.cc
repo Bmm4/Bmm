@@ -132,8 +132,8 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
-  fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}}"));
-  fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}}"));
+  fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} [GeV]"));
+  fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} [GeV]"));
   fVarToTex.insert(make_pair("m1eta", "#eta_{#mu,1}"));
   fVarToTex.insert(make_pair("m2eta", "#eta_{#mu,2}"));
   fVarToTex.insert(make_pair("fls3d", "l_{3D}/#sigma(l_{3D})"));
@@ -143,12 +143,14 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVarToTex.insert(make_pair("iso", "isolation"));
   fVarToTex.insert(make_pair("m1iso", "#mu_{1} isolation"));
   fVarToTex.insert(make_pair("m2iso", "#mu_{2} isolation"));
-  fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0}"));
-  fVarToTex.insert(make_pair("maxdoca", "d^{max}"));
-  fVarToTex.insert(make_pair("pvip", "#delta_{3D}"));
+  fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0} [cm]"));
+  fVarToTex.insert(make_pair("closetrk", "N_{trk}^{close}"));
+
+  fVarToTex.insert(make_pair("maxdoca", "d^{max} [cm]"));
+  fVarToTex.insert(make_pair("pvip", "#delta_{3D} [cm]"));
   fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
 
-  fVarToTex.insert(make_pair("pt", "p_{T_{B}}"));
+  fVarToTex.insert(make_pair("pt", "p_{T_{B}} [GeV]"));
   fVarToTex.insert(make_pair("eta", "#eta_{B}"));
 
   // -- initialize cuts
