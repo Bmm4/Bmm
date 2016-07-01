@@ -45,6 +45,10 @@ void rmPath(std::string &sInput);
 
 std::vector<std::string> glob(std::string basedir, std::string basename);
 
+std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems);
+std::vector<std::string> split(const std::string &s, char delim);
+
+
 // ======================================================================
 // Utitilities for displays and typing shortcuts
 // ======================================================================
