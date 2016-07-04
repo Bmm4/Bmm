@@ -131,6 +131,28 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
+  // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
+  fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} [GeV]"));
+  fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} [GeV]"));
+  fVarToTex.insert(make_pair("m1eta", "#eta_{#mu,1}"));
+  fVarToTex.insert(make_pair("m2eta", "#eta_{#mu,2}"));
+  fVarToTex.insert(make_pair("fls3d", "l_{3D}/#sigma(l_{3D})"));
+  fVarToTex.insert(make_pair("alpha", "#alpha_{3D}"));
+  fVarToTex.insert(make_pair("chi2dof", "#chi^{2}/dof"));
+
+  fVarToTex.insert(make_pair("iso", "isolation"));
+  fVarToTex.insert(make_pair("m1iso", "#mu_{1} isolation"));
+  fVarToTex.insert(make_pair("m2iso", "#mu_{2} isolation"));
+  fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0} [cm]"));
+  fVarToTex.insert(make_pair("closetrk", "N_{trk}^{close}"));
+
+  fVarToTex.insert(make_pair("maxdoca", "d^{max} [cm]"));
+  fVarToTex.insert(make_pair("pvip", "#delta_{3D} [cm]"));
+  fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
+
+  fVarToTex.insert(make_pair("pt", "p_{T_{B}} [GeV]"));
+  fVarToTex.insert(make_pair("eta", "#eta_{B}"));
+
   // -- initialize cuts
   cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
   readCuts(Form("%s", cuts.c_str()));
@@ -426,6 +448,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("q", &fb.q);
 
   t->SetBranchAddress("tis", &fb.tis);
+  t->SetBranchAddress("reftrg", &fb.reftrg);
 
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("gtau", &fb.gtau);
@@ -1397,7 +1420,6 @@ void plotClass::readCuts(string filename) {
 }
 
 
-
 // ----------------------------------------------------------------------
 void plotClass::printCuts(ostream &OUT) {
 
@@ -1633,6 +1655,7 @@ void plotClass::insertDataset(std::string dsname, dataset *ds) {
   if (fDS.find(dsname) != fDS.end()) {
     cout << "######## Error: " << dsname  << " already present in fDS, NOT inserting again" << endl;
   } else {
+    cout << "     inserting: " << dsname  << " " << endl;
     fDS.insert(make_pair(dsname, ds));
   }
 }
@@ -1661,7 +1684,7 @@ void plotClass::loadFiles(string afiles) {
     string::size_type m2 = sbuffer.find("file=");
     string slumi = sbuffer.substr(m1+5, m2-m1-6);
     string sfile = sbuffer.substr(m2+5);
-    string sname, sdecay;
+    string sname("nada"), sdecay("nada");
 
     TFile *pF(0);
     dataset *ds(0);
@@ -1673,7 +1696,7 @@ void plotClass::loadFiles(string afiles) {
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2;
-      if (string::npos != stype.find("bmm")) {
+      if (string::npos != stype.find("bmm,")) {
         sname = "bmmData";
         sdecay = "bmm";
 	ds->fColor = kBlack;
@@ -1684,7 +1707,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bupsik")) {
+      if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikData";
         sdecay = "bupsik";
 	ds->fColor = kBlack;
@@ -1695,7 +1718,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bspsiphi")) {
+      if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiData";
         sdecay = "bspsiphi";
 	ds->fColor = kBlack;
@@ -1706,7 +1729,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bdpsikstar")) {
+      if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarData";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlack;
@@ -1725,7 +1748,7 @@ void plotClass::loadFiles(string afiles) {
       ds->fSize = 0.1;
       ds->fWidth = 2.;
 
-      if (string::npos != stype.find("bupsik")) {
+      if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikMc";
         sdecay = "bupsik";
 	ds->fColor = kGreen-2;
@@ -1737,7 +1760,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3354;
       }
 
-      if (string::npos != stype.find("bspsiphi")) {
+      if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiMc";
         sdecay = "bspsiphi";
 	ds->fColor = kRed;
@@ -1748,7 +1771,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm")) {
+      if (string::npos != stype.find("bsmm,")) {
         sname = "bsmmMc";
         sdecay = "bsmm";
 	ds->fColor = kGreen-2;
@@ -1760,7 +1783,7 @@ void plotClass::loadFiles(string afiles) {
       }
 
 
-      if (string::npos != stype.find("bdpsikstar")) {
+      if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
         sdecay = "bdpsikstar";
 	ds->fColor = kBlue;
@@ -1771,7 +1794,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bdmm")) {
+      if (string::npos != stype.find("bdmm,")) {
         sname = "bdmmMc";
         sdecay = "bdmm";
 	ds->fColor = kBlue;
@@ -1783,7 +1806,7 @@ void plotClass::loadFiles(string afiles) {
       }
 
     }
-    if (ds) {
+    if (sname != "nada") {
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
       ds->fName   = sdecay;
@@ -1802,7 +1825,7 @@ void plotClass::loadFiles(string afiles) {
 
 // ----------------------------------------------------------------------
 // downloaded on 2016/06/6 from https://ghm.web.cern.ch/ghm/plots/
-void plotClass::setTdrStyle() {
+TStyle * plotClass::setTdrStyle() {
 
   TStyle *tdrStyle = new TStyle("tdrStyle","Style for P-TDR");
 
@@ -1943,4 +1966,5 @@ void plotClass::setTdrStyle() {
 
   tdrStyle->cd();
 
+  return tdrStyle;
 }

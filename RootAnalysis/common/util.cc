@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <iomanip>
+#include <sstream>
 
 #include "util.hh"
 #include "TMath.h"
@@ -695,4 +696,22 @@ vector<string> glob(string basedir, string basename) {
     }
   }
   return lof;
+}
+
+// ----------------------------------------------------------------------
+vector<string>& split(const string &s, char delim, vector<string> &elems) {
+  stringstream ss(s);
+  string item;
+  while (getline(ss, item, delim)) {
+    elems.push_back(item);
+  }
+  return elems;
+}
+
+
+// ----------------------------------------------------------------------
+vector<string> split(const string &s, char delim) {
+  vector<string> elems;
+  split(s, delim, elems);
+  return elems;
 }

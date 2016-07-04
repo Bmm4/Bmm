@@ -1107,7 +1107,7 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
   f->SetParameters(g0, peak, sigma, p0, p1, e0, e1, e2, 0.05*g0);
 
   // -- FIXME: remove hard-coded limits!
-  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7);
+  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e6);
   f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45);
   f->ReleaseParameter(2);     f->SetParLimits(2, 0.3*sigma, 1.3*sigma);
   f->ReleaseParameter(3);
@@ -1625,14 +1625,15 @@ void initFunc::initPol1(double &p0, double &p1, TH1 *h) {
 
   double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
-  double yhi = h->Integral(hbin-EDG, hbin)/NB;
-
-  //  cout << "ylo: " << ylo << " yhi: " << yhi << endl;
+  double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
 
   p1  = (yhi-ylo)/dx;
   p0  = ylo - p1*fLo;
+  if (fVerbose) {
+    cout << "ylo: " << ylo << " yhi: " << yhi << " dx = " << dx
+	 << " p0: " << p0 << " p1: " << p1 << endl;
+  }
 }
-
 
 
 // ----------------------------------------------------------------------
@@ -1647,7 +1648,7 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
 
   double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
-  double yhi = h->Integral(hbin-EDG, hbin)/NB;
+  double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
 
   if (ylo > 0 && yhi > 0) {
     p1 = (TMath::Log(yhi) - TMath::Log(ylo))/dx;
@@ -1661,10 +1662,11 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
     p0 = 50.;
   }
 
-  cout << "initFunc::initExpo fLo: " << fLo << " fHi: " << fHi << endl;
-  cout << "initFunc::initExpo ylo: " << ylo << " yhi: " << yhi << endl;
-  cout << "initFunc::initExpo  p0:  " << p0 <<  " p1:  " << p1 << endl;
-
+  if (fVerbose) {
+    cout << "initFunc::initExpo fLo: " << fLo << " fHi: " << fHi << endl;
+    cout << "initFunc::initExpo ylo: " << ylo << " yhi: " << yhi << endl;
+    cout << "initFunc::initExpo  p0:  " << p0 <<  " p1:  " << p1 << endl;
+  }
 }
 
 

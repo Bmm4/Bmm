@@ -1,4 +1,5 @@
 #include "Lumi.hh"
+#include "util.hh"
 
 #include <sstream>
 #include <cstdlib>
@@ -79,23 +80,4 @@ void Lumi::print() {
     cout << "run: " << it->first << " lumi: " << it->second << endl;
   }
 
-}
-
-
-// ----------------------------------------------------------------------
-vector<string>& Lumi::split(const string &s, char delim, vector<string> &elems) {
-  stringstream ss(s);
-  string item;
-  while (getline(ss, item, delim)) {
-    elems.push_back(item);
-  }
-  return elems;
-}
-
-
-// ----------------------------------------------------------------------
-vector<string> Lumi::split(const string &s, char delim) {
-    vector<string> elems;
-    split(s, delim, elems);
-    return elems;
 }

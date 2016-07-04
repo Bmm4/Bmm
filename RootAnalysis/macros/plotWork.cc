@@ -3,6 +3,9 @@
 #include <fstream>
 #include <iostream>
 #include <sstream>
+#include <algorithm>
+#include <iterator>
+
 
 #include "TROOT.h"
 #include "TStyle.h"
@@ -49,6 +52,67 @@ plotWork::~plotWork() {
 
 }
 
+// ----------------------------------------------------------------------
+string plotWork::removeVarFromSelection(string var, string selection) {
+  // this will split on &, not on &&. So every second element in cuts is empty
+  vector<string> cuts = split(selection, '&');
+  string redcuts("");
+  for (unsigned int i = 0; i < cuts.size(); ++i) {
+    if (cuts[i] == "") continue;
+    if ((string::npos == cuts[i].find(" "+var+"<")) && (string::npos == cuts[i].find(" "+var+">"))) {
+      redcuts += cuts[i];
+      if (i < cuts.size()-1) redcuts += " && ";
+    }
+  }
+  return redcuts;
+
+}
+
+// ----------------------------------------------------------------------
+// for removeVarFromSelection(...) to work, there MUST be
+//   - a space in front of the variable
+//   - no space between the variable and the <> operator
+// !!
+// Variables not adhering to this will not be removed.
+string plotWork::selectionString(int imode, int itrig) {
+  string selection("");
+  if (10 == imode) {
+    selection = "abs(m1eta)<1.6 && abs(m2eta)<1.6";
+    selection += " && m1pt>4 && m2pt>4 && m1q*m2q<0";
+    selection += " && pt>6.5";
+    selection += " && fls3d>10 && alpha<0.05 && pvips<2 && pvip<0.008 && chi2dof<2.2";
+    selection += " && iso>0.8 && docatrk>0.015 && closetrk<2";
+  } else if (11 == imode) {
+    selection = "abs(m1eta)<1.6 && abs(m2eta)<1.6";
+    selection += " && m1pt>8 && m2pt>8 && m1q*m2q<0";
+    selection += " && pt>6.5";
+    selection += " && fls3d>10 && alpha<0.05 && pvips<2 && pvip<0.008 && chi2dof<2.2";
+    selection += " && iso>0.8 && docatrk>0.015 && closetrk<2";
+  } else if (12 == imode) {
+    selection = "abs(m1eta)<1.6 && abs(m2eta)<1.6";
+    selection += " && m1pt>8 && m2pt>8 && m1q*m2q<0";
+    selection += " && pt>6.5";
+    selection += " && reftrg";
+    selection += " && fls3d>10 && alpha<0.05 && pvips<2 && pvip<0.008 && chi2dof<2.2";
+    selection += " && iso>0.8 && docatrk>0.015 && closetrk<2";
+  }
+
+  if (0 == itrig) {
+    selection += " ";
+  } else if (1 == itrig) {
+    selection += " && reftrg";
+  } else if (2 == itrig) {
+    selection += " && tis";
+  } else if (3 == itrig) {
+    selection += " && hlt";
+  }
+
+  if (fSample.find("psi")) {
+    selection += " && psimaxdoca<0.5 && mpsi>2.9 && mpsi<3.3 && psipt>6.9";
+  }
+
+  return selection;
+}
 
 
 // ----------------------------------------------------------------------
@@ -62,6 +126,8 @@ void plotWork::init() {
 // ----------------------------------------------------------------------
 void plotWork::makeAll(int bitmask) {
 
+
+
   if (bitmask & 0x1) {
     runTisEfficiency("bupsikData");
     runTisEfficiency("bspsiphiData");
@@ -74,8 +140,20 @@ void plotWork::makeAll(int bitmask) {
     runTisEfficiency("bmmSingleMuon");
   }
 
-  plotTisEfficiency("all");
+  if (bitmask & 0x2) {
+    plotTisEfficiency("all");
+  }
 
+  if (bitmask & 0x4) {
+    efficiencyVariable("all", "hlt", 10, 0, 0, 0, "bupsikMc");
+    efficiencyVariable("all", "reftrg", 10, 0, 0, 0, "bupsikMc");
+
+    efficiencyVariable("all", "hlt", 11, 0, 0, 0, "bupsikMc");
+    efficiencyVariable("all", "reftrg", 11, 0, 0, 0, "bupsikMc");
+
+    efficiencyVariable("all", "hlt", 12, 0, 0, 0, "bupsikMc");
+
+  }
 }
 
 
@@ -164,7 +242,11 @@ void plotWork::runTisEfficiency(string dsname) {
     cout << "tree for sample = " << fSample << " not found" << endl;
     return;
   }
-  bookHist(fSample);
+  //  bookHist(fSample);
+  fpHnorm = new TH1D(Form("h_%s_%s", "norm", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
+  fpHpass = new TH1D(Form("h_%s_%s", "pass", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
+
+
   setupTree(t, fSample);
   fCds = fSample;
   loopOverTree(t, 1);
@@ -174,6 +256,275 @@ void plotWork::runTisEfficiency(string dsname) {
   fpHpass->Write();
   fHistFile->Close();
 
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::refTrgEfficiency(string selection, string dsname) {
+
+  zone(2,2);
+
+  string dir = "candAnaBu2JpsiK";
+  fSample = dsname;
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  }
+
+  TH1D *h1 = new TH1D(Form("h_mc"), Form("h_mc"), 40, 4.8, 6.0);
+  TH1D *h2 = new TH1D(Form("h_mc_hlt"), Form("h_mc_hlt"), 40, 4.8, 6.0);
+
+  double nNorm(0.), nPass(0.), effMc(0.), effRt(0.), effMcE(0.), effRtE
+    (0.);
+  double mBp(5.28), sBp(0.05);
+
+  string fitopt("lm");
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = selection;
+  t->Draw("m >> h_mc", tselection.c_str());
+  tselection = selection + " && hlt";
+  t->Draw("m >> h_mc_hlt", tselection.c_str());
+
+  fIF->limitPar(1, 5.1, 5.5);
+  TF1 *f1 = fIF->pol1gauss2c(h1, mBp, sBp);
+  c0->cd(1);
+  h1->Fit(f1, fitopt.c_str());
+
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "MC");
+  savePad("h_mc.pdf");
+  delete f1;
+
+  c0->cd(2);
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h2, mBp, sBp);
+  h2->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nPass = f1->Integral(5.1, 5.4)/h2->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "MC && HLT");
+  savePad("h_mc_hlt.pdf");
+  delete f1;
+  effMc = nPass/nNorm;
+  effMcE = dEff(static_cast<int>(nPass), static_cast<int>(nNorm));
+  cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
+
+
+  // -- HLT efficiency derived from reference trigger
+  TH1D *h3 = new TH1D(Form("h_rt"), Form("h_rt"), 40, 4.8, 6.0);
+  TH1D *h4 = new TH1D(Form("h_rt_hlt"), Form("h_rt_hlt"), 40, 4.8, 6.0);
+
+  c0->cd(3);
+  tselection = selection + " && reftrg";
+  t->Draw("m >> h_rt", tselection.c_str());
+  tselection = selection + " && reftrg && hlt";
+  t->Draw("m >> h_rt_hlt", tselection.c_str());
+
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h3, mBp, sBp);
+  h3->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nNorm = f1->Integral(5.1, 5.4)/h3->GetBinWidth(1);
+  tl->DrawLatexNDC(0.2, 0.96, "ref trigger");
+  savePad("h_rt.pdf");
+  delete f1;
+
+  c0->cd(4);
+  fIF->limitPar(1, 5.1, 5.5);
+  f1 = fIF->pol1gauss2c(h4, mBp, sBp);
+  h4->Fit(f1, fitopt.c_str());
+  f1->SetParameter(5, 0.);
+  f1->SetParameter(6, 0.);
+  nPass = f1->Integral(5.1, 5.4)/h4->GetBinWidth(1);
+  effRt = nPass/nNorm;
+  effRtE = dEff(static_cast<int>(nPass), static_cast<int>(nNorm));
+  tl->DrawLatexNDC(0.2, 0.96, "ref trigger && HLT");
+  savePad("h_rt_hlt.pdf");
+  delete f1;
+  cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
+  cout << "==> cuts: " << selection << endl;
+  cout << "==> efficiencies: MC = " << Form("%4.2f +/- %4.2f", effMc, effMcE)
+       << "; ref trigger = " << Form("%4.2f +/- %4.2f", effRt, effRtE)
+       << endl;
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::efficiencyVariable(string var, string effvar, int iselection, int nbin, double xmin, double xmax, string dsname) {
+
+  fSample = dsname;
+  string selection = removeVarFromSelection(var, selectionString(iselection, 0));
+  cout << "==> plotWork::efficiencyVariable> selection = " << selection << endl;
+
+  if (var == "all") {
+    var = "m1pt";     efficiencyVariable(var, effvar, iselection, 40,   0.,  40., dsname);
+    var = "m2pt";     efficiencyVariable(var, effvar, iselection, 20,   0.,  20., dsname);
+    var = "m1eta";    efficiencyVariable(var, effvar, iselection, 20, -2.0,  2.0, dsname);
+    var = "m2eta";    efficiencyVariable(var, effvar, iselection, 20, -2.0,  2.0, dsname);
+    var = "pt";       efficiencyVariable(var, effvar, iselection, 20,   0.,  40., dsname);
+    var = "eta";      efficiencyVariable(var, effvar, iselection, 20, -2.0,  2.0, dsname);
+    var = "fls3d";    efficiencyVariable(var, effvar, iselection, 20,   0., 120., dsname);
+    var = "chi2dof";  efficiencyVariable(var, effvar, iselection, 25,   0.,  5.0, dsname);
+    var = "iso";      efficiencyVariable(var, effvar, iselection, 51,   0., 1.02, dsname);
+    var = "m1iso";    efficiencyVariable(var, effvar, iselection, 51,   0., 1.02, dsname);
+    var = "m2iso";    efficiencyVariable(var, effvar, iselection, 51,   0., 1.02, dsname);
+    var = "closetrk"; efficiencyVariable(var, effvar, iselection,  6,   0.,   6., dsname);
+    var = "docatrk";  efficiencyVariable(var, effvar, iselection, 20,   0.,  0.2, dsname);
+    var = "pvip";     efficiencyVariable(var, effvar, iselection, 20,   0., 0.02, dsname);
+    var = "pvips";    efficiencyVariable(var, effvar, iselection, 20,   0.,  4.0, dsname);
+    var = "maxdoca";  efficiencyVariable(var, effvar, iselection, 20,   0., 0.06, dsname);
+    var = "alpha";    efficiencyVariable(var, effvar, iselection, 20,   0.,  0.1, dsname);
+    return;
+  }
+
+  // -- dump histograms
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+  string dir("");
+  if (string::npos != dsname.find("bupsik")) {
+    dir = "candAnaBu2JpsiK";
+  }
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  }
+
+  gStyle->SetHatchesLineWidth(2);
+
+  string normName = Form("effVar_%s_%s_%s_norm", fSample.c_str(), var.c_str(), effvar.c_str());
+  string passName = Form("effVar_%s_%s_%s_pass", fSample.c_str(), var.c_str(), effvar.c_str());
+  string effName  = Form("effVar_%s_%s_%s_eff", fSample.c_str(), var.c_str(), effvar.c_str());
+  TH1D *h1 = new TH1D(normName.c_str(), normName.c_str(), nbin, xmin, xmax);
+  h1->Sumw2();
+  setTitles(h1, fVarToTex[var].c_str(), "");
+  setFilledHist(h1, kBlue, kYellow, 1000, 2);
+  TH1D *h2 = new TH1D(passName.c_str(), passName.c_str(), nbin, xmin, xmax);
+  h2->Sumw2();
+  setFilledHist(h2, kBlue, kBlue, 3354, 2);
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = selection;
+  t->Draw(Form("%s >> %s", var.c_str(), normName.c_str()), tselection.c_str());
+  cout << "==> " << var << " SEL histogram contents =        " << h1->Integral(1, h1->GetNbinsX()+1) << endl;
+  tselection = selection + " && " + effvar;
+  t->Draw(Form("%s >> %s", var.c_str(), passName.c_str()), tselection.c_str());
+  cout << "==> " << var << " SEL && " << effvar << " histogram contents = " << h2->Integral(1, h1->GetNbinsX()+1) << endl;
+
+  TH1D *h3 = (TH1D*)(h1->Clone(effName.c_str())); h3->Reset();
+  setHist(h3);
+  h3->Divide(h2, h1, 1., 1., "b");
+  setTitles(h3, fVarToTex[var].c_str(), "Efficiency");
+
+  zone(1,2);
+  h1->Draw("hist");
+  h2->Draw("histsame");
+  h1->Draw("axissame");
+
+  c0->cd(2);
+  h3->SetMinimum(0.);
+  h3->SetMaximum(1.);
+  h3->Draw("e");
+
+  c0->cd();
+  savePad(Form("trgEfficiency_%s_%s_%s_sel%d.pdf", fSample.c_str(), var.c_str(), effvar.c_str(), iselection));
+
+  h1->Write();
+  h2->Write();
+  h3->Write();
+  fHistFile->Close();
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotWork::yieldStability(string dsname) {
+
+  // -- dump histograms
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+
+  fSample = dsname;
+  string dir = "candAnaBu2JpsiK";
+  if (string::npos != fSample.find("bmm")) {
+    dir = "candAnaMuMu";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    dir = "candAnaBd2JpsiKstar";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    dir = "candAnaBd2JpsiKstar";
+  }
+
+  // -- check whether there are any histograms pre-produced already
+  bool ok = fHistFile->cd(dir.c_str());
+  cout << "OK? " << ok << endl;
+  if (ok) {
+    TIter next(gDirectory->GetListOfKeys());
+    TKey *key(0);
+    TH1D *hHLT(0), *hRTR(0);
+    vector<string> vds;
+    while ((key = (TKey*)next())) {
+      if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
+      if (TString(key->GetName()).Contains("_HLT_")) {
+	string hname = key->GetName();
+	replaceAll(hname, "h_HLT_", "");
+	vds.push_back(hname);
+      }
+    }
+
+    if (vds.size() > 0) {
+      double mBp(5.28), sBp(0.04), stepBp(5.145);
+      fIF->fLo = 4.8;
+      fIF->fHi = 6.0;
+      for (unsigned int i = 0; i < vds.size(); ++i) {
+	cout << vds[i] << endl;
+	TH1D *h1 = (TH1D*)(gDirectory->Get(Form("h_HLT_%s", vds[i].c_str())));
+	TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
+	h1->Fit(f1, "l");
+	c0->Modified();
+	c0->Update();
+      }
+      return;
+    }
+  } else {
+    TDirectory *hDir = fHistFile->mkdir(dir.c_str());
+    fHistFile->cd(dir.c_str());
+    hDir = gDirectory;
+
+    TTree *t = getTree(fSample, dir);
+    if (0 == t) {
+      cout << "tree for sample = " << fSample << " not found" << endl;
+      return;
+    }
+    setupTree(t, fSample);
+    fCds = fSample;
+    loopOverTree(t, 2, 4e6);
+
+    cout << "writing output histograms" << endl;
+    for (map<int, TH1D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
+      it->second->Draw();
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+    for (map<int, TH1D*>::iterator it = fYieldRTR.begin(); it != fYieldRTR.end(); ++it) {
+      it->second->Draw();
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+  }
+
+  fHistFile->Close();
 }
 
 
@@ -226,6 +577,74 @@ void plotWork::loopFunction1() {
 
 }
 
+// ----------------------------------------------------------------------
+void plotWork::loopFunction2() {
+
+
+  if (!fGoodMuonsID) return;
+
+  if (!fGoodQ) return;
+  if (!fGoodPvAveW8) return;
+  if (!fGoodMaxDoca) return;
+  if (!fGoodIp) return;
+  if (!fGoodIpS) return;
+
+  if (!fGoodLip) return;
+  if (!fGoodLipS) return;
+
+  if (!fGoodCloseTrack) return;
+  if (!fGoodIso) return;
+  if (!fGoodDocaTrk) return;
+
+  if (fb.fls3d < 5) return;
+  if (fb.chi2dof < 3.0) return;
+  if (fb.alpha < 0.1) return;
+
+  // if (!fGoodFLS) return;
+  // if (!fGoodAlpha) return;
+  // if (!fGoodChi2) return;
+
+
+  if (TMath::Abs(fb.flsxy) < 3.0) return;
+
+  if (TMath::Abs(fb.m1eta) > 1.6) return;
+  if (TMath::Abs(fb.m2eta) > 1.6) return;
+
+  if (fb.m1pt < 4.0) return;
+  if (fb.m2pt < 4.0) return;
+
+  double m = fb.m;
+  if ((fMode == BU2JPSIKP) || (fMode = BD2JPSIKSTAR) || (fMode = BS2JPSIPHI)) {
+    if (TMath::Abs(fb.mpsi) < 2.9) return;
+    if (TMath::Abs(fb.mpsi) > 3.3) return;
+
+    if (TMath::Abs(fb.psipt) < 6.9) return;
+    if (TMath::Abs(fb.psicosa) < 0.9) return;
+    if (TMath::Abs(fb.psiprob) < 0.1) return;
+    if (TMath::Abs(fb.psiflsxy) < 3) return;
+    m = fb.cm;
+  }
+
+
+  if (0 == fYieldHLT.count(fb.run)) {
+    TH1D *h = new TH1D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("h_HLT_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    fYieldHLT.insert(make_pair(fb.run, h));
+
+    h = new TH1D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("h_RTR_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    fYieldRTR.insert(make_pair(fb.run, h));
+  }
+
+
+  if (fb.hlt) {
+    fYieldHLT[fb.run]->Fill(m);
+  }
+
+  if (fb.reftrg) {
+    fYieldRTR[fb.run]->Fill(m);
+  }
+
+}
+
 
 
 // ----------------------------------------------------------------------
@@ -265,6 +684,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   //    (this is the reason why this function is NOT in plotClass!)
   void (plotWork::*pF)(void);
   if (ifunc == 1) pF = &plotWork::loopFunction1;
+  if (ifunc == 2) pF = &plotWork::loopFunction2;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
@@ -515,7 +935,6 @@ void plotWork::loadFiles(string afiles) {
     if (string::npos != stype.find("SingleMuon")) {
       // -- SingleMuon
       pF = loadFile(sfile);
-
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2;
@@ -563,13 +982,74 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+    } else if (string::npos != stype.find("Charmonium")) {
+      // -- Charmonium
+      pF = loadFile(sfile);
+      ds = new dataset();
+      ds->fSize = 1.2;
+      ds->fWidth = 2;
+      if (string::npos != stype.find("bmm")) {
+        sname = "bmmCharmonium";
+        sdecay = "bmm";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bupsik")) {
+        sname = "bupsikCharmonium";
+        sdecay = "bupsik";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bspsiphi")) {
+        sname = "bspsiphiCharmonium";
+        sdecay = "bspsiphi";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpsikstar")) {
+        sname = "bdpsikstarCharmonium";
+        sdecay = "bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
     } else if (string::npos != stype.find("mc")) {
       // -- MC
       pF = loadFile(sfile);
-
       ds = new dataset();
-      ds->fSize = 0.1;
+      ds->fSize = 1.2;
       ds->fWidth = 2.;
+
+      if (string::npos != stype.find("bupsikBla,")) {
+        sname = "bupsikMcBla";
+        sdecay = "bupsik";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fWidth  = 2.;
+	ds->fF      = pF;
+	ds->fBf     = 1.;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3354;
+      }
 
       if (string::npos != stype.find("YYY")) {
         sname = "bupsikMc";
@@ -599,11 +1079,16 @@ void plotWork::loadFiles(string afiles) {
 
   is.close();
 
+  int cnt(0);
   cout << "------------------------------------------------------------------------------------------" << endl;
-  cout << Form("%30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
+  cout << Form("   %30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
   cout << "------------------------------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
+    // cout << it->first << endl;
+    // cout << it->second->fName << endl;
+    // cout << it->second->fF->GetName() << endl;
+    cout << Form("%2d %30s: %20s: ", cnt, it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
+    ++cnt;
   }
   cout << "------------------------------------------------------------------------------------------" << endl;
 }

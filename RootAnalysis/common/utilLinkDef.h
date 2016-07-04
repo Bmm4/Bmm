@@ -70,6 +70,8 @@
 #pragma link C++ function rmSubString(std::string &, const std::string &);
 #pragma link C++ function rmPath(std::string &);
 #pragma link C++ function glob(std::string, std::string);
+#pragma link C++ function split(const std::string &, char, std::vector<std::string> &);
+#pragma link C++ function split(const std::string &, char);
 
 
 #endif

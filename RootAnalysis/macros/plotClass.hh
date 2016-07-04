@@ -118,7 +118,7 @@ public :
 
 
   // -- display utilities
-  void           setTdrStyle();
+  TStyle *       setTdrStyle();
   void           cd(std::string dataset, std::string dir = "");
   void           replaceAll(std::string &sInput, const std::string &oldString, const std::string &newString);
   void           newLegend(double x1, double y1, double x2, double y2, std::string title = "");
@@ -212,6 +212,7 @@ public :
   initFunc *fIF;
 
   // -- Display utilities
+  std::map<std::string, std::string> fVarToTex;
   std::string fStampString, fStampCms, fStampLumi;
   int fFont;
   double fSize;
