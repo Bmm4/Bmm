@@ -31,7 +31,7 @@ process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v9"
 
 
 # ----------------------------------------------------------------------
-rootFileName = "bmm-prompt-Run2016B-XXXX.root"
+rootFileName = "bmm-prompt-Run2016C-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
