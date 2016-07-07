@@ -12,20 +12,21 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # ----------------------------------------------------------------------
 # -- Database configuration
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
-process.load("CondCore.DBCommon.CondDBSetup_cfi")
+process.load("CondCore.CondDB.CondDB_cfi")
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
+
+process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-# GT for 76X (X>=3) 2015 End of the Yerar data-reprocessing
-process.GlobalTag.globaltag = "76X_dataRun2_v15"
+# requires >= CMSSW_8_0_10
+process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v9"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 
 
 

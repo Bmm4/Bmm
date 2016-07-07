@@ -15,10 +15,9 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 process.load("CondCore.CondDB.CondDB_cfi")
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
-#process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
+
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
@@ -27,6 +26,7 @@ process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v9"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
+process.source = cms.Source("PoolSource", fileNames = cms.untracked.vstring())
 
 
 
@@ -37,7 +37,7 @@ process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
-    requireCand    =  cms.untracked.bool(False),
+    requireCand    =  cms.untracked.bool(True),
     fullGenBlock   = cms.untracked.bool(False),
     fileName       = cms.untracked.string(rootFileName)
     )
