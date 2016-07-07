@@ -28,7 +28,11 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py 
 
 $dataset = "bmmCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 60000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 100000; ";
+
+$dataset = "bmmCharmonium2016C";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016C-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016C-PromptReco -s $version -r -e 80000; ";
 
 $dataset = "bmmSingleMuon2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
@@ -64,17 +68,25 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToJPsiPhi_2K2MuPtEtaFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToKPi_EtaPtFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 
-# -- NEW private MC
+# -- Summer15 private MC
 $dataset = "Summer15_private";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BdToMuMu -s $version -n 10 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil0 -s $version -n 20 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil1 -s $version -n 20 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/recoil2 -s $version -n 20 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BdToKPi-2GM -s $version -n 100 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BuToJpsiKp -s $version -n 20 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BsToJpsiPhi -s $version -n 20 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer15_private-XXXX.py -f ../../../catalogs/Summer15_private/BdToJpsiKstar -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToMuMu -s $version -n 10 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/recoil0 -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/recoil1 -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/recoil2 -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToKPi-2GM -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPhi -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 20 -l;  \ \n";
+
+# -- Summer16 private MC
+$dataset = "Summer16_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPhi -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 50 -l;  \ \n";
+
 
 # -- NEW official MC
 $dataset = "RunIIFall15DR76";

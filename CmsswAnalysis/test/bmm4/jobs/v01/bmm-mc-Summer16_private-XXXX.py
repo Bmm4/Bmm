@@ -12,33 +12,34 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # ----------------------------------------------------------------------
 # -- Database configuration
+#process.load("CondCore.DBCommon.CondDBCommon_cfi")
+#process.load("CondCore.DBCommon.CondDBSetup_cfi")
 process.load("CondCore.CondDB.CondDB_cfi")
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
-#process.load("Configuration.StandardSequences.Geometry_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
 process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
-#process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_cff")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-# requires >= CMSSW_8_0_10
-process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v9"
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_mcRun2_asymptotic_2016_v3', '')
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
 
 
 
+process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
+
 # ----------------------------------------------------------------------
-rootFileName = "bmm-prompt-Run2016B-XXXX.root"
+rootFileName = "bmm-mc-Summer15_private-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
     verbose        = cms.untracked.int32(0),
     printFrequency = cms.untracked.int32(100),
     requireCand    =  cms.untracked.bool(False),
-    fullGenBlock   = cms.untracked.bool(False),
+    fullGenBlock   = cms.untracked.bool(True),
     fileName       = cms.untracked.string(rootFileName)
     )
 
@@ -49,9 +50,22 @@ process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
 process.load("Bmm.CmsswAnalysis.HFBmm_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 
+process.load("Bmm.CmsswAnalysis.HFMCTruth_cff")
+process.load("Bmm.CmsswAnalysis.HFTruthCandidates_cff")
+
+# ----------------------------------------------------------------------
+process.genDump = cms.EDAnalyzer(
+    "HFDumpGenerator",
+    generatorCandidates = cms.untracked.string('genParticles'),
+    generatorEvent = cms.untracked.string('generator')
+    )
+
+
 # ----------------------------------------------------------------------
 process.p = cms.Path(
+    process.genDump*
     process.recoStuffSequence*
     process.bmmSequence*
+    process.truthBmmSequence*
     process.tree
 )
