@@ -83,6 +83,7 @@ public:
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
   virtual void        muScaleCorrectedMasses();
+  virtual void        pvStudy(bool bookHist = false);
   virtual void        runRange();
   virtual void        genMatch();
   virtual void        genMatchOld();
@@ -271,7 +272,7 @@ public:
 
   bool    fGoodEffCand;
 
-  TTree       *fMuonIdTree;
+  TTree       *fMuonIdTree, *fPvStudyTree;
 
   TAnaTrack *fpMuon1, *fpMuon2;
 

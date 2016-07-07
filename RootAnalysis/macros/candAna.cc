@@ -32,6 +32,7 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fGenBTmi = fGenM1Tmi = fGenM2Tmi = fNGenPhotons = fRecM1Tmi = fRecM2Tmi = fCandTmi = -1;
 
   fHistDir = gFile->mkdir(fName.c_str());
+  pvStudy(true);
 
   cout << "======================================================================" << endl;
 
@@ -94,6 +95,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     genMatch();
     recoMatch();
     candMatch();
+    pvStudy();
     if (fBadEvent) {
       cout << "XXXXXXX BAD EVENT XXXXXX SKIPPING XXXXX" << endl;
       return;
@@ -105,11 +107,18 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   runRange();
 
   // -- print HLT path(s) that fired
-  if (0) {
+  if (1) {
     cout << "----------------------------------------------------------------------" << endl;
+    cout << "fired HLT paths" << endl;
     for (int i = 0; i < NHLT; ++i) {
       if (fpEvt->fHLTResult[i]) {
 	cout << "   " << fpEvt->fHLTNames[i] << endl;
+      }
+    }
+    cout << "fired L1 bits" << endl;
+    for (int i = 0; i < NL1T; ++i) {
+      if (fpEvt->fL1TResult[i]) {
+	cout << "   " << fpEvt->fL1TNames[i] << endl;
       }
     }
 
@@ -1324,11 +1333,10 @@ void candAna::bookHist() {
 
   h11 = new TH1D("l1eta", "(eta(L3) - eta(L1))", 40, -2., 2.);
   h11 = new TH1D("l1phi", "(phi(L3) - phi(L1))", 40, -2., 2.);
-  TProfile *p1;
-  p1 = new TProfile("pl1pt","Profile of (pT(L3) - pT(L1))/pT(L3)", 30, 0., 30., -2., 2., "S");
-  p1 = new TProfile("pl1eta","Profile of L1 eta resolution", 25, -2.5, 2.5, -2., 2., "S");
-  p1 = new TProfile("pl1phi","Profile of L1 phi resolution", 32, -3.15, 3.15, -2., 2., "S");
-  p1 = new TProfile("pl1ptec","Profile of (pT(L3) - pT(L1))/pT(L3) (endcap)", 30, 0., 30., -2., 2., "S");
+  new TProfile("pl1pt","Profile of (pT(L3) - pT(L1))/pT(L3)", 30, 0., 30., -2., 2., "S");
+  new TProfile("pl1eta","Profile of L1 eta resolution", 25, -2.5, 2.5, -2., 2., "S");
+  new TProfile("pl1phi","Profile of L1 phi resolution", 32, -3.15, 3.15, -2., 2., "S");
+  new TProfile("pl1ptec","Profile of (pT(L3) - pT(L1))/pT(L3) (endcap)", 30, 0., 30., -2., 2., "S");
 
 
   h11 = new TH1D("L1_0", "hltL1sL1DoubleMu33HighQ", 50, -2.5, 2.5);
@@ -4427,6 +4435,7 @@ void candAna::play3() {
 void candAna::triggerEff(std::string ref, std::string os, int mode) {
 
   TH1D *h1(0);
+  (void*)h1;
   string tname = Form("os_%d", mode);
   if (0 == ((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))) {
     TDirectory *pDir = gDirectory;
@@ -4552,6 +4561,7 @@ void candAna::triggerEff(std::string ref, std::string os, int mode) {
 void candAna::play() {
   static int first(1);
   TH1D *h1(0);
+  (void*)h1;
   vector<string> tnames;
   tnames.push_back("rf");
   tnames.push_back("os");
@@ -5006,4 +5016,166 @@ void candAna::print1() {
   cout << "fl3d = " << fCandFL3d << " fl3de = " << fCandFL3dE << " fls3d = " << fCandFLS3d << endl;
   cout << "pvip = " << fCandPvIp3D << " pvipe = " << fCandPvIpE3D << " pvips = " << fCandPvIpS3D << endl;
   cout << "alpha = " << fCandA << " cosalpha = " <<  fCandCosA << endl;
+}
+
+
+// ----------------------------------------------------------------------
+void candAna::pvStudy(bool bookHist) {
+  static float gx, gy, gz;
+  static float sx, sy, sz;
+  static float p1x, p1y, p1z, p1d;
+  static float p2x, p2y, p2z, p2d;
+  static float p3x, p3y, p3z, p3d;
+  static float pt, eta, phi, m, fls3d;
+  static float lz1, lz2;
+  static float d1, d2, d3; // distance between reco PV and gen PV
+  static float a1, a2, a3; // pointing angle between
+  static float fl1, fl2, fl3; // flight length
+  static float npv;
+  if (bookHist) {
+    TDirectory *pDir = gDirectory;
+    fHistDir->cd();
+
+    fPvStudyTree = new TTree("pvstudy", "pvstudy");
+    fPvStudyTree->Branch("pt",   &pt,  "pt/F");
+    fPvStudyTree->Branch("eta",  &eta, "eta/F");
+    fPvStudyTree->Branch("phi",  &phi, "phi/F");
+    fPvStudyTree->Branch("m",    &m, "m/F");
+    fPvStudyTree->Branch("npv",  &npv, "npv/F");
+    fPvStudyTree->Branch("lz1",  &lz1, "lz1/F");
+    fPvStudyTree->Branch("lz2",  &lz2, "lz2/F");
+
+    fPvStudyTree->Branch("fl1",  &fl1, "fl1/F");
+    fPvStudyTree->Branch("fl2",  &fl2, "fl2/F");
+    fPvStudyTree->Branch("fl3",  &fl3, "fl3/F");
+
+    fPvStudyTree->Branch("gx",  &gx, "gx/F");
+    fPvStudyTree->Branch("gy",  &gy, "gy/F");
+    fPvStudyTree->Branch("gz",  &gz, "gz/F");
+
+    fPvStudyTree->Branch("p1x",  &p1x, "p1x/F");
+    fPvStudyTree->Branch("p1y",  &p1y, "p1y/F");
+    fPvStudyTree->Branch("p1z",  &p1z, "p1z/F");
+    fPvStudyTree->Branch("p1d",  &p1d, "p1d/F");
+
+    fPvStudyTree->Branch("p2x",  &p2x, "p2x/F");
+    fPvStudyTree->Branch("p2y",  &p2y, "p2y/F");
+    fPvStudyTree->Branch("p2z",  &p2z, "p2z/F");
+    fPvStudyTree->Branch("p2d",  &p2d, "p2d/F");
+
+    fPvStudyTree->Branch("p3x",  &p3x, "p3x/F");
+    fPvStudyTree->Branch("p3y",  &p3y, "p3y/F");
+    fPvStudyTree->Branch("p3z",  &p3z, "p3z/F");
+
+    fPvStudyTree->Branch("sx",  &sx, "sx/F");
+    fPvStudyTree->Branch("sy",  &sy, "sy/F");
+    fPvStudyTree->Branch("sz",  &sz, "sz/F");
+
+    fPvStudyTree->Branch("d1",  &d1, "d1/F");
+    fPvStudyTree->Branch("a1",  &a1, "a1/F");
+    fPvStudyTree->Branch("d2",  &d2, "d2/F");
+    fPvStudyTree->Branch("a2",  &a2, "a2/F");
+    fPvStudyTree->Branch("d3",  &d3, "d3/F");
+    fPvStudyTree->Branch("a3",  &a3, "a3/F");
+    pDir->cd();
+    return;
+  }
+
+  // -- this only works for truth-matched cands (no other cand available at this point)
+  if (fCandTmi > -1) {
+    TAnaCand *pCand = fpEvt->getCand(fCandTmi);
+    TVector3 sv = pCand->fVtx.fPoint;
+    TVector3 fl;
+    TVector3 genPV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
+    if (fGenBTmi > -1) {
+      genPV = TVector3(fpEvt->getGenCand(fGenBTmi)->fV.X(), fpEvt->getGenCand(fGenBTmi)->fV.y(), fpEvt->getGenCand(fGenBTmi)->fV.Z());
+      gx = genPV.X();
+      gy = genPV.Y();
+      gz = genPV.Z();
+
+      sx = genPV.X();
+      sy = genPV.Y();
+      sz = genPV.Z();
+
+      p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
+      p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
+      p1z = fpEvt->getPV(pCand->fPvIdx)->fPoint.Z();
+      lz1 = pCand->fPvLip;
+
+      p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
+      p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
+      p2z = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z();
+      lz2 = pCand->fPvLip2;
+
+      distPV = fpEvt->getPV(pCand->fPvIdx)->fPoint - genPV;
+      distPV2 = fpEvt->getPV(pCand->fPvIdx2)->fPoint - genPV;
+
+      d1 = distPV.Mag();
+      d2 = distPV2.Mag();
+
+      TVector3 plab = pCand->fPlab;
+      m =  pCand->fMass;
+      pt = plab.Perp();
+      eta = plab.Eta();
+      phi = plab.Phi();
+
+      fl = sv - fpEvt->getPV(pCand->fPvIdx)->fPoint;
+      fl1 = fl.Mag();
+      a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+
+      fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
+      fl2 = fl.Mag();
+      a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+
+      // -- loop over all PV in event and try out other approaches
+      int minAlphaIdx(-1);
+      double minAlpha(99.), alphaL;
+      int minPvIpIdx(-1);
+      double minPvIp(99.), pvipL;
+      npv = fpEvt->nPV();
+      d1 = d2 = 99.;
+      for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+	fl = sv - fpEvt->getPV(ipv)->fPoint;
+	distPVL = fpEvt->getPV(ipv)->fPoint - genPV;
+	// -- best pointing angle
+	alphaL = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+	if (alphaL < minAlpha) {
+	  minAlphaIdx = ipv;
+	  minAlpha = alphaL;
+	}
+      }
+
+      distPVL = fpEvt->getPV(minAlphaIdx)->fPoint - genPV;
+      d3 = distPVL.Mag();
+      fl = sv - fpEvt->getPV(minAlphaIdx)->fPoint;
+      fl3 = fl.Mag();
+      a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+      p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
+      p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
+      p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
+
+
+      // -- fill delta(z) to closest other PV
+      p1d = p2d = p3d = 99.;
+      for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+	if (ipv != pCand->fPvIdx) {
+	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx)->fPoint.Z());
+	  if (dz < p1d) p1d = dz;
+	}
+
+	if (ipv != pCand->fPvIdx2) {
+	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z());
+	  if (dz < p2d) p2d = dz;
+	}
+
+	if (ipv != pCand->fPvIdx2) {
+	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(minAlphaIdx)->fPoint.Z());
+	  if (dz < p3d) p3d = dz;
+	}
+      }
+
+      fPvStudyTree->Fill();
+
+    }
+  }
 }

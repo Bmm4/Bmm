@@ -22,7 +22,7 @@ public :
   virtual void makeAll(int bitmask = 0);
 
   // -- yield stability
-  void yieldStability(std::string dsname);
+  void yieldStability(std::string dsname, std::string trg);
 
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
