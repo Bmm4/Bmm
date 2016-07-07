@@ -22,6 +22,7 @@
 
 #include "common/dataset.hh"
 #include "common/util.hh"
+#include "common/Lumi.hh"
 
 ClassImp(plotWork)
 
@@ -448,7 +449,7 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
 
 
 // ----------------------------------------------------------------------
-void plotWork::yieldStability(string dsname) {
+void plotWork::yieldStability(string dsname, string trg) {
 
   // -- dump histograms
   cout << "fHistFile: " << fHistFileName;
@@ -470,37 +471,72 @@ void plotWork::yieldStability(string dsname) {
   bool ok = fHistFile->cd(dir.c_str());
   cout << "OK? " << ok << endl;
   if (ok) {
+    cout << "histograms exist already, looping over them" << endl;
     TIter next(gDirectory->GetListOfKeys());
     TKey *key(0);
     TH1D *hHLT(0), *hRTR(0);
-    vector<string> vds;
+    vector<int> vds;
+    int run(-1), runMin(9999999), runMax(0);
     while ((key = (TKey*)next())) {
       if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
       if (TString(key->GetName()).Contains("_HLT_")) {
 	string hname = key->GetName();
 	replaceAll(hname, "h_HLT_", "");
-	vds.push_back(hname);
+	run = atoi(hname.c_str());
+	if (run > runMax) runMax = run;
+	if (run < runMin) runMin = run;
+	vds.push_back(run);
       }
     }
 
     if (vds.size() > 0) {
+      Lumi lumi("../common/json/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      cout << "runs " << runMin << " .. " <<  runMax << endl;
+      TH1D *hRunHLT = new TH1D(Form("hRun%s", trg.c_str()), "", runMax-runMin+1, runMin, runMax); hRunHLT->Sumw2();
+
       double mBp(5.28), sBp(0.04), stepBp(5.145);
-      fIF->fLo = 4.8;
-      fIF->fHi = 6.0;
+      double xmin(5.0), xmax(5.8), ymax(0.);
+      fIF->fLo = xmin;
+      fIF->fHi = xmax;
       for (unsigned int i = 0; i < vds.size(); ++i) {
-	cout << vds[i] << endl;
-	TH1D *h1 = (TH1D*)(gDirectory->Get(Form("h_HLT_%s", vds[i].c_str())));
+	TH1D *h1 = (TH1D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
+	if (h1->Integral(1, h1->GetNbinsX()+1) < 100) continue;
 	TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
-	h1->Fit(f1, "l");
+	h1->Fit(f1, "lr", "", xmin, xmax);
+	double nNormE = f1->IntegralError(5.1, 5.4)/f1->Integral(5.1, 5.4);
+	if (nNormE < 0.1) nNormE = f1->GetParError(0)/f1->GetParameter(0);
+	f1->SetParameter(3, 0.);
+	f1->SetParameter(4, 0.);
+	f1->SetParameter(5, 0.);
+	f1->SetParameter(6, 0.);
+	double nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
+	double result = nNorm/lumi.lumi(vds[i]);
+	cout << "Run " << vds[i] << " bin: " << hRunHLT->FindBin(vds[i])
+	     << " nNorm: " << nNorm << " +/- " << nNormE*nNorm
+	     << " lumi: " << lumi.lumi(vds[i])
+	     <<  " result: " << result
+	     << endl;
+	// normalize yield to 1/pb
+	hRunHLT->SetBinContent(hRunHLT->FindBin(static_cast<double>(vds[i])), result);
+	hRunHLT->SetBinError(hRunHLT->FindBin(static_cast<double>(vds[i])), nNormE*nNorm/lumi.lumi(vds[i]));
+	if (result > ymax) ymax = result;
+	tl->DrawLatexNDC(0.2, 0.92, Form("Nsig = %4.1f +/- %4.1f", nNorm, nNormE*nNorm));
+	tl->DrawLatexNDC(0.2, 0.85, Form("%d", vds[i]));
 	c0->Modified();
 	c0->Update();
+	savePad(Form("yield-%s-%d.pdf", trg.c_str(), vds[i]));
       }
+      hRunHLT->SetMinimum(0.);
+      hRunHLT->SetMaximum(1.3*ymax);
+      hRunHLT->Draw("e");
+      savePad(Form("yield-vs-runs-%d-%s-%s.pdf", fYear, fSample.c_str(), trg.c_str()));
       return;
     }
   } else {
     TDirectory *hDir = fHistFile->mkdir(dir.c_str());
     fHistFile->cd(dir.c_str());
     hDir = gDirectory;
+    cout << "created " << hDir->GetName() << endl;
 
     TTree *t = getTree(fSample, dir);
     if (0 == t) {
@@ -509,10 +545,11 @@ void plotWork::yieldStability(string dsname) {
     }
     setupTree(t, fSample);
     fCds = fSample;
-    loopOverTree(t, 2, 4e6);
+    loopOverTree(t, 2);
 
-    cout << "writing output histograms" << endl;
+    cout << "writing output histograms: " << fYieldHLT.size() << endl;
     for (map<int, TH1D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
+      cout << "run " << it->first << endl;
       it->second->Draw();
       it->second->SetDirectory(hDir);
       it->second->Write();
@@ -524,6 +561,7 @@ void plotWork::yieldStability(string dsname) {
     }
   }
 
+  fHistFile->Write();
   fHistFile->Close();
 }
 
@@ -581,28 +619,26 @@ void plotWork::loopFunction1() {
 void plotWork::loopFunction2() {
 
 
-  if (!fGoodMuonsID) return;
+  //  if (!fGoodMuonsID) return;
 
   if (!fGoodQ) return;
   if (!fGoodPvAveW8) return;
   if (!fGoodMaxDoca) return;
-  if (!fGoodIp) return;
-  if (!fGoodIpS) return;
+
+  if (!fb.json) return;
 
   if (!fGoodLip) return;
   if (!fGoodLipS) return;
 
-  if (!fGoodCloseTrack) return;
-  if (!fGoodIso) return;
-  if (!fGoodDocaTrk) return;
-
+  if (fb.docatrk > 0.15) return;
+  if (fb.closetrk > 3) return;
+  if (fb.iso < 0.7) return;
   if (fb.fls3d < 5) return;
-  if (fb.chi2dof < 3.0) return;
-  if (fb.alpha < 0.1) return;
+  if (fb.chi2dof > 5.0) return;
+  if (fb.alpha > 0.2) return;
 
-  // if (!fGoodFLS) return;
-  // if (!fGoodAlpha) return;
-  // if (!fGoodChi2) return;
+  if (fb.pvip > 0.01) return;
+  if (fb.pvips > 3) return;
 
 
   if (TMath::Abs(fb.flsxy) < 3.0) return;
