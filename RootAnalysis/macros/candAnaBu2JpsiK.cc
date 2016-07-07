@@ -246,6 +246,7 @@ void candAnaBu2JpsiK::genMatch() {
     cout << "fGenM2Tmi = " << fGenM2Tmi << endl;
     cout << "fGenK1Tmi = " << fGenK1Tmi << endl;
   }
+
 }
 
 
@@ -432,8 +433,6 @@ void candAnaBu2JpsiK::candMatch() {
   }
 
 }
-
-
 
 
 // ----------------------------------------------------------------------
