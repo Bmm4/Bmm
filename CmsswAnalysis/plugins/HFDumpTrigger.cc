@@ -2,6 +2,7 @@
 //
 // HFDumpTrigger
 // ------------
+// 2016/07/07 Urs Langenegger      add L1 (both for stage-2 and stage-1)
 // 2016/03/22 Danek Kotlinski      modify TTrgObjv2 to include all modules in the path
 // 2016/01/22 Urs Langenegger      migrate to "consumes"
 // 2016/01/13 Danek Kotlinski      L1 work
@@ -134,15 +135,10 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     const std::vector<std::pair<std::string, bool> > masks = fGtUtil->masks();
     const std::vector<std::pair<std::string, bool> > vetoMasks = fGtUtil->vetoMasks();
 
-    // TString           fL1TNames[NL1T];
-    // int               fL1TPrescale[NL1T];
-    // bool              fL1TResult[NL1T];
-    // bool              fL1TMask[NL1T];
-    // bool              fL1TError[NL1T];
-
-
-    cout << "    Bit                  Algorithm Name                  Init    aBXM  Final   PS Factor     Masked    Veto " << endl;
-    cout << "============================================================================================================" << endl;
+    if (0) {
+      cout << "    Bit                  Algorithm Name                  Init    aBXM  Final   PS Factor     Masked    Veto " << endl;
+      cout << "============================================================================================================" << endl;
+    }
     for (unsigned int i = 0; i < initialDecisions.size(); ++i) {
       if (i >= NL1T) break;
       // get the name and trigger result
@@ -160,11 +156,11 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       bool mask    = (masks.at(i)).second;
       bool veto    = (vetoMasks.at(i)).second;
 
-      cout << std::dec << setfill(' ') << "   " << setw(5) << i << "   "
-	   << setw(40) << name.c_str() << "   " << setw(7) << resultInit
-	   << setw(7) << resultInterm << setw(7) << resultFin << setw(10) << prescale
-	   << setw(11) << mask << setw(9) << veto
-	   << endl;
+      if (0) cout << std::dec << setfill(' ') << "   " << setw(5) << i << "   "
+		  << setw(40) << name.c_str() << "   " << setw(7) << resultInit
+		  << setw(7) << resultInterm << setw(7) << resultFin << setw(10) << prescale
+		  << setw(11) << mask << setw(9) << veto
+		  << endl;
 
       gHFEvent->fL1TNames[i]    = name.c_str();
       gHFEvent->fL1TPrescale[i] = prescale;
@@ -174,8 +170,10 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
     }
     bool finOR = fGtUtil->getFinalOR();
-    cout << "--> FinalOR = " << finOR << endl;
-    cout << "===========================================================================================================" << endl;
+    if (0) {
+      cout << "--> FinalOR = " << finOR << endl;
+      cout << "===========================================================================================================" << endl;
+    }
     gHFEvent->fL1TDecision =  finOR;
   } else {
 
@@ -191,15 +189,15 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       DecisionWord const& dWord(hL1Readout->decisionWord());
       if (dWord.size() > 0) {
 	bool finOR(false);
-	cout << "----------------------------------------------------------------------" << endl;
+	if (0) cout << "----------------------------------------------------------------------" << endl;
 	int cnt(0);
 	for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
 	  if (cnt >= NL1T) break;
 	  bool result = menu->gtAlgorithmResult((algo->second).algoName(), dWord);
 	  if (result) finOR = true;
-	  cout << cnt << " L1Menu Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias()
-	       << " result: " << result
-	       << endl;
+	  if (0) cout << cnt << " L1Menu Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias()
+		      << " result: " << result
+		      << endl;
 
 	  gHFEvent->fL1TNames[cnt]    = (algo->second).algoName().c_str();
 	  gHFEvent->fL1TPrescale[cnt] = 1;
@@ -208,7 +206,7 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  gHFEvent->fL1TError[cnt]    = 0;
 	  ++cnt;
 	}
-	cout << "--> FinalOR = " << finOR << endl;
+	if (0) cout << "--> FinalOR = " << finOR << endl;
       }
     }
   }
@@ -319,11 +317,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	      <<moduleLabels.size()<<" "
 	      <<moduleIndex<<" Index "<<index<<" "<<it<<" "<<triggerIndex<<endl;
 
-	// bool lookAt =
-	//   (validTriggerNamesT.Contains("mu")) ||
-	//   (validTriggerNamesT.Contains("Mu")) ||
-	//   (validTriggerNamesT.Contains("MU"));  // select only muon triggers
-	//if(lookAt || fVerbose>98) {   // store only mu
 	if(1) {  // store all, does not cost much space
 
 	  bool isMuon =
@@ -419,28 +412,9 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 		    lastMuonIndex[m]=-1;
 		  }  //  for(m)
 		} // numMuons>0
-
 	      } // end if n>0
 	    }  // end if
 	  } // for j, modul loop
-
-	  // save only the final module (OLD OPTION)
-	  // load the trigger information to TrgObjv2
-	  // TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
-	  // pTO->fHltPath  = validTriggerNames[it];
-	  // pTO->fHltIndex  = index;
-	  // pTO->fLabel  = lastModuleLabel;
-	  // pTO->fType  = lastModuleType;
-	  // pTO->fNumber  = lastModuleIndex;
-	  // TLorentzVector v;
-	  // for(int m=0;m<numMuons;++m) {
-	  //   v.SetPtEtaPhiE(lastMuonPt[m],lastMuonEta[m],lastMuonPhi[m],lastMuonE[m]);
-	  //   pTO->fP.push_back(v);
-	  //   pTO->fID.push_back(lastMuonID[m]);
-	  //   pTO->fIndex.push_back(lastMuonIndex[m]);
-	  //   lastMuonIndex[m]=-1;
-	  // }
-
 	} // if mu
       } // if hlt passed
 
@@ -556,7 +530,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       if(fVerbose>9) cout << "===> Found L3 trigger collection -> " << L3NameCollection << " "
 			  << (n1-n0)<< endl;
     }
-  }  // if hltf
+  }
+
 
   if (fVerbose > 0)  {
     cout<<" for event "<< fNevt
@@ -584,39 +559,11 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  cout<<n<<" "<<index<<" "<<id<<" "<<p.Pt()<<" "<<p.Eta()<<" "<<p.Phi()<<endl;
 	}
       }
-    } // fVerbose
+    }
+  }
 
-  } // verbose?
 
-  // Check trigger information consistenct
-  // cout<<" my trigger summary "<<muonTrigObjects.size()<<endl;
-  // for(imto=muonTrigObjects.begin(); imto!=muonTrigObjects.end();++imto) {
-  //   int hltIndex = imto->hltIndex;
-  //   string hltPath = imto->hltPath;
-  //   int lastModuleIndex = imto->lastModuleIndex;
-  //   int lastModuleLevel = imto->lastModuleLevel;
-  //   string lastModuleLabel = imto->lastModuleLabel;
-  //   string lastModuleType = imto->lastModuleType;
-  //   vector<int> muonIndex = imto->muonIndex;
-  //   vector<int> muonID= imto->muonID;
-  //   vector<float> muonPt = imto->muonPt;
-  //   vector<float> muonEta = imto->muonEta;
-  //   vector<float> muonPhi = imto->muonPhi;
-  //   int numOfMuons = muonIndex.size();
-
-  //   cout<<" hlt "<<hltPath<<" index "<<hltIndex
-  // 	  <<" last module index "<<lastModuleIndex<<" label "
-  // 	  <<lastModuleLabel<<" type "<<lastModuleType<<" level "
-  // 	  <<lastModuleLevel<<" num of muons "<<numOfMuons
-  // 	  <<endl;
-  //   for(int i=0;i<numOfMuons;++i) {
-  // 	cout<<"muon "<<i<<" index,id,pt,eta,phi "<<muonIndex[i]<<","
-  // 	    <<muonID[i]<<","<<muonPt[i]<<","
-  // 	    <<muonEta[i]<<","<<muonPhi[i]<<endl;
-  //   } // for
-  // } // for
-
-} // the end
+}
 
 // ----------------------------------------------------------------------
 void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup) {
