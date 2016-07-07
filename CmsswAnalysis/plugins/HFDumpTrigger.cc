@@ -20,6 +20,10 @@
 #include "FWCore/Framework/interface/ESHandle.h"
 #include "FWCore/Common/interface/TriggerNames.h"
 
+#include "CondFormats/L1TObjects/interface/L1GtTriggerMenu.h"
+#include "CondFormats/DataRecord/interface/L1GtTriggerMenuRcd.h"
+#include "DataFormats/L1GlobalTrigger/interface/L1GlobalTriggerReadoutRecord.h"
+
 #include "DataFormats/Common/interface/Handle.h"
 #include "DataFormats/Common/interface/TriggerResults.h"
 
@@ -40,7 +44,6 @@
 #include "TH1.h"
 #include "TFile.h"
 #include "TDirectory.h"
-
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
@@ -60,6 +63,7 @@ using namespace std;
 using namespace edm;
 using namespace reco;
 using namespace trigger;
+using namespace l1t;
 
 
 // ----------------------------------------------------------------------
@@ -76,6 +80,15 @@ HFDumpTrigger::HFDumpTrigger(const edm::ParameterSet& iConfig):
   fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel")),
   fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)),
 
+  fL1TriggerReadoutLabel(iConfig.getUntrackedParameter<InputTag>("gtCollection", InputTag("gtDigis"))),
+  fTokenL1TriggerReadoutRecord(consumes<L1GlobalTriggerReadoutRecord>(fL1TriggerReadoutLabel)),
+
+  fAlgInputTag(iConfig.getUntrackedParameter<InputTag>("AlgInputTag", InputTag("gtStage2Digis"))),
+  fExtInputTag(iConfig.getUntrackedParameter<InputTag>("ExtInputTag", InputTag("gtStage2Digis"))),
+
+  fAlgToken(consumes<BXVector<GlobalAlgBlk> >(fAlgInputTag)),
+  fExtToken(consumes<BXVector<GlobalExtBlk> >(fExtInputTag)),
+
   fHltPrescaleProvider(iConfig, consumesCollector(), *this) {
 
   cout << "----------------------------------------------------------------------" << endl;
@@ -85,8 +98,10 @@ HFDumpTrigger::HFDumpTrigger(const edm::ParameterSet& iConfig):
   cout << "--- L1 Muons Label              : " << fL1MuonsLabel << endl;
   cout << "--- HLTResultsLabel             : " << fHLTResultsLabel << endl;
   cout << "--- Trigger Event Label         : " << fTriggerEventLabel << endl;
+  cout << "--- Trigger Digi Label          : " << fL1TriggerReadoutLabel << endl;
   cout << "----------------------------------------------------------------------" << endl;
 
+  fGtUtil      = new L1TGlobalUtil(iConfig, consumesCollector(), *this, fAlgInputTag, fExtInputTag);
 }
 
 
@@ -100,6 +115,103 @@ HFDumpTrigger::~HFDumpTrigger() {
 void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   fNevt++;
+
+  // -- 2016 L1
+  Handle<BXVector<GlobalAlgBlk>> alg;
+  iEvent.getByToken(fAlgToken, alg);
+
+  if (alg.isValid()) {
+    Handle<BXVector<GlobalExtBlk>> ext;
+    iEvent.getByToken(fExtToken, ext);
+
+    fGtUtil->retrieveL1(iEvent, iSetup, fAlgToken);
+
+    // grab the map for the final decisions
+    const std::vector<std::pair<std::string, bool> > initialDecisions = fGtUtil->decisionsInitial();
+    const std::vector<std::pair<std::string, bool> > intermDecisions = fGtUtil->decisionsInterm();
+    const std::vector<std::pair<std::string, bool> > finalDecisions = fGtUtil->decisionsFinal();
+    const std::vector<std::pair<std::string, int> >  prescales = fGtUtil->prescales();
+    const std::vector<std::pair<std::string, bool> > masks = fGtUtil->masks();
+    const std::vector<std::pair<std::string, bool> > vetoMasks = fGtUtil->vetoMasks();
+
+    // TString           fL1TNames[NL1T];
+    // int               fL1TPrescale[NL1T];
+    // bool              fL1TResult[NL1T];
+    // bool              fL1TMask[NL1T];
+    // bool              fL1TError[NL1T];
+
+
+    cout << "    Bit                  Algorithm Name                  Init    aBXM  Final   PS Factor     Masked    Veto " << endl;
+    cout << "============================================================================================================" << endl;
+    for (unsigned int i = 0; i < initialDecisions.size(); ++i) {
+      if (i >= NL1T) break;
+      // get the name and trigger result
+      std::string name = (initialDecisions.at(i)).first;
+      if (name == "NULL") continue;
+
+      bool resultInit = (initialDecisions.at(i)).second;
+
+      // get prescaled and final results (need some error checking here)
+      bool resultInterm = (intermDecisions.at(i)).second;
+      bool resultFin = (finalDecisions.at(i)).second;
+
+      // get the prescale and mask (needs some error checking here)
+      int prescale = (prescales.at(i)).second;
+      bool mask    = (masks.at(i)).second;
+      bool veto    = (vetoMasks.at(i)).second;
+
+      cout << std::dec << setfill(' ') << "   " << setw(5) << i << "   "
+	   << setw(40) << name.c_str() << "   " << setw(7) << resultInit
+	   << setw(7) << resultInterm << setw(7) << resultFin << setw(10) << prescale
+	   << setw(11) << mask << setw(9) << veto
+	   << endl;
+
+      gHFEvent->fL1TNames[i]    = name.c_str();
+      gHFEvent->fL1TPrescale[i] = prescale;
+      gHFEvent->fL1TResult[i]   = resultFin;
+      gHFEvent->fL1TMask[i]     = mask;
+      gHFEvent->fL1TError[i]    = veto;
+
+    }
+    bool finOR = fGtUtil->getFinalOR();
+    cout << "--> FinalOR = " << finOR << endl;
+    cout << "===========================================================================================================" << endl;
+    gHFEvent->fL1TDecision =  finOR;
+  } else {
+
+    // -- legacy L1
+    edm::ESHandle<L1GtTriggerMenu> menuRcd;
+    iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;
+    const L1GtTriggerMenu* menu = menuRcd.product();
+
+    edm::Handle<L1GlobalTriggerReadoutRecord> hL1Readout;
+    iEvent.getByToken(fTokenL1TriggerReadoutRecord, hL1Readout);
+
+    if (hL1Readout.isValid()) {
+      DecisionWord const& dWord(hL1Readout->decisionWord());
+      if (dWord.size() > 0) {
+	bool finOR(false);
+	cout << "----------------------------------------------------------------------" << endl;
+	int cnt(0);
+	for (CItAlgo algo = menu->gtAlgorithmMap().begin(); algo!=menu->gtAlgorithmMap().end(); ++algo) {
+	  if (cnt >= NL1T) break;
+	  bool result = menu->gtAlgorithmResult((algo->second).algoName(), dWord);
+	  if (result) finOR = true;
+	  cout << cnt << " L1Menu Name: " << (algo->second).algoName() << " Alias: " << (algo->second).algoAlias()
+	       << " result: " << result
+	       << endl;
+
+	  gHFEvent->fL1TNames[cnt]    = (algo->second).algoName().c_str();
+	  gHFEvent->fL1TPrescale[cnt] = 1;
+	  gHFEvent->fL1TResult[cnt]   = result;
+	  gHFEvent->fL1TMask[cnt]     = 1;
+	  gHFEvent->fL1TError[cnt]    = 0;
+	  ++cnt;
+	}
+	cout << "--> FinalOR = " << finOR << endl;
+      }
+    }
+  }
 
   // ----------------------------------------------------------------------
   // -- HLT results
