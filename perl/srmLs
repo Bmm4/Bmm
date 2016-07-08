@@ -18,9 +18,11 @@
 #          2013/05/07 migrate to lcg-ls
 #          2013/05/27 removed forgotten srmls
 #          2015/06/13 migrate to gfal-ls
+#          2015/07/08 migrate to xrootd instead of dcap
 # ----------------------------------------------------------------------
 
-$cprefix = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
+#$cprefix = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
+$cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 
 # -- Get arguments
 use Getopt::Std;
@@ -36,6 +38,8 @@ if ($opt_n  =~ /G/i) {$opt_n =~ s/G/000000000/ig;}
 
 $prefix = substr($opt_x, 0, index($opt_x, '/store'));
 $postfix = substr($opt_x, index($opt_x, '/store'));
+
+# -- first version with srmls
 #@filelist = `srmls $opt_x`;
 
 # -- migration to lcg-ls
