@@ -17,8 +17,9 @@
 #          2011/05/17 -C to produce only /store/... lists
 #          2013/05/07 migrate to lcg-ls
 #          2013/05/27 removed forgotten srmls
-#          2015/06/13 migrate to gfal-ls
-#          2015/07/08 migrate to xrootd instead of dcap
+#          2016/06/13 migrate to gfal-ls
+#          2016/07/08 migrate to xrootd instead of dcap
+#          2016/07/08 migrate to xrdfs instead of gfal-ls
 # ----------------------------------------------------------------------
 
 #$cprefix = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
@@ -54,12 +55,25 @@ $postfix = substr($opt_x, index($opt_x, '/store'));
 # -- migration to gfal-ls
 # assume printout of the following form:
 #-rw-r--r--   1 2     2       2754352 Jun  3 20:53 BdToKPi_step3-59971.root
-@filelist = `gfal-ls -l $opt_x`;
+#@filelist = `gfal-ls -l $opt_x`;
+#@filelist = grep(s/\ {1,99}/ /g, @filelist);
+#@filelist = grep(s/\t//g, @filelist);
+#foreach $line (@filelist) {
+#    @parts = split(/ /, $line);
+#    $line = $parts[4] . " " . $postfix . "/" . $parts[8];
+#}
+
+
+# -- migration to xrdfs
+# assume printout of the following form:
+#-rw- 2016-06-16 08:40:04   894752476 root://192.33.123.26:1094///pnfs/psi.ch/cms/trivcat/store/user/ursl/bmm4/cmsRun/v01/dstarCharmonium2016B/dstar-prompt-Run2016B-Charmonium__Run2016B-PromptReco-v01-0274998-0007.root
+#xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat/store/user/$USER/
+@filelist = `xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat$opt_x`;
 @filelist = grep(s/\ {1,99}/ /g, @filelist);
-@filelist = grep(s/\t//g, @filelist);
 foreach $line (@filelist) {
     @parts = split(/ /, $line);
-    $line = $parts[4] . " " . $postfix . "/" . $parts[8];
+    $line = substr($line, index($line, '/store'));
+    $line = $parts[3] . " " . $line;
 }
 
 my $sum = 0;
