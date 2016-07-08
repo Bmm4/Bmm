@@ -107,7 +107,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   runRange();
 
   // -- print HLT path(s) that fired
-  if (1) {
+  if (0) {
     cout << "----------------------------------------------------------------------" << endl;
     cout << "fired HLT paths" << endl;
     for (int i = 0; i < NHLT; ++i) {
