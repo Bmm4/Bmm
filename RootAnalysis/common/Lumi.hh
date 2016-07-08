@@ -27,6 +27,7 @@ public:
 
   void print();
   double lumi(int run);
+  double totalLumi(int run1 = 1, int run2 = 0);
   bool contains(int run);
 
 private:

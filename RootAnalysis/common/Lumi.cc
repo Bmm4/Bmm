@@ -66,6 +66,25 @@ double Lumi::lumi(int run) {
   return fMapRunLumi[run];
 }
 
+
+// ----------------------------------------------------------------------
+double Lumi::totalLumi(int run1, int run2) {
+
+  map<int, double>::iterator it = fMapRunLumi.begin();
+  double total = 0.;
+  for (; it != fMapRunLumi.end(); ++it) {
+    if (run1 < run2) {
+      if ((it->first >= run1) && (it->first <= run2)) {
+	total += it->second;
+      }
+    } else {
+      total += it->second;
+    }
+  }
+  return total;
+}
+
+
 // ----------------------------------------------------------------------
 bool Lumi::contains(int run) {
   return (fMapRunLumi.count(run) > 0);
