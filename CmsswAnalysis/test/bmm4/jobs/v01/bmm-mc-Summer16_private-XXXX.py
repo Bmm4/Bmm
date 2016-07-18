@@ -32,7 +32,7 @@ process.GlobalTag = GlobalTag(process.GlobalTag, '80X_mcRun2_asymptotic_Realisti
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 # ----------------------------------------------------------------------
-rootFileName = "bmm-mc-Summer15_private-XXXX.root"
+rootFileName = "bmm-mc-Summer16_private-XXXX.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
