@@ -38,6 +38,10 @@ $dataset = "bmmSingleMuon2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__SingleMuon__PromptReco/SingleMuon_Run2016B-PromptReco -s $version -r -e 200000; ";
 
+$dataset = "bmmSingleMuon2016C";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016C-XXXX.py -f ../../../catalogs/Run2016__SingleMuon__PromptReco/SingleMuon_Run2016C-PromptReco -s $version -r -e 200000; ";
+
 
 # -- fake rate jobs
 $dataset = "dstarCharmonium2015B";
