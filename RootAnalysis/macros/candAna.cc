@@ -5082,100 +5082,101 @@ void candAna::pvStudy(bool bookHist) {
   }
 
   // -- this only works for truth-matched cands (no other cand available at this point)
-  if (fCandTmi > -1) {
-    TAnaCand *pCand = fpEvt->getCand(fCandTmi);
-    TVector3 sv = pCand->fVtx.fPoint;
-    TVector3 fl;
-    TVector3 genPV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
-    if (fGenBTmi > -1) {
-      genPV = TVector3(fpEvt->getGenCand(fGenBTmi)->fV.X(), fpEvt->getGenCand(fGenBTmi)->fV.y(), fpEvt->getGenCand(fGenBTmi)->fV.Z());
-      gx = genPV.X();
-      gy = genPV.Y();
-      gz = genPV.Z();
+  if (fGenBTmi < 0) return;
+  if (fCandTmi < 0) return;
+  TAnaCand *pCand = fpEvt->getCand(fCandTmi);
+  if (0 == pCand) return;
+  if (pCand->fPvIdx2 < 0) return;
 
-      sx = genPV.X();
-      sy = genPV.Y();
-      sz = genPV.Z();
+  TVector3 sv = pCand->fVtx.fPoint;
+  TVector3 fl;
+  TVector3 genPV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
+  genPV = TVector3(fpEvt->getGenCand(fGenBTmi)->fV.X(), fpEvt->getGenCand(fGenBTmi)->fV.y(), fpEvt->getGenCand(fGenBTmi)->fV.Z());
+  gx = genPV.X();
+  gy = genPV.Y();
+  gz = genPV.Z();
 
-      p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
-      p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
-      p1z = fpEvt->getPV(pCand->fPvIdx)->fPoint.Z();
-      lz1 = pCand->fPvLip;
+  sx = genPV.X();
+  sy = genPV.Y();
+  sz = genPV.Z();
 
-      p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
-      p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
-      p2z = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z();
-      lz2 = pCand->fPvLip2;
+  p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
+  p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
+  p1z = fpEvt->getPV(pCand->fPvIdx)->fPoint.Z();
+  lz1 = pCand->fPvLip;
 
-      distPV = fpEvt->getPV(pCand->fPvIdx)->fPoint - genPV;
-      distPV2 = fpEvt->getPV(pCand->fPvIdx2)->fPoint - genPV;
+  p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
+  p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
+  p2z = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z();
+  lz2 = pCand->fPvLip2;
 
-      d1 = distPV.Mag();
-      d2 = distPV2.Mag();
+  distPV = fpEvt->getPV(pCand->fPvIdx)->fPoint - genPV;
+  distPV2 = fpEvt->getPV(pCand->fPvIdx2)->fPoint - genPV;
 
-      TVector3 plab = pCand->fPlab;
-      m =  pCand->fMass;
-      pt = plab.Perp();
-      eta = plab.Eta();
-      phi = plab.Phi();
+  d1 = distPV.Mag();
+  d2 = distPV2.Mag();
 
-      fl = sv - fpEvt->getPV(pCand->fPvIdx)->fPoint;
-      fl1 = fl.Mag();
-      a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  TVector3 plab = pCand->fPlab;
+  m =  pCand->fMass;
+  pt = plab.Perp();
+  eta = plab.Eta();
+  phi = plab.Phi();
 
-      fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
-      fl2 = fl.Mag();
-      a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  fl = sv - fpEvt->getPV(pCand->fPvIdx)->fPoint;
+  fl1 = fl.Mag();
+  a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
 
-      // -- loop over all PV in event and try out other approaches
-      int minAlphaIdx(-1);
-      double minAlpha(99.), alphaL;
-      int minPvIpIdx(-1);
-      double minPvIp(99.), pvipL;
-      npv = fpEvt->nPV();
-      d1 = d2 = 99.;
-      for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
-	fl = sv - fpEvt->getPV(ipv)->fPoint;
-	distPVL = fpEvt->getPV(ipv)->fPoint - genPV;
-	// -- best pointing angle
-	alphaL = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
-	if (alphaL < minAlpha) {
-	  minAlphaIdx = ipv;
-	  minAlpha = alphaL;
-	}
-      }
+  fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
+  fl2 = fl.Mag();
+  a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
 
-      distPVL = fpEvt->getPV(minAlphaIdx)->fPoint - genPV;
-      d3 = distPVL.Mag();
-      fl = sv - fpEvt->getPV(minAlphaIdx)->fPoint;
-      fl3 = fl.Mag();
-      a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
-      p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
-      p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
-      p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
-
-
-      // -- fill delta(z) to closest other PV
-      p1d = p2d = p3d = 99.;
-      for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
-	if (ipv != pCand->fPvIdx) {
-	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx)->fPoint.Z());
-	  if (dz < p1d) p1d = dz;
-	}
-
-	if (ipv != pCand->fPvIdx2) {
-	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z());
-	  if (dz < p2d) p2d = dz;
-	}
-
-	if (ipv != pCand->fPvIdx2) {
-	  double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(minAlphaIdx)->fPoint.Z());
-	  if (dz < p3d) p3d = dz;
-	}
-      }
-
-      fPvStudyTree->Fill();
-
+  // -- loop over all PV in event and try out other approaches
+  int minAlphaIdx(-1);
+  double minAlpha(99.), alphaL;
+  int minPvIpIdx(-1);
+  double minPvIp(99.), pvipL;
+  npv = fpEvt->nPV();
+  d1 = d2 = 99.;
+  for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+    fl = sv - fpEvt->getPV(ipv)->fPoint;
+    distPVL = fpEvt->getPV(ipv)->fPoint - genPV;
+    // -- best pointing angle
+    alphaL = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+    if (alphaL < minAlpha) {
+      minAlphaIdx = ipv;
+      minAlpha = alphaL;
     }
   }
+
+  distPVL = fpEvt->getPV(minAlphaIdx)->fPoint - genPV;
+  d3 = distPVL.Mag();
+  fl = sv - fpEvt->getPV(minAlphaIdx)->fPoint;
+  fl3 = fl.Mag();
+  a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
+  p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
+  p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
+
+
+  // -- fill delta(z) to closest other PV
+  p1d = p2d = p3d = 99.;
+  for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+    if (ipv != pCand->fPvIdx) {
+      double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx)->fPoint.Z());
+      if (dz < p1d) p1d = dz;
+    }
+
+    if (ipv != pCand->fPvIdx2) {
+      double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z());
+      if (dz < p2d) p2d = dz;
+    }
+
+    if (ipv != pCand->fPvIdx2) {
+      double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(minAlphaIdx)->fPoint.Z());
+      if (dz < p3d) p3d = dz;
+    }
+  }
+
+  fPvStudyTree->Fill();
+
 }
