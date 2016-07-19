@@ -97,22 +97,26 @@ if ($opt_p) {
 }
 
 
-# -- merge rootfiles
+# -- monSge
 if ($opt_m) {
     foreach $j (keys %catalogs) {
+	my $chdired = 0;
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	if (-d "jobs") {
+	    $chdired = 1;
 	    chdir("jobs");
 	} else {
+	    print "$j\n";
 	    if (-d "$j") {
+		$chdired = 1;
 		chdir("$j");
 	    }
 	}
 
 	if (!$opt_d) {
-	    system("monSge");
+	    system("$BMMBASE/perl/monSge");
 	}
-	chdir("..");
+	if (1 == $chdired) {chdir("..");}
     }
 
     exit(0);
