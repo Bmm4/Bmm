@@ -24,6 +24,7 @@
 # Assumptions: jobs are serialized a la asd_asd-asd-10000.py, the numbering is at the end, separated with -
 # ------------ is run in directory where the py files reside! ??? IS THIS TRUE ???
 #
+# 2016/07/19   modify jdl creation and grid job submission
 # 2016/07/18   -C now also submits new jobs (e.g. if new py files for a dataset have appeared)
 # 2016/04/15   added -l old or -l new to run on old or new nodes
 # 2016/04/05   added -b to run local jobs in the background
@@ -268,7 +269,7 @@ foreach $jobfile (@ARGV) {
 	} else {
 	     print("glite-wms-job-submit -o $jobsList -a $job.jdl\n");
 #	    system("glite-wms-job-submit -o $jobsList -a $rb --config $glite $job.jdl");
-	    system("glite-wms-job-submit -o $jobsList -a $job.jdl");
+	    system("glite-wms-job-submit -o $jobsList -a --config $glite $job.jdl");
 
 	    open(IN, ">>$jobsList") || die "Cannot open $jobsList\n";
 	    print IN "\# $timeStamp $pwd/$tdir $job.jdl\n";
@@ -308,21 +309,23 @@ sub makeJdlFile {
     $lpyfile = $ljob.".py";
     open(OUT, ">$ljob.jdl")  || die "Cannot open $ljob.jdl\n";
     my $datum = `/bin/date`; chop $datum;
-    print OUT "# created by runGrid at $datum\n";
+    print OUT "# created by ursl's run at $datum\n";
     print OUT "Executable    = \"$ljob.csh\";\n";
     print OUT "StdOutput     = \"$ljob.log\";\n";
     print OUT "StdError      = \"$ljob.err\";\n";
     print OUT "InputSandbox  ={\"$ljob.csh\", \"$ljob.jdl\", \"$lpyfile\", \"$ljob.tar.gz\", \"data_replica.py\"};\n";
     print OUT "OutputSandbox ={\"$ljob.csh\", \"$ljob.jdl\", \"$lpyfile\", \"$ljob.log\", \"$ljob.err\"};\n";
     print OUT "VirtualOrganisation = \"cms\";\n";
-    print OUT "PerusalFileEnable = true;\n";
-    print OUT "PerusalTimeInterval = 30;\n";
+#    print OUT "PerusalFileEnable = true;\n";
+#    print OUT "PerusalTimeInterval = 30;\n";
+    print OUT "Rank          = other.GlueCEStateFreeCPUs;\n";
+
     if ($opt_D) {
 	if ($opt_D eq "any") {
-	    print OUT "Requirements  = ((Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
+	    #	    print OUT "Requirements  = ((Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
 	} else {
-	    print OUT "Requirements  = ((RegExp(\"$opt_D\", other.GlueCEUniqueId))\n";
-	    print OUT "                 && (Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
+	    print OUT "Requirements  = ((RegExp(\"$opt_D\", other.GlueCEUniqueId)));\n";
+	    #	    print OUT "                 && (Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
 	}
     }
 
