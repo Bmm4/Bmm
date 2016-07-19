@@ -3,7 +3,7 @@
 # ----------------------------------------------------------------------
 #
 # Usage: cd $BMMBASE/..; $BMMBASE/perl/mkTarFile 150701.tar.gz
-# -----  cd $BMMBASE/../..; src/$BMMBASE/perl/mkTarFile -c 150701nc.tar.gz
+# -----  cd $BMMBASE/../..; $BMMBASE/perl/mkTarFile -c 150701nc.tar.gz
 #
 #          -c  complete (for jobs without compilation)
 #          -s  slim format (not supported at the moment)
@@ -26,6 +26,10 @@ $include  = "Bmm/CmsswAnalysis Bmm/RootAnalysis ";
 if ($opt_c) {
     ($include = $include) =~ s%Bmm%src/Bmm%g;
     $include .= " lib config python";
+}
+
+if ($opt_s) {
+    $include = " lib src/Bmm/RootAnalysis/rootio/lib";
 }
 
 if ($opt_i) {
