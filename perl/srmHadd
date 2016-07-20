@@ -12,6 +12,7 @@
 #
 # ----------------------------------------------------------------------
 
+my $root    = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 my $dcap    = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
 my $psi     = "srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat";
 
@@ -19,6 +20,8 @@ my $psi     = "srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/triv
 # -- Get arguments
 use Getopt::Std;
 getopts('a:do:p:x:');
+
+my $BMMBASE = $ENV{'BMMBASE'};
 
 # -- arguments for srmls
 if ($opt_a) {
@@ -32,19 +35,16 @@ if ($opt_o) {$output = $opt_o;}
 my $pattern = "\\.root\$";
 if ($opt_p) {$pattern = $opt_p;}
 
-$prefix = substr($opt_x, 0, index($opt_x, '/store'));
-@merges = `srmls $arg $opt_x`;
+@merges = `$BMMBASE/perl/srmLs -x $opt_x -c -p $pattern`;
 
 # -- prepare list
 foreach $f (@merges) {
     chop($f);
     $f =~ s/^\ *//g;
-    # print "dbx: $f\n";
+    #    print "dbx: $f\n";
     if ($f =~ /$pattern/) {
 	print "pattern found: $f\n";
-	($size, $file) = split(/ /, $f, 2);
-	($rfile = $file) =~ s/.*\/trivcat/$dcap/;
-	push(@urootfiles, $rfile);
+	push(@urootfiles, $f);
     }
 }
 @rootfiles = sort(@urootfiles);
