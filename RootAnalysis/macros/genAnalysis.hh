@@ -40,17 +40,18 @@ public:
   int          muonType(TGenCand *pCand);
   void         bbbarCrossSection();
 
-  void         printBdecays(); 
-  void         genB(); 
-  void         compare2PDG(TGenCand *pCand, int year = 2014, bool finalize = false); 
-  double       isolation(TGenCand *pCand); 
+  void         printBdecays();
+  void         validateLb2PMuNu();
+  void         genB();
+  void         compare2PDG(TGenCand *pCand, int year = 2014, bool finalize = false);
+  double       isolation(TGenCand *pCand);
 
-  void         yVsEta(); 
-  
-  int          NTOTAL; 
+  void         yVsEta();
+
+  int          NTOTAL;
   double       XSECTION;
-  
-  double       f511Mass, f521Mass, f531Mass, f5122Mass, f541Mass; 
+
+  double       f511Mass, f521Mass, f531Mass, f5122Mass, f541Mass;
 
 };
 
