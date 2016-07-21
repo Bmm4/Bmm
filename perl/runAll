@@ -26,7 +26,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('Ccdhlmo:pq:s:t:x:');
+getopts('Ccdhlmo:pq:s:t:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -57,11 +57,24 @@ while (<IN>) {
 }
 eval $gProgram;
 
-# -- merge rootfiles
+# -- merge rootfiles (this results in, e.g.,  specific *2016?-v01.root rootfiles, i.e. split according to eras
 if ($opt_h) {
     foreach $j (keys %jobs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	$command = &srmHadd($j);
+	print "$command\n";
+	if (!$opt_d) {
+	    system("$command");
+	}
+    }
+    exit(0);
+}
+
+# -- combine rootfiles into year
+if ($opt_y) {
+    foreach $j (keys %combine) {
+	if ($opt_s && !($j =~ /$opt_s/)) {next;}
+	$command = "$combine{$j}";
 	print "$command\n";
 	if (!$opt_d) {
 	    system("$command");
