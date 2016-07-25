@@ -1,3 +1,3 @@
 candAnaHh     cuts/candAnaHh.2015.cuts
 #
-JSON          ../common/json/Cert_251168-260627_13TeV_PromptReco_Collisions15_JSON_MuonPhys.txt
+JSON          ../common/json/Cert_271036-276811_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
