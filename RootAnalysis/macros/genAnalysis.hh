@@ -52,6 +52,7 @@ public:
   double       XSECTION;
 
   double       f511Mass, f521Mass, f531Mass, f5122Mass, f541Mass;
+  std::vector<std::pair<int, int> > fRunEvents;
 
 };
 

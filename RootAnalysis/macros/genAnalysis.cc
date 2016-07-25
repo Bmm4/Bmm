@@ -8,6 +8,7 @@
 #include "TPad.h"
 #include "TStyle.h"
 
+#include <algorithm>
 #include <cmath>
 #include <map>
 
@@ -127,6 +128,10 @@ void genAnalysis::yVsEta() {
 // ----------------------------------------------------------------------
 void genAnalysis::endAnalysis() {
   compare2PDG(0, 2014, true);
+
+  for (unsigned int i = 0; i < fRunEvents.size(); ++i) {
+    //    cout << fRunEvents[i].first << " " << fRunEvents[i].second << endl;
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -250,34 +255,63 @@ void genAnalysis::validateLb2PMuNu() {
   static bool first(true);
   if (first) {
     first = false;
-    new TH1D("prpt", "pupt", 40, 0., 40.);
-    new TH1D("mupt", "mupt", 40, 0., 40.);
-    new TH1D("mprmu", "mprmu", 60, 0., 6.);
+    new TH1D("prpt", "pupt", 100, 0., 50.);
+    new TH1D("mupt", "mupt", 100, 0., 50.);
+    new TH1D("preta", "pueta", 52, -2.6, 2.6);
+    new TH1D("mueta", "mueta", 52, -2.6, 2.6);
+    new TH1D("mprmu", "mprmu", 120, 0., 6.);
   }
 
-  TGenCand *pCand, *pD;
-  cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
+  int lbx, lby;
+
+  TGenCand *pCand, *pD, *pMom;
+  //  cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
 
     if (TMath::Abs(pCand->fID) == 5122) {
-      cout << "--- Event " << fEvent << " ------------------------------------------------------------------" << endl;
-      pCand->dump(2);
-      TGenCand *pPr(0), *pMu(0);
+      lbx = static_cast<int>(1000*pCand->fP.X());
+      lby = static_cast<int>(1000*pCand->fP.Y());
+      pair<int, int> runEvent(lbx, lby);
+      //      cout << lbx << " " << lby << endl;
+      bool duplicate(false);
+      for (unsigned int i = 0; i < fRunEvents.size(); ++i) {
+	if (fRunEvents[i].first == lbx && fRunEvents[i].second == lby) {
+	  duplicate = true;
+	  cout << "duplicate proton" << endl;
+	}
+      }
+      fRunEvents.push_back(runEvent);
+      // cout << "--- Event " << fEvent << " ------------------------------------------------------------------" << endl;
+      // pCand->dump(2);
+      TGenCand *pPr(0), *pMu(0), *pNu(0);
       for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
 	pD = fpEvt->getGenCand(iD);
-	pD->dump(2);
-	//	cout << "pT: " << pD->fP.Perp() << " eta: " << pD->fP.Eta() << endl;
+	pMom = fpEvt->getGenCand(pD->fMom1);
+	// skip daughters that are not direct daughters of Lb (this removes Lb -> Lc X)
+	if (TMath::Abs(pMom->fID) != 5122) continue;
 	if (TMath::Abs(pD->fID) == 13) {
 	  pMu = pD;
-	  ((TH1D*)gDirectory->Get("mupt"))->Fill(pD->fP.Perp());
 	}
 	if (TMath::Abs(pD->fID) == 2212) {
 	  pPr = pD;
-	  ((TH1D*)gDirectory->Get("prpt"))->Fill(pD->fP.Perp());
+	}
+	if (TMath::Abs(pD->fID) == 14) {
+	  pNu = pD;
 	}
       }
-      if (pPr && pMu) {
+      if (pPr && pMu && pNu) {
+	if (pPr->fP.Perp() < 3.5 || pMu->fP.Perp() < 3.5) {
+	  cout << "--- Event " << fEvent << " ------------------------------------------------------------------" << endl;
+	  pCand->dump(2);
+	  pPr->dump(2);
+	  pMu->dump(2);
+	  pNu->dump(2);
+	}
+	((TH1D*)gDirectory->Get("mupt"))->Fill(pMu->fP.Perp());
+	((TH1D*)gDirectory->Get("prpt"))->Fill(pPr->fP.Perp());
+	((TH1D*)gDirectory->Get("mueta"))->Fill(pMu->fP.Eta());
+	((TH1D*)gDirectory->Get("preta"))->Fill(pPr->fP.Eta());
 	TLorentzVector m = pPr->fP + pMu->fP;
 	((TH1D*)gDirectory->Get("mprmu"))->Fill(m.M());
       }
