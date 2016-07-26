@@ -18,7 +18,7 @@
 # -- submit runBmm jobs
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -h
-#
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -y -s bmmCharmonium2016
 #
 # ----------------------------------------------------------------------
 
