@@ -46,9 +46,9 @@ my $NMC = 200000;
 # -----------------------------------------------
 # -- combinations
 # -----------------------------------------------
-$combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd bmm-data-bmmCharmonium2015.root bmm-data-bmmCharmonium2015?-*.root; cd - ";
-$combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd bmm-data-bmmCharmonium2016.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
-$combine{"bmmSingleMuon2016"} = "cd $SCRATCH; hadd bmm-data-bmmSingleMuon2016.root bmm-data-bmmSingleMuon2016?-*.root; cd -  ";
+$combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2015-$version.root bmm-data-bmmCharmonium2015?-*.root; cd - ";
+$combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
+$combine{"bmmSingleMuon2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmSingleMuon2016-$version.root bmm-data-bmmSingleMuon2016?-*.root; cd -  ";
 
 
 # -----------------------------------------------
