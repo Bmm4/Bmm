@@ -10,7 +10,8 @@
 
 #include "ana.hh"
 
-using namespace std; 
+using namespace std;
+
 
 // ----------------------------------------------------------------------
 int  numberOfBPixLayers(TAnaTrack *pTrack) {
@@ -26,7 +27,7 @@ int  numberOfBPixLayers(TAnaTrack *pTrack) {
     else if( pat == 0x498 ) layer3 = true;
   }
   //cout<<dec<<endl;
-  
+
   int pixHits(0);
   if(layer1) {pixHits++;}
   if(layer2) {pixHits++;}
@@ -51,7 +52,7 @@ int numberOfPixLayers(TAnaTrack *pTrack) {
     else if( pat == 0x510 ) disk2 = true;
   }
   //cout<<dec<<endl;
-  
+
   int pixHits=0;
   if(layer1) {pixHits++;}
   if(layer2) {pixHits++;}
@@ -66,7 +67,7 @@ int numberOfPixLayers(TAnaTrack *pTrack) {
 // ----------------------------------------------------------------------
 int numberOfPixelHits(TAnaTrack *pTrack) {
   int hits = pTrack->fValidHits;
-  int pixhits(0); 
+  int pixhits(0);
   if (hits>20) hits=20; // pattern has only 20 locations
   for (int i =0; i<hits; ++i){
     unsigned int pat = pTrack->fHitPattern[i];
@@ -78,7 +79,7 @@ int numberOfPixelHits(TAnaTrack *pTrack) {
     else if( pat == 0x510 )  ++pixhits;
   }
   //cout<<dec<<endl;
-  
+
   return pixhits;
 }
 
@@ -131,51 +132,51 @@ int  numberOfBPixLayer1Hits(TAnaTrack *pTrack) {
 //      bad      = there were many bad strips within the ellipse = 3
 // ----------------------------------------------------------------------
 int  numberOfTrackerLayers(TAnaTrack *pTrack) {
-  cout << "numberOfTrackerLayers: " << pTrack << endl; 
-  bool pixl[3], tibl[4], tobl[6]; 
+  cout << "numberOfTrackerLayers: " << pTrack << endl;
+  bool pixl[3], tibl[4], tobl[6];
   bool pixd[2], tidw[3], tecw[9];
 
-  for (int i = 0; i < 3; ++i) pixl[i] = false; 
-  for (int i = 0; i < 4; ++i) tibl[i] = false; 
-  for (int i = 0; i < 6; ++i) tobl[i] = false; 
+  for (int i = 0; i < 3; ++i) pixl[i] = false;
+  for (int i = 0; i < 4; ++i) tibl[i] = false;
+  for (int i = 0; i < 6; ++i) tobl[i] = false;
 
-  for (int i = 0; i < 2; ++i) pixd[i] = false; 
-  for (int i = 0; i < 3; ++i) tidw[i] = false; 
-  for (int i = 0; i < 9; ++i) tecw[i] = false; 
+  for (int i = 0; i < 2; ++i) pixd[i] = false;
+  for (int i = 0; i < 3; ++i) tidw[i] = false;
+  for (int i = 0; i < 9; ++i) tecw[i] = false;
 
   int hits = pTrack->fValidHits;
   if (hits>20) hits=20; // pattern has only 20 locations
   //  cout << "----------------------------------------------------------------------" << endl;
-  int hit(0), hitmask(3); 
-  int det(0), detpos(7), detmask(0); 
-  int lay(0), layerpos(3), layermask(0); 
+  int hit(0), hitmask(3);
+  int det(0), detpos(7), detmask(0);
+  int lay(0), layerpos(3), layermask(0);
   detmask = 0x7 << detpos;
   layermask = 0xf << layerpos;
   //  cout << "detmask = " << std::hex << detmask << " laymask = " << layermask << std::dec << endl;
 
   for (int i =0; i<hits; ++i){
-    cout << " ihit = " << i << " " << endl; 
+    cout << " ihit = " << i << " " << endl;
     unsigned int pat = pTrack->fHitPattern[i];
-    
+
     hit = (pat & hitmask);
-    det = 0; 
-    det = (pat & detmask)>>detpos; 
-    lay = 0; 
-    lay = (pat & layermask)>>layerpos; 
-    cout << "  det = " << det << " lay = " << lay << endl; 
+    det = 0;
+    det = (pat & detmask)>>detpos;
+    lay = 0;
+    lay = (pat & layermask)>>layerpos;
+    cout << "  det = " << det << " lay = " << lay << endl;
     //    lay = lay - 1; // FIXME this line is necessary to be correct. But you should use TAnaTrack::fNumberOfValidTrkHits anyway!
-    if ((1 == det) && (0 == hit)) pixl[lay] = true; 
-    if ((2 == det) && (0 == hit)) pixd[lay] = true; 
-	 	       	      
-    if ((3 == det) && (0 == hit)) tibl[lay] = true; 
-    if ((4 == det) && (0 == hit)) tidw[lay] = true; 
-	 	       	      
-    if ((5 == det) && (0 == hit)) tobl[lay] = true; 
-    if ((6 == det) && (0 == hit)) tecw[lay] = true; 
+    if ((1 == det) && (0 == hit)) pixl[lay] = true;
+    if ((2 == det) && (0 == hit)) pixd[lay] = true;
+
+    if ((3 == det) && (0 == hit)) tibl[lay] = true;
+    if ((4 == det) && (0 == hit)) tidw[lay] = true;
+
+    if ((5 == det) && (0 == hit)) tobl[lay] = true;
+    if ((6 == det) && (0 == hit)) tecw[lay] = true;
 
   }
-  
-  int trkHits(0); 
+
+  int trkHits(0);
   for (int i = 0; i < 3; ++i) {
     if (pixl[i]) {
       ++trkHits;
@@ -184,31 +185,31 @@ int  numberOfTrackerLayers(TAnaTrack *pTrack) {
 
   for (int i = 0; i < 4; ++i) {
     if (tibl[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 6; ++i) {
     if (tobl[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 2; ++i) {
     if (pixd[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 3; ++i) {
     if (tidw[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
 
   for (int i = 0; i < 9; ++i) {
     if (tecw[i]) {
-      ++trkHits; 
+      ++trkHits;
     }
   }
   return trkHits;
@@ -218,9 +219,9 @@ int  numberOfTrackerLayers(TAnaTrack *pTrack) {
 
 // ----------------------------------------------------------------------
 bool tightMuon(TAnaMuon *pM, bool hadronsPass, int year) {
-  
-  const int verbose(0); 
-  
+
+  const int verbose(0);
+
 // FIXME
 //   if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
 //     return true;
@@ -236,37 +237,37 @@ bool tightMuon(TAnaMuon *pM, bool hadronsPass, int year) {
   bool muflag = ((pM->fMuID & 0x40) == 0x40);
   if (verbose) cout << "muflag: " << hex << pM->fMuID << dec << " -> " << muflag << endl;
 
-  bool mucuts(true); 
-  if (pM->fGtrkNormChi2 > 10.) mucuts = false; 
-  if (pM->fNvalidMuonHits < 1) mucuts = false; 
-  if (pM->fNmatchedStations < 2) mucuts = false; 
+  bool mucuts(true);
+  if (pM->fGtrkNormChi2 > 10.) mucuts = false;
+  if (pM->fNvalidMuonHits < 1) mucuts = false;
+  if (pM->fNmatchedStations < 2) mucuts = false;
   if (verbose) cout << "matched muon stations: " << pM->fNmatchedStations << " -> " << mucuts << endl;
-  
-  bool trackcuts(true); 
+
+  bool trackcuts(true);
 
   if (numberOfPixLayers(pM) < 1) trackcuts = false;
   if (verbose)  cout << "pixel layers: " << numberOfPixLayers(pM) << " -> " << trackcuts << endl;
 
   int trkHits    = pM->fLayersWithHits;
-  
+
   if (year > 0) {
     if (year == 2011) {
-      if (trkHits < 9) trackcuts = false; 
+      if (trkHits < 9) trackcuts = false;
       if (verbose)  cout << "valid hits: " << pM->fValidHits << " trackHist: " << trkHits << " -> " << trackcuts << endl;
     } else if (year == 2012) {
-      if (trkHits < 6) trackcuts = false; 
+      if (trkHits < 6) trackcuts = false;
       if (verbose)  cout << "number of tracker layers: " << trkHits << " -> " << trackcuts << endl;
     }
   } else {
-    if (trkHits < 6) trackcuts = false; 
-    if (pM->fValidHits < 11) trackcuts = false; 
+    if (trkHits < 6) trackcuts = false;
+    if (pM->fValidHits < 11) trackcuts = false;
     if (verbose)  cout << "valid hits: " << pM->fValidHits << " -> " << trackcuts << endl;
   }
 
 
   if (muflag && mucuts && trackcuts) {
     if (verbose) cout << " +++ passed " << endl;
-    return true; 
+    return true;
   } else {
     //cout<<" failed "<<endl;
     return false;
