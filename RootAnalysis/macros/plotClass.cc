@@ -84,7 +84,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = 2.7 fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 13.1 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
   if (setup == "") fSuffix = Form("%d", fYear);
 
@@ -155,7 +155,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   // -- initialize cuts
   cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
-  readCuts(Form("%s", cuts.c_str()));
+  readCuts(Form("%s/%s", fDirectory.c_str(), cuts.c_str()));
   fNchan = fCuts.size();
 }
 
@@ -462,8 +462,8 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("closetrk",&fb.closetrk);
   t->SetBranchAddress("pvlip",   &fb.pvlip);
   t->SetBranchAddress("pvlips",  &fb.pvlips);
-  t->SetBranchAddress("pvlip2",  &fb.pvlip2);
-  t->SetBranchAddress("pvlips2", &fb.pvlips2);
+  t->SetBranchAddress("pv2lip",  &fb.pv2lip);
+  t->SetBranchAddress("pv2lips", &fb.pv2lips);
   t->SetBranchAddress("maxdoca", &fb.maxdoca);
   t->SetBranchAddress("pvip",    &fb.pvip);
   t->SetBranchAddress("pvips",   &fb.pvips);
@@ -737,8 +737,8 @@ void plotClass::candAnalysis(/*int mode*/) {
     if (0 == fb.k2gt)  fGoodAcceptance = false;
 
     if (fb.dr   > 0.3) fGoodJpsiCuts = false;
-    if (fb.mkk  < 0.995) fGoodJpsiCuts = false;
-    if (fb.mkk  > 1.045) fGoodJpsiCuts = false;
+    if (fb.mkk  < 1.01) fGoodJpsiCuts = false;
+    if (fb.mkk  > 1.03) fGoodJpsiCuts = false;
   }
 
   if (bs2jpsiphi || bp2jpsikp) {
@@ -914,34 +914,6 @@ void plotClass::candAnalysis(/*int mode*/) {
 }
 
 
-// ----------------------------------------------------------------------
-int plotClass::detChan(double m1eta, double m2eta) {
-  // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-  //old   if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
-  //old   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
-
-
-  double m1 = TMath::Abs(m1eta);
-  double m2 = TMath::Abs(m2eta);
-
-  int im1(-1), im2(-1);
-  for (int ichan = 0; ichan < fNchan; ++ichan) {
-    if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-      im1 = ichan;
-      break;
-    }
-  }
-
-  for (int ichan = 0; ichan < fNchan; ++ichan) {
-    if ((m2 > fCuts[ichan]->metaMin) && (m2 < fCuts[ichan]->metaMax)) {
-      im2 = ichan;
-      break;
-    }
-  }
-  if ((im1 < 0) || (im2 < 0)) return -1;
-  return (im1>im2?im1:im2);
-}
-
 
 // ----------------------------------------------------------------------
 TTree* plotClass::getTree(string ds, string dir) {
@@ -1055,8 +1027,8 @@ void plotClass::calcBDT() {
   frd.closetrks2 = fb.closetrks2;
   frd.closetrks3 = fb.closetrks3;
 
-  frd.pvlip2  = fb.pvlip2;
-  frd.pvlips2 = fb.pvlips2;
+  frd.pv2lip  = fb.pv2lip;
+  frd.pv2lips = fb.pv2lips;
 
   frd.m  = fb.m;
   int remainder = TMath::Abs(fb.evt%3);
@@ -1190,13 +1162,13 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
           cout << " pvdchi2";
           reader->AddVariable( "pvdchi2", &rd.pvdchi2);
         }
-        if (stype == "pvlip2") {
-          cout << " pvlip2";
-          reader->AddVariable( "pvlip2", &rd.pvlip2);
+        if (stype == "pv2lip") {
+          cout << " pv2lip";
+          reader->AddVariable( "pv2lip", &rd.pv2lip);
         }
-        if (stype == "pvlips2") {
-          cout << " pvlips2";
-          reader->AddVariable( "pvlips2", &rd.pvlips2);
+        if (stype == "pv2lips") {
+          cout << " pv2lips";
+          reader->AddVariable( "pv2lips", &rd.pv2lips);
         }
       }
       break;
@@ -1232,191 +1204,220 @@ TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
   return reader;
 }
 
+// ----------------------------------------------------------------------
+void plotClass::readFile(string filename, vector<string> &lines) {
+  cout << "    readFile " << filename << endl;
+  char  buffer[200];
+  ifstream is(filename.c_str());
+  if (!is) {
+    cout << "file ->" << filename << "<- not found, exit(1)" << endl;
+    exit(1);
+  }
+  char input[1000];
+  while (is.getline(buffer, 200, '\n')) {
+    if (buffer[0] != '+') {
+      lines.push_back(string(buffer));
+    } else {
+      sscanf(buffer, "+input %s", input);
+      readFile(input, lines);
+    }
+  }
+}
 
 // ----------------------------------------------------------------------
 void plotClass::readCuts(string filename) {
   cout << "==> plotClass: Reading " << filename << " for cut settings" << endl;
   vector<string> cutLines;
-  char  buffer[200];
-  ifstream is(filename.c_str());
-  while (is.getline(buffer, 200, '\n')) {
-    cutLines.push_back(string(buffer));
-  }
+  readFile(filename, cutLines);
 
-  char CutName[100], XmlName[1000];
-  float CutValue;
-  int dump(0), ok(0);
+  float cutvalue;
+  int dump(1), ok(0);
+  string cutname("nada");
 
   cuts *a = 0;
 
   fCuts.clear();
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
-    sprintf(buffer, "%s", cutLines[i].c_str());
-
-    ok = 0;
-    if (buffer[0] == '#') {continue;}
-    if (buffer[0] == '/') {continue;}
-    sscanf(buffer, "%s %f", CutName, &CutValue);
-
-    if (!strcmp(CutName, "index")) {
-      ok = 1;
-      if (dump) cout << "index:            " << CutValue << endl;
-      if (a) fCuts.push_back(a);
-      a = new cuts;
-      a->index = static_cast<int>(CutValue);
+    if (string::npos != cutLines[i].find("nchan")) {
+      cleanupString(cutLines[i]);
+      vector<string> lineItems = split(cutLines[i], ' ');
+      fNchan = atoi(lineItems[1].c_str());
     }
-
-    if (!strcmp(CutName, "mBdLo")) {
-      a->mBdLo = CutValue; ok = 1;
-      if (dump) cout << "mBdLo:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "mBdHi")) {
-      a->mBdHi = CutValue; ok = 1;
-      if (dump) cout << "mBdHi:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "mBsLo")) {
-      a->mBsLo = CutValue; ok = 1;
-      if (dump) cout << "mBsLo:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "mBsHi")) {
-      a->mBsHi = CutValue; ok = 1;
-      if (dump) cout << "mBsHi:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "etaMin")) {
-      a->etaMin = CutValue; ok = 1;
-      if (dump) cout << "etaMin:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "etaMax")) {
-      a->etaMax = CutValue; ok = 1;
-      if (dump) cout << "etaMax:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pt")) {
-      a->pt = CutValue; ok = 1;
-      if (dump) cout << "pt:                   " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m1pt")) {
-      a->m1pt = CutValue; ok = 1;
-      if (dump) cout << "m1pt:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "m2pt")) {
-      a->m2pt = CutValue; ok = 1;
-      if (dump) cout << "m2pt:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "metaMin")) {
-      a->metaMin = CutValue; ok = 1;
-      if (dump) cout << "metaMin:              " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "metaMax")) {
-      a->metaMax = CutValue; ok = 1;
-      if (dump) cout << "metaMax:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "iso")) {
-      a->iso = CutValue; ok = 1;
-      if (dump) cout << "iso:                   " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "chi2dof")) {
-      a->chi2dof = CutValue; ok = 1;
-      if (dump) cout << "chi2dof:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "alpha")) {
-      a->alpha = CutValue; ok = 1;
-      if (dump) cout << "alpha:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "fls3d")) {
-      a->fls3d = CutValue; ok = 1;
-      if (dump) cout << "fls3d:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "docatrk")) {
-      a->docatrk = CutValue; ok = 1;
-      if (dump) cout << "docatrk:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "maxdoca")) {
-      a->maxdoca = CutValue; ok = 1;
-      if (dump) cout << "maxdoca:               " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "closetrk")) {
-      a->closetrk = static_cast<int>(CutValue); ok = 1;
-      if (dump) cout << "closetrk:              " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvip")) {
-      a->pvip = CutValue; ok = 1;
-      if (dump) cout << "pvip:                  " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvips")) {
-      a->pvips = CutValue; ok = 1;
-      if (dump) cout << "pvips:                 " << CutValue << endl;
-    }
-
-
-    if (!strcmp(CutName, "pvlip")) {
-      a->pvlip = CutValue; ok = 1;
-      if (dump) cout << "pvlip:                 " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvlips")) {
-      a->pvlips = CutValue; ok = 1;
-      if (dump) cout << "pvlips:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvlip2")) {
-      a->pvlip2 = CutValue; ok = 1;
-      if (dump) cout << "pvlip2:                " << CutValue << endl;
-    }
-
-    if (!strcmp(CutName, "pvlips2")) {
-      a->pvlips2 = CutValue; ok = 1;
-      if (dump) cout << "pvlips2:               " << CutValue << endl;
-    }
-
-
-
-    sscanf(buffer, "%s %s", CutName, XmlName);
-    string ctmp = CutName;
-    string sXmlName;
-    replaceAll(ctmp, " ", "");
-    if (!strcmp(ctmp.c_str(), "xml")) {
-      a->xmlFile = XmlName; ok = 1;
-      sXmlName = "weights/" + a->xmlFile + "-Events0_BDT.weights.xml";
-      //      fReaderEvents0.push_back(setupReader(sXmlName, frd));
-      TMVA::Reader *ar = setupReader(sXmlName, frd);
-      fReaderEvents0[a->index] = ar;
-      sXmlName = "weights/" + a->xmlFile + "-Events1_BDT.weights.xml";
-      //      fReaderEvents1.push_back(setupReader(sXmlName, frd));
-      ar = setupReader(sXmlName, frd);
-      fReaderEvents1[a->index] = ar;
-      sXmlName = "weights/" + a->xmlFile + "-Events2_BDT.weights.xml";
-      //      fReaderEvents2.push_back(setupReader(sXmlName, frd));
-      ar = setupReader(sXmlName, frd);
-      fReaderEvents2[a->index] = ar;
-    }
-
-    if (!ok) cout << "==> what about " << CutName << endl;
   }
 
-  if (a) fCuts.push_back(a);
+  if (fNchan < 1) {
+    cout << "no analysis channels found?!" << endl;
+  } else {
+    cout << "creating " << fNchan << " analysis channels" << endl;
+  }
+
+  for (int i = 0; i < fNchan; ++i) {
+    a = new cuts;
+    a->index = i;
+    fCuts.push_back(a);
+  }
+
+  for (unsigned int i = 0; i < cutLines.size(); ++i) {
+    cleanupString(cutLines[i]);
+    vector<string> lineItems = split(cutLines[i], ' ');
+    if (lineItems.size() < 2) {
+      //      cout << "no complete cut line provided ->" << cutLines[i] << "<-" << endl;
+      continue;
+    }
+    cutname  = lineItems[0];
+
+    for (unsigned int j = 1; j < lineItems.size(); ++j) {
+      a = fCuts[j-1];
+
+      cutvalue = atof(lineItems[j].c_str());
+
+      if (cutname == "mBdLo") {
+	a->mBdLo = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBdLo:                " << cutvalue << endl;
+      }
+
+      if (cutname == "mBdHi") {
+	a->mBdHi = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBdHi:                " << cutvalue << endl;
+      }
+
+      if (cutname == "mBsLo") {
+	a->mBsLo = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBsLo:                " << cutvalue << endl;
+      }
+
+      if (cutname == "mBsHi") {
+	a->mBsHi = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBsHi:                " << cutvalue << endl;
+      }
+
+      if (cutname == "etaMin") {
+	a->etaMin = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "etaMin:               " << cutvalue << endl;
+      }
+
+      if (cutname == "etaMax") {
+	a->etaMax = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "etaMax:               " << cutvalue << endl;
+      }
+
+      if (cutname == "pt") {
+	a->pt = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pt:                   " << cutvalue << endl;
+      }
+
+      if (cutname == "m1pt") {
+	a->m1pt = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "m1pt:                 " << cutvalue << endl;
+      }
+
+      if (cutname == "m2pt") {
+	a->m2pt = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "m2pt:                 " << cutvalue << endl;
+      }
+
+      if (cutname == "iso") {
+	a->iso = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "iso:                   " << cutvalue << endl;
+      }
+
+      if (cutname == "chi2dof") {
+	a->chi2dof = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "chi2dof:               " << cutvalue << endl;
+      }
+
+      if (cutname == "alpha") {
+	a->alpha = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "alpha:                 " << cutvalue << endl;
+      }
+
+      if (cutname == "fls3d") {
+	a->fls3d = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "fls3d:                 " << cutvalue << endl;
+      }
+
+      if (cutname == "docatrk") {
+	a->docatrk = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "docatrk:               " << cutvalue << endl;
+      }
+
+      if (cutname == "maxdoca") {
+	a->maxdoca = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "maxdoca:               " << cutvalue << endl;
+      }
+
+      if (cutname == "closetrk") {
+	a->closetrk = static_cast<int>(cutvalue); ok = 1;
+	if (dump) cout << j-1 << " " << "closetrk:              " << cutvalue << endl;
+      }
+
+      if (cutname == "pvip") {
+	a->pvip = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pvip:                  " << cutvalue << endl;
+      }
+
+      if (cutname == "pvips") {
+	a->pvips = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pvips:                 " << cutvalue << endl;
+      }
+
+
+      if (cutname == "pvlip") {
+	a->pvlip = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pvlip:                 " << cutvalue << endl;
+      }
+
+      if (cutname == "pvlips") {
+	a->pvlips = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pvlips:                " << cutvalue << endl;
+      }
+
+      if (cutname == "pv2lip") {
+	a->pv2lip = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pv2lip:                " << cutvalue << endl;
+      }
+
+      if (cutname == "pv2lips") {
+	a->pv2lips = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "pv2lips:               " << cutvalue << endl;
+      }
+
+    }
+
+    if (!ok) cout << "==> what about " << cutname << endl;
+  }
 
   cout << "==> finished reading cut setting, fCuts.size() =  " << fCuts.size() << endl;
 
+}
+
+// ----------------------------------------------------------------------
+int plotClass::detChan(double m1eta, double m2eta) {
+// -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
+  //old   if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
+  //old   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
+
+
+  double m1 = TMath::Abs(m1eta);
+  double m2 = TMath::Abs(m2eta);
+
+  int im1(-1), im2(-1);
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
+      im1 = ichan;
+      break;
+    }
+  }
+
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m2 > fCuts[ichan]->metaMin) && (m2 < fCuts[ichan]->metaMax)) {
+      im2 = ichan;
+      break;
+    }
+  }
+  if ((im1 < 0) || (im2 < 0)) return -1;
+  return (im1>im2?im1:im2);
 }
 
 
@@ -1600,29 +1601,21 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "pvlip2     ";
+  OUT << "pv2lip     ";
   fTEX << Form("\\vdef{%s:liptwo:var}  {\\ensuremath{{\\pvliptwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->pvlip2);
-    fTEX <<  Form("\\vdef{%s:pvlip2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlip2) << endl;
+    OUT << Form("%10.3f", fCuts[i]->pv2lip);
+    fTEX <<  Form("\\vdef{%s:pv2lip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pv2lip) << endl;
   }
   OUT << endl;
 
-  OUT << "pvlips2    ";
+  OUT << "pv2lips    ";
   fTEX << Form("\\vdef{%s:lipstwo:var}  {\\ensuremath{{\\pvlipstwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->pvlips2);
-    fTEX <<  Form("\\vdef{%s:pvlips2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvlips2) << endl;
+    OUT << Form("%10.3f", fCuts[i]->pv2lips);
+    fTEX <<  Form("\\vdef{%s:pv2lips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pv2lips) << endl;
   }
   OUT << endl;
-
-  // OUT << "xmlFile    ";
-  // for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-  //   OUT << Form("%10s", fCuts[i]->xmlFile.c_str());
-  //   fTEX <<  Form("\\vdef{%s:xmlFile:%d}   {%s } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->xmlFile.c_str()) << endl;
-  // }
-  // OUT << endl;
-
 
   OUT.flush();
 
@@ -1705,6 +1698,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
       }
 
       if (string::npos != stype.find("bupsik,")) {
@@ -1716,6 +1710,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
       }
 
       if (string::npos != stype.find("bspsiphi,")) {
@@ -1727,6 +1722,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
       }
 
       if (string::npos != stype.find("bdpsikstar,")) {
@@ -1738,6 +1734,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
       }
 
     } else if (string::npos != stype.find("mc")) {

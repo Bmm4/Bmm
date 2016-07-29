@@ -447,6 +447,24 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
 
 }
 
+// ----------------------------------------------------------------------
+void plotWork::fitJpsiPhi(string ds1) {
+  // TTree *t = getTree(fSample, dir);
+  // if (0 == t) {
+  //   cout << "tree for sample = " << fSample << " not found" << endl;
+  //   return;
+  // }
+
+  // TH1D *h0 = new TH1D("h0", "h0", 80, 5.0, 5.8);
+  // TH1D *h1 = new TH1D("h1", "h1", 80, 5.0, 5.8);
+  // TH1D *h2 = new TH1D("h2", "h2", 80, 5.0, 5.8);
+
+  // string cuts = ds1 + ;
+  // t->Draw("m>>h0",
+
+
+}
+
 
 // ----------------------------------------------------------------------
 void plotWork::yieldStability(string dsname, string trg) {

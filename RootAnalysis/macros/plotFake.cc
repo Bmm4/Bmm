@@ -289,8 +289,8 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("closetrk",&fb.closetrk);
   t->SetBranchAddress("pvlip",   &fb.pvlip);
   t->SetBranchAddress("pvlips",  &fb.pvlips);
-  t->SetBranchAddress("pvlip2",  &fb.pvlip2);
-  t->SetBranchAddress("pvlips2", &fb.pvlips2);
+  t->SetBranchAddress("pv2lip",  &fb.pv2lip);
+  t->SetBranchAddress("pv2lips", &fb.pv2lips);
   t->SetBranchAddress("maxdoca", &fb.maxdoca);
   t->SetBranchAddress("pvip",    &fb.pvip);
   t->SetBranchAddress("pvips",   &fb.pvips);

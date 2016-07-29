@@ -475,12 +475,12 @@ void plotReducedOverlays::loopFunction1() {
 
   // bool closePV(false);
   // if (1 == fChan) {
-  //   closePV = (fb.pvlip2 < 0.15 && fb.pvlip2 > 0.04);
+  //   closePV = (fb.pv2lip < 0.15 && fb.pv2lip > 0.04);
   // } else {
-  //   closePV = (fb.pvlip2 < 0.15 && fb.pvlip2 > 0.02);
+  //   closePV = (fb.pv2lip < 0.15 && fb.pv2lip > 0.02);
   // }
 
-  // bool farPV   = (fb.pvlip2 > 0.5);
+  // bool farPV   = (fb.pv2lip > 0.5);
 
 
   if (fb.hlt && fGoodMuonsID && (fBDT > -1.) && fb.fls3d > 10) {
@@ -1260,8 +1260,8 @@ void plotReducedOverlays::fillDistributions() {
   fAdMap[mapname]->fpLip->fill(fb.pvlip, mass);
   fAdMap[mapname]->fpLipS->fill(fb.pvlips, mass);
 
-  fAdMap[mapname]->fpLip2->fill(fb.pvlip2, mass);
-  fAdMap[mapname]->fpLipS2->fill(fb.pvlips2, mass);
+  fAdMap[mapname]->fpLip2->fill(fb.pv2lip, mass);
+  fAdMap[mapname]->fpLipS2->fill(fb.pv2lips, mass);
   fAdMap[mapname]->fpLastCut->fill(mass, mass);
 
   fAdMap[mapname]->fpOtherVtx->fill(fb.othervtx, mass);
@@ -1441,6 +1441,7 @@ void plotReducedOverlays::loadFiles(string afiles) {
 	ds->fBf     = 1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
       }
 
     } else if (string::npos != stype.find("mc")) {

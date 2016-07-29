@@ -35,6 +35,7 @@
 #include "common/initFunc.hh"
 
 #include "redTreeData.hh"
+#include "cuts.hh"
 
 // -- TMVA related
 #include "TMVA/Factory.h"
@@ -49,21 +50,7 @@ struct readerData {
   float closetrks1, closetrks2, closetrks3;
   float m1iso, m2iso;
   float pvdchi2, othervtx;
-  float pvlip2, pvlips2;
-};
-
-
-
-struct cuts {
-  int index;
-  std::string xmlFile;
-  double mBdLo, mBdHi, mBsLo, mBsHi;
-  double etaMin, etaMax, pt;
-  double m1pt, m2pt, metaMin, metaMax;
-  double iso, chi2dof, alpha, fls3d, docatrk;
-  double closetrk, pvlip, pvlips;
-  double maxdoca, pvlip2, pvlips2;
-  double pvip, pvips;
+  float pv2lip, pv2lips;
 };
 
 
@@ -88,10 +75,11 @@ public :
   virtual void   loopFunction2();
 
   // -- physics utilities
-  int            detChan(double m1eta, double m2eta);
 
+  int            detChan(double m1eta, double m2eta);
   void           closeHistFile();
-  virtual void   readCuts(std:: string filename);
+  virtual void   readCuts(std::string filename);
+  void           readFile(std::string filename, std::vector<std::string> &lines);
   virtual void   printCuts(ostream &OUT);
 
   virtual void   loadFiles(std::string afiles);

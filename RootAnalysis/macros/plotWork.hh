@@ -24,6 +24,10 @@ public :
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg);
 
+  // -- fitting studies
+  void fitJpsiPhi(string ds1);
+
+
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
   void plotTisEfficiency(std::string dsname);
@@ -32,6 +36,8 @@ public :
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
   void efficiencyVariable(std::string var, std::string effvar = "hlt", int iselection = 10,
 			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
+
+
 
 
   std::string removeVarFromSelection(std::string var, std::string selection);
