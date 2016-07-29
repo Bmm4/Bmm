@@ -9,9 +9,11 @@
 #include <TH2.h>
 
 #include "bmmReader.hh"
+#include "common/AnalysisCuts.hh"
+
 #include "redTreeData.hh"
 #include "preselection.hh"
-#include "common/AnalysisCuts.hh"
+#include "cuts.hh"
 
 
 struct isoNumbers {
@@ -28,7 +30,7 @@ struct readerData {
   float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
   float closetrks1, closetrks2, closetrks3;
   float m1iso, m2iso, pvdchi2, othervtx;
-  float pvlip2, pvlips2;
+  float pv2lip, pv2lips;
   float m;
 };
 
@@ -195,6 +197,7 @@ public:
 
   bool fBarrel, fWideMass;
   AnalysisCuts fAnaCuts;
+  std::vector<cuts*> fCuts;
 
   // -- TM
   int     fGenBTmi;
@@ -249,7 +252,7 @@ public:
   double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE;
   double  fCandPvTip, fCandPvTipE, fCandPvTipS, fCandPvLip, fCandPvLipE, fCandPvLipS, fCandPvIp, fCandPvIpE, fCandPvIpS;
   double  fCandPvIp3D, fCandPvIpE3D, fCandPvIpS3D;
-  double  fCandPvLip2, fCandPvLipS2, fCandPvLip12, fCandPvLipE12, fCandPvLipS12;
+  double  fCandPv2Lip, fCandPv2LipS, fCandPv12Lip, fCandPv12LipE, fCandPv12LipS;
   double  fCandPvDeltaChi2;
   double  fCandOtherVtx;
   // NO: They are filled into the "Jpsi" variables in the derived classes!
@@ -258,7 +261,7 @@ public:
 
   double  fOsMuonPt, fOsMuonPtRel, fOsIso, fOsRelIso, fOsMuonDeltaR;
 
-  int     fChan;
+  int     fChan, fNchan;
 
   // -- another reduced tree
   TTree       *fEffTree;
@@ -286,7 +289,7 @@ public:
 
   string  fHLTPath;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
-  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPvLip2, fGoodPvLipS2, fGoodMaxDoca, fGoodIp, fGoodIpS;
+  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
   bool    fGoodDocaTrk, fGoodLastCut, fTIS, fRefTrigger;
 

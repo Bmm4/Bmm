@@ -4,6 +4,7 @@
 
 #include "common/HFMasses.hh"
 #include "common/AnalysisDistribution.hh"
+#include "common/util.hh"
 
 using namespace std;
 
@@ -21,6 +22,7 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fpReader = pReader;
   fVerbose = fpReader->fVerbose;
   fYear    = fpReader->fYear;
+  fNchan   = -1;
   fName    = name;
   cout << "======================================================================" << endl;
   cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << endl;
@@ -327,12 +329,12 @@ void candAna::candAnalysis() {
   fCandPvLip    = fpCand->fPvLip;
   fCandPvLipE   = fpCand->fPvLipE;
   fCandPvLipS   = fCandPvLip/fCandPvLipE;
-  fCandPvLip2   = fpCand->fPvLip2;
-  fCandPvLipS2  = fpCand->fPvLip2/fpCand->fPvLipE2;
-  if (fpCand->fPvLip2 > 999) fCandPvLipS2 = 999.; // in this case no 2nd best PV was found, reset to 'good' state
-  fCandPvLip12  = fCandPvLip/fpCand->fPvLip2;
-  fCandPvLipE12 = fCandPvLipE/fpCand->fPvLipE2;
-  fCandPvLipS12 = fCandPvLipS/(fpCand->fPvLip2/fpCand->fPvLipE2);
+  fCandPv2Lip   = fpCand->fPvLip2;
+  fCandPv2LipS  = fpCand->fPvLip2/fpCand->fPvLipE2;
+  if (fpCand->fPvLip2 > 999) fCandPv2LipS = 999.; // in this case no 2nd best PV was found, reset to 'good' state
+  fCandPv12Lip  = fCandPvLip/fpCand->fPvLip2;
+  fCandPv12LipE = fCandPvLipE/fpCand->fPvLipE2;
+  fCandPv12LipS = fCandPvLipS/(fpCand->fPvLip2/fpCand->fPvLipE2);
 
   // -- 3d impact parameter wrt PV
   if (0) {
@@ -815,24 +817,24 @@ void candAna::candAnalysis() {
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
-  fGoodPvLip      = (TMath::Abs(fCandPvLip) < CANDLIP);
-  fGoodPvLipS     = (TMath::Abs(fCandPvLipS) < CANDLIPS);
-  fGoodPvLip2     = (TMath::Abs(fCandPvLip2) > CANDLIP2);
-  fGoodPvLipS2    = (TMath::Abs(fCandPvLipS2) > CANDLIPS2);
-  fGoodMaxDoca    = (TMath::Abs(fCandDoca) < CANDDOCA);
-  fGoodIp         = (TMath::Abs(fCandPvIp) < CANDIP);
-  fGoodIpS        = (TMath::Abs(fCandPvIpS) < CANDIPS);
+  fGoodPvLip      = (TMath::Abs(fCandPvLip) < fCuts[fChan]->pvlip);
+  fGoodPvLipS     = (TMath::Abs(fCandPvLipS) < fCuts[fChan]->pvlips);
+  fGoodPv2Lip     = (TMath::Abs(fCandPv2Lip) > fCuts[fChan]->pv2lip);
+  fGoodPv2LipS    = (TMath::Abs(fCandPv2LipS) > fCuts[fChan]->pv2lips);
+  fGoodMaxDoca    = (TMath::Abs(fCandDoca) < fCuts[fChan]->maxdoca);
+  fGoodIp         = (TMath::Abs(fCandPvIp) < fCuts[fChan]->pvip);
+  fGoodIpS        = (TMath::Abs(fCandPvIpS) < fCuts[fChan]->pvips);
 
-  fGoodPt         = (fCandPt > CANDPTLO);
-  fGoodEta        = ((fCandEta > CANDETALO) && (fCandEta < CANDETAHI));
-  fGoodAlpha      = (fCandA < CANDALPHA);
-  fGoodChi2       = (fCandChi2/fCandDof < CANDVTXCHI2);
-  fGoodFLS        =  ((fCandFLS3d > CANDFLS3D) && (fCandFLSxy > CANDFLSXY));
+  fGoodPt         = (fCandPt > fCuts[fChan]->pt);
+  fGoodEta        = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
+  fGoodAlpha      = (fCandA < fCuts[fChan]->alpha);
+  fGoodChi2       = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
+  fGoodFLS        =  ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
   if (TMath::IsNaN(fCandFLS3d)) fGoodFLS = false;
 
-  fGoodCloseTrack = (fCandCloseTrk < CANDCLOSETRK);
-  fGoodIso        = (fCandIso > CANDISOLATION);
-  fGoodDocaTrk    = (fCandDocaTrk > CANDDOCATRK);
+  fGoodCloseTrack = (fCandCloseTrk < fCuts[fChan]->closetrk);
+  fGoodIso        = (fCandIso > fCuts[fChan]->iso);
+  fGoodDocaTrk    = (fCandDocaTrk > fCuts[fChan]->docatrk);
   fGoodLastCut    = true;
 
   fAnaCuts.update();
@@ -859,7 +861,6 @@ void candAna::candAnalysis() {
   if(fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
   fPreselection = fPreselection && fGoodHLT;
-
   if(fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(3.);
 
   //  fPreselection = true;
@@ -868,6 +869,36 @@ void candAna::candAnalysis() {
 
 // ----------------------------------------------------------------------
 void candAna::fillCandidateHistograms(int offset) {
+}
+
+
+// ----------------------------------------------------------------------
+int candAna::detChan(double m1eta, double m2eta) {
+  // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
+  //old   if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
+  //old   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
+
+
+  double m1 = TMath::Abs(m1eta);
+  double m2 = TMath::Abs(m2eta);
+
+  int im1(-1), im2(-1);
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
+      im1 = ichan;
+      break;
+    }
+  }
+
+  for (int ichan = 0; ichan < fNchan; ++ichan) {
+    if ((m2 > fCuts[ichan]->metaMin) && (m2 < fCuts[ichan]->metaMax)) {
+      im2 = ichan;
+      break;
+    }
+  }
+
+  if ((im1 < 0) || (im2 < 0)) return -1;
+  return (im1>im2?im1:im2);
 }
 
 // ----------------------------------------------------------------------
@@ -898,8 +929,8 @@ void candAna::candidateCuts() {
   fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
   fAnaCuts.addCut("fGoodPvLip", "LIP(PV)", fGoodPvLip);
   fAnaCuts.addCut("fGoodPvLipS", "LIPS(PV)", fGoodPvLipS);
-  fAnaCuts.addCut("fGoodPvLip2", "LIP2(PV)", fGoodPvLip2);
-  fAnaCuts.addCut("fGoodPvLipS2", "LIPS2(PV)", fGoodPvLipS2);
+  fAnaCuts.addCut("fGoodPv2Lip", "LIP(PV2)", fGoodPv2Lip);
+  fAnaCuts.addCut("fGoodPv2LipS", "LIPS(PV2)", fGoodPv2LipS);
   fAnaCuts.addCut("fGoodIp", "IP", fGoodIp);
   fAnaCuts.addCut("fGoodIpS", "IPS", fGoodIpS);
   fAnaCuts.addCut("fGoodMaxDoca", "MAXDOCA", fGoodMaxDoca);
@@ -1513,14 +1544,15 @@ void candAna::setupReducedTree(TTree *t) {
   // -- PV
   t->Branch("pvlip",    &fCandPvLip,        "pvlip/D");
   t->Branch("pvlips",   &fCandPvLipS,       "pvlips/D");
-  t->Branch("pvlip2",   &fCandPvLip2,       "pvlip2/D");
-  t->Branch("pvlips2",  &fCandPvLipS2,      "pvlips2/D");
+  t->Branch("pv2lip",   &fCandPv2Lip,       "pv2lip/D");
+  t->Branch("pv2lips",  &fCandPv2LipS,      "pv2lips/D");
   t->Branch("pvip",     &fCandPvIp,         "pvip/D");
   t->Branch("pvips",    &fCandPvIpS,        "pvips/D");
   t->Branch("pvip3d",   &fCandPvIp3D,       "pvip3d/D");
   t->Branch("pvips3d",  &fCandPvIpS3D,      "pvips3d/D");
 
   // -- cand
+  t->Branch("chan",    &fChan,              "chan/I");
   t->Branch("q",       &fCandQ,             "q/I");
   t->Branch("type",    &fCandType,          "type/I");
   t->Branch("pt",      &fCandPt,            "pt/D");
@@ -1734,7 +1766,154 @@ void candAna::readCuts(string fileName, int dump) {
   int ibin;
   string cstring = "B cand";
 
+  int ok(0);
+  float cutvalue;
+  string cutname("nada");
+
+  // -- determine fNchan
+  cuts *a = 0;
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
+    if (string::npos != cutLines[i].find("nchan")) {
+      cleanupString(cutLines[i]);
+      vector<string> lineItems = split(cutLines[i], ' ');
+      fNchan = atoi(lineItems[1].c_str());
+    }
+  }
+
+  if (fNchan < 1) {
+    cout << "no analysis channels found?!" << endl;
+  } else {
+    cout << "creating " << fNchan << " analysis channels" << endl;
+  }
+
+  for (int i = 0; i < fNchan; ++i) {
+    a = new cuts;
+    a->index = i;
+    fCuts.push_back(a);
+  }
+
+
+  for (unsigned int i = 0; i < cutLines.size(); ++i) {
+
+    // -- read the baseCuts file to get the channel definition and cuts used for (possible) preselection
+    cleanupString(cutLines[i]);
+    vector<string> lineItems = split(cutLines[i], ' ');
+    if (lineItems.size() == 0) {
+      continue;
+    }
+    cutname  = lineItems[0];
+    if ((fNchan + 1) == lineItems.size()) {
+      for (unsigned int j = 1; j < lineItems.size(); ++j) {
+	if (cutname == "metaMin") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->metaMin = cutvalue; ok = 1;
+	}
+
+	if (cutname == "metaMax") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->metaMax = cutvalue; ok = 1;
+	}
+
+	if (cutname == "m1pt") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->m1pt = cutvalue; ok = 1;
+	}
+
+	if (cutname == "m2pt") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->m2pt = cutvalue; ok = 1;
+	}
+
+	if (cutname == "etaMin") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->etaMin = cutvalue; ok = 1;
+	}
+
+	if (cutname == "etaMax") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->etaMax = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pt") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pt = cutvalue; ok = 1;
+	}
+
+	if (cutname == "alpha") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->alpha = cutvalue; ok = 1;
+	}
+
+      	if (cutname == "fls3d") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->fls3d = cutvalue; ok = 1;
+	}
+
+	if (cutname == "flsxy") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->flsxy = cutvalue; ok = 1;
+	}
+
+	if (cutname == "flsxy") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->flsxy = cutvalue; ok = 1;
+	}
+
+	if (cutname == "chi2dof") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->chi2dof = cutvalue; ok = 1;
+	}
+
+	if (cutname == "iso") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->iso = cutvalue; ok = 1;
+	}
+
+	if (cutname == "docatrk") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->docatrk = cutvalue; ok = 1;
+	}
+
+	if (cutname == "closetrk") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->closetrk = cutvalue; ok = 1;
+	}
+
+	if (cutname == "iso") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->iso = cutvalue; ok = 1;
+	}
+
+	if (cutname == "maxdoca") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->maxdoca = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pvlip") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pvlip = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pvlips") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pvlips = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pv2lip") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pv2lip = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pv2lips") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pv2lips = cutvalue; ok = 1;
+	}
+
+      }
+
+    }
+
+    // -- now back to the original cut reading
     sprintf(buffer, "%s", cutLines[i].c_str());
 
     if (buffer[0] == '#') {continue;}
@@ -1800,94 +1979,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: Ignore preselection :: %i", CutName, NOPRESELECTION));
     }
 
-    if (!strcmp(CutName, "CANDPTLO")) {
-      CANDPTLO = CutValue;
-      if (dump) cout << "CANDPTLO:           " << CANDPTLO << " GeV" << endl;
-      ibin = 11;
-      hcuts->SetBinContent(ibin, CANDPTLO);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: p_{T}^{min}(%s) :: %3.1f", CutName, cstring.c_str(), CANDPTLO));
-    }
-
-    if (!strcmp(CutName, "CANDETALO")) {
-      CANDETALO = CutValue;
-      if (dump) cout << "CANDETALO:           " << CANDETALO << endl;
-      ibin = 12;
-      hcuts->SetBinContent(ibin, CANDETALO);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #eta^{min}(%s) :: %3.1f", CutName, cstring.c_str(), CANDETALO));
-    }
-
-    if (!strcmp(CutName, "CANDETAHI")) {
-      CANDETAHI = CutValue;
-      if (dump) cout << "CANDETAHI:           " << CANDETAHI << endl;
-      ibin = 13;
-      hcuts->SetBinContent(ibin, CANDETAHI);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #eta^{max}(%s) :: %3.1f", CutName, cstring.c_str(), CANDETAHI));
-    }
-
-    if (!strcmp(CutName, "CANDCOSALPHA")) {
-      CANDCOSALPHA = CutValue;
-      if (dump) cout << "CANDCOSALPHA:           " << CANDCOSALPHA << endl;
-      ibin = 20;
-      hcuts->SetBinContent(ibin, CANDCOSALPHA);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: cos#alpha :: %5.4f", CutName, CANDCOSALPHA));
-    }
-
-    if (!strcmp(CutName, "CANDALPHA")) {
-      CANDALPHA = CutValue;
-      if (dump) cout << "CANDALPHA:           " << CANDALPHA << endl;
-      ibin = 21;
-      hcuts->SetBinContent(ibin, CANDALPHA);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #alpha :: %5.4f", CutName, CANDALPHA));
-    }
-
-    if (!strcmp(CutName, "CANDFLS3D")) {
-      CANDFLS3D = CutValue;
-      if (dump) cout << "CANDFLS3D:           " << CANDFLS3D << endl;
-      ibin = 22;
-      hcuts->SetBinContent(ibin, CANDFLS3D);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{3d}/#sigma(l_{3d}) :: %3.1f", CutName, CANDFLS3D));
-    }
-
-    if (!strcmp(CutName, "CANDFLSXY")) {
-      CANDFLSXY = CutValue;
-      if (dump) cout << "CANDFLSXY:           " << CANDFLSXY << endl;
-      ibin = 23;
-      hcuts->SetBinContent(ibin, CANDFLSXY);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{xy}/#sigma(l_{xy}) :: %3.1f", CutName, CANDFLSXY));
-    }
-
-    if (!strcmp(CutName, "CANDVTXCHI2")) {
-      CANDVTXCHI2 = CutValue;
-      if (dump) cout << "CANDVTXCHI2:           " << CANDVTXCHI2 << endl;
-      ibin = 24;
-      hcuts->SetBinContent(ibin, CANDVTXCHI2);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #chi^{2} :: %3.1f", CutName, CANDVTXCHI2));
-    }
-
-    if (!strcmp(CutName, "CANDISOLATION")) {
-      CANDISOLATION = CutValue;
-      if (dump) cout << "CANDISOLATION:           " << CANDISOLATION << endl;
-      ibin = 25;
-      hcuts->SetBinContent(ibin, CANDISOLATION);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: I_{trk} :: %4.2f", CutName, CANDISOLATION));
-    }
-
-    if (!strcmp(CutName, "CANDDOCATRK")) {
-      CANDDOCATRK = CutValue;
-      if (dump) cout << "CANDDOCATRK:           " << CANDDOCATRK << endl;
-      ibin = 26;
-      hcuts->SetBinContent(ibin, CANDDOCATRK);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: doca_{trk} :: %4.3f", CutName, CANDDOCATRK));
-    }
-
-    if (!strcmp(CutName, "CANDCLOSETRK")) {
-      CANDCLOSETRK = CutValue;
-      if (dump) cout << "CANDCLOSETRK:           " << CANDCLOSETRK << endl;
-      ibin = 27;
-      hcuts->SetBinContent(ibin, CANDCLOSETRK);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: N_{close tracks} :: %4.2f", CutName, CANDCLOSETRK));
-    }
-
     if (!strcmp(CutName, "PVAVEW8")) {
       PVAVEW8 = CutValue;
       if (dump) cout << "PVAVEW8:           " << PVAVEW8 << endl;
@@ -1895,63 +1986,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->SetBinContent(ibin, PVAVEW8);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: <w^{PV}_{trk}> :: %4.3f", CutName, PVAVEW8));
     }
-
-    if (!strcmp(CutName, "CANDLIP")) {
-      CANDLIP = CutValue;
-      if (dump) cout << "CANDLIP:           " << CANDLIP << endl;
-      ibin = 40;
-      hcuts->SetBinContent(ibin, CANDLIP);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{z} :: %4.3f", CutName, CANDLIP));
-    }
-
-    if (!strcmp(CutName, "CANDLIPS")) {
-      CANDLIPS = CutValue;
-      if (dump) cout << "CANDLIPS:          " << CANDLIPS << endl;
-      ibin = 41;
-      hcuts->SetBinContent(ibin, CANDLIPS);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{z}/#sigma(l_{z}) :: %4.3f", CutName, CANDLIPS));
-    }
-
-    if (!strcmp(CutName, "CAND2LIP")) {
-      CANDLIP2 = CutValue;
-      if (dump) cout << "CAND2LIP:           " << CANDLIP2 << endl;
-      ibin = 42;
-      hcuts->SetBinContent(ibin, CANDLIP2);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{z,2} :: %4.3f", CutName, CANDLIP2));
-    }
-
-    if (!strcmp(CutName, "CAND2LIPS")) {
-      CANDLIPS2 = CutValue;
-      if (dump) cout << "CAND2LIPS:          " << CANDLIPS2 << endl;
-      ibin = 43;
-      hcuts->SetBinContent(ibin, CANDLIPS2);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{z,2}/#sigma(l_{z,2}) :: %4.3f", CutName, CANDLIPS2));
-    }
-
-    if (!strcmp(CutName, "CANDIP")) {
-      CANDIP = CutValue;
-      if (dump) cout << "CANDIP:          " << CANDIP << endl;
-      ibin = 44;
-      hcuts->SetBinContent(ibin, CANDIP);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{3d} :: %4.3f", CutName, CANDIP));
-    }
-
-    if (!strcmp(CutName, "CANDIPS")) {
-      CANDIPS = CutValue;
-      if (dump) cout << "CANDIPS:          " << CANDIPS << endl;
-      ibin = 45;
-      hcuts->SetBinContent(ibin, CANDIPS);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: l_{3d}/#sigma(l_{3d}) :: %4.3f", CutName, CANDIPS));
-    }
-
-    if (!strcmp(CutName, "MAXDOCA")) {
-      CANDDOCA = CutValue;
-      if (dump) cout << "MAXDOCA:         " << CANDDOCA << endl;
-      ibin = 46;
-      hcuts->SetBinContent(ibin, CANDDOCA);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: d :: %4.3f", CutName, CANDDOCA));
-    }
-
 
     if (!strcmp(CutName, "SIGBOXMIN")) {
       SIGBOXMIN = CutValue;
@@ -2077,46 +2111,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: MuIDResult :: %d", CutName, MUIDRESULT));
     }
 
-    if (!strcmp(CutName, "MUPTLO")) {
-      MUPTLO = CutValue;
-      if (dump) cout << "MUPTLO:           " << MUPTLO << " GeV" << endl;
-      ibin = 202;
-      hcuts->SetBinContent(ibin, MUPTLO);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: p_{T}^{min}(#mu) :: %3.1f", CutName, MUPTLO));
-    }
-
-    if (!strcmp(CutName, "MUPTHI")) {
-      MUPTHI = CutValue;
-      if (dump) cout << "MUPTHI:           " << MUPTHI << " GeV" << endl;
-      ibin = 203;
-      hcuts->SetBinContent(ibin, MUPTHI);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: p_{T}^{max}(#mu) :: %3.1f", CutName, MUPTHI));
-    }
-
-    if (!strcmp(CutName, "MUETALO")) {
-      MUETALO = CutValue;
-      if (dump) cout << "MUETALO:           " << MUETALO << endl;
-      ibin = 204;
-      hcuts->SetBinContent(ibin, MUETALO);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #eta^{min}(#mu) :: %3.1f", CutName, MUETALO));
-    }
-
-    if (!strcmp(CutName, "MUETAHI")) {
-      MUETAHI = CutValue;
-      if (dump) cout << "MUETAHI:           " << MUETAHI << endl;
-      ibin = 205;
-      hcuts->SetBinContent(ibin, MUETAHI);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: #eta^{max}(#mu) :: %3.1f", CutName, MUETAHI));
-    }
-
-    if (!strcmp(CutName, "MUIP")) {
-      MUIP = CutValue;
-      if (dump) cout << "MUIP:           " << MUIP << endl;
-      ibin = 206;
-      hcuts->SetBinContent(ibin, MUIP);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: IP(#mu) :: %3.1f", CutName, MUIP));
-    }
-
     if (!strcmp(CutName, "MUBDTXML")) {
       char xml[1000];
       sscanf(buffer, "%s %s", CutName, xml);
@@ -2141,35 +2135,12 @@ void candAna::readCuts(string fileName, int dump) {
 
   }
 
-  // -- this is now hard-coded!
-  if (0) {
-    string sXmlName;
-    // -- barrel
-    string bXml = (fYear == 2011?"TMVA-0":"TMVA-2");
-    sXmlName = "weights/" + bXml + "-Events0_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents0.push_back(setupReader(sXmlName, frd));
-    sXmlName = "weights/" + bXml + "-Events1_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents1.push_back(setupReader(sXmlName, frd));
-    sXmlName = "weights/" + bXml + "-Events2_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents2.push_back(setupReader(sXmlName, frd));
-
-    // -- endcap
-    string fXml = (fYear == 2011?"TMVA-1":"TMVA-3");
-    sXmlName = "weights/" + fXml + "-Events0_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents0.push_back(setupReader(sXmlName, frd));
-    sXmlName = "weights/" + fXml + "-Events1_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents1.push_back(setupReader(sXmlName, frd));
-    sXmlName = "weights/" + fXml + "-Events2_BDT.weights.xml";
-    if (dump) cout << "xml:                   " << sXmlName << endl;
-    fReaderEvents2.push_back(setupReader(sXmlName, frd));
+  if (dump) {
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fCuts[i]->dump();
+    }
+    cout << "------------------------------------" << endl;
   }
-
-  if (dump)  cout << "------------------------------------" << endl;
 }
 
 
@@ -2416,7 +2387,7 @@ pair<int, int> candAna::nCloseTracks(TAnaCand *pC, double dcaCut, double dcaCutS
   int nsize = pC->fNstTracks.size();
   int pvIdx = pC->fPvIdx;
   //int pvIdx2= nearestPV(pvIdx, 0.1);  UNUSED d.k.
-  //if (TMath::Abs(fCandPvLipS2) > 2) pvIdx2 = -1;
+  //if (TMath::Abs(fCandPv2LipS) > 2) pv2Idx = -1;
 
   TSimpleTrack *pT;
   double pt(0.);
@@ -3043,13 +3014,13 @@ void candAna::calcBDT() {
 }
 
 
-// ----------------------------------------------------------------------
-int candAna::detChan(double m1eta, double m2eta) {
-  // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-  if (TMath::Abs(m1eta) < 1.4 && TMath::Abs(m2eta) < 1.4) return 0;
-  if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
-  return -1;
-}
+// // ----------------------------------------------------------------------
+// int candAna::detChan(double m1eta, double m2eta) {
+//   // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
+//   if (TMath::Abs(m1eta) < 1.4 && TMath::Abs(m2eta) < 1.4) return 0;
+//   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
+//   return -1;
+// }
 
 
 // ----------------------------------------------------------------------
@@ -3362,13 +3333,13 @@ TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
 	  cout << "  adding othervtx" << endl;
 	  reader->AddVariable( "othervtx", &rd.othervtx);
 	}
-	if (stype == "pvlip2") {
-	  cout << "  adding pvlip2" << endl;
-	  reader->AddVariable( "pvlip2", &rd.pvlip2);
+	if (stype == "pv2lip") {
+	  cout << "  adding pv2lip" << endl;
+	  reader->AddVariable( "pv2lip", &rd.pv2lip);
 	}
-	if (stype == "pvlips2") {
-	  cout << "  adding pvlips2" << endl;
-	  reader->AddVariable( "pvlips2", &rd.pvlips2);
+	if (stype == "pv2lips") {
+	  cout << "  adding pv2lips" << endl;
+	  reader->AddVariable( "pv2lips", &rd.pv2lips);
 	}
       }
       break;
