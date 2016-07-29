@@ -17,7 +17,6 @@
 #pragma link C++ function numberOfBPixLayer1Hits(TAnaTrack *);
 #pragma link C++ function numberOfTrackerLayers(TAnaTrack *);
 
-#pragma link C++ function tightMuon(TAnaMuon *, bool, int); 
+#pragma link C++ function tightMuon(TAnaMuon *, bool, int);
 
 #endif
-
