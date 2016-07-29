@@ -41,6 +41,8 @@ void stamp(double x1, std::string text1, std::string text1a, double x2, std::str
 
 void rmSubString(std::string &sinput, const std::string &remove);
 void rmPath(std::string &sInput);
+void cleanupString(std::string &s);
+bool bothAreSpaces(char lhs, char rhs);
 
 
 std::vector<std::string> glob(std::string basedir, std::string basename);

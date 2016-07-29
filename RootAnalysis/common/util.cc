@@ -715,3 +715,20 @@ vector<string> split(const string &s, char delim) {
   split(s, delim, elems);
   return elems;
 }
+
+// ----------------------------------------------------------------------
+void cleanupString(string &s) {
+  replaceAll(s, "\t", " ");
+  string::size_type s1 = s.find("#");
+  if (string::npos != s1) s.erase(s1);
+  if (0 == s.length()) return;
+  string::iterator new_end = unique(s.begin(), s.end(), bothAreSpaces);
+  s.erase(new_end, s.end());
+  if (s.substr(0, 1) == string(" ")) s.erase(0, 1);
+  if (s.substr(s.length()-1, 1) == string(" ")) s.erase(s.length()-1, 1);
+}
+
+// ----------------------------------------------------------------------
+bool bothAreSpaces(char lhs, char rhs) {
+  return (lhs == rhs) && (lhs == ' ');
+}
