@@ -2,13 +2,11 @@ TYPE          1000092
 #TYPE          1313
 TRUTHCAND         511
 TRIGRANGE    NOTRIGGER
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/muons.cuts
-# -- candidate
-+input cuts/candidate.cuts
-# -- bdt input
-#no input cuts/bdt.2012.cuts

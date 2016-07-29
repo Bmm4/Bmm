@@ -1,6 +1,8 @@
 TYPE          300054
 TRUTHCAND        413
 TRIGRANGE PDTRIGGER
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- special cuts
 DSTARTYPE 300054
 D0TYPE    300050
@@ -13,5 +15,3 @@ DELTAM    0.01
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/muons.cuts
-# -- candidate
-+input cuts/candidate.cuts

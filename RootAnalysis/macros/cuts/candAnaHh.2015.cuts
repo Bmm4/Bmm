@@ -3,8 +3,9 @@ TRUTHCAND         91
 MUON_VETO  1
 HH_MLO 4.
 HH_MHI 7.
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- trigger
-#+input cuts/triggerHh.charmonium.cuts
 TRIGRANGE PDTRIGGER
 # -- boxes
 +input cuts/boxes.Bu2JpsiK.cuts
@@ -12,7 +13,3 @@ TRIGRANGE PDTRIGGER
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/muons.cuts
-# -- candidate
-+input cuts/candidate.cuts
-# -- bdt input
-# no input cuts/bdt.2012.cuts

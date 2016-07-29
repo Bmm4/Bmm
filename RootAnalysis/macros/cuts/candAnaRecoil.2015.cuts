@@ -3,6 +3,8 @@ TRUTHCAND         531
 BRECOTYPE     3000068
 BRECOTRUTH        521
 NOPRESELECTION      1
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- trigger
 +input cuts/triggerBs.cuts
 # -- boxes
@@ -11,5 +13,3 @@ NOPRESELECTION      1
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/muons.cuts
-# -- candidate
-+input cuts/candidate.cuts

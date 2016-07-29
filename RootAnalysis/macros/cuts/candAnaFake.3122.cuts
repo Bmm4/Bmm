@@ -2,11 +2,11 @@ TYPE            113122
 TRUTHCAND         3122
 NOPRESELECTION      1
 TRIGRANGE    NOTRIGGER
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/muons.cuts
-# -- candidate
-+input cuts/candidate.cuts

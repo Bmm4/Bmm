@@ -1,6 +1,8 @@
 TYPE           300521
 TRUTHCAND         521
 NOPRESELECTION      1
+# -- baseCuts
++input cuts/baseCuts.cuts
 # -- trigger
 TRIGRANGE    NOTRIGGER
 # -- boxes
@@ -9,9 +11,5 @@ TRIGRANGE    NOTRIGGER
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/jpsimuons.cuts
-# -- candidate
-+input cuts/candidate.cuts
-# -- bdt input
-#no input cuts/bdt.2012.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
