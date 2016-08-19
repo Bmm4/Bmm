@@ -78,25 +78,25 @@ using namespace reco;
 
 // ----------------------------------------------------------------------
 HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
-  fTracksLabel(iConfig.getUntrackedParameter<InputTag>("tracksLabel", string("goodTracks"))), 
+  fTracksLabel(iConfig.getUntrackedParameter<InputTag>("tracksLabel", string("goodTracks"))),
   fTokenTrack(consumes<View<Track> >(fTracksLabel)),
   fPrimaryVertexLabel(iConfig.getUntrackedParameter<InputTag>("PrimaryVertexLabel", InputTag("offlinePrimaryVertices"))),
   fTokenVertex(consumes<VertexCollection>(fPrimaryVertexLabel)),
   fBeamSpotLabel(iConfig.getUntrackedParameter<InputTag>("BeamSpotLabel", InputTag("offlineBeamSpot"))),
   fTokenBeamSpot(consumes<BeamSpot>(fBeamSpotLabel)),
   fMuonsLabel(iConfig.getUntrackedParameter<edm::InputTag>("muonsLabel", InputTag("muons"))),
-  fTokenMuon(consumes<MuonCollection>(fMuonsLabel)), 
+  fTokenMuon(consumes<MuonCollection>(fMuonsLabel)),
   fType(iConfig.getUntrackedParameter("type", 67)),
   fGenType(iConfig.getUntrackedParameter("GenType", -67)),
-  fMotherID(iConfig.getUntrackedParameter("motherID", 0)), 
-  fPartialDecayMatching(iConfig.getUntrackedParameter<bool>("partialDecayMatching", false)), 
+  fMotherID(iConfig.getUntrackedParameter("motherID", 0)),
+  fPartialDecayMatching(iConfig.getUntrackedParameter<bool>("partialDecayMatching", false)),
   fMaxDoca(iConfig.getUntrackedParameter<double>("maxDoca", 99.)),
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)) {
 
   vector<int> defaultIDs;
   defaultIDs.push_back(0);
   fDaughtersID = iConfig.getUntrackedParameter<vector<int> >("daughtersID", defaultIDs);
-  
+
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFTruthCandidate constructor" << endl;
   cout << "--- verbose:               " << fVerbose << endl;
@@ -109,28 +109,28 @@ HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
   cout << "--- GenType:               " << fGenType << endl;
   cout << "--- partialDecayMatching:  " << fPartialDecayMatching << endl;
   cout << "--- maxDoca:               " << fMaxDoca << endl;
-  fDaughtersSet.clear(); 
-  fStableDaughters = 0; 
+  fDaughtersSet.clear();
+  fStableDaughters = 0;
   for (unsigned int i = 0; i < fDaughtersID.size(); ++i) {
     cout << "---   daughterID:              " << fDaughtersID[i] << endl;
-    if (TMath::Abs(fDaughtersID[i]) == 11)   ++fStableDaughters; 
-    if (TMath::Abs(fDaughtersID[i]) == 13)   ++fStableDaughters; 
-    if (TMath::Abs(fDaughtersID[i]) == 211)  ++fStableDaughters; 
-    if (TMath::Abs(fDaughtersID[i]) == 321)  ++fStableDaughters; 
-    if (TMath::Abs(fDaughtersID[i]) == 2212) ++fStableDaughters; 
-    fDaughtersSet.insert(TMath::Abs(fDaughtersID[i])); 
-    fDaughtersGammaSet.insert(TMath::Abs(fDaughtersID[i])); 
-    fDaughtersGamma2Set.insert(TMath::Abs(fDaughtersID[i])); 
-  }    
+    if (TMath::Abs(fDaughtersID[i]) == 11)   ++fStableDaughters;
+    if (TMath::Abs(fDaughtersID[i]) == 13)   ++fStableDaughters;
+    if (TMath::Abs(fDaughtersID[i]) == 211)  ++fStableDaughters;
+    if (TMath::Abs(fDaughtersID[i]) == 321)  ++fStableDaughters;
+    if (TMath::Abs(fDaughtersID[i]) == 2212) ++fStableDaughters;
+    fDaughtersSet.insert(TMath::Abs(fDaughtersID[i]));
+    fDaughtersGammaSet.insert(TMath::Abs(fDaughtersID[i]));
+    fDaughtersGamma2Set.insert(TMath::Abs(fDaughtersID[i]));
+  }
   cout << "---    total stable particles: " << fStableDaughters << endl;
-  fDaughtersGammaSet.insert(22); 
-  fDaughtersGamma2Set.insert(22); 
-  fDaughtersGamma2Set.insert(22); 
+  fDaughtersGammaSet.insert(22);
+  fDaughtersGamma2Set.insert(22);
+  fDaughtersGamma2Set.insert(22);
   cout << "----------------------------------------------------------------------" << endl;
 }
 
 // ----------------------------------------------------------------------
-HFTruthCandidate::~HFTruthCandidate() {  
+HFTruthCandidate::~HFTruthCandidate() {
 }
 
 
@@ -155,27 +155,27 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
   }
 
   // -- In generator block, find mother with declared decay channel
-  multiset<int> genDaughters; 
-  multiset<int> genIndices; 
-  multiset<pair<int, int> > genMap; 
+  multiset<int> genDaughters;
+  multiset<int> genIndices;
+  multiset<pair<int, int> > genMap;
   TGenCand *pGen, *pDau, *pTmp;
   int matchedDecay(0);
-  int iMom(-1), motherIndex(-1); 
+  int iMom(-1), motherIndex(-1);
 
-  vector<int> bla(100); 
-  vector<int>::iterator blaIt; 
+  vector<int> bla(100);
+  vector<int>::iterator blaIt;
 
   //   cout << "----------------------------------------------------------------------" << endl;
   //  cout << " ngenCands: " << gHFEvent->nGenCands() << endl;
   for (int ig = 0; ig < gHFEvent->nGenCands(); ++ig) {
     pGen = gHFEvent->getGenCand(ig);
     if (TMath::Abs(pGen->fID) == fMotherID) {
-      motherIndex = ig; 
+      motherIndex = ig;
       if (fVerbose > 1) {
 	cout << "mother ";
-	pGen->dump(); 
+	pGen->dump();
       }
-      genDaughters.clear(); 
+      genDaughters.clear();
       genIndices.clear();
       genMap.clear();
 
@@ -190,30 +190,30 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (iMom == ig) {
 	  if (fVerbose > 1) {
 	    cout << "  daug: ";
-	    pDau->dump(); 
+	    pDau->dump();
 	  }
 	  if (fPartialDecayMatching) {
 	    if (fDaughtersSet.find(TMath::Abs(pDau->fID)) != fDaughtersSet.end()) {
-	      genDaughters.insert(TMath::Abs(pDau->fID)); 
-	      genIndices.insert(id); 
-	      genMap.insert(make_pair(id, TMath::Abs(pDau->fID))); 
+	      genDaughters.insert(TMath::Abs(pDau->fID));
+	      genIndices.insert(id);
+	      genMap.insert(make_pair(id, TMath::Abs(pDau->fID)));
 	    }
 	  } else {
-	    genDaughters.insert(TMath::Abs(pDau->fID)); 
-	    genIndices.insert(id); 
-	    genMap.insert(make_pair(id, TMath::Abs(pDau->fID))); 
+	    genDaughters.insert(TMath::Abs(pDau->fID));
+	    genIndices.insert(id);
+	    genMap.insert(make_pair(id, TMath::Abs(pDau->fID)));
 	  }
 	}
       }
 
       // -- now check whether this is PARTIALLY the decay channel in question
       if (fPartialDecayMatching) {
-	blaIt = set_intersection(genDaughters.begin(), genDaughters.end(), fDaughtersSet.begin(), fDaughtersSet.end(), bla.begin()); 
+	blaIt = set_intersection(genDaughters.begin(), genDaughters.end(), fDaughtersSet.begin(), fDaughtersSet.end(), bla.begin());
 	if (static_cast<unsigned int>(blaIt - bla.begin()) == fDaughtersSet.size()) {
-	  matchedDecay = 1; 
+	  matchedDecay = 1;
 	  if (fVerbose > 0) {
 	    cout << "matched partial decay: ";
-	    for (vector<int>::iterator it = bla.begin(); it != blaIt; ++it) cout << *it << " "; 
+	    for (vector<int>::iterator it = bla.begin(); it != blaIt; ++it) cout << *it << " ";
 	    cout << endl;
 	  }
 	  break;
@@ -222,17 +222,17 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
       // -- now check whether this is the decay channel in question
       if (fDaughtersSet == genDaughters) {
-	matchedDecay = 1; 
+	matchedDecay = 1;
 	if (fVerbose > 0) cout << "matched decay" << endl;
 	break;
       }
       if (fDaughtersGammaSet == genDaughters) {
-	matchedDecay = 1; 
+	matchedDecay = 1;
 	if (fVerbose > 0) cout << "matched decay with bremsstrahlung photon" << endl;
 	break;
       }
       if (fDaughtersGamma2Set == genDaughters) {
-	matchedDecay = 1; 
+	matchedDecay = 1;
 	if (fVerbose > 0) cout << "matched decay with 2 bremsstrahlung photons" << endl;
 	break;
       }
@@ -242,13 +242,13 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   // -- Dump generator candidate made from stable charged particles
   if (matchedDecay > 0) {
-    int id(-1), idx(-1); 
-    TLorentzVector comp; 
+    int id(-1), idx(-1);
+    TLorentzVector comp;
     for (multiset<pair<int, int> >::iterator i = genMap.begin(); i != genMap.end(); ++i) {
-      idx = i->first; 
-      id  = i->second; 
+      idx = i->first;
+      id  = i->second;
       if (id == 11 || id == 13 || id == 211 || id == 321 || id ==2212)  {
-	comp += gHFEvent->getGenCand(idx)->fP ; 
+	comp += gHFEvent->getGenCand(idx)->fP ;
       }
     }
 
@@ -259,9 +259,9 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     pCand->fIndex= motherIndex;
     if (fVerbose > 1) {
       char line[200];
-      sprintf(line, "p=%8.3f(%+9.3f,%+9.3f,%+9.3f), mass = %f", 
-	      pCand->fPlab.Mag(), 
-	      pCand->fPlab.X(), pCand->fPlab.Y(), pCand->fPlab.Z(), 
+      sprintf(line, "p=%8.3f(%+9.3f,%+9.3f,%+9.3f), mass = %f",
+	      pCand->fPlab.Mag(),
+	      pCand->fPlab.X(), pCand->fPlab.Y(), pCand->fPlab.Z(),
 	      pCand->fMass);
       cout << line << endl;
     }
@@ -284,28 +284,28 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     return;
   }
 
-  Vertex dummy; 
+  Vertex dummy;
   map<int,int> trackIxMap; // map: genIx -> trkIx
   map<int,double> trackMassesMap; // map: genIx -> mass
 
-  TSimpleTrack *pTrack; 
+  TSimpleTrack *pTrack;
   if (matchedDecay > 0) {
     for (int it = 0; it < gHFEvent->nSimpleTracks(); ++it) {
-      pTrack = gHFEvent->getSimpleTrack(it); 
-      int gidx = pTrack->getGenIndex(); 
+      pTrack = gHFEvent->getSimpleTrack(it);
+      int gidx = pTrack->getGenIndex();
       if (genIndices.find(gidx) != genIndices.end()) {
 	if (fVerbose > 2) {
-	  cout << "Found simple track: " << it; 
-	  pTrack->dump(); 
+	  cout << "Found simple track: " << it;
+	  pTrack->dump();
 	}
-	
-	double mass = MMUON; 
-	int mcid = TMath::Abs(gHFEvent->getGenCand(gidx)->fID); 
+
+	double mass = MMUON;
+	int mcid = TMath::Abs(gHFEvent->getGenCand(gidx)->fID);
 	if (321  == mcid) mass = MKAON;
 	if (211  == mcid) mass = MPION;
 	if (13   == mcid) mass = MMUON;
 	if (2212 == mcid) mass = MPROTON;
-				
+
 	if (trackIxMap.count(gidx) > 0) {
 	  // -- this code is not longer called since the introduction of the truth matching cleanup
 	  ESHandle<MagneticField> magfield;
@@ -316,7 +316,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  TrajectoryStateOnSurface tsof;
 	  TrackBaseRef trackView;
 	  TVector3 ipGen,ipThis,ipOld;
-					
+
 	  // GENERATOR IMPACT POINT
 	  pGen = gHFEvent->getGenCand(gidx);
 	  fts = FreeTrajectoryState(GlobalPoint(pGen->fV.X(),pGen->fV.Y(),pGen->fV.Z()),
@@ -325,7 +325,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 				    magfield.product());
 	  tsof = ipExt.extrapolate(fts,vtx);
 	  ipGen.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
-					
+
 	  // NEW TRACK IMPACT POINT
 	  trackView = TrackBaseRef(hTracks,it);
 	  fts = FreeTrajectoryState(GlobalPoint(trackView->vx(),trackView->vy(),trackView->vz()),
@@ -334,7 +334,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 				    magfield.product());
 	  tsof = ipExt.extrapolate(fts,vtx);
 	  ipThis.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
-					
+
 	  // OLD TRACK IMPACT POINT
 	  trackView = TrackBaseRef(hTracks,trackIxMap[gidx]);
 	  fts = FreeTrajectoryState(GlobalPoint(trackView->vx(),trackView->vy(),trackView->vz()),
@@ -343,7 +343,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 				    magfield.product());
 	  tsof = ipExt.extrapolate(fts,vtx);
 	  ipOld.SetXYZ(tsof.globalPosition().x(), tsof.globalPosition().y(), tsof.globalPosition().z());
-					
+
 	  // compare the better tracks
 	  if ( (ipGen - ipThis).Mag() < (ipGen - ipOld).Mag() ) {
 	    trackIxMap[gidx] = it;
@@ -362,7 +362,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
 
     if (static_cast<int>(trackIxMap.size()) == fStableDaughters) {
-			
+
       vector<int> trackIndices;
       for (map<int,int>::const_iterator it = trackIxMap.begin(); it != trackIxMap.end(); ++it) {
 	TrackBaseRef trackView(hTracks,it->second);
@@ -392,7 +392,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	cout << "==>HFTruthCandidate> No primary vertex found, skipping" << endl;
 	return;
       }
-	  
+
       // -- get the beamspot
       Handle<BeamSpot> bspotHandle;
       iEvent.getByLabel(fBeamSpotLabel, bspotHandle);
@@ -400,16 +400,16 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	cout << "==>HFbs2JpsiPhi> No beamspot found, skipping" << endl;
 	return;
       }
-      BeamSpot bspot = *bspotHandle;		
+      BeamSpot bspot = *bspotHandle;
 
       HFSequentialVertexFit aSeq(hTracks, muonCollection, fTTB.product(), recoPrimaryVertexCollection, field, bspot, fVerbose);
       // -- setup with (relevant) muon hypothesis
-      HFDecayTree theTree(1000000+fType, true, 0, false); 
-      int ID(0), IDX(0); 
+      HFDecayTree theTree(1000000+fType, true, 0, false);
+      int ID(0), IDX(0);
       for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	IDX = trackIndices[ii];
 	ID  = 13;
-	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl; 
+	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl;
 	theTree.addTrack(IDX, ID);
       }
       aSeq.doFit(&theTree);
@@ -420,193 +420,420 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	IDX = trackIndices[ii];
 	ID  = gHFEvent->getSimpleTrackMCID(IDX);
-	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl; 
+	if (fVerbose > 2) cout << "-> adding track " << IDX << " with ID = " << ID << " to the tree" << endl;
 	theTree2.addTrack(IDX, ID);
       }
       aSeq.doFit(&theTree2);
 
+
       // -- special case for the normalization sample
       if (68 == fType || 66 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon(-1);
 	HFDecayTree theTree3(3000000 + fType, true, MBPLUS, false, -1.0, true);
-
 	HFDecayTreeIterator iterator = theTree3.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  =  gHFEvent->getSimpleTrackMCID(IDX);
 	  if (13 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 13);
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
 	  }
-	}
-
-	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
-	  IDX = trackIndices[ii];
-	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (321 == TMath::Abs(ID)) {
-	    theTree3.addTrack(IDX, 321);
+	    iKaon = IDX;
 	  }
 	  if (211 == TMath::Abs(ID)) {
-	    theTree3.addTrack(IDX, 321); // assign the kaon mass!
+	    iKaon = IDX;
 	  }
 	}
-
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	theTree3.addTrack(iKaon, 321);
 	if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit for Bu2JpsiKp" << endl;
 	aSeq.doFit(&theTree3);
+	TAnaCand *pCand = theTree3.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree3.clear(400521, true, MBPLUS, false, -1.0, true);
+	  iterator = theTree3.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  theTree3.addTrack(iKaon, 321);
+	  theTree3.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree3);
+	  pCand->fDouble1 = theTree3.fTV.mass;
+	  pCand->fDouble2 = theTree3.fTV.masserr;
+	}
       }
-			
+
       // -- special case for the control sample
       if (67 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon1(-1), iKaon2(-1);
 	HFDecayTree theTree4(3000000 + fType, true, MBS, false, -1.0, true);
-
 	HFDecayTreeIterator iterator = theTree4.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (13 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 13);
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
 	  }
-	}
-
-	iterator = theTree4.addDecayTree(300333, false, MPHI, false);
-	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
-	  IDX = trackIndices[ii];
-	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (321 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 321);
-	  }
-	  if (211 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 321); // assign the kaon mass! do we ever get here?
+	    if (iKaon1 < 0) {
+	      iKaon1 = IDX;
+	    } else {
+	      iKaon2 = IDX;
+	    }
 	  }
 	}
-
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree4.addDecayTree(300333, false, MPHI, false);
+	iterator->addTrack(iKaon1, 321);
+	iterator->addTrack(iKaon2, 321);
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi" << endl;
 	aSeq.doFit(&theTree4);
+	TAnaCand *pCand = theTree4.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree4.clear(400531, true, MBS, false, -1.0, true);
+	  iterator = theTree4.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree4.addDecayTree(400333, false, MPHI, false);
+	  iterator->addTrack(iKaon1, 321);
+	  iterator->addTrack(iKaon2, 321);
+	  theTree4.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree4);
+	  pCand->fDouble1 = theTree4.fTV.mass;
+	  pCand->fDouble2 = theTree4.fTV.masserr;
+	}
       }
 
-      //// added by jmonroy //////
-      
       // -- special case for Bd2JPsiKstar
       if (69 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon(-1), iPion(-1);
 	HFDecayTree theTree7(3000000 + fType, true, MB_0, false, -1.0, true);
-
 	HFDecayTreeIterator iterator = theTree7.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (13 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 13);
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
 	  }
-	}
-
-	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
-	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
-	  IDX = trackIndices[ii];
-	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (321 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 321);
+	    iKaon = IDX;
 	  }
 	  if (211 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 211); // assign the pion mass!
+	    iPion = IDX;
 	  }
 	}
-
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
+	iterator->addTrack(iKaon, 321);
+	iterator->addTrack(iPion, 211);
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
+	TAnaCand *pCand = theTree7.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree7.clear(400511, true, MB_0, false, -1.0, true);
+	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator->addTrack(iKaon, 321);
+	  iterator->addTrack(iPion, 211);
+	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree7);
+	  pCand->fDouble1 = theTree7.fTV.mass;
+	  pCand->fDouble2 = theTree7.fTV.masserr;
+	}
       }
 
-      ////////////////////////////
-      
       // -- special case for B0 -> J/psi Kstar reconstructed as B+ -> J/psi K (leaving out the pion)
       if (10 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon(-1);
 	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
-
 	HFDecayTreeIterator iterator = theTree5.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (13 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 13);
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
 	  }
-	}
-
-	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
-	  IDX = trackIndices[ii];
-	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (321 == TMath::Abs(ID)) {
-		  theTree5.addTrack(IDX, 321);
+	    iKaon = IDX;
 	  }
-		// Comment to leave out the pion
-//	  if (211 == TMath::Abs(ID)) {
-//	    //do nothing and ignore the pion from the K*!
-//		  theTree5.addTrack(IDX, 321); // assign the kaon mass!
-//	  }
 	}
 
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bu2JpsiK of Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree5);
+
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	theTree5.addTrack(iKaon, 321);
+	if (fVerbose > 5) cout << "==>HFBu2JpsiKp> sequential fit for Bu2JpsiKp" << endl;
+	aSeq.doFit(&theTree5);
+
+	TAnaCand *pCand = theTree5.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree5.clear(400521, true, MBPLUS, false, -1.0, true);
+	  iterator = theTree5.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  theTree5.addTrack(iKaon, 321);
+	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree5);
+	  pCand->fDouble1 = theTree5.fTV.mass;
+	  pCand->fDouble2 = theTree5.fTV.masserr;
+	}
       }
 
 
-      // -- special case for B0 -> J/psi Kstar reconstructed as Bs -> J/psi KK 
+      // -- special case for B0 -> J/psi Kstar reconstructed as Bs -> J/psi KK
       if (11 == fType) {
-	HFDecayTree theTree6(3000000 + fType, true, MBS, false, -1.0, true);
-
-	HFDecayTreeIterator iterator = theTree6.addDecayTree(300443, false, MJPSI, false);
+	int iMuon1(-1), iMuon2(-1), iKaon1(-1), iKaon2(-1);
+	HFDecayTree theTree5(3000000 + fType, true, MBS, false, -1.0, true);
+	HFDecayTreeIterator iterator = theTree5.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
 	  if (13 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 13);
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
+	  }
+	  if ((321 == TMath::Abs(ID)) || (211 == TMath::Abs(ID))) {
+	    if (iKaon1 < 0) {
+	      iKaon1 = IDX;
+	    } else {
+	      iKaon2 = IDX;
+	    }
+
 	  }
 	}
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree5.addDecayTree(300333, false, MPHI, false);
+	iterator->addTrack(iKaon1, 321);
+	iterator->addTrack(iKaon2, 321);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiKK of Bd2JpsiKstar" << endl;
+	aSeq.doFit(&theTree5);
+	TAnaCand *pCand = theTree5.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree5.clear(400521, true, MBS, false, -1.0, true);
+	  iterator = theTree5.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree5.addDecayTree(300333, false, MPHI, false);
+	  iterator->addTrack(iKaon1, 321);
+	  iterator->addTrack(iKaon2, 321);
+	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree5);
+	  pCand->fDouble1 = theTree5.fTV.mass;
+	  pCand->fDouble2 = theTree5.fTV.masserr;
+	}
+      }
 
-	iterator = theTree6.addDecayTree(300333, false, MPHI, false);
+
+      // -- special case for Bs -> J/psi Phi reconstructed as B+ -> J/psi K (create two candidates for the two kaons)
+      if (12 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon1(-1), iKaon2(-1);
+	double pTKaon(-1.);
+	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
+	HFDecayTreeIterator iterator = theTree5.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
 	  IDX = trackIndices[ii];
 	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
-	  if (321 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 321);
+	  if (13 == TMath::Abs(ID)) {
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
 	  }
-	  if (211 == TMath::Abs(ID)) {
-	    iterator->addTrack(IDX, 321);
+	  if (321 == TMath::Abs(ID)) {
+	    if (iKaon1 < 0) {
+	      iKaon1 = IDX;
+	    } else {
+	      iKaon2 = IDX;
+	    }
 	  }
 	}
 
-	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi of Bd2JpsiKstar" << endl;
-	aSeq.doFit(&theTree6);
+	// -- candidate with first kaon
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	theTree5.addTrack(iKaon1, 321);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for first Bu2JpsiK from Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree5);
+
+	TAnaCand *pCand = theTree5.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree5.clear(400521, true, MBPLUS, false, -1.0, true);
+	  iterator = theTree5.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  theTree5.addTrack(iKaon1, 321);
+	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree5);
+	  pCand->fDouble1 = theTree5.fTV.mass;
+	  pCand->fDouble2 = theTree5.fTV.masserr;
+	}
+
+	// -- candidate with second kaon
+	theTree5.clear(400521, true, MBPLUS, false, -1.0, true);
+	iterator = theTree5.addDecayTree(400443, false, MJPSI, false);
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	theTree5.addTrack(iKaon2, 321);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for second Bu2JpsiK from Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree5);
+
+	pCand = theTree5.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree5.clear(400521, true, MBPLUS, false, -1.0, true);
+	  iterator = theTree5.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  theTree5.addTrack(iKaon2, 321);
+	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree5);
+	  pCand->fDouble1 = theTree5.fTV.mass;
+	  pCand->fDouble2 = theTree5.fTV.masserr;
+	}
+
       }
 
+
+      // -- special case for Bs -> J/psi phi reconstructed as Bd -> J/psi Kstar
+      if (13 == fType) {
+	int iMuon1(-1), iMuon2(-1), iKaon(-1), iPion(-1);
+	HFDecayTree theTree7(3000000 + fType, true, MB_0, false, -1.0, true);
+	HFDecayTreeIterator iterator = theTree7.addDecayTree(300443, false, MJPSI, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (13 == TMath::Abs(ID)) {
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
+	  }
+	  if ((321 == TMath::Abs(ID)) || (211 == TMath::Abs(ID))) {
+	    if (iKaon < 0) {
+	      iKaon = IDX;
+	    } else {
+	      iPion = IDX;
+	    }
+	  }
+	}
+	// -- first version
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
+	iterator->addTrack(iKaon, 321);
+	iterator->addTrack(iPion, 211);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for first Bd2JpsiKstar from Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree7);
+	TAnaCand *pCand = theTree7.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree7.clear(400511, true, MB_0, false, -1.0, true);
+	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator->addTrack(iKaon, 321);
+	  iterator->addTrack(iPion, 211);
+	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree7);
+	  pCand->fDouble1 = theTree7.fTV.mass;
+	  pCand->fDouble2 = theTree7.fTV.masserr;
+	}
+
+	// -- second version
+	theTree7.clear(400511, true, MB_0, false, -1.0, true);
+	iterator = theTree7.addDecayTree(400443, false, MJPSI, false);
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree7.addDecayTree(300313, false, MKSTAR, false);
+	iterator->addTrack(iPion, 321);
+	iterator->addTrack(iKaon, 211);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for second Bd2JpsiKstar from Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree7);
+	pCand = theTree7.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree7.clear(400511, true, MB_0, false, -1.0, true);
+	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator->addTrack(iKaon, 321);
+	  iterator->addTrack(iPion, 211);
+	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree7);
+	  pCand->fDouble1 = theTree7.fTV.mass;
+	  pCand->fDouble2 = theTree7.fTV.masserr;
+	}
+
+      }
+
+
       // -- special case for B0 -> D*-pi+
-      int iPion1(-1), iPion2(-1), iPion(-1), iKaon(-1); 
       if (30 == fType) {
+	int iPion1(-1), iPion2(-1), iPion(-1), iKaon(-1);
         for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
           IDX = trackIndices[ii];
           ID  = gHFEvent->getSimpleTrackMCID(IDX);
           int mcidx   = gHFEvent->getSimpleTrack(IDX)->getGenIndex();
           int mcmoidx = gHFEvent->getGenCand(mcidx)->fMom1;
           int mcmoID  = gHFEvent->getGenCand(mcmoidx)->fID;
-          //      cout << "IDX = " << IDX << " ID = " << ID << " mcmoID = " << mcmoID << endl;
           if (421 == TMath::Abs(mcmoID)) {
-            if (321 == TMath::Abs(ID)) iKaon = IDX; 
-            if (211 == TMath::Abs(ID)) iPion = IDX; 
+            if (321 == TMath::Abs(ID)) iKaon = IDX;
+            if (211 == TMath::Abs(ID)) iPion = IDX;
           } else if (413 == TMath::Abs(mcmoID)) {
             iPion1 = IDX;
           } else {
-            iPion2 = IDX; 
+            iPion2 = IDX;
           }
         }
 
         if (iPion > -1 && iKaon > -1 && iPion1 > -1 && iPion2 > -1) {
-          
+
           HFDecayTree theTree(3000000 + fType, true, MB_0, false, -1.0, true);
           theTree.addTrack(iPion2,211); // add the fast pion to the B0 candidate
-          
+
           HFDecayTreeIterator iterator = theTree.addDecayTree(300031, false, MDSTARPLUS, false); // D*-
           iterator->addTrack(iPion1,211); // add the slow pion to the D*+ candidate
-          
+
           iterator = iterator->addDecayTree(300032, true, MD0, false); // D0
           iterator->addTrack(iKaon,321);
           iterator->addTrack(iPion,211);
-          
+
           aSeq.doFit(&theTree);
         }
       }
@@ -614,7 +841,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     }
 
     // -- now copy reduced part of gen block and clear the original
-    gHFEvent->fillGenT(motherIndex); 
+    gHFEvent->fillGenT(motherIndex);
   }
 
 }

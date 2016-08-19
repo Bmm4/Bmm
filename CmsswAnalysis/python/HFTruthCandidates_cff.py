@@ -174,7 +174,7 @@ truthBdToMuMuK0Dump = cms.EDAnalyzer(
     daughtersID  = cms.untracked.vint32(13, -13),
     partialDecayMatching = cms.untracked.bool(True)
     )
-    
+
 
 
 
@@ -271,6 +271,26 @@ truthBs2JpsiPhiDump = cms.EDAnalyzer(
     motherID     = cms.untracked.int32(531),
     type         = cms.untracked.int32(67),
     GenType      = cms.untracked.int32(-67),
+    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2JpsiPhiAsBpDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(12),
+    GenType      = cms.untracked.int32(-12),
+    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2JpsiPhiAsBdDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(13),
+    GenType      = cms.untracked.int32(-13),
     daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
     )
 
@@ -520,6 +540,8 @@ truthRareLambdaBSequence = cms.Sequence(truthLambdaBToPPiDump
 truthB2DstarSequence     = cms.Sequence(truthBd2DstarPiDump)
 
 truthB2JpsiSequence      = cms.Sequence(truthBs2JpsiPhiDump
+                                        *truthBs2JpsiPhiAsBpDump
+                                        *truthBs2JpsiPhiAsBdDump
                                         *truthBd2JpsiKsDump
                                         *truthBd2JpsiKstarDump
                                         *truthBd2JpsiKstarAsBpDump
