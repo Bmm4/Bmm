@@ -1,0 +1,14 @@
+TYPE          3000012
+TRUTHCAND         531
+# -- baseCuts
++input cuts/baseCuts.cuts
+# -- trigger
++input cuts/triggerMixDisplacedJpsi.cuts
+# -- boxes
++input cuts/boxes.Bu2JpsiK.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
