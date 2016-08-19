@@ -23,5 +23,4 @@ struct cuts {
   }
 };
 
-
 #endif
