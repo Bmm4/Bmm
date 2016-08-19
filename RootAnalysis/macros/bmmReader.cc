@@ -206,6 +206,30 @@ void bmmReader::readCuts(TString filename, int dump) {
       lCandAnalysis.push_back(a);
     }
 
+    // -- wrongly reconstructed candidates
+    if (!strcmp(className, "candAnaBd2JpsiKstarAsBs")) {
+      candAna *a = new candAnaBs2JpsiPhi(this, "candAnaBd2JpsiKstarAsBs", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+    if (!strcmp(className, "candAnaBd2JpsiKstarAsBu")) {
+      candAna *a = new candAnaBu2JpsiK(this, "candAnaBd2JpsiKstarAsBu", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+    if (!strcmp(className, "candAnaBs2JpsiPhiAsBd")) {
+      candAna *a = new candAnaBd2JpsiKstar(this, "candAnaBs2JpsiPhiAsBd", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+    if (!strcmp(className, "candAnaBs2JpsiPhiAsBu")) {
+      candAna *a = new candAnaBu2JpsiK(this, "candAnaBs2JpsiPhiAsBu", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+
+
+
     string sclassName(className);
     if (string::npos != sclassName.find("candAnaFake")) {
       candAna *a = new candAnaFake(this, className, cutFile);
