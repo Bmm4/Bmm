@@ -133,7 +133,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (mass > (fCandHi+0.3)) continue;
 
       // -- sequential fit: J/Psi kaons
-      theTree.clear(300511, true, MBS, false, -1.0, true);
+      theTree.clear(300511, true, MB_0, false, -1.0, true);
 
       iterator = theTree.addDecayTree(300443, false, MJPSI, false);
       iterator->addTrack(iMuon1, 13);
