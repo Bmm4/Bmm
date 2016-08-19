@@ -1231,7 +1231,7 @@ void plotClass::readCuts(string filename) {
   readFile(filename, cutLines);
 
   float cutvalue;
-  int dump(1), ok(0);
+  int dump(0), ok(0);
   string cutname("nada");
 
   cuts *a = 0;
@@ -1271,6 +1271,29 @@ void plotClass::readCuts(string filename) {
       a = fCuts[j-1];
 
       cutvalue = atof(lineItems[j].c_str());
+      if (cutname == "nchan") {
+	ok = 1;
+      }
+
+      if (cutname == "index") {
+	a->index = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "index:                " << cutvalue << endl;
+      }
+
+      if (cutname == "metaMin") {
+	a->metaMin = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "metaMin:              " << cutvalue << endl;
+      }
+
+      if (cutname == "metaMax") {
+	a->metaMax = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "metaMax:              " << cutvalue << endl;
+      }
+
+      if (cutname == "mBdLo") {
+	a->mBdLo = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBdLo:                " << cutvalue << endl;
+      }
 
       if (cutname == "mBdLo") {
 	a->mBdLo = cutvalue; ok = 1;
