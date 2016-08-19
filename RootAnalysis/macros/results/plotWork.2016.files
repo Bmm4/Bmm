@@ -1,8 +1,8 @@
 # -- SingleMuon
-type=bupsik,SingleMuon      lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
-type=bspsiphi,SingleMuon    lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
-type=bdpsikstar,SingleMuon  lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
-type=bmm,SingleMuon         lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+#type=bupsik,SingleMuon      lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+#type=bspsiphi,SingleMuon    lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+#type=bdpsikstar,SingleMuon  lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
+#type=bmm,SingleMuon         lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmSingleMuon2016B-v01.root
 # -- Charmonium
 type=bupsik,Charmonium      lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmCharmonium2016B-v01.root
 type=bspsiphi,Charmonium    lumi=1. file=/scratch/ursl/bmm4/v01/bmm-data-bmmCharmonium2016B-v01.root
