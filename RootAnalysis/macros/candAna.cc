@@ -236,7 +236,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 		 <<" hlt "<<fGoodHLT<<" matched "<<fHLTmatch<<endl;
 
 
-	  fTree->Fill();
+	  if (fJSON) fTree->Fill();
 
 	  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
 	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
@@ -523,6 +523,12 @@ void candAna::candAnalysis() {
   fMu2IP        = p2->fBsTip;
   fMu2IPE       = p2->fBsTipE;
 
+  fChan = detChan(fMu1Eta, fMu2Eta);
+  if (fChan < 0) {
+    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta << " -> chan = " << fChan << " returning!" << endl;
+    return;
+  }
+
   // -- fill tree for muon id MVA studies
   if (0 && (fMu1rTmId || fMu2rTmId)) {
     TAnaMuon *pt(0);
@@ -643,14 +649,6 @@ void candAna::candAnalysis() {
 
 
   xpDistMuons();
-
-  if ((TMath::Abs(fMu1Eta) < 1.4) && (TMath::Abs(fMu2Eta) < 1.4)) {
-    fBarrel = true;
-  } else {
-    fBarrel = false;
-  }
-
-  fChan = detChan(fMu1Eta, fMu2Eta);
 
   double dphi = p1->fPlab.DeltaPhi(p2->fPlab);
   fCowboy = (p1->fQ*dphi > 0);
