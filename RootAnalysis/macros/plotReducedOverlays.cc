@@ -243,7 +243,7 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
 
     stamp(0., fStampCms, fStampString, 0., fStampLumi);
 
-    c0->SaveAs(Form("%s/mass_ad%d_%s_%s.pdf", fDirectory.c_str(), i, sample.c_str(), selection.c_str()));
+    c0->SaveAs(Form("%s/mass_ad%d_%d_%s_%s.pdf", fDirectory.c_str(), i, fYear, sample.c_str(), selection.c_str()));
   }
   fHistFile->Close();
 }
@@ -932,8 +932,8 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
 
     c0->Modified();
     c0->Update();
-    c0->SaveAs(Form("%s/overlay_%s_%s_%s_%s.pdf",
-		    fDirectory.c_str(), sample1.c_str(), sample2.c_str(), fDoList[i].c_str(), selection.c_str()));
+    c0->SaveAs(Form("%s/overlay_%s_%s_%d_%s_%s.pdf",
+		    fDirectory.c_str(), sample1.c_str(), sample2.c_str(), fYear, fDoList[i].c_str(), selection.c_str()));
 
 
 
