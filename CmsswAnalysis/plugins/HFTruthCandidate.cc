@@ -838,8 +838,88 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
         }
       }
 
-    }
 
+      // -- special case for Bc -> J/psi mu nu (not combining the two J/psi muons)
+      if (20 == fType) {
+	int iMuon1(-1), iMuon2(-1), iMuon3(-1);
+	int q1(99), q2(99), q3(99);
+	TSimpleTrack *st1(0), *st2(0), *st3(0);
+	HFDecayTree theTree2(3000000+fType, true, 0, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (13 == TMath::Abs(ID)) {
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	      q1 = gHFEvent->getSimpleTrackMCID(IDX);
+	      st1 = gHFEvent->getSimpleTrack(IDX);
+	      q1  = st1->getCharge();
+	    } else if (iMuon2 < 0) {
+	      iMuon2 = IDX;
+	      st2 = gHFEvent->getSimpleTrack(IDX);
+	      q2  = st2->getCharge();
+	    } else if (iMuon3 < 0) {
+	      iMuon3 = IDX;
+	      st3 = gHFEvent->getSimpleTrack(IDX);
+	      q3  = st3->getCharge();
+	    }
+	  }
+	}
+
+	int fit(0);
+	double m(0.);
+	//	cout << "----------------------------------------------------------------------" << endl;
+	if (q1*q2 < 0) {
+	  TLorentzVector p1, p2;
+	  p1.SetXYZM(st1->getP().X(), st1->getP().Y(), st1->getP().Z(), MMUON);
+	  p2.SetXYZM(st2->getP().X(), st2->getP().Y(), st2->getP().Z(), MMUON);
+	  m = (p1+p2).M();
+	  //	  cout << "m = " << m << endl;
+	  if (m > 4.0) {
+	    fit += 1;
+	  }
+	}
+
+	if (q1*q3 < 0) {
+	  TLorentzVector p1, p2;
+	  p1.SetXYZM(st1->getP().X(), st1->getP().Y(), st1->getP().Z(), MMUON);
+	  p2.SetXYZM(st3->getP().X(), st3->getP().Y(), st3->getP().Z(), MMUON);
+	  //	  cout << "old m = " << m << " and new m = " << (p1+p2).M() << endl;
+	  m = (p1+p2).M();
+	  if (m > 4) {
+	    fit += 2;
+	  }
+	}
+
+	if (q2*q3 < 0) {
+	  TLorentzVector p1, p2;
+	  p1.SetXYZM(st2->getP().X(), st2->getP().Y(), st2->getP().Z(), MMUON);
+	  p2.SetXYZM(st3->getP().X(), st3->getP().Y(), st3->getP().Z(), MMUON);
+	  //	  cout << "old m = " << m << " and new m = " << (p1+p2).M() << endl;
+	  m = (p1+p2).M();
+	  if (m > 4) {
+	    fit += 4;
+	  }
+	}
+
+	if (1 == fit) {
+	  theTree2.addTrack(iMuon1, 13);
+	  theTree2.addTrack(iMuon2, 13);
+	} else if (2 == fit) {
+	  theTree2.addTrack(iMuon1, 13);
+	  theTree2.addTrack(iMuon3, 13);
+	} else if (4 == fit) {
+	  theTree2.addTrack(iMuon2, 13);
+	  theTree2.addTrack(iMuon3, 13);
+	} else if (0 == fit ) {
+	  //	  cout << "NOT FITTING, no mass > 4" << endl;
+	} else {
+	  cout << "^&^&^&^&^&^&^&^&^ multiple candidates??" << endl;
+	}
+
+	aSeq.doFit(&theTree2);
+      }
+    }
     // -- now copy reduced part of gen block and clear the original
     gHFEvent->fillGenT(motherIndex);
   }

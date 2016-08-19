@@ -214,6 +214,21 @@ truthBuToMuMuPiDump = cms.EDAnalyzer(
     partialDecayMatching = cms.untracked.bool(True)
     )
 
+# ######################################################################
+# Bc modes
+# ######################################################################
+
+# ----------------------------------------------------------------------
+truthBcToJpsiMuNuDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(541),
+    type         = cms.untracked.int32(20),
+    GenType      = cms.untracked.int32(-20),
+    daughtersID  = cms.untracked.vint32(443, 13, 13, -13, 14)
+    )
+
+
 
 # ######################################################################
 # LambdaB modes
@@ -528,6 +543,8 @@ truthRareBdSequence      = cms.Sequence(truthBdToPiPiDump
                                         *truthBdToRhoPiDump
                                         )
 
+truthRareBcSequence      = cms.Sequence(truthBcToJpsiMuNuDump)
+
 truthRareBuSequence      = cms.Sequence(truthBuTo3MuNuDump
                                         *truthBuToMuMuKDump
                                         *truthBuToMuMuPiDump
@@ -568,6 +585,7 @@ truthBmmSequence         = cms.Sequence(truthSignalsSequence
                                         *truthRareBsSequence
                                         *truthRareBdSequence
                                         *truthRareBuSequence
+                                        *truthRareBcSequence
                                         *truthRareLambdaBSequence
                                         )
 
@@ -581,6 +599,7 @@ truthBmtSequence         = cms.Sequence(truthSignalsSequence
 truthAllSequence         = cms.Sequence(truthSignalsSequence
                                         *truthRareBsSequence
                                         *truthRareBdSequence
+                                        *truthRareBcSequence
                                         *truthRareBuSequence
                                         *truthRareLambdaBSequence
                                         *truthB2JpsiSequence
