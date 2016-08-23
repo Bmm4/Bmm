@@ -604,6 +604,25 @@ void initFunc::applyLimits(int npar, TF1 *f, string name) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::err(double lo, double hi) {
+  TF1 *f = new TF1("f1", iF_err, lo, hi, 4);
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::err(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f = new TF1("f1", iF_err, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 4);
+
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
 TF1* initFunc::pol0(double lo, double hi) {
   TF1 *f = new TF1("f1", iF_pol0, lo, hi, 1);
   return f;
