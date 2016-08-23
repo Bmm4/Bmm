@@ -529,7 +529,7 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
-  // pol1 and gauss2
+  // pol1 and gauss2c
   double iF_pol1_gauss2c(double *x, double *par) {
     //   par[0] = norm of gaussian
     //   par[1] = mean of gaussian
@@ -541,6 +541,31 @@ namespace {
     return  (iF_pol1(x, &par[5]) + iF_gauss2c(x, &par[0]));
   }
 
+  // ----------------------------------------------------------------------
+  // pol1 and gauss2
+  double iF_pol1_gauss2(double *x, double *par) {
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> mean of second gaussian
+    // par[5] -> sigma of second gaussian
+    // par[6] = par 0 of pol1
+    // par[7] = par 1 of pol1
+    return  (iF_pol1(x, &par[6]) + iF_gauss2(x, &par[0]));
+  }
+
+
+  // ----------------------------------------------------------------------
+  // pol1 and landau
+  double iF_pol1_landau(double *x, double *par) {
+    //   par[0] = mpv
+    //   par[1] = sigma
+    //   par[2] = norm
+    //   par[3] = par 0 of pol1
+    //   par[4] = par 1 of pol1
+    return  (iF_pol1(x, &par[3]) + iF_landau(x, &par[0]));
+  }
 
 }
 
@@ -660,6 +685,29 @@ TF1* initFunc::argus(double lo, double hi) {
   return f;
 }
 
+
+// ----------------------------------------------------------------------
+TF1* initFunc::landau(double lo, double hi) {
+  TF1 *f = new TF1("f1", iF_landau, lo, hi, 3);
+  f->SetParName(0, "mpvl");
+  f->SetParName(1, "sigl");
+  f->SetParName(2, "norm");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::landau(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f = new TF1("f1", iF_landau, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 3);
+  f->SetParName(0, "mpvl");
+  f->SetParName(1, "sigl");
+  f->SetParName(2, "norm");
+  return f;
+}
 
 
 // ----------------------------------------------------------------------
@@ -1003,6 +1051,8 @@ TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);
 
+  cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
+  cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
   f->SetParameters(g0, peak, sigma, p0, p1);
   applyLimits(npar, f, "pol1gauss");
   return f;
@@ -1021,15 +1071,40 @@ TF1* initFunc::pol1Gauss(TH1 *h, double peak, double sigma) {
     hbin = h->FindBin(fHi);
   }
 
-  cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
 
   double p0, p1;
   initPol1(p0, p1, h);
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
-
+  cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
+  cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
   f->SetParameters(g0, peak, sigma, p0, p1);
   applyLimits(npar, f, "pol1Gauss");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol1Landau(TH1 *h, double peak, double sigma) {
+  int npar(5);
+  TF1 *f = new TF1("f1", iF_pol1_landau, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("mpv", "sigma", "norm", "constant", "slope");
+
+  int lbin(1), hbin(h->GetNbinsX());
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  }
+
+
+  double p0, p1;
+  initPol1(p0, p1, h);
+  double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
+  double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
+  cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
+  cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
+  f->SetParameters(peak, sigma, g0, p0, p1);
+  applyLimits(npar, f, "pol1Landau");
   return f;
 }
 
@@ -1609,6 +1684,54 @@ TF1* initFunc::pol1gauss2c(TH1 *h, double peak, double sigma) {
   f->ReleaseParameter(2);     f->SetParLimits(2, sigma*0.4, sigma*1.3);
   f->ReleaseParameter(3);     f->SetParLimits(3, 0.01, 2.0);
   f->ReleaseParameter(4);     f->SetParLimits(4, sigma*1.2, sigma*10.0);
+
+  return f;
+
+
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol1gauss2(TH1 *h, double peak, double sigma, double deltaPeak, double deltaSigma) {
+
+  TF1 *f = (TF1*)gROOT->FindObject("f1_pol1_gauss2");
+  if (f) delete f;
+  f = new TF1("f1_pol1_gauss2", iF_pol1_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 8);
+  f->SetParNames("norm", "peak", "sigma", "fraction", "peak2", "sigma2", "constant", "slope");
+  //  f->SetLineColor(kBlue);
+  f->SetLineWidth(2);
+
+  int lbin(1), hbin(h->GetNbinsX()+1);
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  }
+
+  //   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin
+  //        << " sigma = " << sigma << " peak = " << peak
+  //        << endl;
+
+  double p0, p1;
+  initPol1(p0, p1, h);
+  cout << "p0: " << p0 << " p1: " << p1 << endl;
+  double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
+
+  double sqrt2pi = 2.506628275;
+  double gInt    = h->Integral(lbin, hbin) - A;
+  //   cout << "A: " << A << endl;
+  //   cout << "gInt: " << gInt << endl;
+  //   cout << "h->Integral(): " << h->Integral(lbin, hbin) << endl;
+
+  double gaussN  = gInt/(2.*sqrt2pi*sigma)*h->GetBinWidth(1);
+
+  //   cout << "initFunc> gaussN = " << gaussN << " peak = " << peak << " sigma = " << sigma << " p0 = " << p0 << " p1 = " << p1 << endl;
+  f->SetParameters(gaussN, peak, sigma, 0.2, peak + deltaPeak, sigma+deltaSigma, p0, p1);
+  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7);
+  f->ReleaseParameter(1);     f->SetParLimits(1, peak-0.1, peak+0.1);
+  f->ReleaseParameter(2);     f->SetParLimits(2, 0.2*sigma, 1.6*sigma);
+  f->ReleaseParameter(3);     f->SetParLimits(3, 0.01, 2.0);
+  f->ReleaseParameter(4);     f->SetParLimits(4, peak+deltaPeak-0.2, peak+deltaPeak+0.2);
+  f->ReleaseParameter(5);     f->SetParLimits(5, sigma*1.01, sigma*10.0);
 
   return f;
 

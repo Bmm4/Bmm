@@ -43,6 +43,8 @@ public:
   TF1* argus(TH1 *h);
   TF1* argus(TH1 *h, double lo, double hi);
 
+  TF1* landau(double lo, double hi);
+  TF1* landau(TH1 *h);
 
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
@@ -54,6 +56,7 @@ public:
   TF1* pol1Gauss(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
   TF1* pol1gauss2c(TH1 *h, double peak = 5.3, double sigma = 0.04);
+  TF1* pol1gauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double deltaPeak = 0.1, double deltaSigma = 0.1);
 
   TF1* expoGauss(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
@@ -67,6 +70,7 @@ public:
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1CrystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
+  TF1* pol1Landau(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
   TF1* pol0BsBlind(TH1 *h);
   TF1* pol1BsBlind(TH1 *h);
