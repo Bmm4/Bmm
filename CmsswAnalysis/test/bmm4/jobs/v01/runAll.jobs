@@ -107,3 +107,11 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $dataset = "RunIIFall15DR76";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q $opt_q *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIIFall15DR76-XXXX.py -f ../../../catalogs/RunIIFall15DR76/BdToMuMu_BMuonFilter -s $version -e 30000;  \ \n";
+
+# -- relval MC
+$dataset = "relval";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer16_private-XXXX.py -f ../../../catalogs/relval/CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2/RelValBdToMuMu_13__CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2-v1 -s $version -n 10 -l ;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer16_private-XXXX.py -f ../../../catalogs/relval/CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2/RelValBuToJpsiK_13__CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2-v1 -s $version -n 10 -l ;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer16_private-XXXX.py -f ../../../catalogs/relval/CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2/RelValBsToJpsiPhi_13__CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2-v1 -s $version -n 10 -l ;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer16_private-XXXX.py -f ../../../catalogs/relval/CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2/RelValBsToMuMu_13__CMSSW_8_1_0_pre9-81X_mcRun2_asymptotic_v2-v1 -s $version -n 10 -l ;  \ \n";
