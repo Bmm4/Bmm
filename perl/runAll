@@ -98,7 +98,6 @@ if ($opt_p) {
 		chdir("$j");
 	    }
 	}
-
 	print "$catalogs{$j}\n";
 	if (!$opt_d) {
 	    system("$catalogs{$j}");
@@ -156,8 +155,8 @@ foreach $j (keys %jobs) {
     }
     if ($opt_l) {
 	$jobs{$j} =~ s/\|\& tee/>/g;
-	$command = "nice $runCommand $jobs{$j} $opt_x >>$dir/runAll.log";
-	$command = "nice $runCommand $jobs{$j} $opt_x";
+	$command = "$runCommand $jobs{$j} $opt_x >>$dir/runAll.log";
+	$command = "$runCommand $jobs{$j} $opt_x";
 	print "$command\n";
 	if (!$opt_d) {
 	    system($command);
