@@ -132,8 +132,8 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
-  fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} [GeV]"));
-  fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} [GeV]"));
+  fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} #it{[GeV]}"));
+  fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("m1eta", "#eta_{#mu,1}"));
   fVarToTex.insert(make_pair("m2eta", "#eta_{#mu,2}"));
   fVarToTex.insert(make_pair("fls3d", "l_{3D}/#sigma(l_{3D})"));
@@ -143,14 +143,17 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVarToTex.insert(make_pair("iso", "isolation"));
   fVarToTex.insert(make_pair("m1iso", "#mu_{1} isolation"));
   fVarToTex.insert(make_pair("m2iso", "#mu_{2} isolation"));
-  fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0} [cm]"));
+  fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0} #it{[cm]}"));
   fVarToTex.insert(make_pair("closetrk", "N_{trk}^{close}"));
+  fVarToTex.insert(make_pair("closetrks1", "N_{trk}^{close, 1#sigma}"));
+  fVarToTex.insert(make_pair("closetrks2", "N_{trk}^{close, 2#sigma}"));
+  fVarToTex.insert(make_pair("closetrks3", "N_{trk}^{close, 3#sigma}"));
 
-  fVarToTex.insert(make_pair("maxdoca", "d^{max} [cm]"));
-  fVarToTex.insert(make_pair("pvip", "#delta_{3D} [cm]"));
+  fVarToTex.insert(make_pair("maxdoca", "d^{max} #it{[cm]}"));
+  fVarToTex.insert(make_pair("pvip", "#delta_{3D} #it{[cm]}"));
   fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
 
-  fVarToTex.insert(make_pair("pt", "p_{T_{B}} [GeV]"));
+  fVarToTex.insert(make_pair("pt", "p_{T_{B}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("eta", "#eta_{B}"));
 
   // -- initialize cuts
@@ -916,18 +919,18 @@ void plotClass::candAnalysis(/*int mode*/) {
 
 
 // ----------------------------------------------------------------------
-TTree* plotClass::getTree(string ds, string dir) {
+TTree* plotClass::getTree(string ds, string dir, string tree) {
   if (!fDS[ds]) {
     cout << "xx> plotClass::getTree: dataset " << ds << " not found" << endl;
     return 0;
   }
   TTree *t(0);
   if (!dir.compare("")) {
-    t = (TTree*)fDS[ds]->fF->Get("events");
+    t = (TTree*)fDS[ds]->fF->Get(tree.c_str());
   } else {
-    t = (TTree*)fDS[ds]->fF->Get(Form("%s/events", dir.c_str()));
+    t = (TTree*)fDS[ds]->fF->Get(Form("%s/%s", dir.c_str(), tree.c_str()));
   }
-  cout << "plotClass::getTree(" << ds << ", " << dir << "): " << t << endl;
+  cout << "plotClass::getTree(" << ds << ", " << dir << ", " << tree << "): " << t << endl;
   return t;
 }
 
@@ -956,7 +959,7 @@ void plotClass::newLegend(double x1, double y1, double x2, double y2, string tit
   legg->SetBorderSize(0);
   legg->SetTextSize(0.04);
   legg->SetFillColor(0);
-  legg->SetTextFont(42);
+  legg->SetTextFont(52);
 }
 
 // ----------------------------------------------------------------------
@@ -1417,10 +1420,6 @@ void plotClass::readCuts(string filename) {
 
 // ----------------------------------------------------------------------
 int plotClass::detChan(double m1eta, double m2eta) {
-// -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-  //old   if (TMath::Abs(m1eta) < fCuts[0]->etaMax && TMath::Abs(m2eta) < fCuts[0]->etaMax) return 0;
-  //old   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
-
 
   double m1 = TMath::Abs(m1eta);
   double m2 = TMath::Abs(m2eta);
@@ -1770,7 +1769,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikMc";
-        sdecay = "bupsik";
+        sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
@@ -1782,7 +1781,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiMc";
-        sdecay = "bspsiphi";
+        sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}}#it{#phi}";
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
@@ -1793,7 +1792,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bsmm,")) {
         sname = "bsmmMc";
-        sdecay = "bsmm";
+        sdecay = "B^{0}_{s} #rightarrow #it{#mu#mu}";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
@@ -1805,7 +1804,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
-        sdecay = "bdpsikstar";
+        sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
@@ -1816,7 +1815,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bdmm,")) {
         sname = "bdmmMc";
-        sdecay = "bdmm";
+        sdecay = "B^{0} #rightarrow #it{#mu#mu}";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
@@ -1907,7 +1906,7 @@ TStyle * plotClass::setTdrStyle() {
   tdrStyle->SetOptFile(0);
   tdrStyle->SetOptStat(0); // To display the mean and RMS:   SetOptStat("mr");
   tdrStyle->SetStatColor(kWhite);
-  tdrStyle->SetStatFont(42);
+  tdrStyle->SetStatFont(52);
   tdrStyle->SetStatFontSize(0.025);
   tdrStyle->SetStatTextColor(1);
   tdrStyle->SetStatFormat("6.4g");
@@ -1926,7 +1925,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the Global title:
   tdrStyle->SetOptTitle(0);
-  tdrStyle->SetTitleFont(42);
+  tdrStyle->SetTitleFont(52);
   tdrStyle->SetTitleColor(1);
   tdrStyle->SetTitleTextColor(1);
   tdrStyle->SetTitleFillColor(10);
@@ -1940,7 +1939,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the axis titles:
   tdrStyle->SetTitleColor(1, "XYZ");
-  tdrStyle->SetTitleFont(42, "XYZ");
+  tdrStyle->SetTitleFont(52, "XYZ");
   tdrStyle->SetTitleSize(0.06, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
@@ -1950,7 +1949,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the axis labels:
   tdrStyle->SetLabelColor(1, "XYZ");
-  tdrStyle->SetLabelFont(42, "XYZ");
+  tdrStyle->SetLabelFont(52, "XYZ");
   tdrStyle->SetLabelOffset(0.007, "XYZ");
   tdrStyle->SetLabelSize(0.05, "XYZ");
 

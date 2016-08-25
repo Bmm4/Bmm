@@ -67,7 +67,7 @@ public :
   enum MODE {UNSET, BMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI};
 
   // -- stuff to run over the tree from any derived class
-  TTree*         getTree(std::string ds, std::string dir = "");
+  TTree*         getTree(std::string ds, std::string dir = "", std::string tree = "events");
   virtual void   setupTree(TTree *t, std::string mode = "");
   virtual void   candAnalysis(/*int mode*/);
   virtual void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
