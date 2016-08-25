@@ -19,14 +19,21 @@ public :
   // -- Main analysis methods
   virtual void init();
   virtual void loadFiles(std::string afiles);
-  virtual void makeAll(int bitmask = 0);
+  virtual void makeAll(std::string what = "all");
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg);
 
-  // -- fitting studies
-  void fitJpsiPhi(string ds1);
+  // -- genSummary plots
+  void genSummary(std::string dsname, std::string dir);
 
+  // -- fitting studies
+  void fitStudies(std::string ds1, std::string tag, int nevt = -1, int nstart = -1);
+  double MKKLO, MKKHI, DR, PTK1, PTK2, PTPSI;
+  void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
+  void plotWrongReco(std::string var, int nbin, double min, double max, std::string selection,
+		     std::string wds, std::string wdir,
+		     std::string cds, std::string cdir);
 
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
@@ -50,6 +57,7 @@ public :
   // -- code for loops
   void   loopFunction1();
   void   loopFunction2();
+  void   loopFunction3();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
@@ -60,6 +68,7 @@ private:
   ClassDef(plotWork,1)
 
   TH1D *fpHnorm, *fpHpass;
+  std::vector<TH1D *> fHma, fHmc;
 
   std::map<int, TH1D*> fYieldRTR, fYieldHLT;
 

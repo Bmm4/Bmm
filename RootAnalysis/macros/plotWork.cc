@@ -45,6 +45,12 @@ plotWork::plotWork(string dir, string files, string cuts, string setup): plotCla
 
   fChan = 0;
 
+  MKKLO = 0.9;
+  MKKHI = 1.2;
+  DR    = 99.;
+  PTK1  = 0.0;
+  PTK2  = 0.0;
+  PTPSI = 0.0;
 }
 
 
@@ -125,11 +131,9 @@ void plotWork::init() {
 
 
 // ----------------------------------------------------------------------
-void plotWork::makeAll(int bitmask) {
+void plotWork::makeAll(string what) {
 
-
-
-  if (bitmask & 0x1) {
+  if (what == "work" || string::npos != what.find("runtis")) {
     runTisEfficiency("bupsikData");
     runTisEfficiency("bspsiphiData");
     runTisEfficiency("bdpsikstarData");
@@ -141,11 +145,11 @@ void plotWork::makeAll(int bitmask) {
     runTisEfficiency("bmmSingleMuon");
   }
 
-  if (bitmask & 0x2) {
+  if (what == "work" || string::npos != what.find("plottis")) {
     plotTisEfficiency("all");
   }
 
-  if (bitmask & 0x4) {
+  if (what == "all" || string::npos != what.find("effvar")) {
     efficiencyVariable("all", "hlt", 10, 0, 0, 0, "bupsikMc");
     efficiencyVariable("all", "reftrg", 10, 0, 0, 0, "bupsikMc");
 
@@ -155,7 +159,89 @@ void plotWork::makeAll(int bitmask) {
     efficiencyVariable("all", "hlt", 12, 0, 0, 0, "bupsikMc");
 
   }
+
+  if (what == "work" || string::npos != what.find("fitstudies")) {
+    //    int ndata(500000), nmc(400000);
+    int ndata(-1), nmc(-1);
+    MKKLO = 0.9;
+    MKKHI = 1.3;
+    DR    = 99.;
+    PTK1  = 0.0;
+    PTK2  = 0.0;
+
+    fitStudies("bspsiphiData", Form("norm"), ndata);
+    //    fitStudies("bspsiphiMc", Form("norm"), nmc);
+
+    return;
+
+    for (int i = 0; i < 5; ++i) {
+      MKKLO = 1.015 - i*0.005;
+      MKKHI = 1.025 + i*0.005;
+      fitStudies("bspsiphiData", Form("mkk%d", i), ndata);
+      fitStudies("bspsiphiMc", Form("mkk%d", i), nmc);
+    }
+
+    MKKLO = 1.01;
+    MKKHI = 1.03;
+    DR    = 2.0;
+    PTK1  = 0.0;
+    PTK2  = 0.0;
+    for (int i = 0; i < 20; ++i) {
+      DR = 2.0 - i*0.1;
+      fitStudies("bspsiphiData", Form("dr%d", i), ndata);
+      fitStudies("bspsiphiMc", Form("dr%d", i), nmc);
+    }
+
+
+    MKKLO = 1.01;
+    MKKHI = 1.03;
+    DR    = 0.4;
+    PTK1  = 0.0;
+    PTK2  = 0.0;
+    for (int i = 0; i < 8; ++i) {
+      PTK1 = 0.3 + i*0.1;
+      fitStudies("bspsiphiData", Form("ptk1%d", i), ndata);
+      fitStudies("bspsiphiMc", Form("ptk1%d", i), nmc);
+    }
+
+    MKKLO = 1.01;
+    MKKHI = 1.03;
+    DR    = 0.4;
+    PTK1  = 0.7;
+    PTK2  = 0.0;
+    for (int i = 0; i < 8; ++i) {
+      PTK2 = 0.3 + i*0.1;
+      fitStudies("bspsiphiData", Form("ptk2%d", i), ndata);
+      fitStudies("bspsiphiMc", Form("ptk2%d", i), nmc);
+    }
+  }
+
+
+  if (what == "all" || string::npos != what.find("wrongreco")) {
+    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBu", "hlt");
+    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03");
+    wrongReco("bcpsimunuMc", "candAnaMuMu", "");
+
+    plotWrongReco("alpha", 50, 0., 0.1, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("closetrk", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("iso", 51, 0., 1.01, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("pvip", 50, 0., 0.02, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("pvips", 50, 0., 4., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("closetrks1", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("closetrks2", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("closetrks3", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+    plotWrongReco("docatrk", 100, 0., 0.02, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
+  }
+
+  if (what == "relval") {
+    genSummary("bsmmrelval", "candAnaMuMu");
+    genSummary("bdmmrelval", "candAnaMuMu");
+    genSummary("bupsikrelval", "candAnaBu2JpsiK");
+    genSummary("bspsiphirelval", "candAnaBs2JpsiPhi");
+  }
+
 }
+
 
 
 // ----------------------------------------------------------------------
@@ -165,6 +251,263 @@ void plotWork::bookHist(string dsname) {
   fpHpass = new TH1D(Form("h_%s_%s", "pass", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
 
 }
+
+
+// ----------------------------------------------------------------------
+void plotWork::genSummary(std::string dsname, std::string dir) {
+  TH1D *hpt    = new TH1D("pt", "pt", 50, 0., 50.0);
+  TH1D *heta   = new TH1D("eta", "eta", 40, -4., 4.0);
+  TH1D *tpt    = new TH1D("tpt", "pt (HLT)", 50, 0., 50.0); setFilledHist(tpt, kBlue, kYellow, 1000);
+  TH1D *teta   = new TH1D("teta", "eta (HLT)", 40, -4., 4.0); setFilledHist(teta, kBlue, kYellow, 1000);
+  TH1D *hm1eta = new TH1D("m1eta", "m1 eta", 40, -4., 4.0);
+  TH1D *hm2eta = new TH1D("m2eta", "m2 eta", 40, -4., 4.0);
+  TH1D *tm1eta = new TH1D("tm1eta", "m1 eta (HLT)", 40, -4., 4.0); setFilledHist(tm1eta, kBlue, kYellow, 1000);
+  TH1D *tm2eta = new TH1D("tm2eta", "m2 eta (HLT)", 40, -4., 4.0); setFilledHist(tm2eta, kBlue, kYellow, 1000);
+  TH1D *hketa  = new TH1D("keta", "kaon eta", 40, -4., 4.0);
+  TH1D *hm1pt  = new TH1D("m1pt", "m1 pt", 50, 0., 10.0);
+  TH1D *hm2pt  = new TH1D("m2pt", "m2 pt", 50, 0., 10.0);
+  TH1D *tm1pt  = new TH1D("tm1pt", "m1 pt (HLT)", 50, 0., 10.0); setFilledHist(tm1pt, kBlue, kYellow, 1000);
+  TH1D *tm2pt  = new TH1D("tm2pt", "m2 pt (HLT)", 50, 0., 10.0); setFilledHist(tm2pt, kBlue, kYellow, 1000);
+  TH1D *hkpt   = new TH1D("kpt", "kaon pt", 50, 0., 10.0);
+  TH1D *htau   = new TH1D("tau", "tau", 100, 0., 15.e-12);
+
+  TTree *T = getTree(dsname, dir, "effTree");
+  T->Draw("gtau>>tau");
+  T->Draw("gpt>>pt");
+  T->Draw("geta>>eta");
+
+  T->Draw("g1pt>>m1pt");
+  T->Draw("g2pt>>m2pt");
+  T->Draw("g1eta>>m1eta");
+  T->Draw("g2eta>>m2eta");
+
+  T->Draw("gpt>>tpt", "hlt");
+  T->Draw("g1pt>>tm1pt", "hlt");
+  T->Draw("g2pt>>tm2pt", "hlt");
+
+  T->Draw("geta>>teta", "hlt");
+  T->Draw("g1eta>>tm1eta", "hlt");
+  T->Draw("g2eta>>tm2eta", "hlt");
+
+
+  bool addKaon(false);
+  if (string::npos != dsname.find("bupsik")) {
+    T->Draw("g3eta>>keta");
+    T->Draw("g3pt>>kpt");
+    addKaon = true;
+  }
+  if (string::npos != dsname.find("bspsiphi")) {
+    T->Draw("g3eta>>keta");
+    T->Draw("g4eta>>keta");
+    T->Draw("g3pt>>kpt");
+    T->Draw("g4pt>>kpt");
+    addKaon = true;
+  }
+
+  tl->SetTextSize(0.05);
+  makeCanvas(1);
+  int ncol(4);
+  if (addKaon) {
+    c1->Divide(5,2);
+    ncol = 5;
+  } else {
+    c1->Divide(4,2);
+  }
+
+  c1->cd(1);
+  hpt->Draw();
+  tpt->Draw("same");
+
+  c1->cd(2);
+  hm1pt->Draw();
+  tm1pt->Draw("same");
+
+  c1->cd(3);
+  hm2pt->Draw();
+  tm2pt->Draw("same");
+
+  if (addKaon) {
+    c1->cd(ncol-1);
+    hkpt->Draw();
+  }
+
+  c1->cd(ncol);
+  gPad->SetLogy(1);
+  htau->Fit("expo", "l");
+  TF1 *f = (TF1*)htau->GetFunction("expo");
+  double chi2 = f->GetChisquare();
+  int    ndf  = f->GetNDF();
+  double t    = -1./f->GetParameter(1);
+  double tE   = -t*f->GetParError(1)/f->GetParameter(1);
+  t  *= 1.e12;
+  tE *= 1.e12;
+
+  c1->cd(ncol+1);
+  heta->Draw();
+  teta->Draw("same");
+  tl->DrawLatexNDC(0.55, 0.3, "B");
+
+  c1->cd(ncol+2);
+  hm1eta->Draw();
+  tm1eta->Draw("same");
+  tl->DrawLatexNDC(0.40, 0.3, "leading muon");
+
+  c1->cd(ncol+3);
+  hm2eta->Draw();
+  tm2eta->Draw("same");
+  tl->DrawLatexNDC(0.35, 0.3, "subleading muon");
+
+  if (addKaon) {
+    c1->cd(2*ncol-1);
+    hketa->Draw();
+    tl->DrawLatexNDC(0.35, 0.3, "kaon(s)");
+  }
+
+  c1->cd(2*ncol);
+  tl->SetTextSize(0.07);
+  tl->DrawLatexNDC(0.2, 0.9, Form("%s (HLT)", dsname.c_str()));
+  tl->DrawLatexNDC(0.2, 0.8, Form("Events: %d", T->GetEntries()));
+
+  tl->DrawLatexNDC(0.2, 0.35, Form("#tau"));
+  tl->DrawLatexNDC(0.25, 0.35, Form("= (%3.2f #pm %5.2f)ps", t, tE));
+
+  tl->DrawLatexNDC(0.2, 0.25, Form("#varepsilon"));
+  tl->DrawLatexNDC(0.25, 0.25, Form("= %4.3f ", teta->GetSumOfWeights()/heta->GetSumOfWeights()));
+
+  c1->SaveAs(Form("%s/genSummary-%s.pdf", fDirectory.c_str(), dsname.c_str()));
+
+}
+
+
+
+// ----------------------------------------------------------------------
+void plotWork::plotWrongReco(string var, int nbin, double min, double max, string selection,
+			     string wds, string wdir, string cds, string cdir) {
+
+  string name = var + wds + wdir;
+  TH1D *h1 = new TH1D(name.c_str(), name.c_str(), nbin, min, max);
+  setFilledHist(h1, kRed, kRed, 3365);
+  setTitles(h1, fVarToTex[var].c_str(), "Entries / Bin", 0.05, 1.2, 1.5, 0.05, 52);
+  TTree *t = getTree(wds, wdir);
+  t->Draw(Form("%s>>%s", var.c_str(), name.c_str()), selection.c_str());
+
+  name = var + cds + cdir;
+  TH1D *h2 = new TH1D(name.c_str(), name.c_str(), nbin, min, max);
+  setFilledHist(h2, kBlue, kBlue, 3354);
+  setTitles(h2, fVarToTex[var].c_str(), "Entries / Bin", 0.05, 1.2, 1.5, 0.05, 52);
+  t = getTree(cds, cdir);
+  t->Draw(Form("%s>>%s", var.c_str(), name.c_str()), selection.c_str());
+
+  double int1 = h1->Integral();
+  double int2 = h2->Integral();
+  h1->Scale(1./int1);
+  h2->Scale(1./int2);
+
+  double ymax(h1->GetMaximum());
+  if (h2->GetMaximum() > ymax) ymax = h2->GetMaximum();
+  ymax *= 1.2;
+
+  shrinkPad(0.15, 0.18);
+  h1->SetMaximum(ymax);
+  h1->Draw();
+  h2->Draw("samehist");
+
+  // setRoman();
+  setItalic();
+  tl->DrawLatexNDC(0.2, 0.92, Form("%s candidates", fDS[cds]->fName.c_str()));
+
+  string wrg("bdpsikstarMc");
+
+  newLegend(0.55, 0.7, 0.75, 0.87);
+  legg->SetHeader("true decay");
+  legg->SetTextSize(0.04);
+  legg->AddEntry(h1, fDS[wrg]->fName.c_str(), "f");
+  legg->AddEntry(h2, fDS[cds]->fName.c_str(), "f");
+  legg->Draw();
+
+  savePad(Form("plotWrongReco_%s_%s_%s.pdf", var.c_str(), wds.c_str(), cds.c_str()));
+}
+
+
+
+// ----------------------------------------------------------------------
+ void plotWork::wrongReco(string ds1, string mode, string selection) {
+
+  setItalic();
+
+  string mapname = ds1 + "-" + mode.substr(string("candAna").size());
+  cout << "==> mapname: " << mapname << endl;
+  map<string, string> dirs;
+  dirs.insert(make_pair(mapname, "B^{0} #rightarrow J/#it{#psi}K^{*0}"));
+  dirs.insert(make_pair(mapname, "B^{0} #rightarrow J/#it{#psi}K^{*0}"));
+  dirs.insert(make_pair(mapname, "B_{c} #rightarrow J/#it{#psi#mu#nu}"));
+
+  //  //  dirs.insert(make_pair("candAnaBs2JpsiPhiAsBd",   "B^{0}_{s} #rightarrow J/#it{#psi}#it{#phi}"));
+  //  //  dirs.insert(make_pair("candAnaBs2JpsiPhiAsBu",   "B^{0}_{s} #rightarrow J/#it{#psi}#it{#phi}"));
+
+
+  shrinkPad(0.15, 0.2);
+  string name(Form("H1_%s", mapname.c_str()));
+  string xtitle("m_{#it{#mu#mu} K^{+}} #it{[GeV]}");
+  if (string::npos != mapname.find("AsBs")) xtitle = "m_{#it{#mu#mu} K^{+}K^{-}} #it{[GeV]}";
+  if (string::npos != mapname.find("bc")) xtitle = "m_{#it{#mu#mu}} #it{[GeV]}";
+  TH1D *h1 = new TH1D(name.c_str(), name.c_str(), 100, 5.0, 6.0);
+  setTitles(h1, xtitle.c_str(), "Entries / Bin", 0.05, 1.2, 2.0, 0.05, 52);
+  TTree *t = getTree(ds1, mode);
+  t->Draw(Form("m>>%s", name.c_str()), selection.c_str());
+  tl->DrawLatexNDC(0.2, 0.92, dirs[mapname].c_str());
+
+  if (mode == "candAnaBd2JpsiKstarAsBu") {
+    TF1 *f1 = fIF->expoErr(5.0, 6.0);
+    double preco(5.145);
+    double e0(preco),  e0Min(preco-0.01), e0Max(preco+0.01);
+    double e1(0.075),  e1Min(0.050), e1Max(0.100);
+    double e2(1.15), e2Min(1.05),  e2Max(1.25);
+    double e3(h1->GetMaximum());
+    double p0, p1;
+    fIF->fLo = 5.25;
+    fIF->fHi = 5.6;
+    fIF->initExpo(p0, p1, h1);
+
+    f1->SetParameters(p0, p1, e0, e1, e2, e3);
+    f1->FixParameter(0, p0);
+    f1->SetLineWidth(2);
+    fIF->fLo = 5.0;
+    fIF->fHi = 6.0;
+    h1->Fit(f1, "lr", "", 5.02, 6.0);
+  }
+
+  if (mode == "candAnaBd2JpsiKstarAsBs") {
+    fIF->fLo = 5.0;
+    fIF->fHi = 6.0;
+    //      TF1 *f1 = fIF->pol1Landau(h1, 5.4, 0.1);
+    //      TF1 *f1 = fIF->pol1gauss(h1, 5.4, 0.1);
+    TF1 *f1 = fIF->pol1gauss2(h1, 5.4, 0.1, 0.05, 0.05);
+
+    f1->SetLineWidth(2);
+    h1->Fit(f1, "lr", "", 5.0, 6.0);
+  }
+
+  if (mode == "candAnaMuMu") {
+    fIF->fLo = 5.0;
+    fIF->fHi = 6.0;
+    //      TF1 *f1 = fIF->pol1Landau(h1, 5.4, 0.1);
+    //      TF1 *f1 = fIF->pol1gauss(h1, 5.4, 0.1);
+    TF1 *f1 = fIF->expo(h1);
+
+    f1->SetLineWidth(2);
+    h1->Fit(f1, "lr", "", 5.0, 6.0);
+  }
+
+  tl->SetTextAngle(90.);
+  setRoman();
+  tl->DrawLatexNDC(0.95, 0.17, selection.c_str());
+  tl->SetTextAngle(0.);
+
+  savePad(Form("wrongReco-%s.pdf", mapname.c_str()));
+}
+
+
 
 
 // ----------------------------------------------------------------------
@@ -262,6 +605,10 @@ void plotWork::runTisEfficiency(string dsname) {
 
 // ----------------------------------------------------------------------
 void plotWork::refTrgEfficiency(string selection, string dsname) {
+
+  if (string::npos != dsname.find("bupsik")) fMode = BU2JPSIKP;
+  if (string::npos != dsname.find("bspsiphi")) fMode = BS2JPSIPHI;
+  if (string::npos != dsname.find("bdpsikstar")) fMode = BD2JPSIKSTAR;
 
   zone(2,2);
 
@@ -448,19 +795,91 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
 }
 
 // ----------------------------------------------------------------------
-void plotWork::fitJpsiPhi(string ds1) {
-  // TTree *t = getTree(fSample, dir);
-  // if (0 == t) {
-  //   cout << "tree for sample = " << fSample << " not found" << endl;
-  //   return;
-  // }
+void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
+  fSample = dsname;
+  string dir = "candAnaBs2JpsiPhi";
+  if (string::npos != fSample.find("bspsiphi")) {
+    fMode = BS2JPSIPHI;
+    dir  = "candAnaBs2JpsiPhi";
+  } else if (string::npos != fSample.find("bupsik")) {
+    fMode = BU2JPSIKP;
+    dir  = "candAnaBu2JpsiK";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    fMode = BD2JPSIKSTAR;
+    dir  = "candAnaBd2JpsiKstar";
+  }
 
-  // TH1D *h0 = new TH1D("h0", "h0", 80, 5.0, 5.8);
-  // TH1D *h1 = new TH1D("h1", "h1", 80, 5.0, 5.8);
-  // TH1D *h2 = new TH1D("h2", "h2", 80, 5.0, 5.8);
+  TH1D *h1(0);
+  // -- check for data histogram
+  fHistFile = TFile::Open(fHistFileName.c_str(), "");
+  if (fHistFile) {
+    h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), 0, tag.c_str()));
+    fHistFile->Close();
+  }
+  if (!h1) {
+    cout << "fHistFile: " << fHistFileName;
+    fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+    cout << " opened " << endl;
 
-  // string cuts = ds1 + ;
-  // t->Draw("m>>h0",
+    fHma.clear();
+    fHmc.clear();
+    string cuts = Form("%4.3f < mkk < %4.3f, dr < %4.3f, ptk1 > %4.3f, ptk2 > %4.3f"
+		       , MKKLO, MKKHI, DR, PTK1, PTK2);
+    for (int i = 0; i < fNchan; ++i) {
+      h1 = new TH1D(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()),
+		    Form("m %s_chan%d %s", dsname.c_str(), i, tag.c_str(), cuts.c_str()),
+		    90, 5.0, 5.9);
+      fHma.push_back(h1);
+      h1 = new TH1D(Form("hmc_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()),
+		    Form("m %s_chan%d %s (constrained)", dsname.c_str(), i, cuts.c_str()),
+		    90, 5.0, 5.9);
+      fHmc.push_back(h1);
+    }
+
+    TTree *t = getTree(fSample, dir);
+    if (0 == t) {
+      cout << "tree for sample = " << fSample << " not found" << endl;
+      return;
+    }
+
+    setupTree(t, fSample);
+    fCds = fSample;
+    loopOverTree(t, 3, nevt, nstart);
+
+    fHistFile->Write();
+    fHistFile->Close();
+
+  }
+
+  fHistFile = TFile::Open(fHistFileName.c_str(), "");
+  zone(2,2);
+  gStyle->SetOptFit(0);
+  double xmin(5.25), xmax(5.45);
+  for (int i = 0; i < fNchan; ++i) {
+    c0->cd(i+1);
+    h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()));
+    h1->SetMinimum(0.);
+    double mBs(5.69), sBs(0.04), stepBs(5.21);
+    fIF->fLo = 5.0;
+    fIF->fHi = 5.9;
+    TF1 *f1 = fIF->expoErrGauss(h1, mBs, sBs, stepBs);
+    h1->Fit(f1, "lr", "", 5.0, 5.9);
+    xmin = f1->GetParameter(1) - 2.*f1->GetParameter(2);
+    xmax = f1->GetParameter(1) + 2.*f1->GetParameter(2);
+    double B = f1->Integral(xmin, xmax)/h1->GetBinWidth(1);
+    f1->SetParameter(3, 0.);
+    f1->SetParameter(4, 0.);
+    f1->SetParameter(5, 0.);
+    f1->SetParameter(6, 0.);
+    double S = f1->Integral(xmin, xmax)/h1->GetBinWidth(1);
+    B -= S;
+    tl->DrawLatexNDC(0.2, 0.95, Form("S/B = %5.1f / %5.1f", S, B));
+    tl->DrawLatexNDC(0.7, 0.95, Form("fit: %3.1f ", f1->GetChisquare()/f1->GetNDF()));
+    tl->DrawLatexNDC(0.2, 0.88, Form("S/B = %3.1f", S/B));
+    tl->DrawLatexNDC(0.6, 0.88, Form("%4.3f < x < %4.3f ", xmin, xmax));
+
+  }
+  savePad(Form("fitStudies_%s_%s.pdf", dsname.c_str(), tag.c_str()));
 
 
 }
@@ -584,7 +1003,6 @@ void plotWork::yieldStability(string dsname, string trg) {
 }
 
 
-
 // ----------------------------------------------------------------------
 void plotWork::loopFunction1() {
 
@@ -700,6 +1118,40 @@ void plotWork::loopFunction2() {
 }
 
 
+// ----------------------------------------------------------------------
+void plotWork::loopFunction3() {
+
+  if (fChan < 0) return;
+
+  if (TMath::Abs(fb.mkk) < MKKLO) return;
+  if (TMath::Abs(fb.mkk) > MKKHI) return;
+  if (TMath::Abs(fb.dr)  > DR) return;
+  if (TMath::Abs(fb.k1pt) < PTK1) return;
+  if (TMath::Abs(fb.k2pt) < PTK2) return;
+  if (TMath::Abs(fb.psipt) < PTPSI) return;
+
+
+  if (TMath::Abs(fb.flsxy) < fCuts[fChan]->flsxy) return;
+  if (TMath::Abs(fb.fls3d) < fCuts[fChan]->fls3d) return;
+
+  if (TMath::Abs(fb.chi2dof) > fCuts[fChan]->chi2dof) return;
+  if (TMath::Abs(fb.alpha) > fCuts[fChan]->alpha) return;
+  if (TMath::Abs(fb.pvip) > fCuts[fChan]->pvip) return;
+  if (TMath::Abs(fb.pvips) > fCuts[fChan]->pvips) return;
+
+  if (TMath::Abs(fb.iso) < fCuts[fChan]->iso) return;
+  if (TMath::Abs(fb.docatrk) < fCuts[fChan]->docatrk) return;
+  if (TMath::Abs(fb.closetrk) > fCuts[fChan]->closetrk) return;
+
+
+  //  if (fChan == 3) cout << "eta: " << TMath::Abs(fb.m1eta) << "/" << TMath::Abs(fb.m2eta) << " -> chan = " << fChan << endl;
+
+  fHma[fChan]->Fill(fb.m);
+  fHmc[fChan]->Fill(fb.cm);
+
+}
+
+
 
 // ----------------------------------------------------------------------
 void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
@@ -732,6 +1184,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
+       << " nbegin = " << nbegin << " nend = " << nend
        << endl;
 
   // -- setup loopfunction through pointer to member functions
@@ -739,6 +1192,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   void (plotWork::*pF)(void);
   if (ifunc == 1) pF = &plotWork::loopFunction1;
   if (ifunc == 2) pF = &plotWork::loopFunction2;
+  if (ifunc == 3) pF = &plotWork::loopFunction3;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
@@ -1093,9 +1547,9 @@ void plotWork::loadFiles(string afiles) {
       ds->fSize = 1.2;
       ds->fWidth = 2.;
 
-      if (string::npos != stype.find("bupsikBla,")) {
-        sname = "bupsikMcBla";
-        sdecay = "bupsik";
+      if (string::npos != stype.find("wrongreco,")) {
+        sname = "wrongReco";
+        sdecay = "wrongReco";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
@@ -1105,9 +1559,9 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3354;
       }
 
-      if (string::npos != stype.find("YYY")) {
-        sname = "bupsikMc";
-        sdecay = "bupsik";
+      if (string::npos != stype.find("bctopsimunu,")) {
+        sname = "bcpsimunuMc";
+        sdecay = "bcpsimunu";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
@@ -1117,7 +1571,32 @@ void plotWork::loadFiles(string afiles) {
 	ds->fFillStyle = 3354;
       }
 
+    } else if (string::npos != stype.find("relval")) {
+      pF = loadFile(sfile);
+      ds = new dataset();
+      ds->fSize = 1.2;
+      ds->fWidth = 2.;
+      if (string::npos != stype.find("bsmm,relval")) {
+	ds->fF      = pF;
+	sname   = "bsmmrelval";
+      }
+
+      if (string::npos != stype.find("bdmm,relval")) {
+	ds->fF      = pF;
+	sname   = "bdmmrelval";
+      }
+
+      if (string::npos != stype.find("bupsik,relval")) {
+	ds->fF      = pF;
+	sname   = "bupsikrelval";
+      }
+
+      if (string::npos != stype.find("bspsiphi,relval")) {
+	ds->fF      = pF;
+	sname   = "bspsiphirelval";
+      }
     }
+
     if (sname != "nada") {
       ds->fLcolor = ds->fColor;
       ds->fFcolor = ds->fColor;
@@ -1127,7 +1606,6 @@ void plotWork::loadFiles(string afiles) {
     } else {
       delete ds;
     }
-
 
   }
 
