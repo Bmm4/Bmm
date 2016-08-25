@@ -87,6 +87,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
+  if (1237 == fVerbose) {
+    cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
+    fpEvt->dumpGenBlock();
+    return;
+  }
+
   if (fVerbose>0) {
     cout << "======================================================================" << endl;
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
@@ -715,6 +721,10 @@ void candAna::candAnalysis() {
   fCandCloseTrkS2 = pclose.second;
   pclose = nCloseTracks(fpCand, 0.03, 3, 0.5);
   fCandCloseTrkS3 = pclose.second;
+  pclose = nCloseTracks(fpCand, 0.03, 4, 0.5);
+  fCandCloseTrkS4 = pclose.second;
+  pclose = nCloseTracks(fpCand, 0.03, 5, 0.5);
+  fCandCloseTrkS5 = pclose.second;
 
   fCandChi2    = sv.fChi2;
   fCandDof     = sv.fNdof;

@@ -248,7 +248,8 @@ public:
   double  fCandCosA, fCandA;
   double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca;
   double  fCandIso;
-  int     fCandIsoTrk, fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk;
+  int     fCandIsoTrk, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk;
+  int     fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandCloseTrkS4, fCandCloseTrkS5;
   double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE;
   double  fCandPvTip, fCandPvTipE, fCandPvTipS, fCandPvLip, fCandPvLipE, fCandPvLipS, fCandPvIp, fCandPvIpE, fCandPvIpS;
   double  fCandPvIp3D, fCandPvIpE3D, fCandPvIpS3D;
