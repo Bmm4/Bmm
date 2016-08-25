@@ -42,7 +42,7 @@
   tdrStyle->SetEndErrorSize(2);
   //tdrStyle->SetErrorMarker(20);  // Seems to give an error
   tdrStyle->SetErrorX(0.);
-  
+
   tdrStyle->SetMarkerStyle(20);
 
   //For the fit/function:
@@ -56,12 +56,12 @@
   tdrStyle->SetOptDate(0);
   // tdrStyle->SetDateX(Float_t x = 0.01);
   // tdrStyle->SetDateY(Float_t y = 0.01);
-  
+
   // For the statistics box:
   tdrStyle->SetOptFile(0);
   tdrStyle->SetOptStat(111111); // To display the mean and RMS:   SetOptStat("mr");
   tdrStyle->SetStatColor(kWhite);
-  tdrStyle->SetStatFont(42);
+  tdrStyle->SetStatFont(52);
   tdrStyle->SetStatFontSize(0.025);
   tdrStyle->SetStatTextColor(1);
   tdrStyle->SetStatFormat("6.4g");
@@ -86,7 +86,7 @@
 
   // For the axis titles:
   tdrStyle->SetTitleColor(1, "XYZ");
-  tdrStyle->SetTitleFont(42, "XYZ");
+  tdrStyle->SetTitleFont(52, "XYZ");
   tdrStyle->SetTitleSize(0.06, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
@@ -96,7 +96,7 @@
 
   // For the axis labels:
   tdrStyle->SetLabelColor(1, "XYZ");
-  tdrStyle->SetLabelFont(42, "XYZ");
+  tdrStyle->SetLabelFont(52, "XYZ");
   tdrStyle->SetLabelOffset(0.007, "XYZ");
   tdrStyle->SetLabelSize(0.05, "XYZ");
 
