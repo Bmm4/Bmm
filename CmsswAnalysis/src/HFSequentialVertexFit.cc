@@ -3,7 +3,7 @@
 // HFSequentialVertexFit
 // ---------------------
 //
-// 2016/02/28 Urs Langenegger        modularization 
+// 2016/02/28 Urs Langenegger        modularization
 // 2010/04/10 Christoph Naegeli      first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -60,14 +60,14 @@ using namespace reco;
 
 
 // ----------------------------------------------------------------------
-HFSequentialVertexFit::HFSequentialVertexFit(Handle<View<Track> > hTracks, 
-					     const MuonCollection* muons, 
-					     const TransientTrackBuilder *TTB, 
-					     Handle<VertexCollection> pvCollection, 
-					     const MagneticField *field, 
-					     BeamSpot beamSpot, 
-					     int verbose, 
-					     bool removeCandTracksFromVtx) : 
+HFSequentialVertexFit::HFSequentialVertexFit(Handle<View<Track> > hTracks,
+					     const MuonCollection* muons,
+					     const TransientTrackBuilder *TTB,
+					     Handle<VertexCollection> pvCollection,
+					     const MagneticField *field,
+					     BeamSpot beamSpot,
+					     int verbose,
+					     bool removeCandTracksFromVtx) :
   fVerbose(verbose),
   fpTTB(TTB),
   fhTracks(hTracks),
@@ -81,23 +81,23 @@ HFSequentialVertexFit::HFSequentialVertexFit(Handle<View<Track> > hTracks,
 
 
 // ----------------------------------------------------------------------
-HFSequentialVertexFit::~HFSequentialVertexFit() {} 
+HFSequentialVertexFit::~HFSequentialVertexFit() {}
 
 
 
 // ----------------------------------------------------------------------
 void HFSequentialVertexFit::doFit(HFDecayTree *tree) {
   if (fVerbose > 5) cout << "==>HFSequentialVertexFit> doFit()" << endl;
-  
+
   try {
     tree->resetKinematicTree(1);
     if (0) tree->dump(1);
     // -- fit it
     fitTree(tree);
     // -- calculate all node variables
-    calculateAll(tree); 
+    calculateAll(tree);
     // -- calculate top tree variables wrt PV
-    calculateStuff(tree, 0); 
+    calculateStuff(tree, 0);
     if (0) tree->dump(1);
     // -- check cuts
     if (passAllCuts(tree)) {
@@ -112,7 +112,7 @@ void HFSequentialVertexFit::doFit(HFDecayTree *tree) {
   } catch (PVRefitException& ex) {
     if (fVerbose > 0) cout << "==> HFSequentialVertexFit: unable to refit PV." << endl;
   }
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -127,7 +127,7 @@ void HFSequentialVertexFit::calculateAll(HFDecayTree *tree) {
   if ((tree->getVerticesEndIterator() - tree->getVerticesBeginIterator()) > 0) {
     for (HFDecayTreeIterator treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
       if (DBX) cout << "call HFSequentialVertexFit::calculateStuff for tree  " << treeIt->particleID() << " at " << &(*treeIt) << endl;
-      calculateStuff(&(*treeIt), &vState); 
+      calculateStuff(&(*treeIt), &vState);
     }
   }
 }
@@ -140,27 +140,29 @@ bool HFSequentialVertexFit::passAllCuts(HFDecayTree *tree) {
 		<< endl;
   if ((tree->getVerticesEndIterator() - tree->getVerticesBeginIterator()) > 0) {
     for (HFDecayTreeIterator treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
+      //      treeIt->dump();
       bool result = passAllCuts(&(*treeIt));
       if (!result) {
 	if (DBX) cout << "HFSequentialVertexFit::passAllCuts returned false for tree  " << treeIt->particleID() << " at " << &(*treeIt)
 		      << " with tree->fTV = " << &(tree->fTV)
 		      << endl;
-	//	return false;
+	return false;
       }
     }
   }
+  //  tree->dump();
   if (tree->passAllCuts()) {
     if (DBX) cout << "HFSequentialVertexFit::passAllCuts returning true for tree  " << tree->particleID()
 		  << " at " << tree  << " with tree->fTV = " << &(tree->fTV) << endl;
-    return true; 
+    return true;
   } else {
     if (DBX) cout << "HFSequentialVertexFit::passAllCuts returning false for tree  " << tree->particleID()
 		  << " at " << tree  << " with tree->fTV = " << &(tree->fTV) << endl;
-    return false; 
+    return false;
   }
   if (DBX) cout << "HFSequentialVertexFit::passAllCuts reached end of function; returning false for tree  " << tree->particleID()
 		<< " at " << tree  << " with tree->fTV = " << &(tree->fTV) << endl;
-  return false; 
+  return false;
 }
 
 
@@ -174,11 +176,11 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
   for (HFDecayTreeIterator treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
     fitTree(&(*treeIt));
   }
-  
+
   // -- set up the kinParticleMap for 'tree'
   map<int,int> *kinParticleMap = tree->getKinParticleMap();
   kinParticleMap->clear();
-	
+
   // -- add the particles from the tracks, we have to add them first for the KinematicConstrainedVertexFitter
   vector<track_entry_t> allTreeTracks = tree->getAllTracks(1);
   sort(allTreeTracks.begin(), allTreeTracks.end()); // sort such that all mass fit tracks are first
@@ -193,14 +195,14 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
     kinParticles.push_back(pFactory.particle(fpTTB->build(*baseRef), mass, 0.0f, 0.0f, sigma));
     if (trackIt->massFit) mass_constrained_tracks++;
   }
-	
-  // -- add the particles from the sub-trees with vertexing 
+
+  // -- add the particles from the sub-trees with vertexing
   for (HFDecayTreeIterator treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
-    if (DBX) cout << "Start assembling kinematic particles for tree->particleID() = " << (int)tree->particleID() << endl;		
+    if (DBX) cout << "Start assembling kinematic particles for tree->particleID() = " << (int)tree->particleID() << endl;
     // get all the already fit particles
     addFittedParticles(&kinParticles, &(*treeIt));
   }
-	
+
   // -- do the actual fit of this vertex
   if (DBX) cout << "do the actual fit for tree  " << tree->particleID() << " at " << tree << endl;
   RefCountedKinematicTree kinTree;
@@ -218,7 +220,7 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
     auto_ptr<KinematicConstraint> con(new MassKinematicConstraint(tree->mass(), tree->massSigma()));
     kinTree = csFitter.fit(&(*con), kinTree);
   }
-	
+
   tree->setKinematicTree(kinTree);
 
   kinTree->movePointerToTheTop();
@@ -227,10 +229,10 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
 
   tree->fTV.setMaxDoca(getMaxDoca(kinParticles));
   tree->fTV.setMinDoca(getMinDoca(kinParticles));
-  tree->fTV.setChi2(kinPart->chiSquared()); 
+  tree->fTV.setChi2(kinPart->chiSquared());
 
-  return true; 
-  
+  return true;
+
 }
 
 
@@ -285,21 +287,21 @@ void HFSequentialVertexFit::saveTree(HFDecayTree *tree) {
   // -- create the Ana Candidate of the node if requested  (top candidate w.r.t. primary vertex)
   if (tree->particleID() && !tree->getAnaCand()) {
     TAnaCand *a = addCandidate(tree);
-    if (a) tree->setAnaCand(a); 
+    if (a) tree->setAnaCand(a);
   }
-  
+
   // get the current vertex state
   subTree = *(tree->getKinematicTree());
   subTree->movePointerToTheTop();
   VertexState vState = subTree->currentDecayVertex()->vertexState();
-  
+
   // -- create all the requested candidates of the daughters
   HFDecayTreeIterator treeIt;
   for (treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
     if (treeIt->particleID() && !treeIt->getAnaCand())
       treeIt->setAnaCand(addCandidate(&(*treeIt), &vState));
   }
-  
+
   // link the candidates
   pMomCand = tree->getAnaCand();
   if (pMomCand) {
@@ -309,15 +311,15 @@ void HFSequentialVertexFit::saveTree(HFDecayTree *tree) {
       if (pCand) {
     	// set mother
 	pCand->fMom = pMomCand->fIndex;
-	
+
      	if (dau1 == -1) dau1 = pCand->fIndex;
 	else            dau1 = (pCand->fIndex < dau1) ? pCand->fIndex : dau1;
-	
+
 	if (dau2 == -1) dau2 = pCand->fIndex;
 	else            dau2 = (pCand->fIndex > dau2) ? pCand->fIndex : dau2;
       }
     }
-    
+
     pMomCand->fDau1 = dau1;
     pMomCand->fDau2 = dau2;
   }
@@ -329,17 +331,17 @@ void HFSequentialVertexFit::saveTree(HFDecayTree *tree) {
   for (treeIt = tree->getVerticesBeginIterator(); treeIt != tree->getVerticesEndIterator(); ++treeIt) {
     saveTree(&(*treeIt));
   }
-  
+
   if (fVerbose > 5) {
-    TAnaTrack *pTrk(0); 
+    TAnaTrack *pTrk(0);
     pMomCand->dump();
     for (int i = pMomCand->fSig1; i <= pMomCand->fSig2; ++i) {
       pTrk = gHFEvent->getSigTrack(i);
       pTrk->dump();
     }
   }
-  
-  
+
+
 }
 
 
@@ -373,8 +375,8 @@ void HFSequentialVertexFit::computeDaughterDistance(HFDecayTree *tree) {
 
 // ----------------------------------------------------------------------
 // Utility routine to sort the mindoca array of the candidate...
-static bool doca_less(pair<int,pair<double,double> > x,pair<int,pair<double,double> > y) { 
-  return x.second.first < y.second.first; 
+static bool doca_less(pair<int,pair<double,double> > x,pair<int,pair<double,double> > y) {
+  return x.second.first < y.second.first;
 }
 
 
@@ -385,7 +387,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
   TransverseImpactPointExtrapolator transverseExtrapolator(fMagneticField);
   TrajectoryStateOnSurface tsos;
-  
+
   if (tree->particleID() == 0) return 0;
 
   RefCountedKinematicTree kinTree = *(tree->getKinematicTree());
@@ -394,12 +396,12 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 
   RefCountedKinematicParticle  kinParticle = kinTree->currentParticle();
   vector<RefCountedKinematicParticle> daughterParticles = kinTree->daughterParticles();
-  
+
   RefCountedKinematicVertex  kinVertex = kinTree->currentDecayVertex();
   map<int,int> *kinParticleMap = tree->getKinParticleMap();
 
   if (!kinVertex->vertexIsValid()) return 0;
-  
+
   TVector3 plab = TVector3(kinParticle->currentState().globalMomentum().x(),
 			   kinParticle->currentState().globalMomentum().y(),
 			   kinParticle->currentState().globalMomentum().z());
@@ -414,13 +416,13 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
     cout << "==> HFSequentialVertexFit: Filling candidate with mass = " << mass << endl;
     cout << "-----------------------------------------" << endl;
   }
-  
+
   tree->fAnaVertex.setInfo(kinParticle->chiSquared(), kinParticle->degreesOfFreedom(), chi.probability(), 0, -1);
   tree->fAnaVertex.fPoint.SetXYZ(kinVertex->position().x(), kinVertex->position().y(), kinVertex->position().z());
 
   vector<track_entry_t> completeTrackList = tree->getAllTracks(0);
   vector<track_entry_t> allTreeTracks = tree->getAllTracks(1);
-  
+
   if (DBX) {
     cout << "DBX addCand:  pid = " << tree->particleID() << " mass = " << mass << " flsxy = " << tree->fAnaVertex.fDxy/tree->fAnaVertex.fDxyE
 	 << " flxy = " << tree->fAnaVertex.fDxy
@@ -429,7 +431,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 	 << " x/y/z = " << tree->fAnaVertex.fPoint.X() << "/" << tree->fAnaVertex.fPoint.Y() << "/" << tree->fAnaVertex.fPoint.Z()
 	 << endl;
     cout << " tracks: " ;
-    for (unsigned int i = 0; i < allTreeTracks.size(); ++i) cout << allTreeTracks[i].trackIx << " "; 
+    for (unsigned int i = 0; i < allTreeTracks.size(); ++i) cout << allTreeTracks[i].trackIx << " ";
     cout << endl;
     cout << "  going on to filling cand into tree" << endl;
   }
@@ -438,7 +440,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   if (TMath::Abs(mass - tree->fTV.mass) > 0.001*mass) {
     cout << "error in HFSequentialVertexFit: mass = " << mass << " and tree->fTV.mass = " << tree->fTV.mass << " are not equal" << endl;
   }
-  
+
   // -- create and fill candidate
   TAnaCand *pCand = gHFEvent->addCand();
   pCand->fPlab  = plab;
@@ -450,13 +452,13 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   pCand->fMom = -1; // Mom gets linked later.
   pCand->fDau1 = -1; // Daughters get linked later
   pCand->fDau2 = -1;
-  
+
   pCand->fSig1 = gHFEvent->nSigTracks();
   pCand->fSig2 = pCand->fSig1 + allTreeTracks.size() - 1;
-  
+
   pCand->fMaxDoca = tree->fTV.maxDoca;
   pCand->fMinDoca = tree->fTV.minDoca;
-  
+
   pCand->fPvIdx = tree->fTV.pvIx;
   pCand->fPvIdx2 = tree->fTV.pvIx2;
   pCand->fPvLip = tree->fTV.pvImpParams.lip.value();
@@ -473,17 +475,17 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 
   pCand->fPv2IP3d  = tree->fTV.pvImpParams2nd.ip3d.value();
   pCand->fPv2IP3dE = tree->fTV.pvImpParams2nd.ip3d.error();
-  
+
   pCand->fDeltaChi2 = tree->fTV.diffChi2;
-  
+
   pCand->fAlpha = TMath::ACos(tree->fTV.vtxDistanceCosAlphaPlab);
 
 
-  pCand->fTau3d  = tree->fTV.tau3d; 
-  pCand->fTau3dE = tree->fTV.tau3dE; 
+  pCand->fTau3d  = tree->fTV.tau3d;
+  pCand->fTau3dE = tree->fTV.tau3dE;
 
-  pCand->fTauxy  = tree->fTV.tauxy; 
-  pCand->fTauxyE = tree->fTV.tauxyE; 
+  pCand->fTauxy  = tree->fTV.tauxy;
+  pCand->fTauxyE = tree->fTV.tauxyE;
 
   TAnaTrack *pTrack;
   for (j = 0; j < allTreeTracks.size(); j++) {
@@ -494,9 +496,9 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
     Track trackView(*baseRef);
 
     int gidx = sTrack->getGenIndex();
-    const reco::BeamSpot *pBeamSpot = &fBeamSpot; 
-    fillAnaTrack(pTrack, trackView, allTreeTracks[j].trackIx, gidx, fPVCollection.product(), fMuons, pBeamSpot); 
-    
+    const reco::BeamSpot *pBeamSpot = &fBeamSpot;
+    fillAnaTrack(pTrack, trackView, allTreeTracks[j].trackIx, gidx, fPVCollection.product(), fMuons, pBeamSpot);
+
     pTrack->fIndex = allTreeTracks[j].trackIx;
     pTrack->fMCID = allTreeTracks[j].particleID; // use the sigTrack MCID to store the assumed particle ID for the mass hypothesis
     pTrack->fRefPlab = TVector3(fitTrack.track().px(),fitTrack.track().py(),fitTrack.track().pz());
@@ -505,7 +507,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
     pTrack->fRefChi2 = fitTrack.chi2();
     //    pTrack->fQ = fitTrack.charge();
     //    pTrack->fMuID = recTrack->fMuID;
-    TAnaMuon *pM = gHFEvent->getSimpleTrackMuon(allTreeTracks[j].trackIx); 
+    TAnaMuon *pM = gHFEvent->getSimpleTrackMuon(allTreeTracks[j].trackIx);
     if (pM) {
       pTrack->fMuID = pM->fMuID;
     } else {
@@ -520,19 +522,19 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 			   kinVertex->chiSquared(),
 			   kinVertex->degreesOfFreedom(),
 			   daughterParticles.size());
-	  
+
 	  if (tree->fTV.pvIx >= 0 && muon::isTightMuon(*muonIt, (*fPVCollection)[tree->fTV.pvIx]))
 	    pTrack->fMuID |= 0x1<<15;
-	  
+
 	  if (muon::isTightMuon(*muonIt, secVertex))
 	    pTrack->fMuID |= 0x1<<16;
-	  
+
 	  break;
 	}
       }
     }
   }
-  
+
   // fill the closest approaching tracks -- only if this is supposed to be a SV
   VertexDistance3D a3d;
   set<int> allUsedTrackIndices = tree->getAllTracksIndices();
@@ -544,18 +546,18 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
       tsos = extrapolator.extrapolate(transTrack.initialFreeState(), kinVertex->position());
       if (!tsos.isValid()) {
 	if (fVerbose > 0)  cout << "==>HFSequentialVertexFit> tsos not valid" << endl;
-	continue; 
+	continue;
       }
       Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), kinVertex->vertexState());
       pCand->fNstTracks.push_back(make_pair(j, make_pair(doca.value(), doca.error())));
     }
-	  
+
     sort(pCand->fNstTracks.begin(), pCand->fNstTracks.end(), doca_less);
     if (pCand->fNstTracks.size() > kNBR_CLOSED_TRACKS) {
       pCand->fNstTracks.erase(pCand->fNstTracks.begin() + kNBR_CLOSED_TRACKS, pCand->fNstTracks.end());
     }
   }
-  
+
   return pCand;
 }
 
@@ -566,7 +568,7 @@ float HFSequentialVertexFit::getParticleMass(int particleID, float *mass_sigma) 
   float mass;
   float sigma = 0.0;
   particleID = abs(particleID);
-  
+
   // sigma corresponds to standard uncertainty as can be found in the PDG
   switch(particleID) {
   case 11: // electron
@@ -593,9 +595,9 @@ float HFSequentialVertexFit::getParticleMass(int particleID, float *mass_sigma) 
     throw MassNotFoundException();
     break;
   }
-  
+
   if (mass_sigma) *mass_sigma = sigma;
-  
+
   return mass;
 }
 
@@ -605,7 +607,7 @@ double HFSequentialVertexFit::getMaxDoca(vector<RefCountedKinematicParticle> &ki
   double maxDoca = -1.0;
   TwoTrackMinimumDistance md;
   vector<RefCountedKinematicParticle>::iterator in_it, out_it;
-	
+
   for (out_it = kinParticles.begin(); out_it != kinParticles.end(); ++out_it) {
     for (in_it = out_it + 1; in_it != kinParticles.end(); ++in_it) {
       md.calculate((*out_it)->currentState().freeTrajectoryState(),(*in_it)->currentState().freeTrajectoryState());
@@ -613,7 +615,7 @@ double HFSequentialVertexFit::getMaxDoca(vector<RefCountedKinematicParticle> &ki
 	maxDoca = md.distance();
     }
   }
-	
+
   return maxDoca;
 }
 
@@ -673,7 +675,7 @@ jac9_t HFSequentialVertexFit::makeJacobianVector3d(const AlgebraicVector3 &vtx1,
 
 
 // ----------------------------------------------------------------------
-jac9_t HFSequentialVertexFit::makeJacobianVector3d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum) {  
+jac9_t HFSequentialVertexFit::makeJacobianVector3d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum) {
   // TODO: Update 2d calculation to projected version as in 3d
   return makeJacobianVector3d(AlgebraicVector3(vtx1.x(),vtx1.y(),vtx1.z()),
 			      AlgebraicVector3(vtx2.x(),vtx2.y(),vtx2.z()),
@@ -682,7 +684,7 @@ jac9_t HFSequentialVertexFit::makeJacobianVector3d(const GlobalPoint &vtx1, cons
 
 
 // ----------------------------------------------------------------------
-jac9_t HFSequentialVertexFit::makeJacobianVector3d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, 
+jac9_t HFSequentialVertexFit::makeJacobianVector3d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,
 									  ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
 									  const GlobalPoint &vtx2, const TVector3 &tv3momentum) {
   return makeJacobianVector3d(AlgebraicVector3(vtx1.X(),vtx1.Y(),vtx1.Z()),
@@ -700,7 +702,7 @@ jac9_t HFSequentialVertexFit::makeJacobianVector2d(const GlobalPoint &vtx1, cons
 
 
 // ----------------------------------------------------------------------
-jac9_t HFSequentialVertexFit::makeJacobianVector2d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, 
+jac9_t HFSequentialVertexFit::makeJacobianVector2d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>,
 									  ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
 									  const GlobalPoint &vtx2, const TVector3 &tv3momentum) {
   return makeJacobianVector2d(AlgebraicVector3(vtx1.X(),vtx1.Y(),vtx1.Z()),
@@ -710,7 +712,7 @@ jac9_t HFSequentialVertexFit::makeJacobianVector2d(const ROOT::Math::PositionVec
 
 
 // ----------------------------------------------------------------------
-jac9_t HFSequentialVertexFit::makeJacobianVector2d(const AlgebraicVector3 &vtx1, const AlgebraicVector3 &vtx2, 
+jac9_t HFSequentialVertexFit::makeJacobianVector2d(const AlgebraicVector3 &vtx1, const AlgebraicVector3 &vtx2,
 									  const AlgebraicVector3 &momentum) {
   jac9_t jac;
   const double momentumMag = ROOT::Math::Mag(momentum);
@@ -737,12 +739,12 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 		  << endl;
     return;
   }
-  
+
   RefCountedKinematicTree kinTree = *(tree->getKinematicTree());
   kinTree->movePointerToTheTop();
   RefCountedKinematicParticle kinParticle = kinTree->currentParticle();
   RefCountedKinematicVertex   kinVertex  = kinTree->currentDecayVertex();
-  
+
   TVector3 plab = TVector3(kinParticle->currentState().globalMomentum().x(),
 			   kinParticle->currentState().globalMomentum().y(),
 			   kinParticle->currentState().globalMomentum().z());
@@ -756,15 +758,15 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       cout << " (" << wrtVertexState->position().x() << "/" << wrtVertexState->position().y() << "/" << wrtVertexState->position().z() << ")";
     } else {
       cout << " (0)";
-    } 
+    }
     cout << endl;
   }
- 
-  tree->fTV.setPt(plab.Perp()); 
-  tree->fTV.setMass(kinParticle->currentState().mass()); 
+
+  tree->fTV.setPt(plab.Perp());
+  tree->fTV.setMass(kinParticle->currentState().mass());
 
   tree->fTV.setMassE(TMath::Sqrt(kinParticle->currentState().kinematicParametersError().matrix()(6,6)));   // mass error from Keith
-  
+
   AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
   TransverseImpactPointExtrapolator transverseExtrapolator(fMagneticField);
 
@@ -780,10 +782,10 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     for (vertexIt = fPVCollection->begin(), j = 0, nGoodVtx = 0; vertexIt != fPVCollection->end(); ++vertexIt,++j) {
       std::pair<bool,Measurement1D> currentIp;
       std::pair<bool,Measurement1D> cur3DIP;
-      
+
       AdaptiveVertexFitter avf;
       vector<TransientTrack> vrtxRefit;
-      
+
       for (vector<TrackBaseRef>::const_iterator itTBR = vertexIt->tracks_begin(); itTBR != vertexIt->tracks_end(); ++itTBR) {
 	TrackRef tref = itTBR->castTo<TrackRef>();
 	vector<track_entry_t>::const_iterator trackIt;
@@ -793,39 +795,39 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 	  if (tref == curTref)
 	    break;
 	}
-	
+
 	if (!fRemoveCandTracksFromVtx || trackIt == completeTrackList.end()) {
 	  TransientTrack tTrk = fpTTB->build(*(*itTBR));
 	  vrtxRefit.push_back(tTrk);
 	}
       }
-      
+
       if (vrtxRefit.size() < 2) continue; // next one
       TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
       if (!newVtx.isValid()) continue; // no valid refit, take next one
       Vertex currentPV = reco::Vertex(newVtx);
-      
-      // extrapolate to PCA 
+
+      // extrapolate to PCA
       TrajectoryStateOnSurface tsos = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
 							       RecoVertex::convertPos(currentPV.position()));
-      
+
       // compute with iptools
       currentIp = IPTools::signedDecayLength3D(tsos, GlobalVector(0,0,1), currentPV);
       cur3DIP = IPTools::absoluteImpactParameter(tsos, currentPV, a3d);
-      
+
       // Compute the PV weight
       double weight = (currentPV.ndof()+2.)/(2. * currentPV.tracksSize());
-      
-      if( weight < fPvW8) { // Check the PV weight and skip it if lower than the cut 
-	if (fVerbose > 2) cout<<"==>HFSequentialVertexFit: PV "<<j<<" rejected because of too low weight "<<weight<<endl; 
+
+      if( weight < fPvW8) { // Check the PV weight and skip it if lower than the cut
+	if (fVerbose > 2) cout<<"==>HFSequentialVertexFit: PV "<<j<<" rejected because of too low weight "<<weight<<endl;
 	continue;
       }
-      
+
       if (!currentIp.first) {
 	if (fVerbose > 2) cout << "==>HFSequentialVertexFit: Unable to compute lip to vertex at index " << j << endl;
 	continue;
       }
-      
+
       // store?
       // the first PV, this is currently the best one ;)
       if (nGoodVtx == 0 ) {
@@ -871,14 +873,14 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       nGoodVtx++; // Count the no. of good vertices
     }
   }
-  
+
   if (wrtVertexState) {
     // -- Distance to mother vertex
     tree->fAnaVertex.fDxy = axy.distance(*wrtVertexState, kinVertex->vertexState()).value();
     tree->fAnaVertex.fDxyE = axy.distance(*wrtVertexState, kinVertex->vertexState()).error();
     tree->fTV.setFlxy(tree->fAnaVertex.fDxy);
     tree->fTV.setFlsxy(tree->fAnaVertex.fDxy/tree->fAnaVertex.fDxyE);
-    
+
     tree->fAnaVertex.fD3d = a3d.distance(*wrtVertexState, kinVertex->vertexState()).value();
     tree->fAnaVertex.fD3dE = a3d.distance(*wrtVertexState, kinVertex->vertexState()).error();
     // -- get covariance matrix for error propagation in lifetime calculation
@@ -907,7 +909,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     Vertex currentPV = (*fPVCollection)[tree->fTV.pvIx];
     Vertex currentPVWithSignal;
     vector<TransientTrack> vrtxRefit;
-	  
+
     if (fVerbose > 5) cout << "HFSequentialVertexFit::addCandidate(): currentPV.tracksSize() = " << currentPV.tracksSize() << endl;
     vector<track_entry_t>::const_iterator trackIt;
     for (vector<TrackBaseRef>::const_iterator itTBR = currentPV.tracks_begin(); itTBR != currentPV.tracks_end(); ++itTBR) {
@@ -918,7 +920,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 	if (tref == curTref)
 	  break;
       }
-		  
+
       if (!fRemoveCandTracksFromVtx || trackIt == completeTrackList.end()) {
 	TransientTrack tTrk = fpTTB->build(*(*itTBR));
 	vrtxRefit.push_back(tTrk);
@@ -933,23 +935,23 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     } else {
       throw PVRefitException();
     }
-    
+
     tree->fAnaVertex.fDxy = axy.distance(currentPV,  kinVertex->vertexState()).value();
     tree->fAnaVertex.fDxyE = axy.distance(currentPV, kinVertex->vertexState()).error();
     tree->fTV.setFlxy(tree->fAnaVertex.fDxy);
     tree->fTV.setFlsxy(tree->fAnaVertex.fDxy/tree->fAnaVertex.fDxyE);
-    
+
     tree->fAnaVertex.fD3d = a3d.distance(currentPV,  kinVertex->vertexState()).value();
     tree->fAnaVertex.fD3dE = a3d.distance(currentPV, kinVertex->vertexState()).error();
     tree->fTV.setFls3d(tree->fAnaVertex.fD3d/tree->fAnaVertex.fD3dE);
-    
+
     // -- recompute impact parameter: lip & ip3d
     TrajectoryStateOnSurface tsos = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
 							     RecoVertex::convertPos(currentPV.position()));
     tree->fTV.pvImpParams.lip = IPTools::signedDecayLength3D(tsos, GlobalVector(0,0,1), currentPV).second;
     tree->fTV.pvImpParams.ip3d = IPTools::absoluteImpactParameter(tsos, currentPV, a3d).second;
     tree->fTV.setPvips(tree->fTV.pvImpParams.ip3d.value()/tree->fTV.pvImpParams.ip3d.error());
-	  
+
     // -- recompute impact parameter: tip
     tsos = transverseExtrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(), RecoVertex::convertPos(currentPV.position()));
     if (!tsos.isValid()) {
@@ -960,7 +962,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 					       VertexState(RecoVertex::convertPos(currentPV.position()),
 							   RecoVertex::convertError(currentPV.error())));
     }
-	  
+
     // -- get covariance matrix for error propagation in lifetime calculation
     tree->fTV.vtxDistanceCov = makeCovarianceMatrix(GlobalError2SMatrix_33(currentPV.error()),
 						    kinParticle->currentState().kinematicParametersError().matrix());
@@ -971,14 +973,14 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     const TVector3 p2(kinVertex->vertexState().position().x(), kinVertex->vertexState().position().y(), kinVertex->vertexState().position().z());
     const TVector3 pDiff = p2-p1;
     tree->fTV.vtxDistanceCosAlphaPlab = plab.Dot(pDiff) / (plab.Mag() * pDiff.Mag());
-	  
+
     // compute the delta chi2 using the Kalman vertex fitter and only tracks with weight > 0.5
     vrtxRefit.clear();
     currentPV = (*fPVCollection)[tree->fTV.pvIx];
     for (vector<TrackBaseRef>::const_iterator itTBR = currentPV.tracks_begin(); itTBR != currentPV.tracks_end(); ++itTBR) {
       if (currentPV.trackWeight(*itTBR) <= 0.5)
 	continue;
-      
+
       TrackRef tref = itTBR->castTo<TrackRef>();
       vector<track_entry_t>::const_iterator trackIt;
       for (trackIt = completeTrackList.begin(); trackIt != completeTrackList.end(); ++trackIt) {
@@ -1009,12 +1011,12 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     } else {
       throw PVRefitException();
     }
-	  
+
     tree->fTV.diffChi2 = currentPVWithSignal.chi2() - currentPV.chi2();
   } else if (fVerbose > 2) {
     cout << "==> HFSequentialVertexFit: No idea what distance to compute in TAnaVertex.fDxy and TAnaVertex.fD3d" << endl;
   }
-  
+
   // -- set covariance matrix
   double cov[9];
   cov[0] = kinVertex->error().cxx();
@@ -1045,6 +1047,6 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     tree->fTV.tau3d = tree->fTV.tauxy = -99.;
   }
 
-  tree->fTV.valid = true; 
+  tree->fTV.valid = true;
   //  cout << "set  tree->fTV.valid " <<  (tree->fTV.valid?"true":"false") << endl;
 }
