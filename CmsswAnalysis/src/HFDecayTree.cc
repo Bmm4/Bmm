@@ -4,7 +4,7 @@
 // -----------
 //
 // 2016/02/28 Urs Langenegger      replace nodeCuts with simpleCuts
-// 2011/03/31 Frank Meier          added flag for massConstraint, 
+// 2011/03/31 Frank Meier          added flag for massConstraint,
 //                                 sign of mass no longer determines behavior
 // 2010/04/28 Christoph Naegeli    first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -56,22 +56,22 @@ void HFDecayTree::clearTreeVariables() {
   // }
 
   fNodeCuts.clear();
-  
-  fTV.valid       = false; 
+
+  fTV.valid       = false;
   fTV.zero        = 0.;
-  
-  fTV.mass      = -9999.; 
-  fTV.pt        = -9999.; 
-  fTV.masserr   = -9999.; 
-  fTV.chi2      = -9999.; 
-  fTV.pvips     = -9999.; 
-  fTV.maxDoca   = -9999.; 
-  fTV.minDoca   = -9999.; 
+
+  fTV.mass      = -9999.;
+  fTV.pt        = -9999.;
+  fTV.masserr   = -9999.;
+  fTV.chi2      = -9999.;
+  fTV.pvips     = -9999.;
+  fTV.maxDoca   = -9999.;
+  fTV.minDoca   = -9999.;
   fTV.flxy   = -9999.;
   fTV.flsxy  = -9999.;
-  fTV.fls3d  = -9999.; 
+  fTV.fls3d  = -9999.;
   fTV.pvIx   = -1;
-  fTV.pvIx2  = -1; 
+  fTV.pvIx2  = -1;
 
   fTV.pvLip    = -9999.;
   fTV.pvLip2   = -9999.;
@@ -85,13 +85,13 @@ void HFDecayTree::clearTreeVariables() {
   fTV.tauxy   = -9999.;
   fTV.tauxyE  = -9999.;
 
-  
+
   fTV.pvImpParams.lip     = Measurement1D(-9999.,-9999.);
   fTV.pvImpParams.tip     = Measurement1D(-9999.,-9999.);
   fTV.pvImpParams.ip3d    = Measurement1D(-9999.,-9999.);
-  fTV.pvImpParams2nd.lip  = Measurement1D(-9999.,-9999.);   
-  fTV.pvImpParams2nd.tip  = Measurement1D(-9999.,-9999.);   
-  fTV.pvImpParams2nd.ip3d = Measurement1D(-9999.,-9999.);   
+  fTV.pvImpParams2nd.lip  = Measurement1D(-9999.,-9999.);
+  fTV.pvImpParams2nd.tip  = Measurement1D(-9999.,-9999.);
+  fTV.pvImpParams2nd.ip3d = Measurement1D(-9999.,-9999.);
 
   // FIXME clear them!
   //  cov99_t vtxDistanceCov;
@@ -104,13 +104,13 @@ void HFDecayTree::clearTreeVariables() {
 // ----------------------------------------------------------------------
 void HFDecayTree::addTrack(int trackIx, int trackID, bool massFit) {
   fTrackIndices.insert(track_entry_t(trackIx, trackID, massFit));
-} 
+}
 
 
 // ----------------------------------------------------------------------
 void HFDecayTree::appendDecayTree(HFDecayTree subTree) {
   fSubVertices.push_back(subTree);
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -136,7 +136,7 @@ void HFDecayTree::clear(int pID, bool doVertexing, double mass, bool massConstra
   fMinDoca = -1.0;
   fDaughtersToPV = daughtersToPV;
   fMassTracks = 0.0;
-  
+
   // clear the containers
   fTrackIndices.clear();
   fKinParticleMap.clear();
@@ -160,7 +160,7 @@ HFDecayTreeTrackIterator HFDecayTree::getTrackBeginIterator() {
 // ----------------------------------------------------------------------
 HFDecayTreeTrackIterator HFDecayTree::getTrackEndIterator() {
   return fTrackIndices.end();
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -179,15 +179,15 @@ HFDecayTreeIterator HFDecayTree::getVerticesEndIterator() {
 void HFDecayTree::getAllTracks(vector<track_entry_t> *out_vector, int onlyThisVertex) {
   HFDecayTreeTrackIterator trackIt;
   HFDecayTreeIterator treeIt;
-  
+
   for (trackIt = fTrackIndices.begin(); trackIt!=fTrackIndices.end(); ++trackIt)
     out_vector->push_back(*trackIt);
-  
+
   for (treeIt = fSubVertices.begin(); treeIt!=fSubVertices.end(); ++treeIt) {
     if (!treeIt->fVertexing || !onlyThisVertex)
       treeIt->getAllTracks(out_vector,onlyThisVertex);
   }
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -195,7 +195,7 @@ vector<track_entry_t> HFDecayTree::getAllTracks(int onlyThisVertex) {
   vector<track_entry_t> tracks;
   getAllTracks(&tracks,onlyThisVertex);
   return tracks;
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -203,12 +203,12 @@ set<int> HFDecayTree::getAllTracksIndices(int onlyThisVertex) {
   vector<track_entry_t> tracks;
   set<int> result;
   getAllTracks(&tracks,onlyThisVertex);
-  
+
   for(vector<track_entry_t >::const_iterator it = tracks.begin(); it != tracks.end();++it)
     result.insert(it->trackIx);
-  
+
   return result;
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -220,7 +220,7 @@ map<int,int> *HFDecayTree::getKinParticleMap() {
 // ----------------------------------------------------------------------
 void HFDecayTree::setKinParticleMap(map<int,int> newMap) {
   fKinParticleMap = newMap;
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -233,23 +233,23 @@ RefCountedKinematicTree* HFDecayTree::getKinematicTree() {
 void HFDecayTree::setKinematicTree(RefCountedKinematicTree newTree) {
   if(!fpKinTree) fpKinTree = new RefCountedKinematicTree;
   *fpKinTree = newTree; // make a copy from the reference counting pointer
-} 
+}
 
 
 // ----------------------------------------------------------------------
 void HFDecayTree::resetKinematicTree(int recursive) {
   HFDecayTreeIterator treeIt;
-  
+
   if(recursive) {
     for(treeIt = getVerticesBeginIterator(); treeIt!=getVerticesEndIterator(); ++treeIt)
       treeIt->resetKinematicTree(recursive);
   }
-  
+
   fKinParticleMap.clear();
   delete fpKinTree;
   fpKinTree = NULL;
   fpAnaCand = NULL;
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -261,7 +261,7 @@ TAnaCand *HFDecayTree::getAnaCand() {
 // ----------------------------------------------------------------------
 void HFDecayTree::setAnaCand(TAnaCand *cand) {
   fpAnaCand = cand;
-} 
+}
 
 
 // // ----------------------------------------------------------------------
@@ -283,16 +283,16 @@ void HFDecayTree::setAnaCand(TAnaCand *cand) {
 
 // // ----------------------------------------------------------------------
 // bool HFDecayTree::passSimpleCuts() {
-//   bool result(true); 
-//   int cpass(0); 
+//   bool result(true);
+//   int cpass(0);
 //   HFSimpleCut *c(0);
 //   for (unsigned int i = 0; i < nSimpleCuts(); ++i) {
-//     c = getSimpleCut(i); 
-//     cpass = c->pass(); 
+//     c = getSimpleCut(i);
+//     cpass = c->pass();
 //     if (1) cout << "HFSimpleCut " << i << " at " << c << ", tree = " << this << " fTV = " << &fTV
 // 		<< " name: " << c->fName
 // 		<< " " << c->fLoCut << " < " << *(c->fVar) << " < " << c->fHiCut
-// 		<< " at fVar = " << c->fVar  
+// 		<< " at fVar = " << c->fVar
 // 		<< ", (*fVal) = " << (*(c->fVal)?"true":"false")
 // 		<< " pass: " << cpass
 // 		<< endl;
@@ -305,7 +305,7 @@ void HFDecayTree::setAnaCand(TAnaCand *cand) {
 //     }
 //   }
 //   if (0 && result) cout << "-> all passed! " << endl;
-//   return result; 
+//   return result;
 // }
 
 
@@ -316,11 +316,11 @@ void HFDecayTree::addNodeCut(bool (HFDecayTree::*f)(), double lo, double hi, con
 
   // char line[200];
   // sprintf(line, "addNodeCut: f = %p, passMass = %p, passMaxDoca = %p",
-  //         (void*)f, (void*)(&HFDecayTree::passMass), (void*)(&HFDecayTree::passMaxDoca)); 
+  //         (void*)f, (void*)(&HFDecayTree::passMass), (void*)(&HFDecayTree::passMaxDoca));
   // cout << line << endl;
-  
+
   if (!strcmp(name, "mass")) {
-    //    cout << "passMass setting mass limits" << endl;
+    //    cout << "passMass setting mass limits: " << lo << " .. " << hi << endl;
     fTV.massLo = lo;
     fTV.massHi = hi;
   } else if (!strcmp(name, "pt")) {
@@ -353,21 +353,21 @@ void HFDecayTree::addNodeCut(bool (HFDecayTree::*f)(), double lo, double hi, con
   } else {
     cout << "problems determining pointer to member function with name " << name << endl;
   }
-  fNodeCutNames.push_back(name); 
-  fNodeCuts.push_back(f); 
+  fNodeCutNames.push_back(name);
+  fNodeCuts.push_back(f);
 }
 
 
 // ----------------------------------------------------------------------
 bool HFDecayTree::passAllCuts() {
-  bool result(true); 
+  bool result(true);
   for (unsigned int i = 0; i < fNodeCuts.size(); ++i) {
     bool cut = CALL_MEMBER_FN(*this, fNodeCuts[i])();
-    //    cout << "passAllCuts " << i << ": " << cut << endl;
-    result = result && cut; 
-    if (false == result) return false; 
+    //    cout << "passAllCuts " << i << ": " << cut << " " << fNodeCutNames[i] << endl;
+    result = result && cut;
+    if (false == result) return false;
   }
-  return result; 
+  return result;
 }
 
 
@@ -375,18 +375,18 @@ bool HFDecayTree::passAllCuts() {
 void HFDecayTree::dump(unsigned indent) {
   HFDecayTreeIterator treeIt;
   HFDecayTreeTrackIterator trackIt;
-  
+
   dumpTabs(indent);
   cout << "HFDecayTree (particleID = " << fParticleID << "), at " << this << " fTV = " << &fTV
        << ", n(nodecuts) = " << fNodeCuts.size()
        << ", vtx = " << fVertexing
-       << ", mconstr = " << fMassConstraint << ", m = " << fMass << ", mSigma = " << fMassSigma 
+       << ", mconstr = " << fMassConstraint << ", m = " << fMass << ", mSigma = " << fMassSigma
        << " {" << endl;
-  
+
 
   for (unsigned int i = 0; i < fNodeCuts.size(); ++i) {
     dumpTabs(indent+1);
-    cout << "node cut " << i << ": " << (void*)(fNodeCuts[i]) << "  "; 
+    cout << "node cut " << i << ": " << (void*)(fNodeCuts[i]) << "  ";
     if (fNodeCutNames[i] == "mass") {
       cout << "passMass: " << fTV.massLo << " < " << fTV.mass << " < " << fTV.massHi << endl;
     } else if (fNodeCutNames[i] == "pt") {
@@ -405,9 +405,9 @@ void HFDecayTree::dump(unsigned indent) {
       cout << endl;
     }
   }
-  
+
   // for (unsigned int i = 0; i < nSimpleCuts(); ++i) {
-  //   HFSimpleCut *c = getSimpleCut(i); 
+  //   HFSimpleCut *c = getSimpleCut(i);
   //   dumpTabs(indent+1);
   //   cout << "HFSimpleCut " << i << " at " << c << ", tree = " << this << " name: " << c->fName
   // 	 << " " << c->fLoCut << " < " << ((*(c->fVal))? Form("%f", *(c->fVar)): "...") << " < " << c->fHiCut
@@ -419,21 +419,21 @@ void HFDecayTree::dump(unsigned indent) {
   //   }
   //   cout << endl;
   // }
-  
+
   for (trackIt = fTrackIndices.begin(); trackIt!=fTrackIndices.end(); ++trackIt) {
     dumpTabs(indent+1);
     cout << "trackIx = " << trackIt->trackIx << ", trackParticleID = " << trackIt->particleID << ", massFit = " << trackIt->massFit << endl;
   }
-  
+
   for (treeIt = fSubVertices.begin(); treeIt != fSubVertices.end(); ++treeIt)
     treeIt->dump(indent+1);
-  
+
   dumpTabs(indent);
   cout << '}' << endl;
-} 
+}
 
 
 // ----------------------------------------------------------------------
 void HFDecayTree::dumpTabs(unsigned indent) {
   for (unsigned j = 0; j < indent; j++) cout << '\t';
-} 
+}
