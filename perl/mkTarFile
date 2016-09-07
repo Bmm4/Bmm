@@ -41,6 +41,7 @@ $exclude .= " --exclude obj/\\*.o";
 $exclude .= " --exclude chains";
 $exclude .= " --exclude Bmm/CmsswAnalysis/test";
 $exclude .= " --exclude \\*.root";
+$exclude .= " --exclude \\*.root.\\*";
 $exclude .= " --exclude \\*.pdf";
 $exclude .= " --exclude \\*.ps";
 $exclude .= " --exclude \\*.eps";
