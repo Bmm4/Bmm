@@ -1,0 +1,46 @@
+#!/usr/bin/env perl
+
+# ----------------------------------------------------------------------
+#
+# Usage: patchDasFile catalog1 catalog2
+# -----
+#
+# ----------------------------------------------------------------------
+
+use Getopt::Std;
+getopts('e');
+
+foreach $file (@ARGV) {
+
+    open(IN, "$file") || die "cannot open $file\n";
+
+    my @lines = <IN>;
+    close(IN);
+
+    if ($lines[0] =~ /\[\'\"/) {
+	print "found it, do it\n";
+    } else {
+	print "did not find it, skip it\n";
+	next;
+    }
+
+    if ($opt_e) {
+	system("mv $file $file.bac");
+    } else {
+	unlink($file);
+    }
+    open(OUT, ">$file") || die "cannot open $file for output\n";
+
+    foreach $line (@lines) {
+	if ($line =~ /\[\]/) {
+	    next;
+	}
+	($f1, $f2, $nevt) = split(' ', $line, 3);
+	$f1 =~ s/\[\'\"//g;
+	$f1 =~ s/\"\',//g;
+	chop($nevt);
+	print OUT "$f1 $nevt\n";
+    }
+
+    close OUT;
+}
