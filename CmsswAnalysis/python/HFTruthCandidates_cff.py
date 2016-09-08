@@ -255,7 +255,7 @@ truthLambdaBToPKDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------
-truthLambdaBToKMuNuDump = cms.EDAnalyzer(
+truthLambdaBToPMuNuDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
     motherID     = cms.untracked.int32(5122),
@@ -552,7 +552,7 @@ truthRareBuSequence      = cms.Sequence(truthBuTo3MuNuDump
 
 truthRareLambdaBSequence = cms.Sequence(truthLambdaBToPPiDump
                                         *truthLambdaBToPKDump
-                                        *truthLambdaBToKMuNuDump)
+                                        *truthLambdaBToPMuNuDump)
 
 truthB2DstarSequence     = cms.Sequence(truthBd2DstarPiDump)
 
