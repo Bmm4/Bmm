@@ -548,6 +548,50 @@ string formatTex(double n, string name, int digits, int sgn) {
 }
 
 // ----------------------------------------------------------------------
+string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
+
+  double expoN  = TMath::Log10(n);
+  //  cout << "original expoN = " << expoN << endl;
+  if (expoN < 0) expoN -= 1;
+  double expoNE = TMath::Log10(nE);
+  //  cout << "original expoNE = " << expoNE << endl;
+  if (expoNE < 0) expoNE -= 1;
+
+  double ratio = expoNE - expoN;
+  double mantN  = n / TMath::Power(10, static_cast<int>(expoN));
+  double mantNE = nE / TMath::Power(10, static_cast<int>(expoNE-ratio));
+
+
+  //  cout << setw(2) << "expoN = " << expoN << " expoNE == " << expoNE << " mantN = " << mantN << " mantNE = " << mantNE << " ratio = " << ratio << endl;
+
+  char line[200];
+  if (TMath::IsNaN(n) || TMath::IsNaN(nE)) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
+  } else if (1 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (2 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (3 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (4 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.4f \\pm %5.4f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.4f \\pm %5.4f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (5 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.5f \\pm %5.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.5f \\pm %5.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (6 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else {
+  }
+
+  return string(line);
+}
+
+// ----------------------------------------------------------------------
 string formatTex(double n, string name, string tag) {
 
   char line[200];

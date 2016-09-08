@@ -35,8 +35,12 @@ void colors(int choice = 0);
 void replaceAll(std::string &s, const std::string &from, const std::string &to);
 std::vector<int> defVector(int n, ...);
 
-std::string formatTex(double n, std::string name, int digits, int sgn = 0);
 std::string formatTex(double n, std::string name, std::string tag);
+// -- normal variant
+std::string formatTex(double n, std::string name, int digits, int sgn = 0);
+// -- value with error in scientific notation
+std::string formatTexErrSci(double n, double nE, std::string name, int digits, int sgn = 0);
+
 void stamp(double x1, std::string text1, std::string text1a, double x2, std::string text2, int ipos = 11);
 
 void rmSubString(std::string &sinput, const std::string &remove);
