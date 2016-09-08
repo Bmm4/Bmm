@@ -16,9 +16,9 @@ public:
   void   setHistStyle(TH1 *);
 
   TFile *fF;
-  std::string fName, fFullName;
+  std::string fName, fLatexName, fFullName;
   // -- decay/process specifics
-  double fXsec, fBf, fMass, fLambda;
+  double fXsec, fBf, fBfE, fMass, fLambda;
   // -- generation information
   double fFilterEff, fLumi;
   // -- display
