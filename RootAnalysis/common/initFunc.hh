@@ -46,6 +46,9 @@ public:
   TF1* landau(double lo, double hi);
   TF1* landau(TH1 *h);
 
+  TF1* gauss(double lo, double hi);
+  TF1* gauss(TH1 *h);
+
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
 
@@ -59,6 +62,7 @@ public:
   TF1* pol1gauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double deltaPeak = 0.1, double deltaSigma = 0.1);
 
   TF1* expoGauss(TH1 *h, double peak = 5.3, double sigma = 0.04);
+  TF1* expogauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double deltaPeak = 0.1, double deltaSigma = 0.1);
 
   TF1* expoErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
   TF1* expoErrgauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double peak2 = 5.3, double sigma2 = 0.1, double preco = 5.14);
@@ -69,6 +73,7 @@ public:
 
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
+  TF1* crystalBallGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1CrystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1Landau(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
