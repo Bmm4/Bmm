@@ -113,7 +113,7 @@ public :
   void           makeCanvas(int i = 3);
   void           setItalic();
   void           setRoman();
-  void           savePad(std::string name);
+  void           savePad(std::string name, TCanvas *c = 0);
 
   // -- histograms
   std::map<std::string, TH1*> fHists;

@@ -1659,8 +1659,12 @@ void plotClass::setRoman() {
 
 
 // ----------------------------------------------------------------------
-void plotClass::savePad(string name) {
-  gPad->SaveAs(Form("%s/%s", fDirectory.c_str(), name.c_str()));
+void plotClass::savePad(string name, TCanvas *c) {
+  if (0 == c) {
+    gPad->SaveAs(Form("%s/%s", fDirectory.c_str(), name.c_str()));
+  } else {
+    c->SaveAs(Form("%s/%s", fDirectory.c_str(), name.c_str()));
+  }
 }
 
 
@@ -1694,12 +1698,39 @@ void plotClass::loadFiles(string afiles) {
     if (sbuffer.size() < 1) continue;
 
     string::size_type m1 = sbuffer.find("lumi=");
-    string stype = sbuffer.substr(5, m1-5);
-
     string::size_type m2 = sbuffer.find("file=");
-    string slumi = sbuffer.substr(m1+5, m2-m1-6);
+    string stype("nada");
+    bool useBf(false);
+    cout << "sbuffer: " << sbuffer  << " m1: " << m1 << endl;
+    if (m1 > sbuffer.size()) {
+      m1 = sbuffer.find("bf=");
+      useBf = true;
+    }
+    stype = sbuffer.substr(5, m1-5);
+    string slumi("nada"), sbf("nada");
+    if (useBf) {
+      sbf = sbuffer.substr(m1+3, m2-m1-3);
+    } else {
+      slumi = sbuffer.substr(m1+5, m2-m1-5);
+    }
     string sfile = sbuffer.substr(m2+5);
-    string sname("nada"), sdecay("nada");
+
+    string sname("nada"), sdecay("nada"), ldecay("");
+
+    double bf(0.), bfE(0.);
+    if (useBf) {
+      cout << "sbf = " << sbf  << endl;
+      float val, err;
+      int expo;
+      sscanf(sbf.c_str(), "(%f,%f)e%d", &val, &err, &expo);
+      bf = val*TMath::Power(10., expo);
+      bfE = err*TMath::Power(10., expo);
+    } else {
+      bf = 0.;
+      bfE = 0.;
+    }
+
+    //    if (useBf) cout << " -> BF = " << bf << " +/- " << bfE << endl;
 
     TFile *pF(0);
     dataset *ds(0);
@@ -1713,11 +1744,13 @@ void plotClass::loadFiles(string afiles) {
       ds->fWidth = 2;
       if (string::npos != stype.find("bmm,")) {
         sname = "bmmData";
-        sdecay = "bmm";
+        sdecay = "dimuon";
+	ldecay = "dimuon";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1725,11 +1758,13 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikData";
-        sdecay = "bupsik";
+        sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
+        ldecay = "\\bupsik";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1737,11 +1772,13 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiData";
-        sdecay = "bspsiphi";
+        sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}}#it{#phi}";
+	ldecay = "\\bspsiphi";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1749,11 +1786,13 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarData";
-        sdecay = "bdpsikstar";
+        sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
+	ldecay = "\\bdpsikstar";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1769,34 +1808,46 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikMc";
-        sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
+        ldecay = "\\bupsik";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
       }
 
       if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}}#it{#phi}";
+        ldecay = "\\bspsiphi";
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
       if (string::npos != stype.find("bsmm,")) {
         sname = "bsmmMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0}_{s} #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1804,32 +1855,123 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
+        ldecay = "\\bdpsikstar";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
       if (string::npos != stype.find("bdmm,")) {
         sname = "bdmmMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0} #rightarrow #it{#mu#mu}";
+        ldecay = "\\bdmm";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bspipi,")) {
+        sname = "bspipiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B^{s} #rightarrow #it{#pi#pi}";
+        ldecay = "\\bspipi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bskk,")) {
+        sname = "bskkMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B^{s} #rightarrow KK";
+        ldecay = "\\bskk";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bskmunu,")) {
+        sname = "bskmunuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B^{s} #rightarrow K#it{#mu}#it{#nu}";
+        ldecay = "\\bskmunu";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("lbppi,")) {
+        sname = "lbppiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "#it{#Lambda}_{b} #rightarrow p #it{#pi}";
+        ldecay = "\\lbppi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("lbpmunu,")) {
+	sname = "lbpmunuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "#it{#Lambda}_{b} #rightarrow p #it{#mu}  #it{#nu}";
+        ldecay = "\\lbpmunu";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+
     }
+    // -- insert if with a "valid" sname
     if (sname != "nada") {
-      ds->fLcolor = ds->fColor;
-      ds->fFcolor = ds->fColor;
-      ds->fName   = sdecay;
-      ds->fFullName = sname;
+      ds->fLcolor    = ds->fColor;
+      ds->fFcolor    = ds->fColor;
+      ds->fName      = sdecay;
+      ds->fLatexName = ldecay;
+      ds->fFullName  = sname;
       insertDataset(sname, ds);
     } else {
       delete ds;
