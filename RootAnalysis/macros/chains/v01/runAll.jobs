@@ -105,6 +105,15 @@ $catalogs{$mode} = "$BMMBASE/perl/srmLs -x /store/user/$USER/bmm4/cmsRun/$versio
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
+# -----------------------------------------------
+$dataset = "bmmCharmonium2016E";
+# -----------------------------------------------
+$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-prompt-Run2016E-Charmonium";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x /store/user/$USER/bmm4/cmsRun/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
 
 # -----------------------------------------------
 $dataset = "bmmSingleMuon2016B";
