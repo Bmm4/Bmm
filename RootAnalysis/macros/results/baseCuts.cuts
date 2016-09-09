@@ -2,8 +2,8 @@
 # basecuts
 nchan      4
 index      0         1          2           3
-metaMin    0.00      0.60       1.25	    1.60
-metaMax    0.60	     1.25       1.60        2.40
+metaMin    0.00      0.50       1.00	    1.40
+metaMax    0.50	     1.00       1.40        2.40
 mBdLo      5.20      5.20       5.20	    5.20
 mBdHi      5.30      5.30       5.30	    5.30
 mBuLo      5.20      5.20       5.20	    5.20
