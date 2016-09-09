@@ -83,7 +83,7 @@ public:
   // -- Additional variables and cuts for Bs -> J/psi phi
   int               PHITYPE;
   double            MKKLO, MKKHI, DELTAR;
-  double            fDeltaR, fMKK;
+  double            fDeltaR, fMKK, fMKPi1, fMKPi2;
   bool              fGoodDeltaR, fGoodMKK;
 
 
