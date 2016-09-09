@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 # ----------------------------------------------------------------------
 dstarpiDump = cms.EDAnalyzer(
     "HFBd2DstarPi",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag('generalTracks'),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     trackPt            = cms.untracked.double(4.0),
@@ -22,7 +22,7 @@ dstarpiDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 dstarDump = cms.EDAnalyzer(
     "HFDstar",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag('generalTracks'),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     trackPt            = cms.untracked.double(3.5),
@@ -41,7 +41,7 @@ dstarDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 ksDump = cms.EDAnalyzer(
     "HFDiTracks",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag("generalTracks"),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
@@ -66,7 +66,7 @@ ksDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 phiDump = cms.EDAnalyzer(
     "HFDiTracks",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag("generalTracks"),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
@@ -76,7 +76,7 @@ phiDump = cms.EDAnalyzer(
     track2Mass         = cms.untracked.double(0.4937),
     massLow            = cms.untracked.double(0.98),
     massHigh           = cms.untracked.double(1.10),
-    maxDoca            = cms.untracked.double(0.1),
+    maxDoca            = cms.untracked.double(0.05),
     pvWeight           = cms.untracked.double(0.60),
     type               = cms.untracked.int32(11333),
     nbrMuons           = cms.untracked.int32(0),
@@ -86,17 +86,21 @@ phiDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 lambdaDump = cms.EDAnalyzer(
     "HFDiTracks",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag("generalTracks"),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
     trackPt            = cms.untracked.double(2.0),
+    chi2               = cms.untracked.double(20.),
+    flxy               = cms.untracked.double(4.),
+    flsxy              = cms.untracked.double(5.),
+    pvips              = cms.untracked.double(5.),
     leadingTrackPt     = cms.untracked.double(3.5),
     track1Mass         = cms.untracked.double(0.9383),
     track2Mass         = cms.untracked.double(0.1396),
     massLow            = cms.untracked.double(1.0),
     massHigh           = cms.untracked.double(1.2),
-    maxDoca            = cms.untracked.double(0.2),
+    maxDoca            = cms.untracked.double(0.1),
     pvWeight           = cms.untracked.double(0.60),
     type               = cms.untracked.int32(113122),
     nbrMuons           = cms.untracked.int32(0),
@@ -107,7 +111,7 @@ lambdaDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 hhDump = cms.EDAnalyzer(
     "HFDiTracks",
-    verbose            = cms.untracked.int32(0), 
+    verbose            = cms.untracked.int32(0),
     tracksLabel        = cms.untracked.InputTag("generalTracks"),
     PrimaryVertexLabel = cms.untracked.InputTag("offlinePrimaryVertices"),
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
