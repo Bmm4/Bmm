@@ -15,6 +15,7 @@
 
 #include "plotReducedOverlays.hh"
 #include "plotWork.hh"
+#include "plotResults.hh"
 
 using namespace std;
 
@@ -38,15 +39,54 @@ int main(int argc, char *argv[]) {
 
   if (2016 == year) {
     if ("nada" == files) files = "plotReducedOverlays.2016.files";
-    if ("nada" == cuts)  cuts  = "plotClass.2016.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
+
+
+  // -- run everything
+  if (0 == plot) {
+    {
+      gROOT->Clear();  gROOT->DeleteAll();
+      files = "plotResults.2016.files";
+      cuts  = "baseCuts.cuts";
+      setup = "";
+      plotResults a(dir, files, cuts, setup);
+      a.makeAll();
+      return 0;
+    }
+    {
+      gROOT->Clear();  gROOT->DeleteAll();
+      files = "plotReducedOverlays.2016.files";
+      cuts  = "baseCuts.cuts";
+      plotReducedOverlays a(dir, files, cuts, setup);
+      a.makeAll();
+    }
+
+  }
+
+
 
   // -- overlays
   if (plot & 1) {
     gROOT->Clear();  gROOT->DeleteAll();
     plotReducedOverlays a(dir, files, cuts, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
+
+
+  // -- work
+  if (plot & 2) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    files = "plotWork.2016.files";
+    cuts  = "baseCuts.cuts";
+    setup = "";
+    plotWork a(dir, files, cuts, setup);
     if (mode != "nada") {
       a.makeAll(mode);
     } else {
