@@ -153,7 +153,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   pi.SetPtEtaPhiM(fPiPt, fPiEta, fPiPhi, MPION);
 
   TLorentzVector kstarCand = ka + pi;
-  fMKPI     = kstarCand.M();
   fKstarPt   = kstarCand.Pt();
   fKstarEta  = kstarCand.Eta();
   fKstarPhi  = kstarCand.Phi();
