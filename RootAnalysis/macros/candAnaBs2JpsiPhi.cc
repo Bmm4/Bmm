@@ -60,7 +60,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     }
   }
 
-
   // -- Get Kaons
   TAnaTrack *p0;
   TAnaTrack *p1(0);
@@ -83,6 +82,13 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   if (0 == p2) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 2 found " << endl;
     return;
+  }
+
+  // -- order the kaons according to (refitted) track pT
+  if (p2->fRefPlab.Perp() > p1->fRefPlab.Perp()) {
+    p0 = p2;
+    p2 = p1;
+    p1 = p0;
   }
 
   fKa1Pt        = p1->fRefPlab.Perp();
@@ -134,15 +140,20 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   fDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
 
-  TLorentzVector ka1, ka2;
+  TLorentzVector ka1, ka2, pi1, pi2;
   ka1.SetPtEtaPhiM(fKa1Pt, fKa1Eta, fKa1Phi, MKAON);
   ka2.SetPtEtaPhiM(fKa2Pt, fKa2Eta, fKa2Phi, MKAON);
+  pi1.SetPtEtaPhiM(fKa1Pt, fKa1Eta, fKa1Phi, MPION);
+  pi2.SetPtEtaPhiM(fKa2Pt, fKa2Eta, fKa2Phi, MPION);
 
   TLorentzVector phiCand = ka1 + ka2;
-  fMKK     = phiCand.M();
+  TLorentzVector pi1Cand = pi1 + ka2;
+  TLorentzVector pi2Cand = ka1 + pi2;
   fPhiPt   = phiCand.Pt();
   fPhiEta  = phiCand.Eta();
   fPhiPhi  = phiCand.Phi();
+  fMKPi1   = pi1Cand.M();
+  fMKPi2   = pi2Cand.M();
 
   fGoodDeltaR = (fDeltaR < DELTAR);
   fGoodMKK    = ((MKKLO < fMKK ) && (fMKK < MKKHI));
@@ -542,6 +553,8 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
 
   t->Branch("mkk",   &fMKK,      "mkk/D");
+  t->Branch("mkpi1", &fMKPi1,    "mkpi1/D");
+  t->Branch("mkpi2", &fMKPi2,    "mkpi2/D");
   t->Branch("phipt", &fPhiPt,    "phipt/D");
   t->Branch("phieta",&fPhiEta,   "phieta/D");
   t->Branch("phiphi",&fPhiPhi,   "phiphi/D");
