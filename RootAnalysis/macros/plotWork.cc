@@ -34,6 +34,7 @@ plotWork::plotWork(string dir, string files, string cuts, string setup): plotCla
   plotWork::loadFiles(files);
 
   changeSetup(dir, "plotWork", setup);
+  init();
 
   // -- initialize cuts
   string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
@@ -124,9 +125,14 @@ string plotWork::selectionString(int imode, int itrig) {
 
 // ----------------------------------------------------------------------
 void plotWork::init() {
-  system(Form("/bin/rm -f %s", fHistFileName.c_str()));
-  system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
+  // cout << Form("/bin/rm -f %s", fHistFileName.c_str()) << endl;
+  // system(Form("/bin/rm -f %s", fHistFileName.c_str()));
+  fTEX.close();
+  cout << Form("/bin/rm -f %s", fTexFileName.c_str()) << endl;
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
+  cout << Form("open for TeX output: %s", fTexFileName.c_str()) << endl;
+  fTEX.open(fTexFileName.c_str(), ios::app);
+
 }
 
 
@@ -161,7 +167,7 @@ void plotWork::makeAll(string what) {
   }
 
   if (what == "work" || string::npos != what.find("fitstudies")) {
-    //    int ndata(500000), nmc(400000);
+    fS = -1.;
     int ndata(-1), nmc(-1);
     MKKLO = 0.9;
     MKKHI = 1.3;
@@ -170,11 +176,10 @@ void plotWork::makeAll(string what) {
     PTK2  = 0.0;
 
     fitStudies("bspsiphiData", Form("norm"), ndata);
-    //    fitStudies("bspsiphiMc", Form("norm"), nmc);
+    if (fS > -1.) return;
+    fitStudies("bspsiphiMc", Form("norm"), nmc);
 
-    return;
-
-    for (int i = 0; i < 5; ++i) {
+    for (int i = 0; i < 6; ++i) {
       MKKLO = 1.015 - i*0.005;
       MKKHI = 1.025 + i*0.005;
       fitStudies("bspsiphiData", Form("mkk%d", i), ndata);
@@ -186,8 +191,8 @@ void plotWork::makeAll(string what) {
     DR    = 2.0;
     PTK1  = 0.0;
     PTK2  = 0.0;
-    for (int i = 0; i < 20; ++i) {
-      DR = 2.0 - i*0.1;
+    for (int i = 0; i < 8; ++i) {
+      DR = 0.5 - i*0.05;
       fitStudies("bspsiphiData", Form("dr%d", i), ndata);
       fitStudies("bspsiphiMc", Form("dr%d", i), nmc);
     }
@@ -195,22 +200,22 @@ void plotWork::makeAll(string what) {
 
     MKKLO = 1.01;
     MKKHI = 1.03;
-    DR    = 0.4;
+    DR    = 99.0;
     PTK1  = 0.0;
     PTK2  = 0.0;
     for (int i = 0; i < 8; ++i) {
-      PTK1 = 0.3 + i*0.1;
+      PTK1 = 0.6 + i*0.1;
       fitStudies("bspsiphiData", Form("ptk1%d", i), ndata);
       fitStudies("bspsiphiMc", Form("ptk1%d", i), nmc);
     }
 
     MKKLO = 1.01;
     MKKHI = 1.03;
-    DR    = 0.4;
-    PTK1  = 0.7;
+    DR    = 99.0;
+    PTK1  = 0.0;
     PTK2  = 0.0;
     for (int i = 0; i < 8; ++i) {
-      PTK2 = 0.3 + i*0.1;
+      PTK2 = 0.6 + i*0.1;
       fitStudies("bspsiphiData", Form("ptk2%d", i), ndata);
       fitStudies("bspsiphiMc", Form("ptk2%d", i), nmc);
     }
@@ -219,7 +224,7 @@ void plotWork::makeAll(string what) {
 
   if (what == "all" || string::npos != what.find("wrongreco")) {
     wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBu", "hlt");
-    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03");
+    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03 && k1pt > 0.7 && k2pt > 0.7");
     wrongReco("bcpsimunuMc", "candAnaMuMu", "");
 
     plotWrongReco("alpha", 50, 0., 0.1, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
@@ -809,7 +814,7 @@ void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
     dir  = "candAnaBd2JpsiKstar";
   }
 
-  TH1D *h1(0);
+  TH1D *h1(0), *h2(0);
   // -- check for data histogram
   fHistFile = TFile::Open(fHistFileName.c_str(), "");
   if (fHistFile) {
@@ -823,15 +828,14 @@ void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
 
     fHma.clear();
     fHmc.clear();
-    string cuts = Form("%4.3f < mkk < %4.3f, dr < %4.3f, ptk1 > %4.3f, ptk2 > %4.3f"
-		       , MKKLO, MKKHI, DR, PTK1, PTK2);
+    string cuts = Form("%4.3f<mkk<%4.3f, dr<%3.2f, ptk1>%3.2f, ptk2>%3.2f", MKKLO, MKKHI, DR, PTK1, PTK2);
     for (int i = 0; i < fNchan; ++i) {
       h1 = new TH1D(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()),
-		    Form("m %s_chan%d %s", dsname.c_str(), i, tag.c_str(), cuts.c_str()),
+		    Form("m %s_chan%d %s cuts:%s", dsname.c_str(), i, tag.c_str(), cuts.c_str()),
 		    90, 5.0, 5.9);
       fHma.push_back(h1);
       h1 = new TH1D(Form("hmc_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()),
-		    Form("m %s_chan%d %s (constrained)", dsname.c_str(), i, cuts.c_str()),
+		    Form("m (constrained) %s_chan%d cuts:%s", dsname.c_str(), i, cuts.c_str()),
 		    90, 5.0, 5.9);
       fHmc.push_back(h1);
     }
@@ -848,41 +852,291 @@ void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
 
     fHistFile->Write();
     fHistFile->Close();
-
+    fS = -1.;
+    return;
   }
 
+  // --------------------------------
+  // -- Fit and analyze the histograms
+  // --------------------------------
   fHistFile = TFile::Open(fHistFileName.c_str(), "");
-  zone(2,2);
+
+  zone(2, 4);
   gStyle->SetOptFit(0);
-  double xmin(5.25), xmax(5.45);
+  string mcname = dsname;
+  replaceAll(mcname, "Charmonium", "Mc");
+  replaceAll(mcname, "Data", "Mc");
+  tag = "norm";
+  string cuts;
+  vector<double> normMc, normDa;
   for (int i = 0; i < fNchan; ++i) {
-    c0->cd(i+1);
     h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tag.c_str()));
+    cuts = h1->GetTitle(); cuts = cuts.substr(cuts.find("cuts:") + 5);
     h1->SetMinimum(0.);
-    double mBs(5.69), sBs(0.04), stepBs(5.21);
+    h2 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", mcname.c_str(), i, tag.c_str()));
+    h2->SetMinimum(0.);
     fIF->fLo = 5.0;
     fIF->fHi = 5.9;
-    TF1 *f1 = fIF->expoErrGauss(h1, mBs, sBs, stepBs);
-    h1->Fit(f1, "lr", "", 5.0, 5.9);
-    xmin = f1->GetParameter(1) - 2.*f1->GetParameter(2);
-    xmax = f1->GetParameter(1) + 2.*f1->GetParameter(2);
-    double B = f1->Integral(xmin, xmax)/h1->GetBinWidth(1);
-    f1->SetParameter(3, 0.);
-    f1->SetParameter(4, 0.);
-    f1->SetParameter(5, 0.);
-    f1->SetParameter(6, 0.);
-    double S = f1->Integral(xmin, xmax)/h1->GetBinWidth(1);
-    B -= S;
-    tl->DrawLatexNDC(0.2, 0.95, Form("S/B = %5.1f / %5.1f", S, B));
-    tl->DrawLatexNDC(0.7, 0.95, Form("fit: %3.1f ", f1->GetChisquare()/f1->GetNDF()));
-    tl->DrawLatexNDC(0.2, 0.88, Form("S/B = %3.1f", S/B));
-    tl->DrawLatexNDC(0.6, 0.88, Form("%4.3f < x < %4.3f ", xmin, xmax));
+    c0->cd(2*i+1);
+    fitStudiesFit0(h1, i);
+    normDa.push_back(fS);
+    tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+    tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+    tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+    tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+    fTEX << Form("\\vdef{%s:fitstudies_chan%d_norm:var} {%s}", fSuffix.c_str(), i, tag.c_str()) << endl;
+    fTEX << Form("\\vdef{%s:fitstudies_chan%d_norm:cuts} {%s}", fSuffix.c_str(), i, cuts.c_str()) << endl;
+    fTEX << formatTex(fS, Form("%s:fitstudies_chan%d_norm:daS", fSuffix.c_str(), i), 1)	 << endl;
+    fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_norm:daSsigma", fSuffix.c_str(), i), 3)	 << endl;
+    fTEX << formatTex(fW/fS, Form("%s:fitstudies_chan%d_norm:W/S", fSuffix.c_str(), i), 2) << endl;
+    fTEX << formatTex(fS/fB,Form("%s:fitstudies_chan%d_norm:S/B", fSuffix.c_str(), i), 2)	 << endl;
+    c0->cd(2*i+2);
+    fitStudiesFit0(h2, i);
+    normMc.push_back(fEntries);
+    tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+    tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+    tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+    tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+    tl->DrawLatexNDC(0.62, 0.40, Form("RMS = %4.3f", fSRMS));
+    fTEX << formatTex(fS,Form("%s:fitstudies_chan%d_norm:mcS", fSuffix.c_str(), i), 2)	 << endl;
+    fTEX << formatTex(fSsigma,Form("%s:fitstudies_chan%d_norm:mcSsigma", fSuffix.c_str(), i), 3)	 << endl;
+    fTEX << formatTex(fSRMS,Form("%s:fitstudies_chan%d_norm:mcSrms", fSuffix.c_str(), i), 3)	 << endl;
+ }
+  c0->cd(2*(fNchan-1)+1);
+  tl->DrawLatexNDC(0.80, 0.40, tag.c_str());
+  savePad(Form("fitStudies_normalization.pdf"), c0);
 
+  tag = "mkk";
+  for (int imod = 0; imod < 6; ++imod) {
+    string tg = Form("%s%d", tag.c_str(), imod);
+    for (int i = 0; i < fNchan; ++i) {
+      h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tg.c_str()));
+      cuts = h1->GetTitle(); cuts = cuts.substr(cuts.find("cuts:") + 5);
+      h1->SetMinimum(0.);
+      h2 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", mcname.c_str(), i, tg.c_str()));
+      h2->SetMinimum(0.);
+      fIF->fLo = 5.0;
+      fIF->fHi = 5.9;
+      c0->cd(2*i+1);
+      fitStudiesFit0(h1, i);
+      tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+      tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+      tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:var} {%s}", fSuffix.c_str(), i, tg.c_str(), tg.c_str()) << endl;
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:cuts} {%s}", fSuffix.c_str(), i, tg.c_str(), cuts.c_str()) << endl;
+      fTEX << formatTex(fS, Form("%s:fitstudies_chan%d_%s:daS", fSuffix.c_str(), i, tg.c_str()), 1) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:daSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fW/fS, Form("%s:fitstudies_chan%d_%s:W/S", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fS/fB, Form("%s:fitstudies_chan%d_%s:S/B", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      c0->cd(2*i+2);
+      fitStudiesFit0(h2, i);
+      tl->DrawLatexNDC(0.60, 0.70, Form("#varepsilon = %4.3f", fEntries/normMc[i]));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      tl->DrawLatexNDC(0.62, 0.40, Form("RMS = %4.3f", fSRMS));
+      fTEX << formatTex(fS,Form("%s:fitstudies_chan%d_%s:mcS", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fSsigma,Form("%s:fitstudies_chan%d_%s:mcSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fSRMS,Form("%s:fitstudies_chan%d_%s:mcSrms", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fEntries/normMc[i],Form("%s:fitstudies_chan%d_%s:eff", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+    }
+    c0->cd(2*(fNchan-1)+1);
+    tl->DrawLatexNDC(0.80, 0.40, Form("%s", tg.c_str()));
+    savePad(Form("fitStudies_%s.pdf", tg.c_str()), c0);
   }
-  savePad(Form("fitStudies_%s_%s.pdf", dsname.c_str(), tag.c_str()));
+
+  tag = "dr";
+  for (int imod = 0; imod < 8; ++imod) {
+    string tg = Form("%s%d", tag.c_str(), imod);
+    for (int i = 0; i < fNchan; ++i) {
+      h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tg.c_str()));
+      cuts = h1->GetTitle(); cuts = cuts.substr(cuts.find("cuts:") + 5);
+      h1->SetMinimum(0.);
+      h2 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", mcname.c_str(), i, tg.c_str()));
+      h2->SetMinimum(0.);
+      fIF->fLo = 5.0;
+      fIF->fHi = 5.9;
+      c0->cd(2*i+1);
+      fitStudiesFit0(h1, i);
+      tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+      tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+      tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:var} {%s}", fSuffix.c_str(), i, tg.c_str(), tg.c_str()) << endl;
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:cuts} {%s}", fSuffix.c_str(), i, tg.c_str(), cuts.c_str()) << endl;
+      fTEX << formatTex(fS, Form("%s:fitstudies_chan%d_%s:daS", fSuffix.c_str(), i, tg.c_str()), 1) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:daSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fW/fS, Form("%s:fitstudies_chan%d_%s:W/S", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fS/fB, Form("%s:fitstudies_chan%d_%s:S/B", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      c0->cd(2*i+2);
+      fitStudiesFit0(h2, i);
+      tl->DrawLatexNDC(0.60, 0.70, Form("#varepsilon = %4.3f", fEntries/normMc[i]));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      tl->DrawLatexNDC(0.62, 0.40, Form("RMS = %4.3f", fSRMS));
+      fTEX << formatTex(fS,Form("%s:fitstudies_chan%d_%s:mcS", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:mcSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fSRMS,Form("%s:fitstudies_chan%d_%s:mcSrms", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fEntries/normMc[i],Form("%s:fitstudies_chan%d_%s:eff", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+    }
+    c0->cd(2*(fNchan-1)+1);
+    tl->DrawLatexNDC(0.80, 0.40, Form("%s", tg.c_str()));
+    savePad(Form("fitStudies_%s.pdf", tg.c_str()), c0);
+  }
+
+
+  tag = "ptk1";
+  for (int imod = 0; imod < 8; ++imod) {
+    string tg = Form("%s%d", tag.c_str(), imod);
+    for (int i = 0; i < fNchan; ++i) {
+      h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tg.c_str()));
+      cuts = h1->GetTitle(); cuts = cuts.substr(cuts.find("cuts:") + 5);
+      h1->SetMinimum(0.);
+      h2 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", mcname.c_str(), i, tg.c_str()));
+      h2->SetMinimum(0.);
+      fIF->fLo = 5.0;
+      fIF->fHi = 5.9;
+      c0->cd(2*i+1);
+      fitStudiesFit0(h1, i);
+      tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+      tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+      tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:var} {%s}", fSuffix.c_str(), i, tg.c_str(), tg.c_str()) << endl;
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:cuts} {%s}", fSuffix.c_str(), i, tg.c_str(), cuts.c_str()) << endl;
+      fTEX << formatTex(fS, Form("%s:fitstudies_chan%d_%s:daS", fSuffix.c_str(), i, tg.c_str()), 1) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:daSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fW/fS, Form("%s:fitstudies_chan%d_%s:W/S", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fS/fB, Form("%s:fitstudies_chan%d_%s:S/B", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      c0->cd(2*i+2);
+      fitStudiesFit0(h2, i);
+      tl->DrawLatexNDC(0.60, 0.70, Form("#varepsilon = %4.3f", fEntries/normMc[i]));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      tl->DrawLatexNDC(0.62, 0.40, Form("RMS = %4.3f", fSRMS));
+      fTEX << formatTex(fS,Form("%s:fitstudies_chan%d_%s:mcS", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:mcSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fSRMS,Form("%s:fitstudies_chan%d_%s:mcSrms", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fEntries/normMc[i],Form("%s:fitstudies_chan%d_%s:eff", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+    }
+    c0->cd(2*(fNchan-1)+1);
+    tl->DrawLatexNDC(0.80, 0.40, Form("%s", tg.c_str()));
+    savePad(Form("fitStudies_%s.pdf", tg.c_str()), c0);
+  }
+
+  tag = "ptk2";
+  for (int imod = 0; imod < 8; ++imod) {
+    string tg = Form("%s%d", tag.c_str(), imod);
+    for (int i = 0; i < fNchan; ++i) {
+      h1 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", dsname.c_str(), i, tg.c_str()));
+      cuts = h1->GetTitle(); cuts = cuts.substr(cuts.find("cuts:") + 5);
+      h1->SetMinimum(0.);
+      h2 = (TH1D*)fHistFile->Get(Form("hma_%s_chan%d_%s", mcname.c_str(), i, tg.c_str()));
+      h2->SetMinimum(0.);
+      fIF->fLo = 5.0;
+      fIF->fHi = 5.9;
+      c0->cd(2*i+1);
+      fitStudiesFit0(h1, i);
+      tl->DrawLatexNDC(0.60, 0.80, Form("N   = %5.1f", fN));
+      tl->DrawLatexNDC(0.60, 0.70, Form("W/S = %5.1f / %5.1f", fW, fS));
+      tl->DrawLatexNDC(0.67, 0.60, Form("= %4.3f", fW/fS));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:var} {%s}", fSuffix.c_str(), i, tg.c_str(), tg.c_str()) << endl;
+      fTEX << Form("\\vdef{%s:fitstudies_chan%d_%s:cuts} {%s}", fSuffix.c_str(), i, tg.c_str(), cuts.c_str()) << endl;
+      fTEX << formatTex(fS, Form("%s:fitstudies_chan%d_%s:daS", fSuffix.c_str(), i, tg.c_str()), 1) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:daSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fW/fS, Form("%s:fitstudies_chan%d_%s:W/S", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fS/fB, Form("%s:fitstudies_chan%d_%s:S/B", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      c0->cd(2*i+2);
+      fitStudiesFit0(h2, i);
+      tl->DrawLatexNDC(0.60, 0.70, Form("#varepsilon = %4.3f", fEntries/normMc[i]));
+      tl->DrawLatexNDC(0.67, 0.50, Form("#sigma = %4.3f", fSsigma));
+      tl->DrawLatexNDC(0.62, 0.40, Form("RMS = %4.3f", fSRMS));
+      fTEX << formatTex(fS,Form("%s:fitstudies_chan%d_%s:mcS", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+      fTEX << formatTex(fSsigma, Form("%s:fitstudies_chan%d_%s:mcSsigma", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fSRMS,Form("%s:fitstudies_chan%d_%s:mcSrms", fSuffix.c_str(), i, tg.c_str()), 3) << endl;
+      fTEX << formatTex(fEntries/normMc[i],Form("%s:fitstudies_chan%d_%s:eff", fSuffix.c_str(), i, tg.c_str()), 2) << endl;
+    }
+    c0->cd(2*(fNchan-1)+1);
+    tl->DrawLatexNDC(0.80, 0.40, Form("%s", tg.c_str()));
+    savePad(Form("fitStudies_%s.pdf", tg.c_str()), c0);
+  }
 
 
 }
+
+
+// ----------------------------------------------------------------------
+void  plotWork::fitStudiesFit0(TH1D *h1, int i) {
+
+  TF1 *f1(0);
+  double xmin(5.0), xmax(6.0);
+  double mBs(5.37), sBs(0.04), stepBs(5.21);
+
+  TF1 *fb = new TF1(Form("b%s_%d", h1->GetName(), i), "[0] * TMath::Exp([1]*x)", 5.0, 6.0);
+  TF1 *fs = new TF1(Form("s%s_%d", h1->GetName(), i), "[0] * TMath::Gaus(x, [1], [2], false)", 5.0, 6.0);
+  TF1 *fw = new TF1(Form("w%s_%d", h1->GetName(), i), "[0] * TMath::Gaus(x, [1], [2], false)", 5.0, 6.0);
+  TH1D *hr = (TH1D*)h1->Clone("hr"); hr->Reset();
+  fSRMS = h1->GetRMS();
+  fIF->fLo = xmin;
+  fIF->fHi = xmax;
+  //  f1 = fIF->pol1gauss2(h1, mBs, sBs, 0.1, 0.1);
+  f1 = fIF->expogauss2(h1, mBs, sBs, 0.1, 0.1);
+  h1->Fit(f1, "lr", "", xmin, 5.9);
+  f1 = (TF1*)f1->Clone(Form("f%d", i));
+  fb->SetParameters(f1->GetParameter(6),
+		    f1->GetParameter(7));
+  fb->SetLineStyle(kDashed);
+  fb->Draw("same");
+  fs->SetParameters(f1->GetParameter(0),
+		    f1->GetParameter(1),
+		    f1->GetParameter(2));
+  fs->SetLineColor(kBlue);
+  fs->SetLineStyle(kDashed);
+  fs->Draw("same");
+  fw->SetParameters(f1->GetParameter(3)*f1->GetParameter(0),
+		    f1->GetParameter(4),
+		    f1->GetParameter(5));
+  fw->SetLineColor(kMagenta);
+  fw->SetLineStyle(kDashed);
+  fw->Draw("same");
+
+  xmin = f1->GetParameter(1) - 2.*f1->GetParameter(2);
+  xmax = f1->GetParameter(1) + 2.*f1->GetParameter(2);
+  double S = fs->Integral(xmin, xmax)/h1->GetBinWidth(1);
+  double W = fw->Integral(xmin, xmax)/h1->GetBinWidth(1);
+  double B = fb->Integral(xmin, xmax)/h1->GetBinWidth(1);
+  if (B < 1.) B = 1.;
+  // -- estimate RMS of combined Gaussian
+  for (int i = 0; i < S; ++i) {
+    hr->Fill(fs->GetRandom());
+  }
+  // -- if the two Gaussians are close together, count both of them as signal
+  fN  = S;
+  fNE = S * f1->GetParError(0) / f1->GetParameter(0);;
+  if (TMath::Abs(f1->GetParameter(1) - f1->GetParameter(4)) < 0.7*f1->GetParameter(2)) {
+    S = S + W;
+    for (int i = 0; i < W; ++i) {
+      hr->Fill(fw->GetRandom());
+    }
+  }
+
+
+
+  tl->SetTextSize(0.06);
+  tl->DrawLatexNDC(0.2, 0.95, Form("S/B = %5.1f / %5.1f", S, B));
+  tl->DrawLatexNDC(0.7, 0.95, Form("fit: %3.1f ", f1->GetChisquare()/f1->GetNDF()));
+  tl->DrawLatexNDC(0.2, 0.88, Form("S/B = %3.1f", S/B));
+  tl->DrawLatexNDC(0.6, 0.88, Form("%4.3f < x < %4.3f ", xmin, xmax));
+  fS  = S;
+  fSE = S * f1->GetParError(0) / f1->GetParameter(0);
+  fW  = W;
+  fWE = W * f1->GetParError(3) / f1->GetParameter(3);
+  fB  = B;
+  fBE = B * f1->GetParError(7) / f1->GetParameter(7);
+  fChi2Dof = f1->GetChisquare()/f1->GetNDF();
+  fSsigma  = f1->GetParameter(2);
+  fSsigma  = hr->GetRMS();
+  fEntries = h1->GetSumOfWeights();
+}
+
 
 
 // ----------------------------------------------------------------------
@@ -1126,8 +1380,13 @@ void plotWork::loopFunction3() {
   if (TMath::Abs(fb.mkk) < MKKLO) return;
   if (TMath::Abs(fb.mkk) > MKKHI) return;
   if (TMath::Abs(fb.dr)  > DR) return;
-  if (TMath::Abs(fb.k1pt) < PTK1) return;
-  if (TMath::Abs(fb.k2pt) < PTK2) return;
+  if (fb.k1pt > fb.k2pt) {
+    if (TMath::Abs(fb.k1pt) < PTK1) return;
+    if (TMath::Abs(fb.k2pt) < PTK2) return;
+  } else {
+    if (TMath::Abs(fb.k1pt) < PTK2) return;
+    if (TMath::Abs(fb.k2pt) < PTK1) return;
+  }
   if (TMath::Abs(fb.psipt) < PTPSI) return;
 
 

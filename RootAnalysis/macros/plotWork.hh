@@ -29,7 +29,10 @@ public :
 
   // -- fitting studies
   void fitStudies(std::string ds1, std::string tag, int nevt = -1, int nstart = -1);
+  void  fitStudiesFit0(TH1D *h1, int chan);
   double MKKLO, MKKHI, DR, PTK1, PTK2, PTPSI;
+
+  // -- misreconstructed background
   void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
   void plotWrongReco(std::string var, int nbin, double min, double max, std::string selection,
 		     std::string wds, std::string wdir,
@@ -69,6 +72,9 @@ private:
 
   TH1D *fpHnorm, *fpHpass;
   std::vector<TH1D *> fHma, fHmc;
+  double fS, fSE, fN, fNE, fW, fWE, fB, fBE, fChi2Dof;
+  double fSsigma, fSRMS;
+  double fEntries;
 
   std::map<int, TH1D*> fYieldRTR, fYieldHLT;
 
