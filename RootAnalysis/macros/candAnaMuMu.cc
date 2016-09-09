@@ -56,36 +56,91 @@ void candAnaMuMu::genMatch() {
   if (1000060 == TYPE) {id1 = 2212; id2 = 211;}
   if (1000061 == TYPE) {id1 = 2212; id2 = 321;}
   if (1000062 == TYPE) {id1 = 2212; id2 = 13;}
+  // -- do not match these!
+  if (3000020 == TYPE) {id1 = 0;    id2 = 0;}
 
   TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0);
   bool goodMatch(false);
-  for (int i = 0; i < fpEvt->nGenT(); ++i) {
-    pC = fpEvt->getGenT(i);
-    if (TRUTHCAND == TMath::Abs(pC->fID)) {
-      pM1 = pM2 = 0;
-      pB = pC;
-      for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
-	pC = fpEvt->getGenTWithIndex(id);
-	//	cout << "dau1 = " << pB->fDau1 << " dau2 = " << pB->fDau2 << " pC: " << pC << endl;
-	if (id1 == TMath::Abs(pC->fID) || id2 == TMath::Abs(pC->fID)) {
-	  if (0 == pM1) {
-	    pM1 = fpEvt->getGenTWithIndex(id);
-	  } else {
-	    pM2 = fpEvt->getGenTWithIndex(id);
+  if (!(3000020 == TYPE)) {
+    //    cout << "event " << fEvent << " nGetT() = " << fpEvt->nGenT() << endl;
+    // for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    //   fpEvt->getGenT(i)->dump();
+    // }
+    // for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    //   cout << "cand " << fpEvt->getCand(iC)->fType << endl;
+    // }
+    for (int i = 0; i < fpEvt->nGenT(); ++i) {
+      pC = fpEvt->getGenT(i);
+      if (TRUTHCAND == TMath::Abs(pC->fID)) {
+	pM1 = pM2 = 0;
+	pB = pC;
+	//	cout << "Found B type " << TRUTHCAND  << " at " << i << endl;
+	for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	  pC = fpEvt->getGenTWithIndex(id);
+	  if ((id1 == TMath::Abs(pC->fID)) || (id2 == TMath::Abs(pC->fID))) {
+	    //	    cout << "found daughter type " << pC->fID << " of truth-B at " << id << endl;
+	    if (0 == pM1) {
+	      pM1 = fpEvt->getGenTWithIndex(id);
+	    } else {
+	      pM2 = fpEvt->getGenTWithIndex(id);
+	    }
+	  }
+	  if ((22 == TMath::Abs(pC->fID))) {
+	    //	    cout << " photon with pt,eta,phi = " << pC->fP.Perp() << "/" << pC->fP.Eta() << "/" << pC->fP.Phi() << endl;
+	    ((TH1D*)fHistDir->Get("egamma"))->Fill(TMath::Log10(pC->fP.Perp()));
 	  }
 	}
-      }
-      if (0 != pM1 && 0 != pM2) {
-	goodMatch = true;
-	fNGenPhotons = pB->fDau2 - pB->fDau1 - 1;
-	if (fVerbose > 10) {
-	  cout << "found gen match for B gen idx = " << pB->fNumber << endl;
+	if (0 != pM1 && 0 != pM2) {
+	  goodMatch = true;
+	  ((TH1D*)fHistDir->Get("mll"))->Fill((pM1->fP + pM2->fP).M());
+	  fNGenPhotons = pB->fDau2 - pB->fDau1 - 1;
+	  if (fVerbose > 10) {
+	    cout << "found gen match for B gen idx = " << pB->fNumber << endl;
+	  }
+	  break;
 	}
-	break;
       }
     }
   }
 
+  // -- very special case for dimuons from Bc -> J/psi mu nu
+  if (3000020 == TYPE) {
+    pC = pM1 = pM2 = pB = 0;
+    for (int i = 0; i < fpEvt->nGenT(); ++i) {
+      pC = fpEvt->getGenT(i);
+      if (TRUTHCAND == TMath::Abs(pC->fID)) {
+	pM1 = pM2 = 0;
+	pB = pC;
+	// -- find bachelor muon:
+	for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	  pC = fpEvt->getGenTWithIndex(id);
+	  if (0 == pC) {
+	    fpEvt->dumpGenBlock();
+	    return;
+	  }
+	  if (13 == TMath::Abs(pC->fID) && (pC->fMom1 == pB->fNumber)) {
+	    pM1 = fpEvt->getGenTWithIndex(id);
+	  }
+	}
+	// -- now get unlike-charge muon from J/psi decay
+	for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
+	  pC = fpEvt->getGenTWithIndex(id);
+	  if (13 == TMath::Abs(pC->fID) && (pC->fQ*pM1->fQ <0)) {
+	    pM2 = fpEvt->getGenTWithIndex(id);
+	  }
+	}
+
+	if (0 != pM1 && 0 != pM2) {
+	  goodMatch = true;
+	  fNGenPhotons = pB->fDau2 - pB->fDau1 - 1;
+	  if (fVerbose > 10) {
+	    cout << "found gen match for B gen idx = " << pB->fNumber << endl;
+	  }
+	  break;
+	}
+      }
+    }
+  }
 
   fGenBTmi = -1;
   if (goodMatch) {
@@ -395,6 +450,8 @@ void candAnaMuMu::bookHist() {
   cout << "==>candAnaMuMu: bookHist" << endl;
   candAna::bookHist();
 
+  new TH1D("egamma", "egamma", 100, -10., 1.);
+  new TH1D("mll", "mll", 50, 5., 5.5);
 }
 
 
