@@ -25,7 +25,7 @@ using namespace reco;
 // ----------------------------------------------------------------------
 HFDumpGenerator::HFDumpGenerator(const ParameterSet& iConfig):
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
-  fGenCandidatesLabel(iConfig.getUntrackedParameter<string>("generatorCandidates", string("MCCandidate"))), 
+  fGenCandidatesLabel(iConfig.getUntrackedParameter<string>("generatorCandidates", string("MCCandidate"))),
   fGenEventLabel(iConfig.getUntrackedParameter<string>("generatorEvent", string("EvtGenProducer")))  {
   using namespace std;
   cout << "----------------------------------------------------------------------" << endl;
@@ -43,7 +43,7 @@ HFDumpGenerator::HFDumpGenerator(const ParameterSet& iConfig):
 
 // ----------------------------------------------------------------------
 HFDumpGenerator::~HFDumpGenerator() {
-  
+
 }
 
 
@@ -52,10 +52,10 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   // -- CAREFUL!
   // keep this Clear()! If a genfilter based on gHFEvent is used in the job, this clear will
-  // make sure that the old GenBlock is cleared before filling it again. 
+  // make sure that the old GenBlock is cleared before filling it again.
   gHFEvent->Clear();
 
-  static int nevt(0); 
+  static int nevt(0);
   ++nevt;
 
   if (fVerbose > 3) {
@@ -66,13 +66,13 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
     iEvent.getByToken(fTokenHepMCProduct, evt);
     const HepMC::GenEvent *genEvent = evt->GetEvent();
     genEvent->print();
-    
+
     cout << "=================HEPMC===================" << endl;
   }
 
   TGenCand  *pGen;
   // -- From PhysicsTools/HepMCCandAlgos/plugins/ParticleListDrawer.cc
-  int iMo1(-1), iMo2(-1), iDa1(-1), iDa2(-1); 
+  int iMo1(-1), iMo2(-1), iDa1(-1), iDa2(-1);
 
   vector<const GenParticle *> cands;
   cands.clear();
@@ -92,19 +92,19 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   if (fVerbose > 1) cout << Form("Number of genParticles = %i", (int)genParticlesH->size()) << endl;
 
-  int i(-1); 
+  int i(-1);
   for(GenParticleCollection::const_iterator p  = genParticlesH->begin(); p != genParticlesH->end();  p++) {
-    ++i; 
+    ++i;
     pGen = gHFEvent->addGenCand();
     pGen->fID     = p->pdgId();
-    pGen->fStatus = p->status();  
-    pGen->fNumber = i; 
-    pGen->fQ      = p->charge(); 
-
+    pGen->fStatus = p->status();
+    pGen->fNumber = i;
+    pGen->fQ      = p->charge();
+    pGen->fMass   = p->mass();
     double vx = p->vx(), vy = p->vy(), vz = p->vz();
-    pGen->fP.SetXYZT(p->px(), 
-		     p->py(), 
-		     p->pz(), 
+    pGen->fP.SetXYZT(p->px(),
+		     p->py(),
+		     p->pz(),
 		     p->energy());
     pGen->fV.SetXYZ(vx, vy, vz);
 
@@ -149,7 +149,7 @@ void HFDumpGenerator::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
     if (fVerbose > 2) pGen->dump();
   }
- 
+
   genParticlesH.clear(); // WHY?
 
   if (fVerbose > 0) cout << "==> HFDumpGenerator> Event " << nevt << ", dumped  " << gHFEvent->nGenCands() << " generator cands" << endl;
