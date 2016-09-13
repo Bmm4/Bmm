@@ -81,6 +81,8 @@ public:
   virtual bool        refTrigger(TAnaCand *pC, std::string refTriggerPath);
   virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
   virtual bool        triggerFired(std::string triggerPath);
+  virtual void        triggerHLT();
+  virtual void        triggerL1T();
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -268,7 +270,7 @@ public:
   TTree       *fEffTree;
   bool fETm1gt, fETm2gt, fETm1id, fETm1tmid, fETm1mvaid, fETm2id, fETm2tmid, fETm2mvaid;
   int fETm1q, fETm2q;
-  float fETgpt, fETgeta;
+  float fETgm, fETgpt, fETgeta;
   float fETcandMass;
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
   float fETm2pt, fETm2eta, fETg2pt, fETg2eta;

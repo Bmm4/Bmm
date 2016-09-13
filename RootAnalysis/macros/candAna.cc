@@ -99,6 +99,9 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	 << fVerbose << " MC: " << fIsMC << endl;
   }
 
+  triggerSelection();
+  runRange();
+
   if (fIsMC) {
     genMatch();
     recoMatch();
@@ -109,10 +112,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       return;
     }
     efficiencyCalculation();
-  }
 
-  triggerSelection();
-  runRange();
+  }
 
   // -- print HLT path(s) that fired
   if (0) {
@@ -129,7 +130,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	cout << "   " << fpEvt->fL1TNames[i] << endl;
       }
     }
-
+    return;
   }
 
 
@@ -531,7 +532,7 @@ void candAna::candAnalysis() {
 
   fChan = detChan(fMu1Eta, fMu2Eta);
   if (fChan < 0) {
-    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta << " -> chan = " << fChan << " returning!" << endl;
+    //    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta << " -> chan = " << fChan << " returning!" << endl;
     return;
   }
 
@@ -1019,6 +1020,79 @@ void candAna::efficiencyCalculation() {
 }
 
 // ----------------------------------------------------------------------
+void candAna::triggerHLT() {
+  fGoodHLT = false;
+  fhltType = -1;
+  fHLTPath = "";
+
+  TString a;
+  int ps(0);
+  bool result(false), wasRun(false), error(false);
+
+  // -- NOTRIGGER, just accept the event
+  if (HLTRANGE.begin()->first == "NOTRIGGER") {
+    if (fVerbose>2) cout << "NOTRIGGER requested... " << endl;
+    fGoodHLT = true;
+    return;
+  }
+
+  for (int i = 0; i < NHLT; ++i) {
+    result = wasRun = error = false;
+    a = fpEvt->fHLTNames[i];
+    ps = fpEvt->fHLTPrescale[i];
+    wasRun = fpEvt->fHLTWasRun[i];
+    result = fpEvt->fHLTResult[i];
+    error  = fpEvt->fHLTError[i];
+
+    if (wasRun && result) { // passed
+
+      if (fVerbose>1  || (-32 == fVerbose) ) cout << "passed: " << a << endl;
+      if ((a == "digitisation_step")
+	  || (a == "L1simulation_step")
+	  || (a == "digi2raw_step")
+	  || (a == "HLTriggerFinalPath")
+	  || (a == "raw2digi_step")
+	  || (a == "reconstruction_step")
+	  ) {
+	//cout << " does this ever happen? " << a << endl;
+	continue;
+      }
+
+      bool good = false;
+      string spath;
+      int rmin, rmax;
+      for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin();
+	   imap != HLTRANGE.end(); ++imap) {
+	spath = imap->first;
+	rmin = imap->second.first;
+	rmax = imap->second.second;
+	if (!a.CompareTo(imap->first.c_str())) {
+	  good=true;
+	  if (fVerbose > 1 || -32 == fVerbose  )
+	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a
+		 << " result: " << result << endl;
+	  break; // can we skip the rest?
+	}
+	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
+	  good=true;
+	  if (fVerbose > 1 || -32 == fVerbose)
+	    cout << "close match: " << imap->first.c_str() << " HLT: " << a
+		 << " result: " << result << " in run " << fRun << endl;
+	  break; // can we skip the rest?
+	} // end if
+
+      } // end for loop
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+void candAna::triggerL1T() {
+
+}
+
+
+// ----------------------------------------------------------------------
 void candAna::triggerSelection() {
   const bool skipL12 = true;
   fGoodHLT = false;
@@ -1450,6 +1524,7 @@ void candAna::bookHist() {
   fEffTree->Branch("procid", &fProcessType,       "procid/I");
   fEffTree->Branch("bidx",   &fGenBTmi,           "bidx/I");
 
+  fEffTree->Branch("gm",     &fETgm,              "gm/F");
   fEffTree->Branch("gpt",    &fETgpt,             "gpt/F");
   fEffTree->Branch("geta",   &fETgeta,            "geta/F");
   fEffTree->Branch("gtau",   &fETgtau,            "gtau/F");

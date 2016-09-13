@@ -391,6 +391,7 @@ void candAnaMuMu::efficiencyCalculation() {
   }
 
   // -- EffTree filling for all events with a signal decay
+  fETgm    = pB->fP.M();
   fETgpt   = pB->fP.Perp();
   fETgtau  = fGenLifeTime;
   fETgeta  = pB->fP.Eta();
