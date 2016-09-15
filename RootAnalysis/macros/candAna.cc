@@ -34,7 +34,7 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fGenBTmi = fGenM1Tmi = fGenM2Tmi = fNGenPhotons = fRecM1Tmi = fRecM2Tmi = fCandTmi = -1;
 
   fHistDir = gFile->mkdir(fName.c_str());
-  pvStudy(true);
+  //  pvStudy(true);
 
   cout << "======================================================================" << endl;
 
@@ -98,6 +98,10 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
 	 << fVerbose << " MC: " << fIsMC << endl;
   }
+
+
+  triggerHLT();
+  triggerL1T();
 
   triggerSelection();
   runRange();
@@ -1045,18 +1049,7 @@ void candAna::triggerHLT() {
     error  = fpEvt->fHLTError[i];
 
     if (wasRun && result) { // passed
-
       if (fVerbose>1  || (-32 == fVerbose) ) cout << "passed: " << a << endl;
-      if ((a == "digitisation_step")
-	  || (a == "L1simulation_step")
-	  || (a == "digi2raw_step")
-	  || (a == "HLTriggerFinalPath")
-	  || (a == "raw2digi_step")
-	  || (a == "reconstruction_step")
-	  ) {
-	//cout << " does this ever happen? " << a << endl;
-	continue;
-      }
 
       bool good = false;
       string spath;
@@ -1067,27 +1060,39 @@ void candAna::triggerHLT() {
 	rmin = imap->second.first;
 	rmax = imap->second.second;
 	if (!a.CompareTo(imap->first.c_str())) {
+	  cout << "----------------------------------------------------------------------" << endl;
+	  cout << a << " result = " << result << " prescale: " << ps << " wasRun = " << wasRun << endl;
 	  good=true;
 	  if (fVerbose > 1 || -32 == fVerbose  )
 	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << endl;
-	  break; // can we skip the rest?
+	  break;
 	}
 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
 	  good=true;
 	  if (fVerbose > 1 || -32 == fVerbose)
 	    cout << "close match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << " in run " << fRun << endl;
-	  break; // can we skip the rest?
-	} // end if
-
-      } // end for loop
+	  break;
+	}
+      }
+      if (good) {
+	fGoodHLT = true;
+	return;
+      }
     }
   }
 }
 
 // ----------------------------------------------------------------------
 void candAna::triggerL1T() {
+  if (!fGoodHLT) return;
+  cout << "fired L1 bits" << endl;
+  for (int i = 0; i < NL1T; ++i) {
+    if (fpEvt->fL1TResult[i]) {
+      cout << "   " << fpEvt->fL1TNames[i] << endl;
+    }
+  }
 
 }
 
@@ -1990,6 +1995,13 @@ void candAna::readCuts(string fileName, int dump) {
 	if (cutname == "pv2lips") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->pv2lips = cutvalue; ok = 1;
+	}
+
+	if (cutname == "l1seeds") {
+	  vector<string> vl1seeds = split(lineItems[j], ',');
+	  for (unsigned int is = 0; is < vl1seeds.size(); ++is) {
+	    fCuts[j-1]->l1seeds.push_back(atoi(vl1seeds[is].c_str()));
+	  }
 	}
 
       }

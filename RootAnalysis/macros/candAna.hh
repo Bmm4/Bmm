@@ -196,6 +196,7 @@ public:
 
   std::map<std::string, pair<int, int> > HLTRANGE;
   string DSNAME; // data set name
+  std::vector<int> L1SEEDS;
 
   bool fBarrel, fWideMass;
   AnalysisCuts fAnaCuts;
