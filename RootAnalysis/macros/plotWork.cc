@@ -245,6 +245,29 @@ void plotWork::makeAll(string what) {
     genSummary("bspsiphirelval", "candAnaBs2JpsiPhi");
   }
 
+
+  if (what == "genvalidation") {
+    genSummary("bdmmMcOff", "candAnaMuMu");
+    genSummary("bdmmMc", "candAnaMuMu");
+    genSummary("bdmmMcOffAcc", "candAnaMuMu");
+    genSummary("bsmmMcOff", "candAnaMuMu");
+    genSummary("bsmmMc", "candAnaMuMu");
+    genSummary("bupsikMcOff", "candAnaBu2JpsiK");
+    genSummary("bupsikMc", "candAnaBu2JpsiK");
+    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
+    genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
+    genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
+    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
+    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+    genSummary("bskkMcOffBg", "candAnaMuMu");
+    genSummary("bskkMcOffAccBg", "candAnaMuMu");
+    genSummary("bskmunuMcOffBg", "candAnaMuMu");
+    genSummary("lbpmunuMcOffAccBg", "candAnaMuMu");
+    genSummary("lbppiMcOffBg", "candAnaMuMu");
+
+
+  }
+
 }
 
 
@@ -260,50 +283,54 @@ void plotWork::bookHist(string dsname) {
 
 // ----------------------------------------------------------------------
 void plotWork::genSummary(std::string dsname, std::string dir) {
-  TH1D *hpt    = new TH1D("pt", "pt", 50, 0., 50.0);
-  TH1D *heta   = new TH1D("eta", "eta", 40, -4., 4.0);
+  TH1D *pt    = new TH1D("pt", "pt", 50, 0., 50.0); setTitles(pt, fVarToTex["pt"].c_str(), "", 0.07, 0.9, 1.1, 0.06);
+  TH1D *eta   = new TH1D("eta", "eta", 30, 0., 9.0); setTitles(eta, fVarToTex["eta"].c_str(), "", 0.07, 0.9, 1.1, 0.06);
   TH1D *tpt    = new TH1D("tpt", "pt (HLT)", 50, 0., 50.0); setFilledHist(tpt, kBlue, kYellow, 1000);
-  TH1D *teta   = new TH1D("teta", "eta (HLT)", 40, -4., 4.0); setFilledHist(teta, kBlue, kYellow, 1000);
-  TH1D *hm1eta = new TH1D("m1eta", "m1 eta", 40, -4., 4.0);
-  TH1D *hm2eta = new TH1D("m2eta", "m2 eta", 40, -4., 4.0);
-  TH1D *tm1eta = new TH1D("tm1eta", "m1 eta (HLT)", 40, -4., 4.0); setFilledHist(tm1eta, kBlue, kYellow, 1000);
-  TH1D *tm2eta = new TH1D("tm2eta", "m2 eta (HLT)", 40, -4., 4.0); setFilledHist(tm2eta, kBlue, kYellow, 1000);
-  TH1D *hketa  = new TH1D("keta", "kaon eta", 40, -4., 4.0);
-  TH1D *hm1pt  = new TH1D("m1pt", "m1 pt", 50, 0., 10.0);
-  TH1D *hm2pt  = new TH1D("m2pt", "m2 pt", 50, 0., 10.0);
-  TH1D *tm1pt  = new TH1D("tm1pt", "m1 pt (HLT)", 50, 0., 10.0); setFilledHist(tm1pt, kBlue, kYellow, 1000);
-  TH1D *tm2pt  = new TH1D("tm2pt", "m2 pt (HLT)", 50, 0., 10.0); setFilledHist(tm2pt, kBlue, kYellow, 1000);
-  TH1D *hkpt   = new TH1D("kpt", "kaon pt", 50, 0., 10.0);
-  TH1D *htau   = new TH1D("tau", "tau", 100, 0., 15.e-12);
+  TH1D *teta   = new TH1D("teta", "eta (HLT)", 30, 0., 9.0); setFilledHist(teta, kBlue, kYellow, 1000);
+  TH1D *meta  = new TH1D("meta", "muon eta", 30, 0., 9.0); setHist(meta, kBlue); setTitles(meta, fVarToTex["meta"].c_str(), "", 0.07, 0.9, 1.1, 0.06);
+  TH1D *tmeta  = new TH1D("tmeta", "muon eta (HLT)", 30, 0., 9.0); setFilledHist(tmeta, kBlue, kYellow, 1000);
+  TH1D *keta  = new TH1D("keta", "kaon eta", 30, 0., 9.0); setHist(keta, kRed);
+  TH1D *mpt   = new TH1D("mpt", "muon pt", 50, 0., 10.0); setHist(mpt, kBlue); setTitles(mpt, fVarToTex["mpt"].c_str(), "", 0.07, 0.9, 1.1, 0.06);
+  TH1D *tmpt   = new TH1D("tmpt", "muon pt (HLT)", 50, 0., 10.0); setFilledHist(tmpt, kBlue, kYellow, 1000);
+  TH1D *kpt   = new TH1D("kpt", "kaon pt", 50, 0., 10.0); setHist(kpt, kRed);
+  TH1D *tau   = new TH1D("tau", "tau", 100, 0., 20.e-12); setTitles(tau, "#tau #it{[ps]}", "", 0.07, 0.9, 1.1, 0.06);
 
   TTree *T = getTree(dsname, dir, "effTree");
   T->Draw("gtau>>tau");
   T->Draw("gpt>>pt");
-  T->Draw("geta>>eta");
+  T->Draw("TMath::Abs(geta)>>eta");
 
-  T->Draw("g1pt>>m1pt");
-  T->Draw("g2pt>>m2pt");
-  T->Draw("g1eta>>m1eta");
-  T->Draw("g2eta>>m2eta");
+  T->Draw("g1pt>>mpt");
+  T->Draw("g2pt>>mpt");
+  T->Draw("TMath::Abs(g1eta)>>meta");
+  T->Draw("TMath::Abs(g2eta)>>meta");
 
-  T->Draw("gpt>>tpt", "hlt");
-  T->Draw("g1pt>>tm1pt", "hlt");
-  T->Draw("g2pt>>tm2pt", "hlt");
+  if (string::npos == dsname.find("Bg")) {
+    T->Draw("gpt>>tpt", "hlt");
+    T->Draw("g1pt>>tmpt", "hlt");
+    T->Draw("g2pt>>tmpt", "hlt");
 
-  T->Draw("geta>>teta", "hlt");
-  T->Draw("g1eta>>tm1eta", "hlt");
-  T->Draw("g2eta>>tm2eta", "hlt");
-
+    T->Draw("TMath::Abs(geta)>>teta", "hlt");
+    T->Draw("TMath::Abs(g1eta)>>tmeta", "hlt");
+    T->Draw("TMath::Abs(g2eta)>>tmeta", "hlt");
+  }
 
   bool addKaon(false);
   if (string::npos != dsname.find("bupsik")) {
-    T->Draw("g3eta>>keta");
+    T->Draw("TMath::Abs(g3eta)>>keta");
     T->Draw("g3pt>>kpt");
     addKaon = true;
   }
   if (string::npos != dsname.find("bspsiphi")) {
-    T->Draw("g3eta>>keta");
-    T->Draw("g4eta>>keta");
+    T->Draw("TMath::Abs(g3eta)>>keta");
+    T->Draw("TMath::Abs(g4eta)>>keta");
+    T->Draw("g3pt>>kpt");
+    T->Draw("g4pt>>kpt");
+    addKaon = true;
+  }
+  if (string::npos != dsname.find("bdpsikstar")) {
+    T->Draw("TMath::Abs(g3eta)>>keta");
+    T->Draw("TMath::Abs(g4eta)>>keta");
     T->Draw("g3pt>>kpt");
     T->Draw("g4pt>>kpt");
     addKaon = true;
@@ -312,34 +339,63 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
   tl->SetTextSize(0.05);
   makeCanvas(1);
   int ncol(4);
-  if (addKaon) {
-    c1->Divide(5,2);
-    ncol = 5;
-  } else {
-    c1->Divide(4,2);
-  }
+  c1->Divide(5,1);
+  ncol = 5;
+
+  tl->SetTextSize(0.07);
 
   c1->cd(1);
-  hpt->Draw();
+  gPad->SetTopMargin(0.12);
+  pt->Draw();
   tpt->Draw("same");
+  tl->DrawLatexNDC(0.15, 0.93, Form("%s ", dsname.c_str()));
+  pt->Draw("sameaxis");
+
+  newLegend(0.5, 0.7, 0.8, 0.85);
+  legg->SetTextSize(0.07);
+  legg->AddEntry(pt,  "B", "l");
+  legg->AddEntry(tpt, "HLT passed", "f");
+  legg->Draw();
+
 
   c1->cd(2);
-  hm1pt->Draw();
-  tm1pt->Draw("same");
+  gPad->SetTopMargin(0.12);
+  eta->SetMinimum(0.);
+  eta->Draw();
+  teta->Draw("same");
+  eta->Draw("sameaxis");
+  tl->SetTextSize(0.07);
+  tl->DrawLatexNDC(0.75, 0.75, "B");
+  tl->DrawLatexNDC(0.15, 0.93, Form("Events: %d", T->GetEntries()));
 
   c1->cd(3);
-  hm2pt->Draw();
-  tm2pt->Draw("same");
+  gPad->SetTopMargin(0.12);
+  mpt->Draw();
+  tmpt->Draw("same");
+  mpt->Draw("axissame");
+  if (addKaon) kpt->Draw("same");
+  tl->SetTextColor(kBlue);
+  tl->DrawLatexNDC(0.65, 0.75, "muon(s)");
+  tl->SetTextColor(kRed);
+  if (addKaon)  tl->DrawLatexNDC(0.65, 0.65, "hadron(s)");
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.15, 0.93, Form("#varepsilon"));
+  tl->DrawLatexNDC(0.20, 0.93, Form("= %4.3f ", teta->GetSumOfWeights()/eta->GetSumOfWeights()));
 
-  if (addKaon) {
-    c1->cd(ncol-1);
-    hkpt->Draw();
-  }
+  c1->cd(4);
+  gPad->SetTopMargin(0.12);
+  meta->Draw();
+  meta->SetMinimum(0.);
+  tmeta->Draw("same");
+  if (addKaon) keta->Draw("same");
+  meta->Draw("axissame");
 
-  c1->cd(ncol);
+  c1->cd(5);
+  gPad->SetTopMargin(0.12);
   gPad->SetLogy(1);
-  htau->Fit("expo", "l");
-  TF1 *f = (TF1*)htau->GetFunction("expo");
+  gStyle->SetOptFit(0);
+  tau->Fit("expo", "lr", "", 0., 15.e-12);
+  TF1 *f = (TF1*)tau->GetFunction("expo");
   double chi2 = f->GetChisquare();
   int    ndf  = f->GetNDF();
   double t    = -1./f->GetParameter(1);
@@ -347,37 +403,8 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
   t  *= 1.e12;
   tE *= 1.e12;
 
-  c1->cd(ncol+1);
-  heta->Draw();
-  teta->Draw("same");
-  tl->DrawLatexNDC(0.55, 0.3, "B");
-
-  c1->cd(ncol+2);
-  hm1eta->Draw();
-  tm1eta->Draw("same");
-  tl->DrawLatexNDC(0.40, 0.3, "leading muon");
-
-  c1->cd(ncol+3);
-  hm2eta->Draw();
-  tm2eta->Draw("same");
-  tl->DrawLatexNDC(0.35, 0.3, "subleading muon");
-
-  if (addKaon) {
-    c1->cd(2*ncol-1);
-    hketa->Draw();
-    tl->DrawLatexNDC(0.35, 0.3, "kaon(s)");
-  }
-
-  c1->cd(2*ncol);
-  tl->SetTextSize(0.07);
-  tl->DrawLatexNDC(0.2, 0.9, Form("%s (HLT)", dsname.c_str()));
-  tl->DrawLatexNDC(0.2, 0.8, Form("Events: %d", T->GetEntries()));
-
-  tl->DrawLatexNDC(0.2, 0.35, Form("#tau"));
-  tl->DrawLatexNDC(0.25, 0.35, Form("= (%3.2f #pm %5.2f)ps", t, tE));
-
-  tl->DrawLatexNDC(0.2, 0.25, Form("#varepsilon"));
-  tl->DrawLatexNDC(0.25, 0.25, Form("= %4.3f ", teta->GetSumOfWeights()/heta->GetSumOfWeights()));
+  tl->DrawLatexNDC(0.15, 0.93, Form("#tau"));
+  tl->DrawLatexNDC(0.20, 0.93, Form("= (%5.4f #pm %5.4f)ps", t, tE));
 
   c1->SaveAs(Form("%s/genSummary-%s.pdf", fDirectory.c_str(), dsname.c_str()));
 
