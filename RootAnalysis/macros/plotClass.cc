@@ -132,8 +132,10 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
+  fVarToTex.insert(make_pair("mpt", "p_{T_{#mu}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} #it{[GeV]}"));
+  fVarToTex.insert(make_pair("meta", "#eta_{#mu}"));
   fVarToTex.insert(make_pair("m1eta", "#eta_{#mu,1}"));
   fVarToTex.insert(make_pair("m2eta", "#eta_{#mu,2}"));
   fVarToTex.insert(make_pair("fls3d", "l_{3D}/#sigma(l_{3D})"));
@@ -1408,6 +1410,14 @@ void plotClass::readCuts(string filename) {
 	a->pv2lips = cutvalue; ok = 1;
 	if (dump) cout << j-1 << " " << "pv2lips:               " << cutvalue << endl;
       }
+
+      if (cutname == "l1seeds") {
+	vector<string> vl1seeds = split(lineItems[j], ',');
+	for (unsigned int is = 0; is < vl1seeds.size(); ++is) {
+	  fCuts[j-1]->l1seeds.push_back(atoi(vl1seeds[is].c_str()));
+	}
+      }
+
 
     }
 
