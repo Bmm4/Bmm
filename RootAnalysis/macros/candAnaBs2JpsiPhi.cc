@@ -155,12 +155,13 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fMKPi1   = pi1Cand.M();
   fMKPi2   = pi2Cand.M();
 
-  fGoodDeltaR = (fDeltaR < DELTAR);
-  fGoodMKK    = ((MKKLO < fMKK ) && (fMKK < MKKHI));
+  fGoodDeltaR   = (fDeltaR < DELTAR);
+  fGoodMKK      = ((MKKLO < fMKK ) && (fMKK < MKKHI));
 
   candAna::candAnalysis();
+  fGoodTracksPt = fGoodTracksPt && ((fKa1Pt > TRACKPTLO) && (fKa2Pt > TRACKPTLO));
 
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR;
+  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR && fGoodTracksPt;
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables

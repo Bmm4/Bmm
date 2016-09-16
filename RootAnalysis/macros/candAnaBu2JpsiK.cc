@@ -116,7 +116,8 @@ void candAnaBu2JpsiK::candAnalysis() {
   fCandChi2Dof = chi2/ndof;
   fCandME      = masse;
 
-  fPreselection = fPreselection && fGoodJpsiMass;
+  fGoodTracksPt = fGoodTracksPt && ((fKaonPt > TRACKPTLO));
+  fPreselection = fPreselection && fGoodJpsiMass && fGoodTracksPt;
   fPreselection = fPreselection && fWideMass;
 
   if(0) { // special misid tests d.k.

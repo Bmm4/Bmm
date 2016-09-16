@@ -161,8 +161,9 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fGoodMKPI    = ((MKPILO < fMKPI ) && (fMKPI < MKPIHI));
 
   candAna::candAnalysis();
+  fGoodTracksPt = fGoodTracksPt && ((fKaPt > TRACKPTLO) && (fPiPt > TRACKPTLO));
 
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKPI && fGoodDeltaR;
+  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKPI && fGoodDeltaR &&fGoodTracksPt;
   fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
