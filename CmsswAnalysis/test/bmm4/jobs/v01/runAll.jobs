@@ -125,6 +125,7 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPhi -s $version -n 20 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 20 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPiPi -s $version -n 20 -l;  \ \n";
 
 # -- Summer16 private MC
 $dataset = "Summer16_private";
@@ -135,6 +136,8 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToMuMu -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BcToJpsiMuNu -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarAcc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPiPi -s $version -n 50 -l;  \ \n";
 
 
 # -- 2015 official MC
