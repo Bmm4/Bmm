@@ -15,8 +15,16 @@ public:
   TTrgObjv2();
   TTrgObjv2(int Option);
   ~TTrgObjv2() { };
-  void     clear() {fNumber = -1; fHltIndex = -1; fP.clear(); fID.clear();
-    fIndex.clear(); fHltPath=""; fLabel=""; fType="";}
+  void     clear() {
+    fNumber = -1;
+    fHltIndex = -1;
+    fP.clear();
+    fID.clear();
+    fIndex.clear();
+    fHltPath = ""; 
+    fLabel = "";
+    fType = "";
+  }
 
   // ----------------------------------------------------------------------
   void dump();
