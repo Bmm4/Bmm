@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
   }
 
   if (2016 == year) {
-    if ("nada" == files) files = "plotReducedOverlays.2016.files";
+    if ("nada" == files) files = "plotResults.2016.files";
     if ("nada" == cuts)  cuts  = "baseCuts.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
