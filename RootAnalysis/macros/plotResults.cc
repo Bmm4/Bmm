@@ -70,7 +70,30 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
-  dumpDatasets();
+  if (what == "all" || what == "dumpdatasets") {
+    dumpDatasets();
+  }
+
+  if (what == "all" || what == "genvalidation") {
+    genSummary("bdmmMcOff", "candAnaMuMu");
+    genSummary("bdmmMc", "candAnaMuMu");
+    genSummary("bdmmMcOffAcc", "candAnaMuMu");
+    genSummary("bsmmMcOff", "candAnaMuMu");
+    genSummary("bsmmMc", "candAnaMuMu");
+    genSummary("bupsikMcOff", "candAnaBu2JpsiK");
+    genSummary("bupsikMc", "candAnaBu2JpsiK");
+    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
+    genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
+    genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
+    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
+    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+    genSummary("bskkMcOffBg", "candAnaMuMu");
+    genSummary("bskkMcOffAccBg", "candAnaMuMu");
+    genSummary("bskmunuMcOffBg", "candAnaMuMu");
+    genSummary("lbpmunuMcOffAccBg", "candAnaMuMu");
+    genSummary("lbppiMcOffBg", "candAnaMuMu");
+  }
+
 
 }
 
