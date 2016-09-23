@@ -487,6 +487,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("rr",     &fb.rr);
   t->SetBranchAddress("pvn",    &fb.pvn);
   t->SetBranchAddress("run",    &fb.run);
+  t->SetBranchAddress("l1s",    &fb.l1s);
   t->SetBranchAddress("evt",    &fb.evt);
   t->SetBranchAddress("hlt",    &fb.hlt);
   t->SetBranchAddress("hltm",   &fb.hltm);
@@ -1461,6 +1462,30 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  OUT << Form("%10d", fCuts[i]->index);
   OUT << endl;
 
+  OUT << "etaMin     ";
+  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMin);
+    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
+  }
+  OUT << endl;
+
+  OUT << "etaMax     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMax);
+    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMax) << endl;
+  }
+  OUT << endl;
+
+  OUT << "l1seeds     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is) OUT << Form("%d ", fCuts[i]->l1seeds[is]);
+    for (int is = fCuts[i]->l1seeds.size()*2; is < 10; ++is) OUT << " ";
+    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is)
+      fTEX <<  Form("\\vdef{%s:l1seeds:%d}   {\\ensuremath{{%d } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->l1seeds[is]) << endl;
+  }
+  OUT << endl;
+
   OUT << "mBdLo      ";
   fTEX << Form("\\vdef{%s:mBd:var}  {\\ensuremath{{m(\\Bz) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i) {
@@ -1488,21 +1513,6 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->mBsHi);
     fTEX <<  Form("\\vdef{%s:mBsHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBsHi) << endl;
-  }
-  OUT << endl;
-
-  OUT << "etaMin     ";
-  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->etaMin);
-    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
-  }
-  OUT << endl;
-
-  OUT << "etaMax     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->etaMax);
-    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMax) << endl;
   }
   OUT << endl;
 
