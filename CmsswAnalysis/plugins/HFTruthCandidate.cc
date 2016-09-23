@@ -803,6 +803,57 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
 
 
+      // -- special case for Bs -> J/psi Pi Pi  reconstructed as Bs -> J/psi KK
+      if (14 == fType) {
+	int iMuon1(-1), iMuon2(-1), iPion1(-1), iPion2(-1);
+	HFDecayTree theTree5(3000000 + fType, true, MBS, false, -1.0, true);
+	HFDecayTreeIterator iterator = theTree5.addDecayTree(300443, false, MJPSI, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (13 == TMath::Abs(ID)) {
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
+	  }
+	  if (211 == TMath::Abs(ID)) {
+	    if (iPion1 < 0) {
+	      iPion1 = IDX;
+	    } else {
+	      iPion2 = IDX;
+	    }
+
+	  }
+	}
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree5.addDecayTree(300333, false, MPHI, false);
+	iterator->addTrack(iPion1, 321);
+	iterator->addTrack(iPion2, 321);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiKK of Bs2JpsiPiPi" << endl;
+	aSeq.doFit(&theTree5);
+	TAnaCand *pCand = theTree5.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree5.clear(400531, true, MBS, false, -1.0, true);
+	  iterator = theTree5.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree5.addDecayTree(300333, false, MPHI, false);
+	  iterator->addTrack(iPion1, 321);
+	  iterator->addTrack(iPion2, 321);
+	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree5);
+	  pCand->fDouble1 = theTree5.fTV.mass;
+	  pCand->fDouble2 = theTree5.fTV.masserr;
+	}
+      }
+
+
+
+
       // -- special case for B0 -> D*-pi+
       if (30 == fType) {
 	int iPion1(-1), iPion2(-1), iPion(-1), iKaon(-1);
