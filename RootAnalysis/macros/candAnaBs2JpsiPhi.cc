@@ -105,25 +105,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fKa2PtNrf     = p2->fPlab.Perp();
   fKa2EtaNrf    = p2->fPlab.Eta();
 
-  fKa1Missid = tightMuon(p1);  // true for tight  muons
-  fKa2Missid = tightMuon(p2);
-  //fKa1Missid2 = mvaMuon(p1,mva);  // true for tight  muons
-  //fKa2Missid2 = mvaMuon(p2,mva);  // true for tight  muons
-
-  fKa1MuMatch = doTriggerMatching(p1,false,false); // see if it matches HLT muon
-  fKa2MuMatch = doTriggerMatching(p2,false,false); // see if it matches HLT muon
-
-  // use this for trigger bias, non-muon can also participate in an trigger
-  fKa1MuMatchR = doTriggerMatchingR(p1,false,false); // see if it matches HLT muon
-  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,false); // see if it matches HLT muon
-  fKa2MuMatchR = doTriggerMatchingR(p2,false,false); // see if it matches HLT muon
-  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,false); // see if it matches HLT muon
-  // use this for testing, to match only to muons
-  fKa1MuMatchR = doTriggerMatchingR(p1,false,true); // see if it matches HLT muon
-  fKa1MuMatchR2 = doTriggerMatchingR(p1,true,true); // see if it matches HLT muon
-  fKa2MuMatchR = doTriggerMatchingR(p2,false,true); // see if it matches HLT muon
-  fKa2MuMatchR2 = doTriggerMatchingR(p2,true,true); // see if it matches HLT muon
-
   if (fCandTmi > -1) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
     fKa1PtGen     = pg1->fP.Perp();
@@ -168,34 +149,6 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
-
-
-  if(0) { // misid test d.k.
-
-    TVector3 muonMom1 = fpMuon1->fPlab;
-    TVector3 muonMom2 = fpMuon2->fPlab;
-
-    TVector3 trackMom = p1->fPlab;  // test track momentum
-    double dR1 = muonMom1.DeltaR(trackMom);
-    double dR2 = muonMom2.DeltaR(trackMom);
-
-    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR5 = dR2;}
-    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR5 = dR1;}
-
-    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon1 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p1->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
-
-    trackMom = p2->fPlab;  // test track momentum
-    dR1 = muonMom1.DeltaR(trackMom);
-    dR2 = muonMom2.DeltaR(trackMom);
-
-    //if(dR1<dR2) { fKa2MuMatchR4 = dR1; fKa2MuMatchR5 = dR2;}
-    //else        { fKa2MuMatchR4 = dR2; fKa2MuMatchR5 = dR1;}
-
-    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon2 is a MUON "<<fEvt<<" "<<fpCand<<" "<<p2->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
-
-  } // end special test
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
@@ -587,18 +540,6 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("g4pt", &fKa2PtGen,  "g4pt/D");
   t->Branch("g4eta",&fKa2EtaGen, "g4eta/D");
   t->Branch("g4id", &fKa2GenID,  "g4id/I");
-
-  t->Branch("k1missid",  &fKa1Missid,    "k1missid/O");
-  t->Branch("k2missid",  &fKa2Missid,    "k2missid/O");
-
-  t->Branch("k1mumatch", &fKa1MuMatch,  "k1mumatch/O");
-  t->Branch("k2mumatch", &fKa2MuMatch,  "k2mumatch/O");
-  t->Branch("k1mumatchr", &fKa1MuMatchR,    "k1mumatchr/F");
-  t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
-  t->Branch("k2mumatchr",  &fKa2MuMatchR,   "k2mumatchr/F");
-  t->Branch("k2mumatchr2", &fKa2MuMatchR2,  "k2mumatchr2/F");
-
-
 }
 
 
