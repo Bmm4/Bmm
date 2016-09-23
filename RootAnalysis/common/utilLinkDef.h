@@ -74,7 +74,7 @@
 #pragma link C++ function split(const std::string &, char, std::vector<std::string> &);
 #pragma link C++ function split(const std::string &, char);
 #pragma link C++ function cleanupString(std::string &);
-#pragma link C++ function bothAreSpaces(char lhs, char rhs);
+#pragma link C++ function bothAreSpaces(char , char );
 
 
 #endif

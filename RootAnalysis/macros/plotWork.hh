@@ -25,7 +25,7 @@ public :
   void pvStudy(std::string filename, std::string selection = "&& fl1 > 0.01");
 
   // -- yield stability
-  void yieldStability(std::string dsname, std::string trg);
+  void yieldStability(std::string dsname, std::string trg = "HLT");
 
   // -- genSummary plots
   void genSummary(std::string dsname, std::string dir);
@@ -73,8 +73,6 @@ private:
 
 
   // ----------------------------------------------------------------------
-  ClassDef(plotWork,1)
-
   TH1D *fpHnorm, *fpHpass;
   TH1D *fpHL1s0, *fpHL1s1, *fpHL1s2, *fpHL1s3, *fpHL1s4, *fpHL1s5, *fpHL1s6, *fpHL1All;
   std::vector<TH1D *> fHma, fHmc;
@@ -82,9 +80,11 @@ private:
   double fSsigma, fSRMS;
   double fEntries;
 
-  std::map<int, TH1D*> fYieldRTR, fYieldHLT;
+  std::map<int, TH2D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
+
+  ClassDef(plotWork,1)
 
 };
 

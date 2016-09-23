@@ -3,7 +3,7 @@
 
 struct redTreeData {
   Long64_t run, evt;
-  int ls, tm, pr, procid, pvn, rr, l1s;
+  int ls, tm, pr, procid, pvn, rr, l1s, ps, chan;
   bool json, hlt, hltm, hltm2, cb, tis, reftrg;
   double bdt, bdt2, pvw8, pvz;
   double rlumi;

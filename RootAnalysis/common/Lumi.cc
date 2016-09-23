@@ -29,7 +29,7 @@ Lumi::~Lumi() {
 void Lumi::parse(std::string fname) {
   vector<string> lFile;
   string line;
-  ifstream file(fname);
+  ifstream file(fname.c_str());
   if (!file.is_open()) {
     cout << "ERROR: could not open " << fname << endl;
     return;

@@ -1088,6 +1088,7 @@ void candAna::triggerHLT() {
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (fVerbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT = true;
+    fHltPrescale = 1;
     return;
   }
 
@@ -1130,6 +1131,7 @@ void candAna::triggerHLT() {
 	}
       }
       if (good) {
+	fHltPrescale = ps;
 	fGoodHLT = true;
 	return;
       }
@@ -1680,6 +1682,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
+  t->Branch("ps",      &fHltPrescale,       "ps/I");
   t->Branch("tis",     &fTIS,               "tis/O");
   t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
@@ -5172,7 +5175,7 @@ void candAna::pvStudy(bool bookHist) {
   static float dsv; // distance between reco SV and gen SV
   static float a1, a2, a3; // pointing angle between
   static float gfl, fl1, fl2, fl3; // flight length
-  static float fl1s; // flight length significance
+  static float fl3d, fls3d; // flight length significance from the real candidate
   static float gt, t1, t2, t3; // (3D) lifetime
   static float npv;
   if (bookHist) {
@@ -5189,15 +5192,16 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("lz1",  &lz1, "lz1/F");
     fPvStudyTree->Branch("lz2",  &lz2, "lz2/F");
 
-    fPvStudyTree->Branch("gfl",  &gfl, "gfl/F");
-    fPvStudyTree->Branch("gt",   &gt,  "gt/F");
-    fPvStudyTree->Branch("fl1",  &fl1, "fl1/F");
-    fPvStudyTree->Branch("fl1s", &fl1s, "fl1s/F");
-    fPvStudyTree->Branch("fl2",  &fl2, "fl2/F");
-    fPvStudyTree->Branch("fl3",  &fl3, "fl3/F");
-    fPvStudyTree->Branch("t1",   &t1,  "t1/F");
-    fPvStudyTree->Branch("t2",   &t2,  "t2/F");
-    fPvStudyTree->Branch("t3",   &t3,  "t3/F");
+    fPvStudyTree->Branch("gfl",   &gfl,   "gfl/F");
+    fPvStudyTree->Branch("gt",    &gt,    "gt/F");
+    fPvStudyTree->Branch("fls3d", &fls3d, "fls3d/F");
+    fPvStudyTree->Branch("fl3d",  &fl3d,  "fl3d/F");
+    fPvStudyTree->Branch("fl1",   &fl1,   "fl1/F");
+    fPvStudyTree->Branch("fl2",   &fl2,   "fl2/F");
+    fPvStudyTree->Branch("fl3",   &fl3,   "fl3/F");
+    fPvStudyTree->Branch("t1",    &t1,    "t1/F");
+    fPvStudyTree->Branch("t2",    &t2,    "t2/F");
+    fPvStudyTree->Branch("t3",    &t3,    "t3/F");
 
     fPvStudyTree->Branch("gx",  &gx, "gx/F");
     fPvStudyTree->Branch("gy",  &gy, "gy/F");
@@ -5238,6 +5242,9 @@ void candAna::pvStudy(bool bookHist) {
   TAnaCand *pCand = fpEvt->getCand(fCandTmi);
   if (0 == pCand) return;
   if (pCand->fPvIdx2 < 0) return;
+
+  fls3d = fpCand->fVtx.fD3d/fpCand->fVtx.fD3dE;
+  fl3d  = fpCand->fVtx.fD3d;
 
   TGenCand *pB = fpEvt->getGenCand(fGenBTmi);
   TGenCand *pM1 = fpEvt->getGenCand(fGenM1Tmi);

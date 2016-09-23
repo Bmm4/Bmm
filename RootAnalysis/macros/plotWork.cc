@@ -245,6 +245,13 @@ void plotWork::makeAll(string what) {
     genSummary("bspsiphirelval", "candAnaBs2JpsiPhi");
   }
 
+  if (what == "yieldstability") {
+    yieldStability("bupsikData", "HLT");
+    yieldStability("bmmData", "HLT");
+    yieldStability("bspsiphiData", "HLT");
+    yieldStability("bdpsikstarData", "HLT");
+  }
+
 
 }
 
@@ -1311,8 +1318,8 @@ void plotWork::yieldStability(string dsname, string trg) {
   string dir = "candAnaBu2JpsiK";
   if (string::npos != fSample.find("bmm")) {
     dir = "candAnaMuMu";
-  } else if (string::npos != fSample.find("bdpsikstar")) {
-    dir = "candAnaBd2JpsiKstar";
+  } else if (string::npos != fSample.find("bspsiphi")) {
+    dir = "candAnaBs2JpsiPhi";
   } else if (string::npos != fSample.find("bdpsikstar")) {
     dir = "candAnaBd2JpsiKstar";
   }
@@ -1324,7 +1331,6 @@ void plotWork::yieldStability(string dsname, string trg) {
     cout << "histograms exist already, looping over them" << endl;
     TIter next(gDirectory->GetListOfKeys());
     TKey *key(0);
-    TH1D *hHLT(0), *hRTR(0);
     vector<int> vds;
     int run(-1), runMin(9999999), runMax(0);
     while ((key = (TKey*)next())) {
@@ -1340,7 +1346,7 @@ void plotWork::yieldStability(string dsname, string trg) {
     }
 
     if (vds.size() > 0) {
-      Lumi lumi("../common/json/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      Lumi lumi("../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
       cout << "runs " << runMin << " .. " <<  runMax << endl;
       TH1D *hRunHLT = new TH1D(Form("hRun%s", trg.c_str()), "", runMax-runMin+1, runMin, runMax); hRunHLT->Sumw2();
 
@@ -1349,7 +1355,9 @@ void plotWork::yieldStability(string dsname, string trg) {
       fIF->fLo = xmin;
       fIF->fHi = xmax;
       for (unsigned int i = 0; i < vds.size(); ++i) {
-	TH1D *h1 = (TH1D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
+	TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
+	if (!h2) continue;
+	TH1D *h1 = h2->ProjectionX("chan_0", 1,1);
 	if (h1->Integral(1, h1->GetNbinsX()+1) < 100) continue;
 	TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
 	h1->Fit(f1, "lr", "", xmin, xmax);
@@ -1395,20 +1403,24 @@ void plotWork::yieldStability(string dsname, string trg) {
     }
     setupTree(t, fSample);
     fCds = fSample;
+    //    loopOverTree(t, 2, 10000);
     loopOverTree(t, 2);
 
     cout << "writing output histograms: " << fYieldHLT.size() << endl;
-    for (map<int, TH1D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
+    for (map<int, TH2D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
       cout << "run " << it->first << endl;
-      it->second->Draw();
+      it->second->Draw("colz");
       it->second->SetDirectory(hDir);
       it->second->Write();
     }
-    for (map<int, TH1D*>::iterator it = fYieldRTR.begin(); it != fYieldRTR.end(); ++it) {
-      it->second->Draw();
+    for (map<int, TH2D*>::iterator it = fYieldRTR.begin(); it != fYieldRTR.end(); ++it) {
+      it->second->Draw("colz");
       it->second->SetDirectory(hDir);
       it->second->Write();
     }
+
+    fYieldHLT.clear();
+    fYieldRTR.clear();
   }
 
   fHistFile->Write();
@@ -1479,9 +1491,8 @@ void plotWork::loopFunction2() {
   if (!fGoodLip) return;
   if (!fGoodLipS) return;
 
-  if (fb.docatrk > 0.15) return;
-  if (fb.closetrk > 3) return;
-  if (fb.iso < 0.7) return;
+  if (fb.docatrk > 0.2) return;
+  if (fb.closetrk > 5) return;
   if (fb.fls3d < 5) return;
   if (fb.chi2dof > 5.0) return;
   if (fb.alpha > 0.2) return;
@@ -1491,9 +1502,6 @@ void plotWork::loopFunction2() {
 
 
   if (TMath::Abs(fb.flsxy) < 3.0) return;
-
-  if (TMath::Abs(fb.m1eta) > 1.6) return;
-  if (TMath::Abs(fb.m2eta) > 1.6) return;
 
   if (fb.m1pt < 4.0) return;
   if (fb.m2pt < 4.0) return;
@@ -1512,20 +1520,20 @@ void plotWork::loopFunction2() {
 
 
   if (0 == fYieldHLT.count(fb.run)) {
-    TH1D *h = new TH1D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("h_HLT_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    TH2D *h = new TH2D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("h_HLT_%d", static_cast<int>(fb.run)), 45, 5.0, 5.9, fNchan, 0., fNchan);
     fYieldHLT.insert(make_pair(fb.run, h));
 
-    h = new TH1D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("h_RTR_%d", static_cast<int>(fb.run)), 60, 4.8, 6.0);
+    h = new TH2D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("h_RTR_%d", static_cast<int>(fb.run)), 45, 5.0, 5.9, fNchan, 0., fNchan);
     fYieldRTR.insert(make_pair(fb.run, h));
   }
 
 
   if (fb.hlt) {
-    fYieldHLT[fb.run]->Fill(m);
+    fYieldHLT[fb.run]->Fill(m, fb.chan);
   }
 
   if (fb.reftrg) {
-    fYieldRTR[fb.run]->Fill(m);
+    fYieldRTR[fb.run]->Fill(m, fb.chan);
   }
 
 }
