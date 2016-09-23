@@ -196,7 +196,6 @@ public:
 
   std::map<std::string, pair<int, int> > HLTRANGE;
   string DSNAME; // data set name
-  std::vector<int> L1SEEDS;
 
   bool fBarrel, fWideMass;
   AnalysisCuts fAnaCuts;
@@ -292,8 +291,7 @@ public:
   isoNumbers fIsoR11Pt03, fIsoR11Pt05, fIsoR11Pt07, fIsoR11Pt09, fIsoR11Pt11;
 
   string  fHLTPath;
-  std::vector<int> fL1Seeds;
-  int     fL1SeedInt;
+  int     fL1Seeds;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;

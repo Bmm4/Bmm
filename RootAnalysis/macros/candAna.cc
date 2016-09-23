@@ -31,6 +31,7 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   MASSMAX = 5.9;
   BLIND = 0;
 
+  fL1Seeds = 0;
   fGenBTmi = fGenM1Tmi = fGenM2Tmi = fNGenPhotons = fRecM1Tmi = fRecM2Tmi = fCandTmi = -1;
 
   fHistDir = gFile->mkdir(fName.c_str());
@@ -50,10 +51,10 @@ candAna::~candAna() {
 void candAna::endAnalysis() {
   TH1D *h1 = ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())));
   if (h1) {
-    cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(2))) << endl;
-    cout << Form("==> mon%s: cands analysed = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(11))) << endl;
-    cout << Form("==> mon%s: cands passed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(12))) << endl;
-    cout << Form("==> mon%s: cands failed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(21))) << endl;
+    cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(1.)))) << endl;
+    cout << Form("==> mon%s: cands analysed = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(10.)))) << endl;
+    cout << Form("==> mon%s: cands passed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(11.)))) << endl;
+    cout << Form("==> mon%s: cands failed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(20.)))) << endl;
     if (h1->GetBinContent(2) < 1) {
       cout << Form("==> mon%s: error, no events seen!", fName.c_str()) << endl;
     }
@@ -217,7 +218,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
       if (fJSON&&fGoodHLT&&fHLTmatch) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
     } else {  // DATA
-      ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
       if (NOPRESELECTION) {
 	fPreselection = true;
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
@@ -228,10 +228,14 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  ) {
       } else {
 	if (fPreselection) {
-	  if (fJSON) fTree->Fill();
+	  if (fJSON) {
+	    fTree->Fill();
+	    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
+	  } else {
+	    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
+	  }
 
 	  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
-	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
 	  //((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
 	  if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
 	  if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
@@ -239,7 +243,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
 	    ((TH1D*)fHistDir->Get("run1"))->Fill(fRun);
 	  }
-
 	} else {
 	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
 	  if ( fVerbose > 9 ) cout << " failed preselection" << endl;
@@ -516,15 +519,56 @@ void candAna::candAnalysis() {
   fMu2IPE       = p2->fBsTipE;
 
   fChan = detChan(fMu1Eta, fMu2Eta);
-  std::string sl1seeds("");
-  for (unsigned int i = 0; i < fL1Seeds.size(); ++i) sl1seeds += Form("%d ", fL1Seeds[i]);
+  std::string  sl1seeds = Form("%d ", fL1Seeds);
 
-  if (0) cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta
-	      << " mu pt = " << fMu1Pt << "/" << fMu2Pt
-	      << " l1seeds = " << sl1seeds
-	      << " l1sInt = " << fL1SeedInt
-	      << ", -> chan = " << fChan
-	      << endl;
+  static int printedEvt(0);
+  if (0 && printedEvt != fEvt) {
+    printedEvt = fEvt;
+    if (!fGoodHLT) {
+      cout << "this event failed HLT" << endl;
+      for (int i = 0; i < NHLT; ++i) {
+	if (fpEvt->fHLTWasRun[i] &&  fpEvt->fHLTResult[i]) {
+	  cout << " pass HLT path: " << fpEvt->fHLTNames[i] << endl;
+	}
+
+      }
+    }
+    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta
+	 << " mu pt = " << fMu1Pt << "/" << fMu2Pt
+	 << " l1seeds = " << sl1seeds
+	 << " l1s = " << fL1Seeds
+	 << ", -> chan = " << fChan
+	 << endl;
+
+    int L1Seeds = 0;
+    cout << "fired L1 bits" << endl;
+    for (int i = 0; i < NL1T; ++i) {
+      if (!fpEvt->fL1TResult[i]) continue;
+      // cout << fpEvt->fL1TNames[i] << endl;
+      if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1;
+      } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<1;
+      } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<2;
+      } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<3;
+      } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<4;
+      } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<5;
+      } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
+	L1Seeds |= 0x1<<6;
+      }
+
+      if (fpEvt->fL1TNames[i].Contains("DoubleMu0er1")) {
+	cout << "** " << fpEvt->fL1TNames[i] << ", L1seeds = " << L1Seeds << endl;
+      } else {
+	cout << fpEvt->fL1TNames[i] << ", L1seeds = " << L1Seeds << endl;
+      }
+
+    }
+  }
   if (fChan < 0) {
     //    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta << " -> chan = " << fChan << " returning!" << endl;
     return;
@@ -813,8 +857,9 @@ void candAna::candAnalysis() {
   fGoodMuonsTmID  = (fMu1TmId && fMu2TmId);
   fGoodMuonsMvaID = (fMu1MvaId && fMu2MvaId);
   fGoodMuonsPt    = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
-  fGoodMuonsEta   = ((TMath::Abs(fMu1Eta) > fCuts[fChan]->metaMin) && (TMath::Abs(fMu1Eta) < fCuts[fChan]->metaMax)
-		     && (TMath::Abs(fMu2Eta) > fCuts[fChan]->metaMin) && (TMath::Abs(fMu2Eta) < fCuts[fChan]->metaMax));
+  double etaLead(TMath::Abs(fMu1Eta));
+  if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
+  fGoodMuonsEta   = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
   fGoodTracksPt   = ((fMu1Pt > TRACKPTLO) && (fMu1Pt < TRACKPTHI) && (fMu2Pt > TRACKPTLO) && (fMu2Pt < TRACKPTHI));
   fGoodTracksEta  = ((fMu1Eta > TRACKETALO) && (fMu1Eta < TRACKETAHI) && (fMu2Eta > TRACKETALO) && (fMu2Eta < TRACKETAHI));
@@ -867,8 +912,6 @@ void candAna::candAnalysis() {
   fPreselection = fPreselection && fGoodHLT;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(3.);
 
-  //  fPreselection = true;
-
 }
 
 // ----------------------------------------------------------------------
@@ -907,14 +950,11 @@ int candAna::detChan(double m1eta, double m2eta) {
     bool found(false);
     for (int ichan = 0; ichan < fNchan; ++ichan) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-	for (int is = 0; is < L1SEEDS.size(); ++is) {
+	for (int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
 	  found = false;
-	  for (int i = 0; i < fL1Seeds.size(); ++i) {
-	    if (L1SEEDS[is] == fL1Seeds[i]) {
-	      found = true;
-	      break;
-	    }
-	    if (found) break;
+	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
+	    found = true;
+	    break;
 	  }
 	}
 	return ichan;
@@ -1099,23 +1139,33 @@ void candAna::triggerHLT() {
 
 // ----------------------------------------------------------------------
 void candAna::triggerL1T() {
-  if (!fGoodHLT) return;
-  fL1Seeds.clear();
-  // cout << "fired L1 bits" << endl;
+  fL1Seeds = 0;
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
-    // cout << fpEvt->fL1TNames[i] << endl;
-    if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(0);
-    if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(1);
-    if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(2);
-    if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(3);
-    if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(4);
-    if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) fL1Seeds.push_back(5);
+    if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1;
+      continue;
+    } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<1;
+      continue;
+    } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<2;
+      continue;
+    } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<3;
+      continue;
+    } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<4;
+      continue;
+    } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<5;
+      continue;
+    } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
+      fL1Seeds |= 0x1<<6;
+      continue;
+    }
   }
 
-  std::string sl1seeds("");
-  for (unsigned int i = 0; i < fL1Seeds.size(); ++i) sl1seeds += Form("%d", fL1Seeds[i]);
-  fL1SeedInt = atoi(sl1seeds.c_str());
 }
 
 
@@ -1629,7 +1679,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("pr",      &fGenBpartial,       "pr/I");
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
-  t->Branch("l1s",     &fL1SeedInt,         "l1s/I");
+  t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("tis",     &fTIS,               "tis/O");
   t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
@@ -5110,16 +5160,20 @@ void candAna::print1() {
 
 // ----------------------------------------------------------------------
 void candAna::pvStudy(bool bookHist) {
+  static int   chan;
   static float gx, gy, gz;
   static float sx, sy, sz;
   static float p1x, p1y, p1z, p1d;
   static float p2x, p2y, p2z, p2d;
   static float p3x, p3y, p3z, p3d;
-  static float pt, eta, phi, m, fls3d;
+  static float pt, eta, phi, m;
   static float lz1, lz2;
   static float d1, d2, d3; // distance between reco PV and gen PV
+  static float dsv; // distance between reco SV and gen SV
   static float a1, a2, a3; // pointing angle between
-  static float fl1, fl2, fl3; // flight length
+  static float gfl, fl1, fl2, fl3; // flight length
+  static float fl1s; // flight length significance
+  static float gt, t1, t2, t3; // (3D) lifetime
   static float npv;
   if (bookHist) {
     TDirectory *pDir = gDirectory;
@@ -5130,13 +5184,20 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("eta",  &eta, "eta/F");
     fPvStudyTree->Branch("phi",  &phi, "phi/F");
     fPvStudyTree->Branch("m",    &m, "m/F");
+    fPvStudyTree->Branch("chan", &chan, "chan/I");
     fPvStudyTree->Branch("npv",  &npv, "npv/F");
     fPvStudyTree->Branch("lz1",  &lz1, "lz1/F");
     fPvStudyTree->Branch("lz2",  &lz2, "lz2/F");
 
+    fPvStudyTree->Branch("gfl",  &gfl, "gfl/F");
+    fPvStudyTree->Branch("gt",   &gt,  "gt/F");
     fPvStudyTree->Branch("fl1",  &fl1, "fl1/F");
+    fPvStudyTree->Branch("fl1s", &fl1s, "fl1s/F");
     fPvStudyTree->Branch("fl2",  &fl2, "fl2/F");
     fPvStudyTree->Branch("fl3",  &fl3, "fl3/F");
+    fPvStudyTree->Branch("t1",   &t1,  "t1/F");
+    fPvStudyTree->Branch("t2",   &t2,  "t2/F");
+    fPvStudyTree->Branch("t3",   &t3,  "t3/F");
 
     fPvStudyTree->Branch("gx",  &gx, "gx/F");
     fPvStudyTree->Branch("gy",  &gy, "gy/F");
@@ -5156,9 +5217,10 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("p3y",  &p3y, "p3y/F");
     fPvStudyTree->Branch("p3z",  &p3z, "p3z/F");
 
-    fPvStudyTree->Branch("sx",  &sx, "sx/F");
-    fPvStudyTree->Branch("sy",  &sy, "sy/F");
-    fPvStudyTree->Branch("sz",  &sz, "sz/F");
+    fPvStudyTree->Branch("sx",  &sx,  "sx/F");
+    fPvStudyTree->Branch("sy",  &sy,  "sy/F");
+    fPvStudyTree->Branch("sz",  &sz,  "sz/F");
+    fPvStudyTree->Branch("dsv", &dsv, "dsv/F");
 
     fPvStudyTree->Branch("d1",  &d1, "d1/F");
     fPvStudyTree->Branch("a1",  &a1, "a1/F");
@@ -5177,17 +5239,35 @@ void candAna::pvStudy(bool bookHist) {
   if (0 == pCand) return;
   if (pCand->fPvIdx2 < 0) return;
 
+  TGenCand *pB = fpEvt->getGenCand(fGenBTmi);
+  TGenCand *pM1 = fpEvt->getGenCand(fGenM1Tmi);
+  TGenCand *pM2 = fpEvt->getGenCand(fGenM2Tmi);
+  chan = detChan(pM1->fP.Eta(), pM2->fP.Eta());
+
   TVector3 sv = pCand->fVtx.fPoint;
   TVector3 fl;
-  TVector3 genPV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
+  TVector3 genPV, genSV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
   genPV = TVector3(fpEvt->getGenCand(fGenBTmi)->fV.X(), fpEvt->getGenCand(fGenBTmi)->fV.y(), fpEvt->getGenCand(fGenBTmi)->fV.Z());
   gx = genPV.X();
   gy = genPV.Y();
   gz = genPV.Z();
 
-  sx = genPV.X();
-  sy = genPV.Y();
-  sz = genPV.Z();
+  genSV = TVector3(fpEvt->getGenCand(fGenM1Tmi)->fV.X(), fpEvt->getGenCand(fGenM1Tmi)->fV.y(), fpEvt->getGenCand(fGenM1Tmi)->fV.Z());
+  sx = genSV.X();
+  sy = genSV.Y();
+  sz = genSV.Z();
+  dsv = (genSV - sv).Mag();
+
+  double gm = pB->fP.Mag();
+  double gp = pB->fP.P();
+  // mother pointer
+  TGenCand *pM = fpEvt->getGenTWithIndex(pB->fMom1);
+  // use the mother if it has the same PDGID (it oscillated)
+  if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
+  double x = (pM1->fV - pM->fV).Mag();
+
+  gt = x*gm/gp/TMath::Ccgs();
+  gfl = x;
 
   p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
   p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
@@ -5211,13 +5291,17 @@ void candAna::pvStudy(bool bookHist) {
   eta = plab.Eta();
   phi = plab.Phi();
 
+  const double massOverC = m/TMath::Ccgs();
+
   fl = sv - fpEvt->getPV(pCand->fPvIdx)->fPoint;
   fl1 = fl.Mag();
   a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  t1 = fl1 / plab.Mag() * massOverC;
 
   fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
   fl2 = fl.Mag();
   a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  t2 = fl2 / plab.Mag() * massOverC;
 
   // -- loop over all PV in event and try out other approaches
   int minAlphaIdx(-1);
@@ -5225,7 +5309,6 @@ void candAna::pvStudy(bool bookHist) {
   int minPvIpIdx(-1);
   double minPvIp(99.), pvipL;
   npv = fpEvt->nPV();
-  d1 = d2 = 99.;
   for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
     fl = sv - fpEvt->getPV(ipv)->fPoint;
     distPVL = fpEvt->getPV(ipv)->fPoint - genPV;
@@ -5242,6 +5325,7 @@ void candAna::pvStudy(bool bookHist) {
   fl = sv - fpEvt->getPV(minAlphaIdx)->fPoint;
   fl3 = fl.Mag();
   a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
+  t3 = fl3 / plab.Mag() * massOverC;
   p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
   p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
   p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
