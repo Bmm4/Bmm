@@ -73,8 +73,6 @@ private:
 
 
   // ----------------------------------------------------------------------
-  ClassDef(plotWork,1)
-
   TH1D *fpHnorm, *fpHpass;
   TH1D *fpHL1s0, *fpHL1s1, *fpHL1s2, *fpHL1s3, *fpHL1s4, *fpHL1s5, *fpHL1s6, *fpHL1All;
   std::vector<TH1D *> fHma, fHmc;
@@ -85,6 +83,8 @@ private:
   std::map<int, TH1D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
+
+  ClassDef(plotWork,1)
 
 };
 
