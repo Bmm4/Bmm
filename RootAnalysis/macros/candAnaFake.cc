@@ -47,11 +47,26 @@ void candAnaFake::candAnalysis() {
   candAna::candAnalysis();
 
   bool skip(false);
-  if (!fJSON) skip = true;
-  if (fCandChi2 > 3) skip = true;
-  if (fCandDoca > 0.01) skip = true;
-  if (!fGoodTracks) skip = true;
-  if (!fGoodQ) skip = true;
+  if (!fJSON) {
+    //    cout << "failed JSON" << endl;
+    skip = true;
+  }
+  if (fCandChi2 > 3) {
+    //    cout << "failed chi2/dof" << endl;
+    skip = true;
+  }
+  if (fCandDoca > 0.01) {
+    //    cout << "failed candDoca" << endl;
+    skip = true;
+  }
+  if (!fGoodTracks) {
+    //    cout << "failed goodTracks" << endl;
+    skip = true;
+  }
+  if (!fGoodQ) {
+    //    cout << "failed goodQ" << endl;
+    skip = true;
+  }
   // FIXME: These should be replaced with the proper signed 3D impact parameter (to be filled!)
   //  if (fpMuon1->fLip/fpMuon1->fLipE < 1.) skip = true;
   //  if (fpMuon2->fLip/fpMuon2->fLipE < 1.) skip = true;
