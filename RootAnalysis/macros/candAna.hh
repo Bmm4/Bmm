@@ -291,7 +291,7 @@ public:
   isoNumbers fIsoR11Pt03, fIsoR11Pt05, fIsoR11Pt07, fIsoR11Pt09, fIsoR11Pt11;
 
   string  fHLTPath;
-  int     fL1Seeds;
+  int     fL1Seeds, fHltPrescale;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;

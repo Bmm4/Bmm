@@ -1088,6 +1088,7 @@ void candAna::triggerHLT() {
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (fVerbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT = true;
+    fHltPrescale = 1;
     return;
   }
 
@@ -1130,6 +1131,7 @@ void candAna::triggerHLT() {
 	}
       }
       if (good) {
+	fHltPrescale = ps;
 	fGoodHLT = true;
 	return;
       }
@@ -1680,6 +1682,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
+  t->Branch("ps",      &fHltPrescale,       "ps/I");
   t->Branch("tis",     &fTIS,               "tis/O");
   t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
