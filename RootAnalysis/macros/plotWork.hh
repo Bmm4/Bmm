@@ -22,7 +22,7 @@ public :
   virtual void makeAll(std::string what = "all");
 
   // -- PV studies
-  void pvStudy(std::string filename, std::string selection = "");
+  void pvStudy(std::string filename, std::string selection = "&& fl1 > 0.01");
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg);
