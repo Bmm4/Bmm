@@ -266,6 +266,62 @@ truthLambdaBToPMuNuDump = cms.EDAnalyzer(
 
 
 # ######################################################################
+# misreconstructed decays
+# ######################################################################
+
+# ----------------------------------------------------------------------
+truthBd2JpsiKstarAsBpDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(511),
+    type         = cms.untracked.int32(10),
+    GenType      = cms.untracked.int32(-10),
+    daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
+    )
+
+# ----------------------------------------------------------------------
+truthBd2JpsiKstarAsBsDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(511),
+    type         = cms.untracked.int32(11),
+    GenType      = cms.untracked.int32(-11),
+    daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2JpsiPhiAsBpDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(12),
+    GenType      = cms.untracked.int32(-12),
+    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2JpsiPhiAsBdDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(13),
+    GenType      = cms.untracked.int32(-13),
+    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2JpsiPiPiAsBsDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(14),
+    GenType      = cms.untracked.int32(-14),
+    daughtersID  = cms.untracked.vint32(443, 13, -13, 211, -211)
+    )
+
+
+
+# ######################################################################
 # B -> J/psi X
 # ######################################################################
 
@@ -290,26 +346,6 @@ truthBs2JpsiPhiDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------
-truthBs2JpsiPhiAsBpDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(531),
-    type         = cms.untracked.int32(12),
-    GenType      = cms.untracked.int32(-12),
-    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
-    )
-
-# ----------------------------------------------------------------------
-truthBs2JpsiPhiAsBdDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(531),
-    type         = cms.untracked.int32(13),
-    GenType      = cms.untracked.int32(-13),
-    daughtersID  = cms.untracked.vint32(443, 333, 13, -13, 321, -321)
-    )
-
-# ----------------------------------------------------------------------
 truthBu2JpsiKpDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
@@ -326,26 +362,6 @@ truthBd2JpsiKstarDump = cms.EDAnalyzer(
     motherID     = cms.untracked.int32(511),
     type         = cms.untracked.int32(69),
     GenType      = cms.untracked.int32(-69),
-    daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
-    )
-
-# ----------------------------------------------------------------------
-truthBd2JpsiKstarAsBpDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(511),
-    type         = cms.untracked.int32(10),
-    GenType      = cms.untracked.int32(-10),
-    daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
-    )
-
-# ----------------------------------------------------------------------
-truthBd2JpsiKstarAsBsDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(511),
-    type         = cms.untracked.int32(11),
-    GenType      = cms.untracked.int32(-11),
     daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
     )
 
@@ -559,6 +575,7 @@ truthB2DstarSequence     = cms.Sequence(truthBd2DstarPiDump)
 truthB2JpsiSequence      = cms.Sequence(truthBs2JpsiPhiDump
                                         *truthBs2JpsiPhiAsBpDump
                                         *truthBs2JpsiPhiAsBdDump
+                                        *truthBs2JpsiPiPiAsBsDump
                                         *truthBd2JpsiKsDump
                                         *truthBd2JpsiKstarDump
                                         *truthBd2JpsiKstarAsBpDump
