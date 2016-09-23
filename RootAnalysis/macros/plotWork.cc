@@ -246,28 +246,6 @@ void plotWork::makeAll(string what) {
   }
 
 
-  if (what == "genvalidation") {
-    genSummary("bdmmMcOff", "candAnaMuMu");
-    genSummary("bdmmMc", "candAnaMuMu");
-    genSummary("bdmmMcOffAcc", "candAnaMuMu");
-    genSummary("bsmmMcOff", "candAnaMuMu");
-    genSummary("bsmmMc", "candAnaMuMu");
-    genSummary("bupsikMcOff", "candAnaBu2JpsiK");
-    genSummary("bupsikMc", "candAnaBu2JpsiK");
-    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
-    genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
-    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
-    genSummary("bskkMcOffBg", "candAnaMuMu");
-    genSummary("bskkMcOffAccBg", "candAnaMuMu");
-    genSummary("bskmunuMcOffBg", "candAnaMuMu");
-    genSummary("lbpmunuMcOffAccBg", "candAnaMuMu");
-    genSummary("lbppiMcOffBg", "candAnaMuMu");
-
-
-  }
-
 }
 
 
@@ -279,6 +257,71 @@ void plotWork::bookHist(string dsname) {
   fpHpass = new TH1D(Form("h_%s_%s", "pass", dsname.c_str()), Form("h_%s_%s", "all", dsname.c_str()), 40, 4.8, 6.0);
 
 }
+
+
+// ----------------------------------------------------------------------
+void plotWork::pvStudy(string filename, string selection) {
+  TFile *f = TFile::Open(filename.c_str());
+  TTree *T = (TTree*)f->Get("candAnaMuMu/pvstudy");
+
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+
+  TH1D *h1(0);
+  for (int i = 0; i < 4; ++i) {
+    h1  = new TH1D(Form("dd1_ch%d", i), Form("dist(PVreco1, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco1, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dd2_ch%d", i), Form("dist(PVreco2, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco2, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dd3_ch%d", i), Form("dist(PVreco3, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco3, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+
+    h1  = new TH1D(Form("dt1_ch%d", i), Form("#delta t(reco1, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco1, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dt2_ch%d", i), Form("#delta t(reco2, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco2, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dt3_ch%d", i), Form("#delta t(reco3, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco3, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+  }
+
+  for (int i = 0; i < 4; ++i) {
+    T->Draw(Form("d1 >> dd1_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+    T->Draw(Form("d2 >> dd2_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+    T->Draw(Form("d3 >> dd3_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+
+    T->Draw(Form("t1-gt >> dt1_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+    T->Draw(Form("t2-gt >> dt2_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+    T->Draw(Form("t3-gt >> dt3_ch%d", i), Form("chan == %d %s", i, selection.c_str()));
+  }
+
+  zone(2,2);
+  TH1D *h2(0);
+  tl->SetTextSize(0.03);
+  for (int i = 0; i < 4; ++i) {
+    c0->cd(i+1); gPad->SetLogy(1);
+    shrinkPad(0.15, 0.15, 0.15, 0.08);
+    h1 = ((TH1D*)gDirectory->Get(Form("dd1_ch%d", i))); setFilledHist(h1, kBlue, kBlue, 3365);
+    h2 = ((TH1D*)gDirectory->Get(Form("dd3_ch%d", i))); setFilledHist(h2, kRed, kRed, 3554);
+    h1->Draw();
+    h2->Draw("same");
+    tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.3, 0.8, Form("r1: %5.3f/%5.3f [cm]", h1->GetMean(), h1->GetRMS()));
+    tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.3, 0.7, Form("r3: %5.3f/%5.3f [cm]", h2->GetMean(), h2->GetRMS()));
+    tl->SetTextColor(kBlack);tl->DrawLatexNDC(0.2, 0.96, Form("Channel %d %s", i, selection.c_str()));
+  }
+  savePad(Form("pvstudy-dd.pdf"), c0);
+
+  zone(2,2);
+  for (int i = 0; i < 4; ++i) {
+    c0->cd(i+1); gPad->SetLogy(1);
+    shrinkPad(0.15, 0.15, 0.15, 0.08);
+    h1 = ((TH1D*)gDirectory->Get(Form("dt1_ch%d", i))); setFilledHist(h1, kBlue, kBlue, 3365);
+    h2 = ((TH1D*)gDirectory->Get(Form("dt3_ch%d", i))); setFilledHist(h2, kRed, kRed, 3554);
+    h1->Draw();
+    h2->Draw("same");
+    tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.8, Form("r1: %5.3f/%5.3f [ps]", 1.e12*h1->GetMean(), 1.e12*h1->GetRMS()));
+    tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.2, 0.7, Form("r3: %5.3f/%5.3f [ps]", 1.e12*h2->GetMean(), 1.e12*h2->GetRMS()));
+    tl->SetTextColor(kBlack);tl->DrawLatexNDC(0.2, 0.96, Form("Channel %d %s", i, selection.c_str()));
+  }
+  savePad(Form("pvstudy-dt.pdf"), c0);
+
+  fHistFile->Close();
+
+}
+
+
 
 
 // ----------------------------------------------------------------------
@@ -410,6 +453,95 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
 
 }
 
+// ----------------------------------------------------------------------
+void plotWork::plotL1Seeds(std::string dsname) {
+  if (string::npos != dsname.find("bupsik")) fMode = BU2JPSIKP;
+  if (string::npos != dsname.find("bspsiphi")) fMode = BS2JPSIPHI;
+  if (string::npos != dsname.find("bdpsikstar")) fMode = BD2JPSIKSTAR;
+
+  fSample = dsname;
+  string dir = "candAnaMuMu";
+  if (string::npos != fSample.find("bspsiphi")) {
+    fMode = BS2JPSIPHI;
+    dir  = "candAnaBs2JpsiPhi";
+  } else if (string::npos != fSample.find("bupsik")) {
+    fMode = BU2JPSIKP;
+    dir  = "candAnaBu2JpsiK";
+  } else if (string::npos != fSample.find("bdpsikstar")) {
+    fMode = BD2JPSIKSTAR;
+    dir  = "candAnaBd2JpsiKstar";
+  }
+
+  TH1D *h1(0);
+  fHistFile = TFile::Open(fHistFileName.c_str(), "");
+  if (fHistFile) {
+    h1 = (TH1D*)fHistFile->Get(Form("h_%s_%s", "s0", dsname.c_str()));
+    fHistFile->Close();
+  }
+  if (!h1) {
+    // -- create histograms
+    cout << "fHistFile: " << fHistFileName;
+    fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+    cout << " opened " << endl;
+
+
+    TTree *t = getTree(fSample, dir);
+    if (0 == t) {
+      cout << "tree for sample = " << fSample << " not found" << endl;
+      return;
+    }
+    //  bookHist(fSample);
+    fpHL1s0 = new TH1D(Form("h_%s_%s", "s0", dsname.c_str()), Form("h_%s_%s", "s0", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s1 = new TH1D(Form("h_%s_%s", "s1", dsname.c_str()), Form("h_%s_%s", "s1", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s2 = new TH1D(Form("h_%s_%s", "s2", dsname.c_str()), Form("h_%s_%s", "s2", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s3 = new TH1D(Form("h_%s_%s", "s3", dsname.c_str()), Form("h_%s_%s", "s3", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s4 = new TH1D(Form("h_%s_%s", "s4", dsname.c_str()), Form("h_%s_%s", "s4", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s5 = new TH1D(Form("h_%s_%s", "s5", dsname.c_str()), Form("h_%s_%s", "s5", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1s6 = new TH1D(Form("h_%s_%s", "s6", dsname.c_str()), Form("h_%s_%s", "s6", dsname.c_str()), 7236, 273150, 280385);
+    fpHL1All = new TH1D(Form("h_%s_%s", "All", dsname.c_str()), Form("h_%s_%s", "All", dsname.c_str()), 7236, 273150, 280385);
+
+    setupTree(t, fSample);
+    fCds = fSample;
+    loopOverTree(t, 4);
+
+    fpHL1s0->Write();
+    fpHL1s1->Write();
+    fpHL1s2->Write();
+    fpHL1s3->Write();
+    fpHL1s4->Write();
+    fpHL1s5->Write();
+    fpHL1s6->Write();
+    fpHL1All->Write();
+
+    fHistFile->Close();
+  }
+
+  fHistFile = TFile::Open(fHistFileName.c_str(), "");
+  TH1D *hAll = (TH1D*)fHistFile->Get(Form("h_%s_%s", "All", dsname.c_str()));
+  TH1D *hSeed(0), *hEff(0);
+  gPad->SetGridx(1);
+  gStyle->SetOptTitle(1);
+  gStyle->SetTitleBorderSize(0);
+  vector<string> sseed;
+  sseed.push_back("L1_DoubleMu0er1p6_dEtaMax1p8");
+  sseed.push_back("L1_DoubleMu0er1p6_dEta_Max1p8_OS");
+  sseed.push_back("L1_DoubleMu0er1p4_dEta_Max1p8_OS");
+  sseed.push_back("L1_DoubleMu_10_0_dEta_Max1p8");
+  sseed.push_back("L1_DoubleMu_11_4");
+  sseed.push_back("L1_DoubleMu_12_5");
+
+  for (int iseed = 0; iseed < 6; ++iseed) {
+    hSeed = (TH1D*)fHistFile->Get(Form("h_%s_%s", Form("s%d", iseed), dsname.c_str()));
+    hEff = (TH1D*)hSeed->Clone(Form("eff_%s", hSeed->GetName())); hEff->Sumw2(); hEff->Reset();
+    hEff->SetTitle((sseed[iseed] + Form("(%s)", fDS[dsname]->fName.c_str())).c_str());
+    cout << "hEff title = " << hEff->GetTitle() << endl;
+    hEff->Divide(hSeed, hAll, 1., 1., "b");
+    setTitles(hEff, "run", "fraction");
+    hEff->Draw();
+    savePad(Form("effL1Seed_%d_%s.pdf", iseed, dsname.c_str()));
+
+  }
+}
 
 
 // ----------------------------------------------------------------------
@@ -1438,6 +1570,21 @@ void plotWork::loopFunction3() {
 }
 
 
+// ----------------------------------------------------------------------
+void plotWork::loopFunction4() {
+
+  if (!fb.hlt) return;
+
+  fpHL1All->Fill(fb.run);
+  if (fb.l1s & (0x1<<0)) fpHL1s0->Fill(fb.run);
+  if (fb.l1s & (0x1<<1)) fpHL1s1->Fill(fb.run);
+  if (fb.l1s & (0x1<<2)) fpHL1s2->Fill(fb.run);
+  if (fb.l1s & (0x1<<3)) fpHL1s3->Fill(fb.run);
+  if (fb.l1s & (0x1<<4)) fpHL1s4->Fill(fb.run);
+  if (fb.l1s & (0x1<<5)) fpHL1s5->Fill(fb.run);
+  if (fb.l1s & (0x1<<6)) fpHL1s6->Fill(fb.run);
+
+}
 
 // ----------------------------------------------------------------------
 void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
@@ -1479,6 +1626,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (ifunc == 1) pF = &plotWork::loopFunction1;
   if (ifunc == 2) pF = &plotWork::loopFunction2;
   if (ifunc == 3) pF = &plotWork::loopFunction3;
+  if (ifunc == 4) pF = &plotWork::loopFunction4;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
