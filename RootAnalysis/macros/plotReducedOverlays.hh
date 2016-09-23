@@ -41,8 +41,8 @@ struct adset {
 class plotReducedOverlays: public plotClass {
 public:
   plotReducedOverlays(std::string dir = "results",
-		      std::string files = "plotReducedOverlays.2016.files",
-		      std::string cuts = "plotClass.2016.cuts",
+		      std::string files = "plotResults.2016.files",
+		      std::string cuts = "baseCuts.cuts",
 		      std::string setup = "");
   ~plotReducedOverlays();
 

@@ -89,6 +89,7 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   fChannelList.push_back("0");
   fChannelList.push_back("1");
   fChannelList.push_back("2");
+  fChannelList.push_back("3");
 
   // fChannelList.push_back("0lopu");
   // fChannelList.push_back("1lopu");
@@ -127,9 +128,9 @@ void plotReducedOverlays::makeAll(string what) {
     init();
 
     printCuts(cout);
-    makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
-    makeSampleOverlay("bmmData", "bdmmMc", "Presel");
-    makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
+    makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
+    makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
+    makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
   }
 
@@ -143,9 +144,9 @@ void plotReducedOverlays::makeAll(string what) {
     system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
 
     printCuts(cout);
-    makeOverlay("bspsiphiData", "bspsiphiMc", "Ao");
-    makeOverlay("bmmData", "bdmmMc", "Presel");
-    makeOverlay("bupsikData", "bupsikMc", "Ao");
+    makeOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
+    makeOverlay("bmmData", "bdmmMcOff", "Presel");
+    makeOverlay("bupsikData", "bupsikMcOff", "Ao");
     makeOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
   }
 
