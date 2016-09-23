@@ -25,7 +25,7 @@ public :
   void pvStudy(std::string filename, std::string selection = "");
 
   // -- yield stability
-  void yieldStability(std::string dsname, std::string trg);
+  void yieldStability(std::string dsname, std::string trg = "HLT");
 
   // -- genSummary plots
   void genSummary(std::string dsname, std::string dir);
@@ -80,7 +80,7 @@ private:
   double fSsigma, fSRMS;
   double fEntries;
 
-  std::map<int, TH1D*> fYieldRTR, fYieldHLT;
+  std::map<int, TH2D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
 
