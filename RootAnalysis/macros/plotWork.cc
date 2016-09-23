@@ -1340,7 +1340,7 @@ void plotWork::yieldStability(string dsname, string trg) {
     }
 
     if (vds.size() > 0) {
-      Lumi lumi("../common/json/Cert_271036-275125_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      Lumi lumi("../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
       cout << "runs " << runMin << " .. " <<  runMax << endl;
       TH1D *hRunHLT = new TH1D(Form("hRun%s", trg.c_str()), "", runMax-runMin+1, runMin, runMax); hRunHLT->Sumw2();
 
