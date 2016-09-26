@@ -5243,8 +5243,8 @@ void candAna::pvStudy(bool bookHist) {
   if (0 == pCand) return;
   if (pCand->fPvIdx2 < 0) return;
 
-  fls3d = fpCand->fVtx.fD3d/fpCand->fVtx.fD3dE;
-  fl3d  = fpCand->fVtx.fD3d;
+  fls3d = pCand->fVtx.fD3d/pCand->fVtx.fD3dE;
+  fl3d  = pCand->fVtx.fD3d;
 
   TGenCand *pB = fpEvt->getGenCand(fGenBTmi);
   TGenCand *pM1 = fpEvt->getGenCand(fGenM1Tmi);
