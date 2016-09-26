@@ -292,7 +292,6 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     return 0;
   }
 
-
   if (fVerbose > 0) {
     c0->cd(1);
     h0->Draw();
@@ -441,7 +440,6 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
     cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
     return 0;
   }
-
 
   if (fVerbose > 0) {
     c0->cd(1);
