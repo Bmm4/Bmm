@@ -58,7 +58,7 @@ int main(int argc, char *argv[]) {
     }
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      files = "plotReducedOverlays.2016.files";
+      files = "plotResults.2016.files";
       cuts  = "baseCuts.cuts";
       plotReducedOverlays a(dir, files, cuts, setup);
       a.makeAll();
@@ -83,7 +83,7 @@ int main(int argc, char *argv[]) {
   // -- work
   if (plot & 2) {
     gROOT->Clear();  gROOT->DeleteAll();
-    files = "plotWork.2016.files";
+    files = "plotResults.2016.files";
     cuts  = "baseCuts.cuts";
     setup = "";
     plotWork a(dir, files, cuts, setup);
