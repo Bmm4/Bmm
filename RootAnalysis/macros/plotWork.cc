@@ -275,13 +275,13 @@ void plotWork::pvStudy(string filename, string selection) {
 
   TH1D *h1(0);
   for (int i = 0; i < 4; ++i) {
-    h1  = new TH1D(Form("dd1_ch%d", i), Form("dist(PVreco1, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco1, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
-    h1  = new TH1D(Form("dd2_ch%d", i), Form("dist(PVreco2, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco2, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
-    h1  = new TH1D(Form("dd3_ch%d", i), Form("dist(PVreco3, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco3, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dd1_ch%d", i), Form("dist(PVreco, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dd2_ch%d", i), Form("dist(PVreco, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dd3_ch%d", i), Form("dist(PVreco, PVgen) ch%d", i), 50, 0., 5.0);  setTitles(h1, "dist(PVreco, PVgen) [cm]", "", 0.07, 0.9, 1.1, 0.06);
 
-    h1  = new TH1D(Form("dt1_ch%d", i), Form("#delta t(reco1, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco1, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
-    h1  = new TH1D(Form("dt2_ch%d", i), Form("#delta t(reco2, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco2, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
-    h1  = new TH1D(Form("dt3_ch%d", i), Form("#delta t(reco3, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco3, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dt1_ch%d", i), Form("#delta t(reco, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dt2_ch%d", i), Form("#delta t(reco, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
+    h1  = new TH1D(Form("dt3_ch%d", i), Form("#delta t(reco, gen) ch%d", i), 50, -1.e-11, 1.e-11);  setTitles(h1, "#delta t(reco, gen) [sec]", "", 0.07, 0.9, 1.1, 0.06);
   }
 
   for (int i = 0; i < 4; ++i) {
@@ -1355,6 +1355,7 @@ void plotWork::yieldStability(string dsname, string trg) {
       fIF->fLo = xmin;
       fIF->fHi = xmax;
       for (unsigned int i = 0; i < vds.size(); ++i) {
+	c0->Clear();
 	TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
 	if (!h2) continue;
 	TH1D *h1 = h2->ProjectionX("chan_0", 1,1);
@@ -1529,11 +1530,11 @@ void plotWork::loopFunction2() {
 
 
   if (fb.hlt) {
-    fYieldHLT[fb.run]->Fill(m, fb.chan);
+    fYieldHLT[fb.run]->Fill(m, fb.chan, fb.ps);
   }
 
   if (fb.reftrg) {
-    fYieldRTR[fb.run]->Fill(m, fb.chan);
+    fYieldRTR[fb.run]->Fill(m, fb.chan, fb.ps);
   }
 
 }
@@ -1582,6 +1583,11 @@ void plotWork::loopFunction3() {
 void plotWork::loopFunction4() {
 
   if (!fb.hlt) return;
+  static int runPrinted(-1);
+  if (fb.run != runPrinted) {
+    cout << "fb.run = " << fb.run << endl;
+    runPrinted = fb.run;
+  }
 
   fpHL1All->Fill(fb.run);
   if (fb.l1s & (0x1<<0)) fpHL1s0->Fill(fb.run);
