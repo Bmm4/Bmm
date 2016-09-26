@@ -37,6 +37,8 @@ AnalysisDistribution::AnalysisDistribution(const char *name, const char *title, 
 
   fpIF = new initFunc();
 
+  TH1::SetDefaultSumw2(kTRUE);
+
   string massbin[3];
   massbin[0] = "signal";
   massbin[1] = "sideband";
