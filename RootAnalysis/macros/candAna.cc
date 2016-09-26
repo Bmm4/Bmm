@@ -5303,12 +5303,12 @@ void candAna::pvStudy(bool bookHist) {
   fl = sv - fpEvt->getPV(pCand->fPvIdx)->fPoint;
   fl1 = fl.Mag();
   a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
-  t1 = fl1 / plab.Mag() * massOverC;
+  t1 = fl1 * TMath::Cos(a1) / plab.Mag() * massOverC;
 
   fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
   fl2 = fl.Mag();
   a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
-  t2 = fl2 / plab.Mag() * massOverC;
+  t2 = fl2 * TMath::Cos(a2) / plab.Mag() * massOverC;
 
   // -- loop over all PV in event and try out other approaches
   int minAlphaIdx(-1);
@@ -5332,7 +5332,7 @@ void candAna::pvStudy(bool bookHist) {
   fl = sv - fpEvt->getPV(minAlphaIdx)->fPoint;
   fl3 = fl.Mag();
   a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
-  t3 = fl3 / plab.Mag() * massOverC;
+  t3 = fl3 * TMath::Cos(a3) / plab.Mag() * massOverC;
   p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
   p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
   p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
