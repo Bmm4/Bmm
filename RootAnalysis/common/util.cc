@@ -71,7 +71,19 @@ void setTitles(TH1 *hold, TH1* hnew) {
 
 }
 
+// ----------------------------------------------------------------------
+void addOverflow(TH1D *h) {
+  int nbins = h->GetNbinsX();
+  h->SetBinContent(nbins, h->GetBinContent(nbins) + h->GetBinContent(nbins+1));
+  h->SetBinContent(nbins+1, 0.);
+}
 
+
+// ----------------------------------------------------------------------
+void addUnderflow(TH1D *h) {
+  h->SetBinContent(1, h->GetBinContent(1) + h->GetBinContent(0));
+  h->SetBinContent(0, 0.);
+}
 
 // ----------------------------------------------------------------------
 void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
