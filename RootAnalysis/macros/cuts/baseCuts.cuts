@@ -30,10 +30,10 @@ pvlips    99.	    99.        99.	   99.
 pv2lip   -99.	   -99.       -99.	  -99.
 pv2lips  -99.	   -99.       -99.	  -99.
 maxdoca   99.	    99.        99.    	   99.
-# 0 L1_DoubleMu0er1p6_dEtaMax1p8
-# 1 L1_DoubleMu0er1p6_dEta_Max1p8_OS
-# 2 L1_DoubleMu0er1p4_dEta_Max1p8_OS
-# 3 L1_DoubleMu_10_0_dEta_Max1p8
-# 4 L1_DoubleMu_11_4
-# 5 L1_DoubleMu_12_5
+# 0 L1_DoubleMu0er1p6_dEtaMax1p8       2
+# 1 L1_DoubleMu0er1p6_dEta_Max1p8_OS   4
+# 2 L1_DoubleMu0er1p4_dEta_Max1p8_OS   8
+# 3 L1_DoubleMu_10_0_dEta_Max1p8      16
+# 4 L1_DoubleMu_11_4                  32
+# 5 L1_DoubleMu_12_5                  64
 # ----------------------------------------------------------------------

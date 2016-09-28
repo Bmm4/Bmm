@@ -114,6 +114,7 @@ public:
 
   std::map<string, adset*> fAdMap;
 
+  bool fIncludeOverflowInLastBin;
   bool fSel0, fSel1, fSel2;
 
   ClassDef(plotReducedOverlays,1) //Testing plotReducedOverlays

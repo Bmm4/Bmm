@@ -33,6 +33,8 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   plotClass::loadFiles(files);
   plotReducedOverlays::loadFiles(files);
 
+  fIncludeOverflowInLastBin = true;
+
   fIsMC = false;
   fIsSignal = false;
 
@@ -86,10 +88,9 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   }
 
   fChannelList.clear();
-  fChannelList.push_back("0");
-  fChannelList.push_back("1");
-  fChannelList.push_back("2");
-  fChannelList.push_back("3");
+  for (unsigned int i = 0; i < fNchan; ++i) {
+    fChannelList.push_back(Form("%d", i));
+  }
 
   // fChannelList.push_back("0lopu");
   // fChannelList.push_back("1lopu");
@@ -128,8 +129,8 @@ void plotReducedOverlays::makeAll(string what) {
     init();
 
     printCuts(cout);
-    makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
     makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
+    makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
     makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
   }
@@ -349,49 +350,40 @@ void plotReducedOverlays::makeSample(string sample, string selection, int nevent
   if (string::npos != fSample.find("bupsik")) {
     dir = "candAnaBu2JpsiK";
     fMode = BU2JPSIKP;
-    BGLBOXMIN = 5.00;
-    BGLBOXMAX = 5.18;
-    if (string::npos != fChannel.find("0")) {
-      SIGBOXMIN = 5.23;
-      SIGBOXMAX = 5.33;
-    } else {
-      SIGBOXMIN = 5.21;
-      SIGBOXMAX = 5.34;
-    }
-    BGHBOXMIN = 5.40;
-    BGHBOXMAX = 5.50;
+    BGLBOXMIN = 4.90;
+    BGLBOXMAX = 5.10;
+
+    SIGBOXMIN = 5.15;
+    SIGBOXMAX = 5.40;
+
+    BGHBOXMIN = 5.50;
+    BGHBOXMAX = 5.90;
   }
 
     if (string::npos != fSample.find("bdpsikstar")) {
     dir = "candAnaBd2JpsiKstar";
     fMode = BD2JPSIKSTAR;
-    BGLBOXMIN = 5.00;
-    BGLBOXMAX = 5.18;
-    if (string::npos != fChannel.find("0")) {
-      SIGBOXMIN = 5.23;
-      SIGBOXMAX = 5.33;
-    } else {
-      SIGBOXMIN = 5.21;
-      SIGBOXMAX = 5.34;
-    }
-    BGHBOXMIN = 5.40;
-    BGHBOXMAX = 5.50;
+    BGLBOXMIN = 4.90;
+    BGLBOXMAX = 5.10;
+
+    SIGBOXMIN = 5.15;
+    SIGBOXMAX = 5.40;
+
+    BGHBOXMIN = 5.45;
+    BGHBOXMAX = 5.90;
   }
 
   if (string::npos != fSample.find("bspsiphi")) {
     dir = "candAnaBs2JpsiPhi";
     fMode = BS2JPSIPHI;
-    BGLBOXMIN = 5.10;
-    BGLBOXMAX = 5.29;
-    if (string::npos != fChannel.find("0")) {
-      SIGBOXMIN = 5.34;
-      SIGBOXMAX = 5.40;
-    } else {
-      SIGBOXMIN = 5.32;
-      SIGBOXMAX = 5.41;
-    }
-    BGHBOXMIN = 5.45;
-    BGHBOXMAX = 5.70;
+    BGLBOXMIN = 4.90;
+    BGLBOXMAX = 5.20;
+
+    SIGBOXMIN = 5.25;
+    SIGBOXMAX = 5.45;
+
+    BGHBOXMIN = 5.55;
+    BGHBOXMAX = 5.90;
   }
 
   // -- must be after the mass box definitions!
@@ -502,48 +494,18 @@ void plotReducedOverlays::loopFunction1() {
     fSel2 = false;
   }
 
-
-
-  if (0 == fChan) {
-    fChannel = "0";
+  if (-1 < fChan && fChan < fNchan) {
+    fChannel = Form("%d", fChan);
     fillDistributions();
-    if (0) {
-      // if (loPU) {
-      // 	fChannel = "0lopu";
-      // 	fillDistributions();
-      // } else {
-      // 	fChannel = "0hipu";
-      // 	fillDistributions();
-      // }
-    }
-  }
-
-  if (1 == fChan) {
-    fChannel = "1";
-    fillDistributions();
-    if (0) {
-      // if (loPU) {
-      // 	fChannel = "1lopu";
-      // 	fillDistributions();
-      // } else {
-      // 	fChannel = "1hipu";
-      // 	fillDistributions();
-      // }
-    }
-  }
-
-  if (2 == fChan) {
-    fChannel = "2";
-    fillDistributions();
-    if (0) {
-      //   if (loPU) {
-      // 	fChannel = "2lopu";
-      // 	fillDistributions();
-      //   } else {
-      // 	fChannel = "2hipu";
-      // 	fillDistributions();
-      //   }
-    }
+    // if (0) {
+    //   // if (loPU) {
+    //   // 	fChannel = "0lopu";
+    //   // 	fillDistributions();
+    //   // } else {
+    //   // 	fChannel = "0hipu";
+    //   // 	fillDistributions();
+    //   // }
+    // }
   }
 
   //  fillDistributions();
@@ -564,58 +526,60 @@ void plotReducedOverlays::bookDistributions() {
     string name = Form("%s_", mapname.c_str());
 
     a = new adset();
-    a->fpMuon1Pt  = bookDistribution(Form("%smuon1pt", name.c_str()), "p_{T, #mu1} [GeV]", "fGoodMuonsPt", 60, 0., 30.);
+    a->fpPvN       = bookDistribution(Form("%spvn", name.c_str()), "N(PV) ", "fGoodHLT", 40, 0., 40.);
+    // a->fpBDT       = bookDistribution(Form("%sbdt", name.c_str()), "BDT", "fGoodHLT", 200, -1.0, 1.0);
+    // a->fpBDTSel0   = bookSpecialDistribution(Form("%sbdtsel0", name.c_str()), "BDTsel0", "fGoodHLT", 200, -1.0, 1.0, &fSel0);
+    // a->fpBDTSel1   = bookSpecialDistribution(Form("%sbdtsel1", name.c_str()), "BDTsel1", "fGoodHLT", 200, -1.0, 1.0, &fSel1);
+    // a->fpBDTSel2   = bookSpecialDistribution(Form("%sbdtsel2", name.c_str()), "BDTsel2", "fGoodHLT", 200, -1.0, 1.0, &fSel2);
+    // a->fpPvZ      = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", 40, -20., 20.);
 
+    a->fpMuon1Pt  = bookDistribution(Form("%smuon1pt", name.c_str()), "p_{T, #mu1} [GeV]", "fGoodMuonsPt", 60, 0., 30.);
     a->fpMuon2Pt   = bookDistribution(Form("%smuon2pt", name.c_str()), "p_{T, #mu2} [GeV]", "fGoodMuonsPt", 40, 0., 20.);
     a->fpMuonsEta  = bookDistribution(Form("%smuonseta", name.c_str()), "#eta_{#mu}", "fGoodMuonsPt", 40, -2.5, 2.5);
+
+    a->fpPvAveW8   = bookDistribution(Form("%spvavew8", name.c_str()), "<w^{PV}>", "fGoodPvAveW8", 50, 0.5, 1.);
+
+    a->fpIp        = bookDistribution(Form("%sip", name.c_str()), "#delta_{3D} [cm]", "fGoodIp", 50, 0., 0.015);
+    a->fpIpS       = bookDistribution(Form("%sips", name.c_str()), "#delta_{3D}/#sigma(#delta_{3D})", "fGoodIpS", 50, 0., 4);
+
+    a->fpLip       = bookDistribution(Form("%slip", name.c_str()), "l_{z} [cm]", "fGoodLip", 50, 0., 0.015);
+    a->fpLip2      = bookDistribution(Form("%slip2", name.c_str()), "l_{z}^{(2)} [cm]", "fGoodLip", 100, 0., 4.0);
+
+    a->fpLipS      = bookDistribution(Form("%slips", name.c_str()), "l_{z}/#sigma(l_{z})", "fGoodLipS", 50, 0., 4);
+    a->fpLipS2     = bookDistribution(Form("%slips2", name.c_str()), "l_{z}^{(2)}/#sigma(l_{z}^{(2)})", "fGoodLipS", 50, 0., 20.);
+
+    a->fpMaxDoca   = bookDistribution(Form("%smaxdoca", name.c_str()), "d^{max} [cm]", "fGoodMaxDoca", 60, 0., 0.03);
+
     a->fpPt        = bookDistribution(Form("%spt", name.c_str()), "p_{T}(B) [GeV]", "fGoodPt", 60, 0., 60.);
     a->fpP         = bookDistribution(Form("%sp", name.c_str()), "p(B) [GeV]", "fGoodPt", 50, 0., 100.);
     a->fpPz        = bookDistribution(Form("%spz", name.c_str()), "p_{z}(B) [GeV]", "fGoodPt", 50, 0., 100.);
-    a->fpEta       = bookDistribution(Form("%seta", name.c_str()), "#eta(B)", "fGoodEta", 40, -2.5, 2.5);
-    a->fpAlpha     = bookDistribution(Form("%salpha", name.c_str()), "#alpha_{3D}", "fGoodAlpha", 50, 0., 0.1);
-    a->fpIso       = bookDistribution(Form("%siso", name.c_str()),  "isolation", "fGoodIso", 52, 0., 1.04);
-    a->fpCloseTrk  = bookDistribution(Form("%sclosetrk", name.c_str()),  "N_{trk}^{close}", "fGoodCloseTrack", 10, 0., 10.);
-    a->fpDocaTrk   = bookDistribution(Form("%sdocatrk", name.c_str()), "d_{ca}^{0} [cm]", "fGoodDocaTrk", 50, 0., 0.20);
 
-    a->fpChi2Dof   = bookDistribution(Form("%schi2dof", name.c_str()),  "#chi^{2}/dof", "fGoodChi2", 40, 0., 4.);
-    a->fpPChi2Dof  = bookDistribution(Form("%spchi2dof", name.c_str()),  "P(#chi^{2},dof)", "fGoodChi2", 50, 0., 1.0);
+    a->fpEta       = bookDistribution(Form("%seta", name.c_str()), "#eta(B)", "fGoodEta", 40, -2.5, 2.5);
+
+    a->fpAlpha     = bookDistribution(Form("%salpha", name.c_str()), "#alpha_{3D}", "fGoodAlpha", 50, 0., 0.1);
 
     a->fpFLS3d     = bookDistribution(Form("%sfls3d", name.c_str()), "l_{3D}/#sigma(l_{3D})", "fGoodFLS", 60, 0., 120.);
     a->fpFL3d      = bookDistribution(Form("%sfl3d", name.c_str()),  "l_{3D} [cm]", "fGoodFLS", 60, 0., 1.5);
     a->fpFL3dE     = bookDistribution(Form("%sfl3de", name.c_str()), "#sigma(l_{3D}) [cm]", "fGoodFLS", 50, 0., 0.05);
 
-    a->fpMaxDoca   = bookDistribution(Form("%smaxdoca", name.c_str()), "d^{max} [cm]", "fGoodMaxDoca", 60, 0., 0.03);
-    a->fpIp        = bookDistribution(Form("%sip", name.c_str()), "#delta_{3D} [cm]", "fGoodIp", 50, 0., 0.015);
-    a->fpIpS       = bookDistribution(Form("%sips", name.c_str()), "#delta_{3D}/#sigma(#delta_{3D})", "fGoodIpS", 50, 0., 4);
-    // a->fpPvZ      = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", 40, -20., 20.);
-    a->fpPvN       = bookDistribution(Form("%spvn", name.c_str()), "N(PV) ", "fGoodHLT", 40, 0., 40.);
-    a->fpPvAveW8   = bookDistribution(Form("%spvavew8", name.c_str()), "<w^{PV}>", "fGoodPvAveW8", 50, 0.5, 1.);
-
-    a->fpBDT       = bookDistribution(Form("%sbdt", name.c_str()), "BDT", "fGoodHLT", 200, -1.0, 1.0);
-
-    a->fpCloseTrkS1= bookDistribution(Form("%sclosetrks1", name.c_str()),  "N_{trk}^{close, 1#sigma}", "fGoodCloseTrack", 10, 0., 10.);
-    a->fpCloseTrkS2= bookDistribution(Form("%sclosetrks2", name.c_str()),  "N_{trk}^{close, 2#sigma}", "fGoodCloseTrack", 10, 0., 10.);
-    a->fpCloseTrkS3= bookDistribution(Form("%sclosetrks3", name.c_str()),  "N_{trk}^{close, 3#sigma}", "fGoodCloseTrack", 10, 0., 10.);
-    a->fpM1Iso     = bookDistribution(Form("%sm1iso", name.c_str()),  "m1 isolation", "fGoodIso", 52, 0., 1.04);
-    a->fpM2Iso     = bookDistribution(Form("%sm2iso", name.c_str()),  "m2 isolation", "fGoodIso", 52, 0., 1.04);
-
+    a->fpChi2Dof   = bookDistribution(Form("%schi2dof", name.c_str()),  "#chi^{2}/dof", "fGoodChi2", 40, 0., 4.);
+    a->fpPChi2Dof  = bookDistribution(Form("%spchi2dof", name.c_str()),  "P(#chi^{2},dof)", "fGoodChi2", 50, 0., 1.0);
     a->fpPvDchi2   = bookDistribution(Form("%spvdchi2", name.c_str()),  "#Delta(#chi^{2})", "fGoodChi2", 100, 0., 2000.);
     a->fpOtherVtx  = bookDistribution(Form("%sothervtx", name.c_str()),  "othervtx", "fGoodChi2", 40, 0., 1.);
 
-    a->fpLip       = bookDistribution(Form("%slip", name.c_str()), "l_{z} [cm]", "fGoodLip", 50, 0., 0.015);
-    a->fpLipS      = bookDistribution(Form("%slips", name.c_str()), "l_{z}/#sigma(l_{z})", "fGoodLipS", 50, 0., 4);
+    a->fpIso       = bookDistribution(Form("%siso", name.c_str()),  "isolation", "fGoodIso", 52, 0., 1.04);
+    a->fpM1Iso     = bookDistribution(Form("%sm1iso", name.c_str()),  "m1 isolation", "fGoodIso", 52, 0., 1.04);
+    a->fpM2Iso     = bookDistribution(Form("%sm2iso", name.c_str()),  "m2 isolation", "fGoodIso", 52, 0., 1.04);
 
-    a->fpLip2      = bookDistribution(Form("%slip2", name.c_str()), "l_{z}^{(2)} [cm]", "fGoodLip", 100, 0., 4.0);
-    a->fpLipS2     = bookDistribution(Form("%slips2", name.c_str()), "l_{z}^{(2)}/#sigma(l_{z}^{(2)})", "fGoodLipS", 50, 0., 20.);
+    a->fpCloseTrk  = bookDistribution(Form("%sclosetrk", name.c_str()),  "N_{trk}^{close}", "fGoodCloseTrack", 10, 0., 10.);
+    a->fpCloseTrkS1= bookDistribution(Form("%sclosetrks1", name.c_str()),  "N_{trk}^{close, 1#sigma}", "fGoodCloseTrack", 10, 0., 10.);
+    a->fpCloseTrkS2= bookDistribution(Form("%sclosetrks2", name.c_str()),  "N_{trk}^{close, 2#sigma}", "fGoodCloseTrack", 10, 0., 10.);
+    a->fpCloseTrkS3= bookDistribution(Form("%sclosetrks3", name.c_str()),  "N_{trk}^{close, 3#sigma}", "fGoodCloseTrack", 10, 0., 10.);
 
+    a->fpDocaTrk   = bookDistribution(Form("%sdocatrk", name.c_str()), "d_{ca}^{0} [cm]", "fGoodDocaTrk", 50, 0., 0.20);
 
-    a->fpTau       = bookDistribution(Form("%stau", name.c_str()), "#tau [ps]", "fGoodLastCut", 50, 0., 1.);
-
+    a->fpTau       = bookDistribution(Form("%stau", name.c_str()), "#tau [ps]", "fGoodLastCut", 50, 0., 10.);
     a->fpLastCut   = bookDistribution(Form("%slastcut", name.c_str()), "lastcut", "fGoodLastCut", 50, 4., 6.);
-
-    a->fpBDTSel0   = bookSpecialDistribution(Form("%sbdtsel0", name.c_str()), "BDTsel0", "fGoodHLT", 200, -1.0, 1.0, &fSel0);
-    a->fpBDTSel1   = bookSpecialDistribution(Form("%sbdtsel1", name.c_str()), "BDTsel1", "fGoodHLT", 200, -1.0, 1.0, &fSel1);
-    a->fpBDTSel2   = bookSpecialDistribution(Form("%sbdtsel2", name.c_str()), "BDTsel2", "fGoodHLT", 200, -1.0, 1.0, &fSel2);
 
     fAdMap.insert(make_pair(mapname, a));
     cout << "bookDistributions: mapname = " << mapname << endl;
@@ -636,10 +600,11 @@ void plotReducedOverlays::sbsDistributions(string sample, string selection, stri
   a.fDirectory = fDirectory;
 
   int type(0);
-  if (string::npos != sample.find("bmmData"))      type = 0; // sidebands
-  if (string::npos != sample.find("Mc"))           type = 1; // signal window
-  if (string::npos != sample.find("bupsikData"))   type = 2; // pol1+err
-  if (string::npos != sample.find("bspsiphiData")) type = 3; // expo
+  if (string::npos != sample.find("bmmData"))        type = 0; // sidebands
+  if (string::npos != sample.find("Mc"))             type = 1; // signal window
+  if (string::npos != sample.find("bupsikData"))     type = 2; // pol1+err
+  if (string::npos != sample.find("bspsiphiData"))   type = 3; // expo
+  if (string::npos != sample.find("bdpsikstarData")) type = 3; // expo
   double preco(5.15);
   if (string::npos != sample.find("bspsiphiData")) {
     preco = 5.2;
@@ -840,14 +805,19 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
     if (string::npos != fDoList[i].find("eta")) doLegend = false; else doLegend = true;
     if (string::npos != fDoList[i].find("bdt")) leftLegend = true; else leftLegend = false;
     h1 = (TH1D*)gDirectory->Get(n1.c_str());
+    if (fIncludeOverflowInLastBin) addOverflow(h1);
     cout << "n1: " << n1 << " -> " << h1 << endl;
+
     h2 = (TH1D*)gDirectory->Get(n2.c_str());
+    if (fIncludeOverflowInLastBin) addOverflow(h2);
     cout << "n2: " << n2 << " -> " << h2 << endl;
     if (0 == h1 || 0 == h2) {
       cout << "  histograms not found" << endl;
       continue;
     }
-    if (h2->GetSumOfWeights() > 0) h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
+    if (h2->GetSumOfWeights() > 0) {
+      h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
+    }
 
     cout << "setHist for " << ds1 << " and " << ds2 << endl;
 
@@ -1268,11 +1238,11 @@ void plotReducedOverlays::fillDistributions() {
   fAdMap[mapname]->fpOtherVtx->fill(fb.othervtx, mass);
   fAdMap[mapname]->fpPvDchi2->fill(fb.pvdchi2, mass);
 
-  fAdMap[mapname]->fpBDT->fill(fBDT, mass);
+  // fAdMap[mapname]->fpBDT->fill(fBDT, mass);
 
-  fAdMap[mapname]->fpBDTSel0->fill(fBDT, mass);
-  fAdMap[mapname]->fpBDTSel1->fill(fBDT, mass);
-  fAdMap[mapname]->fpBDTSel2->fill(fBDT, mass);
+  // fAdMap[mapname]->fpBDTSel0->fill(fBDT, mass);
+  // fAdMap[mapname]->fpBDTSel1->fill(fBDT, mass);
+  // fAdMap[mapname]->fpBDTSel2->fill(fBDT, mass);
 }
 
 
@@ -1284,7 +1254,6 @@ AnalysisDistribution* plotReducedOverlays::bookDistribution(string hn, string ht
   p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
   p->setAnalysisCuts(&fAnaCuts, hc.c_str());
   p->setPreselCut(&fPreselection);
-
   return p;
 }
 

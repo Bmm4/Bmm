@@ -67,7 +67,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     fStampString = "CNC";
   }
   fStampCms = "BMM4";
-  fStampLumi = "2.2 fb^{-1}";
+  fStampLumi = "XXX fb^{-1}";
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
@@ -84,7 +84,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = 13.1 fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 27.8 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
   if (setup == "") fSuffix = Form("%d", fYear);
 
@@ -625,7 +625,7 @@ void plotClass::candAnalysis(/*int mode*/) {
     fGoodHLT = fGoodMuonsID = false;
     fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
     fGoodCloseTrack = fGoodIso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
-    fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
+    fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt  = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
     return;
   }
   pCuts = fCuts[fChan];
@@ -645,7 +645,6 @@ void plotClass::candAnalysis(/*int mode*/) {
   fGoodAcceptance = true;
   fGoodBdtPt      = true;
   fGoodMuonsPt    = true;
-  fGoodMuonsEta   = true;
   fGoodTracks     = fb.gtqual;
   fGoodTracksPt   = true;
   fGoodTracksEta  = true;
@@ -692,9 +691,6 @@ void plotClass::candAnalysis(/*int mode*/) {
   if (TMath::Abs(fb.m2eta) > 2.4) {
     fGoodAcceptance = false;
   }
-
-  // -- by virtue of having a fChan this is true
-  fGoodMuonsEta = true;
 
   if (bp2jpsikp) {
     if (fIsMC) {
@@ -763,7 +759,6 @@ void plotClass::candAnalysis(/*int mode*/) {
         && fGoodTracksPt
         && fGoodTracksEta
         && fGoodBdtPt
-        && fGoodMuonsEta
         && fGoodJpsiCuts
         ) {
       calcBDT();
@@ -775,7 +770,6 @@ void plotClass::candAnalysis(/*int mode*/) {
 //       cout << "goodtrackspt:  " << fGoodTracksPt  << endl;
 //       cout << "goodtrackseta: " << fGoodTracksEta  << endl;
 //       cout << "goodBdtPt:     " << fGoodBdtPt  << endl;
-//       cout << "goodMuonsEta:  " << fGoodMuonsEta  << endl;
 //       cout << "goodJpsiCuts:  " << fGoodJpsiCuts  << endl;
 //     }
   }
@@ -900,7 +894,7 @@ void plotClass::candAnalysis(/*int mode*/) {
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = fb.hlt;
 
-  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && (fb.alpha < 0.2) && (fb.fls3d > 5));
+  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && (fb.alpha < 0.2) && (fb.fls3d > 5));
   if (bs2jpsiphi || bp2jpsikp) {
     fPreselection = fPreselection && fGoodJpsiCuts;
 
@@ -910,7 +904,7 @@ void plotClass::candAnalysis(/*int mode*/) {
   }
 
   if (!fPreselection) {
-    if (0)     cout << "HLT: " << fGoodHLT << " muons: " << fGoodMuonsID << " muonspt: " << fGoodMuonsPt << " muonseta: " << fGoodMuonsEta
+    if (0)     cout << "HLT: " << fGoodHLT << " muons: " << fGoodMuonsID << " muonspt: " << fGoodMuonsPt
 		    << " a: " << fb.alpha << " fls3d: " << fb.fls3d
 		    << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt
 		    << " dr: " << fb.dr  << " mkk: " << fb.mkk

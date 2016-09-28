@@ -31,6 +31,9 @@
 #pragma link C++ function showOverflow(TH1 *);
 #pragma link C++ function unmix(TH1D *, TH1D *, double);
 
+#pragma link C++ function addOverflow(TH1D *);
+#pragma link C++ function addUnderflow(TH1D *);
+
 // #pragma link C++ function scanParameter(int, int, TMinuit &, void (*func)(int &, double *, double &, double *, int));
 
 #pragma link C++ function chi2Prob(double, double);

@@ -54,6 +54,9 @@ std::vector<std::string> glob(std::string basedir, std::string basename);
 std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems);
 std::vector<std::string> split(const std::string &s, char delim);
 
+void addOverflow(TH1D *);
+void addUnderflow(TH1D *);
+
 
 // ======================================================================
 // Utitilities for displays and typing shortcuts

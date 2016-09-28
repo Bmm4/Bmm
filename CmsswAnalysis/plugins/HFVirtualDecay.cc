@@ -50,7 +50,7 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fPvWeight(iConfig.getUntrackedParameter<double>("pvWeight", 0.6)),
   fType(iConfig.getUntrackedParameter<int>("type")) {
 
-  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel); 
+  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel);
   fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
   fTokenMuon       = consumes<MuonCollection>(fMuonsLabel) ;
   fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
@@ -67,11 +67,13 @@ void HFVirtualDecay::dumpConfiguration() {
   cout << "---  BeamSpotLabel               " << fBeamSpotLabel << endl;
   cout << "---  muonsLabel                  " << fMuonsLabel << endl;
   cout << "---  muonQuality:                " << fMuonQualityString << endl;
-	
+
   cout << "---  trackPt                     " << fTrackPt << endl;
   cout << "---  muonPt                      " << fMuonPt << endl;
   cout << "---  chi2                        " << fChi2 << endl;
   cout << "---  candpt                      " << fCandPt << endl;
+  cout << "---  candlo                      " << fCandLo << endl;
+  cout << "---  candhi                      " << fCandHi << endl;
   cout << "---  dimuonpt                    " << fDimuonPt << endl;
   cout << "---  pvips                       " << fPvIpS << endl;
   cout << "---  flsxy                       " << fFlsxy << endl;
@@ -84,21 +86,21 @@ void HFVirtualDecay::dumpConfiguration() {
   cout << "---  maxD0                       " << fMaxD0 << endl;
   cout << "---  maxDz                       " << fMaxDz << endl;
   cout << "---  pvWeight:                   " << fPvWeight << endl;
-	
+
   cout << "---  type                        " <<  fType << endl;
-} 
+}
 
 // ----------------------------------------------------------------------
 void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup) {
   using std::cout; using std::endl;
-	
+
   // -- magnetic field
   edm::ESHandle<MagneticField> fieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(fieldHandle);
   fMagneticField = fieldHandle.product();
-	
+
   // -- primary vertices
-  Handle<VertexCollection> hVertexCollection; 
+  Handle<VertexCollection> hVertexCollection;
   try {
     iEvent.getByToken(fTokenVertex, hVertexCollection);
     hVertexCollection.isValid();
@@ -107,7 +109,7 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   } catch(cms::Exception&){
     throw HFSetupException("No primary vertex collection found, skipping");
   }
-	
+
   // -- beam spot
   Handle<BeamSpot> hBeamSpot;
   try {
@@ -125,7 +127,7 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   } catch(cms::Exception&){
     throw HFSetupException(Form("No valid TrackCollection with label '%s' found, skipping", fTracksLabel.encode().c_str()));
   }
-  
+
   // -- muons
   Handle<MuonCollection> hMuonCollection;
   try {
@@ -139,7 +141,7 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   // -- load the transient track builder
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", fTTB);
   if (!fTTB.isValid()) throw HFSetupException("Error: no TransientTrackBuilder found");
-	
+
   // -- construct a list builder
   fListBuilder.reset(new  HFTrackListBuilder(fTracksHandle, fMuonCollection, fTTB.product(), fVerbose));
   fListBuilder->setMaxD0(fMaxD0);
@@ -148,9 +150,9 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   fListBuilder->setTrackQuality(fTrackQualityString);
 
   muon::SelectionType muonType = muon::selectionTypeFromString(fMuonQualityString);
-  fListBuilder->setMuonQuality(muonType); 
-	
+  fListBuilder->setMuonQuality(muonType);
+
   // -- construct the sequential vertex fitter
   fSequentialFitter.reset(new HFSequentialVertexFit(fTracksHandle, fMuonCollection, fTTB.product(), hVertexCollection, fMagneticField, fBeamSpot, fVerbose));
-  fSequentialFitter->setPvW8(fPvWeight); 
+  fSequentialFitter->setPvW8(fPvWeight);
 }

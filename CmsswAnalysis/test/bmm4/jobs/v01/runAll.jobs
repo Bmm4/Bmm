@@ -68,39 +68,39 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016D-XXXX.py
 # -- fake rate jobs
 $dataset = "dstarCharmonium2015B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 100000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 40000; ";
 
 $dataset = "dstarCharmonium2015C";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015C-16Dec2015-v1 -s $version -e 100000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015C-16Dec2015-v1 -s $version -e 40000; ";
 
 $dataset = "dstarCharmonium2015D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 100000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 40000; ";
 
 $dataset = "dstarCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016B-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016B-PromptReco -s $version -r -e 40000; ";
 
 $dataset = "dstarCharmonium2016C";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016C-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016C-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016C-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016C-PromptReco -s $version -r -e 40000; ";
 
 $dataset = "dstarCharmonium2016D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016D-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016D-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016D-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016D-PromptReco -s $version -r -e 40000; ";
 
 $dataset = "dstarCharmonium2016E";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016E-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016E-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016E-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016E-PromptReco -s $version -r -e 40000; ";
 
 $dataset = "dstarCharmonium2016F";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016F-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016F-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016F-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016F-PromptReco -s $version -r -e 40000; ";
 
 $dataset = "dstarCharmonium2016G";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016G-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016G-PromptReco -s $version -r -e 220000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../dstar-prompt-Run2016G-XXXX.py -f ../../../catalogs/Run2016__Charmonium__PromptReco/Charmonium__Run2016G-PromptReco -s $version -r -e 40000; ";
 
 
 # -- OLD MC
