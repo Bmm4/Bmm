@@ -51,7 +51,23 @@ muonDump = cms.EDAnalyzer(
         useTrack = cms.string("tracker"),
         useState = cms.string("outermost"), # in AOD; this is for matching to the L1 muon!
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
-    )
+    ),
+    #propagate the global track from vertex outwards
+    OutwardPropM1 = cms.PSet(
+        useStation2 = cms.bool(False),
+        useTrack = cms.string("global"),
+        useState = cms.string("atVertex"),
+        useSimpleGeometry = cms.bool(True)
+        ),
+    #propagate the stand alone muon track inwards
+    InwardPropM1 = cms.PSet(
+        useStation2 = cms.bool(False),
+        useTrack = cms.string("muon"),
+        useState = cms.string("outermost"),
+        useSimpleGeometry = cms.bool(True)
+        ),
+    weightFileBarrel               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-B-00.weights.xml"),
+    weightFileEndcap               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-E-00.weights.xml"),
 )
 
 # ----------------------------------------------------------------------

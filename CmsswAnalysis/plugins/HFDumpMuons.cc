@@ -74,7 +74,11 @@ HFDumpMuons::HFDumpMuons(const edm::ParameterSet& iConfig):
   fKeepBest(iConfig.getUntrackedParameter<int>("keepBest",3)),
   fMaxCandTracks(iConfig.getUntrackedParameter<int>("maxCandTracks",3)),
   fpropM1(iConfig.getParameter<edm::ParameterSet>("propM1")),
-  fpropM2(iConfig.getParameter<edm::ParameterSet>("propM2")) {
+  fpropM2(iConfig.getParameter<edm::ParameterSet>("propM2")),
+  fOutwardPropM1(iConfig.getParameter<edm::ParameterSet>("OutwardPropM1")),
+  fInwardPropM1(iConfig.getParameter<edm::ParameterSet>("InwardPropM1")),
+  fweightFileBarrel(iConfig.getUntrackedParameter<edm::FileInPath>("weightFileBarrel")),
+  fweightFileEndcap(iConfig.getUntrackedParameter<edm::FileInPath>("weightFileEndcap")) {
   dumpConfiguration();
   
   fTokenCaloMuon      = consumes<CaloMuonCollection>(fCaloMuonsLabel);
@@ -106,6 +110,12 @@ void HFDumpMuons::beginRun(const Run& iRun, const EventSetup& iSetup) {
   cout << "HFDumpMuons::beginRun" << endl;
   fpropM1.init(iSetup);
   fpropM2.init(iSetup);
+  fOutwardPropM1.init(iSetup);
+  fInwardPropM1.init(iSetup);
+  barrelBDT.setWeightFile(fweightFileBarrel);
+  barrelBDT.setupReader();
+  endcapBDT.setWeightFile(fweightFileEndcap);
+  endcapBDT.setupReader();
 }
 
 // ----------------------------------------------------------------------
@@ -196,6 +206,8 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     pM->fGtrkProb                = muQuality.glbTrackProbability; //6
     pM->fChi2LocalMomentum       = muQuality.chi2LocalMomentum; //6
     pM->fNumberOfValidTrkHits    = track_hp.numberOfValidTrackerHits(); //7
+    pM->fNumberOfValidPixHits    = track_hp.numberOfValidPixelHits();
+    pM->finnerChi2               = iTrack->normalizedChi2();
   }
 
 
@@ -208,7 +220,19 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     pM->fNhitsDT  = gTrack->hitPattern().numberOfValidMuonDTHits();
     pM->fNhitsCSC = gTrack->hitPattern().numberOfValidMuonCSCHits();
     pM->fNhitsRPC = gTrack->hitPattern().numberOfValidMuonRPCHits();
+
+    fillMuonDetHits(pM,gTrack);
+    pM->fglbKinkFinder = rm.combinedQuality().glbKink;
+    pM->ftrkRelChi2 = rm.combinedQuality().trkRelChi2;
+    pM->fstaRelChi2 = rm.combinedQuality().staRelChi2;
+    pM->fglbDeltaEtaPhi = rm.combinedQuality().globalDeltaEtaPhi;
+    pM->STATrkMult_150 = getTrackMultiplicity(rm,true,false);
+    pM->TMTrkMult_100 = getTrackMultiplicity(rm,false,false);
     
+    barrelBDT.getMuon()->fillBDTmuon(rm,&fVertexCollection,&fBeamSpot, pM->STATrkMult_150, pM->TMTrkMult_100);
+    endcapBDT.getMuon()->fillBDTmuon(rm,&fVertexCollection,&fBeamSpot, pM->STATrkMult_150, pM->TMTrkMult_100);
+    pM->barrelBDTresponse = barrelBDT.evaluate();
+    pM->endcapBDTresponse = endcapBDT.evaluate();
   }
 
   if (iTrack.isNonnull()) {
@@ -220,6 +244,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   if (oTrack.isNonnull()) {
     Track trk(*oTrack);
     pM->fOuterPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
+    pM->fouterChi2 = oTrack->normalizedChi2();
   }
 
   // -- propagate muons to muon system to get their impact point
@@ -447,6 +472,169 @@ bool HFDumpMuons::doExtrapolate(double pt, double eta) {
   if (eta > 0.8 && eta < 1.4 && (pt < -eta + 4.2)) return false;
   if (eta > 1.4 && eta < 2.4 && (pt < -eta + 2.8)) return false;
   return true;
+}
+
+// ----------------------------------------------------------------------
+int HFDumpMuons::getTrackMultiplicity(const reco::Muon& Mu, bool MuType, bool verbose) {
+  //MuType=true -->STA
+  //MuType=false -->TrackerMuons
+  int TrkMult(0);
+	      
+  bool muonFlag = muon::isGoodMuon(Mu, muon::AllGlobalMuons);
+  bool HPflag = false;
+  if (muonFlag)
+    {HPflag = (Mu.innerTrack())->quality(Track::highPurity);}
+  if (!muonFlag || !HPflag)
+    {return -1;}
+  
+  if (verbose) 
+    {
+      cout << "HM: starting process looking for: " << MuType << " (" 
+	   << (fMuonCollection->end() - fMuonCollection->begin()) 
+	   << " candidates)" << endl;
+    }
+
+  for (MuonCollection::const_iterator MuIt = fMuonCollection->begin(); MuIt != fMuonCollection->end();++MuIt)
+    {
+      if (verbose) {
+	cout << "HM: Muon " << (MuIt - fMuonCollection->begin()) << endl;
+	cout << "HM: muonType: " << (*MuIt).type() << endl;
+      }
+      if (MuType && !muon::isGoodMuon(*MuIt,muon::AllStandAloneMuons))
+	{continue;}
+      else if (!MuType && !muon::isGoodMuon(*MuIt,muon::AllTrackerMuons))
+	{continue;}
+
+      if (verbose) {cout << "HM: Searching in cone for " << MuType << endl;}
+      
+      if (MuType && (*MuIt).outerTrack().isNull())
+	{
+	  if (verbose) {cout << "HM: Invalid STA." << endl;}
+	  continue;
+	}
+
+      if (MuType)
+	{if ( tracksAreEqual(Mu.outerTrack(),(*MuIt).outerTrack()) ) {continue;}}
+      else
+	{
+	  //to avoid double counting with TM is tricky, as GM and TM are produced by different algorithms.
+	}
+
+      double max_distance(0);
+      //optimal max_distance determined using a BDT
+      if (MuType) {max_distance = 150;}
+      else {max_distance = 100;}
+
+      double distance = getDistanceM1(Mu,(*MuIt), MuType,verbose);
+      if ( (distance < max_distance) && (distance>=0) )
+	{TrkMult++;}
+      if (verbose) {cout << "HM: Moving on to next muon." << endl;}
+    }
+
+  return TrkMult;
+}
+
+double HFDumpMuons::getDistanceM1(const reco::Muon& muon, const reco::Muon& sec, bool MuType, bool verbose) {
+
+  if (verbose) {cout << "HM: Filling the HMhitInfo." << endl;}
+  if (muon.innerTrack().isNull())
+    {if (verbose) {cout << "HM: GM track is not valid." << endl;}return -1;}
+  
+  TrackRef track;
+  if (MuType) {track = sec.outerTrack();}
+  else {track = sec.innerTrack();}
+  if (track.isNull()) 
+    {
+      if (verbose) {cout << "HM: Invalid (secondary) track." << endl;}
+      return -1;
+    }
+
+  TrajectoryStateOnSurface main1TSOS = fOutwardPropM1.extrapolate(*muon.globalTrack());
+  TrajectoryStateOnSurface sec1TSOS;
+  if (MuType)
+    {
+      sec1TSOS = fInwardPropM1.extrapolate(*track);
+      if (verbose) {cout << "HM: Created TSOS using outer track." << endl;}
+    }
+  else
+    {
+      sec1TSOS = fpropM1.extrapolate(*track);
+      if (verbose) {cout << "HM: Created TSOS using inner track." << endl;}
+    }
+
+  if ( !main1TSOS.isValid() || !sec1TSOS.isValid() )
+    {
+      if (verbose) {cout << "HM: At least one TSOS is not valid." << endl;}
+      return -1;
+    }
+  TVector3 Vmain1;
+  TVector3 Vsec1;
+  Vmain1.SetXYZ(main1TSOS.globalPosition().x(),main1TSOS.globalPosition().y(),main1TSOS.globalPosition().z());
+  Vsec1.SetXYZ(sec1TSOS.globalPosition().x(),sec1TSOS.globalPosition().y(),sec1TSOS.globalPosition().z());
+
+  if (verbose) {cout << "HM: 3D dist: " << (Vmain1-Vsec1).Mag() << endl;}
+
+  return (Vmain1-Vsec1).Mag();
+}
+
+bool HFDumpMuons::tracksAreEqual(const TrackRef& main,const TrackRef& STA) {
+  double margin = 0.01;
+  
+  if (main.isNull())
+    {return false;}
+  if (STA.isNull())
+    {return false;}
+
+  double dpt = TMath::Abs(main->pt() - STA->pt());
+  double deta = TMath::Abs(main->eta() - STA->eta());
+  double dphi = TMath::Abs(main->phi() - STA->phi());
+  if (dpt < margin && deta < margin && dphi < margin)
+    {return true;}
+  return false;
+}
+
+void HFDumpMuons::fillMuonDetHits(TAnaMuon* pM, TrackRef gTrack) {
+
+  //Fill valid hits per muon detector and per station from HitPattern
+  //The invalid hits are not filled. It is not very productive using the global track
+  //as they are filtered out during the global muon reconstruction
+  //Nevertheless, the hits are checked for validity.
+  const reco::HitPattern &GMpattern = gTrack->hitPattern();
+  pM->fvDThits = {0,0,0,0};
+  pM->fvRPChits = {0,0,0,0};
+  pM->fvCSChits = {0,0,0,0};
+
+  for (int i=0;i<gTrack->hitPattern().numberOfHits(HitPattern::TRACK_HITS);i++)
+    {
+      uint32_t hit = GMpattern.getHitPattern(HitPattern::TRACK_HITS, i);
+      if ( !GMpattern.validHitFilter(hit) )
+	{continue;}
+
+      if (GMpattern.getMuonStation(hit) == 1)
+	{
+	  if (GMpattern.muonDTHitFilter(hit)) pM->fvDThits[0]++;
+	  if (GMpattern.muonRPCHitFilter(hit)) pM->fvRPChits[0]++;
+	  if (GMpattern.muonCSCHitFilter(hit)) pM->fvCSChits[0]++;
+	}
+      else if (GMpattern.getMuonStation(hit) == 2)
+	{
+	  if (GMpattern.muonDTHitFilter(hit)) pM->fvDThits[1]++;
+	  if (GMpattern.muonRPCHitFilter(hit)) pM->fvRPChits[1]++;
+	  if (GMpattern.muonCSCHitFilter(hit)) pM->fvCSChits[1]++;
+	}
+      else if (GMpattern.getMuonStation(hit) == 3)
+	{
+	  if (GMpattern.muonDTHitFilter(hit)) pM->fvDThits[2]++;
+	  if (GMpattern.muonRPCHitFilter(hit)) pM->fvRPChits[2]++;
+	  if (GMpattern.muonCSCHitFilter(hit)) pM->fvCSChits[2]++;
+	}
+      else if (GMpattern.getMuonStation(hit) == 4)
+	{
+	  if (GMpattern.muonDTHitFilter(hit)) pM->fvDThits[3]++;
+	  if (GMpattern.muonRPCHitFilter(hit)) pM->fvRPChits[3]++;
+	  if (GMpattern.muonCSCHitFilter(hit)) pM->fvCSChits[3]++;
+	}
+    }
 }
 
 //define this as a plug-in
