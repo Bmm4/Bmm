@@ -5164,6 +5164,7 @@ void candAna::print1() {
 // ----------------------------------------------------------------------
 void candAna::pvStudy(bool bookHist) {
   static int   chan;
+  static int   idx1, idx2, idx3;
   static float gx, gy, gz;
   static float sx, sy, sz;
   static float p1x, p1y, p1z, p1d;
@@ -5177,6 +5178,7 @@ void candAna::pvStudy(bool bookHist) {
   static float gfl, fl1, fl2, fl3; // flight length
   static float fl3d, fls3d; // flight length significance from the real candidate
   static float gt, t1, t2, t3; // (3D) lifetime
+  static float gs, s1, s2, s3; // (2D) lifetime
   static float mult1, mult2; // PV track multiplicity
   static float stat1, stat2; // PV status
   static float chi1, chi2; // PV chi2
@@ -5194,6 +5196,10 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("m",    &m, "m/F");
     fPvStudyTree->Branch("chan", &chan, "chan/I");
     fPvStudyTree->Branch("npv",  &npv, "npv/F");
+    fPvStudyTree->Branch("idx1", &idx1, "idx1/I");
+    fPvStudyTree->Branch("idx2", &idx2, "idx2/I");
+    fPvStudyTree->Branch("idx3", &idx3, "idx3/I");
+
     fPvStudyTree->Branch("lz1",  &lz1, "lz1/F");
     fPvStudyTree->Branch("lz2",  &lz2, "lz2/F");
     fPvStudyTree->Branch("mult1",&mult1, "mult1/F");
@@ -5215,6 +5221,12 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("t1",    &t1,    "t1/F");
     fPvStudyTree->Branch("t2",    &t2,    "t2/F");
     fPvStudyTree->Branch("t3",    &t3,    "t3/F");
+
+    // -- 2D version
+    fPvStudyTree->Branch("gs",    &gs,    "gs/F");
+    fPvStudyTree->Branch("s1",    &s1,    "s1/F");
+    fPvStudyTree->Branch("s2",    &s2,    "s2/F");
+    fPvStudyTree->Branch("s3",    &s3,    "s3/F");
 
     fPvStudyTree->Branch("gx",  &gx, "gx/F");
     fPvStudyTree->Branch("gy",  &gy, "gy/F");
@@ -5265,12 +5277,8 @@ void candAna::pvStudy(bool bookHist) {
   chan = detChan(pM1->fP.Eta(), pM2->fP.Eta());
 
   TVector3 sv = pCand->fVtx.fPoint;
-  TVector3 fl;
+  TVector3 fl, fl2d;
   TVector3 genPV, genSV, distPV(99., 99., 99.), distPV2(99., 99., 99.),  distPVL(99., 99., 99.);
-  genPV = TVector3(fpEvt->getGenCand(fGenBTmi)->fV.X(), fpEvt->getGenCand(fGenBTmi)->fV.y(), fpEvt->getGenCand(fGenBTmi)->fV.Z());
-  gx = genPV.X();
-  gy = genPV.Y();
-  gz = genPV.Z();
 
   genSV = TVector3(fpEvt->getGenCand(fGenM1Tmi)->fV.X(), fpEvt->getGenCand(fGenM1Tmi)->fV.y(), fpEvt->getGenCand(fGenM1Tmi)->fV.Z());
   sx = genSV.X();
@@ -5285,17 +5293,32 @@ void candAna::pvStudy(bool bookHist) {
   // use the mother if it has the same PDGID (it oscillated)
   if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
   double x = (pM1->fV - pM->fV).Mag();
+  TVector3 v2d = pM1->fV - pM->fV;
+  v2d.SetZ(0.);
+  double x2d = v2d.Mag();
+  double gp2d = pB->fP.Perp();
+
+  genPV = TVector3(pM->fV.X(), pM->fV.y(), pM->fV.Z());
+  gx = genPV.X();
+  gy = genPV.Y();
+  gz = genPV.Z();
+
+  if ((pM->fV - genPV).Mag() > 0.0001) {
+    cout << "pM->fV = (" << pM->fV.X() << "," << pM->fV.Y() << "," << pM->fV.Z() << " gen PV = (" <<  genPV.X() << "," << genPV.Y() << "," << genPV.Z() << ")" << endl;
+    fpEvt->dumpGenBlock();
+  }
 
   gt = x*gm/gp/TMath::Ccgs();
+  gs = x2d*gm/gp2d/TMath::Ccgs();
   gfl = x;
 
   p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
   p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
   p1z = fpEvt->getPV(pCand->fPvIdx)->fPoint.Z();
+  lz1   = pCand->fPvLip;
   mult1 = fpEvt->getPV(pCand->fPvIdx)->fNtracks;
   chi1  = fpEvt->getPV(pCand->fPvIdx)->fChi2;
   prob1 = fpEvt->getPV(pCand->fPvIdx)->fProb;
-  lz1   = pCand->fPvLip;
 
   p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
   p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
@@ -5304,6 +5327,7 @@ void candAna::pvStudy(bool bookHist) {
   mult2 = fpEvt->getPV(pCand->fPvIdx2)->fNtracks;
   chi2  = fpEvt->getPV(pCand->fPvIdx2)->fChi2;
   prob2 = fpEvt->getPV(pCand->fPvIdx2)->fProb;
+
   dz12  = p2z-p1z;
   dzmin = 99.;
   for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
@@ -5319,7 +5343,7 @@ void candAna::pvStudy(bool bookHist) {
   d1 = distPV.Mag();
   d2 = distPV2.Mag();
 
-  TVector3 plab = pCand->fPlab;
+  TVector3 plab   = pCand->fPlab;
   m =  pCand->fMass;
   pt = plab.Perp();
   eta = plab.Eta();
@@ -5332,10 +5356,26 @@ void candAna::pvStudy(bool bookHist) {
   a1 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
   t1 = fl1 * TMath::Cos(a1) / plab.Mag() * massOverC;
 
+  TVector3 plab2d = plab;
+  plab2d.SetZ(0.);
+  fl2d = fl;
+  fl2d.SetZ(0.);
+  double fl12d = fl2d.Mag();
+  double a12d = TMath::ACos(plab2d.Dot(fl2d) / (plab2d.Mag() * fl2d.Mag()));
+  s1 = fl12d * TMath::Cos(a12d) / plab2d.Mag() * massOverC;
+
+
   fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
   fl2 = fl.Mag();
   a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
   t2 = fl2 * TMath::Cos(a2) / plab.Mag() * massOverC;
+
+  fl2d = fl;
+  fl2d.SetZ(0.);
+  double fl22d = fl2d.Mag();
+  double a22d = TMath::ACos(plab2d.Dot(fl2d) / (plab2d.Mag() * fl2d.Mag()));
+  s2 = fl22d * TMath::Cos(a22d) / plab2d.Mag() * massOverC;
+
 
   // -- loop over all PV in event and try out other approaches
   int minAlphaIdx(-1);
@@ -5361,10 +5401,21 @@ void candAna::pvStudy(bool bookHist) {
   fl3 = fl.Mag();
   a3 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
   t3 = fl3 * TMath::Cos(a3) / plab.Mag() * massOverC;
+
+  fl2d = fl;
+  fl2d.SetZ(0.);
+  double fl32d = fl2d.Mag();
+  double a32d = TMath::ACos(plab2d.Dot(fl2d) / (plab2d.Mag() * fl2d.Mag()));
+  s3 = fl32d * TMath::Cos(a32d) / plab2d.Mag() * massOverC;
+
+
   p3x = fpEvt->getPV(minAlphaIdx)->fPoint.X();
   p3y = fpEvt->getPV(minAlphaIdx)->fPoint.Y();
   p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
 
+  idx1 = pCand->fPvIdx;
+  idx2 = pCand->fPvIdx2;
+  idx3 = minAlphaIdx;
 
   // -- fill delta(z) to closest other PV
   p1d = p2d = p3d = 99.;
