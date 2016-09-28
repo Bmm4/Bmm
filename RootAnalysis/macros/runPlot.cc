@@ -24,7 +24,7 @@ int main(int argc, char *argv[]) {
 
   string progName  = argv[0];
 
-  string dir("nada"), cuts("nada"), files("nada"), mode("nada"), setup("nada");
+  string dir("nada"), cuts("nada"), files("nada"), mode("nada"), setup("nada"), rootfilename("nada");
   int year(2016), plot(0);
   bool remove(false);
 
@@ -32,8 +32,9 @@ int main(int argc, char *argv[]) {
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
-    if (!strcmp(argv[i], "-p"))  {plot  = atoi(argv[++i]);}
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}
+    if (!strcmp(argv[i], "-p"))  {plot  = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];}
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}
   }
 
@@ -53,6 +54,7 @@ int main(int argc, char *argv[]) {
       cuts  = "baseCuts.cuts";
       setup = "";
       plotResults a(dir, files, cuts, setup);
+      if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
       a.makeAll();
       return 0;
     }
@@ -61,6 +63,7 @@ int main(int argc, char *argv[]) {
       files = "plotResults.2016.files";
       cuts  = "baseCuts.cuts";
       plotReducedOverlays a(dir, files, cuts, setup);
+      if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
       a.makeAll();
     }
 
@@ -72,6 +75,7 @@ int main(int argc, char *argv[]) {
   if (plot & 1) {
     gROOT->Clear();  gROOT->DeleteAll();
     plotReducedOverlays a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
     } else {
@@ -87,6 +91,7 @@ int main(int argc, char *argv[]) {
     cuts  = "baseCuts.cuts";
     setup = "";
     plotWork a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
     } else {
