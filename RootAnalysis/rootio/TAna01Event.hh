@@ -39,9 +39,9 @@ public:
   int                 getGenIndex(double px, double py, double pz, int charge, double precision = 0.05);
   int                 getGenIndexWithDeltaR(double pt, double eta, double phi, double charge);
   int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, double charge, double dRthrsh = 99999.9);
-  int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, const TVector3 &vtx, 
+  int                 getGenIndexWithDeltaR(const TLorentzVector &tlv, const TVector3 &vtx,
 					    double charge, double dRthrsh = 99999.9, double dVtxRatioThrsh = 1.3);
-  bool                isAncestor(TGenCand *pMother, TGenCand *pParticle); 
+  bool                isAncestor(TGenCand *pMother, TGenCand *pParticle);
 
   // -- reduced/truncated generator block, filled by plugins/HFTruthCandidate.cc
   int                 nGenT() {return fnGenT;}
@@ -62,7 +62,7 @@ public:
   // -- these helper functions need to be here, and not in TSimpleTrack ...
   int                    getSimpleTrackMCID(int n);
   int                    getSimpleTrackMuonIdx(int n);
-  TAnaMuon*              getSimpleTrackMuon(int n); 
+  TAnaMuon*              getSimpleTrackMuon(int n);
 
   // -- Signal Tracks (e.g. refitted tracks forming cands in the next block)
   int                 nSigTracks() {return fnSigTracks;}
@@ -95,7 +95,7 @@ public:
   virtual TAnaVertex* addPV();
 
   // -- Beamspot
-  TAnaVertex          fBeamSpot; 
+  TAnaVertex          fBeamSpot;
 
   // -- GenJets
   int                 nGenJets() {return fnGenJets;}
@@ -122,7 +122,7 @@ public:
   // -- Basic event and detector information
   Long64_t          fRunNumber, fEventNumber;
   int               fEventBits;
-  int               fDetectorStatus; 
+  int               fDetectorStatus;
   int               fEventTag;
   int               fBestPV;   // be careful with this...
 
@@ -134,12 +134,12 @@ public:
   double            fPtHat;
 
   // -- Lumi
-  double            fLumi, fLumiInt; 
-  int               fLumiSection; 
-  int               fOrbit; 
-  int               fBx; 
-  
-  unsigned int      fTimeLo, fTimeHi; 
+  double            fLumi, fLumiInt;
+  int               fLumiSection;
+  int               fOrbit;
+  int               fBx;
+
+  unsigned int      fTimeLo, fTimeHi;
 
   // -- Trigger words
   bool              fL1TDecision, fHLTDecision;
@@ -168,11 +168,11 @@ public:
   bool              fHLTError[NHLT];
 
   // -- MET
-  TVector3          fGenMET, fMET0, fMET1;  // only x and y component are relevant. z could contain type information. 
+  TVector3          fGenMET, fMET0, fMET1;  // only x and y component are relevant. z could contain type information.
 
   // -- Reserve variables
-  int               fIntRes[10]; 
-  double            fDoubleRes[10]; 
+  int               fIntRes[10];
+  double            fDoubleRes[10];
 
 private:
 
