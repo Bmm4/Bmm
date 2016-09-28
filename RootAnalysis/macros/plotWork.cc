@@ -222,7 +222,7 @@ void plotWork::makeAll(string what) {
   }
 
 
-  if (what == "all" || string::npos != what.find("wrongreco")) {
+  if (string::npos != what.find("wrongreco")) {
     wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBu", "hlt");
     wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03 && k1pt > 0.7 && k2pt > 0.7");
     wrongReco("bcpsimunuMc", "candAnaMuMu", "");
@@ -245,13 +245,17 @@ void plotWork::makeAll(string what) {
     genSummary("bspsiphirelval", "candAnaBs2JpsiPhi");
   }
 
-  if (what == "yieldstability") {
+  if (what == "all" || what == "yieldstability") {
     yieldStability("bupsikData", "HLT");
     yieldStability("bmmData", "HLT");
     yieldStability("bspsiphiData", "HLT");
     yieldStability("bdpsikstarData", "HLT");
   }
 
+  if (what == "all" || what == "l1seeds") {
+    plotL1Seeds("bupsikData");
+    plotL1Seeds("bmmData");
+  }
 
 }
 
@@ -1308,6 +1312,8 @@ void  plotWork::fitStudiesFit0(TH1D *h1, int i) {
 // ----------------------------------------------------------------------
 void plotWork::yieldStability(string dsname, string trg) {
 
+  double minLumi(100.);
+
   // -- dump histograms
   cout << "fHistFile: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
@@ -1348,49 +1354,73 @@ void plotWork::yieldStability(string dsname, string trg) {
     if (vds.size() > 0) {
       Lumi lumi("../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
       cout << "runs " << runMin << " .. " <<  runMax << endl;
-      TH1D *hRunHLT = new TH1D(Form("hRun%s", trg.c_str()), "", runMax-runMin+1, runMin, runMax); hRunHLT->Sumw2();
+
+      vector<TH1D *> vRunHLT;
+      for (unsigned int ichan = 0; ichan < fNchan; ++ichan) {
+	vRunHLT.push_back(new TH1D(Form("hRun%s_chan%d", trg.c_str(), ichan), Form("hRun%s_chan%d", trg.c_str(), ichan), runMax-runMin+1, runMin, runMax));
+	vRunHLT[ichan]->Sumw2();
+      }
 
       double mBp(5.28), sBp(0.04), stepBp(5.145);
       double xmin(5.0), xmax(5.8), ymax(0.);
       fIF->fLo = xmin;
       fIF->fHi = xmax;
-      for (unsigned int i = 0; i < vds.size(); ++i) {
-	c0->Clear();
-	TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
-	if (!h2) continue;
-	TH1D *h1 = h2->ProjectionX("chan_0", 1,1);
-	if (h1->Integral(1, h1->GetNbinsX()+1) < 100) continue;
-	TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
-	h1->Fit(f1, "lr", "", xmin, xmax);
-	double nNormE = f1->IntegralError(5.1, 5.4)/f1->Integral(5.1, 5.4);
-	if (nNormE < 0.1) nNormE = f1->GetParError(0)/f1->GetParameter(0);
-	f1->SetParameter(3, 0.);
-	f1->SetParameter(4, 0.);
-	f1->SetParameter(5, 0.);
-	f1->SetParameter(6, 0.);
-	double nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
-	double result = nNorm/lumi.lumi(vds[i]);
-	cout << "Run " << vds[i] << " bin: " << hRunHLT->FindBin(vds[i])
-	     << " nNorm: " << nNorm << " +/- " << nNormE*nNorm
-	     << " lumi: " << lumi.lumi(vds[i])
-	     <<  " result: " << result
-	     << endl;
-	// normalize yield to 1/pb
-	hRunHLT->SetBinContent(hRunHLT->FindBin(static_cast<double>(vds[i])), result);
-	hRunHLT->SetBinError(hRunHLT->FindBin(static_cast<double>(vds[i])), nNormE*nNorm/lumi.lumi(vds[i]));
-	if (result > ymax) ymax = result;
-	tl->DrawLatexNDC(0.2, 0.92, Form("Nsig = %4.1f +/- %4.1f", nNorm, nNormE*nNorm));
-	tl->DrawLatexNDC(0.2, 0.85, Form("%d", vds[i]));
-	c0->Modified();
-	c0->Update();
-	savePad(Form("yield-%s-%d.pdf", trg.c_str(), vds[i]));
+      TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[0])));
+      if (!h2) {
+	cout << "histogram " << Form("h_%s_%d", trg.c_str(), vds[0]) << " not found!?! returning" << endl;
+	return;
       }
-      hRunHLT->SetMinimum(0.);
-      hRunHLT->SetMaximum(1.3*ymax);
-      hRunHLT->Draw("e");
-      savePad(Form("yield-vs-runs-%d-%s-%s.pdf", fYear, fSample.c_str(), trg.c_str()));
-      return;
+      TH2D *h2Sum = (TH2D*)h2->Clone("h2sum"); h2Sum->Reset();
+      TH1D *h1 = h2->ProjectionX("chan_0", 1,1);
+      h1->SetName("base"); h1->Reset();
+      double intLumi(0.);
+      int oldPs(atoi(h2->GetTitle())), newPs(0);
+      for (unsigned int i = 0; i < vds.size(); ++i) {
+	intLumi += lumi.lumi(vds[i]);
+	h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d", trg.c_str(), vds[i])));
+	newPs = atoi(h2->GetTitle());
+	if (oldPs == newPs)  {
+	  h2Sum->Add(h2);
+	} else {
+	  cout << "XXXXXXXX new PS = " << newPs << " while old PS = " << oldPs << endl;
+	  intLumi = minLumi+0.01;
+	}
+	if (intLumi > minLumi) {
+	  for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
+	    // -- fit
+	    h1 = h2Sum->ProjectionX("chan_0", ichan+1, ichan+1);
+	    TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
+	    h1->Fit(f1, "lr", "", xmin, xmax);
+	    double nNormE = f1->IntegralError(5.1, 5.4)/f1->Integral(5.1, 5.4);
+	    if (nNormE < 0.1) nNormE = f1->GetParError(0)/f1->GetParameter(0);
+	    f1->SetParameter(3, 0.);
+	    f1->SetParameter(4, 0.);
+	    f1->SetParameter(5, 0.);
+	    f1->SetParameter(6, 0.);
+	    double nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
+	    if (nNormE > nNorm) nNormE = TMath::Sqrt(nNorm)/nNorm;
+	    double result = nNorm/lumi.lumi(vds[i]);
+	    // normalize yield to 1/pb
+	    cout << "==> Filling for chan = " << ichan << " into bin " << static_cast<double>(vds[i]) << " result = " << result << " +/- " << nNormE*nNorm/intLumi << endl;
+	    vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(vds[i])), result);
+	    vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(vds[i])), nNormE*nNorm/intLumi);
+	    savePad(Form("yield-%s-%d-chan%d.pdf", trg.c_str(), vds[i], ichan));
+	  }
+	  // -- reset
+	  intLumi = 0.;
+	  h2Sum->Reset();
+
+
+	}
+      }
+
+      for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
+	vRunHLT[ichan]->SetMinimum(0.);
+	vRunHLT[ichan]->Draw("e");
+	savePad(Form("yield-vs-runs-%d-chan%d-%s-%s.pdf", fYear, ichan, fSample.c_str(), trg.c_str()));
+      }
     }
+    return;
   } else {
     TDirectory *hDir = fHistFile->mkdir(dir.c_str());
     fHistFile->cd(dir.c_str());
@@ -1404,7 +1434,7 @@ void plotWork::yieldStability(string dsname, string trg) {
     }
     setupTree(t, fSample);
     fCds = fSample;
-    //    loopOverTree(t, 2, 10000);
+    //    loopOverTree(t, 2, 1000000);
     loopOverTree(t, 2);
 
     cout << "writing output histograms: " << fYieldHLT.size() << endl;
@@ -1424,7 +1454,7 @@ void plotWork::yieldStability(string dsname, string trg) {
     fYieldRTR.clear();
   }
 
-  fHistFile->Write();
+  //  fHistFile->Write();
   fHistFile->Close();
 }
 
@@ -1460,7 +1490,7 @@ void plotWork::loopFunction1() {
   if (fb.m2pt < 3.0) return;
 
 
-  if ((fMode == BU2JPSIKP) || (fMode = BD2JPSIKSTAR) || (fMode = BS2JPSIPHI)) {
+  if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR) || (fMode == BS2JPSIPHI)) {
     if (TMath::Abs(fb.mpsi) < 2.9) return;
     if (TMath::Abs(fb.mpsi) > 3.3) return;
 
@@ -1508,7 +1538,7 @@ void plotWork::loopFunction2() {
   if (fb.m2pt < 4.0) return;
 
   double m = fb.m;
-  if ((fMode == BU2JPSIKP) || (fMode = BD2JPSIKSTAR) || (fMode = BS2JPSIPHI)) {
+  if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR) || (fMode == BS2JPSIPHI)) {
     if (TMath::Abs(fb.mpsi) < 2.9) return;
     if (TMath::Abs(fb.mpsi) > 3.3) return;
 
@@ -1516,25 +1546,36 @@ void plotWork::loopFunction2() {
     if (TMath::Abs(fb.psicosa) < 0.9) return;
     if (TMath::Abs(fb.psiprob) < 0.1) return;
     if (TMath::Abs(fb.psiflsxy) < 3) return;
+    if (fMode == BS2JPSIPHI) {
+      if (fb.mkk < 1.01) return;
+      if (fb.mkk > 1.03) return;
+      if (fb.dr  > 0.80) return;
+      if (fb.kpt < 0.70) return;
+    }
+
+    if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR)) {
+      if (fb.kpt < 0.70) return;
+    }
+
     m = fb.cm;
   }
 
 
   if (0 == fYieldHLT.count(fb.run)) {
-    TH2D *h = new TH2D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("h_HLT_%d", static_cast<int>(fb.run)), 45, 5.0, 5.9, fNchan, 0., fNchan);
+    TH2D *h = new TH2D(Form("h_HLT_%d", static_cast<int>(fb.run)), Form("%d", static_cast<int>(fb.ps)), 90, 5.0, 5.9, fNchan, 0., fNchan);
     fYieldHLT.insert(make_pair(fb.run, h));
 
-    h = new TH2D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("h_RTR_%d", static_cast<int>(fb.run)), 45, 5.0, 5.9, fNchan, 0., fNchan);
+    h = new TH2D(Form("h_RTR_%d", static_cast<int>(fb.run)), Form("%d", static_cast<int>(fb.ps)), 90, 5.0, 5.9, fNchan, 0., fNchan);
     fYieldRTR.insert(make_pair(fb.run, h));
   }
 
 
   if (fb.hlt) {
-    fYieldHLT[fb.run]->Fill(m, fb.chan, fb.ps);
+    fYieldHLT[fb.run]->Fill(m, fb.chan);
   }
 
   if (fb.reftrg) {
-    fYieldRTR[fb.run]->Fill(m, fb.chan, fb.ps);
+    fYieldRTR[fb.run]->Fill(m, fb.chan);
   }
 
 }
