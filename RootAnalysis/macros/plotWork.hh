@@ -21,12 +21,6 @@ public :
   virtual void loadFiles(std::string afiles);
   virtual void makeAll(std::string what = "all");
 
-  // -- PV studies
-  void pvStudy(std::string filename, std::string selection = "&& fl1 > 0.01");
-
-  // -- yield stability
-  void yieldStability(std::string dsname, std::string trg = "HLT");
-
   // -- genSummary plots
   void genSummary(std::string dsname, std::string dir);
 
@@ -79,8 +73,6 @@ private:
   double fS, fSE, fN, fNE, fW, fWE, fB, fBE, fChi2Dof;
   double fSsigma, fSRMS;
   double fEntries;
-
-  std::map<int, TH2D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
 
