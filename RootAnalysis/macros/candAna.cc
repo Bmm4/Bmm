@@ -5177,6 +5177,11 @@ void candAna::pvStudy(bool bookHist) {
   static float gfl, fl1, fl2, fl3; // flight length
   static float fl3d, fls3d; // flight length significance from the real candidate
   static float gt, t1, t2, t3; // (3D) lifetime
+  static float mult1, mult2; // PV track multiplicity
+  static float stat1, stat2; // PV status
+  static float chi1, chi2; // PV chi2
+  static float prob1, prob2; // PV prob
+  static float dz12, dzmin;
   static float npv;
   if (bookHist) {
     TDirectory *pDir = gDirectory;
@@ -5191,6 +5196,14 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("npv",  &npv, "npv/F");
     fPvStudyTree->Branch("lz1",  &lz1, "lz1/F");
     fPvStudyTree->Branch("lz2",  &lz2, "lz2/F");
+    fPvStudyTree->Branch("mult1",&mult1, "mult1/F");
+    fPvStudyTree->Branch("mult2",&mult2, "mult2/F");
+    fPvStudyTree->Branch("prob1",&prob1, "prob1/F");
+    fPvStudyTree->Branch("prob2",&prob2, "prob2/F");
+    fPvStudyTree->Branch("chi1", &chi1, "chi1/F");
+    fPvStudyTree->Branch("chi2", &chi2, "chi2/F");
+    fPvStudyTree->Branch("dz12", &dz12,  "dz12/F");
+    fPvStudyTree->Branch("dzmin",&dzmin,  "dzmin/F");
 
     fPvStudyTree->Branch("gfl",   &gfl,   "gfl/F");
     fPvStudyTree->Branch("gt",    &gt,    "gt/F");
@@ -5279,13 +5292,27 @@ void candAna::pvStudy(bool bookHist) {
   p1x = fpEvt->getPV(pCand->fPvIdx)->fPoint.X();
   p1y = fpEvt->getPV(pCand->fPvIdx)->fPoint.Y();
   p1z = fpEvt->getPV(pCand->fPvIdx)->fPoint.Z();
-  lz1 = pCand->fPvLip;
+  mult1 = fpEvt->getPV(pCand->fPvIdx)->fNtracks;
+  chi1  = fpEvt->getPV(pCand->fPvIdx)->fChi2;
+  prob1 = fpEvt->getPV(pCand->fPvIdx)->fProb;
+  lz1   = pCand->fPvLip;
 
   p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
   p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
   p2z = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z();
   lz2 = pCand->fPvLip2;
-
+  mult2 = fpEvt->getPV(pCand->fPvIdx2)->fNtracks;
+  chi2  = fpEvt->getPV(pCand->fPvIdx2)->fChi2;
+  prob2 = fpEvt->getPV(pCand->fPvIdx2)->fProb;
+  dz12  = p2z-p1z;
+  dzmin = 99.;
+  for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+    if (ipv == pCand->fPvIdx) continue;
+    double delta = fpEvt->getPV(ipv)->fPoint.Z() - p1z;
+    if (TMath::Abs(delta) < TMath::Abs(dzmin)) {
+      dzmin = delta;
+    }
+  }
   distPV = fpEvt->getPV(pCand->fPvIdx)->fPoint - genPV;
   distPV2 = fpEvt->getPV(pCand->fPvIdx2)->fPoint - genPV;
 
@@ -5316,6 +5343,7 @@ void candAna::pvStudy(bool bookHist) {
   int minPvIpIdx(-1);
   double minPvIp(99.), pvipL;
   npv = fpEvt->nPV();
+
   for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
     fl = sv - fpEvt->getPV(ipv)->fPoint;
     distPVL = fpEvt->getPV(ipv)->fPoint - genPV;
