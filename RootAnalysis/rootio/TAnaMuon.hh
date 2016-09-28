@@ -68,6 +68,20 @@ public:
   int            fInt1,    fInt2,    fInt3; 
   double         fDouble1, fDouble2, fDouble3;
 
+  int STATrkMult_150, TMTrkMult_100;
+  int fNumberOfValidPixHits;
+  double finnerChi2;
+  double fouterChi2;
+  std::vector<int> fvDThits;
+  std::vector<int> fvRPChits;
+  std::vector<int> fvCSChits;
+  float fglbKinkFinder;
+  float ftrkRelChi2;
+  float fstaRelChi2;
+  float fglbDeltaEtaPhi;
+  //muonID BDT
+  double barrelBDTresponse, endcapBDTresponse;
+
 private:
 
   ClassDef(TAnaMuon,1)

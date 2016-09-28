@@ -11,6 +11,8 @@
 
 
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
+#include "Bmm/CmsswAnalysis/interface/HFBDT.hh" 
+
 
 // ----------------------------------------------------------------------
 class HFDumpMuons : public HFVirtualDecay {
@@ -29,6 +31,12 @@ class HFDumpMuons : public HFVirtualDecay {
   bool                      doExtrapolate(double pt, double eta);
   void                      findVertex(TAnaMuon *anaMu, std::set<unsigned> *trkIcs, double *prob);
 
+  int                       getTrackMultiplicity(const reco::Muon& muon, bool STA, bool verbose);
+  double                    getDistanceM1(const reco::Muon& muon, const reco::Muon& sec, bool MuType, bool verbose);
+  bool                      tracksAreEqual(const reco::TrackRef& main,const reco::TrackRef& STA);
+  void                      fillMuonDetHits(TAnaMuon* pM, reco::TrackRef gTrack);
+
+
   edm::InputTag             fCaloMuonsLabel;
   
   double                    fMaxTrackDistToStore;
@@ -36,8 +44,12 @@ class HFDumpMuons : public HFVirtualDecay {
   unsigned                  fKeepBest;             // number of candidates to keep for iterative vertex search
   unsigned                  fMaxCandTracks;        // max number of tracks for the muon candidate vertex
 
-  PropagateToMuon           fpropM1, fpropM2;
+  PropagateToMuon           fpropM1, fpropM2, fOutwardPropM1, fInwardPropM1;
   std::vector<xpTrack>      fXpTracks;
+
+  HFBDT barrelBDT,endcapBDT;
+  edm::FileInPath           fweightFileBarrel;
+  edm::FileInPath           fweightFileEndcap;
 
   edm::EDGetTokenT<reco::CaloMuonCollection> fTokenCaloMuon;
 
