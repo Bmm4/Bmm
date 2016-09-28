@@ -16,6 +16,7 @@
 #include "plotReducedOverlays.hh"
 #include "plotWork.hh"
 #include "plotResults.hh"
+#include "plotStuff.hh"
 
 using namespace std;
 
@@ -54,16 +55,23 @@ int main(int argc, char *argv[]) {
       cuts  = "baseCuts.cuts";
       setup = "";
       plotResults a(dir, files, cuts, setup);
-      if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
       a.makeAll();
       return 0;
     }
+
     {
       gROOT->Clear();  gROOT->DeleteAll();
       files = "plotResults.2016.files";
       cuts  = "baseCuts.cuts";
       plotReducedOverlays a(dir, files, cuts, setup);
-      if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+      a.makeAll();
+    }
+
+    {
+      gROOT->Clear();  gROOT->DeleteAll();
+      files = "plotResults.2016.files";
+      cuts  = "baseCuts.cuts";
+      plotStuff a(dir, files, cuts, setup);
       a.makeAll();
     }
 
@@ -84,8 +92,23 @@ int main(int argc, char *argv[]) {
   }
 
 
-  // -- work
+  // -- stuff
   if (plot & 2) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    files = "plotResults.2016.files";
+    cuts  = "baseCuts.cuts";
+    setup = "";
+    plotStuff a(dir, files, cuts, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
+
+
+  // -- work
+  if (plot & 4) {
     gROOT->Clear();  gROOT->DeleteAll();
     files = "plotResults.2016.files";
     cuts  = "baseCuts.cuts";
