@@ -5,7 +5,7 @@
 //
 // 2016/01/21 Urs Langenegger      derive from HFVirtualDecay,
 //                                 migrate to "consumes",
-//                                 remove calomuons and 
+//                                 remove calomuons and
 // stone age  Urs Langenegger      first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
@@ -38,7 +38,6 @@
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 
 #include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistance.h"
 #include "TrackingTools/TransientTrack/interface/TransientTrack.h"
@@ -61,7 +60,7 @@ using namespace reco;
 
 // -- sort the vector with xpTracks
 static bool dist_less(const xpTrack &x, const xpTrack &y) {
-  return (x.dist < y.dist); 
+  return (x.dist < y.dist);
 }
 
 
@@ -80,9 +79,9 @@ HFDumpMuons::HFDumpMuons(const edm::ParameterSet& iConfig):
   fweightFileBarrel(iConfig.getUntrackedParameter<edm::FileInPath>("weightFileBarrel")),
   fweightFileEndcap(iConfig.getUntrackedParameter<edm::FileInPath>("weightFileEndcap")) {
   dumpConfiguration();
-  
+
   fTokenCaloMuon      = consumes<CaloMuonCollection>(fCaloMuonsLabel);
-  
+
 }
 
 
@@ -134,23 +133,23 @@ void HFDumpMuons::analyze(const Event& iEvent, const EventSetup& iSetup) {
   fListBuilder->setMinPt(-1.);
 
   extrapolateTracks();
-  
+
   int im(0);
   for (MuonCollection::const_iterator iMuon = fMuonCollection->begin(); iMuon != fMuonCollection->end(); ++ iMuon ) {
-    fillMuon(*iMuon, im); 
+    fillMuon(*iMuon, im);
     ++im;
   }
 
   if (fVerbose > 0) {
     for (int im = 0; im < gHFEvent->nMuons(); ++im) {
       gHFEvent->getMuon(im)->dump();
-      cout << "px = " << gHFEvent->getMuon(im)->fPlab.Px() 
+      cout << "px = " << gHFEvent->getMuon(im)->fPlab.Px()
 	   << " py = " << gHFEvent->getMuon(im)->fPlab.Py()
 	   << " pz = " << gHFEvent->getMuon(im)->fPlab.Pz()
 	   << endl;
     }
   }
-  
+
 }
 
 
@@ -161,12 +160,12 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   TrackRef iTrack = rm.innerTrack();
   TrackRef oTrack = rm.outerTrack();
 
-  TAnaMuon *pM = gHFEvent->addMuon();    
+  TAnaMuon *pM = gHFEvent->addMuon();
 
-  
+
   if (rm.innerTrack().isNonnull()) {
     Track trk(*iTrack);
-    fillAnaTrack(pM, trk, rm.innerTrack().index(), -2, &fVertexCollection, fMuonCollection, &fBeamSpot); 
+    fillAnaTrack(pM, trk, rm.innerTrack().index(), -2, &fVertexCollection, fMuonCollection, &fBeamSpot);
   } else {
     pM->fIndex = -23;
   }
@@ -175,10 +174,10 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   pM->fQ       = rm.charge();
 
   pM->fMuonChi2         = rm.combinedQuality().trkKink;
-  pM->fTimeInOut        = rm.time().timeAtIpInOut; 
-  pM->fTimeInOutE       = rm.time().timeAtIpInOutErr; 
-  pM->fTimeOutIn        = rm.time().timeAtIpOutIn; 
-  pM->fTimeOutInE       = rm.time().timeAtIpOutInErr; 
+  pM->fTimeInOut        = rm.time().timeAtIpInOut;
+  pM->fTimeInOutE       = rm.time().timeAtIpInOutErr;
+  pM->fTimeOutIn        = rm.time().timeAtIpOutIn;
+  pM->fTimeOutInE       = rm.time().timeAtIpOutInErr;
   pM->fTimeNdof         = rm.time().nDof;
   pM->fNmatchedStations = rm.numberOfMatchedStations();
 
@@ -186,28 +185,28 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   if (isGlobalMuon != rm.isGlobalMuon()) {
     cout << "?????????? error ????  isGlobalMuon() != muon::isGoodMuon(rm, muon::AllGlobalMuons) ???" << endl;
   }
-  
+
   // -- variables for MVA muon ID
   if (gTrack.isNonnull() && iTrack.isNonnull()) {
     const HitPattern track_hp  = iTrack->hitPattern();
     //  changes in 72X
     //const HitPattern exp_track_out_hp = iTrack->trackerExpectedHitsOuter();
     reco::MuonQuality muQuality = rm.combinedQuality();
-    
+
     pM->fItrkValidFraction       = iTrack->validFraction(); //1
     pM->fGtrkNormChi2            = gTrack->normalizedChi2(); //2
     pM->fChi2LocalPosition       = muQuality.chi2LocalPosition; //3
     //pM->fNumberOfLostTrkHits     = exp_track_out_hp.numberOfLostTrackerHits(); //4 change for 72X
-    // should I use this 
+    // should I use this
     //pM->fNumberOfLostTrkHits     = track_hp.numberOfLostTrackerHits(HitPattern::TRACK_HITS); //4
-    // OR this 
+    // OR this
     pM->fNumberOfLostTrkHits     = track_hp.numberOfLostTrackerHits(HitPattern::MISSING_OUTER_HITS); //4
     pM->fSegmentComp             = muon::segmentCompatibility(rm); //5
     pM->fGtrkProb                = muQuality.glbTrackProbability; //6
     pM->fChi2LocalMomentum       = muQuality.chi2LocalMomentum; //6
     pM->fNumberOfValidTrkHits    = track_hp.numberOfValidTrackerHits(); //7
     pM->fNumberOfValidPixHits    = track_hp.numberOfValidPixelHits();
-    pM->finnerChi2               = iTrack->normalizedChi2();
+    pM->fInnerChi2               = iTrack->normalizedChi2();
   }
 
 
@@ -222,17 +221,17 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     pM->fNhitsRPC = gTrack->hitPattern().numberOfValidMuonRPCHits();
 
     fillMuonDetHits(pM,gTrack);
-    pM->fglbKinkFinder = rm.combinedQuality().glbKink;
-    pM->ftrkRelChi2 = rm.combinedQuality().trkRelChi2;
-    pM->fstaRelChi2 = rm.combinedQuality().staRelChi2;
-    pM->fglbDeltaEtaPhi = rm.combinedQuality().globalDeltaEtaPhi;
-    pM->STATrkMult_150 = getTrackMultiplicity(rm,true,false);
-    pM->TMTrkMult_100 = getTrackMultiplicity(rm,false,false);
-    
-    barrelBDT.getMuon()->fillBDTmuon(rm,&fVertexCollection,&fBeamSpot, pM->STATrkMult_150, pM->TMTrkMult_100);
-    endcapBDT.getMuon()->fillBDTmuon(rm,&fVertexCollection,&fBeamSpot, pM->STATrkMult_150, pM->TMTrkMult_100);
-    pM->barrelBDTresponse = barrelBDT.evaluate();
-    pM->endcapBDTresponse = endcapBDT.evaluate();
+    pM->fGlbKinkFinder  = rm.combinedQuality().glbKink;
+    pM->fTrkRelChi2     = rm.combinedQuality().trkRelChi2;
+    pM->fStaRelChi2     = rm.combinedQuality().staRelChi2;
+    pM->fGlbDeltaEtaPhi = rm.combinedQuality().globalDeltaEtaPhi;
+    pM->fStaTrkMult     = getTrackMultiplicity(rm,true,false);
+    pM->fTmTrkMult      = getTrackMultiplicity(rm,false,false);
+
+    barrelBDT.getMuon()->fillBDTmuon(rm, &fVertexCollection, &fBeamSpot, pM->fStaTrkMult, pM->fTmTrkMult);
+    endcapBDT.getMuon()->fillBDTmuon(rm, &fVertexCollection, &fBeamSpot, pM->fStaTrkMult, pM->fTmTrkMult);
+    pM->fBarrelBDTresponse = barrelBDT.evaluate();
+    pM->fEndcapBDTresponse = endcapBDT.evaluate();
   }
 
   if (iTrack.isNonnull()) {
@@ -244,12 +243,12 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   if (oTrack.isNonnull()) {
     Track trk(*oTrack);
     pM->fOuterPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
-    pM->fouterChi2 = oTrack->normalizedChi2();
+    pM->fOuterChi2 = oTrack->normalizedChi2();
   }
 
   // -- propagate muons to muon system to get their impact point
-  TVector3 muPosM1; 
-  bool validM1(false); 
+  TVector3 muPosM1;
+  bool validM1(false);
 
   if (isGlobalMuon && doExtrapolate(rm.pt(), rm.eta())) {
     TrajectoryStateOnSurface prop_M1 = fpropM1.extrapolate(rm);
@@ -258,7 +257,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
       //      Track trk(*oTrack);
       prop_M2 = fpropM2.extrapolate(*oTrack);
     }
-    
+
     if (prop_M1.isValid()) {
       pM->fPositionAtM1.SetXYZ(prop_M1.globalPosition().x(), prop_M1.globalPosition().y(), prop_M1.globalPosition().z());
     }
@@ -275,7 +274,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
       TrajectoryStateOnSurface propOuter = fpropM1.extrapolate(*oTrack);
       if (propOuter.isValid()) {
 	// -- FIXME: not sure whether the next two lines would not be better in prop_M1.isValid() block?!
-	validM1 = true; 
+	validM1 = true;
 	muPosM1.SetXYZ(propOuter.globalPosition().x(),propOuter.globalPosition().y(),propOuter.globalPosition().z());
 	pM->fMuonTrackPosAtM1.SetXYZ(propOuter.globalPosition().x(),propOuter.globalPosition().y(),propOuter.globalPosition().z());
 	pM->fMuonTrackPlabAtM1.SetXYZ(propOuter.globalMomentum().x(),propOuter.globalMomentum().y(),propOuter.globalMomentum().z());
@@ -288,14 +287,14 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     TwoTrackMinimumDistance md(TwoTrackMinimumDistance::SlowMode);
     Track trkMuon(*iTrack);
     TransientTrack transTrkMuon = fTTB->build(trkMuon);
-	  
+
     for (size_t k = 0; k < fTracksHandle->size(); k++) {
       if (k == iTrack.index()) continue; // own track
-		  
+
       TrackBaseRef bRefTrk(fTracksHandle, k);
       Track trk(*bRefTrk);
       TransientTrack transTrk = fTTB->build(trk);
-		  
+
       md.calculate(transTrkMuon.initialFreeState(), transTrk.initialFreeState());
       if (md.distance() < fMaxTrackDistToStore) {
 	pM->fNstTracks.insert(std::make_pair(k,md.distance()));
@@ -305,20 +304,20 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
 
 
   if (isGlobalMuon && validM1) {
-    vector<xpTrack> xvec; 
+    vector<xpTrack> xvec;
     for (unsigned int i = 0; i < fXpTracks.size(); ++i) {
-      xpTrack x = fXpTracks[i]; 
+      xpTrack x = fXpTracks[i];
       if (x.idx == static_cast<int>(iTrack.index())) continue;
-      x.dist = (muPosM1 - x.r).Mag();  
-      xvec.push_back(x); 
+      x.dist = (muPosM1 - x.r).Mag();
+      xvec.push_back(x);
     }
-    
+
     // -- sort the vector & keep only the first TAnaMuon::NXPTRACKS
     sort(xvec.begin(), xvec.end(), dist_less);
     if (TAnaMuon::NXPTRACKS < xvec.size()) {
-      for (unsigned int ii = 0; ii < TAnaMuon::NXPTRACKS; ++ii) pM->fXpTracks[ii] = xvec[ii]; 
+      for (unsigned int ii = 0; ii < TAnaMuon::NXPTRACKS; ++ii) pM->fXpTracks[ii] = xvec[ii];
     } else {
-      for (unsigned int ii = 0; ii < xvec.size(); ++ii) pM->fXpTracks[ii] = xvec[ii]; 
+      for (unsigned int ii = 0; ii < xvec.size(); ++ii) pM->fXpTracks[ii] = xvec[ii];
     }
   }
 
@@ -336,7 +335,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
 // ----------------------------------------------------------------------
 void HFDumpMuons::fillCaloMuon(const reco::CaloMuon& rm, int im) {
 
-  TAnaMuon *pM = gHFEvent->addMuon();    
+  TAnaMuon *pM = gHFEvent->addMuon();
   pM->fMuID    = 0;  // this assumes that fillCaloMuon is independent from the main muons d.k.
 
   if (rm.innerTrack().isNonnull()) {
@@ -346,20 +345,20 @@ void HFDumpMuons::fillCaloMuon(const reco::CaloMuon& rm, int im) {
     pM->fIndex = -23;
     pM->fQ     = 0;
   }
-  pM->fMuIndex = im; 
+  pM->fMuIndex = im;
   pM->fMuID   |= 0x1<<15;
 
-  pM->fNhitsDT  = 0; 
-  pM->fNhitsCSC = 0; 
-  pM->fNhitsRPC = 0; 
-  
+  pM->fNhitsDT  = 0;
+  pM->fNhitsCSC = 0;
+  pM->fNhitsRPC = 0;
+
 
   TrackRef iTrack = rm.innerTrack();
 
   if (iTrack.isNonnull()) {
     Track trk(*iTrack);
     pM->fInnerPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
-  } 
+  }
 
 }
 
@@ -373,7 +372,7 @@ void HFDumpMuons::findVertex(TAnaMuon *anaMu, std::set<unsigned> *trkIcs, double
   KalmanVertexFitter kvf;
   double best;
   unsigned ix;
-	
+
   // build the transient tracks with 'trkIcs'
   for (it = trkIcs->begin(); it != trkIcs->end(); ++it) {
     TrackBaseRef baseRef(fTracksHandle, *it);
@@ -381,54 +380,54 @@ void HFDumpMuons::findVertex(TAnaMuon *anaMu, std::set<unsigned> *trkIcs, double
     TransientTrack ttrack = fTTB->build(trk);
     transTracks.push_back(ttrack);
   }
-	
+
   for (mapIt = anaMu->fNstTracks.begin(); mapIt != anaMu->fNstTracks.end(); ++mapIt) {
-		
+
     if (mapIt->second >= fDocaVertex)
       continue;
-		
+
     if (trkIcs->count(mapIt->first) > 0)
       continue; // already included
-		
+
     trkIcs->insert(mapIt->first);
-		
+
     TrackBaseRef baseRef(fTracksHandle, mapIt->first);
     Track trk(*baseRef);
     TransientTrack ttrack = fTTB->build(trk);
     transTracks.push_back(ttrack);
-		
+
     TransientVertex vtx = kvf.vertex(transTracks);
     ChiSquared chi(vtx.totalChiSquared(), vtx.degreesOfFreedom());
     best = chi.probability();
     if (!TMath::IsNaN(best))
       bestTracks.push_back(make_pair(chi.probability(),mapIt->first));
-		
+
     trkIcs->erase(mapIt->first);
     transTracks.pop_back();
   }
-	
+
   // only iterate the most promosing 'keep'
   std::sort(bestTracks.begin(),bestTracks.end());
   if (bestTracks.size() > fKeepBest) bestTracks.erase(bestTracks.begin(),bestTracks.end()-fKeepBest);
-	
+
   best = *prob;
   resultIcs = *trkIcs;
   for (ix = 0; ix < bestTracks.size(); ix++) {
-		
+
     std::set<unsigned> curTracks = *trkIcs;
     double result = bestTracks[ix].first;
-		
+
     curTracks.insert(bestTracks[ix].second);
-		
+
     if (curTracks.size() < fMaxCandTracks)
       findVertex(anaMu,&curTracks,&result);
-		
+
     if (best < result) {
       best = result;
       resultIcs = curTracks;
     }
   }
-	
+
   // save
   *prob = best;
   *trkIcs = resultIcs;
@@ -438,26 +437,26 @@ void HFDumpMuons::findVertex(TAnaMuon *anaMu, std::set<unsigned> *trkIcs, double
 // ----------------------------------------------------------------------
 void HFDumpMuons::extrapolateTracks() {
 
-  fXpTracks.clear(); 
+  fXpTracks.clear();
 
   for (unsigned int k = 0; k < fTracksHandle->size(); ++k) {
     TrackBaseRef bRefTrk(fTracksHandle, k);
     Track trk(*bRefTrk);
 
-    double eta = TMath::Abs(trk.eta()); 
+    double eta = TMath::Abs(trk.eta());
     double pt  = trk.pt();
-    
+
     // -- skip regions where extrapolation is futile
     if (!doExtrapolate(pt, eta)) continue;
 
     TrajectoryStateOnSurface tsos = fpropM1.extrapolate(trk);
     if (tsos.isValid()) {
-      xpTrack x; 
-      x.idx = k; 
-      x.r = TVector3(tsos.globalPosition().x(), tsos.globalPosition().y(), tsos.globalPosition().z()); 
+      xpTrack x;
+      x.idx = k;
+      x.r = TVector3(tsos.globalPosition().x(), tsos.globalPosition().y(), tsos.globalPosition().z());
       x.p = TVector3(tsos.globalMomentum().x(), tsos.globalMomentum().y(), tsos.globalMomentum().z());
       x.dist = 9999.;
-      fXpTracks.push_back(x); 
+      fXpTracks.push_back(x);
     }
   }
 
@@ -465,7 +464,7 @@ void HFDumpMuons::extrapolateTracks() {
 
 
 // ----------------------------------------------------------------------
-bool HFDumpMuons::doExtrapolate(double pt, double eta) { 
+bool HFDumpMuons::doExtrapolate(double pt, double eta) {
   if (pt < 0.8) return false;
   if (eta > 2.4) return false;
   if (eta < 0.8 && pt < 3.4) return false;
@@ -479,18 +478,18 @@ int HFDumpMuons::getTrackMultiplicity(const reco::Muon& Mu, bool MuType, bool ve
   //MuType=true -->STA
   //MuType=false -->TrackerMuons
   int TrkMult(0);
-	      
+
   bool muonFlag = muon::isGoodMuon(Mu, muon::AllGlobalMuons);
   bool HPflag = false;
   if (muonFlag)
     {HPflag = (Mu.innerTrack())->quality(Track::highPurity);}
   if (!muonFlag || !HPflag)
     {return -1;}
-  
-  if (verbose) 
+
+  if (verbose)
     {
-      cout << "HM: starting process looking for: " << MuType << " (" 
-	   << (fMuonCollection->end() - fMuonCollection->begin()) 
+      cout << "HM: starting process looking for: " << MuType << " ("
+	   << (fMuonCollection->end() - fMuonCollection->begin())
 	   << " candidates)" << endl;
     }
 
@@ -506,7 +505,7 @@ int HFDumpMuons::getTrackMultiplicity(const reco::Muon& Mu, bool MuType, bool ve
 	{continue;}
 
       if (verbose) {cout << "HM: Searching in cone for " << MuType << endl;}
-      
+
       if (MuType && (*MuIt).outerTrack().isNull())
 	{
 	  if (verbose) {cout << "HM: Invalid STA." << endl;}
@@ -539,11 +538,11 @@ double HFDumpMuons::getDistanceM1(const reco::Muon& muon, const reco::Muon& sec,
   if (verbose) {cout << "HM: Filling the HMhitInfo." << endl;}
   if (muon.innerTrack().isNull())
     {if (verbose) {cout << "HM: GM track is not valid." << endl;}return -1;}
-  
+
   TrackRef track;
   if (MuType) {track = sec.outerTrack();}
   else {track = sec.innerTrack();}
-  if (track.isNull()) 
+  if (track.isNull())
     {
       if (verbose) {cout << "HM: Invalid (secondary) track." << endl;}
       return -1;
@@ -579,7 +578,7 @@ double HFDumpMuons::getDistanceM1(const reco::Muon& muon, const reco::Muon& sec,
 
 bool HFDumpMuons::tracksAreEqual(const TrackRef& main,const TrackRef& STA) {
   double margin = 0.01;
-  
+
   if (main.isNull())
     {return false;}
   if (STA.isNull())
