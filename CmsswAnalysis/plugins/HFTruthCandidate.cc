@@ -658,7 +658,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       // -- special case for Bs -> J/psi Phi reconstructed as B+ -> J/psi K (create two candidates for the two kaons)
       if (12 == fType) {
 	int iMuon1(-1), iMuon2(-1), iKaon1(-1), iKaon2(-1);
-	double pTKaon(-1.);
 	HFDecayTree theTree5(3000000 + fType, true, MBPLUS, false, -1.0, true);
 	HFDecayTreeIterator iterator = theTree5.addDecayTree(300443, false, MJPSI, false);
 	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
