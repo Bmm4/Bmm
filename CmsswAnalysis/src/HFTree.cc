@@ -20,7 +20,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 
 // -- Yikes!
 TAna01Event  *gHFEvent;
@@ -30,10 +29,10 @@ using namespace::std;
 
 // ----------------------------------------------------------------------
 HFTree::HFTree(const edm::ParameterSet& iConfig) :
-  fRequireCand(iConfig.getUntrackedParameter<bool>("requireCand", true)), 
-  fFullGenBlock(iConfig.getUntrackedParameter<bool>("fullGenBlock", false)), 
-  fFileName(iConfig.getUntrackedParameter<string>("fileName", string("hfa.root"))), 
-  fTreeName(iConfig.getUntrackedParameter<string>("treeName", string("T1"))), 
+  fRequireCand(iConfig.getUntrackedParameter<bool>("requireCand", true)),
+  fFullGenBlock(iConfig.getUntrackedParameter<bool>("fullGenBlock", false)),
+  fFileName(iConfig.getUntrackedParameter<string>("fileName", string("hfa.root"))),
+  fTreeName(iConfig.getUntrackedParameter<string>("treeName", string("T1"))),
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 1)),
   fPrintFrequency(iConfig.getUntrackedParameter<int>("printFrequency", 1000)) {
   using namespace std;
@@ -41,10 +40,10 @@ HFTree::HFTree(const edm::ParameterSet& iConfig) :
   cout << "--- HFTree constructor" << endl;
   cout << "---  verbose:                         " << fVerbose << endl;
   cout << "---  printFrequency:                  " << fPrintFrequency << endl;
-  cout << "---  fileName:                        " << fFileName << endl; 
-  cout << "---  treeName:                        " << fTreeName << endl; 
-  cout << "---  requireCand:                     " << (fRequireCand?"true":"false") << endl; 
-  cout << "---  fullGenBlock:                    " << (fFullGenBlock?"true":"false") << endl; 
+  cout << "---  fileName:                        " << fFileName << endl;
+  cout << "---  treeName:                        " << fTreeName << endl;
+  cout << "---  requireCand:                     " << (fRequireCand?"true":"false") << endl;
+  cout << "---  fullGenBlock:                    " << (fFullGenBlock?"true":"false") << endl;
   cout << "----------------------------------------------------------------------" << endl;
   fFile = TFile::Open(fFileName.c_str(), "RECREATE");
   fTree = new TTree(fTreeName.c_str(), "CMSSW HF tree");
@@ -61,13 +60,13 @@ HFTree::HFTree(const edm::ParameterSet& iConfig) :
   gHFEvent = fEvent;
   gHFFile  = fFile;
 
-  fEventCounter = -1; 
+  fEventCounter = -1;
 }
 
 
 // ----------------------------------------------------------------------
 HFTree::~HFTree() {
-  
+
   // -- Save output
   fFile->cd();
   //  fTree->Write();
@@ -80,17 +79,17 @@ HFTree::~HFTree() {
 // ----------------------------------------------------------------------
 void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
-  ++fEventCounter; 
+  ++fEventCounter;
   if (fVerbose > 0) {
     if (fEventCounter%fPrintFrequency == 0) {
       pid_t pid = getpid();
-      char line[100]; 
-      sprintf(line, "ps -F %i", pid); 
-      cout << "==>HFTree: analyze() in event #" << fEventCounter 
-	   << "  run: " << gHFEvent->fRunNumber 
+      char line[100];
+      sprintf(line, "ps -F %i", pid);
+      cout << "==>HFTree: analyze() in event #" << fEventCounter
+	   << "  run: " << gHFEvent->fRunNumber
 	   << " event: "  << gHFEvent->fEventNumber
 	   << endl;
-      system(line); 
+      system(line);
     }
   }
 
@@ -98,7 +97,7 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     gHFEvent->clearGenBlock();
   }
 
- 
+
   if (fRequireCand){
     if (gHFEvent->nCands() > 0) {
       if (fVerbose > 1) {
@@ -107,7 +106,7 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
 	if (fVerbose > 2) {
 	  cout << " Cand: " << gHFEvent->nCands() << endl;
-	
+
 	  for (int i = 0; i < gHFEvent->nCands(); ++i) {
 	    cout << gHFEvent->getCand(i)->fType << " ";
 	  }
@@ -115,12 +114,12 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	cout << endl;
       }
       fTree->Fill();
-    } 
+    }
   } else {
     if (fVerbose > 1) {
       cout << "HFTree> filling tree for run: " << gHFEvent->fRunNumber
 	   << " event: "  << gHFEvent->fEventNumber ;
-      
+
       if (fVerbose > 2) {
 	cout << " GENT Cand: " << gHFEvent->nGenT() << endl;
 	for (int i = 0; i < gHFEvent->nGenT(); ++i) {
@@ -149,10 +148,10 @@ void  HFTree::beginJob() {
 void  HFTree::endJob() {
 
   pid_t pid = getpid();
-  char line[100]; 
-  sprintf(line, "ps -F %i", pid); 
+  char line[100];
+  sprintf(line, "ps -F %i", pid);
   cout << "==>HFTree: endJob():" << endl;
-  system(line); 
+  system(line);
 
 }
 
