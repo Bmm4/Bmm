@@ -44,7 +44,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 
 #include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
 
@@ -60,7 +59,7 @@ using namespace reco;
 
 
 // ----------------------------------------------------------------------
-HFDumpTracks::HFDumpTracks(const ParameterSet &iConfig) : 
+HFDumpTracks::HFDumpTracks(const ParameterSet &iConfig) :
   HFVirtualDecay(iConfig),
   fDoTruthMatching(iConfig.getUntrackedParameter<int>("doTruthMatching", 1)),
   fDumpSimpleTracks(iConfig.getUntrackedParameter<bool>("dumpSimpleTracks", true)),
@@ -84,7 +83,7 @@ void HFDumpTracks::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 HFDumpTracks::~HFDumpTracks() {
-  
+
 }
 
 
@@ -101,10 +100,10 @@ void HFDumpTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
   }
 
   fListBuilder->setMinPt(-1.);
-  
-  
-  int genIdx(-1); 
-  
+
+
+  int genIdx(-1);
+
   vector<int> muonList = fListBuilder->getMuonList();
   vector<int> trkList  = fListBuilder->getTrackList();
   for (unsigned int i = 0; i < fTracksHandle->size(); ++i) {
@@ -112,29 +111,29 @@ void HFDumpTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
     Track track(*rTrackView);
 
     // -- Muon?
-    int mid = 0; 
+    int mid = 0;
     for (unsigned int im = 0; im < muonList.size(); ++im) {
       if (i == static_cast<unsigned int>(muonList[im])) {
-	mid = 1; 
+	mid = 1;
 	break;
       }
     }
 
     // -- truth matching with TAna01Event::getGenIndexWithDeltaR(...)
-    genIdx = -1; 
-    if (3 == fDoTruthMatching) {    
-      genIdx  = gHFEvent->getGenIndexWithDeltaR(track.pt(), track.eta(), track.phi(), track.charge()); 
+    genIdx = -1;
+    if (3 == fDoTruthMatching) {
+      genIdx  = gHFEvent->getGenIndexWithDeltaR(track.pt(), track.eta(), track.phi(), track.charge());
     }
-    
+
     // -- fill the tracks
     if (fDumpSimpleTracks) {
       TSimpleTrack *st = gHFEvent->addSimpleTrack();
-      fillSimpleTrack(st, track, i, mid, genIdx, &fVertexCollection); 
-    } 
+      fillSimpleTrack(st, track, i, mid, genIdx, &fVertexCollection);
+    }
 
     if (fDumpRecTracks) {
       TAnaTrack *at = gHFEvent->addRecTrack();
-      fillAnaTrack(at, track, i, genIdx, &fVertexCollection, fMuonCollection, &fBeamSpot); 
+      fillAnaTrack(at, track, i, genIdx, &fVertexCollection, fMuonCollection, &fBeamSpot);
     }
   }
 

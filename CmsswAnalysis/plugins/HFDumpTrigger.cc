@@ -2,6 +2,7 @@
 //
 // HFDumpTrigger
 // ------------
+// 2016/09/28 Urs Langenegger      removed TTrgObj
 // 2016/07/07 Urs Langenegger      add L1 (both for stage-2 and stage-1)
 // 2016/03/22 Danek Kotlinski      modify TTrgObjv2 to include all modules in the path
 // 2016/01/22 Urs Langenegger      migrate to "consumes"
@@ -51,7 +52,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 #include "Bmm/RootAnalysis/rootio/TTrgObjv2.hh"
 
 
@@ -457,15 +457,14 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	       << " m = " << obj.mass() << " pT,eta,phi = " << obj.pt() << ","
 	       <<  obj.eta() << "," << obj.phi() << endl;
 
-	TTrgObj *pTO = gHFEvent->addTrgObj();
-	pTO->fP.SetPtEtaPhiE(obj.pt(),
-			     obj.eta(),
-			     obj.phi(),
-			     obj.energy()
-			     );
-	pTO->fID     = obj.id();
-	pTO->fLabel  = label;
-
+	TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
+	TLorentzVector v;
+	v.SetPtEtaPhiE(obj.pt(), obj.eta(), obj.phi(), obj.energy());
+	pTO->fP.push_back(v);
+	pTO->fID.push_back(obj.id());
+	pTO->fP.push_back(v);
+	pTO->fLabel = label;
+	pTO->fType = "l1muon";
       }
       if(fVerbose>9)
 	cout << "===> Found L1 trigger collection -> " << L1NameCollection << " " << (n1-n0)<<endl;
@@ -487,15 +486,13 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	       << obj.mass() << " pT,eta,phi = " << obj.pt() << ","
 	       <<  obj.eta() << "," << obj.phi() << endl;
 
-	TTrgObj *pTO = gHFEvent->addTrgObj();
-	pTO->fP.SetPtEtaPhiE(obj.pt(),
-			     obj.eta(),
-			     obj.phi(),
-			     obj.energy()
-			     );
-	pTO->fID     = obj.id();
+	TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
+	TLorentzVector v;
+	v.SetPtEtaPhiE(obj.pt(), obj.eta(), obj.phi(), obj.energy());
+	pTO->fP.push_back(v);
+	pTO->fID.push_back(obj.id());
 	pTO->fLabel  = label;
-
+	pTO->fType = "l2muon";
       }
       if(fVerbose>9) cout << "===> Found L2 trigger collection -> " << L2NameCollection << " "
 			  << (n1-n0)<< endl;
@@ -517,15 +514,13 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	       << obj.mass() << " pT,eta,phi = " << obj.pt() << ","
 	       <<  obj.eta() << "," << obj.phi() << endl;
 
-	TTrgObj *pTO = gHFEvent->addTrgObj();
-	pTO->fP.SetPtEtaPhiE(obj.pt(),
-			     obj.eta(),
-			     obj.phi(),
-			     obj.energy()
-			     );
-	pTO->fID     = obj.id();
+	TTrgObjv2 *pTO = gHFEvent->addTrgObjv2();
+	TLorentzVector v;
+	v.SetPtEtaPhiE(obj.pt(), obj.eta(), obj.phi(), obj.energy());
+	pTO->fP.push_back(v);
+	pTO->fID.push_back(obj.id());
 	pTO->fLabel  = label;
-
+	pTO->fType = "l3muon";
       }
       if(fVerbose>9) cout << "===> Found L3 trigger collection -> " << L3NameCollection << " "
 			  << (n1-n0)<< endl;
@@ -534,13 +529,14 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
 
   if (fVerbose > 0)  {
-    cout<<" for event "<< fNevt
-	<< " muon trigger "<<muonTrigger
-	<<" muon objects "<<muonObjects<<" labels"<<countLabels<<" selected "
-	<<countSelectedMuonObjects<<" l3muon "<<l3muon<<endl;
+    cout << "for event " << fNevt
+	 << " muon trigger " << muonTrigger
+	 << " muon objects " << muonObjects << " labels" << countLabels << " selected "
+	 << countSelectedMuonObjects << " l3muon " << l3muon
+	 << endl;
 
     if(fVerbose >1) {
-      cout<<" stored objects "<<gHFEvent->nTrgObjv2()<<" "<<gHFEvent->nTrgObj()<<endl;
+      cout << " stored objects " << gHFEvent->nTrgObjv2() << endl;
       for(int i=0; i<gHFEvent->nTrgObjv2();++i) {
 	TTrgObjv2 *pTO = gHFEvent->getTrgObjv2(i);
 	pTO->dump();

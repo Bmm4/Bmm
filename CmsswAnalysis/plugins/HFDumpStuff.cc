@@ -38,7 +38,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 
 #include <TVector3.h>
 
@@ -71,7 +70,7 @@ HFDumpStuff::HFDumpStuff(const edm::ParameterSet& iConfig):
   cout << "----------------------------------------------------------------------" << endl;
 
   fTokenLumiSummary = consumes<LumiSummary, edm::InLumi>(fLumiSummaryLabel);
-  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel); 
+  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel);
   fTokenTrack       = consumes<vector<Track> >(fPrimaryVertexTracksLabel) ;
   fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
 }
@@ -79,7 +78,7 @@ HFDumpStuff::HFDumpStuff(const edm::ParameterSet& iConfig):
 
 // ----------------------------------------------------------------------
 HFDumpStuff::~HFDumpStuff() {
-  
+
 }
 
 
@@ -94,17 +93,17 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
 
   const edm::Timestamp timeStamp = iEvent.time();
   unsigned int high = timeStamp.value() >> 32;       // seconds
-  unsigned int low = 0xffffffff & timeStamp.value(); // microseconds  
-  
+  unsigned int low = 0xffffffff & timeStamp.value(); // microseconds
+
   gHFEvent->fTimeLo      = low;
   gHFEvent->fTimeHi      = high;
 
-  // Get the luminosity information 
+  // Get the luminosity information
   // cf http://cmslxr.fnal.gov/source/HLTrigger/HLTanalyzers/src/EventHeader.cc?v=CMSSW_7_6_1
   float intlumi(0.), instlumi(0.);
   bool lumiException(false);
-  const LuminosityBlock &iLumi = iEvent.getLuminosityBlock(); 
-  Handle<LumiSummary> lumiSummary; 
+  const LuminosityBlock &iLumi = iEvent.getLuminosityBlock();
+  Handle<LumiSummary> lumiSummary;
   try {
     iLumi.getByToken(fTokenLumiSummary, lumiSummary);
     lumiSummary->isValid();
@@ -130,26 +129,26 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (beamSpotHandle.isValid())    {
     beamSpot = *beamSpotHandle;
   } else {
-    static int firstPrint(0); 
+    static int firstPrint(0);
     if (0 == firstPrint) {
       cout << "==>HFDumpStuff> No beam spot available from EventSetup" << endl;
       ++firstPrint;
-    } 
+    }
   }
-  
+
   double x0 = beamSpot.x0();
   double y0 = beamSpot.y0();
   double z0 = beamSpot.z0();
 
-  TAnaVertex bs; 
-  bs.fPoint.SetXYZ(x0, y0, z0); 
+  TAnaVertex bs;
+  bs.fPoint.SetXYZ(x0, y0, z0);
   gHFEvent->fBeamSpot = bs;
 
   // -- Primary vertex
-  int bestPV(-1), bestN(-1), cnt(0); 
+  int bestPV(-1), bestN(-1), cnt(0);
   Handle<vector<Track> > hTrackCollection;
   try {
-    // -- get the collection of RecoTracks 
+    // -- get the collection of RecoTracks
     iEvent.getByToken(fTokenTrack, hTrackCollection);
   } catch (cms::Exception &ex) {
     if (fVerbose > 1) cout << "No Track collection with label " << fPrimaryVertexTracksLabel << endl;
@@ -160,21 +159,21 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
     iEvent.getByLabel(fPrimaryVertexLabel, recoPrimaryVertexCollection);
     //    const VertexCollection vertices = *(recoPrimaryVertexCollection.product());
 
-    int isFake(-1); 
-    double cov[9]; 
+    int isFake(-1);
+    double cov[9];
     for (VertexCollection::const_iterator iv = recoPrimaryVertexCollection->begin(); iv != recoPrimaryVertexCollection->end(); ++iv) {
       TAnaVertex *pVtx = gHFEvent->addPV();
       ChiSquared chi2(iv->chi2(), iv->ndof());
       if (iv->isFake()) {
-	isFake = 1; 
+	isFake = 1;
       } else {
-	isFake = 0; 
+	isFake = 0;
       }
-      
-      int ntracks = iv->tracksSize(); 
+
+      int ntracks = iv->tracksSize();
       if (0 == isFake) {
 	if (ntracks > bestN) {
-	  bestN  = ntracks; 
+	  bestN  = ntracks;
 	  bestPV = cnt;
 	}
       }
@@ -194,16 +193,16 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       }
       pVtx->setCovXX(cov);
 
-     
+
       //       Vertex::trackRef_iterator v1TrackIter;
       //       Vertex::trackRef_iterator v1TrackBegin = iv->tracks_begin();
       //       Vertex::trackRef_iterator v1TrackEnd   = iv->tracks_end();
-      //       int tcnt(0); 
+      //       int tcnt(0);
       //       for (v1TrackIter = v1TrackBegin; v1TrackIter != v1TrackEnd; v1TrackIter++) {
       // 	if (fVerbose > 10) {
       // 	  cout << "vtx trk: " << " " << v1TrackIter->key()
-      // 	       << "  " << (**v1TrackIter).pt() 
-      // 	       << "  " << (**v1TrackIter).phi() 
+      // 	       << "  " << (**v1TrackIter).pt()
+      // 	       << "  " << (**v1TrackIter).phi()
       // 	       << endl;
       // 	}
       // 	TrackBaseRef rTrackView(tracksView, v1TrackIter->key());
@@ -215,30 +214,30 @@ void HFDumpStuff::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       // 	  if (fVerbose > 10) {cout << " -> track not part of reduced track list " << endl;}
       // 	}
       //      }
-      ++cnt; 
+      ++cnt;
     }
   } catch (cms::Exception &ex) {
     //    cout << ex.explainSelf() << endl;
     if (fVerbose > 0) cout << "==>HFDumpStuff> primaryVertex " << fPrimaryVertexLabel << " not found " << endl;
-  } 
+  }
 
   if (bestPV > -1) {
     gHFEvent->fBestPV = bestPV;
   } else {
     gHFEvent->fBestPV = 0;
-  }    
+  }
   if (fVerbose > 0) cout << "The best pV is at position: " << bestPV  << " and has " << bestN << " tracks" << endl;
 
 
-//   // -- pthat 
-//   gHFEvent->fPtHat = -1.; 
-//   try { 
-//     edm::Handle<GenEventInfoProduct> evt_info; 
-//     iEvent.getByType(evt_info); 
-//     gHFEvent->fPtHat     = evt_info->qScale(); 
-//   } catch (cms::Exception &ex) { 
-//     if (fVerbose > 0) cout << "GenEventInfoProduct not found." << endl; 
-//   } 
+//   // -- pthat
+//   gHFEvent->fPtHat = -1.;
+//   try {
+//     edm::Handle<GenEventInfoProduct> evt_info;
+//     iEvent.getByType(evt_info);
+//     gHFEvent->fPtHat     = evt_info->qScale();
+//   } catch (cms::Exception &ex) {
+//     if (fVerbose > 0) cout << "GenEventInfoProduct not found." << endl;
+//   }
 
 
 }

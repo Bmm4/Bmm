@@ -43,7 +43,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 
 #include <TFile.h>
 #include <TH1.h>
@@ -60,7 +59,7 @@ using namespace reco;
 // ----------------------------------------------------------------------
 HFDumpPhotons::HFDumpPhotons(const edm::ParameterSet& iConfig):
   fPFLabel(iConfig.getUntrackedParameter<InputTag>("pfLabel")),
-  fPhotonsLabel(iConfig.getUntrackedParameter<InputTag>("photonsLabel")),  
+  fPhotonsLabel(iConfig.getUntrackedParameter<InputTag>("photonsLabel")),
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
   fDoTruthMatching(iConfig.getUntrackedParameter<int>("doTruthMatching", 1)),
   fRunOnAOD(iConfig.getUntrackedParameter<bool>("runOnAOD",false))
@@ -84,18 +83,18 @@ HFDumpPhotons::~HFDumpPhotons() {
 
 // ----------------------------------------------------------------------
 void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
-  
+
   Handle<PFCandidateCollection>  pfCandidates;
   iEvent.getByLabel(fPFLabel, pfCandidates);
   if(!pfCandidates.isValid()) {
     cout << "==>HFDumpPhotons> No PF collection found, skipping" << endl;
     return;
   }
-  
+
   if ( fVerbose > 0 ){
     if ( pfCandidates->size() > 0  ) cout << "PF Collection Size " << pfCandidates->size() << endl;
   }
-  
+
   int i(-1);
   TAnaTrack *pTrack;
   TLorentzVector PFGamma;
@@ -109,7 +108,7 @@ void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     if ( iPF->particleId() == 4 ) {
     //if ( iPF->pdgId() == 22 ) {
       if ( fVerbose > 0 ) cout << " PF Photon Energy  " << iPF->energy() << endl;
-    
+
       pTrack = gHFEvent->addRecTrack();
       pTrack->fIndex  = i;
       pTrack->fQ      = iPF->charge();
@@ -117,7 +116,7 @@ void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 				iPF->eta(),
 				iPF->phi()
 				);
-      
+
       PFGamma.SetPtEtaPhiM(pTrack->fPlab.Pt(), pTrack->fPlab.Eta(), pTrack->fPlab.Phi(), 0.);
       for (int s = 0; s < gHFEvent->nGenCands() ; ++s) {
 	if (gHFEvent->getGenCand(s)->fID == 22 ){
@@ -133,7 +132,7 @@ void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 	  }
 	}
       }
-      
+
       if ( match  ){
 	pTrack->fGenIndex = genIndex;
 	pTrack->fMCID = mcid;
@@ -143,7 +142,7 @@ void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
       dR=999; dR_min=999; genIndex=-1; mcid=-1;
     }
   }
-  
+
   /*
   Handle<PhotonCollection>  photonCandidates;
   iEvent.getByLabel(fPhotonsLabel, photonCandidates);
@@ -151,19 +150,19 @@ void HFDumpPhotons::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     cout << "==>HFDumpPhotons> No PhotonCollection found, skipping" << endl;
     return;
   }
-  
+
   if ( photonCandidates->size() > 0  ) cout << "Photon Collection Size " << photonCandidates->size() << endl;
-  
+
   vector<reco::Photon> localPhotons;
-  
+
   for( reco::PhotonCollection::const_iterator  iPho = photonCandidates->begin(); iPho != photonCandidates->end(); iPho++) {
-    
+
     if ( iPho->energy() < 5. ) cout << " Photon Energy  " << iPho->energy() << endl;
-    
+
   }
   */
-  
-  
+
+
 }
 
 

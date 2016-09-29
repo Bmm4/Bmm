@@ -72,7 +72,6 @@
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaVertex.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/RootAnalysis/rootio/TTrgObj.hh"
 #include "Bmm/RootAnalysis/rootio/TTrgObjv2.hh"
 
 
@@ -91,14 +90,14 @@ using namespace trigger;
 HFDebug::HFDebug(const edm::ParameterSet& iConfig):
   HFVirtualDecay(iConfig),
   fTriggerEventLabel(iConfig.getUntrackedParameter<InputTag>("TriggerEventLabel")),
-  fTokenTriggerEvent(consumes<TriggerEvent>(fTriggerEventLabel)), 
-  
+  fTokenTriggerEvent(consumes<TriggerEvent>(fTriggerEventLabel)),
+
   fHLTResultsLabel(iConfig.getUntrackedParameter<InputTag>("HLTResultsLabel")),
-  fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)), 
+  fTokenTriggerResults(consumes<TriggerResults>(fHLTResultsLabel)),
   fHLTProcessName(iConfig.getUntrackedParameter<string>("HLTProcessName")),
   fTriggerNames(iConfig.getParameter<std::vector<std::string> > ("triggerNames"))
 {
-  dumpConfiguration(); 
+  dumpConfiguration();
 }
 
 
@@ -122,14 +121,14 @@ void HFDebug::dumpConfiguration() {
 // ----------------------------------------------------------------------
 void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   if (1) cout << "--- HFDebug -------------------------------------------------------------------" << endl;
-  float pig = TMath::Pi(); 
+  float pig = TMath::Pi();
   try {
     HFVirtualDecay::analyze(iEvent,iSetup);
   } catch(HFSetupException e) {
     cout << "==>HFDebug> " << e.fMsg << endl;
     return;
   }
-  
+
   // -- get trigger information
   Handle<TriggerResults> triggerResults;
   try {
@@ -139,7 +138,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if (fVerbose > 0) cout << "==>HFDumpTrigger> Triggerresults  " << fHLTResultsLabel.encode() << " not found " << endl;
     return;
   }
-  
+
   Handle<trigger::TriggerEvent> triggerEvent;
   try {
     iEvent.getByToken(fTokenTriggerEvent, triggerEvent);
@@ -149,18 +148,18 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     return;
   }
   const trigger::TriggerObjectCollection triggerObjects = triggerEvent->getObjects();
-  
-  
+
+
   iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAny", fPropagatorAlong);
   iSetup.get<TrackingComponentsRecord>().get("SmartPropagatorAnyOpposite", fPropagatorOpposite);
-  
-  
+
+
   // -- HLT L1 muon candidates
   string L1NameCollection("hltL1extraParticles");
   trigger::size_type Index(0);
   Index = triggerEvent->collectionIndex(edm::InputTag(L1NameCollection, "", fTriggerEventLabel.process()));
-  vector<TVector3> l1p3; 
-  TVector3 x; 
+  vector<TVector3> l1p3;
+  TVector3 x;
   if (Index < triggerEvent->sizeCollections()) {
     TString label = TString(L1NameCollection.c_str());
     const trigger::Keys& Keys(triggerEvent->collectionKeys());
@@ -177,10 +176,10 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       l1p3.push_back(x);
     }
   }
-  // -- HLT L2 muon candidates 
+  // -- HLT L2 muon candidates
   string L2NameCollection("hltL2MuonCandidates");
   Index = triggerEvent->collectionIndex(edm::InputTag(L2NameCollection, "", fTriggerEventLabel.process()));
-  
+
   if (Index < triggerEvent->sizeCollections()) {
     TString label = TString(L2NameCollection.c_str());
     const trigger::Keys& Keys(triggerEvent->collectionKeys());
@@ -203,7 +202,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
     }
   }
-  
+
   // -- HLT L3 muon candidates
   string L3NameCollection("hltL3MuonCandidates");
   Index = triggerEvent->collectionIndex(edm::InputTag(L3NameCollection, "", fTriggerEventLabel.process()));
@@ -221,7 +220,7 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	   << endl;
     }
   }
-  
+
   // -- Extrapolation
   double triggerMaxDeltaR(0.1);
   for (MuonCollection::const_iterator imu = fMuonCollection->begin(); imu != fMuonCollection->end(); ++imu) {
@@ -230,10 +229,10 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     bool isTR = (!imu->isGlobalMuon() && imu->isTrackerMuon() && !imu->isStandAloneMuon());
     bool isGL = (imu->isGlobalMuon());//&&!(imu->isStandAloneMuon())&&!(imu->isTrackerMuon()));
     bool isTRSA  = (!imu->isGlobalMuon() && imu->isStandAloneMuon()&&imu->isTrackerMuon());
-    
+
     double matchDeltaR = 9999.;
     int hasTriggered = 0;
-    
+
     matchDeltaR = matchTrigger(fTriggerIndices, triggerObjects, triggerEvent, (*imu));
     if (matchDeltaR < triggerMaxDeltaR) hasTriggered = 1;
     if (hasTriggered) {
@@ -246,18 +245,18 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     } else {
       cout << " NOT trigger matched"  << endl;
     }
-    
+
     if (isSA || isGL){
     } else {
       cout << " skipping muon with pt/eta/phi = " << imu->pt() << "/" << imu->eta() << "/" << imu->phi() << endl;
       continue;
     }
-    TrackRef tr_mu  = imu->outerTrack();  
+    TrackRef tr_mu  = imu->outerTrack();
     if (isSA)   cout << " STA muon ";
     if (isGL)   cout << " GLB muon ";
     cout << " muon pt = " << imu->pt() << endl;
 
-    double ptX(0.), etaX(0.), phiX(0.); 
+    double ptX(0.), etaX(0.), phiX(0.);
     TrajectoryStateOnSurface tsos = cylExtrapTrkSam(tr_mu, 500);  // track at MB2 radius - extrapolation
     if (tsos.isValid()) {
       double xx = tsos.globalPosition().x();
@@ -267,28 +266,28 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double cosphi = xx/rr;
       double eta0   = tsos.globalPosition().eta();
       double phi0   = tsos.globalPosition().phi();
-      double phi(0.); 
-      if (yy>=0) 
+      double phi(0.);
+      if (yy>=0)
 	phi = acos(cosphi);
       else
 	phi = 2*pig-acos(cosphi);
-      // cout << " at MB2: pt = " << imu->pt() << " eta0 = " << eta0 << "phi =  " << phi << " phi0 = " << phi0 
+      // cout << " at MB2: pt = " << imu->pt() << " eta0 = " << eta0 << "phi =  " << phi << " phi0 = " << phi0
       // 	   << " x/y/r = " << xx << " " << yy << " " << rr << " cosphi = " << cosphi
       // 	   << endl;
       if (TMath::Abs(zz) < 790) {
 	cout << "===> MB2:  "
 	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
 		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
-	     << " phi = " << phi 
+	     << " phi = " << phi
 	     << " z = " << tsos.globalPosition().z()
 	     << " r = " << rr
 	     << endl;
-	etaX = eta0; 
-	phiX = phi0; 
+	etaX = eta0;
+	phiX = phi0;
 	ptX  = tr_mu->pt();
       }
     }
-    
+
     tsos = surfExtrapTrkSam(tr_mu, 790);   // track at ME2+ plane - extrapolation
     if (tsos.isValid()) {
       double xx = tsos.globalPosition().x();
@@ -297,22 +296,22 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double cosphi = xx/rr;
       double eta0   = tsos.globalPosition().eta();
       double phi0   = tsos.globalPosition().phi();
-      double phi(0.); 
-      if (yy >= 0) 
+      double phi(0.);
+      if (yy >= 0)
 	phi = acos(cosphi);
       else
-	phi = 2*pig-acos(cosphi);	
-      
+	phi = 2*pig-acos(cosphi);
+
       if ((tr_mu->eta() > 0) && (rr < 500)) {
 	cout << "===> ME2+: "
 	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
 		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
-	     << " phi = " << phi 
+	     << " phi = " << phi
 	     << " z = " << tsos.globalPosition().z()
 	     << " r = " << rr
 	     << endl;
-	etaX = eta0; 
-	phiX = phi0; 
+	etaX = eta0;
+	phiX = phi0;
 	ptX  = tr_mu->pt();
       }
     }
@@ -325,8 +324,8 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       double cosphi = xx/rr;
       double eta0   = tsos.globalPosition().eta();
       double phi0   = tsos.globalPosition().phi();
-      double phi(0.); 
-      if (yy>=0) 
+      double phi(0.);
+      if (yy>=0)
 	phi = acos(cosphi);
       else
 	phi = 2*pig-acos(cosphi);
@@ -334,54 +333,54 @@ void HFDebug::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	cout << "===> ME2-: "
 	     << Form(" %2d id: %+2d m = %4.1f pT/eta/phi = %6.3f/%+5.4f/%+5.4f, expol: %6.3f/%+5.4f/%+5.4f",
 		     1, (isSA?2:1), 0.105, tr_mu->pt(), tr_mu->eta(), tr_mu->phi(), tr_mu->pt(), eta0, phi0)
-	     << " phi = " << phi 
+	     << " phi = " << phi
 	     << " z = " << tsos.globalPosition().z()
 	     << " r = " << rr
 	     << endl;
-	etaX = eta0; 
-	phiX = phi0; 
+	etaX = eta0;
+	phiX = phi0;
 	ptX  = tr_mu->pt();
       }
     }
 
     TVector3 xpp3;
-    xpp3.SetPtEtaPhi(ptX, etaX, phiX); 
-    int idx = imu->innerTrack().index(); 
+    xpp3.SetPtEtaPhi(ptX, etaX, phiX);
+    int idx = imu->innerTrack().index();
     for (int im = 0; im < gHFEvent->nMuons(); ++im) {
       TAnaMuon *pm = gHFEvent->getMuon(im);
       TVector3 hfdm;
       if (pm->fIndex == idx) {
 	hfdm.SetPtEtaPhi(pm->fOuterPlab.Perp(), pm->fPositionAtM2.Eta(), pm->fPositionAtM2.Phi());
-	cout << "     HFDM:                         " 
+	cout << "     HFDM:                         "
 	     << Form(" outer:  %6.3f/%+5.4f/%+5.4f", pm->fOuterPlab.Perp(), pm->fOuterPlab.Eta(), pm->fOuterPlab.Phi())
 	     << Form("  expol: %6.3f/%+5.4f/%+5.4f", pm->fOuterPlab.Perp(), pm->fPositionAtM2.Eta(), pm->fPositionAtM2.Phi())
 	     << endl;
 
 	for (unsigned int i = 0; i < l1p3.size(); ++i) {
 	  ((TH1D*)gHFFile->Get("df0"))->Fill(l1p3[i].DeltaPhi(xpp3));
-	  ((TH1D*)gHFFile->Get("df1"))->Fill(l1p3[i].DeltaPhi(hfdm)); 
+	  ((TH1D*)gHFFile->Get("df1"))->Fill(l1p3[i].DeltaPhi(hfdm));
 
 	  ((TH1D*)gHFFile->Get("de0"))->Fill(l1p3[i].Eta() - etaX);
-	  ((TH1D*)gHFFile->Get("de1"))->Fill(l1p3[i].Eta() - pm->fPositionAtM2.Eta()); 
-	  
+	  ((TH1D*)gHFFile->Get("de1"))->Fill(l1p3[i].Eta() - pm->fPositionAtM2.Eta());
+
 	  ((TH1D*)gHFFile->Get("dr0"))->Fill(l1p3[i].DeltaR(xpp3));
-	  ((TH1D*)gHFFile->Get("dr1"))->Fill(l1p3[i].DeltaR(hfdm)); 
-	  
+	  ((TH1D*)gHFFile->Get("dr1"))->Fill(l1p3[i].DeltaR(hfdm));
+
 	}
-	
+
       }
     }
-    
+
   }
-  
-  
-  
-} 
+
+
+
+}
 
 
 // ----------------------------------------------------------------------
 void  HFDebug::beginRun(const Run &run, const EventSetup &iSetup) {
-  
+
   bool changed = true;
   if (!fHltConfig.init(run, iSetup, fHLTProcessName, changed)) {
     // if you can't initialize hlt configuration, crash!
@@ -390,7 +389,7 @@ void  HFDebug::beginRun(const Run &run, const EventSetup &iSetup) {
   }
 
   bool enableWildcard = true;
-  for (size_t iTrig = 0; iTrig < fTriggerNames.size(); ++iTrig) { 
+  for (size_t iTrig = 0; iTrig < fTriggerNames.size(); ++iTrig) {
     // prepare for regular expression (with wildcards) functionality:
     TString tNameTmp = TString(fTriggerNames[iTrig]);
     TRegexp tNamePattern = TRegexp(tNameTmp, enableWildcard);
@@ -410,26 +409,26 @@ void  HFDebug::beginRun(const Run &run, const EventSetup &iSetup) {
     }
   } // end for triggerNames
 
-  TDirectory *pDir = gDirectory; 
+  TDirectory *pDir = gDirectory;
   gHFFile->cd();
-  TH1D *h1 = new TH1D("dr0", "dr0", 100, 0.0, 0.5); 
+  TH1D *h1 = new TH1D("dr0", "dr0", 100, 0.0, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("dr1", "dr1", 100,  0.0, 0.5); 
+  h1 = new TH1D("dr1", "dr1", 100,  0.0, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("dr2", "dr2", 100,  0.0, 1.5); 
+  h1 = new TH1D("dr2", "dr2", 100,  0.0, 1.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("de0", "de0", 100, -0.5, 0.5); 
+  h1 = new TH1D("de0", "de0", 100, -0.5, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("de1", "de1", 100, -0.5, 0.5); 
+  h1 = new TH1D("de1", "de1", 100, -0.5, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("de2", "de2", 100, -0.5, 0.5); 
+  h1 = new TH1D("de2", "de2", 100, -0.5, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("df0", "df0", 100, -0.5, 0.5); 
+  h1 = new TH1D("df0", "df0", 100, -0.5, 0.5);
   h1->SetDirectory(gHFFile);
-  h1 = new TH1D("df1", "df1", 100, -0.5, 0.5); 
-  h1->SetDirectory(gHFFile); 
-  h1 = new TH1D("df2", "df2", 100, -1.0, 1.0); 
-  h1->SetDirectory(gHFFile); 
+  h1 = new TH1D("df1", "df1", 100, -0.5, 0.5);
+  h1->SetDirectory(gHFFile);
+  h1 = new TH1D("df2", "df2", 100, -1.0, 1.0);
+  h1->SetDirectory(gHFFile);
   pDir->cd();
 
 }
@@ -437,7 +436,7 @@ void  HFDebug::beginRun(const Run &run, const EventSetup &iSetup) {
 
 // ----------------------------------------------------------------------
 void HFDebug::endRun(Run const&, EventSetup const&) {
-} 
+}
 
 
 // ----------------------------------------------------------------------
@@ -451,11 +450,11 @@ void  HFDebug::endJob() {
 
 
 // ----------------------------------------------------------------------
-double HFDebug::matchTrigger(vector<int> &trigIndices, const TriggerObjectCollection &trigObjs, 
+double HFDebug::matchTrigger(vector<int> &trigIndices, const TriggerObjectCollection &trigObjs,
 			      Handle<TriggerEvent>  &triggerEvent, const Muon &mu) {
   double matchDeltaR = 9999;
 
-  int iIdx(-1), iObj(-1); 
+  int iIdx(-1), iObj(-1);
   for(size_t iTrigIndex = 0; iTrigIndex < trigIndices.size(); ++iTrigIndex) {
     int triggerIndex = trigIndices[iTrigIndex];
     const std::vector<std::string> moduleLabels(fHltConfig.moduleLabels(triggerIndex));
@@ -463,7 +462,7 @@ double HFDebug::matchTrigger(vector<int> &trigIndices, const TriggerObjectCollec
     const unsigned moduleIndex = fHltConfig.size(triggerIndex)-2;
     // find index of HLT trigger name:
     const unsigned hltFilterIndex = triggerEvent->filterIndex(edm::InputTag(moduleLabels[moduleIndex], "", fHLTProcessName));
-    
+
     if (hltFilterIndex < triggerEvent->sizeFilters()) {
       const trigger::Keys triggerKeys(triggerEvent->filterKeys(hltFilterIndex));
       const trigger::Vids triggerVids(triggerEvent->filterIds(hltFilterIndex));
@@ -472,12 +471,12 @@ double HFDebug::matchTrigger(vector<int> &trigIndices, const TriggerObjectCollec
       for (size_t iTrig = 0; iTrig < nTriggers; ++iTrig) {
         // loop over all trigger objects:
         const trigger::TriggerObject trigObject = trigObjs[triggerKeys[iTrig]];
-	
+
         double dRtmp = deltaR( mu, trigObject );
 
         if (dRtmp < matchDeltaR) {
           matchDeltaR = dRtmp;
-	  iIdx = iTrigIndex; 
+	  iIdx = iTrigIndex;
 	  iObj = iTrig;
         }
 
@@ -526,7 +525,7 @@ TrajectoryStateOnSurface HFDebug::surfExtrapTrkSam(reco::TrackRef track, double 
 // ----------------------------------------------------------------------
 FreeTrajectoryState HFDebug::freeTrajStateMuon(reco::TrackRef track) {
   GlobalPoint  innerPoint(track->innerPosition().x(), track->innerPosition().y(),  track->innerPosition().z());
-  GlobalVector innerVec  (track->innerMomentum().x(),  track->innerMomentum().y(),  track->innerMomentum().z());  
+  GlobalVector innerVec  (track->innerMomentum().x(),  track->innerMomentum().y(),  track->innerMomentum().z());
   FreeTrajectoryState recoStart(innerPoint, innerVec, track->charge(), fMagneticField);
   return recoStart;
 }
