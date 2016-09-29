@@ -142,7 +142,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   TAnaCand *pCand(0);
   if (fVerbose == -66) {
     cout << "----------------------------------------------------------------------" << endl;
-    cout << " event: " << fEvt << " run: " << fRun << endl;
+    cout << " event: " << fEvt << " run: " << fRun << " nSimpleTracks(): " << fpEvt->nSimpleTracks() << endl;
   }
   bool fillNoCand(true);
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
