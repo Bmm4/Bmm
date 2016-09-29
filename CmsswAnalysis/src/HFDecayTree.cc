@@ -386,7 +386,8 @@ void HFDecayTree::dump(unsigned indent) {
 
   for (unsigned int i = 0; i < fNodeCuts.size(); ++i) {
     dumpTabs(indent+1);
-    cout << "node cut " << i << ": " << (void*)(fNodeCuts[i]) << "  ";
+    //    cout << "node cut " << i << ": " << (void*)(fNodeCuts[i]) << "  ";
+    cout << "node cut " << i << ": " << fNodeCuts[i] << "  ";
     if (fNodeCutNames[i] == "mass") {
       cout << "passMass: " << fTV.massLo << " < " << fTV.mass << " < " << fTV.massHi << endl;
     } else if (fNodeCutNames[i] == "pt") {
