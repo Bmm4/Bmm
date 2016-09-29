@@ -3,7 +3,7 @@
 #include <stdexcept>
 
 ClassImp(TAna01Event)
- 
+
 using namespace std;
 
 #define NGEN 1000
@@ -24,7 +24,7 @@ using namespace std;
 TAna01Event::TAna01Event(Int_t Option) {
   fGenCands        = new TClonesArray("TGenCand", NGENCAND);
   fnGenCands       = 0;
- 
+
   fGenT            = new TClonesArray("TGenCand", NGEN);
   fnGenT           = 0;
 
@@ -36,9 +36,6 @@ TAna01Event::TAna01Event(Int_t Option) {
 
   fMuons           = new TClonesArray("TAnaMuon", NMUON);
   fnMuons          = 0;
-
-  fTrgObj          = new TClonesArray("TTrgObj", NTRGOBJ);
-  fnTrgObj         = 0;
 
   fTrgObjv2        = new TClonesArray("TTrgObjv2", NTRGOBJ);
   fnTrgObjv2       = 0;
@@ -71,17 +68,17 @@ TAna01Event::TAna01Event(Int_t Option) {
 // ----------------------------------------------------------------------
 void TAna01Event::Clear(Option_t *option) {
 
-  fLumi = fLumiInt = fLumiSection = fBx = fOrbit = -9999; 
-  fTimeLo = fTimeHi = 0; 
+  fLumi = fLumiInt = fLumiSection = fBx = fOrbit = -9999;
+  fTimeLo = fTimeHi = 0;
 
   for (int i = 0; i < NL1T; ++i) {
     fL1TPrescale[i] = 0;
-    fL1TResult[i] = fL1TMask[i] = fL1TError[i] = false; 
+    fL1TResult[i] = fL1TMask[i] = fL1TError[i] = false;
   }
 
   for (int i = 0; i < NHLT; ++i) {
-    fHLTPrescale[i] = 0; 
-    fHLTResult[i] = fHLTWasRun[i] = fHLTError[i] = false; 
+    fHLTPrescale[i] = 0;
+    fHLTResult[i] = fHLTWasRun[i] = fHLTError[i] = false;
   }
 
 
@@ -111,14 +108,6 @@ void TAna01Event::Clear(Option_t *option) {
   fMuons->Clear(option);
   fnMuons = 0;
 
-  TTrgObj *pTrgObj;
-  for (int i = 0; i < fnTrgObj; i++) {
-    pTrgObj = getTrgObj(i);
-    pTrgObj->clear();
-  }
-  fTrgObj->Clear(option);
-  fnTrgObj = 0;
-
   TTrgObjv2 *pTrgObjv2;
   for (int i = 0; i < fnTrgObjv2; i++) {
     pTrgObjv2 = getTrgObjv2(i);
@@ -128,18 +117,18 @@ void TAna01Event::Clear(Option_t *option) {
   fnTrgObjv2 = 0;
 
   for (int i = 0; i < NL1T; ++i) {
-    fL1TPrescale[i] = 0; 
-    fL1TResult[i] = fL1TMask[i] = fL1TError[i] = false; 
+    fL1TPrescale[i] = 0;
+    fL1TResult[i] = fL1TMask[i] = fL1TError[i] = false;
   }
 
   for (int i = 0; i < NLTT; ++i) {
-    fLTTPrescale[i] = 0; 
-    fLTTResult[i] = fLTTMask[i] = fLTTError[i] = false; 
+    fLTTPrescale[i] = 0;
+    fLTTResult[i] = fLTTMask[i] = fLTTError[i] = false;
   }
 
   for (int i = 0; i < NHLT; ++i) {
-    fHLTPrescale[i] = 0; 
-    fHLTResult[i] = fHLTWasRun[i] = fHLTError[i] = false; 
+    fHLTPrescale[i] = 0;
+    fHLTResult[i] = fHLTWasRun[i] = fHLTError[i] = false;
   }
 
 
@@ -226,13 +215,13 @@ void TAna01Event::clearGenBlock() {
 
 
 // ----------------------------------------------------------------------
-TGenCand* TAna01Event::getGenCand(Int_t n) { 
-  return (TGenCand*)fGenCands->UncheckedAt(n); 
+TGenCand* TAna01Event::getGenCand(Int_t n) {
+  return (TGenCand*)fGenCands->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TGenCand* TAna01Event::addGenCand() {
-  TClonesArray& d = *fGenCands; 
+  TClonesArray& d = *fGenCands;
   new(d[d.GetLast()+1]) TGenCand();
   ++fnGenCands;
   return (TGenCand*)d[d.GetLast()];
@@ -240,23 +229,23 @@ TGenCand* TAna01Event::addGenCand() {
 
 
 // ----------------------------------------------------------------------
-TGenCand* TAna01Event::getGenT(Int_t n) { 
-  return (TGenCand*)fGenT->UncheckedAt(n); 
+TGenCand* TAna01Event::getGenT(Int_t n) {
+  return (TGenCand*)fGenT->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TGenCand *TAna01Event::getGenTWithIndex(Int_t n) {
-  TGenCand *pG; 
+  TGenCand *pG;
   for (int i = 0; i < fnGenT; ++i) {
-    pG = (TGenCand*)fGenT->UncheckedAt(i); 
-    if (n == pG->fNumber) return pG; 
+    pG = (TGenCand*)fGenT->UncheckedAt(i);
+    if (n == pG->fNumber) return pG;
   }
-  return 0; 
+  return 0;
 }
 
 // ----------------------------------------------------------------------
 TGenCand* TAna01Event::addGenT() {
-  TClonesArray& d = *fGenT; 
+  TClonesArray& d = *fGenT;
   new(d[d.GetLast()+1]) TGenCand();
   ++fnGenT;
   return (TGenCand*)d[d.GetLast()];
@@ -265,13 +254,13 @@ TGenCand* TAna01Event::addGenT() {
 
 // ----------------------------------------------------------------------
 void TAna01Event::fillGenT(int theParticleIdx) {
-  
+
   const int verbose(0);
-  
+
   set<int> daughters, mothers;
-  TGenCand *pDau, *pTmp; 
-  int iMom; 
-  
+  TGenCand *pDau, *pTmp;
+  int iMom;
+
   // -- daughters of theParticleIdx
   for (int id = theParticleIdx+1; id < nGenCands(); ++id) {
     pDau = getGenCand(id);
@@ -281,16 +270,16 @@ void TAna01Event::fillGenT(int theParticleIdx) {
       iMom = pTmp->fMom1;
     }
     if (iMom == theParticleIdx) {
-      daughters.insert(id); 
+      daughters.insert(id);
     }
   }
-  
-  mothers.insert(theParticleIdx); 
-  int cnt(0); 
+
+  mothers.insert(theParticleIdx);
+  int cnt(0);
   while (1) {
     ++cnt;
     for (set<int>::iterator i = mothers.begin(); i != mothers.end(); ++i) {
-      pTmp = getGenCand(*i); 
+      pTmp = getGenCand(*i);
       for (int id = pTmp->fMom1; id <= pTmp->fMom2; ++id) {
 	mothers.insert(id);
       }
@@ -302,52 +291,52 @@ void TAna01Event::fillGenT(int theParticleIdx) {
 
   // -- add documentation block
   for (int i = 0; i < nGenCands(); ++i) {
-    pTmp = getGenCand(i); 
-    if (pTmp->fStatus == 3) mothers.insert(i); 
+    pTmp = getGenCand(i);
+    if (pTmp->fStatus == 3) mothers.insert(i);
   }
 
   // -- now combine all sets into one set
   set<int> allParticles;
   for (set<int>::iterator i = mothers.begin(); i != mothers.end(); ++i) {
-    allParticles.insert(*i); 
+    allParticles.insert(*i);
   }
 
   for (set<int>::iterator i = daughters.begin(); i != daughters.end(); ++i) {
-    allParticles.insert(*i); 
+    allParticles.insert(*i);
   }
 
   if (verbose) {
     cout << "all: " << allParticles.size() << endl;
     for (set<int>::iterator i = allParticles.begin(); i != allParticles.end(); ++i) {
-      cout << "a: "; getGenCand(*i)->dump(); 
+      cout << "a: "; getGenCand(*i)->dump();
     }
   }
 
   // -- fill genT
-  TGenCand *pG, *pOld; 
-  bool alreadyFilled(false); 
+  TGenCand *pG, *pOld;
+  bool alreadyFilled(false);
   for (set<int>::iterator i = allParticles.begin(); i != allParticles.end(); ++i) {
-    alreadyFilled = false; 
+    alreadyFilled = false;
     for (int it = 0; it < nGenT(); ++it) {
       if (*i == getGenT(it)->fNumber) {
-	alreadyFilled = true; 
+	alreadyFilled = true;
 	break;
       }
     }
     if (alreadyFilled) continue;
 
-    pOld = getGenCand(*i); 
-    pG = addGenT(); 
-    pG->fID     = pOld->fID; 
+    pOld = getGenCand(*i);
+    pG = addGenT();
+    pG->fID     = pOld->fID;
     pG->fNumber = pOld->fNumber;
     pG->fStatus = pOld->fStatus;
-    pG->fMom1   = pOld->fMom1; 
+    pG->fMom1   = pOld->fMom1;
     pG->fMom2   = pOld->fMom2;
-    pG->fDau1   = pOld->fDau1; 
+    pG->fDau1   = pOld->fDau1;
     pG->fDau2   = pOld->fDau2;
     pG->fTag    = pOld->fTag;
     pG->fQ      = pOld->fQ;
-    pG->fP      = pOld->fP; 
+    pG->fP      = pOld->fP;
     pG->fMass   = pOld->fMass;
     pG->fV      = pOld->fV;
     pG->fTime   = pOld->fTime;
@@ -369,7 +358,7 @@ int TAna01Event::getGenIndex(double px, double py, double pz, int charge, double
   TGenCand *pGenCand;
   int index(-1);
 
-  //   cout << "Searching among " << fnGenCands << " cands for match to p = (" 
+  //   cout << "Searching among " << fnGenCands << " cands for match to p = ("
   //        << px << ", " << py << ", " << pz << ") with ID = " << id << endl;
 
   for (int i = 0; i < fnGenCands; i++) {
@@ -378,9 +367,9 @@ int TAna01Event::getGenIndex(double px, double py, double pz, int charge, double
     if ((TMath::Abs((pGenCand->fP.X() - px))/px) > precision) continue;
     if ((TMath::Abs((pGenCand->fP.Y() - py))/py) > precision) continue;
     if ((TMath::Abs((pGenCand->fP.Z() - pz))/pz) > precision) continue;
-    
-    index = i; 
-    //     cout << "I think this is a match at index= " << index 
+
+    index = i;
+    //     cout << "I think this is a match at index= " << index
     // 	 << "  " << px << " " << py << " " << pz << " " << endl;
     //     pGenCand->dump();
     break;
@@ -456,7 +445,7 @@ int TAna01Event::getGenIndexWithDeltaR(double pt, double eta, double phi, double
   TVector3 track, gencand;
   int count(0);
   track.SetPtEtaPhi(pt, eta, phi);
-  
+
   for (int i = 0; i < fnGenCands; i++) {
     pGenCand = getGenCand(i);
     if ((pGenCand->fStatus == 1 || pGenCand->fStatus == 8) && (charge*pGenCand->fQ > 0)) {
@@ -468,16 +457,16 @@ int TAna01Event::getGenIndexWithDeltaR(double pt, double eta, double phi, double
       }
     }
   }
-  
+
   if (0 == count) return index;
-  if (1 == count) return tmp_index[0];	
+  if (1 == count) return tmp_index[0];
 
   double deltaR_min(0.12);
-  int  i_min(-1); 	
-  double dr(1.); 
+  int  i_min(-1);
+  double dr(1.);
   for (int i = 0; i < count; i++) {
     pGenCand = getGenCand(tmp_index[i]);
-    dr = track.DeltaR(pGenCand->fP.Vect()); 
+    dr = track.DeltaR(pGenCand->fP.Vect());
     if (dr < deltaR_min) {
       deltaR_min = dr;
       i_min = tmp_index[i];
@@ -490,79 +479,79 @@ int TAna01Event::getGenIndexWithDeltaR(double pt, double eta, double phi, double
 
 
 // ----------------------------------------------------------------------
-TAnaTrack* TAna01Event::getRecTrack(Int_t n) { 
-  return (TAnaTrack*)fRecTracks->UncheckedAt(n); 
+TAnaTrack* TAna01Event::getRecTrack(Int_t n) {
+  return (TAnaTrack*)fRecTracks->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaTrack* TAna01Event::addRecTrack() {
-  TClonesArray& d = *fRecTracks; 
+  TClonesArray& d = *fRecTracks;
   new(d[d.GetLast()+1]) TAnaTrack(fnRecTracks);
   ++fnRecTracks;
   return (TAnaTrack*)d[d.GetLast()];
 }
 
 // ----------------------------------------------------------------------
-TSimpleTrack* TAna01Event::getSimpleTrack(Int_t n) { 
-  return (TSimpleTrack*)fSimpleTracks->UncheckedAt(n); 
+TSimpleTrack* TAna01Event::getSimpleTrack(Int_t n) {
+  return (TSimpleTrack*)fSimpleTracks->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TSimpleTrack* TAna01Event::addSimpleTrack() {
-  TClonesArray& d = *fSimpleTracks; 
+  TClonesArray& d = *fSimpleTracks;
   new(d[d.GetLast()+1]) TSimpleTrack(fnSimpleTracks);
   ++fnSimpleTracks;
   TSimpleTrack *st = (TSimpleTrack*)d[d.GetLast()];
   st->clear(); // to flush the bits and indices
-  return st; 
+  return st;
 }
 
 // ----------------------------------------------------------------------
 int TAna01Event::getSimpleTrackMCID(int n) {
-  TSimpleTrack *st = getSimpleTrack(n); 
-  int gidx = st->getGenIndex(); 
+  TSimpleTrack *st = getSimpleTrack(n);
+  int gidx = st->getGenIndex();
   if (gidx > -1 && gidx < nGenCands()) {
-    return getGenCand(gidx)->fID; 
-  } 
-  return -1; 
+    return getGenCand(gidx)->fID;
+  }
+  return -1;
 }
 
 
 // ----------------------------------------------------------------------
 int TAna01Event::getSimpleTrackMuonIdx(int n) {
-  TSimpleTrack *st = getSimpleTrack(n); 
+  TSimpleTrack *st = getSimpleTrack(n);
   if (st->getMuonID()) {
-    TAnaMuon *pm; 
+    TAnaMuon *pm;
     for (int i = 0; i < fnMuons; ++i) {
-      pm = getMuon(i); 
+      pm = getMuon(i);
       if (n == pm->fIndex) return i;
     }
-  } 
-  return -1; 
+  }
+  return -1;
 }
 
 // ----------------------------------------------------------------------
 TAnaMuon* TAna01Event::getSimpleTrackMuon(int n) {
-  TSimpleTrack *st = getSimpleTrack(n); 
+  TSimpleTrack *st = getSimpleTrack(n);
   if (st->getMuonID()) {
-    TAnaMuon *pm; 
+    TAnaMuon *pm;
     for (int i = 0; i < fnMuons; ++i) {
-      pm = getMuon(i); 
+      pm = getMuon(i);
       if (n == pm->fIndex) return pm;
     }
-  } 
-  return 0; 
+  }
+  return 0;
 }
 
 
 // ----------------------------------------------------------------------
-TAnaMuon* TAna01Event::getMuon(Int_t n) { 
-  return (TAnaMuon*)fMuons->UncheckedAt(n); 
+TAnaMuon* TAna01Event::getMuon(Int_t n) {
+  return (TAnaMuon*)fMuons->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaMuon* TAna01Event::addMuon() {
-  TClonesArray& d = *fMuons; 
+  TClonesArray& d = *fMuons;
   new(d[d.GetLast()+1]) TAnaMuon(fnMuons);
   ++fnMuons;
   return (TAnaMuon*)d[d.GetLast()];
@@ -570,50 +559,39 @@ TAnaMuon* TAna01Event::addMuon() {
 
 
 // ----------------------------------------------------------------------
-TTrgObj* TAna01Event::getTrgObj(Int_t n) { 
-  return (TTrgObj*)fTrgObj->UncheckedAt(n); 
-}
-
-TTrgObjv2* TAna01Event::getTrgObjv2(Int_t n) { 
-  return (TTrgObjv2*)fTrgObjv2->UncheckedAt(n); 
+TTrgObjv2* TAna01Event::getTrgObjv2(Int_t n) {
+  return (TTrgObjv2*)fTrgObjv2->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
-TTrgObj* TAna01Event::addTrgObj() {
-  TClonesArray& d = *fTrgObj; 
-  new(d[d.GetLast()+1]) TTrgObj(fnTrgObj);
-  ++fnTrgObj;
-  return (TTrgObj*)d[d.GetLast()];
-}
-
 TTrgObjv2* TAna01Event::addTrgObjv2() {
-  TClonesArray& d = *fTrgObjv2; 
+  TClonesArray& d = *fTrgObjv2;
   new(d[d.GetLast()+1]) TTrgObjv2(fnTrgObjv2);
   ++fnTrgObjv2;
   return (TTrgObjv2*)d[d.GetLast()];
 }
 
 // ----------------------------------------------------------------------
-TAnaTrack* TAna01Event::getSigTrack(Int_t n) { 
-  return (TAnaTrack*)fSigTracks->UncheckedAt(n); 
+TAnaTrack* TAna01Event::getSigTrack(Int_t n) {
+  return (TAnaTrack*)fSigTracks->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaTrack* TAna01Event::addSigTrack() {
-  TClonesArray& d = *fSigTracks; 
+  TClonesArray& d = *fSigTracks;
   new(d[d.GetLast()+1]) TAnaTrack(fnSigTracks);
   ++fnSigTracks;
   return (TAnaTrack*)d[d.GetLast()];
 }
 
 // ----------------------------------------------------------------------
-TAnaJet* TAna01Event::getCaloJet(Int_t n) { 
-  return (TAnaJet*)fCaloJets->UncheckedAt(n); 
+TAnaJet* TAna01Event::getCaloJet(Int_t n) {
+  return (TAnaJet*)fCaloJets->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaJet* TAna01Event::addCaloJet() {
-  TClonesArray& d = *fCaloJets; 
+  TClonesArray& d = *fCaloJets;
   new(d[d.GetLast()+1]) TAnaJet(fnCaloJets);
   ++fnCaloJets;
   return (TAnaJet*)d[d.GetLast()];
@@ -646,39 +624,39 @@ TAnaJet* TAna01Event::addPFJet() {
 }
 
 // ----------------------------------------------------------------------
-TAnaJet* TAna01Event::getGenJet(Int_t n) { 
-  return (TAnaJet*)fGenJets->UncheckedAt(n); 
+TAnaJet* TAna01Event::getGenJet(Int_t n) {
+  return (TAnaJet*)fGenJets->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaJet* TAna01Event::addGenJet() {
-  TClonesArray& d = *fGenJets; 
+  TClonesArray& d = *fGenJets;
   new(d[d.GetLast()+1]) TAnaJet(fnGenJets);
   ++fnGenJets;
   return (TAnaJet*)d[d.GetLast()];
 }
 
 // ----------------------------------------------------------------------
-TAnaCand* TAna01Event::getCand(Int_t n) { 
-  return (TAnaCand*)fCandidates->UncheckedAt(n); 
+TAnaCand* TAna01Event::getCand(Int_t n) {
+  return (TAnaCand*)fCandidates->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaCand* TAna01Event::addCand() {
-  TClonesArray& d = *fCandidates; 
+  TClonesArray& d = *fCandidates;
   new(d[d.GetLast()+1]) TAnaCand(fnCandidates);
   ++fnCandidates;
   return (TAnaCand*)d[d.GetLast()];
 }
 
 // ----------------------------------------------------------------------
-TAnaVertex* TAna01Event::getPV(Int_t n) { 
-  return (TAnaVertex*)fPV->UncheckedAt(n); 
+TAnaVertex* TAna01Event::getPV(Int_t n) {
+  return (TAnaVertex*)fPV->UncheckedAt(n);
 }
 
 // ----------------------------------------------------------------------
 TAnaVertex* TAna01Event::addPV() {
-  TClonesArray& d = *fPV; 
+  TClonesArray& d = *fPV;
   new(d[d.GetLast()+1]) TAnaVertex();
   ++fnPV;
   return (TAnaVertex*)d[d.GetLast()];
@@ -688,7 +666,7 @@ TAnaVertex* TAna01Event::addPV() {
 
 // ----------------------------------------------------------------------
 void TAna01Event::dump() {
-  cout << "Run: " << fRunNumber << ", Event: " << fEventNumber 
+  cout << "Run: " << fRunNumber << ", Event: " << fEventNumber
        << " nGenCand = " << nGenCands()
        << " nRecTrk = " << nRecTracks()
        << " nSimpleTrk = " << nSimpleTracks()
@@ -697,44 +675,44 @@ void TAna01Event::dump() {
        << " nPV = " << nPV()
        << endl;
 
-  cout << "Primary Vertices: " << endl; 
+  cout << "Primary Vertices: " << endl;
   TAnaVertex *pPV;
   for (int i = 0; i < fnPV; i++) {
     pPV = getPV(i);
     cout << "  " << Form("%3d: ", i);
     pPV->dump();
   }
-  
-  cout << "L1 triggers: " << endl; 
+
+  cout << "L1 triggers: " << endl;
   for (int j = 0; j < NL1T; ++j) {
-    cout << Form("%80s sel:%1d ", fL1TNames[j].Data(), (fL1TResult[j]? 1: 0)) << endl; 
+    cout << Form("%80s sel:%1d ", fL1TNames[j].Data(), (fL1TResult[j]? 1: 0)) << endl;
   }
 
-  cout << "technical triggers: " << endl; 
+  cout << "technical triggers: " << endl;
   for (int i = 0; i < NLTT; ++i) {
-    cout << Form("%80s sel:%1d ", fLTTNames[i].Data(), (fLTTResult[i]? 1: 0)) << endl; 
+    cout << Form("%80s sel:%1d ", fLTTNames[i].Data(), (fLTTResult[i]? 1: 0)) << endl;
   }
 
-  cout << "HLT paths: " << endl; 
+  cout << "HLT paths: " << endl;
   for (int i = 0; i < NHLT; ++i) {
-    cout << Form("%100s sel:%1d ", fHLTNames[i].Data(), (fHLTResult[i]? 1: 0)) << endl; 
+    cout << Form("%100s sel:%1d ", fHLTNames[i].Data(), (fHLTResult[i]? 1: 0)) << endl;
   }
 
-  cout << "generator candidates: " << endl; 
+  cout << "generator candidates: " << endl;
   TGenCand *pGenCand;
   for (int i = 0; i < fnGenCands; i++) {
     pGenCand = getGenCand(i);
     pGenCand->dump();
   }
-  
-  cout << "simple tracks: " << endl; 
+
+  cout << "simple tracks: " << endl;
   TSimpleTrack *sTrk;
   for (int i = 0; i < fnSimpleTracks; ++i) {
     sTrk = getSimpleTrack(i);
     sTrk->dump();
   }
 
-  cout << "rec tracks: " << endl; 
+  cout << "rec tracks: " << endl;
   TAnaTrack *pTrk;
   TAnaCand  *pCand;
   for (int i = 0; i < fnRecTracks; ++i) {
@@ -742,19 +720,11 @@ void TAna01Event::dump() {
     pTrk->dump();
   }
 
-  cout << "muons: " << endl; 
+  cout << "muons: " << endl;
   TAnaMuon  *pMuon;
   for (int i = 0; i < fnMuons; ++i) {
     pMuon = getMuon(i);
     pMuon->dump();
-  }
-  
-  if (0) {
-    TTrgObj  *pTrgObj;
-    for (int i = 0; i < fnTrgObj; ++i) {
-      pTrgObj = getTrgObj(i);
-      pTrgObj->dump();
-    }
   }
 
   cout << "trigger objects (v2):" << endl;
@@ -763,7 +733,7 @@ void TAna01Event::dump() {
     pTrgObjv2 = getTrgObjv2(i);
     pTrgObjv2->dump();
   }
-  
+
   cout << "candidates: " << endl;
   for (int i = 0; i < fnCandidates; ++i) {
     pCand = getCand(i);
@@ -781,15 +751,15 @@ void TAna01Event::dump() {
 // ----------------------------------------------------------------------
 bool TAna01Event::isAncestor(TGenCand *pMother, TGenCand *pParticle) {
   if (pParticle == pMother) return true;
-  
-  TGenCand *pGen = pParticle; 
-  if (pGen->fMom1 < 0) return false; 
-  if (pGen->fMom1 > nGenCands()) return false; 
+
+  TGenCand *pGen = pParticle;
+  if (pGen->fMom1 < 0) return false;
+  if (pGen->fMom1 > nGenCands()) return false;
 
   while ((pGen = getGenCand(pGen->fMom1))) {
     if (pGen == pMother) return true;
     if (pGen->fMom1 < 0) break;
     if (pGen->fMom1 > nGenCands()) break;
   }
-  return false; 
+  return false;
 }

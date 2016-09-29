@@ -11,7 +11,6 @@
 #include "TSimpleTrack.hh"
 #include "TAnaTrack.hh"
 #include "TAnaMuon.hh"
-#include "TTrgObj.hh"
 #include "TTrgObjv2.hh"
 #include "TAnaCand.hh"
 #include "TAnaVertex.hh"
@@ -80,10 +79,6 @@ public:
   virtual TAnaMuon*   addMuon();
 
   // -- Trigger Objects
-  int                 nTrgObj() {return fnTrgObj;}
-  TTrgObj*            getTrgObj(int n);
-  virtual TTrgObj*    addTrgObj();
-
   int                 nTrgObjv2() {return fnTrgObjv2;}
   TTrgObjv2*          getTrgObjv2(int n);
   virtual TTrgObjv2*  addTrgObjv2();
@@ -143,7 +138,7 @@ public:
 
   // -- Trigger words
   bool              fL1TDecision, fHLTDecision;
-  #define NL1T 128
+  #define NL1T 512
   #define NLTT 64
   #define NHLT 1024
   // -- L1 trigger
@@ -190,9 +185,6 @@ private:
 
   int               fnMuons;
   TClonesArray      *fMuons;            //->
-
-  int               fnTrgObj;
-  TClonesArray      *fTrgObj;           //->
 
   int               fnTrgObjv2;
   TClonesArray      *fTrgObjv2;         //->
