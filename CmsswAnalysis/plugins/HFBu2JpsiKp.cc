@@ -162,8 +162,8 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
       fSequentialFitter->doFit(&theTree);
       // -- but we store its relevant information into the unconstrained candidate, saved above
-      pCand->fDouble1 = theTree.fTV.mass;
-      pCand->fDouble2 = theTree.fTV.masserr;
+      pCand->fMassC  = theTree.fTV.mass;
+      pCand->fMassCE = theTree.fTV.masserr;
     }
   }
 }
