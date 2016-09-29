@@ -232,7 +232,7 @@ public:
   bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId;
   double  fMu1TrigM, fMu2TrigM;
 
-  double  fMuDist, fMuDeltaR, fMu1Chi2, fMu2Chi2;
+  double  fDeltaR, fMuDist, fMuDeltaR, fMu1Chi2, fMu2Chi2;
   double  fHltMu1Pt, fHltMu1Eta, fHltMu1Phi, fHltMu2Pt, fHltMu2Eta, fHltMu2Phi;
   double  fMu1Pt, fMu1Eta, fMu1Phi, fMu2Pt, fMu2Eta, fMu2Phi;
   double  fMu1PtGen, fMu2PtGen, fMu1EtaGen, fMu2EtaGen, fMu1PhiGen, fMu2PhiGen;
@@ -252,7 +252,7 @@ public:
   double  fCandIso;
   int     fCandIsoTrk, fCandPvTrk, fCandI0trk, fCandI1trk, fCandI2trk;
   int     fCandCloseTrk, fCandCloseTrkS1, fCandCloseTrkS2, fCandCloseTrkS3, fCandCloseTrkS4, fCandCloseTrkS5;
-  double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IP, fMu1IPE, fMu2IP, fMu2IPE;
+  double  fCandDocaTrk, fCandDocaTrkBdt, fMu1IPS, fMu1IP, fMu1IPE, fMu2IPS, fMu2IP, fMu2IPE;
   double  fCandPvTip, fCandPvTipE, fCandPvTipS, fCandPvLip, fCandPvLipE, fCandPvLipS, fCandPvIp, fCandPvIpE, fCandPvIpS;
   double  fCandPvIp3D, fCandPvIpE3D, fCandPvIpS3D;
   double  fCandPv2Lip, fCandPv2LipS, fCandPv12Lip, fCandPv12LipE, fCandPv12LipS;

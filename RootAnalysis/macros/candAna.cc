@@ -419,6 +419,9 @@ void candAna::candAnalysis() {
   fpMuon1 = p1;
   fpMuon2 = p2;
 
+  fDeltaR = fpMuon1->fRefPlab.DeltaR(fpMuon2->fRefPlab);
+
+
   muScaleCorrectedMasses();
 
   fMu1TrkLayer  = fpReader->numberOfTrackerLayers(p1);
@@ -454,6 +457,7 @@ void candAna::candAnalysis() {
   fMu1PV        = p1->fPvIdx;
   fMu1IP        = p1->fBsTip;
   fMu1IPE       = p1->fBsTipE;
+  fMu1IPS       = p1->fTip/p1->fTipE;
 
   if (p1->fMuIndex > -1) {
     TAnaMuon *pm = fpEvt->getMuon(p1->fMuIndex);
@@ -518,9 +522,12 @@ void candAna::candAnalysis() {
   fMu2PV        = p2->fPvIdx;
   fMu2IP        = p2->fBsTip;
   fMu2IPE       = p2->fBsTipE;
+  fMu2IPS       = p2->fTip/p2->fTipE;
 
   fChan = detChan(fMu1Eta, fMu2Eta);
   std::string  sl1seeds = Form("%d ", fL1Seeds);
+
+
 
   static int printedEvt(0);
   if (0 && printedEvt != fEvt) {
@@ -1738,6 +1745,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("lipE",    &fCandPvLipE,        "lipE/D");
   t->Branch("tip",     &fCandPvTip,         "tip/D");
   t->Branch("tipE",    &fCandPvTipE,        "tipE/D");
+  t->Branch("dr",      &fDeltaR,            "dr/D");
 
   t->Branch("pvdchi2",   &fCandPvDeltaChi2, "pvdchi2/D");
   t->Branch("closetrks1", &fCandCloseTrkS1,   "closetrks1/I");
@@ -1767,6 +1775,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m1eta",   &fMu1Eta,            "m1eta/D");
   t->Branch("m1phi",   &fMu1Phi,            "m1phi/D");
   t->Branch("m1ip",    &fMu1IP,             "m1ip/D");
+  t->Branch("m1ips",   &fMu1IPS,            "m1ips/D");
   t->Branch("m1gt",    &fMu1TkQuality,      "m1gt/I");
   t->Branch("m1pix",   &fMu1Pix,            "m1pix/I");
   t->Branch("m1bpix",  &fMu1BPix,           "m1bpix/I");
@@ -1792,6 +1801,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m2eta",   &fMu2Eta,            "m2eta/D");
   t->Branch("m2phi",   &fMu2Phi,            "m2phi/D");
   t->Branch("m2ip",    &fMu2IP,             "m2ip/D");
+  t->Branch("m2ips",   &fMu2IPS,            "m2ips/D");
   t->Branch("m2gt",    &fMu2TkQuality,      "m2gt/I");
   t->Branch("m2pix",   &fMu2Pix,            "m2pix/I");
   t->Branch("m2bpix",  &fMu2BPix,           "m2bpix/I");
