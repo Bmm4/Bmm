@@ -324,12 +324,12 @@ void candAna::candAnalysis() {
   fCandPvLip    = fpCand->fPvLip;
   fCandPvLipE   = fpCand->fPvLipE;
   fCandPvLipS   = fCandPvLip/fCandPvLipE;
-  fCandPv2Lip   = fpCand->fPvLip2;
-  fCandPv2LipS  = fpCand->fPvLip2/fpCand->fPvLipE2;
-  if (fpCand->fPvLip2 > 999) fCandPv2LipS = 999.; // in this case no 2nd best PV was found, reset to 'good' state
-  fCandPv12Lip  = fCandPvLip/fpCand->fPvLip2;
-  fCandPv12LipE = fCandPvLipE/fpCand->fPvLipE2;
-  fCandPv12LipS = fCandPvLipS/(fpCand->fPvLip2/fpCand->fPvLipE2);
+  fCandPv2Lip   = fpCand->fPv2Lip;
+  fCandPv2LipS  = fpCand->fPv2Lip/fpCand->fPv2LipE;
+  if (fpCand->fPv2Lip > 999) fCandPv2LipS = 999.; // in this case no 2nd best PV was found, reset to 'good' state
+  fCandPv12Lip  = fCandPvLip/fpCand->fPv2Lip;
+  fCandPv12LipE = fCandPvLipE/fpCand->fPv2LipE;
+  fCandPv12LipS = fCandPvLipS/(fpCand->fPv2Lip/fpCand->fPv2LipE);
 
   // -- 3d impact parameter wrt PV
   if (0) {
@@ -351,7 +351,8 @@ void candAna::candAnalysis() {
   if (TMath::IsNaN(fCandPvIpS3D)) fCandPvIpS3D = -1.;
 
   //old  fCandM2 = constrainedMass();
-  fCandM2 = fpCand->fDouble1;
+  //  fCandM2 = fpCand->fDouble1;
+  fCandM2 = fpCand->fMassC;
 
   // -- new variables
   fCandPvDeltaChi2 = fpCand->fDeltaChi2;
@@ -950,7 +951,7 @@ int candAna::detChan(double m1eta, double m2eta) {
     bool found(false);
     for (int ichan = 0; ichan < fNchan; ++ichan) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-	for (int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
+	for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
 	  found = false;
 	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
 	    found = true;
@@ -1420,21 +1421,6 @@ void candAna::triggerSelection() {
       }
 
     }
-
-    TTrgObj *p;
-    cout<<" Dump TTrgObj "<<fpEvt->nTrgObj()<<endl;
-    for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
-      p = fpEvt->getTrgObj(i);
-      p->dump();
-
-      // if ( p->fNumber > -1 )  {
-      // 	cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = "
-      // 	    << p->fID << " pT = " << p->fP.Perp()
-      // 	    << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "
-      // 	    <<p->fID << endl;
-      // } // end if
-
-   } // end for
 
     // print the hlt object map
     for(map<unsigned int, unsigned int, less<unsigned int> >::iterator iter=hltObjMap.begin();
@@ -2432,6 +2418,9 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
   if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
     return true;
   }
+
+  result = pt->fBarrelBDTresponse;
+  return (result > 0);
 
   if (!tightMuon(pt)) {
     result = -2.;
@@ -5049,23 +5038,6 @@ void candAna::play2() {
 
     }
 
-    // Look at Trig Object v1
-    if (0) {
-      TTrgObj *p;
-      cout<<" Dump TTrgObj "<<fpEvt->nTrgObj()<<endl;
-      for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
-	p = fpEvt->getTrgObj(i);
-	p->dump();
-
-	// if ( p->fNumber > -1 )  {
-	// 	cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = "
-	// 	    << p->fID << " pT = " << p->fP.Perp()
-	// 	    << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "
-	// 	    <<p->fID << endl;
-	// } // end if
-      } // end for
-    }
-
 }
 
 
@@ -5266,7 +5238,7 @@ void candAna::pvStudy(bool bookHist) {
   if (fCandTmi < 0) return;
   TAnaCand *pCand = fpEvt->getCand(fCandTmi);
   if (0 == pCand) return;
-  if (pCand->fPvIdx2 < 0) return;
+  if (pCand->fPv2Idx < 0) return;
 
   fls3d = pCand->fVtx.fD3d/pCand->fVtx.fD3dE;
   fl3d  = pCand->fVtx.fD3d;
@@ -5320,13 +5292,13 @@ void candAna::pvStudy(bool bookHist) {
   chi1  = fpEvt->getPV(pCand->fPvIdx)->fChi2;
   prob1 = fpEvt->getPV(pCand->fPvIdx)->fProb;
 
-  p2x = fpEvt->getPV(pCand->fPvIdx2)->fPoint.X();
-  p2y = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Y();
-  p2z = fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z();
-  lz2 = pCand->fPvLip2;
-  mult2 = fpEvt->getPV(pCand->fPvIdx2)->fNtracks;
-  chi2  = fpEvt->getPV(pCand->fPvIdx2)->fChi2;
-  prob2 = fpEvt->getPV(pCand->fPvIdx2)->fProb;
+  p2x = fpEvt->getPV(pCand->fPv2Idx)->fPoint.X();
+  p2y = fpEvt->getPV(pCand->fPv2Idx)->fPoint.Y();
+  p2z = fpEvt->getPV(pCand->fPv2Idx)->fPoint.Z();
+  lz2 = pCand->fPv2Lip;
+  mult2 = fpEvt->getPV(pCand->fPv2Idx)->fNtracks;
+  chi2  = fpEvt->getPV(pCand->fPv2Idx)->fChi2;
+  prob2 = fpEvt->getPV(pCand->fPv2Idx)->fProb;
 
   dz12  = p2z-p1z;
   dzmin = 99.;
@@ -5338,7 +5310,7 @@ void candAna::pvStudy(bool bookHist) {
     }
   }
   distPV = fpEvt->getPV(pCand->fPvIdx)->fPoint - genPV;
-  distPV2 = fpEvt->getPV(pCand->fPvIdx2)->fPoint - genPV;
+  distPV2 = fpEvt->getPV(pCand->fPv2Idx)->fPoint - genPV;
 
   d1 = distPV.Mag();
   d2 = distPV2.Mag();
@@ -5365,7 +5337,7 @@ void candAna::pvStudy(bool bookHist) {
   s1 = fl12d * TMath::Cos(a12d) / plab2d.Mag() * massOverC;
 
 
-  fl = sv - fpEvt->getPV(pCand->fPvIdx2)->fPoint;
+  fl = sv - fpEvt->getPV(pCand->fPv2Idx)->fPoint;
   fl2 = fl.Mag();
   a2 = TMath::ACos(plab.Dot(fl) / (plab.Mag() * fl.Mag()));
   t2 = fl2 * TMath::Cos(a2) / plab.Mag() * massOverC;
@@ -5414,7 +5386,7 @@ void candAna::pvStudy(bool bookHist) {
   p3z = fpEvt->getPV(minAlphaIdx)->fPoint.Z();
 
   idx1 = pCand->fPvIdx;
-  idx2 = pCand->fPvIdx2;
+  idx2 = pCand->fPv2Idx;
   idx3 = minAlphaIdx;
 
   // -- fill delta(z) to closest other PV
@@ -5425,12 +5397,12 @@ void candAna::pvStudy(bool bookHist) {
       if (dz < p1d) p1d = dz;
     }
 
-    if (ipv != pCand->fPvIdx2) {
-      double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPvIdx2)->fPoint.Z());
+    if (ipv != pCand->fPv2Idx) {
+      double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(pCand->fPv2Idx)->fPoint.Z());
       if (dz < p2d) p2d = dz;
     }
 
-    if (ipv != pCand->fPvIdx2) {
+    if (ipv != pCand->fPv2Idx) {
       double dz = TMath::Abs(fpEvt->getPV(ipv)->fPoint.Z() - fpEvt->getPV(minAlphaIdx)->fPoint.Z());
       if (dz < p3d) p3d = dz;
     }

@@ -1545,20 +1545,6 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
   // Print old HLT object
   if(printHLTMuObj) {  // mode 60-69
     int countl1=0, countl2=0, countl3=0;
-    TTrgObj *p;
-    if(PRINT) cout<<" Dump TTrgObj "<<fpEvt->nTrgObj()<<endl;
-    for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
-      p = fpEvt->getTrgObj(i);
-      if(PRINT) p->dump();
-      //cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = "
-      //    << p->fID << " pT = " << p->fP.Perp()
-      //    << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "
-      //    <<p->fID << endl;
-
-      if( (p->fLabel).Contains("L3") )      {countl3++;}
-      else if( (p->fLabel).Contains("L2") ) {countl2++;}
-      else if( (p->fLabel).Contains("L1") ) {countl1++;}
-    } // end for
 
     if(mode==61) status=countl1;
     else if(mode==62) status=countl2;
