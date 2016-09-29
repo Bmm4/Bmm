@@ -460,15 +460,15 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
   pCand->fMinDoca = tree->fTV.minDoca;
 
   pCand->fPvIdx = tree->fTV.pvIx;
-  pCand->fPvIdx2 = tree->fTV.pvIx2;
+  pCand->fPv2Idx = tree->fTV.pvIx2;
   pCand->fPvLip = tree->fTV.pvImpParams.lip.value();
   pCand->fPvLipE = tree->fTV.pvImpParams.lip.error();
   pCand->fPvTip = tree->fTV.pvImpParams.tip.value();
   pCand->fPvTipE = tree->fTV.pvImpParams.tip.error();
-  pCand->fPvLip2 = tree->fTV.pvImpParams2nd.lip.value();
-  pCand->fPvLipE2 = tree->fTV.pvImpParams2nd.lip.error();
-  pCand->fPvTip2 = tree->fTV.pvImpParams2nd.tip.value();
-  pCand->fPvTipE2 = tree->fTV.pvImpParams2nd.tip.error();
+  pCand->fPv2Lip = tree->fTV.pvImpParams2nd.lip.value();
+  pCand->fPv2LipE = tree->fTV.pvImpParams2nd.lip.error();
+  pCand->fPv2Tip = tree->fTV.pvImpParams2nd.tip.value();
+  pCand->fPv2TipE = tree->fTV.pvImpParams2nd.tip.error();
 
   pCand->fPvIP3d  = tree->fTV.pvImpParams.ip3d.value();
   pCand->fPvIP3dE = tree->fTV.pvImpParams.ip3d.error();

@@ -25,9 +25,11 @@ public:
   int         fDau1, fDau2;  // daughters in Cand block
 
   int         fType, fQ;
-  int         fIndex; 
+  int         fIndex;
   double      fMass;
   double      fMassE;
+  double      fMassC;
+  double      fMassCE;
 
   TAnaVertex  fVtx;
 
@@ -40,15 +42,15 @@ public:
   TVector3    fPoca;
 
   // -- information on the associated primary vertex
-  int         fPvIdx, fPvIdx2; 
+  int         fPvIdx, fPv2Idx;
   double      fPvLip, fPvLipE, fPvTip, fPvTipE;
-  double      fPvLip2, fPvLipE2, fPvTip2, fPvTipE2; // Second best PV for pile-up detection
+  double      fPv2Lip, fPv2LipE, fPv2Tip, fPv2TipE; // Second best PV for pile-up detection
   double      fPvIP3d, fPvIP3dE, fPv2IP3d, fPv2IP3dE; // True 3D impact parameter
 
   // -- proper lifetime and its error
   double      fTauxy, fTauxyE; // from 2d (r-phi) measurement
   double      fTau3d, fTau3dE; // from 3d measurement
-  
+
   // -- Delta chi2 PV fitting
   double      fDeltaChi2;
 
@@ -56,7 +58,7 @@ public:
   std::vector<std::pair<int,std::pair<float,float> > > fNstTracks; // usage: (trackIx,doca(value,error))
 
   // -- reserve
-  int            fInt1,    fInt2,    fInt3; 
+  int            fInt1,    fInt2,    fInt3;
   double         fDouble1, fDouble2, fDouble3;
 
 private:
