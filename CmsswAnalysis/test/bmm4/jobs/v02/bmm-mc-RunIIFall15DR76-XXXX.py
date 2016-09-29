@@ -12,8 +12,7 @@ process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 # ----------------------------------------------------------------------
 # -- Database configuration
-process.load("CondCore.DBCommon.CondDBCommon_cfi")
-process.load("CondCore.DBCommon.CondDBSetup_cfi")
+process.load("CondCore.CondDB.CondDB_cfi")
 # -- Conditions
 process.load("Configuration.StandardSequences.MagneticField_38T_cff")
 process.load("Configuration.Geometry.GeometryDB_cff")
@@ -21,7 +20,7 @@ process.load("RecoVertex.BeamSpotProducer.BeamSpot_cfi")
 process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condDBv2_cff")
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
-process.GlobalTag = GlobalTag(process.GlobalTag, '76X_mcRun2_asymptotic_v12', '')
+process.GlobalTag = GlobalTag(process.GlobalTag, '80X_mcRun2_asymptotic_RealisticBS_25ns_13TeV2016_v1_mc', '')
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
