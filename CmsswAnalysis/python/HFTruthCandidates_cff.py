@@ -535,6 +535,41 @@ truthBdToRhoPiDump = cms.EDAnalyzer(
     )
 
 # ######################################################################
+# Fake samples
+# ######################################################################
+
+# ----------------------------------------------------------------------
+truthKsToPiPiDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(310),
+    type         = cms.untracked.int32(100),
+    GenType      = cms.untracked.int32(-100),
+    daughtersID  = cms.untracked.vint32(211, -211)
+    )
+
+# ----------------------------------------------------------------------
+truthPhiToKKDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(333),
+    type         = cms.untracked.int32(101),
+    GenType      = cms.untracked.int32(-101),
+    daughtersID  = cms.untracked.vint32(321, -321)
+    )
+
+# ----------------------------------------------------------------------
+truthLambdaToPPiDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(3211),
+    type         = cms.untracked.int32(101),
+    GenType      = cms.untracked.int32(-101),
+    daughtersID  = cms.untracked.vint32(2212, -211)
+    )
+
+
+# ######################################################################
 # Sequences
 # ######################################################################
 
@@ -612,6 +647,12 @@ truthBmtSequence         = cms.Sequence(truthSignalsSequence
                                         *truthDstarToD0PiToKPiPi
                                         *truthOniaSequence
                                         )
+
+truthFakeSequence        = cms.Sequence(truthKsToPiPiDump
+                                        *truthPhiToKKDump
+                                        *truthLambdaToPPiDump
+                                        )
+
 
 truthAllSequence         = cms.Sequence(truthSignalsSequence
                                         *truthRareBsSequence
