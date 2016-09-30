@@ -8,18 +8,19 @@
 class HFDiTracks : public HFVirtualDecay {
  public:
   explicit HFDiTracks(const edm::ParameterSet&);
-  
+
  protected:
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void dumpConfiguration();
-  
+
   virtual int  idFromMass(double mass);
-  
-  double fLeadingTrackPt; 
+
+  double fLeadingTrackPt;
   double fTrack1Mass;
   double fTrack2Mass;
   double fExtra;
-  
+  bool   fUnlikeCharge;
+
   int    fNbrMuons;
   bool   fCloseToMuons;
 };
