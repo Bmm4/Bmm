@@ -11,7 +11,7 @@
 
 
 #include "Bmm/RootAnalysis/rootio/TAnaMuon.hh"
-#include "Bmm/CmsswAnalysis/interface/HFBDT.hh" 
+#include "Bmm/CmsswAnalysis/interface/HFBDT.hh"
 
 
 // ----------------------------------------------------------------------
@@ -19,15 +19,16 @@ class HFDumpMuons : public HFVirtualDecay {
  public:
   explicit                  HFDumpMuons(const edm::ParameterSet&);
   ~HFDumpMuons();
-  
+
  private:
   virtual void              analyze(const edm::Event&, const edm::EventSetup&);
   virtual void              dumpConfiguration();
+  virtual void              beginJob();
   virtual void              beginRun(const edm::Run&, const edm::EventSetup&);
 
   void                      fillMuon(const reco::Muon& tr, int type);
   void                      fillCaloMuon(const reco::CaloMuon& tr, int type);
-  void                      extrapolateTracks(); 
+  void                      extrapolateTracks();
   bool                      doExtrapolate(double pt, double eta);
   void                      findVertex(TAnaMuon *anaMu, std::set<unsigned> *trkIcs, double *prob);
 
@@ -38,7 +39,7 @@ class HFDumpMuons : public HFVirtualDecay {
 
 
   edm::InputTag             fCaloMuonsLabel;
-  
+
   double                    fMaxTrackDistToStore;
   double                    fDocaVertex;           // try vertexing only with tracks closer than this
   unsigned                  fKeepBest;             // number of candidates to keep for iterative vertex search
