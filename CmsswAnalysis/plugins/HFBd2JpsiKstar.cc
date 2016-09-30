@@ -114,14 +114,16 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (tKaon.pt() < fTrackPt) continue;
       if ((fMaxD0 < 90.) && (tKaon.d0() > fMaxD0)) continue;
       if ((fMaxDz < 90.) && (tKaon.dz() > fMaxDz)) continue;
-      ka.SetXYZM(tKaon.px(), tKaon.py(), tKaon.pz(), MKAON);
-      if ((fDeltaR < 90.) && (psi.DeltaR(ka) > fDeltaR)) continue;
 
       reco::TrackBaseRef rTrackView2(fTracksHandle, iPion);
       reco::Track tPion(*rTrackView2);
       if (tPion.pt() < fTrackPt) continue;
       if ((fMaxD0 < 90.) && (tPion.d0() > fMaxD0)) continue;
       if ((fMaxDz < 90.) && (tPion.dz() > fMaxDz)) continue;
+      if (tKaon.charge()*tPion.charge() > 0) continue;
+
+      ka.SetXYZM(tKaon.px(), tKaon.py(), tKaon.pz(), MKAON);
+      if ((fDeltaR < 90.) && (psi.DeltaR(ka) > fDeltaR)) continue;
       pi.SetXYZM(tPion.px(), tPion.py(), tPion.pz(), MPION);
       if ((fDeltaR < 90.) && (psi.DeltaR(pi) > fDeltaR)) continue;
 

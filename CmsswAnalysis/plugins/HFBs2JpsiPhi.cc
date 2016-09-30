@@ -108,12 +108,14 @@ void HFBs2JpsiPhi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
       if (tKaon1.pt() < fTrackPt) continue;
       if ((fMaxD0 < 90.) && (tKaon1.d0() > fMaxD0)) continue;
       if ((fMaxDz < 90.) && (tKaon1.dz() > fMaxDz)) continue;
-      ka1.SetXYZM(tKaon1.px(), tKaon1.py(), tKaon1.pz(), MKAON);
       reco::TrackBaseRef rTrackView2(fTracksHandle, iKaon2);
       reco::Track tKaon2(*rTrackView2);
       if (tKaon2.pt() < fTrackPt) continue;
       if ((fMaxD0 < 90.) && (tKaon2.d0() > fMaxD0)) continue;
       if ((fMaxDz < 90.) && (tKaon2.dz() > fMaxDz)) continue;
+      if (tKaon1.charge()*tKaon2.charge() > 0) continue;
+
+      ka1.SetXYZM(tKaon1.px(), tKaon1.py(), tKaon1.pz(), MKAON);
       ka2.SetXYZM(tKaon2.px(), tKaon2.py(), tKaon2.pz(), MKAON);
       if ((fDeltaR < 90.) && (ka1.DeltaR(ka2) > fDeltaR)) continue;
 
