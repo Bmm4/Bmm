@@ -562,9 +562,9 @@ truthPhiToKKDump = cms.EDAnalyzer(
 truthLambdaToPPiDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(3211),
-    type         = cms.untracked.int32(101),
-    GenType      = cms.untracked.int32(-101),
+    motherID     = cms.untracked.int32(3122),
+    type         = cms.untracked.int32(102),
+    GenType      = cms.untracked.int32(-102),
     daughtersID  = cms.untracked.vint32(2212, -211)
     )
 
