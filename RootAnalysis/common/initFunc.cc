@@ -648,8 +648,20 @@ void initFunc::resetLimits() {
 
 
 // ----------------------------------------------------------------------
-void initFunc::applyLimits(int npar, TF1 *f, string name) {
-  for (int i = 0; i < npar; ++i) {
+void initFunc::dumpParameters(TF1 *f1) {
+  double lo, hi;
+  for (int i = 0; i < f1->GetNpar(); ++i) {
+    f1->GetParLimits(i, lo, hi);
+    cout << Form("%2d: %f (%f .. %f)", i, f1->GetParameter(i), lo, hi)
+	 << endl;
+  }
+}
+
+
+
+// ----------------------------------------------------------------------
+void initFunc::applyLimits(TF1 *f, string name) {
+  for (int i = 0; i < f->GetNpar(); ++i) {
     if (fFix[i]) {
       if (fVerbose) cout << "initFunc::" << name << "> fixing par " << i << " to " << fLimitLo[i] << endl;
       f->FixParameter(i, fLimitLo[i]);
@@ -963,7 +975,7 @@ TF1* initFunc::expoBsBlind(TH1 *h) {
   }
 
   f->SetParameters(p0, p1);
-  applyLimits(npar, f, "expoBsBlind");
+  applyLimits(f, "expoBsBlind");
   return f;
 }
 
@@ -1027,7 +1039,7 @@ TF1* initFunc::crystalBall(TH1 *h, double peak, double sigma, double alpha, doub
   }
 
   f->SetParameters(peak, sigma, alpha, tailLength, h->GetBinContent(h->FindBin(peak)));
-  applyLimits(npar, f, "crystalBall");
+  applyLimits(f, "crystalBall");
   return f;
 }
 
@@ -1052,7 +1064,7 @@ TF1* initFunc::pol1CrystalBall(TH1 *h, double peak, double sigma, double alpha, 
        << " p1: " << p1
        << endl;
   f->SetParameters(peak, sigma, alpha, tailLength, g0, p0, p1);
-  applyLimits(npar, f, "pol1CrystalBall");
+  applyLimits(f, "pol1CrystalBall");
   return f;
 }
 
@@ -1079,7 +1091,7 @@ TF1* initFunc::crystalBallGauss(TH1 *h, double peak, double sigma, double alpha,
        << " norm: " << g0
        << endl;
   f->SetParameters(fracNormG, fracPeakG, fracSigmaG, peak, sigma, alpha, tailLength, g0);
-  applyLimits(npar, f, "crystalBallGauss");
+  applyLimits(f, "crystalBallGauss");
   return f;
 }
 
@@ -1104,7 +1116,7 @@ TF1* initFunc::pol0gauss(TH1 *h, double peak, double sigma) {
   double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);
 
   f->SetParameters(g0, peak, sigma, p0);
-  applyLimits(npar, f, "pol0gauss");
+  applyLimits(f, "pol0gauss");
   return f;
 }
 
@@ -1131,7 +1143,7 @@ TF1* initFunc::pol0Gauss(TH1 *h, double peak, double sigma) {
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
 
   f->SetParameters(g0, peak, sigma, p0);
-  applyLimits(npar, f, "pol0Gauss");
+  applyLimits(f, "pol0Gauss");
   return f;
 }
 
@@ -1158,7 +1170,7 @@ TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
   cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
   f->SetParameters(g0, peak, sigma, p0, p1);
-  applyLimits(npar, f, "pol1gauss");
+  applyLimits(f, "pol1gauss");
   return f;
 }
 
@@ -1185,7 +1197,7 @@ TF1* initFunc::pol1Gauss(TH1 *h, double peak, double sigma) {
   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
   cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
   f->SetParameters(g0, peak, sigma, p0, p1);
-  applyLimits(npar, f, "pol1Gauss");
+  applyLimits(f, "pol1Gauss");
   return f;
 }
 
@@ -1212,7 +1224,7 @@ TF1* initFunc::pol1Landau(TH1 *h, double peak, double sigma) {
   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
   cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
   f->SetParameters(peak, sigma, g0, p0, p1);
-  applyLimits(npar, f, "pol1Landau");
+  applyLimits(f, "pol1Landau");
   return f;
 }
 
@@ -1269,7 +1281,7 @@ TF1* initFunc::expoGauss(TH1 *h, double peak, double sigma) {
 		     << endl;
 
   f->SetParameters(g0, peak, sigma, p0, p1);
-  applyLimits(npar, f, "expoGauss");
+  applyLimits(f, "expoGauss");
   return f;
 }
 
@@ -1768,32 +1780,27 @@ TF1* initFunc::pol1gauss2c(TH1 *h, double peak, double sigma) {
     lbin = h->FindBin(fLo);
     hbin = h->FindBin(fHi);
   }
-
-  //   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin
-  //        << " sigma = " << sigma << " peak = " << peak
-  //        << endl;
+  double xlo(h->GetBinLowEdge(lbin));
+  double xhi(h->GetBinLowEdge(hbin));
 
   double p0, p1;
   initPol1(p0, p1, h);
-  cout << "p0: " << p0 << " p1: " << p1 << endl;
-  double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
+  if (fVerbose) cout << "p0: " << p0 << " p1: " << p1 << endl;
+  double A   = 0.5*p1*(xhi*xhi - xlo*xlo) + p0*(xhi - xlo);
 
   double sqrt2pi = 2.506628275;
   double gInt    = h->Integral(lbin, hbin) - A;
-  //   cout << "A: " << A << endl;
-  //   cout << "gInt: " << gInt << endl;
-  //   cout << "h->Integral(): " << h->Integral(lbin, hbin) << endl;
 
   double gaussN  = gInt/(2.*sqrt2pi*sigma)*h->GetBinWidth(1);
 
-  //   cout << "initFunc> gaussN = " << gaussN << " peak = " << peak << " sigma = " << sigma << " p0 = " << p0 << " p1 = " << p1 << endl;
+  if (fVerbose) cout << "initFunc> gaussN = " << gaussN << " peak = " << peak << " sigma = " << sigma << " p0 = " << p0 << " p1 = " << p1 << endl;
   f->SetParameters(gaussN, peak, sigma, 0.2, 1.8*sigma, p0, p1);
   f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7);
   f->ReleaseParameter(1);     f->SetParLimits(1, peak-0.1, peak+0.1);
   f->ReleaseParameter(2);     f->SetParLimits(2, sigma*0.4, sigma*1.3);
   f->ReleaseParameter(3);     f->SetParLimits(3, 0.01, 2.0);
   f->ReleaseParameter(4);     f->SetParLimits(4, sigma*1.2, sigma*10.0);
-
+  applyLimits(f, "pol1gauss2c");
   return f;
 
 
@@ -2013,6 +2020,6 @@ TF1* initFunc::phiKK(TH1 *h) {
   f->SetParameter(6, 1.);
   fixPar(7, -2.*MKAON);
 
-  applyLimits(npar, f, "phiKK");
+  applyLimits(f, "phiKK");
   return f;
 }
