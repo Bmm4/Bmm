@@ -1690,7 +1690,7 @@ void plotClass::insertDataset(std::string dsname, dataset *ds) {
   if (fDS.find(dsname) != fDS.end()) {
     cout << "######## Error: " << dsname  << " already present in fDS, NOT inserting again" << endl;
   } else {
-    cout << "     inserting: " << dsname  << " " << endl;
+    //    cout << "     inserting: " << dsname  << " " << endl;
     fDS.insert(make_pair(dsname, ds));
   }
 }
@@ -1717,7 +1717,7 @@ void plotClass::loadFiles(string afiles) {
     string::size_type m2 = sbuffer.find("file=");
     string stype("nada");
     bool useBf(false);
-    cout << "sbuffer: " << sbuffer  << " m1: " << m1 << endl;
+    // cout << "sbuffer: " << sbuffer  << " m1: " << m1 << endl;
     if (m1 > sbuffer.size()) {
       m1 = sbuffer.find("bf=");
       useBf = true;
@@ -1735,7 +1735,7 @@ void plotClass::loadFiles(string afiles) {
 
     double bf(0.), bfE(0.);
     if (useBf) {
-      cout << "sbf = " << sbf  << endl;
+      //cout << "sbf = " << sbf  << endl;
       float val, err;
       int expo;
       sscanf(sbf.c_str(), "(%f,%f)e%d", &val, &err, &expo);
@@ -1804,6 +1804,20 @@ void plotClass::loadFiles(string afiles) {
         sname = "bdpsikstarData";
         sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
 	ldecay = "\\bdpsikstar";
+	ds->fColor = kBlack;
+	ds->fSymbol = 20;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
+      }
+
+      if (string::npos != stype.find("fake,")) {
+        sname = "fakeData";
+        sdecay = "fake";
+	ldecay = "fake";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;

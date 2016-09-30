@@ -15,14 +15,16 @@ public :
 	   std::string setup = "default");
   virtual        ~plotFake();
 
-  void   setCuts(std::string cuts);
-
   // -- Main analysis methods
-  void   loadFiles(std::string afiles);
-  void   makeAll(int bitmask = 0);
-  void   bookHist(int mode);
+  virtual void bookHist(int mode);
+  virtual void init();
+  virtual void loadFiles(std::string afiles);
+  virtual void makeAll(int bitmask = 0);
 
   // -- Fake rate from light hadrons
+  void   playKs(std::string cuts = "flxy<4&&flsxy>15&&pvips<3&&prob>0.01&&abs(m1ips)>5&&abs(m2ips)>5&&m1q*m2q<0");
+  void   playPhi(std::string cuts = "m1q*m2q<0&&prob>0.01&&maxdoca<0.002&&m2pt>4&&m1pv==m2pv&&m1bpixl1&&m2bpixl1");
+  void   playLambda(std::string cuts = "flxy<4&&flsxy>15&&fls3d>15&&chi2<3&&pvips<3");
   void   fakeRate(std::string var = "pt", std::string dataset = "data_charmonium", std::string particle = "pion");
   void   fitKs(TH1D*);
   void   fitPhi(TH1D*);
