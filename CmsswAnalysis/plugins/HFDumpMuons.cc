@@ -111,6 +111,12 @@ void HFDumpMuons::beginRun(const Run& iRun, const EventSetup& iSetup) {
   fpropM2.init(iSetup);
   fOutwardPropM1.init(iSetup);
   fInwardPropM1.init(iSetup);
+}
+
+
+// ----------------------------------------------------------------------
+void HFDumpMuons::beginJob() {
+  cout << "HFDumpMuons::beginJob" << endl;
   barrelBDT.setWeightFile(fweightFileBarrel);
   barrelBDT.setupReader();
   endcapBDT.setWeightFile(fweightFileEndcap);
