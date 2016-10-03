@@ -37,6 +37,14 @@ void TAnaMuon::clear() {
 
   fGtrkProb = -99.;
 
+  fNumberOfValidPixHits = fStaTrkMult = fTmTrkMult = -99;
+  fInnerChi2 = fOuterChi2 = fGlbKinkFinder = fTrkRelChi2 = fStaRelChi2 = fGlbDeltaEtaPhi = -999.;
+  int fDT_RPC_CSC_init[] = {-1,-1,-1,-1};
+  std::vector<int> fvDThits (fDT_RPC_CSC_init, fDT_RPC_CSC_init + sizeof(fDT_RPC_CSC_init) / sizeof(int) );
+  std::vector<int> fvRPChits (fDT_RPC_CSC_init, fDT_RPC_CSC_init + sizeof(fDT_RPC_CSC_init) / sizeof(int) );
+  std::vector<int> fvCSChits (fDT_RPC_CSC_init, fDT_RPC_CSC_init + sizeof(fDT_RPC_CSC_init) / sizeof(int) );
+  fBarrelBDTresponse = fEndcapBDTresponse = -99.;
+
   fInt1 = fInt2 = fInt3 -99; 
   fDouble1 = fDouble2 = fDouble3 = -99.;
 
