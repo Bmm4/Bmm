@@ -1309,9 +1309,9 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
 
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
 
-  double e0(preco),  e0Min(preco-0.001), e0Max(preco+0.001);
-  double e1(0.075),  e1Min(0.050), e1Max(0.100);
-  double e2(1.15), e2Min(1.05),  e2Max(1.25);
+  double e0(preco), e0Min(preco-0.001), e0Max(preco+0.001);
+  double e1(0.075), e1Min(0.050),       e1Max(0.100);
+  double e2(1.15),  e2Min(1.05),        e2Max(1.25);
 
 
   if (fVerbose) cout << "A: " << A << " g0: " << g0
