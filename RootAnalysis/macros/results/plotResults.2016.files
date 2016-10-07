@@ -18,10 +18,18 @@ type=bdmm,mcOff       bf=(1.06,0.09)e-10 file=/scratch/ursl/bmm4/v02/bmm-mc-RunI
 type=bdmm,acc,mcOff   bf=(1.06,0.09)e-10 file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BdToMuMu-v02.root
 type=bsmm,mc          bf=(3.65,0.23)e-9  file=/scratch/ursl/bmm4/v02/bmm-mc-Summer16_private-BsToMuMu-v02.root
 type=bsmm,mcOff       bf=(3.65,0.23)e-9  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v02.root
-# -- backgrounds
-type=bspipi,mcOff,bg      bf=(7.6,1.9)e-7    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToPiPi_BMuonFilter-v02.root
+type=bymm,mcOff       bf=(3.65,0.23)e-9  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p7_BMuonFilter-v02.root
+# -- Bs backgrounds
 type=bskk,mcOff,bg        bf=(2.49,0.17)e-5  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToKK_BMuonFilter-v02.root
 type=bskk,acc,mcOff,bg    bf=(2.49,0.17)e-5  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToKK-v02.root
+type=bskpi,mcOff,bg       bf=(5.5,0.6)e-6    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToKPi_BMuonFilter-v02.root
+type=bspipi,mcOff,bg      bf=(7.6,1.9)e-7    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToPiPi_BMuonFilter-v02.root
 type=bskmunu,mcOff,bg     bf=(1.45,0.05)e-4  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BsToKMuNu_BMuonFilter-v02.root
-type=lbppi,mcOff,bg       bf=(4.1,0.8)e-4    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-LambdaBToPPi_BMuonFilter-v02.root
+# -- Bd backgrounds
+type=bdkpi,acc,mcOff,bg   bf=(1.96,0.05)e-5  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BdToKPi-v02.root
+type=bdkk,mcOff,bg        bf=(1.3,0.7)e-7    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BdToKK_BMuonFilter-v02.root
+type=bdpipi,mcOff,bg      bf=(5.12,0.19)e-6  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-BdToPiPi_BMuonFilter-v02.root
+# -- Lb backgrounds
+type=lbppi,mcOff,bg       bf=(4.1,0.8)e-6    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-LambdaBToPPi_BMuonFilter-v02.root
+type=lbpk,mcOff,bg,acc    bf=(4.9,0.9)e-6    file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-LambdaBToPK-v02.root
 type=lbpmunu,acc,mcOff,bg bf=(4.94,2.19)e-4  file=/scratch/ursl/bmm4/v02/bmm-mc-RunIISpring16DR80-LambdaBToPMuNu-v02.root
