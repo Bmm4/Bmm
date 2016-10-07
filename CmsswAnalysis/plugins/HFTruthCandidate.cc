@@ -165,7 +165,10 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
   vector<int> bla(100);
   vector<int>::iterator blaIt;
 
-  //   cout << "----------------------------------------------------------------------" << endl;
+  if (fVerbose > 0)  cout << "=== HFTruthCandidate run = " << iEvent.id().run()
+			  << " evt = " << iEvent.id().event()
+			  << " ==================================================================="
+			  << endl;
   //  cout << " ngenCands: " << gHFEvent->nGenCands() << endl;
   for (int ig = 0; ig < gHFEvent->nGenCands(); ++ig) {
     pGen = gHFEvent->getGenCand(ig);
