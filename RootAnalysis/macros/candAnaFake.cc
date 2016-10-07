@@ -252,33 +252,33 @@ void candAnaFake::readCuts(string filename, int dump) {
 
 // ----------------------------------------------------------------------
 void candAnaFake::genMatch() {
-  cout << "genMatch()  function" << endl;
+  //  cout << "genMatch()  function" << endl;
 }
 
 // ----------------------------------------------------------------------
 void candAnaFake::genMatchOld() {
-  cout << "genMatchOld()  function" << endl;
+  //  cout << "genMatchOld()  function" << endl;
 }
 
 
 // ----------------------------------------------------------------------
 void candAnaFake::recoMatch() {
-  cout << "recoMatch() function" << endl;
+  //  cout << "recoMatch() function" << endl;
 }
 
 
 // ----------------------------------------------------------------------
 void candAnaFake::candMatch() {
-  cout << "candMatch()  function" << endl;
+  //  cout << "candMatch()  function" << endl;
 }
 
 
 // ----------------------------------------------------------------------
 void candAnaFake::efficiencyCalculation() {
-  cout << "efficiencyCalculation() function" << endl;
+  //  cout << "efficiencyCalculation() function" << endl;
 }
 
 // ----------------------------------------------------------------------
 void candAnaFake::processType() {
-  cout << "processType() function" << endl;
+  //  cout << "processType() function" << endl;
 }
