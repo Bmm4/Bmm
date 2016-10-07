@@ -1892,6 +1892,21 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bymm,")) {
+        sname = "bymmMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(5.7GeV) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bymm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
@@ -1923,13 +1938,79 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bdkpi,")) {
+        sname = "bdkpiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{d} #rightarrow K #it{#pi}";
+        ldecay = "\\bdkpi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdkk,")) {
+        sname = "bdkkMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{d} #rightarrow K K";
+        ldecay = "\\bdkk";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpipi,")) {
+        sname = "bdpipiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{d} #rightarrow #it{#pi#pi}";
+        ldecay = "\\bdpipi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+
+
       if (string::npos != stype.find("bspipi,")) {
         sname = "bspipiMc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "B^{s} #rightarrow #it{#pi#pi}";
+        sdecay = "B_{s} #rightarrow #it{#pi#pi}";
         ldecay = "\\bspipi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bskpi,")) {
+        sname = "bskpiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{s} #rightarrow K#it{#pi}";
+        ldecay = "\\bskpi";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
@@ -1944,7 +2025,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "B^{s} #rightarrow KK";
+        sdecay = "B_{s} #rightarrow KK";
         ldecay = "\\bskk";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
@@ -1978,6 +2059,22 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("bg")) sname += "Bg";
         sdecay = "#it{#Lambda}_{b} #rightarrow p #it{#pi}";
         ldecay = "\\lbppi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("lbpk,")) {
+        sname = "lbpkMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "#it{#Lambda}_{b} #rightarrow p K";
+        ldecay = "\\lbpk";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
