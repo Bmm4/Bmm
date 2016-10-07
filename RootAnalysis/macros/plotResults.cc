@@ -87,11 +87,15 @@ void plotResults::makeAll(string what) {
     genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
     genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
     genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
-    genSummary("bskkMcOffBg", "candAnaMuMu");
-    genSummary("bskkMcOffAccBg", "candAnaMuMu");
-    genSummary("bskmunuMcOffBg", "candAnaMuMu");
-    genSummary("lbpmunuMcOffAccBg", "candAnaMuMu");
-    genSummary("lbppiMcOffBg", "candAnaMuMu");
+
+
+    // -- loop over all (effective) two-body backgrounds
+    for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+      if (string::npos == it->first.find("Bg")) continue;
+      cout << "===> Create genSummary for " << it->first << endl;
+      genSummary(it->first, "candAnaMuMu");
+    }
+
   }
 
 
@@ -142,10 +146,10 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   TH1D *tm1eta = new TH1D("tm1eta", "m1 eta (HLT)", 40, -4., 4.0); setFilledHist(tm1eta, kBlue, kYellow, 1000);
   TH1D *tm2eta = new TH1D("tm2eta", "m2 eta (HLT)", 40, -4., 4.0); setFilledHist(tm2eta, kBlue, kYellow, 1000);
   TH1D *hketa  = new TH1D("keta", "kaon eta", 40, -4., 4.0);
-  TH1D *hm1pt  = new TH1D("m1pt", "m1 pt", 50, 0., 10.0);
-  TH1D *hm2pt  = new TH1D("m2pt", "m2 pt", 50, 0., 10.0);
-  TH1D *tm1pt  = new TH1D("tm1pt", "m1 pt (HLT)", 50, 0., 10.0); setFilledHist(tm1pt, kBlue, kYellow, 1000);
-  TH1D *tm2pt  = new TH1D("tm2pt", "m2 pt (HLT)", 50, 0., 10.0); setFilledHist(tm2pt, kBlue, kYellow, 1000);
+  TH1D *hm1pt  = new TH1D("m1pt", "m1 pt", 100, 0., 10.0);
+  TH1D *hm2pt  = new TH1D("m2pt", "m2 pt", 100, 0., 10.0);
+  TH1D *tm1pt  = new TH1D("tm1pt", "m1 pt (HLT)", 100, 0., 10.0); setFilledHist(tm1pt, kBlue, kYellow, 1000);
+  TH1D *tm2pt  = new TH1D("tm2pt", "m2 pt (HLT)", 100, 0., 10.0); setFilledHist(tm2pt, kBlue, kYellow, 1000);
   TH1D *hkpt   = new TH1D("kpt", "kaon pt", 50, 0., 10.0);
   TH1D *htau   = new TH1D("tau", "tau", 100, 0., 15.e-12);
 
@@ -169,6 +173,11 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
 
 
   bool addKaon(false);
+  bool addHLT(true);
+  if (string::npos != dsname.find("Bg")) {
+    addHLT = false;
+  }
+
   if (string::npos != dsname.find("bupsik")) {
     T->Draw("g3eta>>keta");
     T->Draw("g3pt>>kpt");
@@ -193,19 +202,32 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   }
 
   c1->cd(1);
+  setTitles(hpt, "p_{T} [GeV]", "entries/bin");
   hpt->Draw();
-  tpt->Draw("same");
+  if (addHLT) {
+    tpt->Draw("same");
+    hpt->Draw("sameaxis");
+  }
 
   c1->cd(2);
   hm1pt->Draw();
-  tm1pt->Draw("same");
+  setTitles(hm1pt, "p_{T} [GeV]", "entries/bin");
+  if (addHLT) {
+    tm1pt->Draw("same");
+    hm1pt->Draw("sameaxis");
+  }
 
   c1->cd(3);
   hm2pt->Draw();
-  tm2pt->Draw("same");
+  setTitles(hm2pt, "p_{T} [GeV]", "entries/bin");
+  if (addHLT) {
+    tm2pt->Draw("same");
+    hm2pt->Draw("sameaxis");
+  }
 
   if (addKaon) {
     c1->cd(ncol-1);
+    setTitles(hkpt, "p_{T} [GeV]", "entries/bin");
     hkpt->Draw();
   }
 
@@ -221,29 +243,46 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   tE *= 1.e12;
 
   c1->cd(ncol+1);
+  setTitles(heta, "#eta", "entries/bin");
   heta->Draw();
-  teta->Draw("same");
+  if (addHLT) {
+    teta->Draw("same");
+    heta->Draw("axissame");
+  }
   tl->DrawLatexNDC(0.55, 0.3, "B");
 
   c1->cd(ncol+2);
+  setTitles(hm1eta, "#eta", "entries/bin");
   hm1eta->Draw();
-  tm1eta->Draw("same");
+  if (addHLT) {
+    tm1eta->Draw("same");
+    hm1eta->Draw("sameaxis");
+  }
   tl->DrawLatexNDC(0.40, 0.3, "leading muon");
 
   c1->cd(ncol+3);
+  setTitles(hm2eta, "#eta", "entries/bin");
   hm2eta->Draw();
-  tm2eta->Draw("same");
+  if (addHLT) {
+    tm2eta->Draw("same");
+    hm2eta->Draw("sameaxis");
+  }
   tl->DrawLatexNDC(0.35, 0.3, "subleading muon");
 
   if (addKaon) {
     c1->cd(2*ncol-1);
+    setTitles(hketa, "#eta", "entries/bin");
     hketa->Draw();
     tl->DrawLatexNDC(0.35, 0.3, "kaon(s)");
   }
 
   c1->cd(2*ncol);
   tl->SetTextSize(0.07);
-  tl->DrawLatexNDC(0.2, 0.9, Form("%s (HLT)", dsname.c_str()));
+  if (addHLT) {
+    tl->DrawLatexNDC(0.2, 0.9, Form("%s (HLT)", dsname.c_str()));
+  } else {
+    tl->DrawLatexNDC(0.2, 0.9, Form("%s ", dsname.c_str()));
+  }
   tl->DrawLatexNDC(0.2, 0.8, Form("Events: %d", T->GetEntries()));
 
   tl->DrawLatexNDC(0.2, 0.35, Form("#tau"));
