@@ -107,7 +107,16 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     reco::Track t1(*rTrackView1);
     reco::TrackBaseRef rTrackView2(fTracksHandle, trkIt->second);
     reco::Track t2(*rTrackView2);
-    if (fUnlikeCharge && (t1.charge() * t2.charge())) continue;
+    if (fUnlikeCharge && (t1.charge() * t2.charge() > 0)) continue;
+    if (fDeltaR < 90.) {
+      TLorentzVector p4t1, p4t2;
+      p4t1.SetXYZM(t1.px(), t1.py(), t1.pz(), fTrack1Mass);
+      p4t2.SetXYZM(t2.px(), t2.py(), t2.pz(), fTrack2Mass);
+      if (p4t1.DeltaR(p4t2) > fDeltaR) {
+	if (fVerbose) cout << fType << " skipping because p4t1.DeltaR(p4t2) = " << p4t1.DeltaR(p4t2) << " > " << fDeltaR << endl;
+	continue;
+      }
+    }
 
     HFDecayTree theTree(fType, true, 0, false);
     theTree.addTrack(trkIt->first, idFromMass(fTrack1Mass));
@@ -120,8 +129,8 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     if (fPvIpS > 0) theTree.addNodeCut(&HFDecayTree::passPvips,      -1,   fPvIpS, "pvips");
 
     fSequentialFitter->doFit(&theTree);
-    theTree.dump();
     if (fVerbose) {
+      theTree.dump();
       pCand = theTree.getAnaCand();
       if (0 != pCand) {
 	cout << "==> filled this candidate!" << endl;
