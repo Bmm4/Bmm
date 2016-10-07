@@ -1362,6 +1362,16 @@ void plotClass::readCuts(string filename) {
 	if (dump) cout << j-1 << " " << "fls3d:                 " << cutvalue << endl;
       }
 
+      if (cutname == "flxyLo") {
+	a->flxyLo = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "flxyLo:                " << cutvalue << endl;
+      }
+
+      if (cutname == "flxyHi") {
+	a->flxyHi = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "flxyHi:                " << cutvalue << endl;
+      }
+
       if (cutname == "docatrk") {
 	a->docatrk = cutvalue; ok = 1;
 	if (dump) cout << j-1 << " " << "docatrk:               " << cutvalue << endl;

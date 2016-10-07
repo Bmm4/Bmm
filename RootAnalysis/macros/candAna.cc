@@ -61,6 +61,12 @@ void candAna::endAnalysis() {
   } else {
     cout << Form("==> mon%s: error, histogram not found!", fName.c_str()) << endl;
   }
+
+  h1 = ((TH1D*)fHistDir->Get("hmc"));
+  if (h1) h1->Write();
+  h1 = ((TH1D*)fHistDir->Get("hda"));
+  if (h1) h1->Write();
+
 }
 
 
@@ -71,6 +77,14 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1);
   fpEvt = evt;
   fBadEvent = false;
+
+  if (1233 == fVerbose) {
+    cout << "----------------------------------------------------------------------" << endl;
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      fpEvt->getCand(iC)->dump();
+    }
+  }
+
 
   if (1234 == fVerbose) {
     fpEvt->dump();
@@ -91,6 +105,77 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   if (1237 == fVerbose) {
     cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
     fpEvt->dumpGenBlock();
+    return;
+  }
+
+  if (1238 == fVerbose) {
+    fHistDir->cd();
+    TAnaCand *pCand(0);
+    TAnaTrack *p1(0), *p2(0);
+    static int first(1);
+    static TH1D *hmc(0), *hda(0);
+    if (first == 1) {
+      first = 0;
+      // hmc = new TH1D("hmc", "", 100, 1.0, 1.05);
+      // hda = new TH1D("hda", "", 100, 1.0, 1.05);
+      // hmc = new TH1D("hmc", "", 100, 0.45, 0.55);
+      // hda = new TH1D("hda", "", 100, 0.45, 0.55);
+      hmc = new TH1D("hmc", "", 100, 1.0, 1.2);
+      hda = new TH1D("hda", "", 100, 1.0, 1.2);
+    }
+    int GETYPE(3122);
+    int DATYPE(113122);
+    //    fpEvt->dumpGenBlock();
+    TGenCand *pGC(0), *pG1(0), *pG2(0);
+    int nmatch(0);
+    for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+      pGC = fpEvt->getGenCand(iC);
+      if (pGC->fID == GETYPE) {
+	pG1 = fpEvt->getGenCand(pGC->fDau1);
+	pG2 = fpEvt->getGenCand(pGC->fDau2);
+	if (pG1->fP.Perp() > 3.5 && pG2->fP.Perp() > 1.0) {
+	  cout << "======================================================================" << endl;
+	  cout << "--> found " << GETYPE << " in evt = " << fEvt
+	       << " with flight length = " << pG1->fV.Mag()
+	       << endl;
+	  pGC->dump();
+	  pG1->dump();
+	  pG2->dump();
+	  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+	    int idx = fpEvt->getSimpleTrack(i)->getGenIndex();
+	    if (idx == pGC->fDau1) {
+	      cout << "reco track " << i << " matches " << pGC->fDau1 << endl;
+	      fpEvt->getSimpleTrack(i)->dump();
+	      ++nmatch;
+	    }
+	    if (idx == pGC->fDau2) {
+	      cout << "reco track " << i << " matches " << pGC->fDau2 << endl;
+	      fpEvt->getSimpleTrack(i)->dump();
+	      ++nmatch;
+	    }
+	  }
+	  if (nmatch == 2) break;
+	}
+      }
+    }
+
+    TAnaTrack *q1(0), *q2(0);
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      pCand = fpEvt->getCand(iC);
+      if (pCand->fType == DATYPE) {
+	q1 = fpEvt->getSigTrack(pCand->fSig1);
+	q2 = fpEvt->getSigTrack(pCand->fSig2);
+	if (q1->fPlab.Perp() > 3.5 && q2->fPlab.Perp() > 1.5) {
+	  hda->Fill(pCand->fMass);
+	  cout << "    ==> found " << DATYPE << "!!!" << endl;
+	  cout << "pCand->fSig1 = " << pCand->fSig1 << " pCand->fSig2 = " << pCand->fSig2 << endl;
+	  q1->dump();
+	  q2->dump();
+	  cout << "----------------------------------------------------------------------" << endl;
+	  break;
+	}
+      }
+    }
     return;
   }
 
@@ -384,6 +469,10 @@ void candAna::candAnalysis() {
 
   // -- candidates for fake rate determination from light hadrons
   if (fpCand->fType == 11310 || fpCand->fType == 11333 || fpCand->fType == 113122) {
+    p1 = fpEvt->getSigTrack(fpCand->fSig1);
+    p2 = fpEvt->getSigTrack(fpCand->fSig2);
+  }
+  if (fpCand->fType == 2000100 || fpCand->fType == 2000101 || fpCand->fType == 2000102) {
     p1 = fpEvt->getSigTrack(fpCand->fSig1);
     p2 = fpEvt->getSigTrack(fpCand->fSig2);
   }
@@ -2014,9 +2103,14 @@ void candAna::readCuts(string fileName, int dump) {
 	  fCuts[j-1]->flsxy = cutvalue; ok = 1;
 	}
 
-	if (cutname == "flsxy") {
+	if (cutname == "flxyLo") {
 	  cutvalue = atof(lineItems[j].c_str());
-	  fCuts[j-1]->flsxy = cutvalue; ok = 1;
+	  fCuts[j-1]->flxyLo = cutvalue; ok = 1;
+	}
+
+	if (cutname == "flxyHi") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->flxyHi = cutvalue; ok = 1;
 	}
 
 	if (cutname == "chi2dof") {
