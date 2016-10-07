@@ -4,6 +4,8 @@ NOPRESELECTION      1
 TRIGRANGE    NOTRIGGER
 # -- baseCuts
 +input cuts/baseCuts.cuts
+flxyLo    -1.0	    -1.0       -1.0        -1.0
+flxyHi     3.0	     3.0        3.0         3.0
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks
