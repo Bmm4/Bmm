@@ -50,19 +50,19 @@ foreach $f (@merges) {
 @rootfiles = sort(@urootfiles);
 
 # -- now do it
-if ($opt_d) {
-    print "hadd $output \n";
-    foreach $f (@rootfiles) {print "  $f\n";}
-    exit(0);
-} else {
-    if ($#rootfiles > 0) {
-	print "hadd $output @rootfiles\n";
+if ($#rootfiles > 0) {
+    print "hadd $output @rootfiles\n";
+    if ($opt_d) {
+    } else {
 	if (-e "$output") {unlink("$output"); }
 	system("hadd $output @rootfiles");
+    }
+} else {
+    ($oneFile = $rootfiles[0]) =~ s%$root%$psi%g;
+    print "lcg-cp -b -D srmv2 $oneFile $output \n";
+    if ($opt_d) {
     } else {
-	($oneFile = $rootfiles[0]) =~ s%$dcap%$psi%g;
 	if (-e "$output") {unlink("$output"); }
-	print "lcg-cp -b -D srmv2 $oneFile $output \n";
 	system("lcg-cp -b -D srmv2 $oneFile $output");
     }
 }
