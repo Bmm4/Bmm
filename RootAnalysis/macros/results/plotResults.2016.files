@@ -11,7 +11,7 @@ type=bspsiphi,acc,mcOff bf=(1.07,0.09)e-3  eff=(2.59,0.04)e-3 file=scratch/bmm-m
 # -- B0
 type=bdpsikstar,data    lumi=27.8          file=scratch/bmm-data-bmmCharmonium2016-v02.root
 type=bdpsikstar,mc      bf=(1.32,0.06)e-3  eff=(3.62,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstar-v02.root
-type=bdpsikstar,acc,mc  bf=(1.32,0.06)e-3  eff=(9.53,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstar-v02.root
+type=bdpsikstar,acc,mc  bf=(1.32,0.06)e-3  eff=(9.53,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstarAcc-v02.root
 # -- dimuons
 type=bmm,data           lumi=27.8          file=scratch/bmm-data-bmmCharmonium2016-v02.root
 type=bdmm,mc            bf=(1.06,0.09)e-10 eff=(1.48,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToMuMu-v02.root
