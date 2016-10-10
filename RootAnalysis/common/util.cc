@@ -597,6 +597,9 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
   } else if (6 == digits ) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (digits <0) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
   } else {
   }
 
