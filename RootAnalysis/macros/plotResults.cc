@@ -87,6 +87,7 @@ void plotResults::makeAll(string what) {
     genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
     genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
     genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+    genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
 
 
     // -- loop over all (effective) two-body backgrounds
