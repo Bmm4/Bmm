@@ -130,8 +130,11 @@ void plotReducedOverlays::makeAll(string what) {
 
     printCuts(cout);
     makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
+    makeSampleOverlay("bmmData", "bdmmMc", "Presel");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
+    makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
     makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
+    makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
   }
 
@@ -1297,7 +1300,7 @@ void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
   } else {
     h1->Draw();
   }
-  h2->Draw("same");
+  h2->Draw("samehist");
   h1->SetMaximum(1.2*ymax);
 
   // -- Lower plot
