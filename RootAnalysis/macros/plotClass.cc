@@ -69,6 +69,19 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fStampCms = "BMM4";
   fStampLumi = "XXX fb^{-1}";
 
+  fCrossSection  = 5.679e+01; // mb
+  fCrossSection *= 1.0e12;
+
+
+  fBfPsiMuMu     = 0.05961;
+  fBfPsiMuMuE    = 0.00033;
+  fBfPhiKpKm     = 0.489;
+  fBfPhiKpKmE    = 0.005;
+
+  // L6134 of /cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw-patch/CMSSW_8_0_19_patch2/src/GeneratorInterface/EvtGenInterface/data/DECAY_NOLONGLIFE.DEC
+  fBfKstarKpPim  = 0.6657;
+  fBfKstarKpPimE = 0.007;   // assume 1% error as for phi -> K+K-
+
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
     fYear = 2011;
@@ -1724,22 +1737,36 @@ void plotClass::loadFiles(string afiles) {
     if (sbuffer.size() < 1) continue;
 
     string::size_type m1 = sbuffer.find("lumi=");
-    string::size_type m2 = sbuffer.find("file=");
+    string::size_type m2 = sbuffer.find("eff=");
+    string::size_type m3 = sbuffer.find("file=");
     string stype("nada");
     bool useBf(false);
-    // cout << "sbuffer: " << sbuffer  << " m1: " << m1 << endl;
     if (m1 > sbuffer.size()) {
       m1 = sbuffer.find("bf=");
       useBf = true;
+    }
+    bool useEff(true);
+    double eff(0.), effE(0.);
+    if (m2 > sbuffer.size()) {
+      m2 = sbuffer.find("file=");
+      useEff = false;
+    } else {
+      string seff = sbuffer.substr(m2+4, m3-m2-4);
+      cout << "seff = ->" << seff << "<-" << endl;
+      float val, err;
+      int expo;
+      sscanf(seff.c_str(), "(%f,%f)e%d", &val, &err, &expo);
+      eff = val*TMath::Power(10., expo);
+      effE = err*TMath::Power(10., expo);
     }
     stype = sbuffer.substr(5, m1-5);
     string slumi("nada"), sbf("nada");
     if (useBf) {
       sbf = sbuffer.substr(m1+3, m2-m1-3);
     } else {
-      slumi = sbuffer.substr(m1+5, m2-m1-5);
+      slumi = sbuffer.substr(m1+5, m3-m1-5);
     }
-    string sfile = sbuffer.substr(m2+5);
+    string sfile = sbuffer.substr(m3+5);
 
     string sname("nada"), sdecay("nada"), ldecay("");
 
@@ -1777,20 +1804,22 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
       }
 
-      if (string::npos != stype.find("bupsik,")) {
+       if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikData";
         sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
         ldecay = "\\bupsik";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1803,8 +1832,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu*fBfPhiKpKm;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfPhiKpKmE*fBfPhiKpKmE/fBfPhiKpKm/fBfPhiKpKm);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1817,8 +1847,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu*fBfKstarKpPim;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfKstarKpPimE*fBfKstarKpPimE/fBfKstarKpPim/fBfKstarKpPim);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1833,6 +1864,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1856,8 +1888,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
       }
@@ -1871,8 +1904,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu*fBfPhiKpKm;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfPhiKpKmE*fBfPhiKpKmE/fBfPhiKpKm/fBfPhiKpKm);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1887,6 +1921,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
+	ds->fFilterEff = eff;
 	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
@@ -1903,6 +1938,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1917,8 +1953,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bf*fBfPsiMuMu*fBfKstarKpPim;
+	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfKstarKpPimE*fBfKstarKpPimE/fBfKstarKpPim/fBfKstarKpPim);
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1934,6 +1971,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1950,6 +1988,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1966,6 +2005,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -1982,6 +2022,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2000,6 +2041,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2016,6 +2058,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2032,6 +2075,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2048,6 +2092,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2064,6 +2109,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2080,6 +2126,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2096,6 +2143,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
