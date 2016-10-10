@@ -112,6 +112,19 @@ void plotResults::bookHist(string dsname) {
 
 // ----------------------------------------------------------------------
 void plotResults::dumpDatasets() {
+  fTEX << "% ----------------------------------------------------------------------" << endl;
+  fTEX << formatTex(fBfPsiMuMu, Form("%s:BfPsiMuMu:val", fSuffix.c_str()), 5) << endl;
+  fTEX << formatTex(fBfPsiMuMuE, Form("%s:BfPsiMuMu:err", fSuffix.c_str()), 5) << endl;
+
+  fTEX << formatTex(fBfPhiKpKm, Form("%s:BfPhiKpKm:val", fSuffix.c_str()), 5) << endl;
+  fTEX << formatTex(fBfPhiKpKmE, Form("%s:BfPhiKpKm:err", fSuffix.c_str()), 5) << endl;
+
+  fTEX << formatTex(fBfKstarKpPim, Form("%s:BfKstarKpPim:val", fSuffix.c_str()), 5) << endl;
+  fTEX << formatTex(fBfKstarKpPim, Form("%s:BfKstarKpPim:err", fSuffix.c_str()), 5) << endl;
+
+  fTEX << formatTexErrSci(fCrossSection, 0., Form("%s:PythiaCrossSection:val", fSuffix.c_str()), -1) << endl;
+
+  fTEX << "% ----------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     TH1D *h1 = it->second->getHist("monEvents", false);
     int nEvtFile = static_cast<int>(h1->GetBinContent(1));
@@ -124,8 +137,16 @@ void plotResults::dumpDatasets() {
     fTEX << formatTex(nCands, Form("%s:%s:nCands", fSuffix.c_str(), it->first.c_str()), 0) << endl;
     fTEX << formatTex(epscand, Form("%s:%s:epsCand:val", fSuffix.c_str(), it->first.c_str()), 4) << endl;
     fTEX << formatTex(epscandE, Form("%s:%s:epsCand:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
+    fTEX << formatTex(it->second->fFilterEff, Form("%s:%s:filterEff:val", fSuffix.c_str(), it->first.c_str()), 6) << endl;
+    fTEX << formatTex(0., Form("%s:%s:filterEff:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
     if (it->second->fBf > 0.) {
       fTEX << formatTexErrSci(it->second->fBf, it->second->fBfE, Form("%s:%s:bf", fSuffix.c_str(), it->first.c_str()), 2) << endl;
+      double eqLumi(0.);
+      if (it->second->fFilterEff > 0) {
+	eqLumi = nEvtFile/fCrossSection/it->second->fBf/it->second->fFilterEff;
+	fTEX << formatTex(eqLumi, Form("%s:%s:eqLumi:val", fSuffix.c_str(), it->first.c_str()), 1) << endl;
+	cout << it->first << ": eqLumi = " << eqLumi << " filterEff: " << it->second->fFilterEff << endl;
+      }
     }
     if (it->second->fLumi > 0.) {
       fTEX << formatTex(it->second->fLumi, Form("%s:%s:lumi", fSuffix.c_str(), it->first.c_str()), 1) << endl;
@@ -462,17 +483,24 @@ void plotResults::loadFiles(string afiles) {
   is.close();
 
   int cnt(0);
-  cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
-  cout << Form("   %20s: %90s", "Dataset name", "Filename") << endl;
-  cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << Form("   %20s: %70s %15s %9s %8s %8s", "Dataset name", "Filename", "LaTeX", "Lumi", "Eff", "BF") << endl;
+  cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     // cout << it->first << endl;
     // cout << it->second->fName << endl;
     // cout << it->second->fF->GetName() << endl;
-    cout << Form("%2d %20s: %90s ", cnt, it->first.c_str(), it->second->fF->GetName()) << it->second->fLatexName;
-    //    cout << " BF = " << it->second->fBf << " lumi = " << it->second->fLumi;
-    cout << endl;
+    cout << Form("%2d %20s: %70s %15s %8.1f %.2e %.2e",
+		 cnt,
+		 it->first.c_str(),
+		 it->second->fF->GetName(),
+		 it->second->fLatexName.c_str(),
+		 it->second->fLumi,
+		 it->second->fFilterEff,
+		 it->second->fBf
+		 )
+	 << endl;
     ++cnt;
   }
-  cout << "-----------------------------------------------------------------------------------------------------------------------" << endl;
+  cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
 }
