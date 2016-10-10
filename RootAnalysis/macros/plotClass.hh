@@ -186,6 +186,10 @@ public :
 		 LUMI        // according to the number provided in fLumi       [/fb]!!
   };
   double fNorm, fLumi; // [fLumi] = 1/fb!!!
+  double fCrossSection;
+  double fBfPsiMuMu, fBfPsiMuMuE,
+    fBfPhiKpKm, fBfPhiKpKmE,
+    fBfKstarKpPim, fBfKstarKpPimE;
 
   bool   fDBX, fDoUseBDT;
   int    fVerbose;
