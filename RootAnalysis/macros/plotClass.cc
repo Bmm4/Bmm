@@ -1752,7 +1752,6 @@ void plotClass::loadFiles(string afiles) {
       useEff = false;
     } else {
       string seff = sbuffer.substr(m2+4, m3-m2-4);
-      cout << "seff = ->" << seff << "<-" << endl;
       float val, err;
       int expo;
       sscanf(seff.c_str(), "(%f,%f)e%d", &val, &err, &expo);
