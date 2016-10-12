@@ -239,6 +239,29 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (fVerbose > 0) cout << "matched decay with 2 bremsstrahlung photons" << endl;
 	break;
       }
+
+      // -- allow for arbitrary number of photons
+      multiset<int> genDaughters2 = genDaughters;
+      for (multiset<int>::iterator it = fDaughtersSet.begin(); it != fDaughtersSet.end(); ++it) {
+	std::multiset<int>::iterator hit(genDaughters2.find(*it));
+	if (hit!= genDaughters2.end()) {
+	  genDaughters2.erase(hit);
+	}
+      }
+      bool onlyPhotonsLeft(true);
+      int nphotons(0);
+      for (multiset<int>::iterator it = genDaughters2.begin(); it != genDaughters2.end(); ++it) {
+	if (*it != 22) {
+	  onlyPhotonsLeft = false;
+	} else {
+	  ++nphotons;
+	}
+      }
+      if (onlyPhotonsLeft) {
+	matchedDecay = 1;
+	if (fVerbose > 0) cout << "matched decay with " << nphotons << " bremsstrahlung photons" << endl;
+	break;
+      }
     }
   }
 
@@ -298,7 +321,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       int gidx = pTrack->getGenIndex();
       if (genIndices.find(gidx) != genIndices.end()) {
 	if (fVerbose > 2) {
-	  cout << "Found simple track: " << it;
+	  cout << "Found simple track: " << it << " ";
 	  pTrack->dump();
 	}
 
