@@ -62,23 +62,14 @@ void candAnaMuMu::genMatch() {
   TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0);
   bool goodMatch(false);
   if (!(3000020 == TYPE)) {
-    //    cout << "event " << fEvent << " nGetT() = " << fpEvt->nGenT() << endl;
-    // for (int i = 0; i < fpEvt->nGenT(); ++i) {
-    //   fpEvt->getGenT(i)->dump();
-    // }
-    // for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    //   cout << "cand " << fpEvt->getCand(iC)->fType << endl;
-    // }
     for (int i = 0; i < fpEvt->nGenT(); ++i) {
       pC = fpEvt->getGenT(i);
       if (TRUTHCAND == TMath::Abs(pC->fID)) {
 	pM1 = pM2 = 0;
 	pB = pC;
-	//	cout << "Found B type " << TRUTHCAND  << " at " << i << endl;
 	for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
 	  pC = fpEvt->getGenTWithIndex(id);
 	  if ((id1 == TMath::Abs(pC->fID)) || (id2 == TMath::Abs(pC->fID))) {
-	    //	    cout << "found daughter type " << pC->fID << " of truth-B at " << id << endl;
 	    if (0 == pM1) {
 	      pM1 = fpEvt->getGenTWithIndex(id);
 	    } else {
@@ -346,7 +337,10 @@ void candAnaMuMu::efficiencyCalculation() {
   // -- gen level
   TGenCand *pB(0), *pM1(0), *pM2(0);
   if (-1 == fGenM1Tmi || -1 == fGenM2Tmi) {
-    if (fVerbose > 2 ) cout << "--------------------> No matched signal decay found" << endl;
+    if (fVerbose > 2 ) {
+      cout << "--------------------> No matched signal decay found" << endl;
+      fpEvt->dumpGenBlock();
+    }
     return;
   }
   pB  = fpEvt->getGenTWithIndex(fGenBTmi);
@@ -441,6 +435,7 @@ void candAnaMuMu::efficiencyCalculation() {
     fETcandMass = -99.;
     fETtau      = -99.;
   }
+  if (fVerbose > 2) cout << "Filling effTree" << endl;
   fEffTree->Fill();
 
 }
