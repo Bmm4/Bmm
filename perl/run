@@ -319,6 +319,7 @@ sub makeJdlFile {
 #    print OUT "PerusalFileEnable = true;\n";
 #    print OUT "PerusalTimeInterval = 30;\n";
     print OUT "Rank          = other.GlueCEStateFreeCPUs;\n";
+    print OUT "Rank          =-other.GlueCEStateEstimatedResponseTime;\n";
 
     if ($opt_D) {
 	if ($opt_D eq "any") {
