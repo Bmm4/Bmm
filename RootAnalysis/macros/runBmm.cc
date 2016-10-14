@@ -47,6 +47,7 @@ int main(int argc, char *argv[]) {
   int blind(1);
   int isMC(0);
   int year(0);
+  int json(0);
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -87,6 +88,7 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-C"))  {cutFile    = string(argv[++i]);           }     // file with cuts
     if (!strcmp(argv[i],"-D"))  {dirName    = string(argv[++i]);  dirspec = 1; } // where to put the output
     if (!strcmp(argv[i],"-f"))  {fileName   = string(argv[++i]); file = 1; }     // single file instead of chain
+    if (!strcmp(argv[i],"-j"))  {json       = 1; }                               // ignore JSON status
     if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
     if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run
     if (!strcmp(argv[i],"-r"))  {readerName = string(argv[++i]); }               // which tree reader class to run
@@ -210,6 +212,9 @@ int main(int argc, char *argv[]) {
     if (verbose > -99) a->setVerbosity(verbose);
     a->openHistFile(histfile);
 
+    if (json) {
+      a->ignoreJSON();
+    }
     if (isMC) {
       a->setMC(1);
       blind = 0;
