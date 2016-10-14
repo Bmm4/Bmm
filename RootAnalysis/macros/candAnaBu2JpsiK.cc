@@ -52,7 +52,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   fKaonPtNrf     = pk->fPlab.Perp();
   fKaonEtaNrf    = pk->fPlab.Eta();
 
-  if (fCandTmi > -1) {
+  if (fCandTmi > -1 && fGenM1Tmi > -1 && fGenM2Tmi > -1 && fGenK1Tmi > -1) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(pk->fIndex)->getGenIndex());
     fKPtGen     = pg1->fP.Perp();
     fKEtaGen    = pg1->fP.Eta();

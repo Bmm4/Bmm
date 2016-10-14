@@ -133,12 +133,16 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   }
 
   if (fCandTmi > -1) {
-    TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
-    fKaPtGen     = pg1->fP.Perp();
-    fKaEtaGen    = pg1->fP.Eta();
-    TGenCand *pg2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex());
-    fPiPtGen     = pg2->fP.Perp();
-    fPiEtaGen    = pg2->fP.Eta();
+    if (fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex() < fpEvt->nGenT()) {
+      TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
+      fKaPtGen     = pg1->fP.Perp();
+      fKaEtaGen    = pg1->fP.Eta();
+    }
+    if (fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex() < fpEvt->nGenT()) {
+      TGenCand *pg2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex());
+      fPiPtGen     = pg2->fP.Perp();
+      fPiEtaGen    = pg2->fP.Eta();
+    }
   } else {
     fKaPtGen     = -99.;
     fKaEtaGen    = -99.;
