@@ -80,9 +80,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   if (1233 == fVerbose) {
     cout << "----------------------------------------------------------------------" << endl;
+    cout << "new event: " << fEvt << endl;
+    cout << "----------------------------------------------------------------------" << endl;
     for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
       fpEvt->getCand(iC)->dump();
     }
+    return;
   }
 
 
@@ -223,6 +226,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
+
+  // -- special call for non-candidate analysis (e.g. candAnaFake for MC)
+  if (TYPE == -1) {
+    candAnalysis();
+    return;
+  }
 
   TAnaCand *pCand(0);
   if (fVerbose == -66) {
@@ -523,6 +532,11 @@ void candAna::candAnalysis() {
   fMu1rBDT      = -1.;
   fMu1rMvaId    = mvaMuon(p1, fMu1rBDT, false);
 
+  fMu1BDTLM     = -1.;
+  fMu1MvaIdLM   = mvaMuonLM(p1, fMu1BDTLM);
+  fMu1rBDTLM    = -1.;
+  fMu1rMvaIdLM  = mvaMuonLM(p1, fMu1rBDTLM, false);
+
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 1 "<<endl;
   // false - consider only selecetd triggers, true - match to muon trigger objects
@@ -538,6 +552,7 @@ void candAna::candAnalysis() {
   fMu1Phi       = p1->fRefPlab.Phi();
   fMu1PtNrf     = p1->fPlab.Perp();
   fMu1EtaNrf    = p1->fPlab.Eta();
+  fMu1PhiNrf    = p1->fPlab.Phi();
   fMu1TkQuality = highPurity(p1);
   fMu1Q         = p1->fQ;
   fMu1Pix       = fpReader->numberOfPixLayers(p1);
@@ -582,11 +597,17 @@ void candAna::candAnalysis() {
   fMu2TrkLayer  = fpReader->numberOfTrackerLayers(p2);
   fMu2GmId      = ((p2->fMuID & 2) == 2);
   fMu2TmId      = tightMuon(p2);
+
   fMu2BDT       = -1.;
   fMu2MvaId     = mvaMuon(p2, fMu2BDT);
   fMu2rTmId     = tightMuon(p2, false);
   fMu2rBDT      = -1.;
   fMu2rMvaId    = mvaMuon(p2, fMu2rBDT, false);
+
+  fMu2BDTLM     = -1.;
+  fMu2MvaIdLM   = mvaMuonLM(p2, fMu2BDTLM);
+  fMu2rBDTLM    = -1.;
+  fMu2rMvaIdLM  = mvaMuonLM(p2, fMu2rBDTLM, false);
 
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 2 "<<endl;
@@ -603,6 +624,7 @@ void candAna::candAnalysis() {
   fMu2Phi       = p2->fRefPlab.Phi();
   fMu2PtNrf     = p2->fPlab.Perp();
   fMu2EtaNrf    = p2->fPlab.Eta();
+  fMu2PhiNrf    = p2->fPlab.Phi();
   fMu2TkQuality = highPurity(p2);
   fMu2Q         = p2->fQ;
   fMu2Pix       = fpReader->numberOfPixLayers(p2);
@@ -1858,6 +1880,12 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m1rmvaid",&fMu1rMvaId,          "m1rmvaid/O");
   t->Branch("m1mvabdt",&fMu1BDT,            "m1mvabdt/D");
   t->Branch("m1rmvabdt",&fMu1rBDT,          "m1rmvabdt/D");
+
+  t->Branch("m1mvaidlm",   &fMu1MvaIdLM,    "m1mvaidlm/O");
+  t->Branch("m1rmvaidlm",  &fMu1rMvaIdLM,   "m1rmvaidlm/O");
+  t->Branch("m1mvabdtlm",  &fMu1BDTLM,      "m1mvabdtlm/D");
+  t->Branch("m1rmvabdtlm", &fMu1rBDTLM,     "m1rmvabdtlm/D");
+
   t->Branch("m1trigm", &fMu1TrigM,          "m1trigm/D");
 
   t->Branch("m1pt",    &fMu1Pt,             "m1pt/D");
@@ -1884,6 +1912,12 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m2rmvaid",&fMu2rMvaId,         "m2rmvaid/O");
   t->Branch("m2mvabdt",&fMu2BDT,            "m2mvabdt/D");
   t->Branch("m2rmvabdt",&fMu2rBDT,          "m2rmvabdt/D");
+
+  t->Branch("m2mvaidlm",   &fMu2MvaIdLM,    "m2mvaidlm/O");
+  t->Branch("m2rmvaidlm",  &fMu2rMvaIdLM,   "m2rmvaidlm/O");
+  t->Branch("m2mvabdtlm",  &fMu2BDTLM,      "m2mvabdtlm/D");
+  t->Branch("m2rmvabdtlm", &fMu2rBDTLM,     "m2rmvabdtlm/D");
+
   t->Branch("m2trigm", &fMu2TrigM,          "m2trigm/D");
 
   t->Branch("m2pt",    &fMu2Pt,             "m2pt/D");
@@ -2526,45 +2560,6 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
   result = pt->fBarrelBDTresponse;
   return (result > 0);
 
-  if (!tightMuon(pt)) {
-    result = -2.;
-    return false;
-  }
-
-  mrd.trkValidFract    = pt->fItrkValidFraction;
-  mrd.glbNChi2         = pt->fGtrkNormChi2;
-  mrd.pt               = pt->fPlab.Perp();
-  mrd.eta              = pt->fPlab.Eta();
-  mrd.segComp          = pt->fSegmentComp;
-  mrd.chi2LocMom       = pt->fChi2LocalMomentum;
-  mrd.chi2LocPos       = pt->fChi2LocalPosition;
-  mrd.glbTrackProb     = pt->fGtrkProb;
-  mrd.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
-  mrd.NTrkEHitsOut     = static_cast<float>(pt->fNumberOfLostTrkHits);
-
-  mrd.dpt                  = pt->fNmatchedStations;
-  mrd.intvalidpixelhits    = fpReader->numberOfPixLayers(pt); // FIXME, kind of correct
-  mrd.inttrklayerswithhits = fpReader->numberOfTrackerLayers(pt);
-  mrd.intnmatchedstations  = pt->fNmatchedStations;
-
-  mrd.kink             = pt->fMuonChi2;
-
-  mrd.dpt              = pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag();
-  mrd.dptrel           = TMath::Abs(pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag())/pt->fInnerPlab.Mag();
-  if (pt->fOuterPlab.Mag() > 3.) {
-    mrd.deta             = pt->fInnerPlab.Eta() - pt->fOuterPlab.Eta();
-    mrd.dphi             = pt->fInnerPlab.DeltaPhi(pt->fOuterPlab);
-    mrd.dr               = pt->fInnerPlab.DeltaR(pt->fOuterPlab);
-  } else {
-    mrd.deta             = -99.;
-    mrd.dphi             = -99.;
-    mrd.dr               = -99.;
-  }
-
-
-  result = fMvaMuonID->EvaluateMVA("BDT");
-  if (result > MUBDT) return true;
-  return false;
 }
 
 
@@ -2614,6 +2609,107 @@ bool candAna::mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass) {
   if (idx > -1 && idx < fpEvt->nMuons()) {
     TAnaMuon *pM = fpEvt->getMuon(idx);
     return mvaMuon(pM, result, hadronsPass);
+  } else {
+    cout << "muon index out of range!!!!!" << endl;
+  }
+  return false;
+
+}
+
+
+// ----------------------------------------------------------------------
+bool candAna::mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass) {
+
+  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
+    return true;
+  }
+
+  if (!tightMuon(pt)) {
+    result = -2.;
+    return false;
+  }
+
+  mrd.trkValidFract    = pt->fItrkValidFraction;
+  mrd.glbNChi2         = pt->fGtrkNormChi2;
+  mrd.pt               = pt->fPlab.Perp();
+  mrd.eta              = pt->fPlab.Eta();
+  mrd.segComp          = pt->fSegmentComp;
+  mrd.chi2LocMom       = pt->fChi2LocalMomentum;
+  mrd.chi2LocPos       = pt->fChi2LocalPosition;
+  mrd.glbTrackProb     = pt->fGtrkProb;
+  mrd.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
+  mrd.NTrkEHitsOut     = static_cast<float>(pt->fNumberOfLostTrkHits);
+
+  mrd.dpt                  = pt->fNmatchedStations;
+  mrd.intvalidpixelhits    = fpReader->numberOfPixLayers(pt); // FIXME, kind of correct
+  mrd.inttrklayerswithhits = fpReader->numberOfTrackerLayers(pt);
+  mrd.intnmatchedstations  = pt->fNmatchedStations;
+
+  mrd.kink             = pt->fMuonChi2;
+
+  mrd.dpt              = pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag();
+  mrd.dptrel           = TMath::Abs(pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag())/pt->fInnerPlab.Mag();
+  if (pt->fOuterPlab.Mag() > 3.) {
+    mrd.deta             = pt->fInnerPlab.Eta() - pt->fOuterPlab.Eta();
+    mrd.dphi             = pt->fInnerPlab.DeltaPhi(pt->fOuterPlab);
+    mrd.dr               = pt->fInnerPlab.DeltaR(pt->fOuterPlab);
+  } else {
+    mrd.deta             = -99.;
+    mrd.dphi             = -99.;
+    mrd.dr               = -99.;
+  }
+
+
+  result = fMvaMuonID->EvaluateMVA("BDT");
+  if (result > MUBDT) return true;
+  return false;
+}
+
+
+// ----------------------------------------------------------------------
+bool candAna::mvaMuonLM(TSimpleTrack *pt, double &result, bool hadronsPass) {
+
+  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
+    result = 99.;
+    return true;
+  }
+
+  if (0 == pt->getMuonID()) {
+    result = -3.;
+    return false;
+  }
+
+  TAnaMuon *pM(0);
+  int idx = pt->getIndex();
+  for (int i = 0; i < fpEvt->nMuons(); ++i) {
+    pM = fpEvt->getMuon(i);
+    if (idx == pM->fIndex) {
+      return mvaMuonLM(pM, result, hadronsPass);
+    }
+  }
+  return false;
+
+}
+
+
+// ----------------------------------------------------------------------
+bool candAna::mvaMuonLM(TAnaTrack *pt, double &result, bool hadronsPass) {
+
+  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
+    result = 99.;
+    return true;
+  }
+
+  if (0 == pt->fMuID) {
+    result = -3.;
+    return false;
+  }
+
+
+  int idx = pt->fMuIndex;
+  if (idx > -1 && idx < fpEvt->nMuons()) {
+    TAnaMuon *pM = fpEvt->getMuon(idx);
+    return mvaMuonLM(pM, result, hadronsPass);
   } else {
     cout << "muon index out of range!!!!!" << endl;
   }
