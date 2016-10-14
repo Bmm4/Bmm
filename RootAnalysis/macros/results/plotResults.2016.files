@@ -34,3 +34,7 @@ type=bdpipi,mcOff,bg    bf=(5.12,0.19)e-6  eff=(1.50,0.03)e-3 file=scratch/bmm-m
 type=lbppi,mcOff,bg       bf=(4.1,0.8)e-6    eff=(1.89,0.10)e-4 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPPi_BMuonFilter-v02.root
 type=lbpk,mcOff,bg,acc    bf=(4.9,0.9)e-6    eff=(1.06,0.02)e-3 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPK-v02.root
 type=lbpmunu,acc,mcOff,bg bf=(4.94,2.19)e-4  eff=(1.09,0.02)e-3 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPMuNu-v02.root
+# -- fake
+# type=fake,data            lumi=27.8  file=scratch/dstar-data-dstarCharmonium2016-v02.root
+type=fake,data            lumi=27.8  file=/scratch/ursl/cdstar-data-dstarCharmonium2016B-v02.root
+type=fake,mc              lumi=27.8  file=/scratch/ursl/cbmm-mc-RunIISpring16DR80-BdToKPi_BMuonFilter-v02.root
