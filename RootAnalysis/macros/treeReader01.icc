@@ -10,7 +10,7 @@ treeReader01::treeReader01(TChain *chain, TString evtClassName) {
   }
   fpChain = chain;
   fNentries = chain->GetEntries();
-  fForceJson = false;
+  fIgnoreJson = false;
   init(evtClassName);
 }
 
@@ -190,12 +190,6 @@ int treeReader01::loop(int nevents, int start) {
 	    << ", time now: " << ts.AsString("lc")
 	    << ")" << endl;
     }
-
-    if (fForceJson && !fpJSON->good(fRun, fLS)) {
-       cout << "Skipping event from run = " << fRun << " LS = " << fLS << endl;
-       continue;
-    }
-
 
     eventProcessing();
   }

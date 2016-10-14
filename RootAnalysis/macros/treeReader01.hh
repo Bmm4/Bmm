@@ -57,7 +57,7 @@ public:
   virtual int        numberOfTrackerLayers(TAnaTrack *t);
   virtual void       setJSONFile(const char *name) {JSONFILE = name;}
   virtual void       setLumiFile(const char *name) {LUMIFILE = name;}
-  virtual void       forceJSON() {fForceJson = true;}
+  virtual void       ignoreJSON()  {std::cout << "ignoreJSON() called" << std::endl; fIgnoreJson = true;}
   virtual PdTrigger* pdTrigger() {return fpPdTrigger;}
 
   int fVerbose;
@@ -97,7 +97,7 @@ protected:
   int TYPE;
   int BLIND;
   std::string JSONFILE, DSNAME, LUMIFILE;
-  bool fForceJson;
+  bool fIgnoreJson;
 
   int fIsMC;
 };
