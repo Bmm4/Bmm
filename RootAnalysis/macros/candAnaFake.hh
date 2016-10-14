@@ -49,6 +49,46 @@ public:
 
 private:
 
+  static const int NTRKMAX = 10;
+  TTree *fFakeTree;
+  int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
+  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX];
+
+  float  fFakeInnerChi2[NTRKMAX]
+    , fFakeOuterChi2[NTRKMAX]
+    , fFakeChi2LocalPosition[NTRKMAX]
+    , fFakeChi2LocalMomentum[NTRKMAX]
+    , fFakeStaTrkMult[NTRKMAX]
+    , fFakeTmTrkMult[NTRKMAX]
+    , fFakeDeltaR[NTRKMAX]
+    , fFakeItrkValidFraction[NTRKMAX]
+    , fFakeSegmentComp[NTRKMAX]
+    , fFakeGtrkNormChi2[NTRKMAX]
+    , fFakeDz[NTRKMAX]
+    , fFakeLip[NTRKMAX]
+    , fFakeGtrkProb[NTRKMAX]
+    , fFakeMuonChi2[NTRKMAX]
+    , fFakeGlbKinkFinder[NTRKMAX]
+    , fFakeStaRelChi2[NTRKMAX]
+    , fFakeTrkRelChi2[NTRKMAX]
+    , fFakeGlbDeltaEtaPhi[NTRKMAX]
+    , fFakeTimeInOut[NTRKMAX]
+    , fFakeTimeInOutE[NTRKMAX]
+    ;
+
+  int fFakeNvalidMuonHits[NTRKMAX]
+    , fFakeNmatchedStations[NTRKMAX]
+    , fFakeLayersWithHits[NTRKMAX]
+    , fFakeNumberOfValidTrkHits[NTRKMAX]
+    , fFakeNumberOfLostTrkHits[NTRKMAX]
+    , fFakeNumberOfValidPixHits[NTRKMAX]
+    , fFakeRPChits1[NTRKMAX]
+    , fFakeRPChits2[NTRKMAX]
+    , fFakeRPChits3[NTRKMAX]
+    , fFakeRPChits4[NTRKMAX]
+
+    ;
+
 
 };
 
