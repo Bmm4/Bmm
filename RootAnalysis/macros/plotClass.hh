@@ -64,7 +64,7 @@ public :
 	    std::string setup = "m");
   virtual        ~plotClass();
 
-  enum MODE {UNSET, BMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI};
+  enum MODE {UNSET, BMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
 
   // -- stuff to run over the tree from any derived class
   TTree*         getTree(std::string ds, std::string dir = "", std::string tree = "events");
