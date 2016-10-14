@@ -64,6 +64,8 @@ void bmmReader::eventProcessing() {
   if (fIsMC) {
     json = 1;
     processType();
+  } else if (fIgnoreJson) {
+    json = 1;
   } else {
     json = fpJSON->good(fRun, fLS);
     fProcessType = -98;
