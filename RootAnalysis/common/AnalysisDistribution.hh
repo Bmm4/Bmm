@@ -17,7 +17,8 @@ class AnalysisDistribution: public TObject {
 
 public:
 
-  AnalysisDistribution(const char *name, const char *title, int nbins, double lo, double hi);
+  AnalysisDistribution(const char *name, const char *title, int nbins, double lo, double hi,
+		       double massLo = 4.8, double massHi = 6.0);
   AnalysisDistribution(const char *name, double SigLo=5.2, double SigHi=5.5,
 		       double Bg1Lo=5.0, double Bg1Hi=5.2, double Bg2Lo=5.5, double Bg2Hi=5.7);
   ~AnalysisDistribution();

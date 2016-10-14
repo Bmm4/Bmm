@@ -22,11 +22,11 @@ using std::cout;
 using std::endl;
 
 // ----------------------------------------------------------------------
-AnalysisDistribution::AnalysisDistribution(const char *name, const char *title, int nbins, double lo, double hi) {
+AnalysisDistribution::AnalysisDistribution(const char *name, const char *title, int nbins, double lo, double hi, double massLo, double massHi) {
   int NBINS(120);
   fSigLo = fSigHi = fBg1Lo = fBg1Hi = fBg2Lo = fBg2Hi = 0.0;
-  fMassLo = 4.8;
-  fMassHi = 6.0;
+  fMassLo = massLo;
+  fMassHi = massHi;
   fMassPeak = -1.;
   fMassSigma = -1.;
 
@@ -762,9 +762,9 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 
   if (fVerbose > 0) {
     c0->cd(1);
-    h0->Draw();
+    h0->Draw("hist");
     c0->cd(2);
-    h1->Draw();
+    h1->Draw("hist");
     c0->cd(3);
   }
 
@@ -796,9 +796,15 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     hm->DrawCopy();
 //     hMassBGL->SetMinimum(0.);
 //     hMassBGL->SetMaximum(hm->GetMaximum());
-    hMassBGL->Draw("same");
-    hMassBGH->Draw("same");
-    hMassSG->Draw("same");
+    hMassBGL->SetLineColor(kRed);
+    hMassBGL->SetLineStyle(kSolid);
+    hMassBGL->Draw("samehist");
+    hMassBGH->SetLineColor(kRed);
+    hMassBGH->SetLineStyle(kSolid);
+    hMassBGH->Draw("samehist");
+    hMassSG->SetLineColor(kBlue);
+    hMassSG->SetLineStyle(kSolid);
+    hMassSG->Draw("samehist");
   }
 
   // -- compute integrals
