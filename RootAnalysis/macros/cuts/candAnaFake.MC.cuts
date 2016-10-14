@@ -1,0 +1,15 @@
+TYPE            -1
+NOPRESELECTION      1
+TRIGRANGE    NOTRIGGER
+# -- baseCuts
++input cuts/baseCuts.cuts
+fls3d     -1.0	    -1.0       -1.0        -1.0
+flsxy     -1.0	    -1.0       -1.0        -1.0
+flxyLo    -1.0	    -1.0       -1.0        -1.0
+flxyHi     3.0	     3.0        3.0         3.0
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts
