@@ -122,6 +122,10 @@ public:
   virtual bool        mvaMuon(TSimpleTrack *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass = true);
 
+  virtual bool        mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass = true);
+  virtual bool        mvaMuonLM(TSimpleTrack *pt, double &result, bool hadronsPass = true);
+  virtual bool        mvaMuonLM(TAnaTrack *pt, double &result, bool hadronsPass = true);
+
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
 
   virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9);
@@ -220,6 +224,7 @@ public:
   TMVA::Reader *fMvaMuonID;
   mvaMuonIDData mrd;
   double  fMu1BDT, fMu2BDT, fMu1rBDT, fMu2rBDT;
+  double  fMu1BDTLM, fMu2BDTLM, fMu1rBDTLM, fMu2rBDTLM;
 
   muonData fMuonData;
   muonData fMu1Data, fMu2Data;
@@ -228,8 +233,8 @@ public:
   bool    fJSON, fCowboy;
   int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
-  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
-  bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId;
+  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1MvaIdLM, fMu2MvaIdLM, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
+  bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId, fMu1rMvaIdLM, fMu2rMvaIdLM;
   double  fMu1TrigM, fMu2TrigM;
 
   double  fDeltaR, fMuDist, fMuDeltaR, fMu1Chi2, fMu2Chi2;
@@ -237,7 +242,7 @@ public:
   double  fMu1Pt, fMu1Eta, fMu1Phi, fMu2Pt, fMu2Eta, fMu2Phi;
   double  fMu1PtGen, fMu2PtGen, fMu1EtaGen, fMu2EtaGen, fMu1PhiGen, fMu2PhiGen;
   int     fMu1GenID, fMu2GenID;
-  double  fMu1PtNrf, fMu2PtNrf, fMu1EtaNrf, fMu2EtaNrf; // "now refitted"
+  double  fMu1PtNrf, fMu2PtNrf, fMu1EtaNrf, fMu2EtaNrf, fMu1PhiNrf, fMu2PhiNrf; // "not refitted"
   int     fMu1TrkLayer, fMu1Pix, fMu1BPix, fMu1BPixL1, fMu2TrkLayer, fMu2Pix, fMu2BPix, fMu2BPixL1;
   double  fMu1W8Mu, fMu1W8Tr, fMu2W8Mu, fMu2W8Tr;
   double  fMu1Iso, fMu2Iso;
