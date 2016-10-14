@@ -130,11 +130,11 @@ void plotReducedOverlays::makeAll(string what) {
 
     printCuts(cout);
     makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
-    makeSampleOverlay("bmmData", "bdmmMc", "Presel");
+    //    makeSampleOverlay("bmmData", "bdmmMc", "Presel");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
-    makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
+    //    makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
     makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
-    makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
+    //    makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
   }
 
