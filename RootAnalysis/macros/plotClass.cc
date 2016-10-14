@@ -1877,6 +1877,21 @@ void plotClass::loadFiles(string afiles) {
       ds->fSize = 0.1;
       ds->fWidth = 2.;
 
+      if (string::npos != stype.find("fake,")) {
+        sname = "fakeMc";
+        sdecay = "fake";
+	ldecay = "fake";
+	ds->fColor = kMagenta;
+	ds->fSymbol = 25;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
+      }
+
       if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikMc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
