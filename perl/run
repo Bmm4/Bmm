@@ -24,6 +24,8 @@
 # Assumptions: jobs are serialized a la asd_asd-asd-10000.py, the numbering is at the end, separated with -
 # ------------ is run in directory where the py files reside! ??? IS THIS TRUE ???
 #
+# 2016/10/12   add GlueCEPolicyMaxWallClockTime
+# 2016/10/11   add GlueCEStateEstimatedResponseTime
 # 2016/07/19   modify jdl creation and grid job submission
 # 2016/07/18   -C now also submits new jobs (e.g. if new py files for a dataset have appeared)
 # 2016/04/15   added -l old or -l new to run on old or new nodes
@@ -320,12 +322,14 @@ sub makeJdlFile {
 #    print OUT "PerusalTimeInterval = 30;\n";
     print OUT "Rank          = other.GlueCEStateFreeCPUs;\n";
     print OUT "Rank          =-other.GlueCEStateEstimatedResponseTime;\n";
+    my $REQ = "(other.GlueCEPolicyMaxWallClockTime > 300)";
 
     if ($opt_D) {
 	if ($opt_D eq "any") {
 	    #	    print OUT "Requirements  = ((Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
 	} else {
 	    print OUT "Requirements  = ((RegExp(\"$opt_D\", other.GlueCEUniqueId)));\n";
+            #       print OUT "                );\n";
 	    #	    print OUT "                 && (Member(\"VO-cms-$CMSSW\", other.GlueHostApplicationSoftwareRunTimeEnvironment)));\n";
 	}
     }
