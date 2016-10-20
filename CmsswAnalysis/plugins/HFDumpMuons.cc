@@ -487,9 +487,7 @@ int HFDumpMuons::getTrackMultiplicity(const reco::Muon& Mu, bool MuType, bool ve
 
   bool muonFlag = muon::isGoodMuon(Mu, muon::AllGlobalMuons);
   bool HPflag = false;
-  if (muonFlag)
-    {HPflag = (Mu.innerTrack())->quality(Track::highPurity);}
-  if (!muonFlag || !HPflag)
+  if (!muonFlag)
     {return -1;}
 
   if (verbose)
@@ -542,7 +540,7 @@ int HFDumpMuons::getTrackMultiplicity(const reco::Muon& Mu, bool MuType, bool ve
 double HFDumpMuons::getDistanceM1(const reco::Muon& muon, const reco::Muon& sec, bool MuType, bool verbose) {
 
   if (verbose) {cout << "HM: Filling the HMhitInfo." << endl;}
-  if (muon.innerTrack().isNull())
+  if (muon.globalTrack().isNull())
     {if (verbose) {cout << "HM: GM track is not valid." << endl;}return -1;}
 
   TrackRef track;
