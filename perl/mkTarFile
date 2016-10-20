@@ -47,6 +47,7 @@ $exclude .= " --exclude \\*.ps";
 $exclude .= " --exclude \\*.eps";
 $exclude .= " --exclude \\*.png";
 $exclude .= " --exclude \\*.log";
+$exclude .= " --exclude .nfs\\*";
 $exclude .= " --exclude \\*~";
 if ($opt_x) {
     $exclude .= " $opt_x";
