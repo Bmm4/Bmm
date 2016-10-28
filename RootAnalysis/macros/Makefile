@@ -32,7 +32,7 @@ LDFLAGS       = -g
 SOFLAGS       = -shared
 
 CXXFLAGS     += $(ROOTCFLAGS)
-GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA
+GLIBS         = $(filter-out -lz, $(ROOTGLIBS)) -lTMVA -lRooFitCore -lRooFit
 EXTHEADERS    = -I..
 
 
@@ -41,7 +41,8 @@ CSTUFF = preselection.o
 READER = treeReader01.o bmmReader.o genAnalysis.o \
          candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
          candAnaBd2JpsiKstar.o candAnaRecoil.o candAnaFake.o \
-         plotClass.o plotResults.o plotWork.o plotReducedOverlays.o plotRecoil.o plotFake.o plotStuff.o
+         plotClass.o plotResults.o plotWork.o plotReducedOverlays.o plotRecoil.o plotFake.o plotStuff.o \
+         umlLifetime.o
 
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
