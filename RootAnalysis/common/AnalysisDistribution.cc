@@ -14,6 +14,7 @@
 #include "TCanvas.h"
 #include "TFitResultPtr.h"
 #include "TFitResult.h"
+#include "TPaveStats.h"
 
 ClassImp(AnalysisDistribution)
 
@@ -265,6 +266,184 @@ double AnalysisDistribution::fitMass(TH1 *h1, double &error, int mode) {
 }
 
 
+// ----------------------------------------------------------------------
+TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const char *cut) {
+  TCanvas *c0(0);
+  if (fVerbose > 0) {
+    gStyle->SetOptTitle(1);
+    c0 = (TCanvas*)gROOT->FindObject("c1");
+
+    if (c0) {
+      delete c0;
+    }
+    c0 = new TCanvas("c1");
+    c0->Clear();
+    c0->Divide(2,2);
+  }
+
+  // -- this is not really necessary, could use the class members instead
+  TH1D *hm = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
+  TH1D *h0 = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
+  TH1D *h1 = (TH1D*)gDirectory->Get(Form("%s%s1", variable, cut));
+  if (0 == hm) {
+    cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
+    return 0;
+  }
+
+  if (fVerbose > 0) {
+    c0->cd(1);
+    h0->Draw("hist");
+    c0->cd(2);
+    h1->Draw("hist");
+    c0->cd(3);
+  }
+
+  double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+  double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+  double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+  double s1   = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+  double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+  double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+
+  // -- fit mass distribution
+  if (fMassLo > fMassHi) {
+    fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+    fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+
+    fMassPeak = 0.5*(s0+s1);
+    fMassSigma= 0.2*(s1-s0);
+  }
+  fpIF->fLo = fMassLo;
+  fpIF->fHi = fMassHi;
+
+  cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
+
+  TF1 *f1 = fpIF->phiKK(hm);
+  hm->SetMinimum(0.);
+  f1->SetParameter(0, 0.4*hm->GetMaximum());
+  f1->SetParLimits(1, 1.017, 1.021);
+  f1->SetParLimits(2, 0.001, 0.005);
+
+  TFitResultPtr r;
+  r = hm->Fit(f1, "lsq", "", fMassLo, fMassHi);
+  if (fVerbose > 0) {
+    hm->DrawCopy();
+    c0->Update();
+    TPaveStats *stats2 = (TPaveStats*)gPad->GetPrimitive("stats");
+    if (stats2) {
+      stats2->SetName("fitstatsHm");
+      stats2->SetY1NDC(0.15);
+      stats2->SetY2NDC(0.60);
+      stats2->SetX1NDC(0.50);
+      stats2->SetX2NDC(0.95);
+    }
+//     hMassBGL->SetMinimum(0.);
+//     hMassBGL->SetMaximum(hm->GetMaximum());
+    hMassBGL->SetLineColor(kRed);
+    hMassBGL->SetLineStyle(kSolid);
+    hMassBGL->Draw("samehist");
+    hMassBGH->SetLineColor(kRed);
+    hMassBGH->SetLineStyle(kSolid);
+    hMassBGH->Draw("samehist");
+    hMassSG->SetLineColor(kBlue);
+    hMassSG->SetLineStyle(kSolid);
+    hMassSG->Draw("samehist");
+
+  }
+
+  // -- compute integrals
+  TF1 *f2 = fpIF->argus(hm->GetBinLowEdge(1), hm->GetBinLowEdge(hm->GetNbinsX()+1));
+  f2->SetLineColor(kBlue);
+  f2->SetLineStyle(kDashed);
+  f2->SetParameter(0, f1->GetParameter(5));
+  f2->SetParameter(1, f1->GetParameter(6));
+  f2->SetParameter(2, f1->GetParameter(7));
+  f2->Draw("same");
+  fpIF->dumpParameters(f2);
+
+  double bgl = f2->Integral(l0, l1);
+  double sg  = f2->Integral(s0, s1);
+  double bgh = f2->Integral(u0, u1);
+
+  if (fVerbose > 0) {
+    cout << "bgl (" << l0 << " .. " << l1 << ") = " << bgl << endl;
+    cout << "sg  (" << s0 << " .. " << s1 << ") = " << sg << endl;
+    cout << "bgh (" << u0 << " .. " << u1 << ") = " << bgh << endl;
+  }
+
+  TH1D *h = (TH1D*)h0->Clone(Form("sbs_%s%s", variable, cut));
+  h->Sumw2();
+  h->Add(h0, h1, 1., -sg/(bgl+bgh));
+
+  if (fVerbose > 0) {
+    c0->cd(4);
+    h->Draw();
+    TString fname = fControlPlotsFileName;
+    cout << "=========> "
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    return h;
+
+    c0->Clear();
+    hm->SetTitle("");
+    hm->SetNdivisions(505, "X");
+    setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
+    hm->Draw();
+    cout << "=========> "
+	 << Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+  } else {
+    gStyle->SetOptTitle(1);
+    c0 = (TCanvas*)gROOT->FindObject("c1");
+    if (c0) {
+      delete c0;
+    }
+    c0 = new TCanvas("c1");
+    c0->Clear();
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptTitle(0);
+    hm->SetXTitle("mass [GeV]");
+    hm->SetYTitle("candidates/bin");
+    hm->Draw();
+    TArrow aa;
+    double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+    double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+    double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+    double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+    double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+    double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+    double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+    double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.)+1);
+
+    double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+    double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
+    double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+    double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+
+    aa.SetLineColor(kRed);
+    aa.DrawArrow(x0, y0, x0, 0.);
+    aa.DrawArrow(x1, y1, x1, 0.);
+    aa.SetLineColor(kBlue);
+    aa.DrawArrow(x2, y2, x2, 0.);
+    aa.DrawArrow(x3, y3, x3, 0.);
+
+    aa.SetLineColor(kBlack);
+    aa.DrawArrow(x4, y4, x4, 0.);
+    aa.DrawArrow(x5, y5, x5, 0.);
+
+    TString fname = fControlPlotsFileName;
+    cout << "=========> "
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+  }
+
+  return h;
+
+}
 
 // ----------------------------------------------------------------------
 TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, const char *cut, double preco) {
@@ -735,9 +914,6 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
 
 // ----------------------------------------------------------------------
 TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cut) {
-//
-//  cout << "fVerbose: " << fVerbose << endl;
-//
   TCanvas *c0(0);
   if (fVerbose > 0) {
     gStyle->SetOptTitle(1);
@@ -776,22 +952,25 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  fMassPeak = 0.5*(s0+s1);
-  fMassSigma= 0.2*(s1-s0);
-  fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
-  fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+  if (fMassLo > fMassHi) {
+    fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+    fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+
+    fMassPeak = 0.5*(s0+s1);
+    fMassSigma= 0.2*(s1-s0);
+  }
   fpIF->fLo = fMassLo;
   fpIF->fHi = fMassHi;
-//
   cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
-//
   double peak  = (fMassPeak>0.?fMassPeak:5.3);
   double sigma = (fMassSigma>0.?fMassSigma:0.04);
   TF1 *f1 = fpIF->pol1gauss(hm, peak, sigma);
   hm->SetMinimum(0.);
+  fpIF->dumpParameters(f1);
 
   TFitResultPtr r;
-  r = hm->Fit(f1, "lsq", "", fMassLo, fMassHi);
+  if (fVerbose > 0) cout << "now fitting" << endl;
+  r = hm->Fit(f1, "ls", "", fMassLo, fMassHi);
   if (fVerbose > 0) {
     hm->DrawCopy();
 //     hMassBGL->SetMinimum(0.);
@@ -805,6 +984,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     hMassSG->SetLineColor(kBlue);
     hMassSG->SetLineStyle(kSolid);
     hMassSG->Draw("samehist");
+
   }
 
   // -- compute integrals
@@ -836,6 +1016,17 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    return h;
+
+    c0->Clear();
+    hm->SetTitle("");
+    hm->SetNdivisions(505, "X");
+    setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
+    hm->Draw();
+    cout << "=========> "
+	 << Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   } else {
     gStyle->SetOptTitle(1);
     c0 = (TCanvas*)gROOT->FindObject("c1");

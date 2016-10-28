@@ -21,6 +21,7 @@ public:
   void fixPar(int ipar, double fix);
   void applyLimits(TF1 *f, std::string name);
   void dumpParameters(TF1 *f);
+  void dumpLimits(std::string print = "");
 
   // -- background functions
   TF1* pol0(TH1 *h);

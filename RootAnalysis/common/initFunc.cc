@@ -114,7 +114,7 @@ namespace {
     double ratio = x2/ebeam2;
     if (par[7] < 0) ratio = ebeam2/x2;
     if (ratio < 1.) {
-      background = par[5]*x[0] * sqrt(1. - (ratio)) * exp(par[6] * (1. - (ratio)));
+      background = par[5]*x[0] * TMath::Sqrt(1. - ratio) * TMath::Exp(par[6] * (1. - ratio));
     } else {
       background = 0.;
     }
@@ -677,6 +677,18 @@ void initFunc::applyLimits(TF1 *f, string name) {
   }
 }
 
+
+// ----------------------------------------------------------------------
+void initFunc::dumpLimits(string bla) {
+  cout << bla << endl;
+  for (int i = 0; i < 20; ++i) {
+    cout << Form("%2d limits: %+5.3f ... %+5.3f, limited: %c, fixed: %c",
+		 i, fLimitLo[i], fLimitHi[i], (fLimit[i]?'y':'n'), (fFix[i]?'y':'n'))
+	 << endl;
+  }
+
+}
+
 // ----------------------------------------------------------------------
 TF1* initFunc::err(double lo, double hi) {
   TF1 *f = new TF1("f1", iF_err, lo, hi, 4);
@@ -1165,7 +1177,16 @@ TF1* initFunc::pol1gauss(TH1 *h, double peak, double sigma) {
   double p0, p1;
   initPol1(p0, p1, h);
   double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
-  double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1);
+  // integral of Gaussian: sqrt(2.*pi)*G0*sigma = I
+  double g0 = (h->Integral(lbin, hbin) - A/h->GetBinWidth(1))*h->GetBinWidth(1)/TMath::Sqrt(2*TMath::Pi())/sigma;
+
+  cout << "h->Integral(lbin, hbin): " << h->Integral(lbin, hbin) << endl;
+  cout << "A/h->GetBinWidth(1):     " << A/h->GetBinWidth(1) << endl;
+  cout << "Sqrt(2*Pi())/sigma:      " << TMath::Sqrt(2*TMath::Pi())*sigma << endl;
+  cout << "..>                      " << h->GetBinWidth(1)/TMath::Sqrt(2*TMath::Pi())/sigma << endl;
+  cout << "g0:                      " << g0 << endl;
+
+
 
   cout << "fLo: " << fLo << " fHi: " << fHi << " lbin: " << lbin << " hbin: " << hbin << endl;
   cout << "g0: " << g0 << " peak: " << peak << " sigma: " << sigma << " p0: " << p0 << " p1: " << p1 << endl;
@@ -2011,8 +2032,8 @@ TF1* initFunc::phiKK(TH1 *h) {
   f->SetParNames("const", "peak", "sigma1", "fraction", "sigma2", "norm.", "expo.", "endpoint");
   f->SetLineWidth(2);
 
-  f->SetParameter(0, 10.);
-  f->SetParameter(1, 1.02);
+  f->SetParameter(0, 11.23);
+  f->SetParameter(1, 1.019);
   f->SetParameter(2, 0.003);
   f->SetParameter(3, 0.3);
   f->SetParameter(4, 0.010);
