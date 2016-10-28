@@ -6,9 +6,12 @@
 #include "common/dataset.hh"
 #include "redTreeData.hh"
 
-struct adset {
+struct adsetFake {
   AnalysisDistribution
-  *fpFakeEta,
+  *fpAllEta,
+    *fpAllPt,
+
+    *fpFakeEta,
     *fpFakePt,
     *fpFakeInnerChi2,
     *fpFakeOuterChi2,
@@ -20,8 +23,8 @@ struct adset {
     *fpFakeItrkValidFraction,
     *fpFakeSegmentComp,
     *fpFakeGtrkNormChi2,
-    *fpFakeDz,
-    *fpFakeLip,
+    *fpFakeDzRef,
+    *fpFakeDxyRef,
     *fpFakeGtrkProb,
     *fpFakeMuonChi2,
     *fpFakeGlbKinkFinder,
@@ -41,7 +44,26 @@ struct adset {
     *fpFakeRPChits1,
     *fpFakeRPChits2,
     *fpFakeRPChits3,
-    *fpFakeRPChits4;
+    *fpFakeRPChits4,
+
+  // require only TIS:
+    *fpFakeTisAllEta,
+    *fpFakeTisAllPt,
+    *fpFakeTisFakeEta,
+    *fpFakeTisFakePt,
+
+  // require TIS && separation to trigger
+    *fpFakeTisDtFakePt,
+    *fpFakeTisDtFakeEta,
+    *fpFakeTisDtAllPt,
+    *fpFakeTisDtAllEta,
+
+  // require TIS && separation to trigger && distance to muon
+    *fpFakeTisDtDmFakePt,
+    *fpFakeTisDtDmFakeEta,
+    *fpFakeTisDtDmAllPt,
+    *fpFakeTisDtDmAllEta;
+
 };
 
 
@@ -69,6 +91,9 @@ public :
   AnalysisDistribution* bookDistribution(std::string hn, std::string ht, std::string hc, int nbins, double lo, double hi);
   void sbsDistributions(std::string sample, std::string selection = "Cu", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string what = "");
+  void fakeRate(std::string dataset1 = "fakeData_ks", std::string dataset2 = "fakeMc_ks",
+		std::string var = "FakeTisFakePt", std::string varA = "FakeTisAllPt",
+		double ymax = 0.02);
 
   // -- utilities for control sample optimization
   void   playKs(std::string cuts = "flxy<4&&flsxy>15&&pvips<3&&prob>0.01&&abs(m1ips)>5&&abs(m2ips)>5&&m1q*m2q<0", std::string name = "");
@@ -78,8 +103,6 @@ public :
   void   fitPhi(TH1D*);
   void   fitLambda(TH1D*);
 
-  // -- Fake rate from light hadrons??
-  void   fakeRate(std::string var = "pt", std::string dataset = "data_charmonium", std::string particle = "pion");
 
   void   loopFunction1();
 
@@ -94,17 +117,18 @@ private:
 
   struct redTreeData fb;
 
-  std::map<string, adset*> fAdMap;
+  std::map<string, adsetFake*> fAdMap;
 
   std::string fChannel;
-  std::vector<std::string> fDoList, fChannelList;
+  std::vector<std::string> fDoList, fChannelList, fChannelSample;
 
   double PTLO;
 
   static const int NTRKMAX = 10;
   double fCandM, fCandPvIp, fCandPvIpS, fCandChi2Dof, fCandFLS3d, fCandFL3d, fCandFLxy, fCandFL3dE, fCandFLSxy, fCandDoca;
+  bool   fTIS, fCowboy;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
-  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX];
+  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDtrig[NTRKMAX], fFakeDmuon[NTRKMAX];
   float  fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
     , fFakeChi2LocalPosition[NTRKMAX]
@@ -115,8 +139,8 @@ private:
     , fFakeItrkValidFraction[NTRKMAX]
     , fFakeSegmentComp[NTRKMAX]
     , fFakeGtrkNormChi2[NTRKMAX]
-    , fFakeDz[NTRKMAX]
-    , fFakeLip[NTRKMAX]
+    , fFakeDzRef[NTRKMAX]
+    , fFakeDxyRef[NTRKMAX]
     , fFakeGtrkProb[NTRKMAX]
     , fFakeMuonChi2[NTRKMAX]
     , fFakeGlbKinkFinder[NTRKMAX]
@@ -140,8 +164,10 @@ private:
     ;
 
 
-  bool fGoodCand, fGlobalMuon, fGoodPt, fGlobalMuonA[NTRKMAX];
-
+  bool fGoodCand, fGlobalMuon, fGoodPt, fGoodDtrig, fGoodDmuon, fGoodCowboy;
+  bool fGood, fGoodFake;
+  bool fGoodTIS, fGoodTISFake;
+  bool fGoodTISDT, fGoodTISDTDM, fGoodTISDTFake, fGoodTISDTDMFake;
 
   double fYield, fYieldE;
 

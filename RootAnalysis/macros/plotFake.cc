@@ -50,6 +50,9 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakePt");
   fDoList.push_back("FakeEta");
 
+  fDoList.push_back("AllPt");
+  fDoList.push_back("AllEta");
+
   fDoList.push_back("FakeTisFakePt");
   fDoList.push_back("FakeTisFakeEta");
   fDoList.push_back("FakeTisAllPt");
@@ -100,8 +103,18 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fAnaCuts.addCut("GoodCand", "good cand", fGoodCand);
   fAnaCuts.addCut("GoodPt", "good pt", fGoodPt);
   fAnaCuts.addCut("GlobalMuon", "global muon ID", fGlobalMuon);
+
+  fAnaCuts.addCut("Good", "all, triggered independently of signal", fGood);
+  fAnaCuts.addCut("GoodFake", "fake, triggered independently of signal", fGoodFake);
+
   fAnaCuts.addCut("TIS", "all, triggered independently of signal", fGoodTIS);
   fAnaCuts.addCut("TISFAKE", "fake, triggered independently of signal", fGoodTISFake);
+
+  fAnaCuts.addCut("TISDT", "all, triggered independently of signal, dist(trigger)", fGoodTISDT);
+  fAnaCuts.addCut("TISDTFAKE", "fake, triggered independently of signal, dist(trigger)", fGoodTISDTFake);
+
+  fAnaCuts.addCut("TISDTDM", "all, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDM);
+  fAnaCuts.addCut("TISDTDMFAKE", "fake, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDMFake);
 
   fAnaCuts.dumpAll();
 }
@@ -178,8 +191,17 @@ void plotFake::makeAll(string what) {
 
   if (what == "all" || string::npos != what.find("fakerate")) {
     if ((what == "all") || (what == "fakerate") || (string::npos != what.find("ks"))) {
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakePt", "AllPt", 0.1);
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakeEta", "AllEta", 0.1);
+
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisFakePt", "FakeTisAllPt");
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisFakeEta", "FakeTisAllEta");
+
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtFakePt", "FakeTisDtAllPt");
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtFakeEta", "FakeTisDtAllEta");
+
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+      fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
   }
 
@@ -395,8 +417,10 @@ void plotFake::bookDistributions() {
     string name = Form("%s_", mapname.c_str());
 
     a = new adsetFake();
-    a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GlobalMuon", 40, -2.4, 2.4);
-    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GlobalMuon", 40, 0., 20.);
+    a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 40, -2.4, 2.4);
+    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GoodFake", 40, 0., 20.);
+    a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 40, -2.4, 2.4);
+    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} [GeV]", "Good", 40, 0., 20.);
     a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 51, 0., 102.);
     a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 51, 0., 102.);
 
@@ -435,6 +459,16 @@ void plotFake::bookDistributions() {
     a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} [GeV]", "TIS", 40, 0., 20.);
     a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 40, -2.4, 2.4);
     a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} [GeV]", "TISFAKE", 40, 0., 20.);
+
+    a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 40, -2.4, 2.4);
+    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} [GeV]", "TISDT", 40, 0., 20.);
+    a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 40, -2.4, 2.4);
+    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} [GeV]", "TISDTFAKE", 40, 0., 20.);
+
+    a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 40, -2.4, 2.4);
+    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} [GeV]", "TISDTDM", 40, 0., 20.);
+    a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 40, -2.4, 2.4);
+    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} [GeV]", "TISDTDMFAKE", 40, 0., 20.);
 
 
     fAdMap.insert(make_pair(mapname, a));
@@ -682,7 +716,7 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 
 
 // ----------------------------------------------------------------------
-void plotFake::fakeRate(string dataset1, string dataset2, string varF, string varA) {
+void plotFake::fakeRate(string dataset1, string dataset2, string varF, string varA, double ymax) {
 
   cout << "fHistFileName: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str());
@@ -762,6 +796,7 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     h2p->Divide(h2a);
 
     h1p->SetMinimum(0.);
+    h1p->SetMaximum(ymax);
     h1p->SetTitle("");
     h1p->Draw();
     setHist(h2p, kBlue);
@@ -1087,11 +1122,14 @@ void plotFake::loopFunction1() {
     fGlobalMuon  = (fFakeGm[i]>0);
     fGoodPt      = (fFakePt[i] > 4.);
     fGoodDtrig   = (fFakeDtrig[i] > 0.01);
-    fGoodDmuon   = (fFakeDmuon[i] > 0.1);
+    fGoodDmuon   = (fFakeDmuon[i] > 0.5);
     if (fIsMC) {
       fTIS       = true;
       fGoodDtrig = true; // FIXME?
     }
+
+    fGood     = fGoodCand && fGoodPt;
+    fGoodFake = fGood && fGlobalMuon;
 
     fGoodTIS         = fTIS       && fGoodCand && fGoodPt;
     fGoodTISFake     = fGoodTIS   && fGlobalMuon;
@@ -1104,6 +1142,10 @@ void plotFake::loopFunction1() {
 
     fAnaCuts.update();
 
+
+    fAdMap[mapname]->fpAllPt->fill(fFakePt[i], mass);
+    fAdMap[mapname]->fpAllEta->fill(fFakeEta[i], mass);
+
     fAdMap[mapname]->fpFakePt->fill(fFakePt[i], mass);
     fAdMap[mapname]->fpFakeEta->fill(fFakeEta[i], mass);
 
@@ -1111,6 +1153,17 @@ void plotFake::loopFunction1() {
     fAdMap[mapname]->fpFakeTisAllEta->fill(fFakeEta[i], mass);
     fAdMap[mapname]->fpFakeTisFakePt->fill(fFakePt[i], mass);
     fAdMap[mapname]->fpFakeTisFakeEta->fill(fFakeEta[i], mass);
+
+    fAdMap[mapname]->fpFakeTisDtAllEta->fill(fFakeEta[i], mass);
+    fAdMap[mapname]->fpFakeTisDtAllPt->fill(fFakePt[i], mass);
+    fAdMap[mapname]->fpFakeTisDtFakeEta->fill(fFakeEta[i], mass);
+    fAdMap[mapname]->fpFakeTisDtFakePt->fill(fFakePt[i], mass);
+
+    fAdMap[mapname]->fpFakeTisDtDmAllEta->fill(fFakeEta[i], mass);
+    fAdMap[mapname]->fpFakeTisDtDmAllPt->fill(fFakePt[i], mass);
+    fAdMap[mapname]->fpFakeTisDtDmFakeEta->fill(fFakeEta[i], mass);
+    fAdMap[mapname]->fpFakeTisDtDmFakePt->fill(fFakePt[i], mass);
+
 
     fAdMap[mapname]->fpFakeInnerChi2->fill(fFakeInnerChi2[i], mass);
     fAdMap[mapname]->fpFakeOuterChi2->fill(fFakeOuterChi2[i], mass);
@@ -1328,6 +1381,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("eta",     fFakeEta);
   t->SetBranchAddress("phi",     fFakePhi);
   t->SetBranchAddress("dtrig",   fFakeDtrig);
+  t->SetBranchAddress("dmuon",   fFakeDmuon);
   t->SetBranchAddress("bdt",     fFakeBdt);
 
   t->SetBranchAddress("innerchi2", fFakeInnerChi2);
