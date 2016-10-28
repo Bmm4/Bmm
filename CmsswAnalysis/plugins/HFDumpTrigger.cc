@@ -440,10 +440,12 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
   // ----------------------------------------------------------------------
 
   if (hltF) {
-    // -- HLT L1 muon candidates
-    string L1NameCollection("hltL1extraParticles");
+    // -- HLT L1 muon candidates FIXME: Fills NOTHING
+    //    string L1NameCollection("hltL1extraParticles");
+    string L1NameCollection("l1extraParticles");
     trigger::size_type Index(0);
-    Index = triggerSummary->collectionIndex(edm::InputTag(L1NameCollection, "", fTriggerEventLabel.process()));
+    //    Index = triggerSummary->collectionIndex(edm::InputTag(L1NameCollection, "", fTriggerEventLabel.process()));
+    Index = triggerSummary->collectionIndex(edm::InputTag(L1NameCollection, "", "RECO"));
 
     if (Index < triggerSummary->sizeCollections()) {
       TString label = TString(L1NameCollection.c_str());
