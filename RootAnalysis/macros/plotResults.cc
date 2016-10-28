@@ -75,19 +75,21 @@ void plotResults::makeAll(string what) {
   }
 
   if (what == "all" || what == "genvalidation") {
+    genSummary("bdmmMcOffAcc", "candAnaMuMu");
     genSummary("bdmmMcOff", "candAnaMuMu");
     genSummary("bdmmMc", "candAnaMuMu");
-    genSummary("bdmmMcOffAcc", "candAnaMuMu");
+    genSummary("bsmmMcOffAcc", "candAnaMuMu");
     genSummary("bsmmMcOff", "candAnaMuMu");
     genSummary("bsmmMc", "candAnaMuMu");
+
+    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
     genSummary("bupsikMcOff", "candAnaBu2JpsiK");
     genSummary("bupsikMc", "candAnaBu2JpsiK");
-    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
+    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
     genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
     genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
-    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
     genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
+    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
 
 
     // -- loop over all (effective) two-body backgrounds
