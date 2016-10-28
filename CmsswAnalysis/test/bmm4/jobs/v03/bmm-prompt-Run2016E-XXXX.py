@@ -47,6 +47,7 @@ process.tree = cms.EDAnalyzer(
 process.load("Configuration.StandardSequences.Reconstruction_cff")
 process.load("Bmm.CmsswAnalysis.HFRecoStuff_cff")
 process.load("Bmm.CmsswAnalysis.HFBmm_cff")
+process.load("Bmm.CmsswAnalysis.HFOnia_cff")
 process.load("Bmm.CmsswAnalysis.HFHadronic_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 
@@ -54,6 +55,7 @@ process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 process.p = cms.Path(
     process.recoStuffSequence*
     process.bmmSequence*
+    process.psiDump*
     process.dstarDump*
     process.ksDump*
     process.phiDump*
