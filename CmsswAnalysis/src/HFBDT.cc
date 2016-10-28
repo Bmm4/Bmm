@@ -172,6 +172,7 @@ BDTmuon::BDTmuon() {
   vCSChits_2=-42;
   vCSChits_3=-42;
   vCSChits_4=-42;
+  vMuonHitComb=-42;
 }
 
 BDTmuon::~BDTmuon(){
@@ -221,6 +222,7 @@ void BDTmuon::createVariableMap() {
   tmpMap["vCSC_2"] = &vCSChits_2;
   tmpMap["vCSC_3"] = &vCSChits_3;
   tmpMap["vCSC_4"] = &vCSChits_4;
+  tmpMap["vMuonHitComb"] = &vMuonHitComb;
   tmpMap["STATrkMult150"] = &STATrkMult_150;
   tmpMap["TMTrkMult100"] = &TMTrkMult_100;
 
@@ -301,7 +303,7 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   vCSChits = gHits.numberOfValidMuonCSCHits();
   timeAtIpInOut = recoMuon.time().timeAtIpInOut;
   timeAtIpInOutErr = recoMuon.time().timeAtIpInOutErr;
-  getMuonHitsPerStation(gTrack);
+  getMuonHitsPerStation(gTrack); //also fills vMuonHitComb
   STATrkMult_150 = staTrkMult_150;
   TMTrkMult_100 = tmTrkMult_100;
 
@@ -313,6 +315,7 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   unsigned int dt1(0),dt2(0),dt3(0),dt4(0);
   unsigned int rpc1(0),rpc2(0),rpc3(0),rpc4(0);
   unsigned int csc1(0),csc2(0),csc3(0),csc4(0);
+  float comb(0);
   const reco::HitPattern &pattern = gTrack->hitPattern();
   for (int i=0;i<pattern.numberOfHits(reco::HitPattern::TRACK_HITS);i++)
     {
@@ -343,6 +346,12 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
 	  if (pattern.muonCSCHitFilter(hit)) {csc4++;}
 	}      
     }//for
+  comb = (dt1+dt2+dt3+dt4)/2. + (rpc1+rpc2+rpc3+rpc4);
+  csc1>6 ? comb+=6 : comb+=csc1;
+  csc2>6 ? comb+=6 : comb+=csc2;
+  csc3>6 ? comb+=6 : comb+=csc3;
+  csc4>6 ? comb+=6 : comb+=csc4;
+  //assignments
   vDThits_1 = dt1;
   vDThits_2 = dt2;
   vDThits_3 = dt3;
@@ -355,6 +364,7 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   vCSChits_2 = csc2;
   vCSChits_3 = csc3;
   vCSChits_4 = csc4;
+  vMuonHitComb = comb;
 }
 
 double getDeltaR(reco::Track track1,reco::Track track2) {
