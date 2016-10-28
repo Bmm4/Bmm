@@ -45,6 +45,7 @@ private:
   float vDThits_1,vDThits_2,vDThits_3,vDThits_4;
   float vRPChits_1,vRPChits_2,vRPChits_3,vRPChits_4;
   float vCSChits_1,vCSChits_2,vCSChits_3,vCSChits_4;
+  float vMuonHitComb;
   //stand alone muon && tracker muon multiplicity in a radius given in cm
   float STATrkMult_150,TMTrkMult_100; 
 
