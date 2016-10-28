@@ -80,6 +80,8 @@ public:
   virtual bool        tis(TAnaCand *pC);
   virtual bool        refTrigger(TAnaCand *pC, std::string refTriggerPath);
   virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
+  //  virtual double      dist2PdTrigger(const TVector3 &t);
+  virtual void        dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &dm2);
   virtual bool        triggerFired(std::string triggerPath);
   virtual void        triggerHLT();
   virtual void        triggerL1T();
@@ -139,6 +141,7 @@ public:
   virtual int         osMuon(TAnaCand *pC, double r = 1.0);
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
+  virtual double      distToMuon(TSimpleTrack *pt); // calculate DR separation of a track to closest (other) muon
   virtual void        triggerEff(std::string ref, std::string os, int mode);
   virtual void        play();
   virtual void        play2();

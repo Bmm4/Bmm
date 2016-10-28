@@ -1235,14 +1235,14 @@ void candAna::triggerHLT() {
 	  // cout << a << " result = " << result << " prescale: " << ps << " wasRun = " << wasRun
 	  //      << " event: " << fEvt << " run: " << fRun
 	  //      << endl;
-	  good=true;
+	  good = true;
 	  if (fVerbose > 1 || -32 == fVerbose  )
 	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << endl;
 	  break;
 	}
 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
-	  good=true;
+	  good = true;
 	  if (fVerbose > 1 || -32 == fVerbose)
 	    cout << "close match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << " in run " << fRun << endl;
@@ -4114,7 +4114,7 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   }
 
 
-  // -- determine trigger objets for reference path
+  // -- determine trigger objects for reference path
   TTrgObjv2 *pTO(0);
   set<int> trgTrkIdx;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
@@ -4169,6 +4169,89 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   return result;
 }
 
+// ----------------------------------------------------------------------
+// -- calculate closest distance (deltaR) for a simpleTrack to a PD trigger object
+// -- return by reference: deltaR, distance at M1, distance at M2
+// -- FIXME: Implement calculating M1 and M2 distances (is this beneficial?)
+void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &dm2) {
+
+  TTrgObjv2 *pTO(0);
+  double result(99.);
+  dr = dm1 = dm2 = -1.;
+  int verbose(0);
+  TVector3 pT = pS->getP();
+  // TAnaMuon *pM = fpEvt->getSimpleTrackMuon(pS->getIndex());
+  // TVector3 rm1, rm2;
+  // if (pM) {
+  //   rm1 = pM->fPositionAtM2;
+  // } else {
+  //   rm1.SetXYZ(0., 0., 0.);
+  // }
+
+  // cout << "--- trg objects -------------------------------------------------------------------" << endl;
+  // for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+  //   pTO = fpEvt->getTrgObjv2(i);
+  //   cout << "trgobjv2 type = " << pTO->fType << ", label = " << pTO->fLabel << " num = " << pTO->fP.size()
+  // 	 << " pt/eta/phi = " << pTO->fP[0].Perp() << "/" << pTO->fP[0].Eta() << "/" << pTO->fP[0].Phi()
+  // 	 << endl;
+  //   continue;
+  //   if (pTO->fType.Contains("l3muon")) {
+  //     vector<int> muonIndex = pTO->fIndex;
+  //     vector<int> muonID = pTO->fID;
+  //     vector<TLorentzVector> muonP = pTO->fP;
+  //     int num = muonIndex.size();
+  //     cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
+  //     for (int j = 0; j < num; ++j) {
+  // 	dr = muonP[j].Vect().DeltaR(pT);
+  // 	cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j] << endl;
+  //     }
+  //   }
+  // }
+
+
+  // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
+  TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
+  if (!ht) return;
+  string hltPath("nada");
+  if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
+  for (int j = 1; j <= ht->GetNbinsX(); ++j) {
+    hltPath =  ht->GetXaxis()->GetBinLabel(j);
+    // -- determine trigger objects for this path
+    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+      pTO = fpEvt->getTrgObjv2(i);
+      if (hltPath == pTO->fHltPath) {
+	vector<int> muonIndex = pTO->fIndex;
+	vector<int> muonID = pTO->fID;
+	vector<TLorentzVector> muonP = pTO->fP;
+	int num = muonIndex.size();
+	// -- skip L1 and L2 objects (bad resolution for matching)
+	if (pTO->fType.Contains("L1Filter")) continue;
+	if (pTO->fType.Contains("L1T")) continue;
+	if (pTO->fType.Contains("L2")) continue;
+	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
+	double dr(99.);
+	for (int j = 0; j < num; ++j) {
+	  dr = muonP[j].Vect().DeltaR(pT);
+	  if (dr < result) result = dr;
+	  if (verbose > 0) {
+	    cout << "hlt path =  " << hltPath << endl;
+	    cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << "/" << j << endl;
+	    cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+		 << " distance to track " << " pt/eta/phi = "
+		 << pT.Perp() << "/"
+		 << pT.Eta() << "/"
+		 << pT.Phi()
+		 << " with dr = " << dr
+		 << endl;
+	  }
+	}
+
+      }
+    }
+
+  }
+  dr = result;
+}
 
 // ----------------------------------------------------------------------
 // -- search for a PD trigger that has no overlap with the tracks of the candidate
@@ -4190,7 +4273,7 @@ bool candAna::tis(TAnaCand *pC) {
   TH1D *h1 = (TH1D*)(fHistDir->Get(Form("dr_%s", fName.c_str())));
   for (int j = 1; j <= ht->GetNbinsX(); ++j) {
     hltPath =  ht->GetXaxis()->GetBinLabel(j);
-    // -- determine trigger objets for this path
+    // -- determine trigger objects for this path
     for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
       pTO = fpEvt->getTrgObjv2(i);
       if (hltPath == pTO->fHltPath) {
@@ -4399,7 +4482,57 @@ void candAna::boostGames() {
 
 
 }
-//
+
+
+// ----------------------------------------------------------------------
+double candAna::distToMuon(TSimpleTrack *ps) {
+
+  int numMuons(fpEvt->nMuons());
+
+  TVector3 trackMom = ps->getP();
+  int psIdx = ps->getIndex();
+
+  TVector3 muonMom;
+  TAnaMuon *pM(0);
+
+  if (0) cout << "simple track index = " << ps->getIndex() << " with pt/eta/phi = "
+	      << ps->getP().Perp() << "/" << ps->getP().Eta() << "/" << ps->getP().Phi()
+	      << endl;
+
+  int pmIdx(-1), bestIdx(-1);
+  double ptMuon(0.), drMin(9999.), dr(0.);
+  for (int im = 0; im < numMuons; ++im) {
+    pM = fpEvt->getMuon(im);
+    pmIdx = pM->fIndex;
+    // skip if not global muon
+    if ((pM->fMuID & 2) != 2) {
+      if (0) cout << "muon with track index " << pmIdx << " is not a GM" << endl;
+      continue;
+    }
+    // skip if same track index
+    if (pmIdx == psIdx) {
+      if (0) cout << "skipping muon with same track index " << pmIdx << endl;
+      continue;
+    }
+    dr = pM->fPlab.DeltaR(trackMom);
+    if (dr < drMin) {
+      if (0) cout << "muon with track index " << pmIdx << " has smaller dr = " << dr << endl;
+      drMin = dr;
+      bestIdx = pmIdx;
+    }
+  }
+
+  TSimpleTrack *s = fpEvt->getSimpleTrack(bestIdx);
+
+  if (0) cout << " muon " << bestIdx
+	      << " with pt/eta/phi = "
+	      << s->getP().Perp() << "/" << s->getP().Eta() << "/" << s->getP().Phi()
+	      << " has dr = " << drMin << endl;
+  return drMin;
+}
+
+
+
 //-----------------------------------------------------------------------------------
 // Loops over all muons, returns dR of the closests muon, excluding the
 // same track muon (if exists)

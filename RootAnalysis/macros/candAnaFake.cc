@@ -93,8 +93,8 @@ void candAnaFake::candAnalysis() {
       pr.SetPtEtaPhiM(fpMuon1->fPlab.Perp(), fpMuon1->fPlab.Eta(), fpMuon1->fPlab.Phi(), MPROTON);
       pi.SetPtEtaPhiM(fpMuon2->fPlab.Perp(), fpMuon2->fPlab.Eta(), fpMuon2->fPlab.Phi(), MPION);
       la = pr + pi;
-      double mla = la.M();
-      if (TMath::Abs(mla - MLAMBDA_0) < 0.006) skip = true;
+      fCandMLambda = la.M();
+      //      if (TMath::Abs(mla - MLAMBDA_0) < 0.006) skip = true;
 
       fFakeId[0] = 211;
       fFakeId[1] = 211;
@@ -105,22 +105,28 @@ void candAnaFake::candAnalysis() {
       fFakeId[1] = 321;
     } else if (3122 == TRUTHCAND) {
       // root [227] events->Draw("m", "1.0<m&&m<1.2&&fls3d>15&&flxy<4&&maxdoca<0.005&&pvips<5", "")
-      if (fCandFLxy > 4.0)   skip = true;
+      //      if (fCandFLxy > 4.0)   skip = true;
       if (fCandFLSxy < 15)   skip = true;
       if (fCandFLS3d < 15)   skip = true;
       if (fCandDoca > 0.004) skip = true;
-      if (fCandPvIpS > 5.0)  skip = true;
+      //      if (fCandPvIpS > 5.0)  skip = true;
 
       // -- calculate KS masses
       TLorentzVector pi1, pi2, ks;
       pi1.SetPtEtaPhiM(fpMuon1->fPlab.Perp(), fpMuon1->fPlab.Eta(), fpMuon1->fPlab.Phi(), MPION);
       pi2.SetPtEtaPhiM(fpMuon2->fPlab.Perp(), fpMuon2->fPlab.Eta(), fpMuon2->fPlab.Phi(), MPION);
       ks = pi1 + pi2;
-      double mks = ks.M();
-      if (TMath::Abs(mks - MKSHORT) < 0.025) {
+      fCandMKS = ks.M();
+      if (TMath::Abs(fCandMKS - MKSHORT) < 0.025) {
 	//      cout << " mks = " << mks << endl;
-	skip = true;
+	//	skip = true;
       }
+      // -- calculate gamma conversion masses
+      TLorentzVector el1, el2, conv;
+      el1.SetPtEtaPhiM(fpMuon1->fPlab.Perp(), fpMuon1->fPlab.Eta(), fpMuon1->fPlab.Phi(), MELECTRON);
+      el2.SetPtEtaPhiM(fpMuon2->fPlab.Perp(), fpMuon2->fPlab.Eta(), fpMuon2->fPlab.Phi(), MELECTRON);
+      conv = el1 + el2;
+      fCandMconv = conv.M();
       // -- proton has higher pT than pion
       if (211 == TMath::Abs(fpMuon1->fMCID)) {
 	skip = true;
@@ -181,6 +187,7 @@ void candAnaFake::candAnalysis() {
 
   // -- now fill into tree
   double result(0.);
+  double d2trig, dm1, dm2;
   for (int im = 0; im < fFakeNtrk; ++im) {
     result = 0.;
 
@@ -188,6 +195,9 @@ void candAnaFake::candAnalysis() {
     fFakeEta[im]               = pt[im]->getP().Eta();
     fFakePhi[im]               = pt[im]->getP().Phi();
     fFakeQ[im]                 = pt[im]->getCharge();
+    dist2PdTrigger(pt[im], d2trig, dm1, dm2);
+    fFakeDistTrig[im]          = d2trig;
+    fFakeDistMuon[im]          = distToMuon(pt[im]);
 
     if (0 == pm[im]) {
       fFakeGm[im]                     = -99;
@@ -214,11 +224,13 @@ void candAnaFake::candAnalysis() {
       fFakeGlbDeltaEtaPhi[im]         = -99.;
       fFakeTimeInOut[im]              = -99.;
       fFakeTimeInOutE[im]             = -99.;
+      fFakeTimeInOutS[im]             = -99.;
 
       fFakeNvalidMuonHits[im]         = -99;
       fFakeNmatchedStations[im]       = -99;
       fFakeLayersWithHits[im]         = -99;
       fFakeNumberOfValidPixHits[im]   = -99;
+      fFakeRPChits[im]                = -99;
       fFakeRPChits1[im]               = -99;
       fFakeRPChits2[im]               = -99;
       fFakeRPChits3[im]               = -99;
@@ -241,6 +253,8 @@ void candAnaFake::candAnalysis() {
       fFakeItrkValidFraction[im]      = pm[im]->fItrkValidFraction;
       fFakeSegmentComp[im]            = pm[im]->fSegmentComp;
       fFakeGtrkNormChi2[im]           = (pm[im]->fGtrkNormChi2 < 10?pm[im]->fGtrkNormChi2:11.);
+      fFakeDxyRef[im]                 = pm[im]->fTip;
+      fFakeDzRef[im]                  = pm[im]->fLip;
       fFakeDz[im]                     = pm[im]->fdz;
       fFakeLip[im]                    = pm[im]->fLip;
       fFakeGtrkProb[im]               = (pm[im]->fGtrkProb < 100?pm[im]->fGtrkProb:101);
@@ -253,31 +267,23 @@ void candAnaFake::candAnalysis() {
       fFakeGlbDeltaEtaPhi[im]         = pm[im]->fGlbDeltaEtaPhi;
       fFakeTimeInOut[im]              = pm[im]->fTimeInOut;
       fFakeTimeInOutE[im]             = pm[im]->fTimeInOutE;
+      fFakeTimeInOutS[im]             = (pm[im]->fTimeInOutE > 1.e-15?pm[im]->fTimeInOut/pm[im]->fTimeInOutE :-98.);
 
       fFakeNvalidMuonHits[im]         = pm[im]->fNvalidMuonHits;
       fFakeNmatchedStations[im]       = pm[im]->fNmatchedStations;
       fFakeLayersWithHits[im]         = pm[im]->fLayersWithHits;
       fFakeNumberOfValidPixHits[im]   = pm[im]->fNumberOfValidPixHits;
       unsigned int size = pm[im]->fvRPChits.size();
-      if (size > 0) {
+      if (size ==4) {
 	fFakeRPChits1[im] = pm[im]->fvRPChits[0];
-      } else {
-	fFakeRPChits1[im] = -99;
-      }
-      if (size > 1) {
 	fFakeRPChits2[im] = pm[im]->fvRPChits[1];
-      } else {
-	fFakeRPChits2[im] = -99;
-      }
-      if (size > 2) {
 	fFakeRPChits3[im] = pm[im]->fvRPChits[2];
-      } else {
-	fFakeRPChits3[im] = -99;
-      }
-      if (size > 3) {
 	fFakeRPChits4[im] = pm[im]->fvRPChits[3];
-      } else {
-	fFakeRPChits4[im] = -99;
+
+	fFakeRPChits[im]  = fFakeRPChits1[im];
+	fFakeRPChits[im]  += fFakeRPChits2[im];
+	fFakeRPChits[im]  += fFakeRPChits3[im];
+	fFakeRPChits[im]  += fFakeRPChits4[im];
       }
     }
   }
@@ -344,7 +350,11 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("run",     &fRun,               "run/L");
   fFakeTree->Branch("evt",     &fEvt,               "evt/L");
 
-  fFakeTree->Branch("m",       &fCandM,             "m/DF");
+  fFakeTree->Branch("m",       &fCandM,             "m/D");
+  fFakeTree->Branch("mks",     &fCandMKS,           "mks/D");
+  fFakeTree->Branch("mconv",   &fCandMconv,         "mconv/D");
+  fFakeTree->Branch("mlambda", &fCandMLambda,       "mlambda/D");
+
   fFakeTree->Branch("pvip",    &fCandPvIp,          "pvip/D");
   fFakeTree->Branch("pvips",   &fCandPvIpS,         "pvips/D");
 
@@ -355,6 +365,8 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("fl3dE",   &fCandFL3dE,         "fl3dE/D");
   fFakeTree->Branch("flsxy",   &fCandFLSxy,         "flsxy/D");
   fFakeTree->Branch("maxdoca", &fCandDoca,          "maxdoca/D");
+  fFakeTree->Branch("tis",     &fTIS,               "tis/O");
+  fFakeTree->Branch("cowboy",  &fCowboy,            "cowboy/O");
 
   fFakeTree->Branch("ntrk",    &fFakeNtrk,          "ntrk/I");
   fFakeTree->Branch("id",      fFakeId,             "id[ntrk]/I");
@@ -363,44 +375,54 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("pt",      fFakePt,             "pt[ntrk]/F");
   fFakeTree->Branch("eta",     fFakeEta,            "eta[ntrk]/F");
   fFakeTree->Branch("phi",     fFakePhi,            "phi[ntrk]/F");
+  fFakeTree->Branch("dtrig",   fFakeDistTrig,       "dtrig[ntrk]/F");
+  fFakeTree->Branch("dmuon",   fFakeDistMuon,       "dmuon[ntrk]/F");
 
   fFakeTree->Branch("bdt",         fFakeBdt,               "bdt[ntrk]/F");
-  fFakeTree->Branch("statrkmult",  fFakeStaTrkMult,        "statrkmult[ntrk]/F");
-  fFakeTree->Branch("tmtrkmult",   fFakeTmTrkMult,         "tmtrkmult[ntrk]/F");
+
+  fFakeTree->Branch("deltar",               fFakeDeltaR,               "deltar[ntrk]/F");                    // tree->deltaR = swMu->fInnerPlab.DeltaR(swMu->fOuterPlab);
+  fFakeTree->Branch("gtrknormchi2",         fFakeGtrkNormChi2,         "gtrknormchi2[ntrk]/F");              // tree->gNchi2 = swMu->fGtrkNormChi2;
+  fFakeTree->Branch("nvalidmuonhits",       fFakeNvalidMuonHits,       "nvalidmuonhits[ntrk]/I");            // tree->vMuHits = swMu->fNvalidMuonHits;
+  fFakeTree->Branch("nmatchedstations",     fFakeNmatchedStations,     "nmatchedstations[ntrk]/I");          // tree->mMuStations = swMu->fNmatchedStations;
+  fFakeTree->Branch("dxyref",               fFakeDxyRef,               "dxyref[ntrk]/F");                    // tree->dxyRef = swMu->fTip;
+  fFakeTree->Branch("dzref",                fFakeDzRef,                "dzref[ntrk]/F");                     // tree->dzRef = swMu->fLip;
+  fFakeTree->Branch("layerswithhits",       fFakeLayersWithHits,       "layerswithhits[ntrk]/I");            // tree->LWH = swMu->fLayersWithHits;
+  fFakeTree->Branch("numberofvalidpixhits", fFakeNumberOfValidPixHits, "numberofvalidpixhits[ntrk]/I");      // tree->valPixHits = swMu->fNumberOfValidPixHits;
+  fFakeTree->Branch("innerchi2",            fFakeInnerChi2,            "innerchi2[ntrk]/F");                 // tree->innerChi2 = swMu->fInnerChi2;
+  fFakeTree->Branch("outerchi2",            fFakeOuterChi2,            "outerchi2[ntrk]/F");                 // tree->outerChi2 = swMu->fOuterChi2;
+  fFakeTree->Branch("itrkvalidfraction",    fFakeItrkValidFraction,    "itrkValidFraction[ntrk]/F");         // tree->iValFrac = swMu->fItrkValidFraction;
+  fFakeTree->Branch("segmentcomp",          fFakeSegmentComp,          "segmentComp[ntrk]/F");               // tree->segComp = swMu->fSegmentComp;
+  fFakeTree->Branch("chi2localposition",    fFakeChi2LocalPosition,    "chi2localposition[ntrk]/F");         // tree->chi2LocPos = swMu->fChi2LocalPosition;
+  fFakeTree->Branch("chi2localmomentum",    fFakeChi2LocalMomentum,    "chi2localmomentum[ntrk]/F");         // tree->chi2LocMom = swMu->fChi2LocalMomentum;
+  fFakeTree->Branch("gtrktailprob",         fFakeGtrkProb,             "gtrktailprob[ntrk]/F");              // tree->glbTrackTailProb = swMu->fGtrkProb;
+  fFakeTree->Branch("numberofvalidtrkhits", fFakeNumberOfValidTrkHits, "numberofvalidtrkhits[ntrk]/I");      // tree->NTrkVHits = swMu->fNumberOfValidTrkHits;
+  fFakeTree->Branch("muonchi2",             fFakeMuonChi2,             "muonchi2[ntrk]/F");                  // tree->kinkFinder = swMu->fMuonChi2;
+  fFakeTree->Branch("rpchits",              fFakeRPChits,              "rpchits[ntrk]/I");                   //  tree->vRPC = swMu->fvRPChits;
+  // no entry for DT hits, needs to be changed in BDT setup
+  fFakeTree->Branch("glbkinkfinder",        fFakeGlbKinkFinder,        "glbkinkfinder[ntrk]/F");             // tree->glbKinkFinder = swMu->fGlbKinkFinder;
+  fFakeTree->Branch("starelchi2",           fFakeStaRelChi2,           "starelchi2[ntrk]/F");                // tree->staRelChi2 = swMu->fStaRelChi2;
+  fFakeTree->Branch("trkrelchi2",           fFakeTrkRelChi2,           "trkrelchi2[ntrk]/F");                // tree->trkRelChi2 = swMu->fTrkRelChi2;
+  fFakeTree->Branch("glbdeltaetaphi",       fFakeGlbDeltaEtaPhi,       "glbdeltaetaphi[ntrk]/F");            // tree->glbDeltaEtaPhi = swMu->fGlbDeltaEtaPhi;
+  fFakeTree->Branch("timeinout",            fFakeTimeInOut,            "timeinout[ntrk]/F");                 // tree->timeAtIpInOut = swMu->fTimeInOut;
+  fFakeTree->Branch("timeinoute",           fFakeTimeInOutE,           "timeinoute[ntrk]/F");                // tree->timeAtIpInOutErr = swMu->fTimeInOutE;
+  fFakeTree->Branch("timeinouts",           fFakeTimeInOutS,           "timeinouts[ntrk]/F");
+  // no entry for DT hits per layer, needs to be changed in BDT setup
+  fFakeTree->Branch("rpchits1",             fFakeRPChits1,             "rpchits1[ntrk]/I");                  // tree->vRPC_1 = (swMu->fvRPChits)[0];
+  fFakeTree->Branch("rpchits2",             fFakeRPChits2,             "rpchits2[ntrk]/I");                  // tree->vRPC_1 = (swMu->fvRPChits)[1];
+  fFakeTree->Branch("rpchits3",             fFakeRPChits3,             "rpchits3[ntrk]/I");                  // tree->vRPC_1 = (swMu->fvRPChits)[2];
+  fFakeTree->Branch("rpchits4",             fFakeRPChits4,             "rpchits4[ntrk]/I");                  // tree->vRPC_1 = (swMu->fvRPChits)[3];
+  fFakeTree->Branch("statrkmult",           fFakeStaTrkMult,           "statrkmult[ntrk]/F");                // tree->STATrkMult150 = swMu->fStaTrkMult;
+  fFakeTree->Branch("tmtrkmult",            fFakeTmTrkMult,            "tmtrkmult[ntrk]/F");                 // tree->TMTrkMult100 = swMu->fTmTrkMult;
 
 
-
-  fFakeTree->Branch("innerchi2",            fFakeInnerChi2,            "innerchi2[ntrk]/F");
-  fFakeTree->Branch("outerchi2",            fFakeOuterChi2,            "outerchi2[ntrk]/F");
-  fFakeTree->Branch("chi2localposition",    fFakeChi2LocalPosition,    "chi2localposition[ntrk]/F");
-  fFakeTree->Branch("chi2localmomentum",    fFakeChi2LocalMomentum,    "chi2localmomentum[ntrk]/F");
-  fFakeTree->Branch("statrkmult",           fFakeStaTrkMult,           "statrkmult[ntrk]/F");
-  fFakeTree->Branch("tmtrkmult",            fFakeTmTrkMult,            "tmtrkmult[ntrk]/F");
-  fFakeTree->Branch("deltar",               fFakeDeltaR,               "deltar[ntrk]/F");
-  fFakeTree->Branch("itrkvalidfraction",    fFakeItrkValidFraction,    "itrkValidFraction[ntrk]/F");
-  fFakeTree->Branch("segmentcomp",          fFakeSegmentComp,          "segmentComp[ntrk]/F");
-  fFakeTree->Branch("gtrknormchi2",         fFakeGtrkNormChi2,         "gtrknormchi2[ntrk]/F");
-  fFakeTree->Branch("dz",                   fFakeDz,                   "dz[ntrk]/F");
-  fFakeTree->Branch("lip",                  fFakeLip,                  "lip[ntrk]/F");
-  fFakeTree->Branch("gtrkprob",             fFakeGtrkProb,             "gtrkprob[ntrk]/F");
-  fFakeTree->Branch("numberofvalidtrkhits", fFakeNumberOfValidTrkHits, "numberofvalidtrkhits[ntrk]/I");
   fFakeTree->Branch("numberoflosttrkhits",  fFakeNumberOfLostTrkHits,  "numberoflosttrkhits[ntrk]/I");
-  fFakeTree->Branch("muonchi2",             fFakeMuonChi2,             "muonchi2[ntrk]/F");
-  fFakeTree->Branch("glbkinkfinder",        fFakeGlbKinkFinder,        "glbkinkfinder[ntrk]/F");
-  fFakeTree->Branch("starelchi2",           fFakeStaRelChi2,           "starelchi2[ntrk]/F");
-  fFakeTree->Branch("trkrelchi2",           fFakeTrkRelChi2,           "trkrelchi2[ntrk]/F");
-  fFakeTree->Branch("glbdeltaetaphi",       fFakeGlbDeltaEtaPhi,       "glbdeltaetaphi[ntrk]/F");
-  fFakeTree->Branch("timeinout",            fFakeTimeInOut,            "timeinout[ntrk]/F");
-  fFakeTree->Branch("timeinoute",           fFakeTimeInOutE,           "timeinoute[ntrk]/F");
 
-  fFakeTree->Branch("nvalidmuonhits",       fFakeNvalidMuonHits,       "nvalidmuonhits[ntrk]/I");
-  fFakeTree->Branch("nmatchedstations",     fFakeNmatchedStations,     "nmatchedstations[ntrk]/I");
-  fFakeTree->Branch("layerswithhits",       fFakeLayersWithHits,       "layerswithhits[ntrk]/I");
-  fFakeTree->Branch("numberofvalidpixhits", fFakeNumberOfValidPixHits, "numberofvalidpixhits[ntrk]/I");
-  fFakeTree->Branch("rpchits1",             fFakeRPChits1,             "rpchits1[ntrk]/I");
-  fFakeTree->Branch("rpchits2",             fFakeRPChits2,             "rpchits2[ntrk]/I");
-  fFakeTree->Branch("rpchits3",             fFakeRPChits3,             "rpchits3[ntrk]/I");
-  fFakeTree->Branch("rpchits4",             fFakeRPChits4,             "rpchits4[ntrk]/I");
+
+
+
+
+
+
 
 
 
