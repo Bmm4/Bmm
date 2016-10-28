@@ -4,3 +4,4 @@ candAnaFake3122      cuts/candAnaFake.3122.cuts
 candAnaFake443       cuts/candAnaFake.443.cuts
 #
 JSON             ../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+DSNAME       Charmonium
