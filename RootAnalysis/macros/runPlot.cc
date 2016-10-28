@@ -17,6 +17,7 @@
 #include "plotWork.hh"
 #include "plotResults.hh"
 #include "plotStuff.hh"
+#include "plotFake.hh"
 
 using namespace std;
 
@@ -25,8 +26,8 @@ int main(int argc, char *argv[]) {
 
   string progName  = argv[0];
 
-  string dir("nada"), cuts("nada"), files("nada"), mode("nada"), setup("nada"), rootfilename("nada");
-  int year(2016), plot(0);
+  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada");
+  int year(2016);
   bool remove(false);
 
   // -- command line arguments
@@ -34,7 +35,8 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}
-    if (!strcmp(argv[i], "-p"))  {plot  = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
+    if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}
     if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];}
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}
   }
@@ -48,7 +50,7 @@ int main(int argc, char *argv[]) {
 
 
   // -- run everything
-  if (0 == plot) {
+  if ("nada" == plot) {
     {
       gROOT->Clear();  gROOT->DeleteAll();
       files = "plotResults.2016.files";
@@ -79,8 +81,20 @@ int main(int argc, char *argv[]) {
 
 
 
+  // -- results
+  if (string::npos != plot.find("results")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    plotResults a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
+
   // -- overlays
-  if (plot & 1) {
+  if (string::npos != plot.find("overlays")) {
     gROOT->Clear();  gROOT->DeleteAll();
     plotReducedOverlays a(dir, files, cuts, setup);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
@@ -93,12 +107,13 @@ int main(int argc, char *argv[]) {
 
 
   // -- stuff
-  if (plot & 2) {
+  if (string::npos != plot.find("stuff")) {
     gROOT->Clear();  gROOT->DeleteAll();
     files = "plotResults.2016.files";
     cuts  = "baseCuts.cuts";
     setup = "";
     plotStuff a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
     } else {
@@ -106,9 +121,23 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // -- fake
+  if (string::npos != plot.find("fake")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    files = "plotResults.2016.files";
+    cuts  = "baseCuts.cuts";
+    setup = "";
+    plotFake a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
 
   // -- work
-  if (plot & 4) {
+  if (string::npos != plot.find("work")) {
     gROOT->Clear();  gROOT->DeleteAll();
     files = "plotResults.2016.files";
     cuts  = "baseCuts.cuts";
