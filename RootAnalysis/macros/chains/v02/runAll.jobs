@@ -230,7 +230,7 @@ $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 $dataset = "fakeMC";
 # -----------------------------------------------
 $mode = "$dataset-$version"; $pattern = "bmm-mc";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.fakeMC' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v MuMu | grep -v MuNu | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NDA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -318,6 +318,12 @@ $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
+$mode = "bmm-mc-$dataset-BdToKPi_BMuonFilter-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.mix-Bd2KPi -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
 $mode = "bmm-mc-$dataset-BsToKK-$version"; $pattern = "$mode";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.mix-Bs2KK -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
@@ -355,6 +361,12 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $mode = "bmm-mc-$dataset-LambdaBToPMuNu-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.mix-Lb2PMuNu -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-LambdaBToPMuNu_BMuonFilter-$version"; $pattern = "$mode";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm -C cuts/bmmReader.mix-Lb2PMuNu -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
