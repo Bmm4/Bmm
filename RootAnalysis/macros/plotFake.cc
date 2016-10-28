@@ -819,10 +819,10 @@ void plotFake::fitKs(TH1D *h) {
   double ypeak = f1->GetParameter(0);
   double xpeak = f1->GetParameter(1);
   double sigma = f1->GetParameter(2);
-  double NSIG(5.0);
-  double xmin = xpeak - NSIG*sigma;
-  double xmax = xpeak + NSIG*sigma;
-  xmin = 0.480;
+  double nSig(5.0);
+  double xmin = xpeak - nSig*sigma;
+  double xmax = xpeak + nSig*sigma;
+  xmin = 0.485;
   xmax = 0.515;
   double aintegral  = f1->Integral(xmin, xmax)/bwidth;
   // -- (slight?) overestimate of signal integral error by including the background
@@ -902,9 +902,9 @@ void plotFake::fitPhi(TH1D *h) {
   double ypeak = f1->GetParameter(0);
   double xpeak = f1->GetParameter(1);
   double sigma = f1->GetParameter(2);
-  double NSIG(3.0);
-  double xmin = xpeak - NSIG*sigma;
-  double xmax = xpeak + NSIG*sigma;
+  double nSig(3.0);
+  double xmin = xpeak - nSig*sigma;
+  double xmax = xpeak + nSig*sigma;
   double aintegral  = f1->Integral(xmin, xmax)/bwidth;
   // -- (slight?) overestimate of signal integral error by including the background
   double fintegralE = f1->IntegralError(xmin, xmax, r->GetParams(), r->GetCovarianceMatrix().GetMatrixArray())/bwidth;
@@ -981,9 +981,9 @@ void plotFake::fitLambda(TH1D *h) {
   double ypeak = f1->GetParameter(0);
   double xpeak = f1->GetParameter(1);
   double sigma = f1->GetParameter(2);
-  double NSIG(5.0);
-  double xmin = xpeak - NSIG*sigma;
-  double xmax = xpeak + NSIG*sigma;
+  double nSig(5.0);
+  double xmin = xpeak - nSig*sigma;
+  double xmax = xpeak + nSig*sigma;
   xmin = 1.112;
   xmax = 1.120;
   double aintegral  = f1->Integral(xmin, xmax)/bwidth;
