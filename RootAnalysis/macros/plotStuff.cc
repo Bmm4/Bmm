@@ -74,6 +74,9 @@ void plotStuff::makeAll(string what) {
   if (what == "ys") {
     changeSetup("results", "yieldstability", "");
     yieldStability("bupsikData", "HLT");
+    // yieldStability("bmmData", "HLT");
+    // yieldStability("bspsiphiData", "HLT");
+    // yieldStability("bdpsikstarData", "HLT");
   }
 
   if (what == "all" || what == "yieldstability") {
@@ -300,12 +303,11 @@ void plotStuff::yieldStability(string dsname, string trg) {
 
   // -- check whether there are any histograms pre-produced already
   bool ok = fHistFile->cd(dir.c_str());
-  cout << "OK? " << ok << endl;
   if (ok) {
     cout << "histograms exist already, looping over them" << endl;
     TIter next(gDirectory->GetListOfKeys());
     TKey *key(0);
-    vector<int> vds;
+    vector<int> vruns;
     int run(-1), runMin(9999999), runMax(0);
     while ((key = (TKey*)next())) {
       if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
@@ -315,24 +317,26 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	run = atoi(hname.c_str());
 	if (run > runMax) runMax = run;
 	if (run < runMin) runMin = run;
-	if (find(vds.begin(), vds.end(), run) == vds.end()) {
-	  vds.push_back(run);
-	  // if (run == 274244) vds.push_back(run);
+	if (find(vruns.begin(), vruns.end(), run) == vruns.end()) {
+	  vruns.push_back(run);
+	  // if (run == 274244) vruns.push_back(run);
 	}
 	//	if (run < 278800) continue;
-	//	if (run > 275000) break;
+	if (run > 274000) break;
       }
     }
 
-    if (vds.size() > 0) {
+    if (vruns.size() > 0) {
       double minLumi(200.);
 
       Lumi lumi("../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
-      cout << "runs " << runMin << " .. " <<  runMax << endl;
+      cout << "analyzing runs " << runMin << " .. " <<  runMax << endl;
 
       vector<TH1D *> vRunHLT;
       for (unsigned int ichan = 0; ichan < fNchan; ++ichan) {
-	vRunHLT.push_back(new TH1D(Form("hRun%s_chan%d", trg.c_str(), ichan), Form("hRun%s_chan%d", trg.c_str(), ichan), runMax-runMin+1, runMin, runMax));
+	vRunHLT.push_back(new TH1D(Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				   Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				   runMax-runMin+1, runMin, runMax));
 	vRunHLT[ichan]->Sumw2();
       }
 
@@ -340,9 +344,9 @@ void plotStuff::yieldStability(string dsname, string trg) {
       double xmin(5.0), xmax(5.9), ymax(0.);
       fIF->fLo = xmin;
       fIF->fHi = xmax;
-      TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_1", trg.c_str(), vds[0])));
+      TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_1", trg.c_str(), vruns[0])));
       if (!h2) {
-	cout << "histogram " << Form("h_%s_%d_1", trg.c_str(), vds[0]) << " not found!?! returning" << endl;
+	cout << "histogram " << Form("h_%s_%d_1", trg.c_str(), vruns[0]) << " not found!?! returning" << endl;
 	return;
       }
 
@@ -362,28 +366,42 @@ void plotStuff::yieldStability(string dsname, string trg) {
       }
       double intLumi(0.);
 
-      // -- now loop over all runs
-      vector<int> prescales;
-      for (unsigned int ids = 0; ids < vds.size(); ++ids) {
+      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
 	for (int ips = 1; ips < MAXPS; ++ips) {
-	  h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vds[ids], ips)));
+	  h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vruns[irun], ips)));
 	  if (h2) {
-	    prescales.push_back(ips);
-	    cout << " chan 0, run " << vds[ids];
+	    for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
+	      h1 = h2->ProjectionX("bla", ichan+1, ichan+1);
+	      allHists[Form("chan%d", ichan)]->Add(h1);
+	      delete h1;
+	    }
+	  }
+	}
+      }
+
+      // -- now loop over all runs, splitting into lumi blocks
+      vector<int> prescales;
+      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
+	for (int ips = 1; ips < MAXPS; ++ips) {
+	  h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vruns[irun], ips)));
+	  if (h2) {
+	    if (find(prescales.begin(), prescales.end(), ips) == prescales.end()) {
+	      prescales.push_back(ips);
+	    }
 	    for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
 	      h1 = h2->ProjectionX("bla", ichan+1, ichan+1);
 	      allHists[Form("chan%d_ps%d", ichan, ips)]->Add(h1);
-	      allHists[Form("chan%d", ichan)]->Add(h1);
+	      //	      allHists[Form("chan%d", ichan)]->Add(h1);
 	      if (0 == ichan) {
-		if (h1->GetSumOfWeights() > 0) cout << ": ps " << ips << ", h1: " << h1->GetSumOfWeights();
+		if (h1->GetSumOfWeights() > 0) cout << "chan 0: ps " << ips << ", h1: " << h1->GetSumOfWeights();
 	      }
 	      delete h1;
 	    }
 	  }
 	}
 	cout << endl;
-	intLumi += lumi.lumi(vds[ids]);
-	cout << "XXXXXXXX vds[" << ids << "] = " << vds[ids] << " lumi = " << lumi.lumi(vds[ids]) << " and intLumi = " << intLumi << endl;
+	intLumi += lumi.lumi(vruns[irun]);
+	cout << "adding vruns[" << irun << "] = " << vruns[irun] << " with lumi = " << lumi.lumi(vruns[irun]) << " and intLumi = " << intLumi << endl;
 
 	if (intLumi > minLumi) {
 	  cout << "==== now fitting because intLumi = " << intLumi << endl;
@@ -391,7 +409,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    for (unsigned ichan = 0; ichan < 1; ++ichan) {
 	      if (0 == ichan) {
 		if (allHists[Form("chan%d_ps%d", ichan, ips)]->GetSumOfWeights() > 0) {
-		  cout  << " chan 0, run" << vds[ids] << ": ps " << ips << ", h1: " << allHists[Form("chan%d_ps%d", ichan, ips)]->GetSumOfWeights();
+		  cout  << " chan 0, run" << vruns[irun] << ": ps " << ips << ", h1: " << allHists[Form("chan%d_ps%d", ichan, ips)]->GetSumOfWeights();
 		}
 	      }
 	    }
@@ -408,9 +426,13 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
 	    f1->SetParLimits(8, 0., 1.e5);
 	    h1->SetMinimum(0.);
-	    cout << "========> Fitting combined ps for channel " << ichan << endl;
+	    cout << "========> Fitting combined ps for channel " << ichan << " h1->GetSumOfWeights() = " << h1->GetSumOfWeights() << endl;
+	    if (h1->GetSumOfWeights() < 100) {
+	      cout << "XXXXXXXXXXX not enough events for combined ps for channel = " << ichan << ", run hist = " << h1->GetName() << endl;
+	      continue;
+	    }
 	    h1->Fit(f1, "lrq", "", xmin, xmax);
-	    savePad(Form("yield-%s-%d-chan%d-allps.pdf", trg.c_str(), vds[ids], ichan));
+	    savePad(Form("yield-%s-%d-chan%d-allps.pdf", trg.c_str(), vruns[irun], ichan));
 	    double A0(f1->GetParameter(0));
 	    double peak(f1->GetParameter(1));
 	    double peakE(f1->GetParError(1));
@@ -430,6 +452,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    delete f1;
 	    // -- now fit all histograms for the different prescales
 	    double norm(0.), normE(0.);
+	    cout << "prescales.size() = " << prescales.size() << endl;
 	    for (unsigned ips = 0; ips < prescales.size(); ++ips) {
 	      h1 = allHists[Form("chan%d_ps%d", ichan, prescales[ips])];
 	      if (h1->GetSumOfWeights() < 100) {
@@ -451,10 +474,14 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	      f1->SetParameter(6, err1);	      f1->SetParLimits(6, err1 - err1E,         err1 + err1E);
 	      f1->SetParameter(7, err2);	      f1->SetParLimits(7, err2 - err2E,         err2 + err2E);
 	      f1->SetParameter(8, A2*scale); 	      f1->SetParLimits(8, 0., 1.e5);
-	      cout << "========> Fitting ps: " << prescales[ips] << " for channel: " << ichan << " histogram maximum: " << h1->GetMaximum() << endl;
-	      cout << "f1: " << endl;
-	      fIF->dumpParameters(f1);
-	      h1->Fit(f1, "lr", "", xmin, xmax);
+	      cout << "========> Fitting ps: " << prescales[ips] << " for channel: " << ichan
+		   << " histogram: " << h1->GetName() << "/" << h1->GetTitle()
+		   << " histogram maximum: " << h1->GetMaximum()
+		   << " sumofw8() = " << h1->GetSumOfWeights()
+		   << endl;
+	      //	      cout << "f1: " << endl;
+	      //	      fIF->dumpParameters(f1);
+	      h1->Fit(f1, "lrq", "", xmin, xmax);
 	      double par0E = f1->GetParError(0);
 	      double intError = f1->IntegralError(peak-3*sigma, peak+3*sigma);
 	      double psNormE = intError;
@@ -472,8 +499,8 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	      f2->SetLineColor(kRed);
 	      f2->SetLineStyle(kDashed);
 	      f2->Draw("same");
-	      cout << "f2: " << endl;
-	      fIF->dumpParameters(f2);
+	      //	      cout << "f2: " << endl;
+	      //	      fIF->dumpParameters(f2);
 	      double psNorm = f1->Integral(peak-3*sigma, peak+3*sigma);
 	      psNorm  /= h1->GetBinWidth(1);
 	      psNormE /= h1->GetBinWidth(1);
@@ -489,8 +516,8 @@ void plotStuff::yieldStability(string dsname, string trg) {
 		cout << "XXXXXXXXX intError           = " << intError << endl;
 		cout << "XXXXXXXXX sqrt(psNorm)       = " << TMath::Sqrt(psNorm)*h1->GetBinWidth(1) << endl;
 	      }
-	      tl->DrawLatex(0.2, 0.92, Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vds[ids], ichan, prescales[ips]));
-	      savePad(Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vds[ids], ichan, prescales[ips]));
+	      tl->DrawLatex(0.2, 0.92, Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vruns[irun], ichan, prescales[ips]));
+	      savePad(Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vruns[irun], ichan, prescales[ips]));
 	      delete f1;
 	      delete f2;
 	    }
@@ -498,18 +525,18 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    double result  = norm/intLumi;
 	    double resultE = TMath::Sqrt(normE)/intLumi;
 	    // -- normalize yield to 1/pb
-	    cout << "==> Filling for chan = " << ichan << " into bin " << static_cast<double>(vds[ids])
+	    cout << "==> Filling for chan = " << ichan << " into bin " << static_cast<double>(vruns[irun])
 		 << " result = " << result << " +/- " << resultE
 		 << " for intLumi = " << intLumi
 		 << endl;
-	    vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(vds[ids])), result);
-	    vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(vds[ids])), resultE);
+	    vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(vruns[irun])), result);
+	    vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(vruns[irun])), resultE);
 	    vRunHLT[ichan]->Draw();
 	  }
 	  // -- reset lumi
 	  intLumi = 0.;
 	  for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	    allHists[Form("chan%d", ichan)]->Reset();
+	    //allHists[Form("chan%d", ichan)]->Reset();
 	    for (int ips = 1; ips < MAXPS; ++ips) {
 	      allHists[Form("chan%d_ps%d", ichan, ips)]->Reset();
 	    }
