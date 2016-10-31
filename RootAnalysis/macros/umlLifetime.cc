@@ -69,9 +69,6 @@ umlLifetime::umlLifetime(string dir, string files, string cuts, string setup): p
 
   fChan = 0;
 
-  ft = new RooRealVar("t", "t", TLO, THI, "ps");
-  fm = new RooRealVar("m", "m", MLO, MHI, "GeV");
-
 }
 
 
@@ -107,7 +104,13 @@ void umlLifetime::makeAll(string what) {
 
 // ----------------------------------------------------------------------
 model* umlLifetime::createModel1(string name, int mode) {
-  model1 *aModel = new model1(name);
+  model *aModel = new model();
+
+  aModel->name = "m1";
+
+  // -- variables
+  aModel->m  = new RooRealVar("m1_m", "m", MLO, MHI, "GeV");
+  aModel->t  = new RooRealVar("m1_t", "t", TLO, THI, "ps");
 
   // -- parameters
   aModel->bsMassPeak  = new RooRealVar("m1_bsMassPeak", "Bs mass peak", 5.369, 5.359, 5.379);
@@ -127,14 +130,14 @@ model* umlLifetime::createModel1(string name, int mode) {
 
 
   // -- create PDFs
-  aModel->tTruth = new RooTruthModel("m1_tTruth", "truth model", *ft); // Build a truth resolution model (delta function)
-  aModel->bsPdfT = new RooDecay("m1_bsPdfT", "Bs t", *ft, *aModel->bsTau, *aModel->tTruth, RooDecay::SingleSided);
-  aModel->bdPdfT = new RooDecay("m1_bdPdfT", "Bd t", *ft, *aModel->bdTau, *aModel->tTruth, RooDecay::SingleSided);
-  aModel->bgPdfT = new RooDecay("m1_bgPdfT", "background t", *ft, *aModel->bgTau, *aModel->tTruth, RooDecay::SingleSided);
+  aModel->tTruth = new RooTruthModel("m1_tTruth", "truth model", *aModel->t); // Build a truth resolution model (delta function)
+  aModel->bsPdfT = new RooDecay("m1_bsPdfT", "Bs t", *aModel->t, *aModel->bsTau, *aModel->tTruth, RooDecay::SingleSided);
+  aModel->bdPdfT = new RooDecay("m1_bdPdfT", "Bd t", *aModel->t, *aModel->bdTau, *aModel->tTruth, RooDecay::SingleSided);
+  aModel->bgPdfT = new RooDecay("m1_bgPdfT", "background t", *aModel->t, *aModel->bgTau, *aModel->tTruth, RooDecay::SingleSided);
 
-  aModel->bsPdfM = new RooGaussian("m1_bsPdfM", "Bs signal mass", *fm, *aModel->bsMassPeak, *aModel->bsMassSigma);
-  aModel->bdPdfM = new RooGaussian("m1_bdPdfM", "Bd signal mass", *fm, *aModel->bdMassPeak, *aModel->bdMassSigma);
-  aModel->bgPdfM = new RooExponential("m1_bgPdfM", "background mass", *fm, *aModel->bgMassSlope);
+  aModel->bsPdfM = new RooGaussian("m1_bsPdfM", "Bs signal mass", *aModel->m, *aModel->bsMassPeak, *aModel->bsMassSigma);
+  aModel->bdPdfM = new RooGaussian("m1_bdPdfM", "Bd signal mass", *aModel->m, *aModel->bdMassPeak, *aModel->bdMassSigma);
+  aModel->bgPdfM = new RooExponential("m1_bgPdfM", "background mass", *aModel->m, *aModel->bgMassSlope);
 
 
   aModel->bsPdf = new RooProdPdf("m1_bsPdf", "Bs pdf",         RooArgSet(*aModel->bsPdfM, *aModel->bsPdfT));
@@ -148,63 +151,6 @@ model* umlLifetime::createModel1(string name, int mode) {
 
 
   return aModel;
-}
-
-
-// ----------------------------------------------------------------------
-model2* umlLifetime::createModel2(string name, int mode) {
-  model2 *m2 = new model2(name);
-
-  const int nchan(2);
-  double mres[nchan] = {0.040, 0.040};
-  model *aModel(0);
-  for (int ichan = 0; ichan < nchan; ++ichan) {
-
-    aModel = new model(name);
-
-    // -- parameters
-    aModel->bsMassPeak  = new RooRealVar(Form("m2_chan%d_bsMassPeak", ichan), "Bs mass peak", 5.369, 5.359, 5.379);
-    aModel->bsMassSigma = new RooRealVar(Form("m2_chan%d_bsMassSigma", ichan), "Bs mass width", mres[ichan], mres[ichan] - 0.010, mres[ichan] + 0.010);
-    aModel->bdMassPeak  = new RooRealVar(Form("m2_chan%d_bdMassPeak", ichan), "Bd mass peak", 5.279, 5.269, 5.289);
-    aModel->bdMassSigma = new RooRealVar(Form("m2_chan%d_bdMassSigma", ichan), "Bd mass width", mres[ichan], mres[ichan] - 0.010, mres[ichan] + 0.010);
-    aModel->bgMassSlope = new RooRealVar(Form("m2_chan%d_bgMassSlope", ichan), "bg mass slope", -0.3, -10., 10.);
-
-    // -- fit (fixed) parameters:
-    aModel->bsTau  = new RooRealVar(Form("m2_chan%d_bsTau", ichan), "B signal lifetime", TAU0, 0., 10.);
-    aModel->bdTau  = new RooRealVar(Form("m2_chan%d_bdTau", ichan), "B signal lifetime", 1.52, 0., 10.);
-    aModel->bgTau  = new RooRealVar(Form("m2_chan%d_bgTau", ichan), "Background lifetime", 1.2, 0., 10.);
-
-    aModel->bsN    = new RooRealVar(Form("m2_chan%d_bsN", ichan), "Bs signal yield", 1., 0., 1.e7);
-    aModel->bdN    = new RooRealVar(Form("m2_chan%d_bdN", ichan), "Bd signal yield", 1., 0., 1.e7);
-    aModel->bgN    = new RooRealVar(Form("m2_chan%d_bgN", ichan), "Background yield", 1., 0., 1.e7);
-
-
-    // -- create PDFs
-    aModel->tTruth = new RooTruthModel(Form("m2_chan%d_tTruth", ichan), "truth model", *ft); // Build a truth resolution model (delta function)
-    aModel->bsPdfT = new RooDecay(Form("m2_chan%d_bsPdfT", ichan), "Bs t", *ft, *aModel->bsTau, *aModel->tTruth, RooDecay::SingleSided);
-    aModel->bdPdfT = new RooDecay(Form("m2_chan%d_bdPdfT", ichan), "Bd t", *ft, *aModel->bdTau, *aModel->tTruth, RooDecay::SingleSided);
-    aModel->bgPdfT = new RooDecay(Form("m2_chan%d_bgPdfT", ichan), "background t", *ft, *aModel->bgTau, *aModel->tTruth, RooDecay::SingleSided);
-
-    aModel->bsPdfM = new RooGaussian(Form("m2_chan%d_bsPdfM", ichan), "Bs signal mass", *fm, *aModel->bsMassPeak, *aModel->bsMassSigma);
-    aModel->bdPdfM = new RooGaussian(Form("m2_chan%d_bdPdfM", ichan), "Bd signal mass", *fm, *aModel->bdMassPeak, *aModel->bdMassSigma);
-    aModel->bgPdfM = new RooExponential(Form("m2_chan%d_bgPdfM", ichan), "background mass", *fm, *aModel->bgMassSlope);
-
-
-    aModel->bsPdf = new RooProdPdf(Form("m2_chan%d_bsPdf", ichan), "Bs pdf",         RooArgSet(*aModel->bsPdfM, *aModel->bsPdfT));
-    aModel->bdPdf = new RooProdPdf(Form("m2_chan%d_bdPdf", ichan), "Bd pdf",         RooArgSet(*aModel->bdPdfM, *aModel->bdPdfT));
-    aModel->bgPdf = new RooProdPdf(Form("m2_chan%d_bgPdf", ichan), "background pdf", RooArgSet(*aModel->bgPdfM, *aModel->bgPdfT));
-
-
-    aModel->modelPdf = new RooAddPdf(Form("m2_chan%d_model", ichan), Form("m2_chan%d_model", ichan),
-				     RooArgList(*aModel->bsPdf, *aModel->bdPdf, *aModel->bgPdf),
-				     RooArgList(*aModel->bsN,   *aModel->bdN,   *aModel->bgN));
-
-    m2->addChannel(aModel);
-  }
-  m2->createSimPdf();
-  m2->fSimPdf->Print("t");
-
-  return m2;
 }
 
 
@@ -235,49 +181,23 @@ void umlLifetime::runToys(string whichtoy, int ntoys, int nsg, int nbg) {
   TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
   TH1D *hBd = new TH1D("hBd", "", 100, 0., 20.);
 
-  cout << "======================================================================" << endl;
 
   model *pM(0);
-  model2 *pM2(0);
-  RooDataSet *d0(0);
+
   for (int i = 0; i < ntoys; ++i) {
-    if ("m1" == whichtoy) {
+
+    if (whichtoy == "m1") {
       pM = createModel1("m1", 0);
-      RooDataSet *bgData  = pM->bgPdf->generate(RooArgSet(*fm, *ft), nbg);
-      RooDataSet *bsData  = pM->bsPdf->generate(RooArgSet(*fm, *ft), nsg);
-      RooDataSet *bdData  = pM->bdPdf->generate(RooArgSet(*fm, *ft), nbd);
-
-      d0 = new RooDataSet(*bgData);
-      d0->append(*bsData);
-      d0->append(*bdData);
-      delete bgData;
-      delete bsData;
-      delete bdData;
-      cout << " creating new toy run " << i << " for model " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
-    } else if ("m2" == whichtoy) {
-      pM = createModel2("m2");
-      pM2 = (model2*)pM;
-      double nchan(pM2->fChan.size());
-      RooDataSet *d2[2];
-      for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
-	cout << "pM2->bgPdf = " << pM2->bgPdf << " nchan = " << nchan << endl;
-	RooDataSet *bgData  = pM2->fChan[ichan]->bgPdf->generate(RooArgSet(*fm, *ft), nbg/nchan);
-	RooDataSet *bsData  = pM2->fChan[ichan]->bsPdf->generate(RooArgSet(*fm, *ft), nsg/nchan);
-	RooDataSet *bdData  = pM2->fChan[ichan]->bdPdf->generate(RooArgSet(*fm, *ft), nbd/nchan);
-	d2[ichan] = new RooDataSet(*bgData);
-	d2[ichan]->append(*bsData);
-	d2[ichan]->append(*bdData);
-	delete bgData;
-	delete bsData;
-	delete bdData;
-      }
-
-      d0 = new RooDataSet("combData","combined data", RooArgSet(*fm, *ft), Index(*(pM2->fChannels)),
-			  Import("chan0", *d2[0]),
-			  Import("chan1", *d2[1])
-			  );
-      cout << " creating new toy run " << i << " for model " << whichtoy << ", sgTau = " << pM2->fChan[0]->bsTau->getVal() << endl;
     }
+    cout << "======================================================================" << endl;
+    cout << " creating new toy run " << i << " for model " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
+    RooDataSet *bgData  = pM->bgPdf->generate(RooArgSet(*pM->m, *pM->t), nbg);
+    RooDataSet *bsData  = pM->bsPdf->generate(RooArgSet(*pM->m, *pM->t), nsg);
+    RooDataSet *bdData  = pM->bdPdf->generate(RooArgSet(*pM->m, *pM->t), nbd);
+
+    RooDataSet *d0 = new RooDataSet(*bgData);
+    d0->append(*bsData);
+    d0->append(*bdData);
 
     // Fit pdf. The normalization integral is calculated numerically.
     RooFitResult *r = pM->modelPdf->fitTo(*d0, Save()) ;
@@ -292,7 +212,7 @@ void umlLifetime::runToys(string whichtoy, int ntoys, int nsg, int nbg) {
       tl->SetTextSize(0.04);
       c1->cd(1);
       gPad->SetLogy(0);
-      RooPlot *fd0m = fm->frame(Title("d0m"), Name("mass"), Range(MLO, MHI));
+      RooPlot *fd0m = pM->m->frame(Title("d0m"), Name("mass"), Range(MLO, MHI));
       d0->plotOn(fd0m);
       pM->modelPdf->plotOn(fd0m);
       pM->modelPdf->plotOn(fd0m, Components("m1_bgPdf"), LineStyle(kDashed), LineColor(kRed)) ;
@@ -303,7 +223,7 @@ void umlLifetime::runToys(string whichtoy, int ntoys, int nsg, int nbg) {
 
       c1->cd(2);
       gPad->SetLogy(1);
-      RooPlot *fd0t = ft->frame(Title("d0t"), Name("t"), Range(TLO, THI));
+      RooPlot *fd0t = pM->t->frame(Title("d0t"), Name("t"), Range(TLO, THI));
       d0->plotOn(fd0t);
       pM->modelPdf->plotOn(fd0t);
       pM->modelPdf->plotOn(fd0t, Components("m1_bgPdf"), LineStyle(kDashed), LineColor(kRed)) ;
@@ -321,30 +241,6 @@ void umlLifetime::runToys(string whichtoy, int ntoys, int nsg, int nbg) {
 
 
       savePad(Form("runToys-example-%s-%d.pdf", whichtoy.c_str(), nsg), c1);
-
-      if ("m2" == whichtoy) {
-
-	c1->Divide(2, 2);
-	c1->cd(1);
-	gPad->SetLogy(0);
-	d0->plotOn(fd0m, Cut("channel==channel::chan0")) ;
-	pM2->fSimPdf->plotOn(fd0m, Slice(*pM2->fChannels, "chan0"), ProjWData(*pM2->fChannels, *d0)) ;
-
-	c1->cd(2);
-	gPad->SetLogy(1);
-	d0->plotOn(fd0t, Cut("channel==channel::chan0")) ;
-
-	c1->cd(3);
-	gPad->SetLogy(0);
-	d0->plotOn(fd0m, Cut("channel==channel::chan1")) ;
-
-	c1->cd(2);
-	gPad->SetLogy(1);
-	d0->plotOn(fd0t, Cut("channel==channel::chan1")) ;
-
-      }
-
-
 
       c0->cd(1);
       hBs->Draw();
@@ -383,6 +279,9 @@ void umlLifetime::runToys(string whichtoy, int ntoys, int nsg, int nbg) {
     }
     delete r;
     delete pM;
+    delete bgData;
+    delete bsData;
+    delete bdData;
     delete d0;
   }
 
