@@ -157,7 +157,7 @@ public :
   model1*  createModel1(std::string name, int mode = 0);
   model2*  createModel2(std::string name, int mode = 0);
 
-  RooDataSet *createData2(model2 *m, int nsig, int nbg);
+  RooDataSet *createData2(model2 *m, int nsig, int nbg, bool channelWise = false);
 
   void   runToys1(std::string toy , int ntoys, int nsig, int nbg);
   void   runToys2(std::string toy , int ntoys, int nsig, int nbg);

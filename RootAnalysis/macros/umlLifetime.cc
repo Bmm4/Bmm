@@ -209,214 +209,6 @@ model2* umlLifetime::createModel2(string name, int mode) {
 
 
 
-
-
-// ----------------------------------------------------------------------
-void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
-
-  RooRandom::randomGenerator()->SetSeed(fRndmSeed);
-
-  bool doPlot(true); // setting to true will create a memory leak!
-
-  double nbd = 0.1*nsg;
-
-  TCanvas *c0 = (TCanvas*)gROOT->FindObject("c0");
-  if (!c0) c0 = new TCanvas("c0","--c0--",0, 0, 656, 400);
-  // -- summary plots
-  c0->Clear();
-  c0->Divide(2, 2);
-
-  TCanvas *c1 = (TCanvas*)gROOT->FindObject("c1");
-  if (!c1) c1 = new TCanvas("c1","--c1--",0, 0, 800, 800);
-  // -- example plots
-  c1->Clear();
-  c1->Divide(2, 2);
-
-  TH1D *ht = new TH1D("ht", "", 100, TAU0-0.5, TAU0+0.5);
-  TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
-
-  TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
-  TH1D *hBd = new TH1D("hBd", "", 100, 0., 2.*nbd);
-
-  model2 *pM(0);
-  RooDataSet *d0[NCHAN];
-  for (int i = 0; i < ntoys; ++i) {
-    pM = createModel2("m2", 0);
-    cout << "======================================================================" << endl;
-    cout << " creating new toy run " << i << " for model2 " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
-    RooDataSet *bgData[NCHAN];
-    RooDataSet *bsData[NCHAN];
-    RooDataSet *bdData[NCHAN];
-    for (int ichan = 0; ichan < NCHAN; ++ichan) {
-      bgData[ichan]  = pM->bgPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbg);
-      bsData[ichan]  = pM->bsPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nsg);
-      bdData[ichan]  = pM->bdPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbd);
-      d0[ichan] = new RooDataSet(*bgData[ichan]);
-      d0[ichan]->append(*bsData[ichan]);
-      d0[ichan]->append(*bdData[ichan]);
-      delete bgData[ichan];
-      delete bsData[ichan];
-      delete bdData[ichan];
-    }
-
-    RooDataSet *D0 = new RooDataSet("d0", "combined data", RooArgSet(*fm,*ft), Index(*(pM->sample)), Import("chan0", *(d0[0])), Import("chan1", *(d0[1])));
-
-    // Fit pdf. The normalization integral is calculated numerically.
-    RooFitResult *r = pM->simPdf->fitTo(*D0, Save()) ;
-
-    if (doPlot || (0 == i)) {
-
-      tl->SetNDC(kTRUE);
-      tl->SetTextSize(0.04);
-      c1->cd(1);
-      gPad->SetLogy(0);
-      RooPlot *fd0m = fm->frame(Title("d0m"), Name("mass"), Range(MLO, MHI));
-      D0->plotOn(fd0m, Cut("sample==sample::chan0"));
-      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), ProjWData(*pM->sample, *D0)) ;
-      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
-      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
-      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
-      fd0m->Draw();
-
-      c1->cd(2);
-      gPad->SetLogy(1);
-      RooPlot *fd0t = ft->frame(Title("d0t"), Name("t"), Range(TLO, THI));
-      D0->plotOn(fd0t, Cut("sample==sample::chan0"));
-      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), ProjWData(*pM->sample, *D0)) ;
-      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
-      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
-      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
-      fd0t->Draw();
-
-      tl->SetTextSize(0.04);
-      tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
-      tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
-      tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[0]->getVal(), pM->bsN[0]->getError()));
-      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[0]->getVal(), pM->bdN[0]->getError()));
-      tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
-
-      c1->cd(3);
-      gPad->SetLogy(0);
-      RooPlot *fd1m = fm->frame(Title("d1m"), Name("mass"), Range(MLO, MHI));
-      D0->plotOn(fd1m, Cut("sample==sample::chan1"));
-      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
-      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
-      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
-      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
-      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
-      fd1m->Draw();
-
-      c1->cd(4);
-      gPad->SetLogy(1);
-      RooPlot *fd1t = ft->frame(Title("d1t"), Name("t"), Range(TLO, THI));
-      D0->plotOn(fd1t, Cut("sample==sample::chan1"));
-      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
-      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
-      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
-      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
-      fd1t->Draw();
-
-
-      tl->SetTextSize(0.04);
-      tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
-      tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
-      tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[1]->getVal(), pM->bsN[1]->getError()));
-      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[1]->getVal(), pM->bdN[1]->getError()));
-      tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
-      tl->DrawLatex(0.1+0.45,  0.65, Form("N_{Bs}^{tot} = %3.1f #pm %3.1f",
-					  pM->bsN[0]->getVal() + pM->bsN[1]->getVal(),
-					  TMath::Sqrt(pM->bsN[0]->getError()*pM->bsN[0]->getError() + pM->bsN[1]->getError()*pM->bsN[1]->getError())
-					  ));
-      tl->DrawLatex(0.1+0.45,  0.60, Form("N_{Bd}^{tot} = %3.1f #pm %3.1f",
-					  pM->bdN[1]->getVal() + pM->bdN[0]->getVal(),
-					  TMath::Sqrt(pM->bdN[0]->getError()*pM->bdN[0]->getError() + pM->bdN[1]->getError()*pM->bdN[1]->getError())
-					  ));
-
-      savePad(Form("runToys2-example-%s-%d.pdf", whichtoy.c_str(), i), c1);
-
-
-    }
-
-
-    ht->Fill(pM->bsTau->getVal());
-    hs->Fill(pM->bsTau->getError());
-    hBs->Fill(pM->bsN[0]->getVal() + pM->bsN[1]->getVal());
-    hBd->Fill(pM->bdN[0]->getVal() + pM->bdN[1]->getVal());
-
-    delete r;
-    delete pM;
-    for (int ichan = 0; ichan < NCHAN; ++ichan) delete d0[ichan];
-    delete D0;
-  }
-
-
-  c0->cd(1);
-  hBs->SetMaximum(1.3*hBs->GetMaximum());
-  hBs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(hBs->GetEntries())));
-  tl->DrawLatex(0.25, 0.96, Form("N^{0} = %d", nsg));
-  pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
-
-  c0->cd(2);
-  hBd->SetMaximum(1.3*hBd->GetMaximum());
-  hBd->Draw();
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
-  tl->SetTextSize(0.035);
-  pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
-
-  c0->cd(3);
-  ht->SetMaximum(1.3*ht->GetMaximum());
-  ht->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(ht->GetEntries())));
-  pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
-
-  c0->cd(4);
-  hs->SetMaximum(1.3*hs->GetMaximum());
-  hs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
-
-  savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
-}
-
-
-// ----------------------------------------------------------------------
-RooDataSet* umlLifetime::createData2(model2 *m, int nsg, int nbg) {
-  RooDataSet *bgData[NCHAN];
-  RooDataSet *bsData[NCHAN];
-  RooDataSet *bdData[NCHAN];
-  double nbd = 0.1*nsg;
-  for (int ichan = 0; ichan < NCHAN; ++ichan) {
-    bgData[ichan]  = m->bgPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbg);
-    bsData[ichan]  = m->bsPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nsg);
-    bdData[ichan]  = m->bdPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbd);
-    // delete bgData[ichan];
-    // delete bsData[ichan];
-    // delete bdData[ichan];
-  }
-  RooDataSet *D0 = new RooDataSet(*bgData[0]);
-  D0->append(*bgData[1]);
-  D0->append(*bsData[0]);
-  D0->append(*bsData[1]);
-  D0->append(*bdData[0]);
-  D0->append(*bdData[1]);
-
-  for (int ichan = 0; ichan < NCHAN; ++ichan) {
-    delete bgData[ichan];
-    delete bsData[ichan];
-    delete bdData[ichan];
-  }
-
-  return D0;
-}
-
 // ----------------------------------------------------------------------
 void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
 
@@ -462,7 +254,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
       delete bsData;
       delete bdData;
     } else {
-      d0 = createData2(pM2, nsg, nbg);
+      d0 = createData2(pM2, nsg, nbg, false);
     }
     // Fit pdf. The normalization integral is calculated numerically.
     RooFitResult *r = pM->modelPdf->fitTo(*d0, Save()) ;
@@ -551,6 +343,216 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
 
   savePad(Form("runToys1-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+}
+
+
+
+// ----------------------------------------------------------------------
+void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
+
+  RooRandom::randomGenerator()->SetSeed(fRndmSeed);
+
+  bool doPlot(true); // setting to true will create a memory leak!
+
+  double nbd = 0.1*nsg;
+
+  TCanvas *c0 = (TCanvas*)gROOT->FindObject("c0");
+  if (!c0) c0 = new TCanvas("c0","--c0--",0, 0, 656, 400);
+  // -- summary plots
+  c0->Clear();
+  c0->Divide(2, 2);
+
+  TCanvas *c1 = (TCanvas*)gROOT->FindObject("c1");
+  if (!c1) c1 = new TCanvas("c1","--c1--",0, 0, 800, 800);
+  // -- example plots
+  c1->Clear();
+  c1->Divide(2, 2);
+
+  TH1D *ht = new TH1D("ht", "", 100, TAU0-0.5, TAU0+0.5);
+  TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
+
+  TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
+  TH1D *hBd = new TH1D("hBd", "", 100, 0., 2.*nbd);
+
+  model2 *pM(0);
+  for (int i = 0; i < ntoys; ++i) {
+    pM = createModel2("m2", 0);
+    cout << "======================================================================" << endl;
+    cout << " creating new toy run " << i << " for model2 " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
+    RooDataSet *D0 = createData2(pM, nsg, nbg, true);
+
+    // Fit pdf. The normalization integral is calculated numerically.
+    RooFitResult *r = pM->simPdf->fitTo(*D0, Save()) ;
+
+    if (doPlot || (0 == i)) {
+
+      tl->SetNDC(kTRUE);
+      tl->SetTextSize(0.04);
+      c1->cd(1);
+      gPad->SetLogy(0);
+      RooPlot *fd0m = fm->frame(Title("d0m"), Name("mass"), Range(MLO, MHI));
+      D0->plotOn(fd0m, Cut("sample==sample::chan0"));
+      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), ProjWData(*pM->sample, *D0)) ;
+      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
+      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
+      pM->simPdf->plotOn(fd0m, Slice(*pM->sample, "chan0"), Components("m0_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
+      fd0m->Draw();
+
+      c1->cd(2);
+      gPad->SetLogy(1);
+      RooPlot *fd0t = ft->frame(Title("d0t"), Name("t"), Range(TLO, THI));
+      D0->plotOn(fd0t, Cut("sample==sample::chan0"));
+      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), ProjWData(*pM->sample, *D0)) ;
+      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
+      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
+      pM->simPdf->plotOn(fd0t, Slice(*pM->sample, "chan0"), Components("m0_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
+      fd0t->Draw();
+
+      tl->SetTextSize(0.04);
+      tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
+      tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
+      tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[0]->getVal(), pM->bsN[0]->getError()));
+      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[0]->getVal(), pM->bdN[0]->getError()));
+      tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
+
+      c1->cd(3);
+      gPad->SetLogy(0);
+      RooPlot *fd1m = fm->frame(Title("d1m"), Name("mass"), Range(MLO, MHI));
+      D0->plotOn(fd1m, Cut("sample==sample::chan1"));
+      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
+      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
+      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
+      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
+      pM->simPdf->plotOn(fd1m, Slice(*pM->sample, "chan1"), Components("m1_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
+      fd1m->Draw();
+
+      c1->cd(4);
+      gPad->SetLogy(1);
+      RooPlot *fd1t = ft->frame(Title("d1t"), Name("t"), Range(TLO, THI));
+      D0->plotOn(fd1t, Cut("sample==sample::chan1"));
+      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), ProjWData(*pM->sample, *D0)) ;
+      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bgPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kRed));
+      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bsPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kBlue));
+      pM->simPdf->plotOn(fd1t, Slice(*pM->sample, "chan1"), Components("m1_bdPdf"), ProjWData(*pM->sample, *D0), LineStyle(kDashed), LineColor(kGreen));
+      fd1t->Draw();
+
+
+      tl->SetTextSize(0.04);
+      tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
+      tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
+      tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[1]->getVal(), pM->bsN[1]->getError()));
+      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[1]->getVal(), pM->bdN[1]->getError()));
+      tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
+      tl->DrawLatex(0.1+0.45,  0.65, Form("N_{Bs}^{tot} = %3.1f #pm %3.1f",
+					  pM->bsN[0]->getVal() + pM->bsN[1]->getVal(),
+					  TMath::Sqrt(pM->bsN[0]->getError()*pM->bsN[0]->getError() + pM->bsN[1]->getError()*pM->bsN[1]->getError())
+					  ));
+      tl->DrawLatex(0.1+0.45,  0.60, Form("N_{Bd}^{tot} = %3.1f #pm %3.1f",
+					  pM->bdN[1]->getVal() + pM->bdN[0]->getVal(),
+					  TMath::Sqrt(pM->bdN[0]->getError()*pM->bdN[0]->getError() + pM->bdN[1]->getError()*pM->bdN[1]->getError())
+					  ));
+
+      savePad(Form("runToys2-example-%s-%d.pdf", whichtoy.c_str(), i), c1);
+
+
+    }
+
+
+    ht->Fill(pM->bsTau->getVal());
+    hs->Fill(pM->bsTau->getError());
+    hBs->Fill(pM->bsN[0]->getVal() + pM->bsN[1]->getVal());
+    hBd->Fill(pM->bdN[0]->getVal() + pM->bdN[1]->getVal());
+
+    delete r;
+    delete pM;
+    delete D0;
+  }
+
+
+  c0->cd(1);
+  hBs->SetMaximum(1.3*hBs->GetMaximum());
+  hBs->Fit("gaus");
+  tl->SetTextSize(0.05);
+  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
+  tl->SetTextSize(0.035);
+  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(hBs->GetEntries())));
+  tl->DrawLatex(0.25, 0.96, Form("N^{0} = %d", nsg));
+  pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
+
+  c0->cd(2);
+  hBd->SetMaximum(1.3*hBd->GetMaximum());
+  hBd->Draw();
+  tl->SetTextSize(0.05);
+  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
+  tl->SetTextSize(0.035);
+  pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
+
+  c0->cd(3);
+  ht->SetMaximum(1.3*ht->GetMaximum());
+  ht->Fit("gaus");
+  tl->SetTextSize(0.05);
+  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
+  tl->SetTextSize(0.035);
+  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(ht->GetEntries())));
+  pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
+
+  c0->cd(4);
+  hs->SetMaximum(1.3*hs->GetMaximum());
+  hs->Fit("gaus");
+  tl->SetTextSize(0.05);
+  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
+
+  savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+}
+
+
+// ----------------------------------------------------------------------
+RooDataSet* umlLifetime::createData2(model2 *m, int nsg, int nbg, bool channelWise) {
+  RooDataSet *d0[NCHAN];
+  RooDataSet *bgData[NCHAN];
+  RooDataSet *bsData[NCHAN];
+  RooDataSet *bdData[NCHAN];
+  double nbd = 0.1*nsg;
+  for (int ichan = 0; ichan < NCHAN; ++ichan) {
+    bgData[ichan]  = m->bgPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbg);
+    bsData[ichan]  = m->bsPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nsg);
+    bdData[ichan]  = m->bdPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbd);
+
+
+    d0[ichan] = new RooDataSet(*bgData[ichan]);
+    d0[ichan]->append(*bsData[ichan]);
+    d0[ichan]->append(*bdData[ichan]);
+    delete bgData[ichan];
+    delete bsData[ichan];
+    delete bdData[ichan];
+  }
+  if (channelWise) {
+    RooDataSet *D0 = new RooDataSet("d0", "combined data", RooArgSet(*fm,*ft), Index(*(m->sample)), Import("chan0", *(d0[0])), Import("chan1", *(d0[1])));
+    return D0;
+  } else {
+    RooDataSet *D0 = new RooDataSet(*d0[0]);
+    for (int ichan = 1; ichan < NCHAN; ++ichan)  {
+      D0->append(*d0[ichan]);
+    }
+    return D0;
+  }
+   // RooDataSet *bgData[NCHAN];
+   //  RooDataSet *bsData[NCHAN];
+   //  RooDataSet *bdData[NCHAN];
+   //  for (int ichan = 0; ichan < NCHAN; ++ichan) {
+   //    bgData[ichan]  = pM->bgPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbg);
+   //    bsData[ichan]  = pM->bsPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nsg);
+   //    bdData[ichan]  = pM->bdPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbd);
+   //    d0[ichan] = new RooDataSet(*bgData[ichan]);
+   //    d0[ichan]->append(*bsData[ichan]);
+   //    d0[ichan]->append(*bdData[ichan]);
+   //    delete bgData[ichan];
+   //    delete bsData[ichan];
+   //    delete bdData[ichan];
+   //  }
+
+
+  return 0;
 }
 
 
