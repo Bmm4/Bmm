@@ -203,6 +203,17 @@ void plotFake::makeAll(string what) {
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
+
+    if ((what == "all") || (what == "fakerate") || (string::npos != what.find("phi"))) {
+      fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+      fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
+    }
+
+    if ((what == "all") || (what == "fakerate") || (string::npos != what.find("lambda"))) {
+      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
+    }
+
   }
 
   // plotMass("fakeData_ks", "Cu");
