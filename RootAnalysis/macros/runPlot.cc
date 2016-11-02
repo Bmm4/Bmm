@@ -19,6 +19,8 @@
 #include "plotStuff.hh"
 #include "plotFake.hh"
 
+#include "umlLifetime.hh"
+
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -151,6 +153,32 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // -- umlLifetime
+  if (string::npos != plot.find("umllifetime")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    files = "plotResults.2016.files";
+    cuts  = "baseCuts.cuts";
+    setup = "";
+    umlLifetime a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (string::npos != mode.find("runtoys2m2")) {
+      int nruns(1000), nsg(100), nbg(400);
+      sscanf(mode.c_str(), "runtoys2m2-%d-%d-%d", &nruns, &nsg, &nbg);
+      cout << "====================================================" << endl;
+      cout << "=== runToys2(m2, " << nruns << ", " << nsg << ", " << nbg << ")" << endl;
+      cout << "====================================================" << endl;
+      a.runToys2("m2", nruns, nsg, nbg);
+    } else if (string::npos != mode.find("runtoys1m2")) {
+      int nruns(1000), nsg(100), nbg(400);
+      sscanf(mode.c_str(), "runtoys1m2-%d-%d-%d", &nruns, &nsg, &nbg);
+      cout << "====================================================" << endl;
+      cout << "=== runToys1(m2, " << nruns << ", " << nsg << ", " << nbg << ")" << endl;
+      cout << "====================================================" << endl;
+      a.runToys1("m2", nruns, nsg, nbg);
+    } else {
+      a.makeAll();
+    }
+  }
 
   return 0;
 }

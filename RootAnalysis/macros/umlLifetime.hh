@@ -16,35 +16,123 @@
 #include "RooPolynomial.h"
 #include "RooTruthModel.h"
 #include "RooDecay.h"
+#include "RooCategory.h"
+#include "RooSimultaneous.h"
 
 #define  MLO  4.8
 #define  MHI  6.0
 #define  TLO  0.
 #define  THI  15.
+#define  TAU0 1.68
+#define  NCHAN 2
 
-
-
-class model {
+// ----------------------------------------------------------------------
+class model1 {
 public:
-  model() {};
-  ~model() {};
-  std::string name;
+  model1(std::string name = "") : fName(name) {}
+  ~model1() {
+    std::cout << "deleting model1 " << fName << std::endl;
+    delete bsN;
+    delete bdN;
+    delete bgN;
 
-  RooRealVar *m, *t;   // variables: mass and reconstructed decay time
+    delete bsMassPeak;
+    delete bsMassSigma;
+    delete bdMassPeak;
+    delete bdMassSigma;
+    delete bgMassSlope;
+
+    delete bsTau;
+    delete bdTau;
+    delete bgTau;
+
+    delete tTruth;
+    delete bsPdfT;
+    delete bdPdfT;
+    delete bgPdfT;
+
+    delete bsPdfM;
+    delete bdPdfM;
+    delete bgPdfM;
+
+    delete bsPdf;
+    delete bdPdf;
+    delete bgPdf;
+
+    delete modelPdf;
+  };
+
+  std::string fName;
 
   // -- fit (fixed) parameters:
-  RooRealVar *sgMassPeak, *sgMassSigma, *bgMassSlope;
-  RooRealVar *sgTau, *bgTau;
-  RooRealVar *sgN, *bgN;
+  RooRealVar *bsTau, *bdTau, *bgTau;
+  RooRealVar *bsN, *bdN, *bgN;
+  RooRealVar *bsMassPeak, *bsMassSigma, *bdMassPeak, *bdMassSigma, *bgMassSlope;
 
   RooTruthModel  *tTruth;
-  RooDecay       *sgPdfT, *bgPdfT;
-  RooGaussian    *sgPdfM;
+  RooDecay       *bsPdfT, *bdPdfT, *bgPdfT;
+  RooGaussian    *bsPdfM, *bdPdfM;
   RooExponential *bgPdfM;
 
-  RooAbsPdf      *sgPdf, *bgPdf;
+  RooAbsPdf      *bsPdf, *bdPdf, *bgPdf;
   RooAbsPdf      *modelPdf;
-  RooArgSet      poi;
+};
+
+
+// ----------------------------------------------------------------------
+class model2 {
+public:
+  model2(std::string name = "") : fName(name) {}
+  ~model2() {
+    std::cout << "deleting model1 " << fName << std::endl;
+    // delete bsN;
+    // delete bdN;
+    // delete bgN;
+
+    // delete bsMassPeak;
+    // delete bsMassSigma;
+    // delete bdMassPeak;
+    // delete bdMassSigma;
+    // delete bgMassSlope;
+
+    // delete bsTau;
+    // delete bdTau;
+    // delete bgTau;
+
+    // delete tTruth;
+    // delete bsPdfT;
+    // delete bdPdfT;
+    // delete bgPdfT;
+
+    // delete bsPdfM;
+    // delete bdPdfM;
+    // delete bgPdfM;
+
+    // delete bsPdf;
+    // delete bdPdf;
+    // delete bgPdf;
+
+    // delete modelPdf;
+  };
+
+  std::string fName;
+
+  // -- fit (fixed) parameters:
+  RooRealVar *bsTau, *bdTau, *bgTau;
+  RooRealVar *bsN[NCHAN], *bdN[NCHAN], *bgN[NCHAN];
+  RooRealVar *bsMassPeak[NCHAN], *bsMassSigma[NCHAN], *bdMassPeak[NCHAN], *bdMassSigma[NCHAN], *bgMassSlope[NCHAN];
+
+  RooTruthModel  *tTruth[NCHAN];
+  RooDecay       *bsPdfT[NCHAN], *bdPdfT[NCHAN], *bgPdfT[NCHAN];
+  RooGaussian    *bsPdfM[NCHAN], *bdPdfM[NCHAN];
+  RooExponential *bgPdfM[NCHAN];
+
+  RooAbsPdf      *bsPdf[NCHAN], *bdPdf[NCHAN], *bgPdf[NCHAN];
+  RooAbsPdf      *modelPdf[NCHAN];
+
+  RooSimultaneous *simPdf;
+  RooCategory     *sample;
+
 };
 
 
@@ -66,16 +154,27 @@ public :
   virtual void bookHist(std::string dsname);
 
   // -- models
-  model* createModel1(std::string name, int mode = 0);
+  model1*  createModel1(std::string name, int mode = 0);
+  model2*  createModel2(std::string name, int mode = 0);
 
-  void   runToy(model *pM, int nsig, int nbg);
+  RooDataSet *createData2(model2 *m, int nsig, int nbg);
+
+  void   runToys1(std::string toy , int ntoys, int nsig, int nbg);
+  void   runToys2(std::string toy , int ntoys, int nsig, int nbg);
 
   // -- code for loops
   void   loopFunction1();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
+  int fRndmSeed;
+
 protected:
+
+  RooRealVar *fm, *ft;   // variables: mass and reconstructed decay time
+
+  double fMeanValue, fMeanValueWidth;
+  double fMeanError, fMeanErrorWidth;
 
   // ----------------------------------------------------------------------
   ClassDef(umlLifetime,1)
