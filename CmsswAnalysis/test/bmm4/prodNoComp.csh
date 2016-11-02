@@ -34,8 +34,8 @@ echo "--> cat /proc/cpuinfo"
 cat /proc/cpuinfo
 echo "--> uname -a"
 uname -a
-echo "--> df -kl"
-df -kl
+#echo "--> df -kl"
+#df -kl
 echo "--> printenv"
 printenv
 limit coredumpsize 0

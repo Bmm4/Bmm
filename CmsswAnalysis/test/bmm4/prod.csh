@@ -31,7 +31,7 @@ date
 hostname
 cat /proc/cpuinfo
 uname -a
-df -kl
+#df -kl
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR

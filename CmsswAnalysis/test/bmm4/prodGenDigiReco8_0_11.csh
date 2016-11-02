@@ -42,7 +42,7 @@ echo "--> Environment"
 date
 hostname
 uname -a
-df -kl
+#df -kl
 limit coredumpsize 0
 
 echo $VO_CMS_SW_DIR
