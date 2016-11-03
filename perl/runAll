@@ -26,12 +26,17 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('Ccdhlmo:pq:s:t:x:y');
+getopts('Ccdhlmo:pq:s:t:w:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
     $dir = $opt_o;
 }
+
+if (!$opt_w) {
+    $opt_w = "all";
+}
+
 
 if (!$opt_q) {
     $opt_q = "all.q";
