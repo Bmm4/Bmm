@@ -241,6 +241,11 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   cout << "=> runToys1(" << whichtoy << ", " << ntoys << ", " << nsg << ", " << nbg << "), fRndmSeed = " << fRndmSeed << endl;
   cout << "====================================================" << endl;
   bool doPlot(false); // setting to true will create a memory leak!
+  if (!doPlot) {
+    RooMsgService::instance().setSilentMode(true);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
+    gErrorIgnoreLevel = kWarning;
+  }
 
   double nbd = 0.1*nsg;
 
@@ -256,16 +261,15 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   c1->Clear();
   c1->Divide(2, 1);
 
-  TH1D *ht = new TH1D("ht", "", 100, 1.0, 2.5);
-  TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
+  TH1D *ht = new TH1D("ht", "", 100, 0., 3.0);
+  TH1D *hs = new TH1D("hs", "", 100, 0., 1.0);
 
-  TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
+  TH1D *hBs = new TH1D("hBs", "", 100, 0., 2.*nsg);
   TH1D *hBd = new TH1D("hBd", "", 100, 0, 2.*nbd);
 
   for (int i = 0; i < ntoys; ++i) {
     model1 *pM  = createModel1("m1", 0);
     model2 *pM2 = createModel2("m2", 0);
-    cout << "======================================================================" << endl;
     cout << " creating new toy run " << i << " for model1 " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
     RooDataSet *d0(0);
     if (whichtoy == "m1") {
@@ -283,14 +287,15 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
       d0 = createData2(pM2, nsg, nbg, false);
     }
     // Fit pdf. The normalization integral is calculated numerically.
-    RooFitResult *r = pM->modelPdf->fitTo(*d0, Save()) ;
+    RooFitResult *r = pM->modelPdf->fitTo(*d0, Save(), PrintEvalErrors(-1)) ;
 
     ht->Fill(pM->bsTau->getVal());
     hs->Fill(pM->bsTau->getError());
     hBs->Fill(pM->bsN->getVal());
     hBd->Fill(pM->bdN->getVal());
 
-    if (doPlot || (0 == i%200)) {
+    //    if (doPlot || (0 == i%200)) {
+    if (doPlot) {
       tl->SetNDC(kTRUE);
       tl->SetTextSize(0.04);
       c1->cd(1);
@@ -355,41 +360,42 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   h->Write();
   fHistFile->Close();
 
-  c0->cd(1);
-  hBs->SetMaximum(1.3*hBs->GetMaximum());
-  hBs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
-  pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
+  if (doPlot) {
+    c0->cd(1);
+    hBs->SetMaximum(1.3*hBs->GetMaximum());
+    hBs->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
+    tl->SetTextSize(0.035);
+    tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
+    pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
 
-  c0->cd(2);
-  hBd->SetMaximum(1.3*hBd->GetMaximum());
-  hBd->Draw();
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
-  tl->SetTextSize(0.035);
-  pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
+    c0->cd(2);
+    hBd->SetMaximum(1.3*hBd->GetMaximum());
+    hBd->Draw();
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
+    tl->SetTextSize(0.035);
+    pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
 
-  c0->cd(3);
-  ht->SetMaximum(1.3*ht->GetMaximum());
-  ht->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
-  pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
+    c0->cd(3);
+    ht->SetMaximum(1.3*ht->GetMaximum());
+    ht->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
+    tl->SetTextSize(0.035);
+    tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
+    pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
 
-  c0->cd(4);
-  hs->SetMaximum(1.3*hs->GetMaximum());
-  hs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
-  tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
+    c0->cd(4);
+    hs->SetMaximum(1.3*hs->GetMaximum());
+    hs->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
+    tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
-  savePad(Form("runToys1-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
-
+    savePad(Form("runToys1-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+  }
 
 }
 
@@ -405,6 +411,12 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
 
   bool doPlot(false); // setting to true will create a memory leak!
 
+  if (!doPlot) {
+    RooMsgService::instance().setSilentMode(true);
+    RooMsgService::instance().setGlobalKillBelow(RooFit::WARNING);
+    gErrorIgnoreLevel = kWarning;
+  }
+
   double nbd = 0.1*nsg;
 
   TCanvas *c0 = (TCanvas*)gROOT->FindObject("c0");
@@ -419,24 +431,21 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   c1->Clear();
   c1->Divide(2, 2);
 
-  TH1D *ht = new TH1D("ht", "", 100, 1.0, 2.5);
-  TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
+  TH1D *ht = new TH1D("ht", "", 100, 0., 3.0);
+  TH1D *hs = new TH1D("hs", "", 100, 0., 1.0);
 
-  TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
-  TH1D *hBd = new TH1D("hBd", "", 100, 0., 2.*nbd);
+  TH1D *hBs = new TH1D("hBs", "", 100, 0., 2.*nsg);
+  TH1D *hBd = new TH1D("hBd", "", 100, 0, 2.*nbd);
 
   model2 *pM(0);
   for (int i = 0; i < ntoys; ++i) {
     pM = createModel2("m2", 0);
-    cout << "======================================================================" << endl;
     cout << " creating new toy run " << i << " for model2 " << whichtoy << ", sgTau = " << pM->bsTau->getVal() << endl;
     RooDataSet *D0 = createData2(pM, nsg, nbg, true);
 
-    // Fit pdf. The normalization integral is calculated numerically.
     RooFitResult *r = pM->simPdf->fitTo(*D0, Save()) ;
 
-    if (doPlot || (0 == i%200)) {
-
+    if (doPlot) {
       tl->SetNDC(kTRUE);
       tl->SetTextSize(0.04);
       c1->cd(1);
@@ -540,41 +549,43 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   h->Write();
   fHistFile->Close();
 
-  c0->cd(1);
-  hBs->SetMaximum(1.3*hBs->GetMaximum());
-  hBs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
-  tl->DrawLatex(0.25, 0.96, Form("N^{0} = %d", nsg));
-  pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
+  if (doPlot) {
+    c0->cd(1);
+    hBs->SetMaximum(1.3*hBs->GetMaximum());
+    hBs->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
+    tl->SetTextSize(0.035);
+    tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
+    tl->DrawLatex(0.25, 0.96, Form("N^{0} = %d", nsg));
+    pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
 
-  c0->cd(2);
-  hBd->SetMaximum(1.3*hBd->GetMaximum());
-  hBd->Draw();
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
-  tl->SetTextSize(0.035);
-  pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
+    c0->cd(2);
+    hBd->SetMaximum(1.3*hBd->GetMaximum());
+    hBd->Draw();
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBd->GetMean(), hBd->GetMeanError()));
+    tl->SetTextSize(0.035);
+    pa->DrawArrow(nbd, 0.5*hBd->GetMaximum(), nbd, 0.);
 
-  c0->cd(3);
-  ht->SetMaximum(1.3*ht->GetMaximum());
-  ht->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
-  tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
-  pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
+    c0->cd(3);
+    ht->SetMaximum(1.3*ht->GetMaximum());
+    ht->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
+    tl->SetTextSize(0.035);
+    tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
+    pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
 
-  c0->cd(4);
-  hs->SetMaximum(1.3*hs->GetMaximum());
-  hs->Fit("gaus");
-  tl->SetTextSize(0.05);
-  tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
-  tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
+    c0->cd(4);
+    hs->SetMaximum(1.3*hs->GetMaximum());
+    hs->Fit("gaus");
+    tl->SetTextSize(0.05);
+    tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
+    tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
-  savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+    savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+  }
 
 }
 

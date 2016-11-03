@@ -32,7 +32,6 @@ class model1 {
 public:
   model1(std::string name = "") : fName(name) {}
   ~model1() {
-    std::cout << "deleting model1 " << fName << std::endl;
     delete bsN;
     delete bdN;
     delete bgN;
@@ -85,35 +84,38 @@ class model2 {
 public:
   model2(std::string name = "") : fName(name) {}
   ~model2() {
-    std::cout << "deleting model1 " << fName << std::endl;
-    // delete bsN;
-    // delete bdN;
-    // delete bgN;
+    for (int ichan = 0; ichan < NCHAN; ++ichan) {
+      delete bsN[ichan];
+      delete bdN[ichan];
+      delete bgN[ichan];
 
-    // delete bsMassPeak;
-    // delete bsMassSigma;
-    // delete bdMassPeak;
-    // delete bdMassSigma;
-    // delete bgMassSlope;
+      delete bsMassPeak[ichan];
+      delete bsMassSigma[ichan];
+      delete bdMassPeak[ichan];
+      delete bdMassSigma[ichan];
+      delete bgMassSlope[ichan];
 
-    // delete bsTau;
-    // delete bdTau;
-    // delete bgTau;
+      delete tTruth[ichan];
+      delete bsPdfT[ichan];
+      delete bdPdfT[ichan];
+      delete bgPdfT[ichan];
 
-    // delete tTruth;
-    // delete bsPdfT;
-    // delete bdPdfT;
-    // delete bgPdfT;
+      delete bsPdfM[ichan];
+      delete bdPdfM[ichan];
+      delete bgPdfM[ichan];
 
-    // delete bsPdfM;
-    // delete bdPdfM;
-    // delete bgPdfM;
+      delete bsPdf[ichan];
+      delete bdPdf[ichan];
+      delete bgPdf[ichan];
 
-    // delete bsPdf;
-    // delete bdPdf;
-    // delete bgPdf;
-
-    // delete modelPdf;
+      delete modelPdf[ichan];
+    }
+    delete bsTau;
+    delete bdTau;
+    delete bgTau;
+    delete bd2Bs;
+    delete simPdf;
+    delete sample;
   };
 
   std::string fName;
