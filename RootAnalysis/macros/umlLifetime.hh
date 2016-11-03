@@ -16,6 +16,7 @@
 #include "RooPolynomial.h"
 #include "RooTruthModel.h"
 #include "RooDecay.h"
+#include "RooProduct.h"
 #include "RooCategory.h"
 #include "RooSimultaneous.h"
 
@@ -118,8 +119,9 @@ public:
   std::string fName;
 
   // -- fit (fixed) parameters:
-  RooRealVar *bsTau, *bdTau, *bgTau;
-  RooRealVar *bsN[NCHAN], *bdN[NCHAN], *bgN[NCHAN];
+  RooRealVar *bsTau, *bdTau, *bgTau, *bd2Bs;
+  RooRealVar *bsN[NCHAN], *bgN[NCHAN];
+  RooProduct *bdN[NCHAN];
   RooRealVar *bsMassPeak[NCHAN], *bsMassSigma[NCHAN], *bdMassPeak[NCHAN], *bdMassSigma[NCHAN], *bgMassSlope[NCHAN];
 
   RooTruthModel  *tTruth[NCHAN];

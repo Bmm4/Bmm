@@ -31,7 +31,6 @@
 #include "RooDataHist.h"
 #include "RooAddPdf.h"
 #include "RooAddition.h"
-#include "RooProduct.h"
 #include "RooProdPdf.h"
 #include "RooExtendPdf.h"
 #include "RooMCStudy.h"
@@ -162,9 +161,11 @@ model2* umlLifetime::createModel2(string name, int mode) {
   double mSigma[NCHAN]   = {0.040, 0.060};
 
   // -- common fit (fixed) parameters:
-  aModel->bsTau  = new RooRealVar("m2_bsTau", "B signal lifetime", TAU0, 0., 10.);
-  aModel->bdTau  = new RooRealVar("m2_bdTau", "B signal lifetime", 1.52, 0., 10.);
-  aModel->bgTau  = new RooRealVar("m2_bgTau", "Background lifetime", 1.2, 0., 10.);
+  aModel->bsTau = new RooRealVar("m2_bsTau", "B signal lifetime", TAU0, 0., 10.);
+  aModel->bdTau = new RooRealVar("m2_bdTau", "B signal lifetime", 1.52, 0., 10.);
+  aModel->bgTau = new RooRealVar("m2_bgTau", "Background lifetime", 1.2, 0., 10.);
+  aModel->bd2Bs = new RooRealVar("m2_bd2Bs", "Ratio Bd/Bs", 0.1, 0.01, 2.);
+
 
   // -- channel-dependent parameters
   aModel->sample = new RooCategory("sample", "sample");
@@ -177,7 +178,8 @@ model2* umlLifetime::createModel2(string name, int mode) {
     aModel->bgMassSlope[ichan] = new RooRealVar(Form("m%d_bgMassSlope", ichan), "bg mass slope", -0.3, -10., 10.);
 
     aModel->bsN[ichan]    = new RooRealVar(Form("m%d_bsN", ichan), "Bs signal yield",  1., 0., 1.e7);
-    aModel->bdN[ichan]    = new RooRealVar(Form("m%d_bdN", ichan), "Bd signal yield",  1., 0., 1.e7);
+    aModel->bdN[ichan]    = new RooProduct(Form("m%d_bdN", ichan), "bd2Bs * Bs", RooArgSet(*aModel->bd2Bs, *aModel->bsN[ichan]));
+
     aModel->bgN[ichan]    = new RooRealVar(Form("m%d_bgN", ichan), "Background yield", 1., 0., 1.e7);
 
     // -- create PDFs
@@ -214,7 +216,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
 
   RooRandom::randomGenerator()->SetSeed(fRndmSeed);
 
-  bool doPlot(true); // setting to true will create a memory leak!
+  bool doPlot(false); // setting to true will create a memory leak!
 
   double nbd = 0.1*nsg;
 
@@ -230,7 +232,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   c1->Clear();
   c1->Divide(2, 1);
 
-  TH1D *ht = new TH1D("ht", "", 100, TAU0-0.5, TAU0+0.5);
+  TH1D *ht = new TH1D("ht", "", 100, 1.0, 2.5);
   TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
 
   TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
@@ -264,7 +266,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
     hBs->Fill(pM->bsN->getVal());
     hBd->Fill(pM->bdN->getVal());
 
-    if (doPlot || (0 == i)) {
+    if (doPlot || (0 == i%200)) {
       tl->SetNDC(kTRUE);
       tl->SetTextSize(0.04);
       c1->cd(1);
@@ -316,7 +318,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
   tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(hBs->GetEntries())));
+  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
   pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
 
   c0->cd(2);
@@ -333,7 +335,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
   tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(ht->GetEntries())));
+  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
   pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
 
   c0->cd(4);
@@ -341,6 +343,7 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   hs->Fit("gaus");
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
+  tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
   savePad(Form("runToys1-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
 }
@@ -352,7 +355,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
 
   RooRandom::randomGenerator()->SetSeed(fRndmSeed);
 
-  bool doPlot(true); // setting to true will create a memory leak!
+  bool doPlot(false); // setting to true will create a memory leak!
 
   double nbd = 0.1*nsg;
 
@@ -368,7 +371,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   c1->Clear();
   c1->Divide(2, 2);
 
-  TH1D *ht = new TH1D("ht", "", 100, TAU0-0.5, TAU0+0.5);
+  TH1D *ht = new TH1D("ht", "", 100, 1.0, 2.5);
   TH1D *hs = new TH1D("hs", "", 100, 0., 0.5);
 
   TH1D *hBs = new TH1D("hBs", "", 100, nsg-0.5*nsg, nsg+0.5*nsg);
@@ -384,7 +387,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
     // Fit pdf. The normalization integral is calculated numerically.
     RooFitResult *r = pM->simPdf->fitTo(*D0, Save()) ;
 
-    if (doPlot || (0 == i)) {
+    if (doPlot || (0 == i%200)) {
 
       tl->SetNDC(kTRUE);
       tl->SetTextSize(0.04);
@@ -412,7 +415,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
       tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
       tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
       tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[0]->getVal(), pM->bsN[0]->getError()));
-      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[0]->getVal(), pM->bdN[0]->getError()));
+      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[0]->getVal(), pM->bdN[0]->getPropagatedError(*r)));
       tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
 
       c1->cd(3);
@@ -441,7 +444,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
       tl->DrawLatex(0.1+0.465, 0.85, Form("N^{0} = %3.1f", (1./NCHAN)*nsg));
       tl->DrawLatex(0.1+0.70,  0.85, Form("#tau_{0} = %4.3f", TAU0));
       tl->DrawLatex(0.1+0.45,  0.80, Form("N_{Bs} = %3.1f #pm %3.1f", pM->bsN[1]->getVal(), pM->bsN[1]->getError()));
-      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[1]->getVal(), pM->bdN[1]->getError()));
+      tl->DrawLatex(0.1+0.45,  0.75, Form("N_{Bd} = %3.1f #pm %3.1f", pM->bdN[1]->getVal(), pM->bdN[1]->getPropagatedError(*r)));
       tl->DrawLatex(0.1+0.49,  0.70, Form("#tau = %4.3f #pm %4.3f",   pM->bsTau->getVal(), pM->bsTau->getError()));
       tl->DrawLatex(0.1+0.45,  0.65, Form("N_{Bs}^{tot} = %3.1f #pm %3.1f",
 					  pM->bsN[0]->getVal() + pM->bsN[1]->getVal(),
@@ -449,7 +452,8 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
 					  ));
       tl->DrawLatex(0.1+0.45,  0.60, Form("N_{Bd}^{tot} = %3.1f #pm %3.1f",
 					  pM->bdN[1]->getVal() + pM->bdN[0]->getVal(),
-					  TMath::Sqrt(pM->bdN[0]->getError()*pM->bdN[0]->getError() + pM->bdN[1]->getError()*pM->bdN[1]->getError())
+					  TMath::Sqrt(pM->bdN[0]->getPropagatedError(*r)*pM->bdN[0]->getPropagatedError(*r)
+						      + pM->bdN[1]->getPropagatedError(*r)*pM->bdN[1]->getPropagatedError(*r))
 					  ));
 
       savePad(Form("runToys2-example-%s-%d.pdf", whichtoy.c_str(), i), c1);
@@ -475,7 +479,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.1f #pm %4.1f", hBs->GetMean(), hBs->GetMeanError()));
   tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(hBs->GetEntries())));
+  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(hBs->GetSumOfWeights())));
   tl->DrawLatex(0.25, 0.96, Form("N^{0} = %d", nsg));
   pa->DrawArrow(nsg, 0.5*hBs->GetMaximum(), nsg, 0.);
 
@@ -493,7 +497,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", ht->GetMean(), ht->GetMeanError()));
   tl->SetTextSize(0.035);
-  tl->DrawLatex(0.40, 0.96, Form("Nentries = %d", static_cast<int>(ht->GetEntries())));
+  tl->DrawLatex(0.40, 0.96, Form("S(W8) = %d", static_cast<int>(ht->GetSumOfWeights())));
   pa->DrawArrow(TAU0, 0.5*ht->GetMaximum(), TAU0, 0.);
 
   c0->cd(4);
@@ -501,6 +505,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   hs->Fit("gaus");
   tl->SetTextSize(0.05);
   tl->DrawLatex(0.25, 0.87, Form("#mu = %4.3f #pm %4.3f", hs->GetMean(), hs->GetMeanError()));
+  tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
   savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
 }
