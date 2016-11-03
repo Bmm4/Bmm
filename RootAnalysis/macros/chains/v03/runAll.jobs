@@ -25,6 +25,12 @@ sub runCommand() {
     return $runCmd;
 }
 
+sub runPlotCommand() {
+    $runCmd  = "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/RootAnalysis/macros/runPlotNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
 sub mCC() {
     return " && $BMMBASE/perl/mkCheckedChain $mode ; ";
 }
@@ -508,6 +514,14 @@ $jobs{$mode}   = "cd $mode && ".&runCommand." -m batch -q $opt_q -x 'bin/runBmm 
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | grep -v Bc | grep -v Bu | grep -v Acc > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+
+# ----------------------------------------------------------------------
+$dataset = "umlLifetime";
+# ----------------------------------------------------------------------
+$mode = "$dataset";
+$jobs{$mode}   = "cd $mode && ".&runPlotCommand." -m batch -q $opt_q -x 'bin/runPlot -p umllifetime -w ' $opt_w* && cd - ";
+$merges{$mode} = "-x $SEDIR/$dataset -p $opt_w";
 
 
 # $mode = "bmm-mc-$dataset-recoil0-$version"; $pattern = "$mode";
