@@ -79,8 +79,8 @@ date
 cd src/Bmm/RootAnalysis/macros/
 pwd
 
-echo "$EXECUTABLE $JOB  -r $FILE1 |& tee $JOB.log"
-$EXECUTABLE  $JOB -r $FILE1 |& tee $JOB.log
+echo "$EXECUTABLE $JOB  |& tee $JOB.log"
+$EXECUTABLE  $JOB  |& tee $JOB.log
 date
 ls -rtl
 

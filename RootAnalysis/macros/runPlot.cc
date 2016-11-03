@@ -29,12 +29,11 @@ int main(int argc, char *argv[]) {
   string progName  = argv[0];
 
   string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada");
-  int year(2016), randomSeed(1);
+  int year(2016);
   bool remove(false);
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){
-    if (!strcmp(argv[i], "-i"))  {randomSeed  = atoi(argv[++i]);}
     if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
@@ -162,11 +161,11 @@ int main(int argc, char *argv[]) {
     cuts  = "baseCuts.cuts";
     setup = "";
     umlLifetime a(dir, files, cuts, setup);
-    a.fRndmSeed = randomSeed;
-    if (rootfilename != "nada") {
-      a.fHistFileName = rootfilename;
+    if (rootfilename == "nada") {
+      a.fHistFileName = Form("%s.root", mode.c_str());
+    } else {
+      a.changeSetup(dir, rootfilename, setup);
     }
-    //    if (rootfilename == "nada") a.changeSetup(dir, Form("umlLifetime-rndm%d", randomSeed), setup);
     if (mode != "nada") {
       a.makeAll(mode);
     } else {

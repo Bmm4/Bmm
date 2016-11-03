@@ -110,7 +110,7 @@ void umlLifetime::makeAll(string what) {
     replaceAll(lwhat, "all-", "");
     replaceAll(lwhat, "runtoys1-", "");
     cout << "scanning lwhat ->" << lwhat << "<-" << endl;
-    sscanf(lwhat.c_str(), "%d-%d-%d", &nruns, &nsg, &nbg);
+    sscanf(lwhat.c_str(), "%d-%d-%d-%d", &nruns, &nsg, &nbg, &fRndmSeed);
     runToys1("m2", nruns, nsg, nbg);
   }
 
@@ -120,7 +120,7 @@ void umlLifetime::makeAll(string what) {
     replaceAll(lwhat, "all-", "");
     replaceAll(lwhat, "runtoys2-", "");
     cout << "scanning lwhat ->" << lwhat << "<-" << endl;
-    sscanf(lwhat.c_str(), "%d-%d-%d", &nruns, &nsg, &nbg);
+    sscanf(lwhat.c_str(), "%d-%d-%d-%d", &nruns, &nsg, &nbg, &fRndmSeed);
     runToys2("m2", nruns, nsg, nbg);
   }
 
