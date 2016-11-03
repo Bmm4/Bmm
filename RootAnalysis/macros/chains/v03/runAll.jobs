@@ -37,7 +37,11 @@ sub mCC() {
 
 sub srmHadd() {
     ($lmode) = @_;
-    return "$BMMBASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode.root";
+    if ($opt_w) {
+	return "$BMMBASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode-$opt_w.root";
+    } else {
+	return "$BMMBASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode.root";
+    }
 }
 
 # ######################
