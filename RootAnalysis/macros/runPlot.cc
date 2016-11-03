@@ -29,11 +29,13 @@ int main(int argc, char *argv[]) {
   string progName  = argv[0];
 
   string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada");
-  int year(2016);
+  int year(2016), randomSeed(1);
   bool remove(false);
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){
+    if (!strcmp(argv[i], "-i"))  {randomSeed  = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}
@@ -160,21 +162,13 @@ int main(int argc, char *argv[]) {
     cuts  = "baseCuts.cuts";
     setup = "";
     umlLifetime a(dir, files, cuts, setup);
-    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
-    if (string::npos != mode.find("runtoys2m2")) {
-      int nruns(1000), nsg(100), nbg(400);
-      sscanf(mode.c_str(), "runtoys2m2-%d-%d-%d", &nruns, &nsg, &nbg);
-      cout << "====================================================" << endl;
-      cout << "=== runToys2(m2, " << nruns << ", " << nsg << ", " << nbg << ")" << endl;
-      cout << "====================================================" << endl;
-      a.runToys2("m2", nruns, nsg, nbg);
-    } else if (string::npos != mode.find("runtoys1m2")) {
-      int nruns(1000), nsg(100), nbg(400);
-      sscanf(mode.c_str(), "runtoys1m2-%d-%d-%d", &nruns, &nsg, &nbg);
-      cout << "====================================================" << endl;
-      cout << "=== runToys1(m2, " << nruns << ", " << nsg << ", " << nbg << ")" << endl;
-      cout << "====================================================" << endl;
-      a.runToys1("m2", nruns, nsg, nbg);
+    a.fRndmSeed = randomSeed;
+    if (rootfilename != "nada") {
+      a.fHistFileName = rootfilename;
+    }
+    //    if (rootfilename == "nada") a.changeSetup(dir, Form("umlLifetime-rndm%d", randomSeed), setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
     } else {
       a.makeAll();
     }

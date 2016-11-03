@@ -98,8 +98,30 @@ void umlLifetime::init() {
 // ----------------------------------------------------------------------
 void umlLifetime::makeAll(string what) {
 
-  if (what == "model1") {
-    runToys1("m1", 100, 1000, 900);
+  if (string::npos != what.find("all")) {
+    cout << Form("/bin/rm -f %s", fHistFileName.c_str()) << endl;
+    system(Form("/bin/rm -f %s", fHistFileName.c_str()));
+  }
+
+
+  string lwhat = what;
+  if (string::npos != lwhat.find("all") || string::npos != lwhat.find("runtoys1")) {
+    int nruns(1000), nsg(100), nbg(400);
+    replaceAll(lwhat, "all-", "");
+    replaceAll(lwhat, "runtoys1-", "");
+    cout << "scanning lwhat ->" << lwhat << "<-" << endl;
+    sscanf(lwhat.c_str(), "%d-%d-%d", &nruns, &nsg, &nbg);
+    runToys1("m2", nruns, nsg, nbg);
+  }
+
+  lwhat = what;
+  if (string::npos != lwhat.find("all") || string::npos != lwhat.find("runtoys2")) {
+    int nruns(1000), nsg(100), nbg(400);
+    replaceAll(lwhat, "all-", "");
+    replaceAll(lwhat, "runtoys2-", "");
+    cout << "scanning lwhat ->" << lwhat << "<-" << endl;
+    sscanf(lwhat.c_str(), "%d-%d-%d", &nruns, &nsg, &nbg);
+    runToys2("m2", nruns, nsg, nbg);
   }
 
 }
@@ -215,7 +237,9 @@ model2* umlLifetime::createModel2(string name, int mode) {
 void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
 
   RooRandom::randomGenerator()->SetSeed(fRndmSeed);
-
+  cout << "====================================================" << endl;
+  cout << "=> runToys1(" << whichtoy << ", " << ntoys << ", " << nsg << ", " << nbg << "), fRndmSeed = " << fRndmSeed << endl;
+  cout << "====================================================" << endl;
   bool doPlot(false); // setting to true will create a memory leak!
 
   double nbd = 0.1*nsg;
@@ -311,6 +335,25 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
     delete d0;
   }
 
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+  TH1D *h = (TH1D*)hs->Clone(Form("runToys1_%s_%s", whichtoy.c_str(), hs->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+
+  h = (TH1D*)ht->Clone(Form("runToys1_%s_%s", whichtoy.c_str(), ht->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+
+  h = (TH1D*)hBd->Clone(Form("runToys1_%s_%s", whichtoy.c_str(), hBd->GetName()));
+  h->Write();
+
+  h = (TH1D*)hBs->Clone(Form("runToys1_%s_%s", whichtoy.c_str(), hBs->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+  fHistFile->Close();
 
   c0->cd(1);
   hBs->SetMaximum(1.3*hBs->GetMaximum());
@@ -346,6 +389,8 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
   savePad(Form("runToys1-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+
+
 }
 
 
@@ -354,6 +399,9 @@ void umlLifetime::runToys1(string whichtoy, int ntoys, int nsg, int nbg) {
 void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
 
   RooRandom::randomGenerator()->SetSeed(fRndmSeed);
+  cout << "====================================================" << endl;
+  cout << "=> runToys2(" << whichtoy << ", " << ntoys << ", " << nsg << ", " << nbg << "), fRndmSeed = " << fRndmSeed << endl;
+  cout << "====================================================" << endl;
 
   bool doPlot(false); // setting to true will create a memory leak!
 
@@ -472,6 +520,25 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
     delete D0;
   }
 
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+  TH1D *h = (TH1D*)hs->Clone(Form("runToys2_%s_%s", whichtoy.c_str(), hs->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+
+  h = (TH1D*)ht->Clone(Form("runToys2_%s_%s", whichtoy.c_str(), ht->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+
+  h = (TH1D*)hBd->Clone(Form("runToys2_%s_%s", whichtoy.c_str(), hBd->GetName()));
+  h->Write();
+
+  h = (TH1D*)hBs->Clone(Form("runToys2_%s_%s", whichtoy.c_str(), hBs->GetName()));
+  h->SetDirectory(fHistFile);
+  h->Write();
+  fHistFile->Close();
 
   c0->cd(1);
   hBs->SetMaximum(1.3*hBs->GetMaximum());
@@ -508,6 +575,7 @@ void umlLifetime::runToys2(string whichtoy, int ntoys, int nsg, int nbg) {
   tl->DrawLatex(0.25, 0.80, Form("#sigma = %4.3f #pm %4.3f", hs->GetRMS(), hs->GetRMSError()));
 
   savePad(Form("runToys2-summary-%s-%d.pdf", whichtoy.c_str(), nsg), c0);
+
 }
 
 
@@ -533,29 +601,18 @@ RooDataSet* umlLifetime::createData2(model2 *m, int nsg, int nbg, bool channelWi
   }
   if (channelWise) {
     RooDataSet *D0 = new RooDataSet("d0", "combined data", RooArgSet(*fm,*ft), Index(*(m->sample)), Import("chan0", *(d0[0])), Import("chan1", *(d0[1])));
+    delete d0[0];
+    delete d0[1];
     return D0;
   } else {
     RooDataSet *D0 = new RooDataSet(*d0[0]);
+    delete d0[0];
     for (int ichan = 1; ichan < NCHAN; ++ichan)  {
       D0->append(*d0[ichan]);
+      delete d0[ichan];
     }
     return D0;
   }
-   // RooDataSet *bgData[NCHAN];
-   //  RooDataSet *bsData[NCHAN];
-   //  RooDataSet *bdData[NCHAN];
-   //  for (int ichan = 0; ichan < NCHAN; ++ichan) {
-   //    bgData[ichan]  = pM->bgPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbg);
-   //    bsData[ichan]  = pM->bsPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nsg);
-   //    bdData[ichan]  = pM->bdPdf[ichan]->generate(RooArgSet(*fm, *ft), (1./NCHAN)*nbd);
-   //    d0[ichan] = new RooDataSet(*bgData[ichan]);
-   //    d0[ichan]->append(*bsData[ichan]);
-   //    d0[ichan]->append(*bdData[ichan]);
-   //    delete bgData[ichan];
-   //    delete bsData[ichan];
-   //    delete bdData[ichan];
-   //  }
-
 
   return 0;
 }
