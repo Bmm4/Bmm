@@ -1,0 +1,20 @@
+Alias      MyJpsi      J/psi
+ChargeConj MyJpsi      MyJpsi
+# ----------------------------------------------------------------------
+# Bs -> mu+ mu-
+Decay B_s0
+1.000    mu+  mu-  PHOTOS PHSP;
+Enddecay
+CDecay anti-B_s0
+# ----------------------------------------------------------------------
+# B+ -> J/Psi K + -> MU+ MU- K+
+Decay B+
+  1.000    MyJpsi      K+             SVS;
+Enddecay
+CDecay B-
+#
+Decay MyJpsi
+  1.000         mu+       mu-         PHOTOS VLL;
+Enddecay
+#
+End

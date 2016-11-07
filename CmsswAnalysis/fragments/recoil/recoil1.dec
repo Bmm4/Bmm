@@ -1,0 +1,30 @@
+Alias      MyJpsi      J/psi
+ChargeConj MyJpsi      MyJpsi
+Alias      MyK*0       K*0
+Alias      MyK*0bar    anti-K*0
+ChargeConj MyK*0       MyK*0bar
+# ----------------------------------------------------------------------
+# Bs -> mu+ mu-
+Decay B_s0
+1.000    mu+  mu-  PHOTOS PHSP;
+Enddecay
+CDecay anti-B_s0
+# ----------------------------------------------------------------------
+Decay B0
+  1.000    MyJpsi      MyK*0             SVV_HELAMP 0.159 1.563 0.775 0.0 0.612 2.712;
+Enddecay
+CDecay anti-B0
+#
+Decay MyJpsi
+  1.000         mu+       mu-            PHOTOS VLL;
+Enddecay
+#
+Decay MyK*0
+  1.000        K+        pi-                    VSS;
+Enddecay
+#
+Decay MyK*0bar
+  1.000        K-        pi+                    VSS;
+Enddecay 
+#
+End
