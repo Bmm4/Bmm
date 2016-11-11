@@ -28,21 +28,27 @@ open(RES, ">l1keys.log") || die "cannot open l1keys.log\n";
 
 open(IN, $ARGV[0]) || die "cannot open $ARGV[0]\n";
 
-
+my @result; 
 while(<IN>) {
     s/\{//g;
     s/\}//g;
     s/\"//g;
     ($run, $bla) = split(/:/); 
     $run =~ s/\ //g;
-    print "$run\n"; 
     open(OUT, ">viewTKE-$run.py") || die "cannot open viewTKE-$run.py\n";
     for ($i = 0; $i < $#lines; $i++) {
-	$lines[$i] =~ s/runnumber/$run/;
-	print OUT $lines[$i];
+	if ($lines[$i] =~ /runnumber/) {
+	    $bla =  $lines[$i];
+	    $bla =~ s/runnumber/$run/;
+	    print OUT $bla;
+	} else {
+	    print OUT $lines[$i]; 
+	}
     }
     close(OUT); 
-    @result = `cmsRun viewTKE-273150.py`;
+    @result = (); 
+    print "running viewTKE-$run.py\n"; 
+    @result = `cmsRun viewTKE-$run.py`;
     $basekey = " "; 
     $menu = " "; 
     for ($i = 0; $i < $#result; $i++) {
@@ -55,6 +61,7 @@ while(<IN>) {
 	    $menu =~ s/\n//;
 	}
     }
+    print "$run $basekey $menu\n";
     print RES "$run $basekey $menu\n";
 }
 
