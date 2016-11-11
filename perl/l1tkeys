@@ -1,0 +1,62 @@
+#! /usr/bin/perl
+# ----------------------------------------------------------------------
+# Usage: lxplus0048>pwd
+# =====  /afs/cern.ch/user/u/ursl/bmm4/CMSSW_8_0_22/src/L1TriggerConfig/Utilities/test
+#
+#        lxplus104>$BMMBASE/perl/l1tkeys .../Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T_MuonPhys.txt 
+#
+# Requirements: 
+# =============
+#  >= CMSSW_8_0_22
+#
+#  lxplus0048>diff viewTKE-perl.py viewTKE.py
+#  10c9
+#  < process.source = cms.Source("EmptySource", firstRun = cms.untracked.uint32(runnumber))
+#  ---
+#  > process.source = cms.Source("EmptySource", firstRun = cms.untracked.uint32(3))
+#  16c15
+#  <        connect = cms.string('frontier://FrontierProd/CMS_CONDITIONS'),
+#  ---
+#  >        connect = cms.string('sqlite:o2o/l1config.db'),
+# ----------------------------------------------------------------------
+
+open(IN, "viewTKE-perl.py") || die "cannot open viewTKE-perl.py\n";
+@lines = <IN>; 
+close(IN); 
+
+open(RES, ">l1keys.log") || die "cannot open l1keys.log\n";
+
+open(IN, $ARGV[0]) || die "cannot open $ARGV[0]\n";
+
+
+while(<IN>) {
+    s/\{//g;
+    s/\}//g;
+    s/\"//g;
+    ($run, $bla) = split(/:/); 
+    $run =~ s/\ //g;
+    print "$run\n"; 
+    open(OUT, ">viewTKE-$run.py") || die "cannot open viewTKE-$run.py\n";
+    for ($i = 0; $i < $#lines; $i++) {
+	$lines[$i] =~ s/runnumber/$run/;
+	print OUT $lines[$i];
+    }
+    close(OUT); 
+    @result = `cmsRun viewTKE-273150.py`;
+    $basekey = " "; 
+    $menu = " "; 
+    for ($i = 0; $i < $#result; $i++) {
+	if ($result[$i] =~ /UGT_BASE_KEY/) {
+	    ($bla, $basekey) = split(/key: /, $result[$i]); 
+	    $basekey =~ s/\n//;
+	}
+	if ($result[$i] =~ /L1TUtmTriggerMenuRcd/) {
+	    ($bla, $menu) = split(/L1TUtmTriggerMenuRcd key:/, $result[$i]); 
+	    $menu =~ s/\n//;
+	}
+    }
+    print RES "$run $basekey $menu\n";
+}
+
+close(IN); 
+close(RES); 
