@@ -9,7 +9,7 @@
 # Note: this script does NOT use the (py) file with which it is submitted,
 #       it uses step2.py and step3.py which should be in the digireco.tar.gz file.
 # ----------------------------------------------------------------------
-setenv GENRELEASE CMSSW_7_1_21
+setenv GENRELEASE CMSSW_7_1_21_patch2
 setenv RECRELEASE CMSSW_8_0_11
 
 setenv SCRAM_ARCH
