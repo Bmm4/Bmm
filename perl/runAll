@@ -33,9 +33,9 @@ if ($opt_o) {
     $dir = $opt_o;
 }
 
-if (!$opt_w) {
-    $opt_w = "all";
-}
+#if (!$opt_w) {
+#    $opt_w = "all";
+#}
 
 
 if (!$opt_q) {
