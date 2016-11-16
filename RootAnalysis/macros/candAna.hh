@@ -78,13 +78,14 @@ public:
   virtual void        setupMuonIdTree(TTree *);
 
   virtual bool        tis(TAnaCand *pC);
+  virtual bool        tos(TAnaCand *pC);
   virtual bool        refTrigger(TAnaCand *pC, std::string refTriggerPath);
   virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
   //  virtual double      dist2PdTrigger(const TVector3 &t);
   virtual void        dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &dm2);
   virtual bool        triggerFired(std::string triggerPath);
-  virtual void        triggerHLT();
   virtual void        triggerL1T();
+  virtual void        triggerHLT();
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
   virtual void        getSigTracks(std::vector<int> &v, TAnaCand *pC);
   virtual double      constrainedMass();
@@ -123,6 +124,7 @@ public:
   virtual bool        mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TSimpleTrack *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass = true);
+  double              getDetVarComb(TAnaMuon *mu);
 
   virtual bool        mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuonLM(TSimpleTrack *pt, double &result, bool hadronsPass = true);
@@ -302,9 +304,13 @@ public:
   int     fL1Seeds, fHltPrescale;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
-  bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodCloseTrack, fGoodChi2, fGoodFLS;
-  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fRefTrigger;
+  bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
+  bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger;
   bool    fPreselAlpha;
+  // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
+  bool    fGoodHLT1;
+  string  fHLT1Path, fL1SeedString;
 
   bool    fPreselection;
   bool    fBadEvent;
