@@ -15,25 +15,32 @@ etaMin   -99.	   -99.       -99.	  -99.
 etaMax    99.	    99.        99.	   99.
 pt         6.5	     6.5        6.5	    6.5
 m1pt       4.0	     4.0        4.0	    4.0
-m2pt       3.5	     3.5        3.5	    3.5
+m2pt       4.0	     4.0        4.0	    4.0
 iso        0.8	     0.8        0.8	    0.8
+m1iso      0.8       0.8        0.8	    0.8
+m2iso      0.8       0.8        0.8	    0.8
 chi2dof    2.2	     2.2        2.2	    2.2
+maxdoca    0.1	     0.1        0.1    	    0.1
 alpha      0.05	     0.05       0.05	    0.05
 fls3d     13.0	    13.0       13.0        13.0
 flsxy      3.0	     3.0        3.0	    3.0
+flxyLo     4.0	     4.0        4.0	    4.0
+flxyHi   999.0	   999.0      999.0	  999.0
 docatrk    0.015     0.015      0.015	    0.015
 closetrk   2	     2          2	    2
+closetrks1 99	     99         99	    99
+closetrks2 99	     99         99	    99
+closetrks3 99	     99         99	    99
 pvip       0.008     0.008      0.008	    0.008
 pvips      2.0	     2.0        2.0	    2.0
 pvlip     99.	    99.        99.	   99.
 pvlips    99.	    99.        99.	   99.
 pv2lip   -99.	   -99.       -99.	  -99.
 pv2lips  -99.	   -99.       -99.	  -99.
-maxdoca   99.	    99.        99.    	   99.
-# L1_DoubleMu0er1p6_dEtaMax1p8
-# L1_DoubleMu0er1p6_dEta_Max1p8_OS
-# L1_DoubleMu0er1p4_dEta_Max1p8_OS
-# L1_DoubleMu_10_0_dEta_Max1p8
-# L1_DoubleMu_11_4
-# L1_DoubleMu_12_5
+# 0 L1_DoubleMu0er1p6_dEtaMax1p8       2
+# 1 L1_DoubleMu0er1p6_dEta_Max1p8_OS   4
+# 2 L1_DoubleMu0er1p4_dEta_Max1p8_OS   8
+# 3 L1_DoubleMu_10_0_dEta_Max1p8      16
+# 4 L1_DoubleMu_11_4                  32
+# 5 L1_DoubleMu_12_5                  64
 # ----------------------------------------------------------------------
