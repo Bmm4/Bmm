@@ -91,6 +91,7 @@ private:
     , fFakeRPChits2[NTRKMAX]
     , fFakeRPChits3[NTRKMAX]
     , fFakeRPChits4[NTRKMAX]
+    , fFakeMuonDetectorHitsCombination[NTRKMAX]
 
     ;
 

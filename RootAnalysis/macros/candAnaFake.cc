@@ -226,16 +226,16 @@ void candAnaFake::candAnalysis() {
       fFakeTimeInOutE[im]             = -99.;
       fFakeTimeInOutS[im]             = -99.;
 
-      fFakeNvalidMuonHits[im]         = -99;
-      fFakeNmatchedStations[im]       = -99;
-      fFakeLayersWithHits[im]         = -99;
-      fFakeNumberOfValidPixHits[im]   = -99;
-      fFakeRPChits[im]                = -99;
-      fFakeRPChits1[im]               = -99;
-      fFakeRPChits2[im]               = -99;
-      fFakeRPChits3[im]               = -99;
-      fFakeRPChits4[im]               = -99;
-
+      fFakeNvalidMuonHits[im]              = -99;
+      fFakeNmatchedStations[im]            = -99;
+      fFakeLayersWithHits[im]              = -99;
+      fFakeNumberOfValidPixHits[im]        = -99;
+      fFakeRPChits[im]                     = -99;
+      fFakeRPChits1[im]                    = -99;
+      fFakeRPChits2[im]                    = -99;
+      fFakeRPChits3[im]                    = -99;
+      fFakeRPChits4[im]                    = -99;
+      fFakeMuonDetectorHitsCombination[im] = -99;
       continue;
     } else {
       fFakeGm[im]                     = ((pm[im]->fMuID & 2) == 2);
@@ -274,7 +274,7 @@ void candAnaFake::candAnalysis() {
       fFakeLayersWithHits[im]         = pm[im]->fLayersWithHits;
       fFakeNumberOfValidPixHits[im]   = pm[im]->fNumberOfValidPixHits;
       unsigned int size = pm[im]->fvRPChits.size();
-      if (size ==4) {
+      if (size == 4) {
 	fFakeRPChits1[im] = pm[im]->fvRPChits[0];
 	fFakeRPChits2[im] = pm[im]->fvRPChits[1];
 	fFakeRPChits3[im] = pm[im]->fvRPChits[2];
@@ -284,6 +284,8 @@ void candAnaFake::candAnalysis() {
 	fFakeRPChits[im]  += fFakeRPChits2[im];
 	fFakeRPChits[im]  += fFakeRPChits3[im];
 	fFakeRPChits[im]  += fFakeRPChits4[im];
+
+	fFakeMuonDetectorHitsCombination[im] = getDetVarComb(pm[im]);
       }
     }
   }
@@ -413,7 +415,7 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("rpchits4",             fFakeRPChits4,             "rpchits4[ntrk]/I");                  // tree->vRPC_1 = (swMu->fvRPChits)[3];
   fFakeTree->Branch("statrkmult",           fFakeStaTrkMult,           "statrkmult[ntrk]/F");                // tree->STATrkMult150 = swMu->fStaTrkMult;
   fFakeTree->Branch("tmtrkmult",            fFakeTmTrkMult,            "tmtrkmult[ntrk]/F");                 // tree->TMTrkMult100 = swMu->fTmTrkMult;
-
+  fFakeTree->Branch("mudethitscomb",        fFakeMuonDetectorHitsCombination, "mudethitscomb[ntrk]/I");      // the combination
 
   fFakeTree->Branch("numberoflosttrkhits",  fFakeNumberOfLostTrkHits,  "numberoflosttrkhits[ntrk]/I");
 
