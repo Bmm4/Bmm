@@ -158,10 +158,11 @@ public :
   double MASSMIN, MASSMAX, SIGBOXMIN, SIGBOXMAX, BGLBOXMIN, BGLBOXMAX, BGHBOXMIN, BGHBOXMAX;
 
   bool fGoodAcceptance, fPreselection, fWideMass, fGoodHLT, fGoodMuonsID,
-       fGoodBdtPt, fGoodMuonsPt, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
+    fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
-       fGoodPt, fGoodEta, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso;
-  bool fGoodCloseTrack, fGoodDocaTrk, fGoodJpsiCuts, fGoodBDT, fGoodLastCut;
+    fGoodPt, fGoodEta, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;
+  bool fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3,
+    fGoodDocaTrk, fGoodJpsiCuts, fGoodBDT, fGoodLastCut;
 
   bool fIsCowboy;
 

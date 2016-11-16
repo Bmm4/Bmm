@@ -97,7 +97,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
-    fStampLumi = "L = 27.8 fb^{-1} (#sqrt{s} = 13 TeV)";
+    fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
   if (setup == "") fSuffix = Form("%d", fYear);
 
@@ -120,31 +120,45 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   }
 
   fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
+  fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
   fAnaCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
   fAnaCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
+  fAnaCuts.addCut("fGoodMuonsEta", "#eta_{#mu} ", fGoodMuonsEta);
   fAnaCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
   fAnaCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
   fAnaCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
 
   fAnaCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
-  fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
+  fAnaCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
+  fAnaCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
+
+  fAnaCuts.addCut("fGoodChi2", "#chi^{2}", fGoodChi2);
+  fAnaCuts.addCut("fGoodMaxDoca", "MAXDOCA", fGoodMaxDoca);
+
+  fAnaCuts.addCut("fGoodAlpha", "#alpha", fGoodAlpha);
+  fAnaCuts.addCut("fGoodFLS", "l/#sigma(l)", fGoodFLS);
+
   fAnaCuts.addCut("fGoodIp", "IP", fGoodIp);
   fAnaCuts.addCut("fGoodIpS", "IPS", fGoodIpS);
   fAnaCuts.addCut("fGoodLip", "LIP", fGoodLip);
   fAnaCuts.addCut("fGoodLipS", "LIPS", fGoodLipS);
-  fAnaCuts.addCut("fGoodMaxDoca", "MAXDOCA", fGoodMaxDoca);
-  fAnaCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
-  fAnaCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
-  fAnaCuts.addCut("fGoodAlpha", "#alpha", fGoodAlpha);
-  fAnaCuts.addCut("fGoodFLS", "l/#sigma(l)", fGoodFLS);
-  fAnaCuts.addCut("fGoodChi2", "#chi^{2}", fGoodChi2);
-  fAnaCuts.addCut("fGoodIso", "I_{trk}", fGoodIso);
-  fAnaCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
+
   fAnaCuts.addCut("fGoodDocaTrk", "d_{ca}(trk)", fGoodDocaTrk);
-  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
+  fAnaCuts.addCut("fGoodIso", "I_{trk}", fGoodIso);
+  fAnaCuts.addCut("fGoodM1Iso", "I_{trk}^{#mu,1}", fGoodM1Iso);
+  fAnaCuts.addCut("fGoodM2Iso", "I_{trk}^{#mu,2}", fGoodM2Iso);
+  fAnaCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
+  fAnaCuts.addCut("fGoodCloseTrackS1", "close track s1 veto", fGoodCloseTrackS1);
+  fAnaCuts.addCut("fGoodCloseTrackS2", "close track s2 veto", fGoodCloseTrackS2);
+  fAnaCuts.addCut("fGoodCloseTrackS3", "close track s3 veto", fGoodCloseTrackS3);
+
+  //  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
   fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
+  fVarToTex.insert(make_pair("pt", "p_{T_{B}} #it{[GeV]}"));
+  fVarToTex.insert(make_pair("eta", "#eta_{B}"));
+
   fVarToTex.insert(make_pair("mpt", "p_{T_{#mu}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} #it{[GeV]}"));
   fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} #it{[GeV]}"));
@@ -167,9 +181,6 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVarToTex.insert(make_pair("maxdoca", "d^{max} #it{[cm]}"));
   fVarToTex.insert(make_pair("pvip", "#delta_{3D} #it{[cm]}"));
   fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
-
-  fVarToTex.insert(make_pair("pt", "p_{T_{B}} #it{[GeV]}"));
-  fVarToTex.insert(make_pair("eta", "#eta_{B}"));
 
   // -- initialize cuts
   cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
@@ -504,6 +515,8 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("l1s",    &fb.l1s);
   t->SetBranchAddress("evt",    &fb.evt);
   t->SetBranchAddress("hlt",    &fb.hlt);
+  t->SetBranchAddress("hlt1",   &fb.hlt1);
+  t->SetBranchAddress("tos",    &fb.tos);
   t->SetBranchAddress("hltm",   &fb.hltm);
   t->SetBranchAddress("ls",     &fb.ls);
   t->SetBranchAddress("ps",     &fb.ps);
@@ -589,9 +602,9 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
       t->SetBranchAddress("g3eta",&fb.g3eta);
     }
-    t->SetBranchAddress("kpt",  &fb.k1pt);
-    t->SetBranchAddress("kgt",  &fb.k1gt);
-    t->SetBranchAddress("keta", &fb.k1eta);
+    t->SetBranchAddress("kpt",  &fb.kpt);
+    t->SetBranchAddress("kgt",  &fb.kgt);
+    t->SetBranchAddress("keta", &fb.keta);
   }
 
   if (string::npos != mode.find("bspsiphi")) {
@@ -616,6 +629,30 @@ void plotClass::setupTree(TTree *t, string mode) {
     fb.dr = 999.;
   }
 
+
+  if (string::npos != mode.find("bdpsikstar")) {
+    if (string::npos != mode.find("Mc")) {
+      t->SetBranchAddress("g3pt", &fb.g3pt);
+      t->SetBranchAddress("g3eta",&fb.g3eta);
+      t->SetBranchAddress("g4pt", &fb.g4pt);
+      t->SetBranchAddress("g4eta",&fb.g4eta);
+    }
+    t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
+    t->SetBranchAddress("mkk",  &fb.mkk);
+    t->SetBranchAddress("dr",   &fb.dr);
+    t->SetBranchAddress("kpt", &fb.kpt);
+    t->SetBranchAddress("kgt", &fb.kgt);
+    t->SetBranchAddress("keta",&fb.keta);
+    t->SetBranchAddress("pipt", &fb.pipt);
+    t->SetBranchAddress("pigt", &fb.pigt);
+    t->SetBranchAddress("pieta",&fb.pieta);
+  } else {
+    fb.mkk = 999.;
+    fb.dr = 999.;
+  }
+
+
   if (string::npos != mode.find("dstarpi")) {
     t->SetBranchAddress("md0",&fb.md0);
     t->SetBranchAddress("dm",&fb.dm);
@@ -638,8 +675,9 @@ void plotClass::candAnalysis(/*int mode*/) {
     fBDT = -99.;
     fGoodHLT = fGoodMuonsID = false;
     fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
-    fGoodCloseTrack = fGoodIso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
-    fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt  = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
+    fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
+    fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+    fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
     return;
   }
   pCuts = fCuts[fChan];
@@ -652,13 +690,15 @@ void plotClass::candAnalysis(/*int mode*/) {
   fBDT = -99.;
   fGoodHLT = fGoodMuonsID = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
-  fGoodCloseTrack = fGoodIso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+  fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
 
   fGoodJpsiCuts = true;
 
   fGoodAcceptance = true;
   fGoodBdtPt      = true;
   fGoodMuonsPt    = true;
+  fGoodMuonsEta   = true;
   fGoodTracks     = fb.gtqual;
   fGoodTracksPt   = true;
   fGoodTracksEta  = true;
@@ -686,13 +726,6 @@ void plotClass::candAnalysis(/*int mode*/) {
   if (0 == fb.m1gt)  fGoodAcceptance = false;
   if (0 == fb.m2gt)  fGoodAcceptance = false;
 
-  // if (fb.m1pt < pCuts->bdtPt) {
-  //   fGoodBdtPt = false;
-  // }
-  // if (fb.m2pt < pCuts->bdtPt) {
-  //   fGoodBdtPt = false;
-  // }
-
   if (fb.m1pt < pCuts->m1pt) {
     fGoodMuonsPt = false;
   }
@@ -701,9 +734,11 @@ void plotClass::candAnalysis(/*int mode*/) {
   }
   if (TMath::Abs(fb.m1eta) > 2.4) {
     fGoodAcceptance = false;
+    fGoodMuonsEta = false;
   }
   if (TMath::Abs(fb.m2eta) > 2.4) {
     fGoodAcceptance = false;
+    fGoodMuonsEta = false;
   }
 
   if (bp2jpsikp) {
@@ -718,7 +753,7 @@ void plotClass::candAnalysis(/*int mode*/) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
-    if (fb.k1pt < 0.5) {
+    if (fb.kpt < 0.5) {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
@@ -895,10 +930,15 @@ void plotClass::candAnalysis(/*int mode*/) {
   fGoodFLS        = (fb.fls3d > pCuts->fls3d);
   if (TMath::IsNaN(fb.fls3d)) fGoodFLS = false;
 
-  fGoodCloseTrack = (fb.closetrk < pCuts->closetrk);
-  fGoodIso        = (fb.iso > pCuts->iso);
-  fGoodDocaTrk    = (fb.docatrk > pCuts->docatrk);
-  fGoodLastCut    = true;
+  fGoodCloseTrack   = (fb.closetrk < pCuts->closetrk);
+  fGoodCloseTrackS1 = (fb.closetrks1 < pCuts->closetrks1);
+  fGoodCloseTrackS2 = (fb.closetrks2 < pCuts->closetrks2);
+  fGoodCloseTrackS3 = (fb.closetrks3 < pCuts->closetrks3);
+  fGoodIso          = (fb.iso > pCuts->iso);
+  fGoodM1Iso        = (fb.m1iso > pCuts->m1iso);
+  fGoodM2Iso        = (fb.m2iso > pCuts->m2iso);
+  fGoodDocaTrk      = (fb.docatrk > pCuts->docatrk);
+  fGoodLastCut      = true;
 
   //FIXME  fGoodBDT        = (fBDT > pCuts->bdtMin);
   fGoodBDT        = true;
@@ -1358,78 +1398,104 @@ void plotClass::readCuts(string filename) {
 
       if (cutname == "iso") {
 	a->iso = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "iso:                   " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "iso:                  " << cutvalue << endl;
+      }
+      if (cutname == "m1iso") {
+	a->m1iso = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "m1iso:                " << cutvalue << endl;
+      }
+      if (cutname == "m2iso") {
+	a->m2iso = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "m2iso:                " << cutvalue << endl;
       }
 
       if (cutname == "chi2dof") {
 	a->chi2dof = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "chi2dof:               " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "chi2dof:              " << cutvalue << endl;
       }
 
       if (cutname == "alpha") {
 	a->alpha = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "alpha:                 " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "alpha:                " << cutvalue << endl;
       }
 
       if (cutname == "fls3d") {
 	a->fls3d = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "fls3d:                 " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "fls3d:                " << cutvalue << endl;
+      }
+
+      if (cutname == "flsxy") {
+	a->flsxy = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "flsxy:                " << cutvalue << endl;
       }
 
       if (cutname == "flxyLo") {
 	a->flxyLo = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "flxyLo:                " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "flxyLo:               " << cutvalue << endl;
       }
 
       if (cutname == "flxyHi") {
 	a->flxyHi = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "flxyHi:                " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "flxyHi:               " << cutvalue << endl;
       }
 
       if (cutname == "docatrk") {
 	a->docatrk = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "docatrk:               " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "docatrk:              " << cutvalue << endl;
       }
 
       if (cutname == "maxdoca") {
 	a->maxdoca = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "maxdoca:               " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "maxdoca:              " << cutvalue << endl;
       }
 
       if (cutname == "closetrk") {
 	a->closetrk = static_cast<int>(cutvalue); ok = 1;
-	if (dump) cout << j-1 << " " << "closetrk:              " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "closetrk:             " << cutvalue << endl;
       }
+      if (cutname == "closetrks1") {
+	a->closetrks1 = static_cast<int>(cutvalue); ok = 1;
+	if (dump) cout << j-1 << " " << "closetrks1:           " << cutvalue << endl;
+      }
+      if (cutname == "closetrks2") {
+	a->closetrks2 = static_cast<int>(cutvalue); ok = 1;
+	if (dump) cout << j-1 << " " << "closetrks2:           " << cutvalue << endl;
+      }
+      if (cutname == "closetrks3") {
+	a->closetrks3 = static_cast<int>(cutvalue); ok = 1;
+	if (dump) cout << j-1 << " " << "closetrks3:           " << cutvalue << endl;
+      }
+
 
       if (cutname == "pvip") {
 	a->pvip = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pvip:                  " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pvip:                 " << cutvalue << endl;
       }
 
       if (cutname == "pvips") {
 	a->pvips = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pvips:                 " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pvips:                " << cutvalue << endl;
       }
 
 
       if (cutname == "pvlip") {
 	a->pvlip = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pvlip:                 " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pvlip:                " << cutvalue << endl;
       }
 
       if (cutname == "pvlips") {
 	a->pvlips = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pvlips:                " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pvlips:               " << cutvalue << endl;
       }
 
       if (cutname == "pv2lip") {
 	a->pv2lip = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pv2lip:                " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pv2lip:               " << cutvalue << endl;
       }
 
       if (cutname == "pv2lips") {
 	a->pv2lips = cutvalue; ok = 1;
-	if (dump) cout << j-1 << " " << "pv2lips:               " << cutvalue << endl;
+	if (dump) cout << j-1 << " " << "pv2lips:              " << cutvalue << endl;
       }
 
       if (cutname == "l1seeds") {
@@ -1583,6 +1649,22 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
+  OUT << "m1iso        ";
+  fTEX << Form("\\vdef{%s:m1iso:var}  {\\ensuremath{{\\m1iso } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m1iso);
+    fTEX <<  Form("\\vdef{%s:m1iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1iso) << endl;
+  }
+  OUT << endl;
+
+  OUT << "m2iso        ";
+  fTEX << Form("\\vdef{%s:m2iso:var}  {\\ensuremath{{\\m2iso } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m2iso);
+    fTEX <<  Form("\\vdef{%s:m2iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2iso) << endl;
+  }
+  OUT << endl;
+
   OUT << "chi2dof    ";
   fTEX << Form("\\vdef{%s:chidof:var}  {\\ensuremath{{\\chidof } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
@@ -1607,6 +1689,14 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
+  OUT << "flsxy      ";
+  fTEX << Form("\\vdef{%s:flsxy:var}  {\\ensuremath{{\\flsyx } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->flsxy);
+    fTEX <<  Form("\\vdef{%s:flsxy:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->flsxy) << endl;
+  }
+  OUT << endl;
+
   OUT << "docatrk    ";
   fTEX << Form("\\vdef{%s:docatrk:var}  {\\ensuremath{{\\docatrk } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
@@ -1620,6 +1710,30 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrk);
     fTEX <<  Form("\\vdef{%s:closetrk:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrk) << endl;
+  }
+  OUT << endl;
+
+  OUT << "closetrks1   ";
+  fTEX << Form("\\vdef{%s:closetrks1:var}  {\\ensuremath{{\\closetrksI } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks1);
+    fTEX <<  Form("\\vdef{%s:closetrks1:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrks1) << endl;
+  }
+  OUT << endl;
+
+  OUT << "closetrks2   ";
+  fTEX << Form("\\vdef{%s:closetrks2:var}  {\\ensuremath{{\\closetrksII } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks2);
+    fTEX <<  Form("\\vdef{%s:closetrks2:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrks2) << endl;
+  }
+  OUT << endl;
+
+  OUT << "closetrks3   ";
+  fTEX << Form("\\vdef{%s:closetrks3:var}  {\\ensuremath{{\\closetrksIII } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks3);
+    fTEX <<  Form("\\vdef{%s:closetrks3:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->closetrks3) << endl;
   }
   OUT << endl;
 
@@ -1948,6 +2062,70 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0}_{s}(5.7GeV) #rightarrow #it{#mu#mu}";
         ldecay = "\\bymm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bxmm,")) {
+        sname = "bxmmMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(5.1GeV) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bxmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm0,")) {
+        sname = "bsmm0Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(482.9) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmmZ";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm2,")) {
+        sname = "bsmm2Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(503.7) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmmII";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm3,")) {
+        sname = "bsmm3Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(503.7,twice) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmmIII";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
