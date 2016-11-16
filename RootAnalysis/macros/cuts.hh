@@ -10,8 +10,8 @@ struct cuts {
   double mBdLo, mBdHi, mBsLo, mBsHi;
   double etaMin, etaMax, pt;
   double m1pt, m2pt, metaMin, metaMax;
-  double iso, chi2dof, alpha, fls3d, flxyLo, flxyHi, flsxy, docatrk;
-  double closetrk, maxdoca;
+  double iso, m1iso, m2iso, chi2dof, alpha, fls3d, flxyLo, flxyHi, flsxy, docatrk;
+  double closetrk, closetrks1, closetrks2, closetrks3, maxdoca;
   double pvip, pvips;
   double pvlip, pvlips, pv2lip, pv2lips;
   void dump() {
