@@ -188,7 +188,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	 << fVerbose << " MC: " << fIsMC << endl;
   }
 
-
+  // -- trigger selection (trigger matching is done AFTER [or in] candAnalysis)
+  fTIS = fTOS = fGoodHLT1 = fRefTrigger = false;
   triggerHLT();
   triggerL1T();
 
@@ -253,34 +254,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       continue;
     }
 
-    if ( fVerbose > 1 ) // || fVerbose==-32 )
-      cout<<"--------------- found candidate ------------------- " << iC << " type = " << pCand->fType << " evt = " << fEvt << endl;
-
-    if (fVerbose > 9) {
-
-      int gen1(-1), gen2(-1), gen0(-1);
-
-      if (fIsMC) {
-	gen1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(fpEvt->getSigTrack(pCand->fSig1)->fIndex)->getGenIndex())->fID;
-	gen2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(fpEvt->getSigTrack(pCand->fSig2)->fIndex)->getGenIndex())->fID;
-	gen0 = fpEvt->getGenTWithIndex(fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(fpEvt->getSigTrack(pCand->fSig1)->fIndex)->getGenIndex())->fMom1)->fID;
-      }
-
-      cout << "Analyzing candidate at " << iC << " which is of type " << TYPE << " mass "<< pCand->fMass
-	   << " with sig tracks: " << pCand->fSig1 << " .. " << pCand->fSig2
-	   << " and rec tracks: "
-	   << fpEvt->getSigTrack(pCand->fSig1)->fIndex
-	   << " .. "
-	   << fpEvt->getSigTrack(pCand->fSig2)->fIndex
-	   << " gen IDs =  " << gen1 << " " << gen2 << " from " << gen0
-	   << " tm = " << fGenM1Tmi << " " << fGenM2Tmi
-	   << " ctm " << fCandTmi
-	   << endl;
-
-      if (TMath::Abs(gen1) != 13 || TMath::Abs(gen2) != 13) fpEvt->dumpGenBlock();
-
-    }
-
     fillNoCand = false;
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(3);
     fpCand = pCand;
@@ -299,7 +272,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     if (0)
       cout << " cand " << fpCand->fType
 	   << " run " << fRun << " ls " << fLS << " event " << fEvt << " json " << fJSON
-	   << " hlt " <<fGoodHLT << " matched " << fHLTmatch
+	   << " chan = " << fChan
+	   << " hlt1 " <<fGoodHLT1 << " TOS " << fTOS
 	   << " presel = " << fPreselection
 	   << endl;
 
@@ -468,8 +442,6 @@ void candAna::candAnalysis() {
     }
   }
 
-  //cout<<p1->fMuIndex<<" "<<p2->fMuIndex<<endl;
-
   // -- for rare backgrounds there are no "true" muons
   if (fpCand->fType > 1000000 && fpCand->fType < 2000000) {
     p1 = fpEvt->getSigTrack(fpCand->fSig1);
@@ -635,64 +607,6 @@ void candAna::candAnalysis() {
   fMu2IPE       = p2->fBsTipE;
   fMu2IPS       = p2->fTip/p2->fTipE;
 
-  fChan = detChan(fMu1Eta, fMu2Eta);
-  std::string  sl1seeds = Form("%d ", fL1Seeds);
-
-
-
-  static int printedEvt(0);
-  if (0 && printedEvt != fEvt) {
-    printedEvt = fEvt;
-    if (!fGoodHLT) {
-      cout << "this event failed HLT" << endl;
-      for (int i = 0; i < NHLT; ++i) {
-	if (fpEvt->fHLTWasRun[i] &&  fpEvt->fHLTResult[i]) {
-	  cout << " pass HLT path: " << fpEvt->fHLTNames[i] << endl;
-	}
-
-      }
-    }
-    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta
-	 << " mu pt = " << fMu1Pt << "/" << fMu2Pt
-	 << " l1seeds = " << sl1seeds
-	 << " l1s = " << fL1Seeds
-	 << ", -> chan = " << fChan
-	 << endl;
-
-    int L1Seeds = 0;
-    cout << "fired L1 bits" << endl;
-    for (int i = 0; i < NL1T; ++i) {
-      if (!fpEvt->fL1TResult[i]) continue;
-      // cout << fpEvt->fL1TNames[i] << endl;
-      if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1;
-      } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<1;
-      } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<2;
-      } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<3;
-      } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<4;
-      } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<5;
-      } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
-	L1Seeds |= 0x1<<6;
-      }
-
-      if (fpEvt->fL1TNames[i].Contains("DoubleMu0er1")) {
-	cout << "** " << fpEvt->fL1TNames[i] << ", L1seeds = " << L1Seeds << endl;
-      } else {
-	cout << fpEvt->fL1TNames[i] << ", L1seeds = " << L1Seeds << endl;
-      }
-
-    }
-  }
-  if (fChan < 0) {
-    //    cout << " mu eta = " << fMu1Eta << "/" << fMu2Eta << " -> chan = " << fChan << " returning!" << endl;
-    return;
-  }
-
   // -- fill tree for muon id MVA studies
   if (0 && (fMu1rTmId || fMu2rTmId)) {
     TAnaMuon *pt(0);
@@ -752,28 +666,6 @@ void candAna::candAnalysis() {
 
       fMuonIdTree->Fill();
     }
-  }
-
-  //cout<<fMu1Id<<" "<<fMu2Id<<endl;
-
-  if (fMu1Id) {
-    ((TH1D*)fHistDir->Get("tm_pt"))->Fill(fMu1Pt);
-    ((TH1D*)fHistDir->Get("tm_eta"))->Fill(fMu1Eta);
-  }
-
-  if (fMu2Id) {
-    ((TH1D*)fHistDir->Get("tm_pt"))->Fill(fMu2Pt);
-    ((TH1D*)fHistDir->Get("tm_eta"))->Fill(fMu2Eta);
-  }
-
-  if (fMu1MvaId) {
-    ((TH1D*)fHistDir->Get("bm_pt"))->Fill(fMu1Pt);
-    ((TH1D*)fHistDir->Get("bm_eta"))->Fill(fMu1Eta);
-  }
-
-  if (fMu2MvaId) {
-    ((TH1D*)fHistDir->Get("bm_pt"))->Fill(fMu2Pt);
-    ((TH1D*)fHistDir->Get("bm_eta"))->Fill(fMu2Eta);
   }
 
   // -- cut on fMuIndex so that fake muons (from rare backgrounds) can be treated above as real muons
@@ -970,6 +862,22 @@ void candAna::candAnalysis() {
   //   calcBDT();
   // }
 
+  fChan = detChan(fMu1Eta, fMu2Eta);
+
+  if (0 && fMu2Pt < 4.0) {
+    cout << "======== chan = " << fChan << " hlt1 = " << fGoodHLT1 << " m2pt = " << fMu2Pt << " " << fL1SeedString << endl;
+  }
+  fTOS = tos(fpCand);
+  fTIS = tis(fpCand);
+  fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
+
+  // -- check for good channel, else the cuts array cannot be used!
+  if (fChan < 0) {
+    //    cout << "Failed chan, l1 seeds = " << fL1SeedString << endl;
+    return;
+  }
+
+
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX));
 
   fGoodMuonsID    = (fMu1Id && fMu2Id);
@@ -1001,23 +909,24 @@ void candAna::candAnalysis() {
   fGoodFLS        =  ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
   if (TMath::IsNaN(fCandFLS3d)) fGoodFLS = false;
 
-  fGoodCloseTrack = (fCandCloseTrk < fCuts[fChan]->closetrk);
-  fGoodIso        = (fCandIso > fCuts[fChan]->iso);
-  fGoodDocaTrk    = (fCandDocaTrk > fCuts[fChan]->docatrk);
-  fGoodLastCut    = true;
+  fGoodCloseTrack   = (fCandCloseTrk < fCuts[fChan]->closetrk);
+  fGoodCloseTrackS1 = (fCandCloseTrkS1 < fCuts[fChan]->closetrks1);
+  fGoodCloseTrackS2 = (fCandCloseTrkS2 < fCuts[fChan]->closetrks2);
+  fGoodCloseTrackS3 = (fCandCloseTrkS3 < fCuts[fChan]->closetrks3);
+  fGoodIso          = (fCandIso > fCuts[fChan]->iso);
+  fGoodM1Iso        = (fMu1Iso > fCuts[fChan]->m1iso);
+  fGoodM2Iso        = (fMu2Iso > fCuts[fChan]->m2iso);
+  fGoodDocaTrk      = (fCandDocaTrk > fCuts[fChan]->docatrk);
+  fGoodLastCut      = true;
 
   fAnaCuts.update();
-
-
-  fTIS = tis(fpCand);
-  fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
 
   fillRedTreeData();
 
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
-  fPreselection = fGoodQ && fGoodMuonsEta && fGoodMuonsPt && fWideMass && fPreselAlpha;
+  fPreselection = fGoodQ && fGoodMuonsEta && fWideMass && fPreselAlpha;
   if (0) cout << "fGoodQ = " << fGoodQ
 	      << " fGoodMuonsEta = " << fGoodMuonsEta
 	      << Form(" (%3.1f, %3.1f)", fMu1Eta, fMu2Eta)
@@ -1028,7 +937,7 @@ void candAna::candAnalysis() {
 	      << endl;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
-  fPreselection = fPreselection && fGoodHLT;
+  fPreselection = fPreselection && fGoodHLT1;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(3.);
 
 }
@@ -1088,7 +997,7 @@ int candAna::detChan(double m1eta, double m2eta) {
 void candAna::basicCuts() {
   cout << "    candAna basic cuts" << endl;
   fAnaCuts.addCut("fWideMass", "m(B candidate) [GeV]", fWideMass);
-  fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
+  fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT1);
   fAnaCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
   fAnaCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
   fAnaCuts.addCut("fGoodMuonsEta", "#eta_{#mu}", fGoodMuonsEta);
@@ -1195,9 +1104,9 @@ void candAna::efficiencyCalculation() {
 
 // ----------------------------------------------------------------------
 void candAna::triggerHLT() {
-  fGoodHLT = false;
+  fGoodHLT1 = false;
   fhltType = -1;
-  fHLTPath = "";
+  fHLT1Path = "nada";
 
   TString a;
   int ps(0);
@@ -1206,7 +1115,7 @@ void candAna::triggerHLT() {
   // -- NOTRIGGER, just accept the event
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (fVerbose>2) cout << "NOTRIGGER requested... " << endl;
-    fGoodHLT = true;
+    fGoodHLT1 = true;
     fHltPrescale = 1;
     return;
   }
@@ -1225,12 +1134,11 @@ void candAna::triggerHLT() {
       bool good = false;
       string spath;
       int rmin, rmax;
-      for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin();
-	   imap != HLTRANGE.end(); ++imap) {
+      for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
 	spath = imap->first;
 	rmin = imap->second.first;
 	rmax = imap->second.second;
-	if (!a.CompareTo(imap->first.c_str())) {
+	if (!a.CompareTo(imap->first.c_str()) && (rmin <= fRun) && (fRun <= rmax) ) {
 	  // cout << "----------------------------------------------------------------------" << endl;
 	  // cout << a << " result = " << result << " prescale: " << ps << " wasRun = " << wasRun
 	  //      << " event: " << fEvt << " run: " << fRun
@@ -1251,7 +1159,8 @@ void candAna::triggerHLT() {
       }
       if (good) {
 	fHltPrescale = ps;
-	fGoodHLT = true;
+	fHLT1Path    = a;
+	fGoodHLT1    = true;
 	return;
       }
     }
@@ -1261,28 +1170,43 @@ void candAna::triggerHLT() {
 // ----------------------------------------------------------------------
 void candAna::triggerL1T() {
   fL1Seeds = 0;
+  fL1SeedString = "";
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
     if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<1;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<2;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<3;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<4;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<5;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1<<6;
+      fL1SeedString += fpEvt->fL1TNames[i];
+      fL1SeedString += " ";
       continue;
     }
   }
@@ -1614,13 +1538,6 @@ void candAna::bookHist() {
 
   h11 = new TH1D(Form("dr_%s", fName.c_str()), Form("dr(track, trigger bject) %s", fName.c_str()), 501, -0.001, 0.5);
 
-  h11 = new TH1D("tm_pt", "tight muon pT", 50, 0., 25.);
-  h11 = new TH1D("bm_pt", "BDT muon pT", 50, 0., 25.);
-
-  h11 = new TH1D("tm_eta", "tight muon eta", 50, -2.5, 2.5);
-  h11 = new TH1D("bm_eta", "BDT muon eta", 50, -2.5, 2.5);
-
-
   h11 = new TH1D("l1pt",  "(pT(L3) - pT(L1))/(pT(L3)", 40, -2., 2.);
   h11 = new TH1D("l1pt_10_11",  "(pT(L3) - pT(L1))/(pT(L3) for 10 < pT < 11", 40, -2., 2.);
   h11 = new TH1D("l1pt_15_17",  "(pT(L3) - pT(L1))/(pT(L3) for 15 < pT < 17", 40, -2., 2.);
@@ -1704,6 +1621,7 @@ void candAna::bookHist() {
   fEffTree->Branch("run",    &fRun,               "run/L");
   fEffTree->Branch("evt",    &fEvt,               "evt/L");
   fEffTree->Branch("hlt",    &fGoodHLT,           "hlt/O");
+  fEffTree->Branch("hlt1",   &fGoodHLT1,          "hlt1/O");
   fEffTree->Branch("procid", &fProcessType,       "procid/I");
   fEffTree->Branch("bidx",   &fGenBTmi,           "bidx/I");
 
@@ -1785,8 +1703,10 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("pr",      &fGenBpartial,       "pr/I");
   t->Branch("procid",  &fProcessType,       "procid/I");
   t->Branch("hlt",     &fGoodHLT,           "hlt/O");
+  t->Branch("hlt1",    &fGoodHLT1,          "hlt1/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
+  t->Branch("tos",     &fTOS,               "tos/O");
   t->Branch("tis",     &fTIS,               "tis/O");
   t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
@@ -2156,6 +2076,14 @@ void candAna::readCuts(string fileName, int dump) {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->iso = cutvalue; ok = 1;
 	}
+	if (cutname == "m1iso") {
+	  cutvalue = cutvalue; ok = 1;
+	  fCuts[j-1]->m1iso = cutvalue; ok = 1;
+	}
+	if (cutname == "m2iso") {
+	  cutvalue = cutvalue; ok = 1;
+	  fCuts[j-1]->m2iso = cutvalue; ok = 1;
+	}
 
 	if (cutname == "docatrk") {
 	  cutvalue = atof(lineItems[j].c_str());
@@ -2165,6 +2093,18 @@ void candAna::readCuts(string fileName, int dump) {
 	if (cutname == "closetrk") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->closetrk = cutvalue; ok = 1;
+	}
+	if (cutname == "closetrks1") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->closetrks1 = cutvalue; ok = 1;
+	}
+	if (cutname == "closetrks2") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->closetrks2 = cutvalue; ok = 1;
+	}
+	if (cutname == "closetrks3") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->closetrks3 = cutvalue; ok = 1;
 	}
 
 	if (cutname == "iso") {
@@ -4342,6 +4282,92 @@ bool candAna::tis(TAnaCand *pC) {
 
 
 // ----------------------------------------------------------------------
+// -- check whether all trigger primitives are matched to the candidate's tracks
+bool candAna::tos(TAnaCand *pC) {
+  bool result(false);
+  int verbose(0);
+
+  if (fHLT1Path == "nada" || !fGoodHLT1) {
+    if (verbose) cout << "event not triggered: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path << endl;
+    return false;
+  }
+  // -- get list of indices of tracks making up candidate
+  vector<int> sigIdx;
+  getSigTracks(sigIdx, pC);
+
+  string hltPath(fHLT1Path);
+  TTrgObjv2 *pTO(0);
+  if (verbose) cout << "==> candAna::tos> trigger objects for this path ->" << hltPath << "<-  for cand type = " << pC->fType << endl;
+  // cout << "cand tracks = ";
+  // for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+  //   cout << sigIdx[i] << " ";
+  // }
+  // cout << endl;
+
+  map<string, set<int> > trgTrkIdx;
+  // -- determine trigger objects for this path
+  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+    pTO = fpEvt->getTrgObjv2(i);
+    if (hltPath == pTO->fHltPath) {
+      vector<int> muonIndex = pTO->fIndex;
+      vector<int> muonID = pTO->fID;
+      vector<TLorentzVector> muonP = pTO->fP;
+      int num = muonIndex.size();
+      // -- skip L1 and L2 objects (bad resolution for matching)
+      if (pTO->fType.Contains("L1Filter")) continue;
+      if (pTO->fType.Contains("L1T")) continue;
+      if (pTO->fType.Contains("L2")) continue;
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
+      for (int j = 0; j < num; ++j) {
+	double dr(0.);
+	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	if (trkIdx < 0) {
+	  if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
+	  continue;
+	}
+	if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+			  << " matched to track idx " << trkIdx << " pt/eta/phi = "
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			  << " with dr = " << dr
+			  << endl;
+	trgTrkIdx[hltPath].insert(trkIdx);
+      }
+
+    }
+  }
+
+  if (verbose) cout << "==> searching for completely overlapping trigger, trgTrkIdx.size() = " << trgTrkIdx.size() << endl;
+  map<string, set<int> >::iterator it;
+  for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
+    set<int>::iterator is;
+    if (verbose) cout << it->first << " size = " << it->second.size() << ": ";
+    int overlaps(0);
+    for (is = it->second.begin(); is != it->second.end(); ++is) {
+      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+	if (*is == sigIdx[i]) {
+	  ++overlaps;
+	  if (verbose) cout << "(" << *is << ") ";
+	} else {
+	  if (verbose) cout << " " << *is << " ";
+	}
+      }
+    }
+    if (overlaps == it->second.size()) {
+      result = true;
+      if (verbose) {
+	cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+      }
+    }
+    if (verbose) cout << endl;
+
+  }
+  return result;
+}
+
+
+// ----------------------------------------------------------------------
 int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
   double dRthrsh(0.3), dRmin(99.);
   int dRminIdx(-1);
@@ -5743,4 +5769,30 @@ void candAna::pvStudy(bool bookHist) {
 
   fPvStudyTree->Fill();
 
+}
+
+
+// ----------------------------------------------------------------------
+double candAna::getDetVarComb(TAnaMuon *mu) {
+  double combination(0);
+  if ((mu->fvDThits.size() < 4)
+      || (mu->fvRPChits.size() < 4)
+      || (mu->fvCSChits.size() < 4)) {
+    // cout << "TAnaMuon without enough entries in hit vectors: "
+    // 	 << mu->fvDThits.size() << " / "
+    //   	 << mu->fvRPChits.size() << " / "
+    //   	 << mu->fvCSChits.size() << " / "
+    // 	 << endl;
+    return 0.;
+  }
+  for (unsigned int station = 0; station < 4; ++station) {
+    combination += ((mu->fvDThits)[station])/2.;
+    combination += (mu->fvRPChits)[station];
+    if ((mu->fvCSChits)[station] > 6) {
+      combination += 6;
+    } else {
+      combination += (mu->fvCSChits)[station];
+    }
+  }
+  return combination;
 }
