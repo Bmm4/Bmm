@@ -444,12 +444,12 @@ void candAnaBu2JpsiK::bookHist() {
   moreReducedTree(fTree);
 
   // -- Additional effTree variables
-  fEffTree->Branch("k1pt",   &fETk1pt,            "k1pt/F");
+  fEffTree->Branch("kpt",    &fETk1pt,            "kpt/F");
   fEffTree->Branch("g3pt",   &fETg3pt,            "g3pt/F");
-  fEffTree->Branch("k1eta",  &fETk1eta,           "k1eta/F");
+  fEffTree->Branch("keta",   &fETk1eta,           "keta/F");
   fEffTree->Branch("g3eta",  &fETg3eta,           "g3eta/F");
-  fEffTree->Branch("k1q",    &fETk1q,             "k1q/I");
-  fEffTree->Branch("k1gt",   &fETk1gt,            "k1gt/O");
+  fEffTree->Branch("kq",     &fETk1q,             "kq/I");
+  fEffTree->Branch("kgt",    &fETk1gt,            "kgt/O");
 
 }
 

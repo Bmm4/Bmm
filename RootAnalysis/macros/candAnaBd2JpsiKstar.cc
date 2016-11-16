@@ -521,18 +521,18 @@ void candAnaBd2JpsiKstar::bookHist() {
 
   // -- Additional effTree variables
   fEffTree->Branch("kpt",   &fETkpt,            "kpt/F");
-  fEffTree->Branch("g3pt",   &fETg3pt,            "g3pt/F");
+  fEffTree->Branch("g3pt",  &fETg3pt,           "g3pt/F");
   fEffTree->Branch("keta",  &fETketa,           "keta/F");
-  fEffTree->Branch("g3eta",  &fETg3eta,           "g3eta/F");
+  fEffTree->Branch("g3eta", &fETg3eta,          "g3eta/F");
   fEffTree->Branch("kq",    &fETkq,             "kq/I");
   fEffTree->Branch("kgt",   &fETkgt,            "kgt/O");
 
-  fEffTree->Branch("pipt",   &fETpipt,            "pipt/F");
-  fEffTree->Branch("g4pt",   &fETg4pt,            "g4pt/F");
-  fEffTree->Branch("pieta",  &fETpieta,           "pieta/F");
-  fEffTree->Branch("g4eta",  &fETg4eta,           "g4eta/F");
-  fEffTree->Branch("piq",    &fETpiq,             "piq/I");
-  fEffTree->Branch("pigt",   &fETpigt,            "pigt/O");
+  fEffTree->Branch("pipt",   &fETpipt,          "pipt/F");
+  fEffTree->Branch("g4pt",   &fETg4pt,          "g4pt/F");
+  fEffTree->Branch("pieta",  &fETpieta,         "pieta/F");
+  fEffTree->Branch("g4eta",  &fETg4eta,         "g4eta/F");
+  fEffTree->Branch("piq",    &fETpiq,           "piq/I");
+  fEffTree->Branch("pigt",   &fETpigt,          "pigt/O");
 
 }
 
