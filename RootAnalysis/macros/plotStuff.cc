@@ -71,7 +71,7 @@ void plotStuff::init() {
 // ----------------------------------------------------------------------
 void plotStuff::makeAll(string what) {
 
-  if (what == "ys") {
+  if (what == "dbx") {
     changeSetup("results", "yieldstability", "");
     yieldStability("bupsikData", "HLT");
     // yieldStability("bmmData", "HLT");
