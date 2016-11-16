@@ -22,6 +22,7 @@ struct adset {
     , *fpIso, *fpCloseTrk, *fpDocaTrk
     , *fpChi2Dof, *fpPChi2Dof
     , *fpFLS3d, *fpFL3d, *fpFL3dE
+    , *fpFLSxy, *fpFLxy, *fpFLxyE
     , *fpMaxDoca, *fpIp, *fpIpS
     , *fpBDT
     , *fpBDTSel0, *fpBDTSel1, *fpBDTSel2
