@@ -323,11 +323,14 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
   f1->SetParameter(0, 0.4*hm->GetMaximum());
   f1->SetParLimits(1, 1.017, 1.021);
   f1->SetParLimits(2, 0.001, 0.005);
+  f1->SetParLimits(3, 0.05,  0.10);
+  f1->SetParLimits(4, 0.006, 0.010);
 
   TFitResultPtr r;
   r = hm->Fit(f1, "lsq", "", fMassLo, fMassHi);
   if (fVerbose > 0) {
     hm->DrawCopy();
+    cout << "Drawing histogram with name ->" << hm->GetName() << "<- and title ->" << hm->GetTitle() << "<-" << endl;
     c0->Update();
     TPaveStats *stats2 = (TPaveStats*)gPad->GetPrimitive("stats");
     if (stats2) {
@@ -337,8 +340,6 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
       stats2->SetX1NDC(0.50);
       stats2->SetX2NDC(0.95);
     }
-//     hMassBGL->SetMinimum(0.);
-//     hMassBGL->SetMaximum(hm->GetMaximum());
     hMassBGL->SetLineColor(kRed);
     hMassBGL->SetLineStyle(kSolid);
     hMassBGL->Draw("samehist");
@@ -352,8 +353,22 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
   }
 
   // -- compute integrals
+  TF1 *fs = fpIF->gauss2c(hm->GetBinLowEdge(1), hm->GetBinLowEdge(hm->GetNbinsX()+1));
+  fs->SetLineColor(kBlue);
+  fs->SetLineStyle(kDashed);
+  fs->SetParameter(0, f1->GetParameter(0));
+  fs->SetParameter(1, f1->GetParameter(1));
+  fs->SetParameter(2, f1->GetParameter(2));
+  fs->SetParameter(3, f1->GetParameter(3));
+  fs->SetParameter(4, f1->GetParameter(4));
+  fs->Draw("same");
+  fpIF->dumpParameters(fs);
+
+
+
+  // -- compute integrals
   TF1 *f2 = fpIF->argus(hm->GetBinLowEdge(1), hm->GetBinLowEdge(hm->GetNbinsX()+1));
-  f2->SetLineColor(kBlue);
+  f2->SetLineColor(kRed);
   f2->SetLineStyle(kDashed);
   f2->SetParameter(0, f1->GetParameter(5));
   f2->SetParameter(1, f1->GetParameter(6));
@@ -926,6 +941,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     c0->Clear();
     c0->Divide(2,2);
   }
+  cout << "hello 3" << endl;
 
   // -- this is not really necessary, could use the class members instead
   TH1D *hm = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
@@ -935,6 +951,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
     return 0;
   }
+  cout << "hello 4" << endl;
 
   if (fVerbose > 0) {
     c0->cd(1);
@@ -944,12 +961,14 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     c0->cd(3);
   }
 
+  cout << "hello 5" << endl;
   double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
   double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
   double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
   double s1   = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
   double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+  cout << "hello 6" << endl;
 
   // -- fit mass distribution
   if (fMassLo > fMassHi) {

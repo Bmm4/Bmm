@@ -41,6 +41,7 @@ public:
   TH1D* sbsDistributionPol1ErrGauss(const char *variable, const char *cut, double preco=5.1);
   // -- phi -> KK
   TH1D* sbsDistributionPhiKK(const char *variable, const char *cut);
+  TH1D* sbsDistributionPhiKK2(const char *variable, const char *cut);
 
   void   setPreselCut(bool *p) {fpPreselCutTrue = p;}
 
