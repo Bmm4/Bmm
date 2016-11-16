@@ -5,6 +5,7 @@ struct redTreeData {
   Long64_t run, evt;
   int ls, tm, pr, procid, pvn, rr, l1s, ps, chan;
   bool json, hlt, hltm, hltm2, cb, tis, reftrg;
+  bool hlt1, tos;
   double bdt, bdt2, pvw8, pvz;
   double rlumi;
 
@@ -25,11 +26,12 @@ struct redTreeData {
   double m2pt, m2eta, m2phi, m2ip, m2chi2;
   double kpt, keta, kphi;
   double k1pt, k1eta, k1phi, k2pt, k2eta, k2phi;
+  double pipt, pieta, piphi;
 
   bool m1id, m2id, m1gmid, m2gmid, m1tmid, m2tmid, m1mvaid, m2mvaid, m1rmvaid, m2rmvaid;
   double m1rmvabdt, m2rmvabdt;
   double m1trigm, m2trigm;
-  int m1gt, m2gt, k1gt, k2gt;
+  int m1gt, m2gt, k1gt, k2gt, kgt, pigt;
   int m1pix, m1bpix, m1bpixl1, m1pv;
   int m2pix, m2bpix, m2bpixl1, m2pv;
 
