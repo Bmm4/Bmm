@@ -98,6 +98,7 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeRPChits2");
   fDoList.push_back("FakeRPChits3");
   fDoList.push_back("FakeRPChits4");
+  fDoList.push_back("FakeCombHits");
 
   fAnaCuts.clear();
   fAnaCuts.addCut("GoodCand", "good cand", fGoodCand);
@@ -143,6 +144,9 @@ void plotFake::init() {
 // ----------------------------------------------------------------------
 void plotFake::makeAll(string what) {
 
+  if (what == "dbx") {
+      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+  }
 
   if (what == "all" || string::npos != what.find("sample")) {
     init();
@@ -465,6 +469,7 @@ void plotFake::bookDistributions() {
     a->fpFakeRPChits2 = bookDistribution(Form("%sFakeRPChits2", name.c_str()), "RPChits2", "GlobalMuon", 10, 0., 10.);
     a->fpFakeRPChits3 = bookDistribution(Form("%sFakeRPChits3", name.c_str()), "RPChits3", "GlobalMuon", 10, 0., 10.);
     a->fpFakeRPChits4 = bookDistribution(Form("%sFakeRPChits4", name.c_str()), "RPChits4", "GlobalMuon", 10, 0., 10.);
+    a->fpFakeCombHits = bookDistribution(Form("%sFakeCombHits", name.c_str()), "CombHits", "GlobalMuon", 35, 0., 35.);
 
     a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 40, -2.4, 2.4);
     a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} [GeV]", "TIS", 40, 0., 20.);
@@ -521,12 +526,8 @@ AnalysisDistribution* plotFake::bookDistribution(string hn, string ht, std::stri
 
 // ----------------------------------------------------------------------
 void plotFake::sbsDistributions(string sample, string selection, std::string what) {
-  // cout << "fHistFileName: " << fHistFileName;
-  // fHistFile = TFile::Open(fHistFileName.c_str());
-  // cout << " opened " << endl;
-
+  cout << "plotFake::sbsDistributions(" << sample << ", " << selection << ", " << what << ")" << endl;
   string sbsControlPlotsFileName = Form("sbsctrl");
-
   AnalysisDistribution a(Form("%s_FakePt", sample.c_str()));
   a.fVerbose = 1;
   a.fControlPlotsFileName = sbsControlPlotsFileName;
@@ -548,21 +549,26 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     a.fMassLo    = 2.930;
     a.fMassHi    = 3.280;
   } else if (string::npos != sample.find("lambda")) {
-    if (string::npos == sample.find("Mc")) {
+    if (0 && string::npos == sample.find("Mc")) {
       type = 1;
       a.fMassPeak  = 1.116;
       a.fMassSigma = 0.002;
       a.fMassLo    = 1.095;
-      a.fMassHi    = 1.145;
+      a.fMassHi    = 1.140;
       string bla =  Form("%s_FakePtMassNm", sample.c_str());
-      cout << "=> Looking for prefit histogram " << bla.c_str() << endl;
       TH1D *h = (TH1D*)gDirectory->Get(Form("%s", bla.c_str()));
+      cout << "=> Looking for prefit histogram " << bla.c_str() << ", at h = " << h << " with nentries = " << h->GetSumOfWeights() << endl;
       fIF->fLo = a.fMassLo;
       fIF->fHi = a.fMassHi;
+      fIF->limitPar(0, 0., 1.e7);
       TF1 *f1 = fIF->pol1gauss(h, a.fMassPeak, a.fMassSigma);
-      TFitResultPtr r = h->Fit(f1, "ls", "", a.fMassLo, a.fMassHi);
+      cout << "now prefitting: h = " << h << " f1 = " << f1 << endl;
+      h->Fit(f1, "lsr", "", a.fMassLo, a.fMassHi);
+      savePad(Form("prefit-%s-%s-%s.pdf", sample.c_str(), selection.c_str(), what.c_str()));
       a.fpIF->limitPar(1, f1->GetParameter(1) - 3.*f1->GetParError(1), f1->GetParameter(1) + 3.*f1->GetParError(1));
       a.fpIF->limitPar(2, f1->GetParameter(2) - 3.*f1->GetParError(2), f1->GetParameter(2) + 3.*f1->GetParError(2));
+      cout << "done prefitting: h = " << h << " f1 = " << f1 << endl;
+      cout << "done prefitting: h = " << h << " f1 = " << f1 << endl;
     }
   } else if (string::npos != sample.find("phi")) {
     type = 2;
@@ -575,10 +581,13 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
   }
 
   // -- override the above choice in case of MC
-  if (string::npos != sample.find("Mc"))             type = 0; // signal window
+  if (string::npos != sample.find("Mc")) {
+    type = 0; // signal window
+  }
 
-
+  cout << "----------------------------------------------------------------------" << endl;
   cout << "type = " << type << endl;
+  cout << "----------------------------------------------------------------------" << endl;
   TH1D *h(0);
   bool restricted = (what != "");
   string bla;
@@ -603,9 +612,6 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
 
     cout << "  Title: " << h->GetTitle() << " with integral: " << h->GetSumOfWeights() << endl;
 
-    c0->cd();
-    h->Draw();
-    savePad(Form("%s.pdf", bla.c_str()));
   }
 
   cout << "sbsDistributions: created histogram with name: " << h->GetName() << " in directory " << h->GetDirectory()->GetName() << endl;
@@ -1209,6 +1215,7 @@ void plotFake::loopFunction1() {
     fAdMap[mapname]->fpFakeRPChits2->fill(fFakeRPChits2[i], mass);
     fAdMap[mapname]->fpFakeRPChits3->fill(fFakeRPChits3[i], mass);
     fAdMap[mapname]->fpFakeRPChits4->fill(fFakeRPChits4[i], mass);
+    fAdMap[mapname]->fpFakeCombHits->fill(fFakeCombHits[i], mass);
 
   }
 
@@ -1426,6 +1433,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("rpchits2", fFakeRPChits2);
   t->SetBranchAddress("rpchits3", fFakeRPChits3);
   t->SetBranchAddress("rpchits4", fFakeRPChits4);
+  t->SetBranchAddress("mudethitscomb", fFakeCombHits);
 
 
 

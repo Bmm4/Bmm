@@ -45,6 +45,7 @@ struct adsetFake {
     *fpFakeRPChits2,
     *fpFakeRPChits3,
     *fpFakeRPChits4,
+    *fpFakeCombHits,
 
   // require only TIS:
     *fpFakeTisAllEta,
@@ -161,6 +162,7 @@ private:
     , fFakeRPChits2[NTRKMAX]
     , fFakeRPChits3[NTRKMAX]
     , fFakeRPChits4[NTRKMAX]
+    , fFakeCombHits[NTRKMAX]
     ;
 
 
