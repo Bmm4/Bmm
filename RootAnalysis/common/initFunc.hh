@@ -14,6 +14,7 @@ class initFunc: public TObject {
 public:
 
   initFunc();
+  initFunc(std::string name);
   ~initFunc();
 
   void resetLimits();
@@ -50,6 +51,9 @@ public:
 
   TF1* gauss(double lo, double hi);
   TF1* gauss(TH1 *h);
+
+  TF1* gauss2c(double lo, double hi);
+  TF1* gauss2c(TH1 *h);
 
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
@@ -102,6 +106,8 @@ public:
   double fLimitLo[20], fLimitHi[20];
   bool   fLimit[20], fFix[20];
   bool   fVerbose;
+
+  std::string fName;
 
 private:
 
