@@ -2136,6 +2136,22 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bsmm4,")) {
+        sname = "bsmm4Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(503.7,everywhere) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmmIV";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
