@@ -84,6 +84,7 @@ void plotResults::makeAll(string what) {
     genSummary("bsmm0Mc", "candAnaMuMu");
     genSummary("bsmm2Mc", "candAnaMuMu");
     genSummary("bsmm3Mc", "candAnaMuMu");
+    genSummary("bsmm4Mc", "candAnaMuMu");
 
     genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
     genSummary("bupsikMcOff", "candAnaBu2JpsiK");
