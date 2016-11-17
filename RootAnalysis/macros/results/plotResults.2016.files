@@ -21,6 +21,7 @@ type=bsmm,mc            bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-m
 type=bsmm0,mc           bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm0-v03.root
 type=bsmm2,mc           bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm2-v03.root
 type=bsmm3,mc           bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm3-v03.root
+type=bsmm4,mc           bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm4-v03.root
 type=bsmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v03.root
 type=bsmm,acc,mcOff     bf=(3.65,0.23)e-9  eff=(2.64,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu-v03.root
 type=bymm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p7_BMuonFilter-v03.root
