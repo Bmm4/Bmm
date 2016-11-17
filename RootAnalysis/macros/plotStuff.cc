@@ -282,6 +282,23 @@ void plotStuff::pvStudy(string dsname, string selection, string fmod) {
 
 // ----------------------------------------------------------------------
 void plotStuff::yieldStability(string dsname, string trg) {
+  int MAXPS(20);
+  double MINLUMI(1000.);
+  double mBp(5.28), sBp(0.015), stepBp(5.15);
+  double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
+  fIF->fName = "fit";
+  TF1 *f1 = fIF->pol1Err2gauss2c(xmin, xmax);
+  fIF->fName = "comp";
+  TF1 *fg  = fIF->gauss2c(xmin, xmax);
+  fg->SetLineColor(kBlue+1);
+  TF1 *fe = fIF->err2(xmin, xmax);
+  fe->SetLineColor(kRed+2);
+  fe->SetLineStyle(kSolid);
+  TF1 *fp = fIF->pol1(xmin, xmax);
+  fp->SetLineColor(kRed+2);
+  fp->SetLineStyle(kSolid);
+
+  gStyle->SetOptStat(11111);
 
   fIF->fVerbose = false;
 
@@ -292,23 +309,31 @@ void plotStuff::yieldStability(string dsname, string trg) {
 
 
   fSample = dsname;
-  string dir = "candAnaBu2JpsiK";
-  if (string::npos != fSample.find("bmm")) {
-    dir = "candAnaMuMu";
-  } else if (string::npos != fSample.find("bspsiphi")) {
-    dir = "candAnaBs2JpsiPhi";
-  } else if (string::npos != fSample.find("bdpsikstar")) {
+  fMode = BMM;
+  string dir = "candAnaMuMu";
+  if (string::npos != fSample.find("bupsik")) {
+    fMode = BU2JPSIKP;
+    dir = "candAnaBu2JpsiK";
+  }
+  if (string::npos != fSample.find("bdpsikstar")) {
+    fMode = BD2JPSIKSTAR;
     dir = "candAnaBd2JpsiKstar";
   }
+  if (string::npos != fSample.find("bspsiphi")) {
+    fMode = BS2JPSIPHI;
+    dir = "candAnaBs2JpsiPhi";
+  }
+
 
   // -- check whether there are any histograms pre-produced already
   bool ok = fHistFile->cd(dir.c_str());
+  cout << "OK = " << ok << endl;
   if (ok) {
     cout << "histograms exist already, looping over them" << endl;
     TIter next(gDirectory->GetListOfKeys());
     TKey *key(0);
-    vector<int> vruns;
     int run(-1), runMin(9999999), runMax(0);
+    vector<int> vruns;
     while ((key = (TKey*)next())) {
       if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
       if (TString(key->GetName()).Contains("_HLT_")) {
@@ -319,19 +344,41 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	if (run < runMin) runMin = run;
 	if (find(vruns.begin(), vruns.end(), run) == vruns.end()) {
 	  vruns.push_back(run);
-	  // if (run == 274244) vruns.push_back(run);
+	  //if (run == 283946) vruns.push_back(run);
 	}
 	//	if (run < 278800) continue;
-	if (run > 274000) break;
+	//	if (run > 274000) break;
       }
     }
 
     if (vruns.size() > 0) {
-      double minLumi(200.);
-
-      Lumi lumi("../common/json/Cert_271036-280385_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
       cout << "analyzing runs " << runMin << " .. " <<  runMax << endl;
 
+      // -- create run blocks based on integrated lumi
+      Lumi lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      double intLumi(0.);
+      map<pair<int, double>, vector<int> > runBlocks;
+      vector<int> segment;
+      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
+	intLumi += lumi.lumi(vruns[irun]);
+	segment.push_back(vruns[irun]);
+	if (intLumi > MINLUMI) {
+	  runBlocks.insert(make_pair(make_pair(segment[0], intLumi), segment));
+	  intLumi = 0.;
+	  segment.clear();
+	}
+      }
+
+      // -- print the blocks
+      for (map<pair<int, double>, vector<int> >::iterator it = runBlocks.begin(); it != runBlocks.end(); ++it) {
+	cout << Form("%d %4.1f: ", it->first.first, it->first.second);
+	for (unsigned int i = 0; i < it->second.size(); ++i) {
+	  cout << it->second[i] << " ";
+	}
+	cout << endl;
+      }
+
+      // -- the result histograms
       vector<TH1D *> vRunHLT;
       for (unsigned int ichan = 0; ichan < fNchan; ++ichan) {
 	vRunHLT.push_back(new TH1D(Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
@@ -340,218 +387,228 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	vRunHLT[ichan]->Sumw2();
       }
 
-      double mBp(5.28), sBp(0.04), stepBp(5.145);
-      double xmin(5.0), xmax(5.9), ymax(0.);
+      // -- book map of histograms for 'all' and individual prescales
       fIF->fLo = xmin;
       fIF->fHi = xmax;
-      TH2D *h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_1", trg.c_str(), vruns[0])));
-      if (!h2) {
-	cout << "histogram " << Form("h_%s_%d_1", trg.c_str(), vruns[0]) << " not found!?! returning" << endl;
+      TH2D *h2(0);
+      for (int i = 0; i < MAXPS; ++i) {
+	h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vruns[0], i)));
+	if (h2) {
+	  cout << "histogram " << Form("h_%s_%d_%d", trg.c_str(), vruns[0], i) << " found -- breaking" << endl;
+	  break;
+	}
+      }
+      if (0 == h2) {
+	cout << "did not find any histogram???" << endl;
 	return;
       }
-
-      // -- create map of chan histograms
-      int MAXPS(10);
       TH2D *h2Sum = (TH2D*)h2->Clone("h2sum"); h2Sum->Reset();
-      TH1D *h1 = h2->ProjectionX("chan_0", 1,1);
+      TH1D *h1 = h2->ProjectionX("chan_0", 1, 1);
       h1->SetName("chan_0"); h1->Reset();
-      map<string, TH1D*> allHists;
+      map<string, TH1D*> vBlockHist;
       for (unsigned int ichan = 0; ichan < fNchan; ++ichan) {
 	for (unsigned int ips = 1; ips < MAXPS; ++ips) {
-	  allHists.insert(make_pair(Form("chan%d_ps%d", ichan, ips), (TH1D*)h1->Clone(Form("chan%d_ps%d", ichan, ips))));
-	  allHists[Form("chan%d_ps%d", ichan, ips)]->Reset();
-	  allHists.insert(make_pair(Form("chan%d", ichan), (TH1D*)h1->Clone(Form("chan%d", ichan))));
-	  allHists[Form("chan%d", ichan)]->Reset();
-	}
-      }
-      double intLumi(0.);
-
-      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
-	for (int ips = 1; ips < MAXPS; ++ips) {
-	  h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vruns[irun], ips)));
-	  if (h2) {
-	    for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	      h1 = h2->ProjectionX("bla", ichan+1, ichan+1);
-	      allHists[Form("chan%d", ichan)]->Add(h1);
-	      delete h1;
-	    }
-	  }
+	  vBlockHist.insert(make_pair(Form("chan%d_ps%d", ichan, ips), (TH1D*)h1->Clone(Form("chan%d_ps%d", ichan, ips))));
+	  vBlockHist[Form("chan%d_ps%d", ichan, ips)]->Reset();
+	  vBlockHist.insert(make_pair(Form("chan%d", ichan), (TH1D*)h1->Clone(Form("chan%d", ichan))));
+	  vBlockHist[Form("chan%d", ichan)]->Reset();
 	}
       }
 
-      // -- now loop over all runs, splitting into lumi blocks
-      vector<int> prescales;
-      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
-	for (int ips = 1; ips < MAXPS; ++ips) {
-	  h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), vruns[irun], ips)));
-	  if (h2) {
-	    if (find(prescales.begin(), prescales.end(), ips) == prescales.end()) {
-	      prescales.push_back(ips);
-	    }
-	    for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	      h1 = h2->ProjectionX("bla", ichan+1, ichan+1);
-	      allHists[Form("chan%d_ps%d", ichan, ips)]->Add(h1);
-	      //	      allHists[Form("chan%d", ichan)]->Add(h1);
-	      if (0 == ichan) {
-		if (h1->GetSumOfWeights() > 0) cout << "chan 0: ps " << ips << ", h1: " << h1->GetSumOfWeights();
-	      }
-	      delete h1;
-	    }
+
+      // -- now loop over blocks
+      for (map<pair<int, double>, vector<int> >::iterator it = runBlocks.begin(); it != runBlocks.end(); ++it) {
+	int iblock = it->first.first;
+	double blockLumi = it->first.second;
+	cout << Form("block %d %4.1f: ", iblock, blockLumi);
+	// -- clear the block histograms
+	for (unsigned int ichan = 0; ichan < fNchan; ++ichan) {
+	  for (unsigned int ips = 1; ips < MAXPS; ++ips) {
+	    vBlockHist[Form("chan%d_ps%d", ichan, ips)]->Reset();
+	    vBlockHist[Form("chan%d", ichan)]->Reset();
 	  }
 	}
-	cout << endl;
-	intLumi += lumi.lumi(vruns[irun]);
-	cout << "adding vruns[" << irun << "] = " << vruns[irun] << " with lumi = " << lumi.lumi(vruns[irun]) << " and intLumi = " << intLumi << endl;
-
-	if (intLumi > minLumi) {
-	  cout << "==== now fitting because intLumi = " << intLumi << endl;
+	// -- add up all runs in block into per-PS and combined histograms
+	for (unsigned int i = 0; i < it->second.size(); ++i) {
+	  int irun = it->second[i];
+	  // -- get all prescales
 	  for (int ips = 1; ips < MAXPS; ++ips) {
-	    for (unsigned ichan = 0; ichan < 1; ++ichan) {
-	      if (0 == ichan) {
-		if (allHists[Form("chan%d_ps%d", ichan, ips)]->GetSumOfWeights() > 0) {
-		  cout  << " chan 0, run" << vruns[irun] << ": ps " << ips << ", h1: " << allHists[Form("chan%d_ps%d", ichan, ips)]->GetSumOfWeights();
-		}
+	    h2 = (TH2D*)(gDirectory->Get(Form("h_%s_%d_%d", trg.c_str(), irun, ips)));
+	    if (h2) {
+	      for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
+		h1 = h2->ProjectionX("bla", ichan+1, ichan+1);
+		vBlockHist[Form("chan%d_ps%d", ichan, ips)]->Add(h1);
+		vBlockHist[Form("chan%d", ichan)]->Add(h1);
+		delete h1;
 	      }
 	    }
 	  }
-	  if (allHists[Form("chan%d", 0)]->GetSumOfWeights() > 0) {
-	    cout << " combined: " << allHists[Form("chan%d", 0)]->GetSumOfWeights();
+	}
+
+	// -- fit the block histograms
+	cout << "all: " << vBlockHist[Form("chan%d", 0)]->GetEntries() << endl;
+	for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
+	  // -- fit combined ps hist to determine signal and error function parameters
+	  h1 = vBlockHist[Form("chan%d", ichan)];
+	  //	  h1->SetMinimum(-0.2*h1->GetMaximum());
+	  for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
+	    f1->ReleaseParameter(ipar);
 	  }
-	  cout << endl;
 
-	  for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	    // -- fit combined ps hist to determine signal parameters
-	    h1 = allHists[Form("chan%d", ichan)];
+	  cout << "========> Fitting combined ps for channel " << ichan << " h1->GetSumOfWeights() = " << h1->GetSumOfWeights() << endl;
+	  double p0, p1;
+	  fIF->fLo = expoLo;
+	  fIF->fHi = expoHi;
+	  fIF->initPol1(p0, p1, h1);
+	  fIF->fLo = xmin;
+	  fIF->fHi = xmax;
+	  double A   = 0.5*p1*(expoHi*expoHi - expoLo*expoLo) + p0*(expoHi - expoLo);
+	  double g0 = (h1->Integral(h1->FindBin(expoLo), h1->FindBin(expoHi))*h1->GetBinWidth(1) - A);
+	  double errN = 0.6*(h1->GetBinContent(h1->FindBin(expoLo - 0.1)) - h1->GetBinContent(h1->FindBin(expoLo)));
+	  f1->SetParameter(0, 0.8*g0); f1->SetParLimits(0, 0., h1->GetMaximum());
+	  f1->SetParameter(1, mBp);    f1->SetParLimits(1, mBp - 1.*sBp, mBp + 1.*sBp);
+	  f1->SetParameter(2, sBp);    f1->SetParLimits(2, 0.010, 0.040);
+	  f1->SetParameter(3, 0.2);    f1->SetParLimits(3, 0.05, 0.60);
+	  f1->SetParameter(4, 5*sBp);  f1->SetParLimits(4, 0.050, 0.150);
+	  f1->SetParameter(5, p0);     //f1->SetParLimits(3, 0., 1.e10);
+	  f1->SetParameter(6, p1);     //f1->SetParLimits(4, -1.e10, 2.);
+	  f1->SetParameter(7, stepBp); f1->SetParLimits(7, stepBp - 2.*sBp, stepBp + 2.*sBp);
+	  f1->SetParameter(8, 2.*sBp); f1->SetParLimits(8, 2.*sBp - sBp, 2.*sBp + 1.5*sBp);
+	  f1->SetParameter(9, errN);   f1->SetParLimits(9, 0., h1->GetMaximum());
 
-	    TF1 *f1 = fIF->expoErrGauss(h1, mBp, sBp, stepBp);
-	    f1->SetParLimits(8, 0., 1.e5);
-	    h1->SetMinimum(0.);
-	    cout << "========> Fitting combined ps for channel " << ichan << " h1->GetSumOfWeights() = " << h1->GetSumOfWeights() << endl;
-	    if (h1->GetSumOfWeights() < 100) {
-	      cout << "XXXXXXXXXXX not enough events for combined ps for channel = " << ichan << ", run hist = " << h1->GetName() << endl;
+	  h1->Fit(f1, "lr", "", xmin, xmax);
+	  fg->SetParameters(f1->GetParameter(0), f1->GetParameter(1), f1->GetParameter(2), f1->GetParameter(3), f1->GetParameter(4));
+	  fg->Draw("same");
+	  for (int ipar = 0; ipar < fe->GetNpar(); ++ipar) fe->SetParameter(ipar, f1->GetParameter(ipar+7));
+	  fe->Draw("same");
+	  for (int ipar = 0; ipar < fp->GetNpar(); ++ipar) fp->SetParameter(ipar, f1->GetParameter(ipar+5));
+	  fp->Draw("same");
+	  tl->SetTextSize(0.04);
+	  tl->DrawLatexNDC(0.5, 0.5, Form("Signal: %5.1f", fg->Integral(5.15, 5.4)/h1->GetBinWidth(1)));
+	  tl->SetTextSize(0.03);
+	  tl->DrawLatexNDC(0.2, 0.92, Form("yield-%s-%d-chan%d-allps.pdf", trg.c_str(), iblock, ichan));
+	  savePad(Form("yield-%s-%d-chan%d-allps.pdf", trg.c_str(), iblock, ichan));
+
+	  double A0(f1->GetParameter(0));
+	  double peak(f1->GetParameter(1));
+	  double peakE(f1->GetParError(1));
+	  double sigma(f1->GetParameter(2));
+	  double sigmaE(f1->GetParError(2));
+	  double frac2(f1->GetParameter(3));
+	  double frac2E(f1->GetParError(3));
+	  double sigma2(f1->GetParameter(4));
+	  double sigma2E(f1->GetParError(4));
+	  double pol0(f1->GetParameter(5));
+	  double pol0E(f1->GetParError(5));
+	  double pol1(f1->GetParameter(6));
+	  double pol1E(f1->GetParError(6));
+	  double step(f1->GetParameter(7));
+	  double stepE(f1->GetParError(7));
+	  double res(f1->GetParameter(8));
+	  double resE(f1->GetParError(8));
+	  double level(f1->GetParameter(9));
+	  double levelE(f1->GetParError(9));
+
+	  double NSIG  = fg->Integral(5.1, 5.5)/h1->GetBinWidth(1);
+	  double NTOT  = h1->GetSumOfWeights();
+	  double SALL  = NSIG/NTOT;
+	  double SALLE = TMath::Sqrt(1./NSIG + 1./NTOT)*SALL;
+	  // -- now fit all histograms for the different prescales
+	  double nAll = h1->GetMaximum();
+	  double norm(0.), normE(0.);
+	  for (int ips = 1; ips < MAXPS; ++ips) {
+	    h1 = vBlockHist[Form("chan%d_ps%d", ichan, ips)];
+	    //	    h1->SetMinimum(-0.2*h1->GetMaximum());
+	    if (0 == h1) {
+	      cout << "xxx no histogram " << Form("chan%d_ps%d", ichan, ips) << endl;
 	      continue;
 	    }
-	    h1->Fit(f1, "lrq", "", xmin, xmax);
-	    savePad(Form("yield-%s-%d-chan%d-allps.pdf", trg.c_str(), vruns[irun], ichan));
-	    double A0(f1->GetParameter(0));
-	    double peak(f1->GetParameter(1));
-	    double peakE(f1->GetParError(1));
-	    double sigma(f1->GetParameter(2));
-	    double sigmaE(f1->GetParError(2));
-	    double A1(f1->GetParameter(3));
-	    double expslope(f1->GetParameter(4));
-	    double expslopeE(f1->GetParError(4));
-	    double err0(f1->GetParameter(5));
-	    double err0E(f1->GetParError(5));
-	    double err1(f1->GetParameter(6));
-	    double err1E(f1->GetParError(6));
-	    double err2(f1->GetParameter(7));
-	    double err2E(f1->GetParError(7));
-	    double A2(f1->GetParameter(8));
-	    double nAll(h1->GetMaximum());
-	    delete f1;
-	    // -- now fit all histograms for the different prescales
-	    double norm(0.), normE(0.);
-	    cout << "prescales.size() = " << prescales.size() << endl;
-	    for (unsigned ips = 0; ips < prescales.size(); ++ips) {
-	      h1 = allHists[Form("chan%d_ps%d", ichan, prescales[ips])];
-	      if (h1->GetSumOfWeights() < 100) {
-		cout << "XXXXXXXXXXX not enough events in h1 for chan = " << ichan << ", run hist = " << h1->GetName() << endl;
+	    double psNorm(0.), psNormE(0.), par0E(0.), intError(0.);
+	    if (h1 && h1->GetSumOfWeights() < 200) {
+	      // -- FIXME replace with S/B scaled nentries!
+	      if (h1->GetSumOfWeights() > 0) {
+		h1->Draw();
+		psNorm  = SALL*h1->GetSumOfWeights();
+		psNormE = TMath::Sqrt(1./h1->GetSumOfWeights() + SALLE*SALLE/SALL/SALL)*psNorm;
+		cout << "using S/All scaled histogram entries,  h1->GetSumOfWeights() = " << h1->GetSumOfWeights()
+		     << " SALL = " << SALL << " +/- " << SALLE << " -> psNorm = " << psNorm << " +/- " << psNormE
+		     << endl;
+	      } else {
 		continue;
 	      }
-	      f1 = fIF->expoErrGauss(h1, peak, sigma, stepBp);
-	      h1->SetMinimum(0.);
+	    } else{
 	      for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
 		f1->ReleaseParameter(ipar);
 	      }
 	      double scale = h1->GetMaximum()/nAll;
-	      f1->SetParameter(0, A0*scale);
-	      f1->SetParameter(1, peak);	      f1->SetParLimits(1, peak - peakE,         peak + peakE);
-	      f1->SetParameter(2, sigma);	      f1->SetParLimits(2, sigma - sigmaE,       sigma + sigmaE);
-	      f1->SetParameter(3, A1*scale);
-	      f1->SetParameter(4, expslope);	      f1->SetParLimits(4, expslope - expslopeE, expslope + expslopeE);
-	      f1->SetParameter(5, err0);	      f1->SetParLimits(5, err0 - err0E,         err0 + err0E);
-	      f1->SetParameter(6, err1);	      f1->SetParLimits(6, err1 - err1E,         err1 + err1E);
-	      f1->SetParameter(7, err2);	      f1->SetParLimits(7, err2 - err2E,         err2 + err2E);
-	      f1->SetParameter(8, A2*scale); 	      f1->SetParLimits(8, 0., 1.e5);
-	      cout << "========> Fitting ps: " << prescales[ips] << " for channel: " << ichan
-		   << " histogram: " << h1->GetName() << "/" << h1->GetTitle()
-		   << " histogram maximum: " << h1->GetMaximum()
-		   << " sumofw8() = " << h1->GetSumOfWeights()
-		   << endl;
-	      //	      cout << "f1: " << endl;
-	      //	      fIF->dumpParameters(f1);
-	      h1->Fit(f1, "lrq", "", xmin, xmax);
-	      double par0E = f1->GetParError(0);
-	      double intError = f1->IntegralError(peak-3*sigma, peak+3*sigma);
-	      double psNormE = intError;
-	      TF1 *f2 = fIF->expoErr(xmin, xmax);
-	      for (int ipar = 0; ipar < f2->GetNpar(); ++ipar) f2->SetParameter(ipar, f1->GetParameter(ipar+3));
-	      f1->SetParameter(3, 0.);
-	      f1->SetParameter(4, 0.);
-	      f1->SetParameter(5, 0.);
-	      f1->SetParameter(6, 0.);
-	      f1->SetParameter(7, 0.);
-	      f1->SetParameter(8, 0.);
-	      f1->SetLineColor(kBlue);
-	      f1->SetLineStyle(kDashed);
-	      f1->Draw("same");
-	      f2->SetLineColor(kRed);
-	      f2->SetLineStyle(kDashed);
-	      f2->Draw("same");
-	      //	      cout << "f2: " << endl;
-	      //	      fIF->dumpParameters(f2);
-	      double psNorm = f1->Integral(peak-3*sigma, peak+3*sigma);
-	      psNorm  /= h1->GetBinWidth(1);
-	      psNormE /= h1->GetBinWidth(1);
-	      if (psNormE < 0.01*psNorm) psNormE = par0E/h1->GetBinWidth(1);
-	      if (psNormE > psNorm) psNormE = TMath::Sqrt(psNorm);
-	      norm += prescales[ips]*psNorm;
-	      normE += (prescales[ips]*psNormE)*(prescales[ips]*psNormE);
-	      cout << "prescale: " << prescales[ips] << " Nsig = " << psNorm << " (area = " << f1->GetParameter(0)
-		   << ") -> running sum: " << norm << " running error: " << TMath::Sqrt(normE) << endl;
-	      if (TMath::Sqrt(normE) < 0.001) {
-		cout << "XXXXXXXXX psNormE            = " << psNormE << endl;
-		cout << "XXXXXXXXX f1->GetParError(0) = " << par0E << endl;
-		cout << "XXXXXXXXX intError           = " << intError << endl;
-		cout << "XXXXXXXXX sqrt(psNorm)       = " << TMath::Sqrt(psNorm)*h1->GetBinWidth(1) << endl;
+	      cout << "========> Fitting ps  = " << ips << " for channel " << ichan << " h1->GetSumOfWeights() = " << h1->GetSumOfWeights() << endl;
+	      cout << "SCALE = " << scale << endl;
+	      f1->SetParameter(0, scale*A0);      f1->SetParLimits(0, 0., 1.e10);
+	      f1->SetParameter(1, peak);	  f1->SetParLimits(1, peak - peakE,     peak + peakE);
+	      f1->SetParameter(2, sigma);	  f1->SetParLimits(2, sigma - sigmaE,   sigma + sigmaE);
+	      f1->SetParameter(3, frac2);         f1->SetParLimits(3, 0., 1.);
+	      f1->SetParameter(4, sigma2);	  f1->SetParLimits(4, sigma2 - sigma2E, sigma2 + sigma2E);
+	      f1->SetParameter(5, scale*pol0);  //  f1->SetParLimits(5, pol0 - pol0E, pol0 + pol0E);
+	      f1->SetParameter(6, scale*pol1);  //  f1->SetParLimits(6, pol1 - pol1E, pol1 + pol1E);
+	      f1->FixParameter(7, step);
+	      f1->FixParameter(8, res);
+	      f1->SetParameter(9, scale*level);	  f1->SetParLimits(9, scale*level*0.8, scale*level*1.2);
+	      fIF->dumpParameters(f1);
+	      h1->Fit(f1, "lr", "", xmin, xmax);
+	      par0E = f1->GetParError(0);
+	      intError = f1->IntegralError(peak-3*sigma, peak+3*sigma);
+	      psNormE = intError;
+	      for (int ipar = 0; ipar < fg->GetNpar(); ++ipar) {
+		fg->SetParameter(ipar, f1->GetParameter(ipar));
+		fg->SetParError(ipar, f1->GetParameter(ipar));
 	      }
-	      tl->DrawLatex(0.2, 0.92, Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vruns[irun], ichan, prescales[ips]));
-	      savePad(Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), vruns[irun], ichan, prescales[ips]));
-	      delete f1;
-	      delete f2;
+	      for (int ipar = 0; ipar < fe->GetNpar(); ++ipar) fe->SetParameter(ipar, f1->GetParameter(ipar+7));
+	      for (int ipar = 0; ipar < fp->GetNpar(); ++ipar) fp->SetParameter(ipar, f1->GetParameter(ipar+5));
+	      fg->Draw("same");
+	      f1->Draw("same");
+	      fe->Draw("same");
+	      fp->Draw("same");
+	      psNorm = fg->Integral(peak-3*sigma, peak+3*sigma);
+	      psNorm  /= h1->GetBinWidth(1);
+	    }
+	    psNormE /= h1->GetBinWidth(1);
+	    if (psNormE < 0.01*psNorm) psNormE = par0E/h1->GetBinWidth(1);
+	    if (psNormE > psNorm) psNormE = TMath::Sqrt(psNorm);
+	    norm += ips*psNorm;
+	    normE += (ips*psNormE)*(ips*psNormE);
+	    cout << "prescale: " << ips << " Nsig = " << psNorm << " (area = " << fg->GetParameter(0)
+		 << ") -> running sum: " << norm << " running error: " << TMath::Sqrt(normE) << endl;
+	    if (TMath::Sqrt(normE) < 0.001) {
+	      cout << "XXXXXXXXX psNormE            = " << psNormE << endl;
+	      cout << "XXXXXXXXX fg->GetParError(0) = " << par0E << endl;
+	      cout << "XXXXXXXXX intError           = " << intError << endl;
+	      cout << "XXXXXXXXX sqrt(psNorm)       = " << TMath::Sqrt(psNorm)*h1->GetBinWidth(1) << endl;
 	    }
 
-	    double result  = norm/intLumi;
-	    double resultE = TMath::Sqrt(normE)/intLumi;
-	    // -- normalize yield to 1/pb
-	    cout << "==> Filling for chan = " << ichan << " into bin " << static_cast<double>(vruns[irun])
-		 << " result = " << result << " +/- " << resultE
-		 << " for intLumi = " << intLumi
-		 << endl;
-	    vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(vruns[irun])), result);
-	    vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(vruns[irun])), resultE);
-	    vRunHLT[ichan]->Draw();
+	    tl->SetTextSize(0.04);
+	    tl->DrawLatexNDC(0.5, 0.5, Form("Signal: %5.1f", psNorm));
+	    tl->SetTextSize(0.03);
+	    tl->DrawLatexNDC(0.2, 0.92, Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), iblock, ichan, ips));
+	    savePad(Form("yield-%s-%d-chan%d-ps%d.pdf", trg.c_str(), iblock, ichan, ips));
 	  }
-	  // -- reset lumi
-	  intLumi = 0.;
-	  for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	    //allHists[Form("chan%d", ichan)]->Reset();
-	    for (int ips = 1; ips < MAXPS; ++ips) {
-	      allHists[Form("chan%d_ps%d", ichan, ips)]->Reset();
-	    }
-	  }
-	  prescales.clear();
+
+	  double result  = norm/blockLumi;
+	  double resultE = TMath::Sqrt(normE)/blockLumi;
+	  // -- normalize yield to 1/pb
+	  cout << "==> Filling for chan = " << ichan << " into bin " << static_cast<double>(iblock)
+	       << " result = " << result << " +/- " << resultE
+	       << " for blockLumi = " << blockLumi
+	       << endl;
+	  vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result);
+	  vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE);
 	}
       }
-
       for (unsigned ichan = 0; ichan < fNchan; ++ichan) {
-	vRunHLT[ichan]->SetMinimum(0.);
-	vRunHLT[ichan]->Draw("e");
-	savePad(Form("yield-vs-runs-%d-chan%d-%s-%s.pdf", fYear, ichan, fSample.c_str(), trg.c_str()));
+	vRunHLT[ichan]->Draw();
+	savePad(Form("yieldVsBlock-%s-chan%d.pdf", trg.c_str(), ichan));
       }
     }
-    return;
+
   } else {
     TDirectory *hDir = fHistFile->mkdir(dir.c_str());
     fHistFile->cd(dir.c_str());
@@ -563,6 +620,17 @@ void plotStuff::yieldStability(string dsname, string trg) {
       cout << "tree for sample = " << fSample << " not found" << endl;
       return;
     }
+    fMode = BMM;
+    if (string::npos != fSample.find("bupsik")) {
+      fMode = BU2JPSIKP;
+    }
+    if (string::npos != fSample.find("bdpsikstar")) {
+      fMode = BD2JPSIKSTAR;
+    }
+    if (string::npos != fSample.find("bspsiphi")) {
+      fMode = BS2JPSIPHI;
+    }
+
     setupTree(t, fSample);
     fCds = fSample;
     loopOverTree(t, 1);
@@ -587,7 +655,6 @@ void plotStuff::yieldStability(string dsname, string trg) {
   //  fHistFile->Write();
   fHistFile->Close();
 }
-
 
 
 // ----------------------------------------------------------------------
