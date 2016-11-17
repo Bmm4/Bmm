@@ -620,17 +620,6 @@ void plotStuff::yieldStability(string dsname, string trg) {
       cout << "tree for sample = " << fSample << " not found" << endl;
       return;
     }
-    fMode = BMM;
-    if (string::npos != fSample.find("bupsik")) {
-      fMode = BU2JPSIKP;
-    }
-    if (string::npos != fSample.find("bdpsikstar")) {
-      fMode = BD2JPSIKSTAR;
-    }
-    if (string::npos != fSample.find("bspsiphi")) {
-      fMode = BS2JPSIPHI;
-    }
-
     setupTree(t, fSample);
     fCds = fSample;
     loopOverTree(t, 1);
@@ -697,11 +686,20 @@ void plotStuff::loopFunction1() {
       if (fb.mkk < 1.01) return;
       if (fb.mkk > 1.03) return;
       if (fb.dr  > 0.80) return;
-      if (fb.kpt < 0.70) return;
+      if (fb.k1pt < 0.70) return;
+      if (fb.k2pt < 0.70) return;
     }
 
     if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR)) {
       if (fb.kpt < 0.70) return;
+    }
+
+    if (fMode == BD2JPSIKSTAR) {
+      if (fb.kpt < 0.70) return;
+      if (fb.pipt < 0.70) return;
+      if (fb.mkpi < 0.86) return;
+      if (fb.mkpi > 0.94) return;
+
     }
 
     m = fb.cm;
