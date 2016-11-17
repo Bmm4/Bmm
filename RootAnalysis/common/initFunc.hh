@@ -31,6 +31,9 @@ public:
   TF1* err(TH1 *h);
   TF1* err(double lo, double hi);
 
+  TF1* err2(TH1 *h);
+  TF1* err2(double lo, double hi);
+
   TF1* pol1(double lo, double hi);
   TF1* pol1(TH1 *h);
   TF1* pol1(TH1 *h, double lo, double hi);
@@ -51,12 +54,14 @@ public:
 
   TF1* gauss(double lo, double hi);
   TF1* gauss(TH1 *h);
+  TF1* Gauss(double lo, double hi);
 
   TF1* gauss2c(double lo, double hi);
   TF1* gauss2c(TH1 *h);
 
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
+  TF1* expoErr2(double lo, double hi);
 
   // -- signal+background functions
   TF1* pol0gauss(TH1 *h, double peak = 0.5, double sigma = 0.006);
@@ -75,7 +80,17 @@ public:
   TF1* expoErrgauss2c(TH1 *h, double peak = 5.3, double sigma1 = 0.04, double sigma2 = 0.1, double preco = 5.14);
   TF1* expoErrgauss2f(TH1 *h, double peak = 5.3, double sigma1 = 0.04, double peak2 = 5.425, double sigma2 = 0.079, double fraction = -1.,
 		      double preco = -1.);
+
+  TF1* expoErr2Gauss(double lo, double hi);
+  TF1* expoErr2Gauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
+
   TF1* pol1ErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
+
+  TF1* pol1Err2Gauss(double lo, double hi);
+  TF1* pol1Err2Gauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
+
+  TF1* pol1Err2gauss2c(double lo, double hi);
+  //  TF1* pol1Err2Gauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
 
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);

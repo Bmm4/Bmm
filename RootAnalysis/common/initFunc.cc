@@ -43,6 +43,14 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  double iF_err2(double *x, double *par) {
+    // par[0]: step
+    // par[1]: resolution
+    // par[2]: level of plateau
+    return par[2]*(TMath::Erf((par[0]-x[0])/par[1]) + 1.);
+  }
+
+  // ----------------------------------------------------------------------
   double iF_cb(double *x, double *par) {
     // par[0]:  mean
     // par[1]:  sigma
@@ -377,6 +385,20 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  // expo and err2 and gauss
+  double iF_expo_err2_Gauss(double *x, double *par) {
+    //   par[0] = normalization of gaussian
+    //   par[1] = mean of gaussian
+    //   par[2] = sigma of gaussian
+    //   par[3] = norm
+    //   par[4] = exp
+    //   par[5] = par[0] of err2
+    //   par[6] = par[1] of err2
+    //   par[7] = par[2] of err2
+    return  (iF_err2(x, &par[5]) + iF_expo(x, &par[3]) + iF_Gauss(x, &par[0]));
+  }
+
+  // ----------------------------------------------------------------------
   // expo and err and gauss2c
   double iF_expo_err_gauss2c(double *x, double *par) {
     // par[0] -> const
@@ -489,7 +511,7 @@ namespace {
 
 
   // ----------------------------------------------------------------------
-  // expo and err and gauss
+  // expo and err
   double iF_expo_err(double *x, double *par) {
     //   par[0] = norm
     //   par[1] = exp
@@ -500,9 +522,20 @@ namespace {
     return  (iF_err(x, &par[2]) + iF_expo(x, &par[0]));
   }
 
+  // ----------------------------------------------------------------------
+  // expo and err2
+  double iF_expo_err2(double *x, double *par) {
+    //   par[0] = norm
+    //   par[1] = exp
+    //   par[2] = par[0] of err2
+    //   par[3] = par[1] of err2
+    //   par[4] = par[2] of err2
+    return  (iF_err2(x, &par[2]) + iF_expo(x, &par[0]));
+  }
+
 
   // ----------------------------------------------------------------------
-  // expo and err and gauss
+  // expo and err and Gauss
   double iF_pol1_err_Gauss(double *x, double *par) {
     //   par[0] = normalization of gaussian
     //   par[1] = mean of gaussian
@@ -515,6 +548,40 @@ namespace {
     //   par[8] = par[3] of err
     return  (iF_err(x, &par[5]) + iF_pol1(x, &par[3]) + iF_Gauss(x, &par[0]));
   }
+
+  // ----------------------------------------------------------------------
+  // expo and err2 and Gauss
+  double iF_pol1_err2_Gauss(double *x, double *par) {
+    //   par[0] = normalization of gaussian
+    //   par[1] = mean of gaussian
+    //   par[2] = sigma of gaussian
+    //   par[3] = const
+    //   par[4] = slope
+    //   par[5] = par[0] of err
+    //   par[6] = par[1] of err
+    //   par[7] = par[2] of err
+    return  (iF_err2(x, &par[5]) + iF_pol1(x, &par[3]) + iF_Gauss(x, &par[0]));
+  }
+
+  // ----------------------------------------------------------------------
+  // pol1 and err2 and gauss2
+  double iF_pol1_err2_gauss2c(double *x, double *par) {
+    //   par[0]  = const of gaussian
+    //   par[1]  = mean of gaussian
+    //   par[2]  = sigma of gaussian
+    //   par[3]  = fraction in second gaussian
+    //   par[4]  = sigma of second gaussian
+    //   par[5]  = const
+    //   par[6]  = slope
+    //   par[7]  = par[0] of err2
+    //   par[8]  = par[1] of err2
+    //   par[9]  = par[2] of err2
+    // cout << x[0] << ": " << iF_err2(x, &par[7]) << " " << iF_pol1(x, &par[5]) << " " << iF_gauss2c(x, &par[0])
+    // 	 << " -> " << (iF_err2(x, &par[7]) + iF_pol1(x, &par[5]) + iF_gauss2c(x, &par[0]))
+    // 	 << endl;
+    return  (iF_err2(x, &par[7]) + iF_pol1(x, &par[5]) + iF_gauss2c(x, &par[0]));
+  }
+
 
 
   // ----------------------------------------------------------------------
@@ -655,7 +722,7 @@ void initFunc::resetLimits() {
 // ----------------------------------------------------------------------
 void initFunc::dumpParameters(TF1 *f1) {
   double lo, hi;
-  cout << "initFunc(" << fName << ") dumpParameters:" << endl;
+  cout << "initFunc(" << fName << ") dumpParameters: " << f1->GetName() << endl;
   for (int i = 0; i < f1->GetNpar(); ++i) {
     f1->GetParLimits(i, lo, hi);
     cout << Form("%2d: %f (%f .. %f)", i, f1->GetParameter(i), lo, hi)
@@ -716,6 +783,24 @@ TF1* initFunc::err(TH1 *h) {
   return f;
 }
 
+// ----------------------------------------------------------------------
+TF1* initFunc::err2(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_err2", fName.c_str()), iF_err2, lo, hi, 3);
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::err2(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f = new TF1(Form("%s_err2", fName.c_str()), iF_err2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 3);
+
+  return f;
+}
+
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol0(double lo, double hi) {
@@ -749,6 +834,12 @@ TF1* initFunc::expoErr(double lo, double hi) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::expoErr2(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_expoErr2", fName.c_str()), iF_expo_err2, lo, hi, 5);
+  return f;
+}
+
+// ----------------------------------------------------------------------
 TF1* initFunc::argus(double lo, double hi) {
   TF1 *f = new TF1(Form("%s_argus", fName.c_str()), iF_argus, lo, hi, 3);
   f->SetParNames("norm.", "expo.", "endpoint");
@@ -776,6 +867,17 @@ TF1* initFunc::landau(TH1 *h) {
   f->SetParName(0, "mpvl");
   f->SetParName(1, "sigl");
   f->SetParName(2, "norm");
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::Gauss(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_Gauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss", fName.c_str()), iF_Gauss, lo, hi, 3);
+  f->SetParName(0, "area");
+  f->SetParName(1, "peak");
+  f->SetParName(2, "sigma");
   return f;
 }
 
@@ -1337,7 +1439,7 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_Gauss", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_Gauss", fName.c_str()), iF_expo_err_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 9);
-  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2", "err3");
+  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
   //  f->SetLineColor(kBlue);
   f->SetLineWidth(2);
 
@@ -1353,9 +1455,93 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
 
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
 
-  double e0(preco), e0Min(preco-0.001), e0Max(preco+0.001);
-  double e1(0.075), e1Min(0.050),       e1Max(0.100);
-  double e2(1.15),  e2Min(1.05),        e2Max(1.25);
+  double e0(preco), e0Min(preco-0.001), e0Max(preco+0.001); // step
+  double e1(0.075), e1Min(0.050),       e1Max(0.100);       // resolution
+  //  double e2(1.15),  e2Min(1.05),        e2Max(1.25);        // level
+  double e2(0.),     e2Min(0.),        e2Max(0.1);        // level
+
+
+  if (fVerbose) cout << "A: " << A << " g0: " << g0
+		     << " e0: " << e0 << " e1: " << e1 << " e2: " << e2
+		     << " p0: " << p0 << " p1: " << p1
+		     << endl;
+
+  f->SetParameters(g0, peak, sigma, p0, p1, e0, e1, e2, 0.05*g0);
+
+  // -- FIXME: remove hard-coded limits!
+  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e6);
+  f->ReleaseParameter(1);     f->SetParLimits(1, 5.2, 5.45);
+  f->ReleaseParameter(2);     f->SetParLimits(2, 0.3*sigma, 1.3*sigma);
+  f->ReleaseParameter(3);
+  f->ReleaseParameter(4);
+  f->ReleaseParameter(5);     f->SetParLimits(5, e0Min, e0Max);
+  f->ReleaseParameter(6);     f->SetParLimits(6, e1Min, e1Max);
+  f->ReleaseParameter(7);     f->SetParLimits(7, e2Min, e2Max);
+  f->ReleaseParameter(8);     //f->SetParLimits(8, 0, 0.05*g0);
+
+  return f;
+
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol1Err2Gauss(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_pol1_err2_Gauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_pol1_err2_Gauss", fName.c_str()), iF_pol1_err2_Gauss, lo, hi, 8);
+  f->SetParNames("area", "peak", "sigma", "const", "slope", "err0", "err1", "err2");
+  //  f->SetLineColor(kBlue);
+  f->SetLineWidth(2);
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pol1Err2gauss2c(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_pol1_err2_gauss2c", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_pol1_err2_gauss2c", fName.c_str()), iF_pol1_err2_gauss2c, lo, hi, 10);
+  f->SetParNames("norm", "peak", "sigma", "fraction2", "sigma2", "const", "slope", "step", "res", "level");
+  //  f->SetLineColor(kBlue);
+  f->SetLineWidth(2);
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::expoErr2Gauss(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err2_Gauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_expo_err2_Gauss", fName.c_str()), iF_expo_err2_Gauss, lo, hi, 8);
+  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
+  //  f->SetLineColor(kBlue);
+  f->SetLineWidth(2);
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::expoErr2Gauss(TH1 *h, double peak, double sigma, double preco) {
+
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err2_Gauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_expo_err2_Gauss", fName.c_str()), iF_expo_err2_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 8);
+  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
+  //  f->SetLineColor(kBlue);
+  f->SetLineWidth(2);
+
+  int lbin(1), hbin(h->GetNbinsX()+1);
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  }
+
+  double p0, p1;
+  initExpo(p0, p1, h);
+  double A   = p0*(TMath::Exp(p1*fHi) - TMath::Exp(p1*fLo));
+  double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
+
+  double e0(preco), e0Min(preco-0.001), e0Max(preco+0.001); // step
+  double e1(0.075), e1Min(0.050),       e1Max(0.100);       // resolution
+  double e2(1.),     e2Min(0.99),        e2Max(1.01);       // high-range level = 0
 
 
   if (fVerbose) cout << "A: " << A << " g0: " << g0
@@ -1778,7 +1964,7 @@ TF1* initFunc::pol1ErrGauss(TH1 *h, double peak, double sigma, double preco) {
 
   double p0, p1;
   initPol1(p0, p1, h);
-  double A   = p0*(TMath::Exp(p1*fHi) - TMath::Exp(p1*fLo));
+  double A   = p0*(TMath::Exp(p1*fHi) - TMath::Exp(p1*fLo)); // FIXME: should not be exponential!
 
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
 
@@ -1953,8 +2139,9 @@ void initFunc::initPol1(double &p0, double &p1, TH1 *h) {
 
   p1  = (yhi-ylo)/dx;
   p0  = ylo - p1*xlo;
-  if (fVerbose) {
-    cout << "ylo: " << ylo << " yhi: " << yhi << " dx = " << dx
+  if (1 ||fVerbose) {
+    cout << "lbin: " << lbin << " hbin: " << hbin
+	 << " ylo: " << ylo << " yhi: " << yhi << " dx: " << dx
 	 << " p0: " << p0 << " p1: " << p1 << endl;
   }
 }
