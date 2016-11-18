@@ -135,13 +135,14 @@ void plotReducedOverlays::makeAll(string what) {
     init();
 
     printCuts(cout);
+    // -- data vs official MC
     makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
-    //    makeSampleOverlay("bmmData", "bdmmMc", "Presel");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
-    //    makeSampleOverlay("bspsiphiData", "bspsiphiMc", "Ao");
     makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
-    //    makeSampleOverlay("bupsikData", "bupsikMc", "Ao");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
+
+    // -- validation of private MC vs official MC
+    makeSampleOverlay("bupsikMc", "bupsikMcOff", "Ao");
   }
 
   if (what == "plot") {
@@ -359,6 +360,7 @@ void plotReducedOverlays::makeSample(string sample, string selection, int nevent
   if (string::npos != fSample.find("bupsik")) {
     dir = "candAnaBu2JpsiK";
     fMode = BU2JPSIKP;
+
     BGLBOXMIN = 4.90;
     BGLBOXMAX = 5.10;
 
@@ -853,7 +855,8 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
     overlayAndRatio(c0, h1, h2);
     setHist(h1, fDS[ds1]);
     setHist(h2, fDS[ds2]);
-    setHist(h2, fDS[ds2]);
+
+    //    setHist(h2, fDS[ds2]);
 
     if (doLegend) {
       if (leftLegend) {
@@ -874,8 +877,16 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
 	sprintf(loption1, "f");
 	if (string::npos != sample1.find("Sg")) {
 	  h1string = "B_{s} #rightarrow #mu^{+} #mu^{-} (MC)";
-      } else {
+	} else {
 	  h1string = "MC simulation";
+	  // -- change things for the private/official validation
+	  if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
+	    h1string += " (private)";
+	    sprintf(loption1, "p");
+	    h1->SetMarkerStyle(24);
+	    h1->SetMarkerSize(1.5);
+	    h1->Draw("esame");
+	  }
 	}
       } else if (string::npos != sample1.find("Data")) {
 	sprintf(loption1, "p");
@@ -896,6 +907,10 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
 	  h2string = "B^{0}_{s} #rightarrow #mu^{+} #mu^{-}";
 	} else {
 	  h2string = "MC simulation";
+	  // -- change things for the private/official validation
+	  if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
+	    h2string += " (official)";
+	  }
 	}
       } else if (string::npos != sample2.find("Data")) {
 	sprintf(loption2, "p");
