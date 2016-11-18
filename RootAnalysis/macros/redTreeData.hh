@@ -40,12 +40,13 @@ struct redTreeData {
   int    g1id, g2id;
   double t1pt, t1eta, t2pt, t2eta, t3pt, t3eta, t4pt, t4eta;
 
-  // -- dimuon variables
-  double mpsi, mkk;
+  // -- psi variables
+  double mpsi;
   double psipt, psieta, psiphi;
   double psicosa, psiflsxy, psiprob, psimaxdoca;
 
   // -- other resonances
+  double mkk, mkpi;
   double phipt, phieta, phiphi, dr;
 
   double md0, dm, ptd0;
