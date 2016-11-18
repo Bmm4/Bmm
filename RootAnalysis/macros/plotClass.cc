@@ -597,11 +597,14 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("psimaxdoca", &fb.psimaxdoca);
 
   }
+
   if (string::npos != mode.find("bupsik")) {
     if (string::npos != mode.find("Mc")) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
       t->SetBranchAddress("g3eta",&fb.g3eta);
     }
+    t->SetBranchAddress("mpsi", &fb.mpsi);
+    t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("kpt",  &fb.kpt);
     t->SetBranchAddress("kgt",  &fb.kgt);
     t->SetBranchAddress("keta", &fb.keta);
@@ -624,9 +627,6 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("k2pt", &fb.k2pt);
     t->SetBranchAddress("k2gt", &fb.k2gt);
     t->SetBranchAddress("k2eta",&fb.k2eta);
-  } else {
-    fb.mkk = 999.;
-    fb.dr = 999.;
   }
 
 
@@ -639,7 +639,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     }
     t->SetBranchAddress("mpsi", &fb.mpsi);
     t->SetBranchAddress("psipt", &fb.psipt);
-    t->SetBranchAddress("mkk",  &fb.mkk);
+    t->SetBranchAddress("mkpi",  &fb.mkpi);
     t->SetBranchAddress("dr",   &fb.dr);
     t->SetBranchAddress("kpt", &fb.kpt);
     t->SetBranchAddress("kgt", &fb.kgt);
@@ -647,11 +647,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("pipt", &fb.pipt);
     t->SetBranchAddress("pigt", &fb.pigt);
     t->SetBranchAddress("pieta",&fb.pieta);
-  } else {
-    fb.mkk = 999.;
-    fb.dr = 999.;
   }
-
 
   if (string::npos != mode.find("dstarpi")) {
     t->SetBranchAddress("md0",&fb.md0);
@@ -2142,6 +2138,22 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("acc")) sname += "Acc";
         sdecay = "B^{0}_{s}(503.7,everywhere) #rightarrow #it{#mu#mu}";
         ldecay = "\\bsmmIV";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm5,")) {
+        sname = "bsmm5Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(503.7,L&H) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmmV";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
