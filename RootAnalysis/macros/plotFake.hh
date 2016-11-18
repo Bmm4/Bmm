@@ -13,6 +13,9 @@ struct adsetFake {
 
     *fpFakeEta,
     *fpFakePt,
+    *fpFakeBdt,
+    *fpFakeTip,
+    *fpFakeLip,
     *fpFakeInnerChi2,
     *fpFakeOuterChi2,
     *fpFakeChi2LocalPosition,
@@ -130,7 +133,7 @@ private:
   bool   fTIS, fCowboy;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
   float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDtrig[NTRKMAX], fFakeDmuon[NTRKMAX];
-  float  fFakeInnerChi2[NTRKMAX]
+  float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX], fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
     , fFakeChi2LocalPosition[NTRKMAX]
     , fFakeChi2LocalMomentum[NTRKMAX]

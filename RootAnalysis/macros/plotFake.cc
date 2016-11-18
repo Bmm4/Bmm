@@ -68,6 +68,8 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeTisDtDmAllPt");
   fDoList.push_back("FakeTisDtDmAllEta");
 
+  // fDoList.push_back("FakeTip");
+  // fDoList.push_back("FakeLip");
   fDoList.push_back("FakeInnerChi2");
   fDoList.push_back("FakeOuterChi2");
   fDoList.push_back("FakeChi2LocalPosition");
@@ -401,6 +403,7 @@ void plotFake::makeOverlay(string what1, string what2, string selection) {
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what2.c_str()), selection);
 
     for (unsigned int id = 0; id < fDoList.size(); ++id) {
+      c0->cd();
       overlay(Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()),
 	      Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str())
 	      );
@@ -436,8 +439,12 @@ void plotFake::bookDistributions() {
     a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GoodFake", 40, 0., 20.);
     a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 40, -2.4, 2.4);
     a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} [GeV]", "Good", 40, 0., 20.);
-    a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 51, 0., 102.);
-    a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 51, 0., 102.);
+
+    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 50, -1., 1.);
+    a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 50, 0., 2.);
+    a->fpFakeLip       = bookDistribution(Form("%sFakeLip", name.c_str()), "LIP [cm]", "GlobalMuon", 50, 0., 2.);
+    a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 51, 0., 20.);
+    a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 51, 0., 02.);
 
     a->fpFakeChi2LocalPosition = bookDistribution(Form("%sFakeChi2LocalPosition", name.c_str()), "local position #chi^{2}", "GlobalMuon", 51, 0., 102.);
     a->fpFakeChi2LocalMomentum = bookDistribution(Form("%sFakeChi2LocalMomentum", name.c_str()), "local momentum #chi^{2}", "GlobalMuon", 51, 0., 102.);
@@ -549,12 +556,12 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     a.fMassLo    = 2.930;
     a.fMassHi    = 3.280;
   } else if (string::npos != sample.find("lambda")) {
+    type = 1;
+    a.fMassPeak  = 1.116;
+    a.fMassSigma = 0.002;
+    a.fMassLo    = 1.095;
+    a.fMassHi    = 1.140;
     if (0 && string::npos == sample.find("Mc")) {
-      type = 1;
-      a.fMassPeak  = 1.116;
-      a.fMassSigma = 0.002;
-      a.fMassLo    = 1.095;
-      a.fMassHi    = 1.140;
       string bla =  Form("%s_FakePtMassNm", sample.c_str());
       TH1D *h = (TH1D*)gDirectory->Get(Form("%s", bla.c_str()));
       cout << "=> Looking for prefit histogram " << bla.c_str() << ", at h = " << h << " with nentries = " << h->GetSumOfWeights() << endl;
@@ -644,9 +651,24 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 
   h1->SetTitle("");
   h1->SetMinimum(0.01);
-  h1->SetMinimum(-0.1*h1->GetMaximum());
   double ymax = h1->GetMaximum();
   if (h2->GetMaximum() > ymax) ymax = h2->GetMaximum();
+
+  c0->SetLogy(0);
+  if ((string::npos != sample1.find("Chi2"))
+      || (string::npos != sample1.find("ItrkValidFraction"))
+      || (string::npos != sample1.find("GtrkProb"))
+      || (string::npos != sample1.find("GlbDeltaEtaPhi"))
+      || (string::npos != sample1.find("TimeInOut"))
+      ) {
+    h1->SetMinimum(0.5);
+    ymax *= 5.;
+    c0->SetLogy(1);
+  }
+
+  if (string::npos != sample1.find("NvalidMuonHits")) leftLegend = true;
+  if (string::npos != sample1.find("LayersWithHits")) leftLegend = true;
+
   h1->SetStats(0);
   string hname = h1->GetName();
   if (string::npos != hname.find("Data")) {
@@ -714,7 +736,7 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 
   if (doLegend) {
     if (leftLegend) {
-      newLegend(0.21, 0.7, 0.41, 0.87);
+      newLegend(0.26, 0.7, 0.46, 0.87);
     } else {
       newLegend(0.70, 0.7, 0.90, 0.87);
     }
@@ -1181,6 +1203,8 @@ void plotFake::loopFunction1() {
     fAdMap[mapname]->fpFakeTisDtDmFakeEta->fill(fFakeEta[i], mass);
     fAdMap[mapname]->fpFakeTisDtDmFakePt->fill(fFakePt[i], mass);
 
+    fAdMap[mapname]->fpFakeTip->fill(fFakeTip[i], mass);
+    fAdMap[mapname]->fpFakeLip->fill(fFakeLip[i], mass);
 
     fAdMap[mapname]->fpFakeInnerChi2->fill(fFakeInnerChi2[i], mass);
     fAdMap[mapname]->fpFakeOuterChi2->fill(fFakeOuterChi2[i], mass);
@@ -1401,6 +1425,9 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("dtrig",   fFakeDtrig);
   t->SetBranchAddress("dmuon",   fFakeDmuon);
   t->SetBranchAddress("bdt",     fFakeBdt);
+
+  t->SetBranchAddress("tip", fFakeTip);
+  t->SetBranchAddress("lip", fFakeLip);
 
   t->SetBranchAddress("innerchi2", fFakeInnerChi2);
   t->SetBranchAddress("outerchi2", fFakeOuterChi2);
