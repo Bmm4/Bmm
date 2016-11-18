@@ -202,6 +202,9 @@ void candAnaFake::candAnalysis() {
     if (0 == pm[im]) {
       fFakeGm[im]                     = -99;
 
+      fFakeBdt[im]                    = -99.;
+      fFakeTip[im]                    = -99.;
+      fFakeLip[im]                    = -99.;
       fFakeInnerChi2[im]              = -99.;
       fFakeOuterChi2[im]              = -99.;
       fFakeChi2LocalPosition[im]      = -99.;
@@ -212,8 +215,9 @@ void candAnaFake::candAnalysis() {
       fFakeItrkValidFraction[im]      = -99.;
       fFakeSegmentComp[im]            = -99.;
       fFakeGtrkNormChi2[im]           = -99.;
+      fFakeDxyRef[im]                 = -99.;
+      fFakeDzRef[im]                 = -99.;
       fFakeDz[im]                     = -99.;
-      fFakeLip[im]                    = -99.;
       fFakeGtrkProb[im]               = -99.;
       fFakeNumberOfValidTrkHits[im]   = -99.;
       fFakeNumberOfLostTrkHits[im]    = -99.;
@@ -243,6 +247,8 @@ void candAnaFake::candAnalysis() {
       mvaMuon(pm[im], result, false);
       fFakeBdt[im]                    = result;
 
+      fFakeTip[im]                    = pm[im]->fTip;
+      fFakeLip[im]                    = pm[im]->fLip;
       fFakeInnerChi2[im]              = pm[im]->fInnerChi2;
       fFakeOuterChi2[im]              = (pm[im]->fOuterChi2 < 100.?pm[im]->fOuterChi2:101.);
       fFakeChi2LocalPosition[im]      = (pm[im]->fChi2LocalPosition < 100?pm[im]->fChi2LocalPosition:101.);
@@ -390,6 +396,8 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("dzref",                fFakeDzRef,                "dzref[ntrk]/F");                     // tree->dzRef = swMu->fLip;
   fFakeTree->Branch("layerswithhits",       fFakeLayersWithHits,       "layerswithhits[ntrk]/I");            // tree->LWH = swMu->fLayersWithHits;
   fFakeTree->Branch("numberofvalidpixhits", fFakeNumberOfValidPixHits, "numberofvalidpixhits[ntrk]/I");      // tree->valPixHits = swMu->fNumberOfValidPixHits;
+  fFakeTree->Branch("tip",                  fFakeTip,                  "tip[ntrk]/F");                       // tree->innerChi2 = swMu->fTip;
+  fFakeTree->Branch("lip",                  fFakeLip,                  "lip[ntrk]/F");                       // tree->innerChi2 = swMu->fLip;
   fFakeTree->Branch("innerchi2",            fFakeInnerChi2,            "innerchi2[ntrk]/F");                 // tree->innerChi2 = swMu->fInnerChi2;
   fFakeTree->Branch("outerchi2",            fFakeOuterChi2,            "outerchi2[ntrk]/F");                 // tree->outerChi2 = swMu->fOuterChi2;
   fFakeTree->Branch("itrkvalidfraction",    fFakeItrkValidFraction,    "itrkValidFraction[ntrk]/F");         // tree->iValFrac = swMu->fItrkValidFraction;

@@ -55,7 +55,8 @@ private:
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
   float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDistTrig[NTRKMAX], fFakeDistMuon[NTRKMAX];
 
-  float  fFakeInnerChi2[NTRKMAX]
+  float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX]
+    , fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
     , fFakeChi2LocalPosition[NTRKMAX]
     , fFakeChi2LocalMomentum[NTRKMAX]
@@ -68,7 +69,6 @@ private:
     , fFakeSegmentComp[NTRKMAX]
     , fFakeGtrkNormChi2[NTRKMAX]
     , fFakeDz[NTRKMAX]
-    , fFakeLip[NTRKMAX]
     , fFakeGtrkProb[NTRKMAX]
     , fFakeMuonChi2[NTRKMAX]
     , fFakeGlbKinkFinder[NTRKMAX]
