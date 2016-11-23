@@ -68,8 +68,9 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeTisDtDmAllPt");
   fDoList.push_back("FakeTisDtDmAllEta");
 
-  // fDoList.push_back("FakeTip");
-  // fDoList.push_back("FakeLip");
+  fDoList.push_back("FakeBdt");
+  fDoList.push_back("FakeTip");
+  fDoList.push_back("FakeLip");
   fDoList.push_back("FakeInnerChi2");
   fDoList.push_back("FakeOuterChi2");
   fDoList.push_back("FakeChi2LocalPosition");
@@ -147,7 +148,10 @@ void plotFake::init() {
 void plotFake::makeAll(string what) {
 
   if (what == "dbx") {
-      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+    //      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+    makeSample("fakeData", "ks");
+    makeSample("fakeMc", "ks");
+    makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
   }
 
   if (what == "all" || string::npos != what.find("sample")) {
@@ -327,52 +331,52 @@ void plotFake::makeSample(std::string dataset, std::string sample, int nevents, 
   if (string::npos != sample.find("ks")) {
     fMode = FAKEKS;
     dir = "candAnaFake310";
-    BGLBOXMIN = 0.450;
-    BGLBOXMAX = 0.465;
-    SIGBOXMIN = 0.480;
-    SIGBOXMAX = 0.515;
-    BGHBOXMIN = 0.530;
-    BGHBOXMAX = 0.550;
+    // BGLBOXMIN = 0.450;
+    // BGLBOXMAX = 0.465;
+    // SIGBOXMIN = 0.480;
+    // SIGBOXMAX = 0.515;
+    // BGHBOXMIN = 0.530;
+    // BGHBOXMAX = 0.550;
   }
 
   if (string::npos != sample.find("psi")) {
     fMode = FAKEPSI;
     dir = "candAnaFake443";
-    BGLBOXMIN = 2.800;
-    BGLBOXMAX = 2.900;
-    SIGBOXMIN = 3.050;
-    SIGBOXMAX = 3.150;
-    BGHBOXMIN = 3.200;
-    BGHBOXMAX = 3.300;
+    // BGLBOXMIN = 2.800;
+    // BGLBOXMAX = 2.900;
+    // SIGBOXMIN = 3.050;
+    // SIGBOXMAX = 3.150;
+    // BGHBOXMIN = 3.200;
+    // BGHBOXMAX = 3.300;
   }
 
   if (string::npos != sample.find("phi")) {
     fMode = FAKEPHI;
     dir = "candAnaFake333";
-    BGLBOXMIN = 0.990;
-    BGLBOXMAX = 1.005;
-    SIGBOXMIN = 1.010;
-    SIGBOXMAX = 1.030;
-    BGHBOXMIN = 1.035;
-    BGHBOXMAX = 1.045;
+    // BGLBOXMIN = 0.990;
+    // BGLBOXMAX = 1.005;
+    // SIGBOXMIN = 1.010;
+    // SIGBOXMAX = 1.030;
+    // BGHBOXMIN = 1.035;
+    // BGHBOXMAX = 1.045;
   }
 
   if (string::npos != sample.find("lambda")) {
     fMode = FAKELAMBDA;
     dir = "candAnaFake3122";
-    BGLBOXMIN = 1.095;
-    BGLBOXMAX = 1.105;
-    SIGBOXMIN = 1.110;
-    SIGBOXMAX = 1.122;
-    BGHBOXMIN = 1.130;
-    BGHBOXMAX = 1.140;
+    // BGLBOXMIN = 1.095;
+    // BGLBOXMAX = 1.105;
+    // SIGBOXMIN = 1.110;
+    // SIGBOXMAX = 1.122;
+    // BGHBOXMIN = 1.130;
+    // BGHBOXMAX = 1.140;
   }
 
 
   if (fIsMC) dir = "candAnaFakeMC";
 
 
-  // -- must be after the mass box definitions!
+  // -- mass box definitions are in there!
   bookDistributions();
 
   TTree *t = getTree(dataset, dir, "fakeTree");
@@ -425,14 +429,40 @@ void plotFake::fillDistributions() {
 // ----------------------------------------------------------------------
 void plotFake::bookDistributions() {
 
-  cout << "SIG: " << SIGBOXMIN << " .. " << SIGBOXMAX << endl;
-  cout << "BGL: " << BGLBOXMIN << " .. " << BGLBOXMAX << endl;
-  cout << "BGH: " << BGHBOXMIN << " .. " << BGHBOXMAX << endl;
-
   adsetFake *a(0);
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
     string mapname = Form("ad%s_%s", fChannelList[i].c_str(), fSample.c_str());
     string name = Form("%s_", mapname.c_str());
+
+    if (string::npos != fSample.find("ks")) {
+      if (0 == i) {
+	SIGBOXMIN = 0.482;
+	SIGBOXMAX = 0.510;
+	BGLBOXMIN = 0.450;
+	BGLBOXMAX = 0.465;
+	BGHBOXMIN = 0.530;
+	BGHBOXMAX = 0.550;
+      } else if (1 == i) {
+	SIGBOXMIN = 0.480;
+	SIGBOXMAX = 0.515;
+	BGLBOXMIN = 0.450;
+	BGLBOXMAX = 0.465;
+	BGHBOXMIN = 0.530;
+	BGHBOXMAX = 0.550;
+      } else {
+	SIGBOXMIN = 0.475;
+	SIGBOXMAX = 0.520;
+	BGLBOXMIN = 0.450;
+	BGLBOXMAX = 0.465;
+	BGHBOXMIN = 0.530;
+	BGHBOXMAX = 0.550;
+      }
+    }
+
+    cout << "fSample: " << fSample << endl;
+    cout << "SIG: " << SIGBOXMIN << " .. " << SIGBOXMAX << endl;
+    cout << "BGL: " << BGLBOXMIN << " .. " << BGLBOXMAX << endl;
+    cout << "BGH: " << BGHBOXMIN << " .. " << BGHBOXMAX << endl;
 
     a = new adsetFake();
     a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 40, -2.4, 2.4);
@@ -660,6 +690,8 @@ void plotFake::overlay(string sample1, string sample2, string what) {
       || (string::npos != sample1.find("GtrkProb"))
       || (string::npos != sample1.find("GlbDeltaEtaPhi"))
       || (string::npos != sample1.find("TimeInOut"))
+      || (string::npos != sample1.find("Tip"))
+      || (string::npos != sample1.find("Lip"))
       ) {
     h1->SetMinimum(0.5);
     ymax *= 5.;
@@ -1203,6 +1235,7 @@ void plotFake::loopFunction1() {
     fAdMap[mapname]->fpFakeTisDtDmFakeEta->fill(fFakeEta[i], mass);
     fAdMap[mapname]->fpFakeTisDtDmFakePt->fill(fFakePt[i], mass);
 
+    fAdMap[mapname]->fpFakeBdt->fill(fFakeBdt[i], mass);
     fAdMap[mapname]->fpFakeTip->fill(fFakeTip[i], mass);
     fAdMap[mapname]->fpFakeLip->fill(fFakeLip[i], mass);
 
