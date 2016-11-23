@@ -5,6 +5,7 @@
 #include "common/dataset.hh"
 #include "common/AnalysisDistribution.hh"
 #include "redTreeData.hh"
+#include "pvTreeData.hh"
 
 // ----------------------------------------------------------------------
 class plotStuff: public plotClass {
@@ -22,20 +23,23 @@ public :
   virtual void loadFiles(std::string afiles);
   virtual void makeAll(std::string what = "all");
 
-  // -- PV studies
+  // -- PV studies: our PV choice or best pointing angle
   void pvStudy(std::string dsname, std::string selection = "&& fl1 > 0.01", std::string fmod = "");
+  // -- Pileup studies: what happens when another PV is close
+  void puStudy(std::string dsname);
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg = "HLT");
-
+  void yieldStabilityRatios(std::string trg = "HLT");
 
   // -- code for loops
-  void   loopFunction1();
-  void   loopFunction2();
-  void   loopFunction3();
-  void   loopFunction4();
+  void setupPvTree(TTree *t);
+  void loopFunction1();
+  void loopFunction2();
+  void loopFunction3();
+  void loopFunction4();
 
-  void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
+  void loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
 
 
@@ -53,6 +57,14 @@ private:
   std::map<std::string, TH2D*> fYieldRTR, fYieldHLT;
 
   int fRefTrigger;
+
+  struct pvTreeData fpv;
+  static const int NCHAN = 5;
+  TH1D *fpHmultFar[NCHAN], *fpHmultClose02[NCHAN], *fpHmultClose05[NCHAN], *fpHmultClose10[NCHAN]
+    , *fpHdzmin[NCHAN]
+    ;
+
+  TProfile *fpPflsxy[NCHAN], *fpPfls3d[NCHAN], *fpPdfl3d[NCHAN], *fpPtau[NCHAN], *fpPdtau[NCHAN];
 
   ClassDef(plotStuff,1)
 
