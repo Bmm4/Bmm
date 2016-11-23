@@ -354,6 +354,17 @@ void candAna::candAnalysis() {
     fPvNtrk = pv->getNtracks();
     fPvNdof = pv->fNdof;
     fPvAveW8 = ((fPvNdof+2.)/2.)/fPvNtrk;
+    fPvDzmin = 99.;
+    for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
+      pVtx = fpEvt->getPV(ipv);
+      if (ipv == fpCand->fPvIdx) continue;
+      if (0 != pVtx->fStatus) continue;
+      double delta = pVtx->fPoint.Z() - fPvZ;
+      if (TMath::Abs(delta) < TMath::Abs(fPvDzmin)) {
+	fPvDzmin = delta;
+      }
+    }
+
   } else {
     fPvIdx = -99;
     fPvX = -99.;
@@ -1717,6 +1728,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("bdt",     &fBDT,               "bdt/D");
   t->Branch("npv",     &fPvN,               "npv/I");
   t->Branch("pvw8",    &fPvAveW8,           "pvw8/D");
+  t->Branch("dzmin",   &fPvDzmin,           "dzmin/D");
   t->Branch("presel",  &fPreselection,      "presel/O");
 
   // -- global cuts and weights
@@ -1875,66 +1887,6 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("t1eta",   &fMu1EtaNrf,         "t1eta/D");
   t->Branch("t2pt",    &fMu2PtNrf,          "t2pt/D");
   t->Branch("t2eta",   &fMu2EtaNrf,         "t2eta/D");
-
-  t->Branch("hm1pt",  &fHltMu1Pt,  "hm1pt/D");
-  t->Branch("hm1eta", &fHltMu1Eta, "hm1eta/D");
-  t->Branch("hm1phi", &fHltMu1Phi, "hm1phi/D");
-  t->Branch("hm2pt",  &fHltMu2Pt,  "hm2pt/D");
-  t->Branch("hm2eta", &fHltMu2Eta, "hm2eta/D");
-  t->Branch("hm2phi", &fHltMu2Phi, "hm2phi/D");
-
-
-  // -- all muon variables for Marco
-  t->Branch("m1bdt", &fMu1Data.mbdt, "m1bdt/F");
-  t->Branch("m1validMuonHits", &fMu1Data.validMuonHits, "m1validMuonHits/F");
-  t->Branch("m1glbNChi2", &fMu1Data.glbNChi2, "m1glbNChi2/F");
-
-  t->Branch("m1nMatchedStations", &fMu1Data.nMatchedStations, "m1nMatchedStations/I");
-  t->Branch("m1validPixelHits", &fMu1Data.validPixelHits, "m1validPixelHits/I");
-  t->Branch("m1validPixelHits2", &fMu1Data.validPixelHits2, "m1validPixelHits2/I");
-  t->Branch("m1trkLayerWithHits", &fMu1Data.trkLayerWithHits, "m1trkLayerWithHits/I");
-
-  t->Branch("m1trkValidFract", &fMu1Data.trkValidFract, "m1trkValidFract/F");
-  t->Branch("m1pt", &fMu1Data.pt, "m1pt/F");
-  t->Branch("m1eta", &fMu1Data.eta, "m1eta/F");
-  t->Branch("m1segComp", &fMu1Data.segComp, "m1segComp/F");
-  t->Branch("m1chi2LocMom", &fMu1Data.chi2LocMom, "m1chi2LocMom/F");
-  t->Branch("m1chi2LocPos", &fMu1Data.chi2LocPos, "m1chi2LocPos/F");
-  t->Branch("m1glbTrackProb", &fMu1Data.glbTrackProb, "m1glbTrackProb/F");
-  t->Branch("m1NTrkVHits", &fMu1Data.NTrkVHits, "m1NTrkVHits/F");
-  t->Branch("m1NTrkEHitsOut", &fMu1Data.NTrkEHitsOut, "m1NTrkEHitsOut/F");
-  t->Branch("m1kink", &fMu1Data.kink, "m1kink/F");
-  t->Branch("m1dpt", &fMu1Data.dpt, "m1dpt/F");
-  t->Branch("m1dptrel", &fMu1Data.dptrel, "m1dptrel/F");
-  t->Branch("m1deta", &fMu1Data.deta, "m1deta/F");
-  t->Branch("m1dphi", &fMu1Data.dphi, "m1dphi/F");
-  t->Branch("m1dr", &fMu1Data.dr, "m1dr/F");
-
-
-  t->Branch("m2bdt", &fMu2Data.mbdt, "m2bdt/F");
-  t->Branch("m2validMuonHits", &fMu2Data.validMuonHits, "m2validMuonHits/F");
-  t->Branch("m2glbNChi2", &fMu2Data.glbNChi2, "m2glbNChi2/F");
-
-  t->Branch("m2nMatchedStations", &fMu2Data.nMatchedStations, "m2nMatchedStations/I");
-  t->Branch("m2validPixelHits", &fMu2Data.validPixelHits, "m2validPixelHits/I");
-  t->Branch("m2validPixelHits2", &fMu2Data.validPixelHits2, "m2validPixelHits2/I");
-  t->Branch("m2trkLayerWithHits", &fMu2Data.trkLayerWithHits, "m2trkLayerWithHits/I");
-
-  t->Branch("m2trkValidFract", &fMu2Data.trkValidFract, "m2trkValidFract/F");
-  t->Branch("m2pt", &fMu2Data.pt, "m2pt/F");
-  t->Branch("m2eta", &fMu2Data.eta, "m2eta/F");
-  t->Branch("m2segComp", &fMu2Data.segComp, "m2segComp/F");
-  t->Branch("m2chi2LocMom", &fMu2Data.chi2LocMom, "m2chi2LocMom/F");
-  t->Branch("m2chi2LocPos", &fMu2Data.chi2LocPos, "m2chi2LocPos/F");
-  t->Branch("m2glbTrackProb", &fMu2Data.glbTrackProb, "m2glbTrackProb/F");
-  t->Branch("m2NTrkVHits", &fMu2Data.NTrkVHits, "m2NTrkVHits/F");
-  t->Branch("m2NTrkEHitsOut", &fMu2Data.NTrkEHitsOut, "m2NTrkEHitsOut/F");
-  t->Branch("m2kink", &fMu2Data.kink, "m2kink/F");
-  t->Branch("m2dpt", &fMu2Data.dpt, "m2dpt/F");
-  t->Branch("m2dptrel", &fMu2Data.dptrel, "m2dptrel/F");
-  t->Branch("m2deta", &fMu2Data.deta, "m2deta/F");
-  t->Branch("m2dphi", &fMu2Data.dphi, "m2dphi/F");
-  t->Branch("m2dr", &fMu2Data.dr, "m2dr/F");
 
 }
 
@@ -5508,6 +5460,7 @@ void candAna::pvStudy(bool bookHist) {
   static float a1, a2, a3; // pointing angle between
   static float gfl, fl1, fl2, fl3; // flight length
   static float fl3d, fls3d; // flight length significance from the real candidate
+  static float flxy, flsxy; // flight length significance from the real candidate
   static float gt, t1, t2, t3; // (3D) lifetime
   static float gs, s1, s2, s3; // (2D) lifetime
   static float mult1, mult2; // PV track multiplicity
@@ -5544,6 +5497,8 @@ void candAna::pvStudy(bool bookHist) {
 
     fPvStudyTree->Branch("gfl",   &gfl,   "gfl/F");
     fPvStudyTree->Branch("gt",    &gt,    "gt/F");
+    fPvStudyTree->Branch("flsxy", &flsxy, "flsxy/F");
+    fPvStudyTree->Branch("flxy",  &flxy,  "flxy/F");
     fPvStudyTree->Branch("fls3d", &fls3d, "fls3d/F");
     fPvStudyTree->Branch("fl3d",  &fl3d,  "fl3d/F");
     fPvStudyTree->Branch("fl1",   &fl1,   "fl1/F");
@@ -5601,6 +5556,9 @@ void candAna::pvStudy(bool bookHist) {
 
   fls3d = pCand->fVtx.fD3d/pCand->fVtx.fD3dE;
   fl3d  = pCand->fVtx.fD3d;
+
+  flsxy = pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
+  flxy  = pCand->fVtx.fDxy;
 
   TGenCand *pB = fpEvt->getGenCand(fGenBTmi);
   TGenCand *pM1 = fpEvt->getGenCand(fGenM1Tmi);
@@ -5663,6 +5621,10 @@ void candAna::pvStudy(bool bookHist) {
   dzmin = 99.;
   for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
     if (ipv == pCand->fPvIdx) continue;
+    if (0 != fpEvt->getPV(ipv)->fStatus) {
+      cout << "failed PV status: " << fpEvt->getPV(ipv)->fStatus << endl;
+      continue;
+    }
     double delta = fpEvt->getPV(ipv)->fPoint.Z() - p1z;
     if (TMath::Abs(delta) < TMath::Abs(dzmin)) {
       dzmin = delta;

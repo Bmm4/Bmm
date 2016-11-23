@@ -254,7 +254,7 @@ public:
   double  fMu1VtxProb, fMu2VtxProb;
   bool    fMu1OtherVtx, fMu2OtherVtx;
   double  fMu1XpDist, fMu2XpDist;
-  double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8;
+  double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8, fPvDzmin;
   int     fPvN, fPvIdx;
   double  fCandPt, fCandP, fCandTau, fCandTauE, fCandTauxy, fCandTauxyE, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
   double  fCandCosA, fCandA;
