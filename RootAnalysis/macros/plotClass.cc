@@ -295,7 +295,7 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
 
 // ----------------------------------------------------------------------
 void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool loga, bool legend, double xleg, double yleg) {
-  const bool verbose(false);
+  const bool verbose(true);
 
   showOverflow(h1);
   showOverflow(h2);

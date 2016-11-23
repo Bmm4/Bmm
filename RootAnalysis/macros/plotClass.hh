@@ -13,6 +13,7 @@
 #include "TObject.h"
 #include "TFile.h"
 #include "TDirectory.h"
+#include "TProfile.h"
 #include "TH1.h"
 #include "TH2.h"
 #include "TF1.h"
