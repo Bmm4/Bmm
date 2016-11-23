@@ -472,7 +472,10 @@ void plotReducedOverlays::loopOverTree(TTree *t, int ifunc, int nevts, int nstar
 void plotReducedOverlays::loopFunction1() {
 
   // -- modify here the fGoodHLT to accomodate the preselections in HFBmm_cff.py, but not in the truth-based MC candidates!
-  fGoodHLT        = fb.hlt1 && fb.tos && fb.m1pt>4. && fb.m2pt>4.;
+  fGoodHLT        = fb.hlt1 && fb.tos
+    && (fb.m1pt>4.) && (fb.m2pt>4.)
+    && (fb.pvips < 5.) && (fb.flsxy > 4) && (fb.maxdoca < 0.08) && (fb.chi2 < 10.)
+    ;
 
   if (fMode == BU2JPSIKP) {
     fGoodHLT = fGoodHLT && fb.kpt > 0.6;
