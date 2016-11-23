@@ -100,3 +100,25 @@ void Lumi::print() {
   }
 
 }
+
+
+// ----------------------------------------------------------------------
+int Lumi::firstRun() {
+  int minRun(9999999);
+  map<int, double>::iterator it = fMapRunLumi.begin();
+  for (; it != fMapRunLumi.end(); ++it) {
+    if (it->first < minRun) minRun = it->first;
+  }
+  return minRun;
+}
+
+
+// ----------------------------------------------------------------------
+int Lumi::lastRun() {
+  int maxRun(-1);
+  map<int, double>::iterator it = fMapRunLumi.begin();
+  for (; it != fMapRunLumi.end(); ++it) {
+    if (it->first > maxRun) maxRun = it->first;
+  }
+  return maxRun;
+}

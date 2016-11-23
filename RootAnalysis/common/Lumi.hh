@@ -23,19 +23,16 @@ public:
   Lumi(std::string fname, int verbose = 1);
   ~Lumi();
 
-  void parse(std::string fname);
+  void   parse(std::string fname);
 
-  void print();
+  void   print();
   double lumi(int run);
   double totalLumi(int run1 = 1, int run2 = 0);
-  bool contains(int run);
+  bool   contains(int run);
+  int    firstRun();
+  int    lastRun();
 
 private:
-
-  // std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems);
-  // std::vector<std::string> split(const std::string &s, char delim);
-
-
   std::map<int, double> fMapRunLumi;
   std::string           fNormtag;
   int fVerbose;
