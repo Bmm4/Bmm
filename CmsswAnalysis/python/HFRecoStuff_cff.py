@@ -21,8 +21,8 @@ trkDump = cms.EDAnalyzer(
     primaryVertexCollectionLabel   = cms.untracked.InputTag('offlinePrimaryVertices'),
     muonsLabel                     = cms.untracked.InputTag("muons"),
     doTruthMatching                = cms.untracked.int32(3),
-    dumpSimpleTracks               = cms.untracked.bool(True), 
-    dumpRecTracks                  = cms.untracked.bool(False), 
+    dumpSimpleTracks               = cms.untracked.bool(True),
+    dumpRecTracks                  = cms.untracked.bool(False),
     type                           = cms.untracked.int32(0)
 )
 
@@ -39,15 +39,15 @@ muonDump = cms.EDAnalyzer(
     keepBest                       = cms.untracked.int32(3),
     maxCandTracks                  = cms.untracked.int32(3),
     type                           = cms.untracked.int32(0),
-    # Configuration for the extrapolation at the muon system 
+    # Configuration for the extrapolation at the muon system
     propM1 = cms.PSet(
-        useStation2 = cms.bool(False), 
+        useStation2 = cms.bool(False),
         useTrack = cms.string("tracker"),
         useState = cms.string("atVertex"),  # in AOD; this is for matching to other tracks?
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
     ),
     propM2 = cms.PSet(
-        useStation2 = cms.bool(True), 
+        useStation2 = cms.bool(True),
         useTrack = cms.string("tracker"),
         useState = cms.string("outermost"), # in AOD; this is for matching to the L1 muon!
         useSimpleGeometry = cms.bool(True), # use just one cylinder and two planes, not all the fancy chambers
@@ -66,20 +66,20 @@ muonDump = cms.EDAnalyzer(
         useState = cms.string("outermost"),
         useSimpleGeometry = cms.bool(True)
         ),
-    weightFileBarrel               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-B-00.weights.xml"),
-    weightFileEndcap               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-E-00.weights.xml"),
+    weightFileBarrel               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-B-10.weights.xml"),
+    weightFileEndcap               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-E-10.weights.xml"),
 )
 
 # ----------------------------------------------------------------------
 triggerDump = cms.EDAnalyzer(
     "HFDumpTrigger",
     verbose                 = cms.untracked.int32(0),
-    HLTProcessName          = cms.untracked.string('HLT'), 
-    L1GTReadoutRecordLabel  = cms.untracked.InputTag("gtDigis"), 
-    hltL1GtObjectMap        = cms.untracked.InputTag("hltL1GtObjectMap"), 
-    L1MuonsLabel            = cms.untracked.InputTag("hltL1extraParticles"), 
-    HLTResultsLabel         = cms.untracked.InputTag("TriggerResults::HLT"), 
-    TriggerEventLabel       = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"), 
+    HLTProcessName          = cms.untracked.string('HLT'),
+    L1GTReadoutRecordLabel  = cms.untracked.InputTag("gtDigis"),
+    hltL1GtObjectMap        = cms.untracked.InputTag("hltL1GtObjectMap"),
+    L1MuonsLabel            = cms.untracked.InputTag("hltL1extraParticles"),
+    HLTResultsLabel         = cms.untracked.InputTag("TriggerResults::HLT"),
+    TriggerEventLabel       = cms.untracked.InputTag("hltTriggerSummaryAOD::HLT"),
     )
 
 
@@ -103,4 +103,3 @@ l1trep = cms.EDAnalyzer(
 #recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump*hltrep*l1trep)
 #recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump)
 recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump)
-
