@@ -134,6 +134,10 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm4 -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm5 -s $version -n 50 -l;  \ \n";
 
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToPiMuNuAcc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToKMuNuAcc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LambdaBToPK -s $version -n 50 -l;  \ \n";
+
 
 # -- 2015 official MC
 $dataset = "RunIIFall15DR76";
@@ -143,33 +147,40 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIIFall15DR76-XXX
 # -- 2016 official MC
 $dataset = "RunIISpring16DR80";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToMuMu_BMuonFilter -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToMuMu -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BuToJpsiK_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BuToJpsiK -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToJpsiPhi_BMuonFilter -s $version -e 20000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToJpsiPhi -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKPi -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKK_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKK -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKMuMu_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToPiPi_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPMuNu -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPPi_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToMuMu_BMuonFilter -s $version -e 30000;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPK_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPK -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu_BMuonFilter -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu_m5p1_BMuonFilter -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu_m5p7_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToMuMu_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToPiPi_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKPi_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKK_BMuonFilter -s $version -e 30000;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/B2JpsiCocktail -s $version -n 1 -l ;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKPi_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BuToJpsiK -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BuToJpsiK_BMuonFilter -s $version -e 30000;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToJpsiPhi -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToJpsiPhi_BMuonFilter -s $version -e 20000;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKMuMu_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKK -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKK_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToKPi_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BsToPiPi_BMuonFilter -s $version -e 30000;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPMuNu -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPMuNu_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPK -s $version -e 30000;  \ \n";
+#this is wrong: $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPK_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/LambdaBToPPi_BMuonFilter -s $version -e 30000;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToPiMuNu_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKPi -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKPi_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToPiPi_BMuonFilter -s $version -e 30000;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKK_BMuonFilter -s $version -e 30000;  \ \n";
+
+#$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/B2JpsiCocktail -s $version -n 1 -l ;  \ \n";
+
 
 
 # -- relval MC
