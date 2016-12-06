@@ -211,6 +211,31 @@ void plotClass::changeSetup(string dir, string name, string setup) {
 
 
 // ----------------------------------------------------------------------
+void plotClass::setup(string ds) {
+  fSetup   = ds;
+  string dir = "candAnaMuMu";
+  fMode = BMM;
+  if (string::npos != ds.find("bupsik")) {
+    fMode = BU2JPSIKP;
+    dir = "candAnaBu2JpsiK";
+  } else if (string::npos != ds.find("bspsiphi")) {
+    dir = "candAnaBs2JpsiPhi";
+    fMode = BS2JPSIPHI;
+  } else if (string::npos != ds.find("bdpsikstar")) {
+    dir = "candAnaBd2JpsiKstar";
+    fMode = BD2JPSIKSTAR;
+  } else if (string::npos != ds.find("bsmm")) {
+    dir = "candAnaMuMu";
+    fMode = BSMM;
+  } else if (string::npos != ds.find("bdmm")) {
+    dir = "candAnaMuMu";
+    fMode = BDMM;
+  }
+
+  fTreeDir = dir;
+}
+
+// ----------------------------------------------------------------------
 void plotClass::init() {
 }
 
@@ -661,7 +686,7 @@ void plotClass::setupTree(TTree *t, string mode) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::candAnalysis(/*int mode*/) {
+void plotClass::candAnalysis() {
 
   cuts *pCuts(0);
   fChan = detChan(fb.m1eta, fb.m2eta);
@@ -679,7 +704,9 @@ void plotClass::candAnalysis(/*int mode*/) {
   pCuts = fCuts[fChan];
 
   bool bp2jpsikp(false), bs2jpsiphi(false);
-  if (BU2JPSIKP == fMode)  bp2jpsikp = true;
+  if (BU2JPSIKP == fMode)  {
+    bp2jpsikp = true;
+  }
   if (BS2JPSIPHI == fMode)  bs2jpsiphi = true;
 
   // -- reset all
@@ -719,7 +746,12 @@ void plotClass::candAnalysis(/*int mode*/) {
 
   if (fb.m1pt < fAccPt) fGoodAcceptance = false;
   if (fb.m2pt < fAccPt) fGoodAcceptance = false;
-  if (0 == fb.m1gt)  fGoodAcceptance = false;
+  if (0 == fb.m1gt)  {
+    //    cout << "failed good track cut" << endl;
+    fGoodAcceptance = false;
+  } else {
+    //    cout << "passed good track cut" << endl;
+  }
   if (0 == fb.m2gt)  fGoodAcceptance = false;
 
   if (fb.m1pt < pCuts->m1pt) {
@@ -745,7 +777,7 @@ void plotClass::candAnalysis(/*int mode*/) {
       if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false;
       if (fb.g3pt < 0.4) fGoodAcceptance = false;
     }
-    if (TMath::Abs(fb.k1eta) > 2.4) {
+    if (TMath::Abs(fb.keta) > 2.4) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
@@ -753,7 +785,7 @@ void plotClass::candAnalysis(/*int mode*/) {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
-    if (0 == fb.k1gt)  fGoodAcceptance = false;
+    if (0 == fb.kgt)  fGoodAcceptance = false;
   }
 
   if (bs2jpsiphi) {
@@ -936,7 +968,6 @@ void plotClass::candAnalysis(/*int mode*/) {
   fGoodDocaTrk      = (fb.docatrk > pCuts->docatrk);
   fGoodLastCut      = true;
 
-  //FIXME  fGoodBDT        = (fBDT > pCuts->bdtMin);
   fGoodBDT        = true;
   //FIXME  fGoodHLT        = fb.hlt &&fb.hltm;
   fGoodHLT        = fb.hlt;
@@ -2238,6 +2269,23 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("bg")) sname += "Bg";
         sdecay = "B_{d} #rightarrow #it{#pi#pi}";
         ldecay = "\\bdpipi";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bdpimunu,")) {
+        sname = "bdpimunuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{d} #rightarrow #it{#pi#mu#nu}";
+        ldecay = "\\bdpimunu";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;

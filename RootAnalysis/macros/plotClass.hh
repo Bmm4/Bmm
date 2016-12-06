@@ -65,12 +65,13 @@ public :
 	    std::string setup = "m");
   virtual        ~plotClass();
 
-  enum MODE {UNSET, BMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
+  enum MODE {UNSET, BMM, BDMM, BSMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
 
   // -- stuff to run over the tree from any derived class
+  virtual void   setup(std::string ds);
   TTree*         getTree(std::string ds, std::string dir = "", std::string tree = "events");
   virtual void   setupTree(TTree *t, std::string mode = "");
-  virtual void   candAnalysis(/*int mode*/);
+  virtual void   candAnalysis();
   virtual void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
   virtual void   loopFunction1();
   virtual void   loopFunction2();
@@ -197,7 +198,7 @@ public :
   int    fVerbose;
   double fEpsilon;
 
-  std::string fDirectory, fSetup, fSuffix, fSample, fNumbersFileName;
+  std::string fDirectory, fSetup, fSuffix, fSample, fNumbersFileName, fTreeDir;
 
   // -- datasets (files and associated information)
   std::map<std::string, dataset*> fDS;
