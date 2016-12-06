@@ -44,7 +44,107 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
 
   printCuts(cout);
 
+  fMassLo = 4.5;
+  fMassHi = 6.5;
+
+  fNoLo = 5.10;
+  fNoHi = 5.40;
+
+  fCsLo = 5.27;
+  fCsHi = 5.47;
+
+  fBgLo = 4.9;
+  fBgHi = 5.9;
+
+  fSgLo = 5.20;
+  fSgHi = 5.45;
+
+
   fChan = 0;
+
+  TH2D *h2(0);
+  TH1D *h(0);
+  for (int i = 0; i < fNchan; ++i) {
+    h2 = new TH2D(Form("hAccAll%d", i), Form("hAccAll%d", i), 25, 0., 2.5, 25, 0., 50.);
+    fhAccAll.push_back(h2);
+    h2 = new TH2D(Form("hAccPass%d", i), Form("hAccPass%d", i), 25, 0., 2.5, 25, 0., 50.);
+    fhAccPass.push_back(h2);
+
+    h = new TH1D(Form("hAccPtAll%d", i), Form("hAccPtAll%d", i), 25, 0., 50.);
+    fhAccPtAll.push_back(h);
+    h = new TH1D(Form("hAccPtPass%d", i), Form("hAccPtPass%d", i), 25, 0., 50.);
+    fhAccPtPass.push_back(h);
+
+    h = new TH1D(Form("hAccEtaAll%d", i), Form("hAccEtaAll%d", i), 25, 0., 2.5);
+    fhAccEtaAll.push_back(h);
+    h = new TH1D(Form("hAccEtaPass%d", i), Form("hAccEtaPass%d", i), 25, 0., 2.5);
+    fhAccEtaPass.push_back(h);
+
+    h = new TH1D(Form("hGenAndAccNumbers%d", i), Form("hGenAndAccNumbers%d", i), 100, 0., 100.);
+    fhGenAndAccNumbers.push_back(h);
+
+    h = new TH1D(Form("hMassAbsNoCuts%d", i), Form("hMassAbsNoCuts%d", i), 100, 0, 10);
+    fhMassAbsNoCuts.push_back(h);
+
+    h = new TH1D(Form("hMassNoCuts%d", i), Form("hMassNoCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhMassNoCuts.push_back(h);
+
+    h = new TH1D(Form("fhMassWithAnaCuts%d", i), Form("hMassChan%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithAnaCuts.push_back(h);
+
+    h = new TH1D(Form("hMassWithMuonCuts%d", i), Form("hMassWithMuonCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithMuonCuts.push_back(h);
+
+    h = new TH1D(Form("hMassWithTriggerCuts%d", i), Form("hMassWithTriggerCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithTriggerCuts.push_back(h);
+
+    h = new TH1D(Form("hMassWithAllCuts%d", i), Form("hMassWithAllCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithAllCuts.push_back(h);
+
+    h = new TH1D(Form("hMassWithAllCutsBlind%d", i), Form("hMassWithAllCutsBlind%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithAllCutsBlind.push_back(h);
+
+    h = new TH1D(Form("hW8MassWithAllCuts%d", i), Form("hW8MassWithAllCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhW8MassWithAllCuts.push_back(h);
+
+    h = new TH1D(Form("hW8MassWithAllCutsBlind%d", i), Form("hW8MassWithAllCutsBlind%d", i), NBINS, fMassLo, fMassHi);
+    fhW8MassWithAllCutsBlind.push_back(h);
+
+    h = new TH1D(Form("hMassWithMassCuts%d", i), Form("hW8MassWithMassCuts%d", i), NBINS, fMassLo, fMassHi);
+    fhMassWithMassCuts.push_back(h);
+
+    h = new TH1D(Form("hNo%d", i), Form("hNo%d", i), 100, 4.9, 5.9);
+    fhNo.push_back(h);
+
+    h = new TH1D(Form("hNoC%d", i), Form("hNoC%d", i), 200, 4.9, 5.9);
+    fhNoC.push_back(h);
+
+    h = new TH1D(Form("hCs%d", i), Form("hCs%d", i), 100, 4.9, 5.9);
+    fhCs.push_back(h);
+
+    h = new TH1D(Form("hCsC%d", i), Form("hCsC%d", i), 200, 4.9, 5.9);
+    fhCsC.push_back(h);
+
+    h = new TH1D(Form("hB0%d", i), Form("hB0%d", i), 100, 4.9, 5.9);
+    fhB0.push_back(h);
+
+    h = new TH1D(Form("hB0C%d", i), Form("hB0C%d", i), 200, 4.9, 5.9);
+    fhB0C.push_back(h);
+
+  }
+
+  if (1) {
+    int year(fYear);
+    year = 2012;
+    fptFakePosKaons     = new PidTable(Form("../common/pidtables/%d-kaonPosFakeRate-mvaMuon.dat", year));
+    fptFakeNegKaons     = new PidTable(Form("../common/pidtables/%d-kaonNegFakeRate-mvaMuon.dat", year));
+
+    fptFakePosPions     = new PidTable(Form("../common/pidtables/%d-pionPosFakeRate-mvaMuon.dat", year));
+    fptFakeNegPions     = new PidTable(Form("../common/pidtables/%d-pionNegFakeRate-mvaMuon.dat", year));
+
+    fptFakePosProtons   = new PidTable(Form("../common/pidtables/%d-protonPosFakeRate-mvaMuon.dat", year));
+    fptFakeNegProtons   = new PidTable(Form("../common/pidtables/%d-protonNegFakeRate-mvaMuon.dat", year));
+  }
 
 }
 
@@ -105,6 +205,12 @@ void plotResults::makeAll(string what) {
     }
 
   }
+
+  // -- this will recreate fHistFile!
+  if (what == "dbx") {
+    fillAndSaveHistograms(100000);
+  }
+
 
 
 }
@@ -326,9 +432,191 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
 
 
 
+// ----------------------------------------------------------------------
+void plotResults::fillAndSaveHistograms(int nevents) {
+  // -- dump histograms
+  fHistFile = TFile::Open(fHistFileName.c_str(), "RECREATE");
+  cout << " opened, running on " << nevents << " entries" << endl;
+
+  TTree *t(0);
+
+
+  // -- rare backgrounds
+  if (1) {
+    resetHistograms();
+    //    rareBgHists("nada", nevents);
+  }
+
+  // -- normalization
+  if (1) {
+    resetHistograms();
+    setup("bupsikData");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    fSetup = "bupsikMcOff";
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    //    otherNumbers(fSetup);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    setup("bspsiphiData");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    fSetup = "bspsiphiMcOff";
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    //    otherNumbers(fSetup);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    setup("bmmData");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    setup("bdmmMcOff");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    saveHistograms(fSetup);
+
+    resetHistograms();
+    setup("bsmmMcOff");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, nevents);
+    saveHistograms(fSetup);
+
+  }
+
+  fHistFile->Close();
+}
+
+
+
+
+
 
 // ----------------------------------------------------------------------
 void plotResults::loopFunction1() {
+
+  if (fChan < 0) return;
+
+  double mass = fb.m;
+
+  fhMassAbsNoCuts[fChan]->Fill(mass);
+  fhAccAll[fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
+  fhAccPtAll[fChan]->Fill(fb.pt);
+  fhAccEtaAll[fChan]->Fill(TMath::Abs(fb.eta));
+
+  if (!fGoodAcceptance) return;
+  fhAccPass[fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
+  fhAccPtPass[fChan]->Fill(fb.pt);
+  fhAccEtaPass[fChan]->Fill(TMath::Abs(fb.eta));
+
+  // -- this is the base, after the raw acceptance cuts
+  fhMassNoCuts[fChan]->Fill(mass);
+
+  if (fDoUseBDT) {
+    if (!fGoodQ) return;
+    if (!fGoodPvAveW8) return;
+    if (!fGoodTracks) return;
+    if (!fGoodTracksPt) return;
+    if (!fGoodTracksEta) return;
+    if (!fGoodBdtPt) return;
+    if (!fGoodMuonsEta) return;
+    if (!fGoodJpsiCuts) return;
+    cout << "confusione assoluta" << endl;
+  } else {
+    if (!fGoodQ) return;
+    if (!fGoodMuonsPt) return;
+    if (!fGoodMuonsEta) return;
+    if (!fGoodJpsiCuts) return;
+    if (!fGoodPvAveW8) return;
+    if (!fGoodMaxDoca) return;
+    if (!fGoodLip) return;
+    if (!fGoodLipS) return;
+    if (!fGoodIp) return;
+    if (!fGoodIpS) return;
+    if (!fGoodPt) return;
+    if (!fGoodEta) return;
+    if (!fGoodAlpha) return;
+    if (!fGoodChi2) return;
+    if (!fGoodFLS) return;
+    if (!fGoodCloseTrack) return;
+    if (!fGoodIso) return;
+    if (!fGoodDocaTrk) return;
+  }
+
+  fhMassWithAnaCuts[fChan]->Fill(mass);
+
+  // -- weighted with fake rate
+  fhW8MassWithAllCuts[fChan]->Fill(mass, fW8MisId);
+
+  // -- blind version
+  if (BMM == fMode && !(5.2 < mass && mass < 5.45)) {
+    fhW8MassWithAllCutsBlind[fChan]->Fill(mass, fW8MisId);
+  }
+
+  // -- MUON ID
+  if (false == fGoodMuonsID) return;
+  fhMassWithMuonCuts[fChan]->Fill(mass);
+
+  // -- Trigger
+  if (false == fGoodHLT) return;
+  fhMassWithTriggerCuts[fChan]->Fill(mass);
+
+  fhMassWithAllCuts[fChan]->Fill(mass);
+  if (BMM == fMode && !(5.2 < mass && mass < 5.45)) {
+    fhMassWithAllCutsBlind[fChan]->Fill(mass);
+  }
+
+  if (fMode == BU2JPSIKP) {
+    fhNo[fChan]->Fill(mass);
+    fhNoC[fChan]->Fill(fb.cm);
+  }
+
+  if (fMode == BS2JPSIPHI) {
+    fhCs[fChan]->Fill(mass);
+    fhCsC[fChan]->Fill(fb.cm);
+  }
+
+  if (fMode == BD2JPSIKSTAR) {
+    fhB0[fChan]->Fill(mass);
+    fhB0C[fChan]->Fill(fb.cm);
+  }
+
+
+  if (fMode == BSMM && mass < fCuts[fChan]->mBsLo) return;
+  if (fMode == BSMM && mass > fCuts[fChan]->mBsHi) return;
+  if (fMode == BDMM && mass < fCuts[fChan]->mBdLo) return;
+  if (fMode == BDMM && mass > fCuts[fChan]->mBdHi) return;
+  if (fMode == BU2JPSIKP && mass < fNoLo) return;
+  if (fMode == BU2JPSIKP && mass > fNoHi) return;
+  if (fMode == BS2JPSIPHI && mass < fCsLo) return;
+  if (fMode == BS2JPSIPHI && mass > fCsHi) return;
+  if (fMode == BD2JPSIKSTAR && mass < fNoLo) return;
+  if (fMode == BD2JPSIKSTAR && mass > fNoHi) return;
+
+  fhMassWithMassCuts[fChan]->Fill(mass);
+
+
+
+
+
 
 }
 
@@ -511,4 +799,188 @@ void plotResults::loadFiles(string afiles) {
     ++cnt;
   }
   cout << "----------------------------------------------------------------------------------------------------------------------------------------" << endl;
+}
+
+
+// ----------------------------------------------------------------------
+void plotResults::saveHistograms(string smode) {
+
+  fHistFile->cd();
+  fHistFile->mkdir(fSetup.c_str());
+  fHistFile->cd(fSetup.c_str());
+  TDirectory *dir = gDirectory;
+
+  // int mode(0);
+  // if (string::npos != smode.find("bsmmMc"))          mode = 0;
+  // if (string::npos != smode.find("bdmmMc"))          mode = 1;
+  // if (string::npos != smode.find("bsmmMcOffAcc"))    mode = 2;
+
+  // if (string::npos != smode.find("bmmData"))         mode = 5;
+  // if (string::npos != smode.find("SgDataAMS"))       mode = 6;
+
+  // if (string::npos != smode.find("bupsikMc"))        mode = 10;
+  // if (string::npos != smode.find("bupsikData"))      mode = 15;
+
+  // if (string::npos != smode.find("bspsiphiMc"))      mode = 20;
+  // if (string::npos != smode.find("bspsiphiData"))    mode = 25;
+
+  TH1D *h1(0);
+  TH2D *h2(0);
+
+  for (unsigned int i = 0; i < fNchan; ++i) {
+    string modifier = "cnc";
+    h1 = (TH1D*)(fhGenAndAccNumbers[i]->Clone(Form("hGenAndAccNumbers_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h2 = (TH2D*)(fhAccAll[i]->Clone(Form("hAccAll_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h2->SetDirectory(dir);
+    h2->Write();
+    h2 = (TH2D*)(fhAccPass[i]->Clone(Form("hAccPass_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h2->SetDirectory(dir);
+    h2->Write();
+
+    h1 = (TH1D*)(fhAccEtaAll[i]->Clone(Form("hAccEtaAll_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetDirectory(dir);
+    h1->Write();
+    h1 = (TH1D*)(fhAccEtaPass[i]->Clone(Form("hAccEtaPass_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhAccPtAll[i]->Clone(Form("hAccPtAll_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetDirectory(dir);
+    h1->Write();
+    h1 = (TH1D*)(fhAccPtPass[i]->Clone(Form("hAccPtPass_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassAbsNoCuts[i]->Clone(Form("hMassAbsNoCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassAbsNoCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassNoCuts[i]->Clone(Form("hMassNoCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassNoCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithAnaCuts[i]->Clone(Form("hMassWithAnaCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithAnaCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithMuonCuts[i]->Clone(Form("hMassWithMuonCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithMuonCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithTriggerCuts[i]->Clone(Form("hMassWithTriggerCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithTriggerCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithAllCuts[i]->Clone(Form("hMassWithAllCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithAllCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithMassCuts[i]->Clone(Form("hMassWithMassCuts_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithMassCuts_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+    h1 = (TH1D*)(fhMassWithMassCuts[i]->Clone(Form("hMassWithAllCutsBlind_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+    h1->SetTitle(Form("hMassWithAllCutsBlind_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+
+
+    if (string::npos != fSetup.find("bupsik")) {
+      h1 = (TH1D*)(fhNo[i]->Clone(Form("hNo_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hNo_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhNoC[i]->Clone(Form("hNoC_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hNoC_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+    }
+
+    if (string::npos != fSetup.find("bspsiphi")) {
+      h1 = (TH1D*)(fhCs[i]->Clone(Form("hCs_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hCs_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhCsC[i]->Clone(Form("hCsC_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hCsC_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+    }
+
+    if (string::npos != fSetup.find("bdpsikstar")) {
+      h1 = (TH1D*)(fhB0[i]->Clone(Form("hB0_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hB0_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhB0C[i]->Clone(Form("hB0C_%s_%s_chan%d", modifier.c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hB0C_%s_%s_chan%d %s", modifier.c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+    }
+
+
+
+  }
+
+
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotResults::resetHistograms() {
+
+  for (unsigned int i = 0; i < fNchan; ++i) {
+    fhGenAndAccNumbers[i]->Reset();
+
+    fhMassAbsNoCuts[i]->Reset();
+    fhMassNoCuts[i]->Reset();
+
+    fhMassWithAnaCuts[i]->Reset();
+
+    fhMassWithMuonCuts[i]->Reset();
+
+    fhMassWithTriggerCuts[i]->Reset();
+
+    fhMassWithAllCuts[i]->Reset();
+    fhMassWithAllCutsBlind[i]->Reset();
+
+    fhW8MassWithAllCuts[i]->Reset();
+    fhW8MassWithAllCutsBlind[i]->Reset();
+
+    fhMassWithMassCuts[i]->Reset();
+
+    fhNo[i]->Reset();
+    fhNoC[i]->Reset();
+    fhCs[i]->Reset();
+    fhCsC[i]->Reset();
+    fhB0[i]->Reset();
+    fhB0C[i]->Reset();
+
+    fhAccAll[i]->Reset();
+    fhAccPass[i]->Reset();
+    fhAccPtAll[i]->Reset();
+    fhAccPtPass[i]->Reset();
+    fhAccEtaAll[i]->Reset();
+    fhAccEtaPass[i]->Reset();
+
+
+
+  }
+
 }

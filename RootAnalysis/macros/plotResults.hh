@@ -25,6 +25,12 @@ public :
   void dumpDatasets();
   void genSummary(std::string dsname, std::string dir);
 
+  // -- main results
+  void fillAndSaveHistograms(int nevents = -1);
+  void saveHistograms(std::string smode);
+  void resetHistograms();
+
+
   // -- code for loops
   void   loopFunction1();
   void   loopFunction2();
@@ -34,6 +40,33 @@ public :
 
 private:
 
+  static const int NBINS = 100;
+  double fMassLo, fMassHi
+    , fBgLo, fBgHi
+    , fSgLo, fSgHi
+    , fNoLo, fNoHi
+    , fCsLo, fCsHi
+    ;
+
+  std::vector<TH2D*> fhAccAll, fhAccPass;
+  std::vector<TH1D*> fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
+
+  std::vector<TH1D*> fhGenAndAccNumbers;
+  std::vector<TH1D*> fhMassAbsNoCuts;
+  std::vector<TH1D*> fhMassNoCuts;
+  std::vector<TH1D*> fhMassWithAnaCuts;
+  std::vector<TH1D*> fhMassWithMuonCuts;
+  std::vector<TH1D*> fhMassWithTriggerCuts;
+  std::vector<TH1D*> fhMassWithAllCuts;
+  std::vector<TH1D*> fhMassWithAllCutsBlind;
+
+  std::vector<TH1D*> fhW8MassWithAllCuts;
+  std::vector<TH1D*> fhW8MassWithAllCutsBlind;
+
+  std::vector<TH1D*> fhMassWithMassCuts;
+  std::vector<TH1D*> fhNo, fhNoC;
+  std::vector<TH1D*> fhCs, fhCsC;
+  std::vector<TH1D*> fhB0, fhB0C;
 
   // ----------------------------------------------------------------------
   ClassDef(plotResults,1)
