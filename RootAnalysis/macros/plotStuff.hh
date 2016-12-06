@@ -60,11 +60,15 @@ private:
 
   struct pvTreeData fpv;
   static const int NCHAN = 5;
-  TH1D *fpHmultFar[NCHAN], *fpHmultClose02[NCHAN], *fpHmultClose05[NCHAN], *fpHmultClose10[NCHAN]
+  TH1D *fpHmultFar[NCHAN], *fpHmultClose05[NCHAN]
     , *fpHdzmin[NCHAN]
+    , *fpHmultFar2[NCHAN], *fpHmultClose2[NCHAN]
+    , *fpHlz1[NCHAN]
+    , *fpHlz2[NCHAN]
     ;
 
-  TProfile *fpPflsxy[NCHAN], *fpPfls3d[NCHAN], *fpPdfl3d[NCHAN], *fpPtau[NCHAN], *fpPdtau[NCHAN];
+  TProfile *fpP1flsxy[NCHAN], *fpP1fls3d[NCHAN], *fpP1dfl3d[NCHAN], *fpP1tau[NCHAN], *fpP1dtau[NCHAN];
+  TProfile *fpP2flsxy[NCHAN], *fpP2fls3d[NCHAN], *fpP2dfl3d[NCHAN], *fpP2tau[NCHAN], *fpP2dtau[NCHAN];
 
   ClassDef(plotStuff,1)
 

@@ -108,57 +108,88 @@ void plotStuff::bookHist(string dsname) {
 // ----------------------------------------------------------------------
 void plotStuff::puStudy(string dsname) {
 
+  // -- book histograms and profiles
   for (int i = 0; i < NCHAN; ++i) {
     fpHmultFar[i]   = new TH1D(Form("pvmultfar_chan%d", i), "PV multiplicity dzmin > 2 cm", 40, 0., 120.);
     setFilledHist(fpHmultFar[i], kBlue, kBlue, 3354);
     setTitles(fpHmultFar[i], "PV track multiplicity", "a.u.", 0.05, 1.1, 1.8);
 
-    fpHmultClose02[i] = new TH1D(Form("pvmultclose02_chan%d", i), "PV multiplicity dzmin < 0.02 cm", 40, 0., 120.);
-    setFilledHist(fpHmultClose02[i], kRed, kRed, 3359);
-
     fpHmultClose05[i] = new TH1D(Form("pvmultclose05_chan%d", i), "PV multiplicity dzmin < 0.05 cm", 40, 0., 120.);
     setFilledHist(fpHmultClose05[i], kGreen+2, kGreen+2, 3365);
 
-    fpHmultClose10[i] = new TH1D(Form("pvmultclose10_chan%d", i), "PV multiplicity dzmin < 0.10 cm", 40, 0., 120.);
-    setFilledHist(fpHmultClose10[i], kMagenta+2, kMagenta+2, 3369);
+    fpHmultFar2[i]  = new TH1D(Form("pvmultfar2_chan%d", i), "PV multiplicity | l_{z}^{2} | > 1 cm", 40, 0., 120.);
+    setFilledHist(fpHmultFar2[i], kBlue, kBlue, 3354);
+    setTitles(fpHmultFar2[i], "PV track multiplicity", "a.u.", 0.05, 1.1, 1.8);
+    fpHmultClose2[i] = new TH1D(Form("pvmultclose2_chan%d", i), "PV multiplicity  | l_{z}^{2} | < 0.05 cm", 40, 0., 120.);
+    setFilledHist(fpHmultClose2[i], kGreen+2, kGreen+2, 3365);
+
 
     fpHdzmin[i] = new TH1D(Form("dzmin_chan%d", i), "dzmin", 100, 0., 1.0);
     setFilledHist(fpHdzmin[i], kBlue, kYellow, 1000);
     setTitles(fpHdzmin[i], "minimum |#Delta z|", "a.u.", 0.05, 1.1, 1.8);
 
-    fpPflsxy[i] = new TProfile(Form("flsxy_chan%d", i), "flsxy", 100, 0., 2.0, 0., 120., "");
-    fpPflsxy[i]->SetMinimum(10.);     fpPflsxy[i]->SetMaximum(20.);
-    setTitles(fpPflsxy[i], "minimum |#Delta z|", "mean flsxy", 0.05, 1.1, 1.8, 0.04);
-    fpPfls3d[i] = new TProfile(Form("fls3d_chan%d", i), "fls3d", 100, 0., 2.0, 0., 120., "");
-    setTitles(fpPfls3d[i], "minimum |#Delta z|", "mean fls3d", 0.05, 1.1, 1.8, 0.04);
-    fpPfls3d[i]->SetMinimum(10.);     fpPfls3d[i]->SetMaximum(20.);
+    fpHlz1[i] = new TH1D(Form("lz1_chan%d", i), "lz1", 100, 0., 0.2);
+    setTitles(fpHlz1[i], "| l_{z}^{(1)} | cm", "a.u.", 0.05, 1.1, 1.8);
 
-    fpPdfl3d[i] = new TProfile(Form("dfl3d_chan%d", i), "dfl3d", 100, 0., 2.0, 0., 50., "");
-    setTitles(fpPdfl3d[i], "minimum |#Delta z|", "mean #Delta fl3d", 0.05, 1.1, 1.8, 0.04);
+    fpHlz2[i] = new TH1D(Form("lz2_chan%d", i), "lz2", 100, 0., 0.2);
+    setTitles(fpHlz2[i], "| l_{z}^{(2)} | cm", "a.u.", 0.05, 1.1, 1.8);
 
-    fpPtau[i] = new TProfile(Form("tau_chand%d", i), "tau", 100, 0., 2.0, -1.e-10, 1.e-10, "");
-    setTitles(fpPtau[i], "minimum |#Delta z|", "mean #tau_{eff} ", 0.05, 1.1, 1.8, 0.04);
-    fpPdtau[i] = new TProfile(Form("dtau_chan%d", i), "dtau", 100, 0., 2.0, -1.e-10, 1.e-10, "");
-    setTitles(fpPdtau[i], "minimum |#Delta z|", "mean #Delta#tau_{eff}", 0.05, 1.1, 1.8, 0.04);
+    // -- vs dzmin
+    fpP1flsxy[i] = new TProfile(Form("p1flsxy_chan%d", i), "flsxy", 100, 0., 2.0, 0., 120., "");
+    fpP1flsxy[i]->SetMinimum(10.);     fpP1flsxy[i]->SetMaximum(30.);
+    setTitles(fpP1flsxy[i], "minimum |#Delta z| cm", "mean flsxy", 0.05, 1.1, 1.8, 0.04);
+    fpP1fls3d[i] = new TProfile(Form("p1fls3d_chan%d", i), "fls3d", 100, 0., 2.0, 0., 120., "");
+    setTitles(fpP1fls3d[i], "minimum |#Delta z| cm", "mean fls3d", 0.05, 1.1, 1.8, 0.04);
+    fpP1fls3d[i]->SetMinimum(10.);     fpP1fls3d[i]->SetMaximum(30.);
+
+    fpP1dfl3d[i] = new TProfile(Form("p1dfl3d_chan%d", i), "dfl3d", 100, 0., 2.0, 0., 50., "");
+    fpP1dfl3d[i]->SetMinimum(-0.02); fpP1dfl3d[i]->SetMaximum(0.02);
+    setTitles(fpP1dfl3d[i], "minimum |#Delta z| cm", "mean #Delta fl3d", 0.05, 1.1, 1.8, 0.04);
+
+    fpP1tau[i] = new TProfile(Form("p1tau_chand%d", i), "tau", 100, 0., 2.0, -1.e-10, 1.e-10, "");
+    setTitles(fpP1tau[i], "minimum |#Delta z| cm", "mean #tau_{eff} ", 0.05, 1.1, 1.8, 0.04);
+    fpP1dtau[i] = new TProfile(Form("p1dtau_chan%d", i), "dtau", 100, 0., 2.0, -1.e-10, 1.e-10, "");
+    fpP1dtau[i]->SetMinimum(-0.2e-12); fpP1dtau[i]->SetMaximum(+0.2e-12);
+    setTitles(fpP1dtau[i], "minimum |#Delta z| cm", "mean #Delta#tau_{eff}", 0.05, 1.1, 1.8, 0.04);
+
+    // -- vs lz2
+    fpP2flsxy[i] = new TProfile(Form("p2flsxy_chan%d", i), "flsxy", 40, 0., 1.0, 0., 120., "");
+    fpP2flsxy[i]->SetMinimum(10.);     fpP2flsxy[i]->SetMaximum(30.);
+    setTitles(fpP1flsxy[i], "| l_{z}^{(2)} | cm", "mean flsxy", 0.05, 1.1, 1.8, 0.04);
+    fpP2fls3d[i] = new TProfile(Form("p2fls3d_chan%d", i), "fls3d", 40, 0., 1.0, 0., 120., "");
+    setTitles(fpP1fls3d[i], "| l_{z}^{(2)} | cm", "mean fls3d", 0.05, 1.1, 1.8, 0.04);
+    fpP2fls3d[i]->SetMinimum(10.);     fpP2fls3d[i]->SetMaximum(30.);
+
+    fpP2dfl3d[i] = new TProfile(Form("p2dfl3d_chan%d", i), "dfl3d", 40, 0., 1.0, 0., 50., "");
+    fpP2dfl3d[i]->SetMinimum(-0.02); fpP2dfl3d[i]->SetMaximum(0.02);
+    setTitles(fpP2dfl3d[i], "| l_{z}^{(2)} | cm", "mean #Delta fl3d", 0.05, 1.1, 1.8, 0.04);
+
+    fpP2tau[i] = new TProfile(Form("p2tau_chand%d", i), "tau", 40, 0., 1.0, -1.e-10, 1.e-10, "");
+    setTitles(fpP2tau[i], "| l_{z}^{(2)} | cm", "mean #tau_{eff} ", 0.05, 1.1, 1.8, 0.04);
+    fpP2dtau[i] = new TProfile(Form("p2dtau_chan%d", i), "dtau", 40, 0., 1.0, -1.e-10, 1.e-10, "");
+    fpP2dtau[i]->SetMinimum(-0.2e-12); fpP2dtau[i]->SetMaximum(+0.2e-12);
+    setTitles(fpP2dtau[i], "| l_{z}^{(2)} | cm", "mean #Delta#tau_{eff}", 0.05, 1.1, 1.8, 0.04);
+
   }
 
   fSample = dsname;
-  fMode = BMM;
-  string dir = "candAnaMuMu";
-  if (string::npos != fSample.find("bupsik")) {
-    fMode = BU2JPSIKP;
-    dir = "candAnaBu2JpsiK";
-  }
-  if (string::npos != fSample.find("bdpsikstar")) {
-    fMode = BD2JPSIKSTAR;
-    dir = "candAnaBd2JpsiKstar";
-  }
-  if (string::npos != fSample.find("bspsiphi")) {
-    fMode = BS2JPSIPHI;
-    dir = "candAnaBs2JpsiPhi";
-  }
+  setup(fSample);
+  // fMode = BMM;
+  // string dir = "candAnaMuMu";
+  // if (string::npos != fSample.find("bupsik")) {
+  //   fMode = BU2JPSIKP;
+  //   dir = "candAnaBu2JpsiK";
+  // }
+  // if (string::npos != fSample.find("bdpsikstar")) {
+  //   fMode = BD2JPSIKSTAR;
+  //   dir = "candAnaBd2JpsiKstar";
+  // }
+  // if (string::npos != fSample.find("bspsiphi")) {
+  //   fMode = BS2JPSIPHI;
+  //   dir = "candAnaBs2JpsiPhi";
+  // }
 
-  TTree *t = getTree(dsname, dir, "pvstudy");
+  TTree *t = getTree(dsname, fTreeDir, "pvstudy");
   setupPvTree(t);
 
   int nevts(-1);
@@ -219,36 +250,85 @@ void plotStuff::puStudy(string dsname) {
     savePad(Form("pustudyChan%d-dzmin.pdf", i));
 
     // -- profiles vs minimum z separation
-    fpPflsxy[i]->Draw();
+    fpP1flsxy[i]->Draw();
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
-    savePad(Form("pustudyChan%d-prof-flsxy.pdf", i));
-    fpPfls3d[i]->Draw();
+    savePad(Form("pustudyChan%d-prof1-flsxy.pdf", i));
+    fpP1fls3d[i]->Draw();
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
-    savePad(Form("pustudyChan%d-prof-fls3d.pdf", i));
+    savePad(Form("pustudyChan%d-prof1-fls3d.pdf", i));
 
-    fpPdfl3d[i]->Draw();
+    fpP1dfl3d[i]->Draw();
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
-    savePad(Form("pustudyChan%d-prof-dfl3d.pdf", i));
+    savePad(Form("pustudyChan%d-prof1-dfl3d.pdf", i));
 
-    fpPtau[i]->Draw();
+    fpP1tau[i]->Draw();
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
-    savePad(Form("pustudyChan%d-prof-tau.pdf", i));
-    fpPdtau[i]->Draw();
+    savePad(Form("pustudyChan%d-prof1-tau.pdf", i));
+    fpP1dtau[i]->Draw();
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
-    savePad(Form("pustudyChan%d-prof-dtau.pdf", i));
+    savePad(Form("pustudyChan%d-prof1-dtau.pdf", i));
+
+    // -- minimum z separation
+    shrinkPad(0.13, 0.20);
+    gPad->SetLogy(1);
+    setFilledHist(fpHlz1[i], kBlue, kYellow, 1000);
+    fpHlz1[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-lz1.pdf", i));
+
+    gPad->SetLogy(1);
+    fpHlz2[i]->Draw();
+    setFilledHist(fpHlz2[i], kBlue, kYellow, 1000);
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-lz2.pdf", i));
+
+    setFilledHist(fpHlz1[i], kBlue, kBlue, 3354);
+    setFilledHist(fpHlz2[i], kRed, kRed, 3365);
+    setTitles(fpHlz1[i], "| l_{z} | cm", "a.u.", 0.05, 1.1, 1.8);
+    fpHlz1[i]->Draw();
+    fpHlz2[i]->Draw("same");
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+
+    newLegend(0.41, 0.7, 0.71, 0.90);
+    legg->SetHeader("longitudinal IP to PV");
+    legg->SetTextSize(0.05);
+    legg->AddEntry(fpHlz1[i], "best PV", "f");
+    legg->AddEntry(fpHlz2[i], "second-best PV", "f");
+    legg->Draw();
+
+    savePad(Form("pustudyChan%d-overlay-lz1-lz2.pdf", i));
+
+    // -- profiles vs lz2
+    gPad->SetLogy(0);
+    fpP2flsxy[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-prof2-flsxy.pdf", i));
+    fpP2fls3d[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-prof2-fls3d.pdf", i));
+
+    fpP2dfl3d[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-prof2-dfl3d.pdf", i));
+
+    fpP2tau[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-prof2-tau.pdf", i));
+    fpP2dtau[i]->Draw();
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-prof2-dtau.pdf", i));
+
+
 
 
     // -- PV multiplicity
     shrinkPad(0.13, 0.20);
-    //  overlay(fpHmultFar, "close", fpHmultClose05, "far", fpHmultClose10, "", UNITY, false, false);
     overlay(fpHmultFar[i], "close", fpHmultClose05[i], "far", 0, "", UNITY, false, false);
-
-    newLegend(0.41, 0.7, 0.71, 0.87);
+    newLegend(0.41, 0.7, 0.71, 0.90);
     legg->SetHeader("other PV");
     legg->SetTextSize(0.05);
-    legg->AddEntry(fpHmultFar[i], "#it{|dzmin| > 1cm}", "f");
-    legg->AddEntry(fpHmultClose05[i], "#it{|dzmin| < 0.05cm}", "f");
-    //  legg->AddEntry(fpHmultClose10[4], "|dzmin| < 0.10cm", "f");
+    legg->AddEntry(fpHmultFar[i], "#it{|d_{z}^{min}| > 1cm}", "f");
+    legg->AddEntry(fpHmultClose05[i], "#it{|d_{z}^{min}| < 0.05cm}", "f");
     legg->Draw();
 
     tl->SetTextSize(0.04);
@@ -260,6 +340,27 @@ void plotStuff::puStudy(string dsname) {
 
     tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
     savePad(Form("pustudyChan%d-farCloseMultiplicity.pdf", i));
+
+
+    // -- PV multiplicity lz2
+    shrinkPad(0.13, 0.20);
+    overlay(fpHmultFar2[i], "close", fpHmultClose2[i], "far", 0, "", UNITY, false, false);
+    newLegend(0.41, 0.7, 0.71, 0.90);
+    legg->SetHeader("other PV");
+    legg->SetTextSize(0.05);
+    legg->AddEntry(fpHmultFar2[i], "#it{| l_{z}^{2} | > 1cm}", "f");
+    legg->AddEntry(fpHmultClose2[i], "#it{| l_{z}^{2} | < 0.05cm}", "f");
+    legg->Draw();
+
+    tl->SetTextSize(0.03);
+    tl->SetTextColor(kGreen+2);
+    tl->DrawLatexNDC(0.60, 0.62, Form("#mu/RMS = %3.1f/%3.1f", fpHmultClose2[i]->GetMean(), fpHmultClose2[i]->GetRMS()));
+    tl->SetTextColor(kBlue);
+    tl->DrawLatexNDC(0.65, 0.5, Form("#mu/RMS = %3.1f/%3.1f", fpHmultFar2[i]->GetMean(), fpHmultFar2[i]->GetRMS()));
+    tl->SetTextColor(kBlack);
+
+    tl->SetTextSize(0.04); tl->DrawLatexNDC(0.75, 0.92, Form("Chan %d", i));
+    savePad(Form("pustudyChan%d-farCloseMultiplicity2.pdf", i));
   }
 }
 
@@ -542,7 +643,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	cout << endl;
       }
 
-      return;
+      //FIXME      return;
 
       // -- the result histograms
       vector<TH1D *> vRunHLT;
@@ -1004,20 +1105,35 @@ void plotStuff::loopFunction2() {
   int ic = fpv.chan;
   int idx[] = {4, ic};
   int imax = (ic > -1?2:1);
+  // -- we are only interested in 'real' candidates (else you get strange effects, e.g. back-to-back low-pT muons with large eta-B)
+  if (!fpv.hlt1) return;
+
+  // -- fill per-channel and combined histograms
   for (int i = 0; i < imax; ++i) {
     if (TMath::Abs(fpv.dzmin) > 1.0) fpHmultFar[idx[i]]->Fill(fpv.mult1);
     if (TMath::Abs(fpv.dzmin) < 0.05) fpHmultClose05[idx[i]]->Fill(fpv.mult1);
-    if (TMath::Abs(fpv.dzmin) < 0.02) fpHmultClose02[idx[i]]->Fill(fpv.mult1);
-    if (TMath::Abs(fpv.dzmin) < 0.10) fpHmultClose10[idx[i]]->Fill(fpv.mult1);
 
+    // -- vs dzmin
     fpHdzmin[idx[i]]->Fill(TMath::Abs(fpv.dzmin));
+    fpP1flsxy[idx[i]]->Fill(fpv.dzmin, fpv.flsxy);
+    fpP1fls3d[idx[i]]->Fill(fpv.dzmin, fpv.fls3d);
+    fpP1dfl3d[idx[i]]->Fill(fpv.dzmin, fpv.fl1 - fpv.gfl);
 
-    fpPflsxy[idx[i]]->Fill(fpv.dzmin, fpv.flsxy);
-    fpPfls3d[idx[i]]->Fill(fpv.dzmin, fpv.fls3d);
-    fpPdfl3d[idx[i]]->Fill(fpv.dzmin, fpv.gfl - fpv.fl1);
+    fpP1tau[idx[i]]->Fill(fpv.dzmin,  fpv.t1);
+    fpP1dtau[idx[i]]->Fill(fpv.dzmin, fpv.t1 - fpv.gt);
 
-    fpPtau[idx[i]]->Fill(fpv.dzmin, fpv.t1);
-    fpPdtau[idx[i]]->Fill(fpv.dzmin, fpv.t1 - fpv.gt);
+    // -- vs lz2
+    if (TMath::Abs(fpv.lz2) > 1.0) fpHmultFar2[idx[i]]->Fill(fpv.mult1);
+    if (TMath::Abs(fpv.lz2) < 0.05) fpHmultClose2[idx[i]]->Fill(fpv.mult1);
+
+    fpHlz1[idx[i]]->Fill(TMath::Abs(fpv.lz1));
+    fpHlz2[idx[i]]->Fill(TMath::Abs(fpv.lz2));
+    fpP2flsxy[idx[i]]->Fill(fpv.lz2, fpv.flsxy);
+    fpP2fls3d[idx[i]]->Fill(fpv.lz2, fpv.fls3d);
+    fpP2dfl3d[idx[i]]->Fill(fpv.lz2, fpv.fl1 - fpv.gfl);
+
+    fpP2tau[idx[i]]->Fill(fpv.lz2,  fpv.t1);
+    fpP2dtau[idx[i]]->Fill(fpv.lz2, fpv.t1 - fpv.gt);
   }
 }
 
@@ -1297,11 +1413,14 @@ void plotStuff::loadFiles(string afiles) {
 // ----------------------------------------------------------------------
 void plotStuff::setupPvTree(TTree *t) {
 
+  t->SetBranchAddress("m1pt", &fpv.m1pt);
+  t->SetBranchAddress("m2pt", &fpv.m2pt);
   t->SetBranchAddress("pt",   &fpv.pt);
   t->SetBranchAddress("eta",  &fpv.eta);
   t->SetBranchAddress("phi",  &fpv.phi);
   t->SetBranchAddress("m",    &fpv.m);
   t->SetBranchAddress("chan", &fpv.chan);
+  t->SetBranchAddress("hlt1", &fpv.hlt1);
   t->SetBranchAddress("npv",  &fpv.npv);
   t->SetBranchAddress("idx1", &fpv.idx1);
   t->SetBranchAddress("idx2", &fpv.idx2);
