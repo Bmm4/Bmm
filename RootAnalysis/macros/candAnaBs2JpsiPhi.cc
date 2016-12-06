@@ -105,7 +105,7 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fKa2PtNrf     = p2->fPlab.Perp();
   fKa2EtaNrf    = p2->fPlab.Eta();
 
-  if (fCandTmi > -1) {
+  if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
     fKa1PtGen     = pg1->fP.Perp();
     fKa1EtaGen    = pg1->fP.Eta();
