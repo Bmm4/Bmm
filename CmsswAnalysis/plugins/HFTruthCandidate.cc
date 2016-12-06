@@ -577,13 +577,59 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
 	  iterator->addTrack(iMuon1, 13);
 	  iterator->addTrack(iMuon2, 13);
-	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator = theTree7.addDecayTree(400313, false, MKSTAR, false);
 	  iterator->addTrack(iKaon, 321);
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree7);
 	  pCand->fDouble1 = theTree7.fTV.mass;
 	  pCand->fDouble2 = theTree7.fTV.masserr;
+	}
+
+	// -- add the swapped kstar mass hypothesis
+	{
+	  int iMuon1(-1), iMuon2(-1), iKaon(-1), iPion(-1);
+	  HFDecayTree theTree8(3000000 + 70, true, MB_0, false, -1.0, true);
+	  HFDecayTreeIterator iterator = theTree8.addDecayTree(300443, false, MJPSI, false);
+	  for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	    IDX = trackIndices[ii];
+	    ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	    if (13 == TMath::Abs(ID)) {
+	      if (iMuon1 < 0) {
+		iMuon1 = IDX;
+	      } else {
+		iMuon2 = IDX;
+	      }
+	    }
+	    if (211 == TMath::Abs(ID)) {
+	      iKaon = IDX;
+	    }
+	    if (321 == TMath::Abs(ID)) {
+	      iPion = IDX;
+	    }
+	  }
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree8.addDecayTree(300313, false, MKSTAR, false);
+	  iterator->addTrack(iKaon, 321);
+	  iterator->addTrack(iPion, 211);
+	  if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar with wrong K/pi assignments" << endl;
+	  aSeq.doFit(&theTree8);
+	  TAnaCand *pCand = theTree8.getAnaCand();
+	  if (0 == pCand) {
+	  } else {
+	    theTree8.clear(400511, true, MB_0, false, -1.0, true);
+	    iterator = theTree8.addDecayTree(400443, true, MJPSI, true);
+	    iterator->addTrack(iMuon1, 13);
+	    iterator->addTrack(iMuon2, 13);
+	    iterator = theTree8.addDecayTree(400313, false, MKSTAR, false);
+	    iterator->addTrack(iKaon, 321);
+	    iterator->addTrack(iPion, 211);
+	    theTree8.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	    aSeq.doFit(&theTree8);
+	    pCand->fDouble1 = theTree8.fTV.mass;
+	    pCand->fDouble2 = theTree8.fTV.masserr;
+	  }
 	}
       }
 
@@ -790,7 +836,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
 	  iterator->addTrack(iMuon1, 13);
 	  iterator->addTrack(iMuon2, 13);
-	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator = theTree7.addDecayTree(400313, false, MKSTAR, false);
 	  iterator->addTrack(iKaon, 321);
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
@@ -816,7 +862,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
 	  iterator->addTrack(iMuon1, 13);
 	  iterator->addTrack(iMuon2, 13);
-	  iterator = theTree7.addDecayTree(400333, false, MPHI, false);
+	  iterator = theTree7.addDecayTree(400313, false, MKSTAR, false);
 	  iterator->addTrack(iKaon, 321);
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");

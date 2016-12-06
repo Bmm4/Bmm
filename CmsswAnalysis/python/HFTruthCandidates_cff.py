@@ -187,8 +187,8 @@ truthBuTo3MuNuDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
     motherID     = cms.untracked.int32(521),
-    type         = cms.untracked.int32(70),
-    GenType      = cms.untracked.int32(-70),
+    type         = cms.untracked.int32(71),
+    GenType      = cms.untracked.int32(-71),
     daughtersID  = cms.untracked.vint32(13, 13, -13, 14)
     )
 
