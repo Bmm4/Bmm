@@ -35,13 +35,24 @@ bmmReader::~bmmReader() {
 // ----------------------------------------------------------------------
 void bmmReader::startAnalysis() {
   cout << "==> bmmReader: fVerbose = " << fVerbose << endl;
-  fpJSON = new JSON(JSONFILE.c_str(), fVerbose);
+  if (JSONFILE == "") {
+    cout << "No JSONFILE provided, ignoring JSON" << endl;
+    fpJSON = 0;
+    fIgnoreJson = true;
+  } else {
+    fpJSON = new JSON(JSONFILE.c_str(), fVerbose);
+  }
   if (LUMIFILE == "") {
     cout << "No LUMIFILE provided, deriving LUMIFILE from " << JSONFILE << endl;
     LUMIFILE = JSONFILE;
     replaceAll(LUMIFILE, "txt", "lumi");
+    if (LUMIFILE == "") {
+      cout << "Cannot derive LUMIFILE, no lumi information" << endl;
+      fpLumi = 0;
+    } else {
+      fpLumi = new Lumi(LUMIFILE.c_str(), fVerbose);
+    }
   }
-  fpLumi = new Lumi(LUMIFILE.c_str(), fVerbose);
   fpPdTrigger = new PdTrigger("unused", fVerbose);
 }
 
