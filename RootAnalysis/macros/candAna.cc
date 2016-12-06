@@ -62,11 +62,6 @@ void candAna::endAnalysis() {
     cout << Form("==> mon%s: error, histogram not found!", fName.c_str()) << endl;
   }
 
-  h1 = ((TH1D*)fHistDir->Get("hmc"));
-  if (h1) h1->Write();
-  h1 = ((TH1D*)fHistDir->Get("hda"));
-  if (h1) h1->Write();
-
 }
 
 
@@ -114,18 +109,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   if (1238 == fVerbose) {
     fHistDir->cd();
     TAnaCand *pCand(0);
-    TAnaTrack *p1(0), *p2(0);
-    static int first(1);
-    static TH1D *hmc(0), *hda(0);
-    if (first == 1) {
-      first = 0;
-      // hmc = new TH1D("hmc", "", 100, 1.0, 1.05);
-      // hda = new TH1D("hda", "", 100, 1.0, 1.05);
-      // hmc = new TH1D("hmc", "", 100, 0.45, 0.55);
-      // hda = new TH1D("hda", "", 100, 0.45, 0.55);
-      hmc = new TH1D("hmc", "", 100, 1.0, 1.2);
-      hda = new TH1D("hda", "", 100, 1.0, 1.2);
-    }
     int GETYPE(3122);
     int DATYPE(113122);
     //    fpEvt->dumpGenBlock();
@@ -169,7 +152,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	q1 = fpEvt->getSigTrack(pCand->fSig1);
 	q2 = fpEvt->getSigTrack(pCand->fSig2);
 	if (q1->fPlab.Perp() > 3.5 && q2->fPlab.Perp() > 1.5) {
-	  hda->Fill(pCand->fMass);
 	  cout << "    ==> found " << DATYPE << "!!!" << endl;
 	  cout << "pCand->fSig1 = " << pCand->fSig1 << " pCand->fSig2 = " << pCand->fSig2 << endl;
 	  q1->dump();
@@ -365,6 +347,18 @@ void candAna::candAnalysis() {
       }
     }
 
+    if (fpCand->fPv2Idx > -1 && fpCand->fPv2Idx < fpEvt->nPV()) {
+      TAnaVertex *pv2 = fpEvt->getPV(fpCand->fPv2Idx);
+      fPv2Idx   = fpCand->fPv2Idx;
+      fPv2Ntrk  = pv2->getNtracks();
+      fPv2Ndof  = pv2->fNdof;
+      fPv2AveW8 = ((fPv2Ndof+2.)/2.)/fPv2Ntrk;
+      fPvDz12   = fPvZ - pv2->fPoint.Z();
+    } else {
+      fPv2Idx  = -99;
+      fPv2Ntrk = -99;
+      fPvDz12  = -99.;
+    }
   } else {
     fPvIdx = -99;
     fPvX = -99.;
@@ -643,38 +637,8 @@ void candAna::candAnalysis() {
 	continue;
       }
 
-      //      fillMuonData(fMuonData, pt);
-
       fMuonData.pt            = pt->fPlab.Perp();
       fMuonData.eta           = pt->fPlab.Eta();
-      fMuonData.validMuonHits    = 0;
-      fMuonData.glbNChi2         = pt->fGtrkNormChi2;
-      fMuonData.nMatchedStations = pt->fNmatchedStations;
-      fMuonData.validPixelHits   = fpReader->numberOfPixLayers(pt); // FIXME, kind of correct
-      fMuonData.trkLayerWithHits = fpReader->numberOfTrackerLayers(pt);
-
-      fMuonData.trkValidFract = pt->fItrkValidFraction;
-      fMuonData.segComp       = pt->fSegmentComp;
-      fMuonData.chi2LocMom    = pt->fChi2LocalMomentum;
-      fMuonData.chi2LocPos    = pt->fChi2LocalPosition;
-      fMuonData.glbTrackProb  = pt->fGtrkProb;
-      fMuonData.NTrkVHits     = static_cast<float>(pt->fNumberOfValidTrkHits);
-      fMuonData.NTrkEHitsOut  = static_cast<float>(pt->fNumberOfLostTrkHits);
-
-      fMuonData.kink          = pt->fMuonChi2;
-
-      fMuonData.dpt           = pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag();
-      fMuonData.dptrel        = TMath::Abs(pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag())/pt->fInnerPlab.Mag();
-      if (pt->fOuterPlab.Mag() > 3.) {
-	fMuonData.deta          = pt->fInnerPlab.Eta() - pt->fOuterPlab.Eta();
-	fMuonData.dphi          = pt->fInnerPlab.DeltaPhi(pt->fOuterPlab);
-	fMuonData.dr            = pt->fInnerPlab.DeltaR(pt->fOuterPlab);
-      } else {
-	fMuonData.deta          = -99.;
-	fMuonData.dphi          = -99.;
-	fMuonData.dr            = -99.;
-      }
-
       fMuonIdTree->Fill();
     }
   }
@@ -986,13 +950,10 @@ int candAna::detChan(double m1eta, double m2eta) {
     return (im1>im2?im1:im2);
   } else if (1 == mode) {
     if (m2 > m1) m1 = m2;
-    bool found(false);
     for (int ichan = 0; ichan < fNchan; ++ichan) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
 	for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
-	  found = false;
 	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
-	    found = true;
 	    break;
 	  }
 	}
@@ -1677,29 +1638,7 @@ void candAna::setupMuonIdTree(TTree *t) {
 
   t->Branch("pt",                   &fMuonData.pt,  "pt/F");
   t->Branch("eta",                  &fMuonData.eta, "eta/F");
-
-  t->Branch("intvalidmuonhits",     &fMuonData.validMuonHits, "validmuonhits/I");
-  t->Branch("intnmatchedstations",  &fMuonData.nMatchedStations, "nmatchedstations/I");
-  t->Branch("intvalidpixelhits",    &fMuonData.validPixelHits, "validpixelhits/I");
-  t->Branch("inttrklayerswithhits", &fMuonData.trkLayerWithHits, "trklayerswithhits/I");
-
-  t->Branch("gchi2",                &fMuonData.glbNChi2, "gchi2/F");
-
-  t->Branch("itrkvalidfraction",    &fMuonData.trkValidFract, "itrkvalidfraction/F");
-  t->Branch("segcomp",              &fMuonData.segComp, "segcomp/F");
-  t->Branch("chi2lmom",             &fMuonData.chi2LocMom, "chi2lmom/F");
-  t->Branch("chi2lpos",             &fMuonData.chi2LocPos, "chi2lpos/F");
-  t->Branch("gtrkprob",             &fMuonData.glbTrackProb, "gtrkprob/F");
-  t->Branch("ntrkvhits",            &fMuonData.NTrkVHits, "ntrkvhits/F");
-  t->Branch("ntrkehitsout",         &fMuonData.NTrkEHitsOut, "ntrkehitsout/F");
-
-  t->Branch("kink",                 &fMuonData.kink, "kink/F");
-  t->Branch("dpt",                  &fMuonData.dpt, "dpt/F");
-  t->Branch("dptrel",               &fMuonData.dptrel, "dptrel/F");
-  t->Branch("deta",                 &fMuonData.deta, "deta/F");
-  t->Branch("dphi",                 &fMuonData.dphi, "dphi/F");
-  t->Branch("dr",                   &fMuonData.dr, "dr/F");
-
+  // removed rest
 }
 
 // ----------------------------------------------------------------------
@@ -1721,6 +1660,8 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("tis",     &fTIS,               "tis/O");
   t->Branch("reftrg",  &fRefTrigger,        "reftrg/O");
   t->Branch("pvidx",   &fPvIdx,             "pvidx/I");
+  t->Branch("pvx",     &fPvX,               "pvx/D");
+  t->Branch("pvy",     &fPvY,               "pvy/D");
   t->Branch("pvz",     &fPvZ,               "pvz/D");
   t->Branch("pvn",     &fPvN,               "pvn/I");
   t->Branch("cb",      &fCowboy,            "cb/O");
@@ -1728,7 +1669,11 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("bdt",     &fBDT,               "bdt/D");
   t->Branch("npv",     &fPvN,               "npv/I");
   t->Branch("pvw8",    &fPvAveW8,           "pvw8/D");
+  t->Branch("pv2w8",   &fPv2AveW8,          "pv2w8/D");
   t->Branch("dzmin",   &fPvDzmin,           "dzmin/D");
+  t->Branch("dz12",    &fPvDz12,            "dz12/D");
+  t->Branch("pvntrk",  &fPvNtrk,            "pvntrk/I");
+  t->Branch("pv2ntrk", &fPv2Ntrk,           "pv2ntrk/I");
   t->Branch("presel",  &fPreselection,      "presel/O");
 
   // -- global cuts and weights
@@ -1957,7 +1902,7 @@ void candAna::readCuts(string fileName, int dump) {
       continue;
     }
     cutname  = lineItems[0];
-    if ((fNchan + 1) == lineItems.size()) {
+    if (static_cast<unsigned int>(fNchan + 1) == lineItems.size()) {
       for (unsigned int j = 1; j < lineItems.size(); ++j) {
 	if (cutname == "metaMin") {
 	  cutvalue = atof(lineItems[j].c_str());
@@ -2094,6 +2039,10 @@ void candAna::readCuts(string fileName, int dump) {
 	  for (unsigned int is = 0; is < vl1seeds.size(); ++is) {
 	    fCuts[j-1]->l1seeds.push_back(atoi(vl1seeds[is].c_str()));
 	  }
+	}
+
+	if (0 == ok) {
+	  cout << "XXXX unknown cut or cannot parse ->" << cutLines[i] << "<-" << endl;
 	}
 
       }
@@ -2311,7 +2260,6 @@ void candAna::readCuts(string fileName, int dump) {
       fMvaMuonID = setupMuonMvaReader(string(xml), mrd);
     }
 
-
     if (!strcmp(CutName, "MUBDT")) {
       MUBDT = CutValue;
       if (dump) cout << "MUBDT:           " << MUBDT << endl;
@@ -2320,10 +2268,33 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BDT(#mu) :: %3.1f", CutName, MUBDT));
     }
 
+    if (!strcmp(CutName, "MUBDTXML1")) {
+      char xml[1000];
+      sscanf(buffer, "%s %s", CutName, xml);
+      string tl(xml);
+      if (dump) {
+	cout << "MUBDTXML1:       " << xml << endl;
+      }
+      ibin = 209;
+      hcuts->SetBinContent(ibin, 1);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, xml));
+      fMvaMuonID1 = setupMuonMvaReader(string(xml), mrd1);
+    }
+
+    if (!strcmp(CutName, "MUBDT1")) {
+      MUBDT1 = CutValue;
+      if (dump) cout << "MUBDT1:           " << MUBDT1 << endl;
+      ibin = 210;
+      hcuts->SetBinContent(ibin, MUBDT1);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BDT1(#mu) :: %3.1f", CutName, MUBDT1));
+    }
+
+
+
   }
 
   if (dump) {
-    for (unsigned int i = 0; i < fNchan; ++i) {
+    for (int i = 0; i < fNchan; ++i) {
       fCuts[i]->dump();
     }
     cout << "------------------------------------" << endl;
@@ -2444,14 +2415,63 @@ bool candAna::tightMuon(TSimpleTrack *pT, bool hadronsPass) {
 
 // ----------------------------------------------------------------------
 bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
-
+  bool doNow(true);
   if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
     return true;
   }
 
-  result = pt->fBarrelBDTresponse;
-  return (result > 0);
-
+  if (doNow) {
+    // -- Stephan's developing set of variables
+    if (TMath::Abs(pt->fPlab.Eta()) < 0.9) {
+      mrd.segComp          = pt->fSegmentComp;
+      mrd.chi2LocMom       = pt->fChi2LocalMomentum;
+      mrd.chi2LocPos       = pt->fChi2LocalPosition;
+      mrd.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
+      mrd.glbTrackTailProb = pt->fGtrkProb;
+      mrd.glbDeltaEtaPhi   = pt->fGlbDeltaEtaPhi;
+      mrd.trkValidFract    = pt->fItrkValidFraction;
+      mrd.LWH              = static_cast<float>(pt->fLayersWithHits);
+      mrd.dxyRef           = pt->fTip;
+      mrd.dzRef            = pt->fLip;
+      mrd.kinkFinder       = pt->fMuonChi2;
+      mrd.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd.timeAtIpInOutErr = pt->fTimeInOutE;
+      mrd.outerChi2        = pt->fOuterChi2;
+      mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
+      mrd.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
+      mrd.detVarComb       = getDetVarComb(pt);
+      result = fMvaMuonID->EvaluateMVA("BDT");
+      return (result > MUBDT);
+    } else {
+      mrd1.segComp          = pt->fSegmentComp;
+      mrd1.chi2LocMom       = pt->fChi2LocalMomentum;
+      mrd1.chi2LocPos       = pt->fChi2LocalPosition;
+      mrd1.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
+      mrd1.glbTrackTailProb = pt->fGtrkProb;
+      mrd1.glbDeltaEtaPhi   = pt->fGlbDeltaEtaPhi;
+      mrd1.trkValidFract    = pt->fItrkValidFraction;
+      mrd1.LWH              = static_cast<float>(pt->fLayersWithHits);
+      mrd1.dxyRef           = pt->fTip;
+      mrd1.dzRef            = pt->fLip;
+      mrd1.kinkFinder       = pt->fMuonChi2;
+      mrd1.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd1.timeAtIpInOutErr = pt->fTimeInOutE;
+      mrd1.outerChi2        = pt->fOuterChi2;
+      mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
+      mrd1.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
+      mrd1.detVarComb       = getDetVarComb(pt);
+      result = fMvaMuonID1->EvaluateMVA("BDT");
+      return (result > MUBDT1);
+    }
+  } else {
+    if (TMath::Abs(pt->fPlab.Eta()) < 0.9) {
+      result = pt->fBarrelBDTresponse;
+      return (result > MUBDT);
+    } else {
+      result = pt->fEndcapBDTresponse;
+      return (result > MUBDT1);
+    }
+  }
 }
 
 
@@ -2521,6 +2541,7 @@ bool candAna::mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass) {
     return false;
   }
 
+  // -- Luca's variables for TMVA-muonid-2
   mrd.trkValidFract    = pt->fItrkValidFraction;
   mrd.glbNChi2         = pt->fGtrkNormChi2;
   mrd.pt               = pt->fPlab.Perp();
@@ -2531,26 +2552,6 @@ bool candAna::mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass) {
   mrd.glbTrackProb     = pt->fGtrkProb;
   mrd.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
   mrd.NTrkEHitsOut     = static_cast<float>(pt->fNumberOfLostTrkHits);
-
-  mrd.dpt                  = pt->fNmatchedStations;
-  mrd.intvalidpixelhits    = fpReader->numberOfPixLayers(pt); // FIXME, kind of correct
-  mrd.inttrklayerswithhits = fpReader->numberOfTrackerLayers(pt);
-  mrd.intnmatchedstations  = pt->fNmatchedStations;
-
-  mrd.kink             = pt->fMuonChi2;
-
-  mrd.dpt              = pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag();
-  mrd.dptrel           = TMath::Abs(pt->fInnerPlab.Mag() - pt->fOuterPlab.Mag())/pt->fInnerPlab.Mag();
-  if (pt->fOuterPlab.Mag() > 3.) {
-    mrd.deta             = pt->fInnerPlab.Eta() - pt->fOuterPlab.Eta();
-    mrd.dphi             = pt->fInnerPlab.DeltaPhi(pt->fOuterPlab);
-    mrd.dr               = pt->fInnerPlab.DeltaR(pt->fOuterPlab);
-  } else {
-    mrd.deta             = -99.;
-    mrd.dphi             = -99.;
-    mrd.dr               = -99.;
-  }
-
 
   result = fMvaMuonID->EvaluateMVA("BDT");
   if (result > MUBDT) return true;
@@ -3211,27 +3212,12 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 // ----------------------------------------------------------------------
 void candAna::calcBDT() {
   fBDT = -99.;
-  //??  if (5 == mode && 5.2 < mass && mass < 5.45 && fb.iso < 0.7) continue;
   if (fChan < 0) return;
   if (0 == fReaderEvents0.size()) {
     cout << "no BDT defined" << endl;
     return;
   }
-
   if (!preselection(fRTD, fChan)) return;
-
-  //   if (fCandPt > 100) return;
-  //   if (fCandPt < 6) return;
-  //   if (fMu1Pt < 4) return;
-  //   if (fMu2Pt < 4) return;
-  //   if (fCandFL3d > 1.5) return;
-  //   if (fCandFL3d < 0.) return;
-  //   if (fCandM > 5.9) return;
-  //   if (fCandM < 4.9) return;
-
-  //   if (!fb.hlt) return;
-  //   if (!fb.gmuid) return;
-
   frd.pt = fCandPt;
   frd.eta = fCandEta;
   frd.m1eta = fMu1Eta;
@@ -3247,10 +3233,7 @@ void candAna::calcBDT() {
   frd.docatrk = fCandDocaTrk;
   frd.chi2dof = fCandChi2/fCandDof;
   frd.closetrk = fCandCloseTrk;
-
   frd.m  = fCandM;
-  //  cout << "Evt = " << fEvt << " %3 = " << fEvt%3 << " chan = " << fChan << " " << " etas = " << fMu1Eta << " " << fMu2Eta;
-
   fBDT = 0.;
   return;
   if (0 == fEvt%3) {
@@ -3262,26 +3245,14 @@ void candAna::calcBDT() {
   } else {
     cout << "all hell break loose" << endl;
   }
-  //  cout << " bdt = " << fBDT << endl;
 }
-
-
-// // ----------------------------------------------------------------------
-// int candAna::detChan(double m1eta, double m2eta) {
-//   // -- simple two channel analysis: channel 0 if both muons in barrel, channel 1 else
-//   if (TMath::Abs(m1eta) < 1.4 && TMath::Abs(m2eta) < 1.4) return 0;
-//   if (TMath::Abs(m1eta) < 2.4 && TMath::Abs(m2eta) < 2.4) return 1;
-//   return -1;
-// }
 
 
 // ----------------------------------------------------------------------
 TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
   TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
-
   TString dir    = "weights/";
   TString methodNameprefix = "BDT";
-
   // -- read in variables from weight file
   vector<string> allLines;
   char  buffer[2000];
@@ -3305,6 +3276,27 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	m1 = allLines[j].find("Expression=\"")+10;
 	m2 = allLines[j].find("\" Label=\"");
 	stype = allLines[j].substr(m1+2, m2-m1-2);
+	if (stype == "segComp") {
+	  cout << "  adding segComp" << endl;
+	  reader->AddVariable("segComp", &d.segComp);
+	  continue;
+	}
+	if (stype == "chi2LocMom") {
+	  cout << "  adding chi2LocMom" << endl;
+	  reader->AddVariable("chi2LocMom", &d.chi2LocMom);
+	  continue;
+	}
+	if (stype == "chi2LocPos") {
+	  cout << "  adding chi2LocPos" << endl;
+	  reader->AddVariable("chi2LocPos", &d.chi2LocPos);
+	  continue;
+	}
+	if (stype == "NTrkVHits") {
+	  cout << "  adding NTrkVHits" << endl;
+	  reader->AddVariable("NTrkVHits", &d.NTrkVHits);
+	  continue;
+	}
+
 	if (stype == "trkValidFract") {
 	  cout << "  adding trkValidFract" << endl;
 	  reader->AddVariable( "trkValidFract", &d.trkValidFract);
@@ -3325,135 +3317,83 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	  reader->AddVariable("pt", &d.pt);
 	  continue;
 	}
-	if (stype == "segComp") {
-	  cout << "  adding segComp" << endl;
-	  reader->AddVariable("segComp", &d.segComp);
-	  continue;
-	}
-	if (stype == "chi2LocMom") {
-	  cout << "  adding chi2LocMom" << endl;
-	  reader->AddVariable("chi2LocMom", &d.chi2LocMom);
-	  continue;
-	}
-	if (stype == "chi2LocPos") {
-	  cout << "  adding chi2LocPos" << endl;
-	  reader->AddVariable("chi2LocPos", &d.chi2LocPos);
-	  continue;
-	}
 	if (stype == "glbTrackProb") {
 	  cout << "  adding glbTrackProb" << endl;
 	  reader->AddVariable("glbTrackProb", &d.glbTrackProb);
 	  continue;
 	}
-	if (stype == "NTrkVHits") {
-	  cout << "  adding NTrkVHits" << endl;
-	  reader->AddVariable("NTrkVHits", &d.NTrkVHits);
-	  continue;
-	}
-	if (stype == "NTrkEHitsOut") {
-	  cout << "  adding NTrkEHitsOut" << endl;
-	  reader->AddVariable("NTrkEHitsOut", &d.NTrkEHitsOut);
-	  continue;
-	}
 	if (stype == "NTrkEHitsOut") {
 	  cout << "  adding NTrkEHitsOut" << endl;
 	  reader->AddVariable("NTrkEHitsOut", &d.NTrkEHitsOut);
 	  continue;
 	}
 
-	// -- new convention for UL's BDT
-	if (stype == "intnmatchedstations") {
-	  cout << "  adding intnmatchedstations" << endl;
-	  reader->AddVariable("intnmatchedstations", &d.intnmatchedstations);
+	// -- variables for SW's BDT
+	if (stype == "glbTrackTailProb") {
+	  cout << "  adding glbTrackTailProb" << endl;
+	  reader->AddVariable("glbTrackTailProb", &d.glbTrackTailProb);
 	  continue;
 	}
-	if (stype == "intvalidpixelhits") {
-	  cout << "  adding intvalidpixelhits" << endl;
-	  reader->AddVariable("intvalidpixelhits", &d.intvalidpixelhits);
+	if (stype == "glbDeltaEtaPhi") {
+	  cout << "  adding glbDeltaEtaPhi" << endl;
+	  reader->AddVariable("glbDeltaEtaPhi", &d.glbDeltaEtaPhi);
 	  continue;
 	}
-	if (stype == "inttrklayerswithhits") {
-	  cout << "  adding inttrklayerswithhits" << endl;
-	  reader->AddVariable("inttrklayerswithhits", &d.inttrklayerswithhits);
+	if (stype == "iValFrac") {
+	  cout << "  adding iValFrac (aka trkValidFract)" << endl;
+	  reader->AddVariable("iValFrac", &d.trkValidFract);
 	  continue;
 	}
-	if (stype == "gchi2") {
-	  cout << "  adding gchi2" << endl;
-	  reader->AddVariable("gchi2", &d.glbNChi2);
+	if (stype == "LWH") {
+	  cout << "  adding LWH" << endl;
+	  reader->AddVariable("LWH", &d.LWH);
 	  continue;
 	}
-	if (stype == "itrkvalidfraction") {
-	  cout << "  adding itrkvalidfraction" << endl;
-	  reader->AddVariable("itrkvalidfraction", &d.trkValidFract);
+	if (stype == "dxyRef") {
+	  cout << "  adding dxyRef" << endl;
+	  reader->AddVariable("dxyRef", &d.dxyRef);
 	  continue;
 	}
-	if (stype == "segcomp") {
-	  cout << "  adding segcomp" << endl;
-	  reader->AddVariable("segcomp", &d.segComp);
+	if (stype == "kinkFinder") {
+	  cout << "  adding kinkFinder" << endl;
+	  reader->AddVariable("kinkFinder", &d.kinkFinder);
 	  continue;
 	}
-	if (stype == "chi2lmom") {
-	  cout << "  adding chi2lmom" << endl;
-	  reader->AddVariable("chi2lmom", &d.chi2LocMom);
+	if (stype == "dzRef") {
+	  cout << "  adding dzRef" << endl;
+	  reader->AddVariable("dzRef", &d.dzRef);
 	  continue;
 	}
-	if (stype == "chi2lpos") {
-	  cout << "  adding chi2lpos" << endl;
-	  reader->AddVariable("chi2lpos", &d.chi2LocPos);
+	if (stype == "glbKinkFinder") {
+	  cout << "  adding glbKinkFinder" << endl;
+	  reader->AddVariable("glbKinkFinder", &d.glbKinkFinder);
 	  continue;
 	}
-	if (stype == "gtrkprob") {
-	  cout << "  adding gtrkprob" << endl;
-	  reader->AddVariable("gtrkprob", &d.glbTrackProb);
+	if (stype == "timeAtIpInOutErr") {
+	  cout << "  adding timeAtIpInOutErr" << endl;
+	  reader->AddVariable("timeAtIpInOutErr", &d.timeAtIpInOutErr);
 	  continue;
 	}
-	if (stype == "ntrkvhits") {
-	  cout << "  adding ntrkvhits" << endl;
-	  reader->AddVariable("ntrkvhits", &d.NTrkVHits);
+	if (stype == "outerChi2") {
+	  cout << "  adding outerChi2" << endl;
+	  reader->AddVariable("outerChi2", &d.outerChi2);
 	  continue;
 	}
-	if (stype == "inttrklayerswithhits") {
-	  cout << "  adding inttrklayerswithhits" << endl;
-	  reader->AddVariable("inttrklayerswithhits", &d.inttrklayerswithhits);
+	if (stype == "valPixHits") {
+	  cout << "  adding valPixHits" << endl;
+	  reader->AddVariable("valPixHits", &d.valPixHits);
 	  continue;
 	}
-	if (stype == "ntrkehitsout") {
-	  cout << "  adding ntrkehitsout" << endl;
-	  reader->AddVariable("ntrkehitsout", &d.NTrkEHitsOut);
+	if (stype == "TMTrkMult100") {
+	  cout << "  adding TMTrkMult100" << endl;
+	  reader->AddVariable("TMTrkMult100", &d.TMTrkMult100);
 	  continue;
 	}
-	if (stype == "kink") {
-	  cout << "  adding kink" << endl;
-	  reader->AddVariable("kink", &d.kink);
+	if (stype == "detVarComb") {
+	  cout << "  adding detVarComb" << endl;
+	  reader->AddVariable("detVarComb", &d.detVarComb);
 	  continue;
 	}
-	if (stype == "dpt") {
-	  cout << "  adding dpt" << endl;
-	  reader->AddVariable("dpt", &d.dpt);
-	  continue;
-	}
-	if (stype == "deta") {
-	  cout << "  adding deta" << endl;
-	  reader->AddVariable("deta", &d.deta);
-	  continue;
-	}
-	if (stype == "dphi") {
-	  cout << "  adding dphi" << endl;
-	  reader->AddVariable("dphi", &d.dphi);
-	  continue;
-	}
-	if (stype == "dr") {
-	  cout << "  adding dr" << endl;
-	  reader->AddVariable("dr", &d.dr);
-	  continue;
-	}
-	if (stype == "dptrel") {
-	  cout << "  adding dptrel" << endl;
-	  reader->AddVariable("dptrel", &d.dptrel);
-	  continue;
-	}
-
-
       }
       break;
     }
@@ -4306,7 +4246,7 @@ bool candAna::tos(TAnaCand *pC) {
 	}
       }
     }
-    if (overlaps == it->second.size()) {
+    if (static_cast<unsigned int>(overlaps) == it->second.size()) {
       result = true;
       if (verbose) {
 	cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
@@ -4478,7 +4418,7 @@ double candAna::distToMuon(TSimpleTrack *ps) {
 	      << endl;
 
   int pmIdx(-1), bestIdx(-1);
-  double ptMuon(0.), drMin(9999.), dr(0.);
+  double drMin(9999.), dr(0.);
   for (int im = 0; im < numMuons; ++im) {
     pM = fpEvt->getMuon(im);
     pmIdx = pM->fIndex;
@@ -4876,33 +4816,31 @@ void candAna::play3() {
 // ----------------------------------------------------------------------
 void candAna::triggerEff(std::string ref, std::string os, int mode) {
 
-  TH1D *h1(0);
-  (void*)h1;
   string tname = Form("os_%d", mode);
   if (0 == ((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))) {
     TDirectory *pDir = gDirectory;
     gFile->cd();
     cout << "triggerEff booking hists for mode = " << mode << endl;
-    h1 = new TH1D(Form("%s_ptp", tname.c_str()), "pt (pass)", 50, 0., 50.);
-    h1 = new TH1D(Form("%s_pta", tname.c_str()), "pt (all)", 50, 0., 50.);
-    h1 = new TH1D(Form("%s_ptp1", tname.c_str()), "pt muon1 (pass)", 50, 0., 50.);
-    h1 = new TH1D(Form("%s_pta1", tname.c_str()), "pt muon1 (all)",  50, 0., 50.);
-    h1 = new TH1D(Form("%s_ptp2", tname.c_str()), "pt muon2 (pass)", 50, 0., 50.);
-    h1 = new TH1D(Form("%s_pta2", tname.c_str()), "pt muon2 (all)",  50, 0., 50.);
+    new TH1D(Form("%s_ptp", tname.c_str()), "pt (pass)", 50, 0., 50.);
+    new TH1D(Form("%s_pta", tname.c_str()), "pt (all)", 50, 0., 50.);
+    new TH1D(Form("%s_ptp1", tname.c_str()), "pt muon1 (pass)", 50, 0., 50.);
+    new TH1D(Form("%s_pta1", tname.c_str()), "pt muon1 (all)",  50, 0., 50.);
+    new TH1D(Form("%s_ptp2", tname.c_str()), "pt muon2 (pass)", 50, 0., 50.);
+    new TH1D(Form("%s_pta2", tname.c_str()), "pt muon2 (all)",  50, 0., 50.);
 
-    h1 = new TH1D(Form("%s_etap", tname.c_str()), "eta (pass)", 50, -2.5, 2.5);
-    h1 = new TH1D(Form("%s_etaa", tname.c_str()), "eta (all)",  50, -2.5, 2.5);
-    h1 = new TH1D(Form("%s_etap1", tname.c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
-    h1 = new TH1D(Form("%s_etaa1", tname.c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
-    h1 = new TH1D(Form("%s_etap2", tname.c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
-    h1 = new TH1D(Form("%s_etaa2", tname.c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
+    new TH1D(Form("%s_etap", tname.c_str()), "eta (pass)", 50, -2.5, 2.5);
+    new TH1D(Form("%s_etaa", tname.c_str()), "eta (all)",  50, -2.5, 2.5);
+    new TH1D(Form("%s_etap1", tname.c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
+    new TH1D(Form("%s_etaa1", tname.c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
+    new TH1D(Form("%s_etap2", tname.c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
+    new TH1D(Form("%s_etaa2", tname.c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
 
-    h1 = new TH1D(Form("%s_phip", tname.c_str()), "phi (pass)", 50, -3.15, 3.15);
-    h1 = new TH1D(Form("%s_phia", tname.c_str()), "phi (all)",  50, -3.15, 3.15);
-    h1 = new TH1D(Form("%s_phip1", tname.c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
-    h1 = new TH1D(Form("%s_phia1", tname.c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
-    h1 = new TH1D(Form("%s_phip2", tname.c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
-    h1 = new TH1D(Form("%s_phia2", tname.c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
+    new TH1D(Form("%s_phip", tname.c_str()), "phi (pass)", 50, -3.15, 3.15);
+    new TH1D(Form("%s_phia", tname.c_str()), "phi (all)",  50, -3.15, 3.15);
+    new TH1D(Form("%s_phip1", tname.c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
+    new TH1D(Form("%s_phia1", tname.c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
+    new TH1D(Form("%s_phip2", tname.c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
+    new TH1D(Form("%s_phia2", tname.c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
 
     pDir->cd();
   }
@@ -5002,8 +4940,6 @@ void candAna::triggerEff(std::string ref, std::string os, int mode) {
 // ----------------------------------------------------------------------
 void candAna::play() {
   static int first(1);
-  TH1D *h1(0);
-  (void*)h1;
   vector<string> tnames;
   tnames.push_back("rf");
   tnames.push_back("os");
@@ -5015,34 +4951,34 @@ void candAna::play() {
     TDirectory *pDir = gDirectory;
     gFile->cd();
     for (unsigned int i = 0; i < tnames.size(); ++i) {
-      h1 = new TH1D(Form("%s_m1", tnames[i].c_str()), "pt (muon1)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_m2", tnames[i].c_str()), "pt (muon2)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_e1", tnames[i].c_str()), "eta (muon1)", 50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_e2", tnames[i].c_str()), "eta (muon2)", 50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_f1", tnames[i].c_str()), "phi (muon1)", 50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_f2", tnames[i].c_str()), "phi (muon2)", 50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_dEta", tnames[i].c_str()), "dEta", 50, -2.5, 2.5);
+      new TH1D(Form("%s_m1", tnames[i].c_str()), "pt (muon1)", 50, 0., 50.);
+      new TH1D(Form("%s_m2", tnames[i].c_str()), "pt (muon2)", 50, 0., 50.);
+      new TH1D(Form("%s_e1", tnames[i].c_str()), "eta (muon1)", 50, -2.5, 2.5);
+      new TH1D(Form("%s_e2", tnames[i].c_str()), "eta (muon2)", 50, -2.5, 2.5);
+      new TH1D(Form("%s_f1", tnames[i].c_str()), "phi (muon1)", 50, -3.15, 3.15);
+      new TH1D(Form("%s_f2", tnames[i].c_str()), "phi (muon2)", 50, -3.15, 3.15);
+      new TH1D(Form("%s_dEta", tnames[i].c_str()), "dEta", 50, -2.5, 2.5);
 
-      h1 = new TH1D(Form("%s_ptp", tnames[i].c_str()), "pt (pass)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_pta", tnames[i].c_str()), "pt (all)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_ptp1", tnames[i].c_str()), "pt muon1 (pass)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_pta1", tnames[i].c_str()), "pt muon1 (all)",  50, 0., 50.);
-      h1 = new TH1D(Form("%s_ptp2", tnames[i].c_str()), "pt muon2 (pass)", 50, 0., 50.);
-      h1 = new TH1D(Form("%s_pta2", tnames[i].c_str()), "pt muon2 (all)",  50, 0., 50.);
+      new TH1D(Form("%s_ptp", tnames[i].c_str()), "pt (pass)", 50, 0., 50.);
+      new TH1D(Form("%s_pta", tnames[i].c_str()), "pt (all)", 50, 0., 50.);
+      new TH1D(Form("%s_ptp1", tnames[i].c_str()), "pt muon1 (pass)", 50, 0., 50.);
+      new TH1D(Form("%s_pta1", tnames[i].c_str()), "pt muon1 (all)",  50, 0., 50.);
+      new TH1D(Form("%s_ptp2", tnames[i].c_str()), "pt muon2 (pass)", 50, 0., 50.);
+      new TH1D(Form("%s_pta2", tnames[i].c_str()), "pt muon2 (all)",  50, 0., 50.);
 
-      h1 = new TH1D(Form("%s_etap", tnames[i].c_str()), "eta (pass)", 50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_etaa", tnames[i].c_str()), "eta (all)",  50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_etap1", tnames[i].c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_etaa1", tnames[i].c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_etap2", tnames[i].c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
-      h1 = new TH1D(Form("%s_etaa2", tnames[i].c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
+      new TH1D(Form("%s_etap", tnames[i].c_str()), "eta (pass)", 50, -2.5, 2.5);
+      new TH1D(Form("%s_etaa", tnames[i].c_str()), "eta (all)",  50, -2.5, 2.5);
+      new TH1D(Form("%s_etap1", tnames[i].c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
+      new TH1D(Form("%s_etaa1", tnames[i].c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
+      new TH1D(Form("%s_etap2", tnames[i].c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
+      new TH1D(Form("%s_etaa2", tnames[i].c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
 
-      h1 = new TH1D(Form("%s_phip", tnames[i].c_str()), "phi (pass)", 50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_phia", tnames[i].c_str()), "phi (all)",  50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_phip1", tnames[i].c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_phia1", tnames[i].c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_phip2", tnames[i].c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
-      h1 = new TH1D(Form("%s_phia2", tnames[i].c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
+      new TH1D(Form("%s_phip", tnames[i].c_str()), "phi (pass)", 50, -3.15, 3.15);
+      new TH1D(Form("%s_phia", tnames[i].c_str()), "phi (all)",  50, -3.15, 3.15);
+      new TH1D(Form("%s_phip1", tnames[i].c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
+      new TH1D(Form("%s_phia1", tnames[i].c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
+      new TH1D(Form("%s_phip2", tnames[i].c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
+      new TH1D(Form("%s_phia2", tnames[i].c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
     }
     pDir->cd();
   }
@@ -5447,6 +5383,7 @@ void candAna::print1() {
 // ----------------------------------------------------------------------
 void candAna::pvStudy(bool bookHist) {
   static int   chan;
+  static bool  hlt1;
   static int   idx1, idx2, idx3;
   static float gx, gy, gz;
   static float sx, sy, sz;
@@ -5464,10 +5401,10 @@ void candAna::pvStudy(bool bookHist) {
   static float gt, t1, t2, t3; // (3D) lifetime
   static float gs, s1, s2, s3; // (2D) lifetime
   static float mult1, mult2; // PV track multiplicity
-  static float stat1, stat2; // PV status
   static float chi1, chi2; // PV chi2
   static float prob1, prob2; // PV prob
   static float dz12, dzmin;
+  static float m1pt, m2pt;
   static float npv;
   if (bookHist) {
     TDirectory *pDir = gDirectory;
@@ -5478,6 +5415,9 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("eta",  &eta, "eta/F");
     fPvStudyTree->Branch("phi",  &phi, "phi/F");
     fPvStudyTree->Branch("m",    &m, "m/F");
+    fPvStudyTree->Branch("hlt1", &hlt1, "hlt1/O");
+    fPvStudyTree->Branch("m1pt", &m1pt, "m1pt/F");
+    fPvStudyTree->Branch("m2pt", &m2pt, "m2pt/F");
     fPvStudyTree->Branch("chan", &chan, "chan/I");
     fPvStudyTree->Branch("npv",  &npv, "npv/F");
     fPvStudyTree->Branch("idx1", &idx1, "idx1/I");
@@ -5554,6 +5494,10 @@ void candAna::pvStudy(bool bookHist) {
   if (0 == pCand) return;
   if (pCand->fPv2Idx < 0) return;
 
+  m1pt  = fMu1Pt;
+  m2pt  = fMu2Pt;
+
+  hlt1  = fGoodHLT1;
   fls3d = pCand->fVtx.fD3d/pCand->fVtx.fD3dE;
   fl3d  = pCand->fVtx.fD3d;
 
@@ -5673,8 +5617,6 @@ void candAna::pvStudy(bool bookHist) {
   // -- loop over all PV in event and try out other approaches
   int minAlphaIdx(-1);
   double minAlpha(99.), alphaL;
-  int minPvIpIdx(-1);
-  double minPvIp(99.), pvipL;
   npv = fpEvt->nPV();
 
   for (int ipv = 0; ipv < fpEvt->nPV(); ++ipv) {
