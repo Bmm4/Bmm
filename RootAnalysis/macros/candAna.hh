@@ -55,9 +55,13 @@ struct mvaMuonIDData {
   float pt, eta;
   float segComp, chi2LocMom, chi2LocPos, glbTrackProb;
   float NTrkVHits, NTrkEHitsOut;
-  // -- new/additional setup
-  int intnmatchedstations, intvalidpixelhits, inttrklayerswithhits;
-  float kink, dpt, dptrel, dphi, deta, dr;
+  // -- Stephan's other variables
+  float glbTrackTailProb, glbDeltaEtaPhi, iValFrac;
+  float LWH; //int
+  float dxyRef, dzRef;
+  float kinkFinder, glbKinkFinder, timeAtIpInOutErr, outerChi2;
+  float valPixHits, TMTrkMult100; //int
+  float detVarComb;
 };
 
 class TTree;
@@ -198,7 +202,7 @@ public:
     , TRACKTIP, TRACKLIP
     , MUPTLO, MUPTHI
     , MUETALO, MUETAHI, MUIP
-    , MUBDT
+    , MUBDT, MUBDT1
     ;
 
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, IGNORETRIGGER, NOPRESELECTION;
@@ -226,8 +230,8 @@ public:
   double  fBDT;
   readerData frd;
 
-  TMVA::Reader *fMvaMuonID;
-  mvaMuonIDData mrd;
+  TMVA::Reader *fMvaMuonID, *fMvaMuonID1;
+  mvaMuonIDData mrd, mrd1;
   double  fMu1BDT, fMu2BDT, fMu1rBDT, fMu2rBDT;
   double  fMu1BDTLM, fMu2BDTLM, fMu1rBDTLM, fMu2rBDTLM;
 
@@ -254,8 +258,8 @@ public:
   double  fMu1VtxProb, fMu2VtxProb;
   bool    fMu1OtherVtx, fMu2OtherVtx;
   double  fMu1XpDist, fMu2XpDist;
-  double  fPvX, fPvY, fPvZ, fPvNtrk, fPvNdof, fPvAveW8, fPvDzmin;
-  int     fPvN, fPvIdx;
+  double  fPvX, fPvY, fPvZ, fPvNdof, fPvAveW8, fPv2Ndof, fPv2AveW8, fPvDzmin, fPvDz12;
+  int     fPvN, fPvIdx, fPv2Idx, fPvNtrk, fPv2Ntrk;
   double  fCandPt, fCandP, fCandTau, fCandTauE, fCandTauxy, fCandTauxyE, fCandEta, fCandPhi, fCandM, fCandME, fCandM2, fCandM3, fCandM4, fCandW8Tr, fCandW8Mu;
   double  fCandCosA, fCandA;
   double  fCandChi2, fCandDof, fCandChi2Dof, fCandProb, fCandFL3d, fCandFL3dE, fCandFLS3d, fCandFLxy, fCandFLSxy, fCandDoca;
