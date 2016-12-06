@@ -28,8 +28,53 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 
   if (0 == fpCand) return;
 
+  TAnaCand *pC(0), *pD(0);
+  // -- Check for another candidate with the same tracks that is closer to the PDG K*0 mass
+  double mkstar(0.), mkstarOther(0.);
+  for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
+    if (i < 0) break;
+    pD = fpEvt->getCand(i);
+    if (pD->fType == KSTARTYPE) {
+      mkstar     = pD->fMass;
+      break;
+    }
+  }
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    pC = fpEvt->getCand(iC);
+    if (pC->fType != fpCand->fType) continue;
+    if (pC == fpCand) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      if (idx0[i0] == idx1[i0]) {
+	++overlap;
+      }
+    }
+    // -- if all 4 track overlap, get kstar mass of the other cand
+    if (4 == overlap) {
+      for (int i = pC->fDau1; i <= pC->fDau2; ++i) {
+	if (i < 0) break;
+	pD = fpEvt->getCand(i);
+	if (pD->fType == KSTARTYPE) {
+	  mkstarOther = pD->fMass;
+	  break;
+	}
+      }
+      if (TMath::Abs(mkstarOther - MKSTAR) < TMath::Abs(mkstar - MKSTAR)) {
+	if (0) cout << "other cand " << pC->fIndex << " track indices has better kstar mass: " << mkstarOther << " (" << TMath::Abs(mkstarOther - MKSTAR)
+		    << ") then this cand: " << mkstar  << " (" << TMath::Abs(mkstar - MKSTAR) << ")"
+		    << endl;
+	return;
+      }
+    }
+  }
+
   // -- Check for J/psi mass
-  TAnaCand *pD = 0;
   fGoodJpsiMass = false;
   double chi2(0.), ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
@@ -132,7 +177,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
     //if(fKa1Missid || fKa2Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa2Missid<<" "<<fKa1MuMatch<<" "<<fKa2MuMatch<<endl;
   }
 
-  if (fCandTmi > -1) {
+  if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
     if (fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex() < fpEvt->nGenT()) {
       TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
       fKaPtGen     = pg1->fP.Perp();
@@ -140,6 +185,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
     }
     if (fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex() < fpEvt->nGenT()) {
       TGenCand *pg2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex());
+      pg2->dump();
       fPiPtGen     = pg2->fP.Perp();
       fPiEtaGen    = pg2->fP.Eta();
     }
