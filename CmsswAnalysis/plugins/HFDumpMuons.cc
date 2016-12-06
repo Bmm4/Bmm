@@ -95,6 +95,8 @@ void HFDumpMuons::dumpConfiguration() {
   cout << "---  docaVertex:              " << fDocaVertex << endl;
   cout << "---  keepBest:                " << fKeepBest << endl;
   cout << "---  maxCandTracks:           " << fMaxCandTracks << endl;
+  cout << "---  weightFileBarrel:        " << fweightFileBarrel << endl;
+  cout << "---  weightFileEndcap:        " << fweightFileEndcap << endl;
   cout << "----------------------------------------------------------------------" << endl;
 }
 
