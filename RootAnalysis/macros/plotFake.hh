@@ -98,6 +98,7 @@ public :
   void fakeRate(std::string dataset1 = "fakeData_ks", std::string dataset2 = "fakeMc_ks",
 		std::string var = "FakeTisFakePt", std::string varA = "FakeTisAllPt",
 		double ymax = 0.02);
+  void  massPlots(std::string varname = "AllPtMassSi");
 
   // -- utilities for control sample optimization
   void   playKs(std::string cuts = "flxy<4&&flsxy>15&&pvips<3&&prob>0.01&&abs(m1ips)>5&&abs(m2ips)>5&&m1q*m2q<0", std::string name = "");

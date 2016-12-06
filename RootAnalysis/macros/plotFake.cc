@@ -231,6 +231,41 @@ void plotFake::makeAll(string what) {
 }
 
 
+// ----------------------------------------------------------------------
+void  plotFake::massPlots(std::string varname) {
+
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str());
+  cout << " opened " << endl;
+
+  vector<string> modes;
+  modes.push_back("ks");
+  modes.push_back("phi");
+  modes.push_back("lambda");
+  modes.push_back("psi");
+  string hname(""), fname("");
+  TH1D *h1(0);
+  gStyle->SetOptStat(0);
+  for (unsigned int im = 0; im < modes.size(); ++im) {
+    for (unsigned int ic = 0; ic < 3; ++ic) {
+      hname = Form("ad%d_fakeData_%s_%s", ic, modes[im].c_str(), varname.c_str());
+      h1 = (TH1D*)fHistFile->Get(hname.c_str());
+      cout << "hname = " << hname << endl;
+      if (string::npos != modes[im].find("ks")) {
+	setTitles(h1, "m_{#pi#pi} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+      } else if (string::npos != modes[im].find("phi")) {
+	setTitles(h1, "m_{KK} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+      } else if (string::npos != modes[im].find("lambda")) {
+	setTitles(h1, "m_{p#pi} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+      } else if (string::npos != modes[im].find("psi")) {
+	setTitles(h1, "m_{#mu#mu} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+      }
+      shrinkPad(0.15, 0.2);
+      if (h1) h1->Draw();
+      savePad(Form("fakemass_ad%d_%s_%s.pdf", ic, modes[im].c_str(), varname.c_str()));
+    }
+  }
+}
 
 // // ----------------------------------------------------------------------
 // void plotFake::plotMass(string sample, string selection) {
