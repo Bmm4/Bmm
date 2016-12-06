@@ -2439,7 +2439,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.outerChi2        = pt->fOuterChi2;
       mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
       mrd.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
-      mrd.detVarComb       = getDetVarComb(pt);
+      mrd.vMuonHitComb     = getDetVarComb(pt); //FIXME
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2459,7 +2459,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.outerChi2        = pt->fOuterChi2;
       mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
       mrd1.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
-      mrd1.detVarComb       = getDetVarComb(pt);
+      mrd1.vMuonHitComb     = getDetVarComb(pt); // FIXME
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }
@@ -3389,9 +3389,9 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	  reader->AddVariable("TMTrkMult100", &d.TMTrkMult100);
 	  continue;
 	}
-	if (stype == "detVarComb") {
-	  cout << "  adding detVarComb" << endl;
-	  reader->AddVariable("detVarComb", &d.detVarComb);
+	if (stype == "vMuonHitComb") {
+	  cout << "  adding vMuonHitComb" << endl;
+	  reader->AddVariable("vMuonHitComb", &d.vMuonHitComb);
 	  continue;
 	}
       }
