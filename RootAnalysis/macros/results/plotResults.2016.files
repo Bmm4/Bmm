@@ -26,7 +26,7 @@ type=bsmm5,mc           bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-m
 type=bsmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root
 type=bsmm,acc,mcOff     bf=(3.65,0.23)e-9  eff=(2.64,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu-v03.root
 type=bymm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p7_BMuonFilter-v03.root
-# type=bxmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p1_BMuonFilter-v03.root
+type=bxmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p1_BMuonFilter-v03.root
 # -- Bs backgrounds
 type=bskk,mcOff,bg      bf=(2.49,0.17)e-5  eff=(1.97,0.01)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToKK_BMuonFilter-v03.root
 type=bskk,acc,mcOff,bg  bf=(2.49,0.17)e-5  eff=(2.68,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToKK-v03.root
