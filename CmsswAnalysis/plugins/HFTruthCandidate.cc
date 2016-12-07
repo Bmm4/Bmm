@@ -165,10 +165,13 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
   vector<int> bla(100);
   vector<int>::iterator blaIt;
 
-  if (fVerbose > 0)  cout << "=== HFTruthCandidate run = " << iEvent.id().run()
-			  << " evt = " << iEvent.id().event()
-			  << " ==================================================================="
-			  << endl;
+  if (fVerbose > 0)  {
+    cout << "======================================================================" << endl;
+    cout << "=== HFTruthCandidate run = " << iEvent.id().run()
+	 << " evt = " << iEvent.id().event()
+	 << "----------------------------------------------------------------------"
+	 << endl;
+  }
   //  cout << " ngenCands: " << gHFEvent->nGenCands() << endl;
   for (int ig = 0; ig < gHFEvent->nGenCands(); ++ig) {
     pGen = gHFEvent->getGenCand(ig);
@@ -489,8 +492,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  theTree3.addTrack(iKaon, 321);
 	  theTree3.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree3);
-	  pCand->fDouble1 = theTree3.fTV.mass;
-	  pCand->fDouble2 = theTree3.fTV.masserr;
+	  pCand->fMassC  = theTree3.fTV.mass;
+	  pCand->fMassCE = theTree3.fTV.masserr;
 	}
       }
 
@@ -536,8 +539,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iKaon2, 321);
 	  theTree4.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree4);
-	  pCand->fDouble1 = theTree4.fTV.mass;
-	  pCand->fDouble2 = theTree4.fTV.masserr;
+	  pCand->fMassC  = theTree4.fTV.mass;
+	  pCand->fMassCE = theTree4.fTV.masserr;
 	}
       }
 
@@ -570,8 +573,10 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	iterator->addTrack(iPion, 211);
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
+	cout << "correct type unconstrained fit mass: " << theTree7.fTV.mass << " for type = " << 3000000 + fType << endl;
 	TAnaCand *pCand = theTree7.getAnaCand();
 	if (0 == pCand) {
+	  cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
 	} else {
 	  theTree7.clear(400511, true, MB_0, false, -1.0, true);
 	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
@@ -582,8 +587,9 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree7);
-	  pCand->fDouble1 = theTree7.fTV.mass;
-	  pCand->fDouble2 = theTree7.fTV.masserr;
+	  pCand->fMassC  = theTree7.fTV.mass;
+	  pCand->fMassCE = theTree7.fTV.masserr;
+	  cout << "correct type constrained fit mass: " << theTree7.fTV.mass << endl;
 	}
 
 	// -- add the swapped kstar mass hypothesis
@@ -615,8 +621,10 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion, 211);
 	  if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar with wrong K/pi assignments" << endl;
 	  aSeq.doFit(&theTree8);
+	  cout << "wrong type unconstrained fit mass: " << theTree8.fTV.mass << endl;
 	  TAnaCand *pCand = theTree8.getAnaCand();
 	  if (0 == pCand) {
+	    cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
 	  } else {
 	    theTree8.clear(400511, true, MB_0, false, -1.0, true);
 	    iterator = theTree8.addDecayTree(400443, true, MJPSI, true);
@@ -627,8 +635,9 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    iterator->addTrack(iPion, 211);
 	    theTree8.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	    aSeq.doFit(&theTree8);
-	    pCand->fDouble1 = theTree8.fTV.mass;
-	    pCand->fDouble2 = theTree8.fTV.masserr;
+	    pCand->fMassC  = theTree8.fTV.mass;
+	    pCand->fMassCE = theTree8.fTV.masserr;
+	    cout << "wrong type constrained fit mass: " << theTree8.fTV.mass << endl;
 	  }
 	}
       }
@@ -672,8 +681,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  theTree5.addTrack(iKaon, 321);
 	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree5);
-	  pCand->fDouble1 = theTree5.fTV.mass;
-	  pCand->fDouble2 = theTree5.fTV.masserr;
+	  pCand->fMassC  = theTree5.fTV.mass;
+	  pCand->fMassCE = theTree5.fTV.masserr;
 	}
       }
 
@@ -721,8 +730,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iKaon2, 321);
 	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree5);
-	  pCand->fDouble1 = theTree5.fTV.mass;
-	  pCand->fDouble2 = theTree5.fTV.masserr;
+	  pCand->fMassC  = theTree5.fTV.mass;
+	  pCand->fMassCE = theTree5.fTV.masserr;
 	}
       }
 
@@ -768,8 +777,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  theTree5.addTrack(iKaon1, 321);
 	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree5);
-	  pCand->fDouble1 = theTree5.fTV.mass;
-	  pCand->fDouble2 = theTree5.fTV.masserr;
+	  pCand->fMassC  = theTree5.fTV.mass;
+	  pCand->fMassCE = theTree5.fTV.masserr;
 	}
 
 	// -- candidate with second kaon
@@ -791,8 +800,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  theTree5.addTrack(iKaon2, 321);
 	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree5);
-	  pCand->fDouble1 = theTree5.fTV.mass;
-	  pCand->fDouble2 = theTree5.fTV.masserr;
+	  pCand->fMassC  = theTree5.fTV.mass;
+	  pCand->fMassCE = theTree5.fTV.masserr;
 	}
 
       }
@@ -841,8 +850,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree7);
-	  pCand->fDouble1 = theTree7.fTV.mass;
-	  pCand->fDouble2 = theTree7.fTV.masserr;
+	  pCand->fMassC  = theTree7.fTV.mass;
+	  pCand->fMassCE = theTree7.fTV.masserr;
 	}
 
 	// -- second version
@@ -867,8 +876,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion, 211);
 	  theTree7.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree7);
-	  pCand->fDouble1 = theTree7.fTV.mass;
-	  pCand->fDouble2 = theTree7.fTV.masserr;
+	  pCand->fMassC  = theTree7.fTV.mass;
+	  pCand->fMassCE = theTree7.fTV.masserr;
 	}
 
       }
@@ -917,8 +926,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion2, 321);
 	  theTree5.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
 	  aSeq.doFit(&theTree5);
-	  pCand->fDouble1 = theTree5.fTV.mass;
-	  pCand->fDouble2 = theTree5.fTV.masserr;
+	  pCand->fMassC  = theTree5.fTV.mass;
+	  pCand->fMassCE  = theTree5.fTV.masserr;
 	}
       }
 
