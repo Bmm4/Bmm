@@ -423,8 +423,6 @@ void candAna::candAnalysis() {
   fCandPvIpS3D  = fpCand->fPvIP3d/fpCand->fPvIP3dE;
   if (TMath::IsNaN(fCandPvIpS3D)) fCandPvIpS3D = -1.;
 
-  //old  fCandM2 = constrainedMass();
-  //  fCandM2 = fpCand->fDouble1;
   fCandM2 = fpCand->fMassC;
 
   // -- new variables
