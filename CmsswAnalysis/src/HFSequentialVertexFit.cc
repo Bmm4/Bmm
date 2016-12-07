@@ -87,7 +87,7 @@ HFSequentialVertexFit::~HFSequentialVertexFit() {}
 
 // ----------------------------------------------------------------------
 void HFSequentialVertexFit::doFit(HFDecayTree *tree) {
-  if (fVerbose > 5) cout << "==>HFSequentialVertexFit> doFit()" << endl;
+  if (fVerbose > 5) cout << "==>HFSequentialVertexFit> doFit() for particleID = " << tree->particleID() << endl;
 
   try {
     tree->resetKinematicTree(1);
@@ -413,7 +413,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
 
   if (fVerbose > 2) {
     cout << "-----------------------------------------" << endl;
-    cout << "==> HFSequentialVertexFit: Filling candidate with mass = " << mass << endl;
+    cout << "==> HFSequentialVertexFit: Filling candidate " << tree->particleID() << " with mass = " << mass << endl;
     cout << "-----------------------------------------" << endl;
   }
 
