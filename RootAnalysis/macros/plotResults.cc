@@ -580,8 +580,12 @@ void plotResults::loopFunction1() {
   fhMassWithTriggerCuts[fChan]->Fill(mass);
 
   fhMassWithAllCuts[fChan]->Fill(mass);
-  if (BMM == fMode && !(5.2 < mass && mass < 5.45)) {
-    fhMassWithAllCutsBlind[fChan]->Fill(mass);
+  if (BMM == fMode) {
+    if (5.2 < mass && mass < 5.45) {
+      // -- do nothing
+    } else {
+      fhMassWithAllCutsBlind[fChan]->Fill(mass);
+    }
   }
 
   if (fMode == BU2JPSIKP) {
