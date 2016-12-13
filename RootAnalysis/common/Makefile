@@ -42,7 +42,7 @@ EXTHEADERS    = -I..
 # -- Files
 UTIL     := PidTable.o PidData.o \
             AnalysisCuts.o AnalysisDistribution.o HistCutEfficiency.o selpoint.o dataset.o \
-            util.o initFunc.o hpl.o JSON.o PdTrigger.o Lumi.o ana.o
+            util.o initFunc.o hpl.o JSON.o PdTrigger.o Lumi.o ana.o fitPsYield.o
 UTILDICT := ${UTIL:.o=Dict.o}
 
 DICTHEADERS := ${UTIL:.o=Dict.h}
