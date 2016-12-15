@@ -1592,6 +1592,7 @@ void candAna::bookHist() {
   fEffTree->Branch("evt",    &fEvt,               "evt/L");
   fEffTree->Branch("hlt",    &fGoodHLT,           "hlt/O");
   fEffTree->Branch("hlt1",   &fGoodHLT1,          "hlt1/O");
+  fEffTree->Branch("chan",   &fETchan,            "chan/I");
   fEffTree->Branch("procid", &fProcessType,       "procid/I");
   fEffTree->Branch("bidx",   &fGenBTmi,           "bidx/I");
 
@@ -5394,6 +5395,7 @@ void candAna::pvStudy(bool bookHist) {
   static float dsv; // distance between reco SV and gen SV
   static float a1, a2, a3; // pointing angle between
   static float gfl, fl1, fl2, fl3; // flight length
+  static float tau; // proper 3d lifetime
   static float fl3d, fls3d; // flight length significance from the real candidate
   static float flxy, flsxy; // flight length significance from the real candidate
   static float gt, t1, t2, t3; // (3D) lifetime
@@ -5437,6 +5439,7 @@ void candAna::pvStudy(bool bookHist) {
     fPvStudyTree->Branch("gt",    &gt,    "gt/F");
     fPvStudyTree->Branch("flsxy", &flsxy, "flsxy/F");
     fPvStudyTree->Branch("flxy",  &flxy,  "flxy/F");
+    fPvStudyTree->Branch("tau",   &tau,   "tau/F");
     fPvStudyTree->Branch("fls3d", &fls3d, "fls3d/F");
     fPvStudyTree->Branch("fl3d",  &fl3d,  "fl3d/F");
     fPvStudyTree->Branch("fl1",   &fl1,   "fl1/F");
@@ -5501,6 +5504,7 @@ void candAna::pvStudy(bool bookHist) {
 
   flsxy = pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
   flxy  = pCand->fVtx.fDxy;
+  tau   = pCand->fTau3d;
 
   TGenCand *pB = fpEvt->getGenCand(fGenBTmi);
   TGenCand *pM1 = fpEvt->getGenCand(fGenM1Tmi);
