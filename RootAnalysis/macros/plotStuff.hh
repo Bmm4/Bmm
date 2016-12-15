@@ -63,12 +63,13 @@ private:
   TH1D *fpHmultFar[NCHAN], *fpHmultClose05[NCHAN]
     , *fpHdzmin[NCHAN]
     , *fpHmultFar2[NCHAN], *fpHmultClose2[NCHAN]
-    , *fpHlz1[NCHAN]
+    , *fpHlz1[NCHAN], *fpHtmlz1[NCHAN]
     , *fpHlz2[NCHAN]
     ;
 
-  TProfile *fpP1flsxy[NCHAN], *fpP1fls3d[NCHAN], *fpP1dfl3d[NCHAN], *fpP1tau[NCHAN], *fpP1dtau[NCHAN];
-  TProfile *fpP2flsxy[NCHAN], *fpP2fls3d[NCHAN], *fpP2dfl3d[NCHAN], *fpP2tau[NCHAN], *fpP2dtau[NCHAN];
+  TProfile *fpP1Mult[NCHAN], *fpP1flsxy[NCHAN], *fpP1fls3d[NCHAN], *fpP1fl3d[NCHAN], *fpP1dfl3d[NCHAN], *fpP1tau[NCHAN], *fpP1dtau[NCHAN];
+  TProfile *fpP2Mult[NCHAN], *fpP2flsxy[NCHAN], *fpP2fls3d[NCHAN], *fpP2fl3d[NCHAN], *fpP2dfl3d[NCHAN], *fpP2tau[NCHAN], *fpP2dtau[NCHAN];
+  TProfile *fpP3tau[NCHAN],  *fpP3dtau[NCHAN];
 
   ClassDef(plotStuff,1)
 
