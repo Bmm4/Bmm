@@ -23,14 +23,17 @@ fitPsYield::fitPsYield(string hname, TDirectory *pD, int verbose): fVerbose(verb
   if (0 == fpDir) fpDir = gDirectory;
   TIter next(fpDir->GetListOfKeys());
   TKey *key(0);
+  if (fVerbose > 0) cout << "fitPsYield: looking for histogram ->" << hname << "<- in directory " << fpDir->GetName() << endl;
   while ((key = (TKey*)next())) {
     if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
     if (TString(key->GetName()).Contains(hname.c_str())) {
       string hname = key->GetName();
       TH2D *h2     = (TH2D*)fpDir->Get(hname.c_str());
       if (!h2) continue;
+      if (fVerbose > 0) cout << "fitPsYield: found histogram " << h2->GetName()
+			     << " with integral = " << h2->Integral(1, h2->GetNbinsX(), 1, h2->GetNbinsY())
+			     << endl;
       fH2          = (TH2D*)h2->Clone(Form("fpy_%s", hname.c_str()));
-      //      int chanA    = h2->GetYaxis()->FindBin(-0.1);
       int chanB    = h2->GetYaxis()->FindBin(+0.1);
       int chan1    = h2->GetYaxis()->FindBin(1.1);
       int chan2    = h2->GetYaxis()->FindBin(h2->GetYaxis()->GetXmax()) - 1;
@@ -88,10 +91,7 @@ void fitPsYield::printSummary() {
 	 << Form(" fit chi2/dof = %5.1f/%3d, prob = %4.3f", fData[i]->fChi2, fData[i]->fNdof, fData[i]->fProb)
 	 << (fData[i]->fProb < 0.05? "**":"")
 	 << endl;
-    fSummary.fSg += fData[i]->fPs*fData[i]->fResults.fSg;
-    fSummary.fSgE += fData[i]->fPs*fData[i]->fPs*fData[i]->fResults.fSgE*fData[i]->fResults.fSgE;
   }
-  fSummary.fSgE = TMath::Sqrt(fSummary.fSgE);
 
   cout << Form("  total = %8.1f +/- %3.2f", fSummary.fSg, fSummary.fSgE)
        << Form(" (rel err = %6.5f)", fSummary.fSgE/fSummary.fSg)
@@ -112,21 +112,32 @@ void fitPsYield::printSummary() {
 
 
 // ----------------------------------------------------------------------
-void fitPsYield::fitBu2JpsiKp() {
+void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
   // -- prefit weighted combination:
-  fit0_Bu2JpsiKp(fW8Combined, -1);
+  fit0_Bu2JpsiKp(fW8Combined, -1, pdfprefix);
   // -- prefit unweighted combination:
-  fit0_Bu2JpsiKp(fUnW8Combined, -1);
+  fit0_Bu2JpsiKp(fUnW8Combined, -1, pdfprefix);
 
   // -- fit all prescales
   for (unsigned int ips = 0; ips < fData.size(); ++ips) {
-    fit0_Bu2JpsiKp(fData[ips]);
+    fit0_Bu2JpsiKp(fData[ips], limitpars, pdfprefix);
   }
+
+  fSummary.clear();
+  for (unsigned int i = 0; i < fData.size(); ++i) {
+    fSummary.fSg += fData[i]->fPs*fData[i]->fResults.fSg;
+    fSummary.fSgE += fData[i]->fPs*fData[i]->fPs*fData[i]->fResults.fSgE*fData[i]->fResults.fSgE;
+  }
+  fSummary.fSgE = TMath::Sqrt(fSummary.fSgE);
+
 
 }
 
 // ----------------------------------------------------------------------
-void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars) {
+// limitpars < 0: determine starting values for fit
+//           = 0: unconstrained fit, based on starting values of prior (limitpars < 0) call
+//           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
+void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
   if (0 == fData.size()) return;
   fSummary.clear();
@@ -194,14 +205,17 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars) {
     f1->FixParameter(8, fPar[8]);
     double shift = (limitpars < 5?limitpars*0.1: 0.6);
     f1->SetParameter(9, scale*fPar[9]);	if (limitpars) f1->SetParLimits(9, scale*fPar[9]*(1.-shift), scale*fPar[9]*(1.+shift));
-    fpIF->dumpParameters(f1);
+    if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
 
   cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
+  string fitopt = "lr";
+  if (fVerbose) fitopt += "q";
   if (h->GetSumOfWeights() > h->GetEntries()) {
-    h->Fit(f1, "wlr", "", xmin, xmax);
+    fitopt += "w";
+    h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
   } else {
-    h->Fit(f1, "lr", "", xmin, xmax);
+    h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
   }
 
   // -- copy parameters into components and draw them
@@ -265,7 +279,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars) {
 
   c0->Modified();
   c0->Update();
-  c0->SaveAs(Form("%s.pdf", h->GetName()));
+  c0->SaveAs(Form("%s%s.pdf", pdfprefix.c_str(), h->GetName()));
 
   delete f1;
   delete fg;
