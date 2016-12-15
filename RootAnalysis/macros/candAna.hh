@@ -283,7 +283,7 @@ public:
   // -- another reduced tree
   TTree       *fEffTree;
   bool fETm1gt, fETm2gt, fETm1id, fETm1tmid, fETm1mvaid, fETm2id, fETm2tmid, fETm2mvaid;
-  int fETm1q, fETm2q;
+  int fETm1q, fETm2q, fETchan;
   float fETgm, fETgpt, fETgeta;
   float fETcandMass;
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
