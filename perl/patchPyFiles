@@ -6,9 +6,9 @@
 # script for patching py files created by cmsDriver.py
 #
 # ----------------------------------------------------------------------
-# Send all questions, wishes and complaints to the 
+# Send all questions, wishes and complaints to the
 #
-# Author    Urs Langenegger <urs.langenegger@psi.ch>
+# Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
 
 
@@ -16,9 +16,9 @@ use Getopt::Std;
 getopts('s:');
 
 
-my $seed = 40000; 
+my $seed = 40000;
 if ($opt_s) {
-    $seed = $opt_s; 
+    $seed = $opt_s;
 }
 
 @insert = ("# -- Reduced verbosity\n",
@@ -42,7 +42,7 @@ foreach $file (@ARGV) {
     for ($i; $i < $#ARRAY; $i++) {
 	if ($ARRAY[$i] =~ /EmptySource/) {
 	    splice @ARRAY, $i-1, 0, @insert;
-	    last; 
+	    last;
 	}
     }
 
@@ -51,5 +51,3 @@ foreach $file (@ARGV) {
     truncate(FH,tell(FH))               or die "Truncating: $!";
     close(FH)                           or die "Closing: $!";
 }
-
-

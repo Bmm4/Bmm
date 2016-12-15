@@ -1,5 +1,17 @@
 #!/usr/bin/perl
 
+# -- Usage: $BMMBASE/perl/cleanProductionArea BsToKMuNu*
+#
+#
+# 2016/12/15   first shot
+#
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+
 use Getopt::Std;
 getopts('Ccdhlmo:pq:s:t:w:x:y');
 

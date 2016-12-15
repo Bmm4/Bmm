@@ -11,6 +11,11 @@
 #           -o /scratch/ursl/bmm4/v01/bmm-mc-Summer15_private-recoil0-v01.root
 #
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
 
 my $root    = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 my $dcap    = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";

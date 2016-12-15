@@ -6,9 +6,9 @@
 #            -c counts how many events were put into a chain (for verification)
 #
 # ----------------------------------------------------------------------
-# Send all questions, wishes and complaints to the 
+# Send all questions, wishes and complaints to the
 #
-# Author    Urs Langenegger <urs.langenegger@gmail.com>
+# Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
@@ -16,9 +16,9 @@ getopts('cn:');
 
 
 if ($opt_c) {
-    my $totalcnt = 0; 
+    my $totalcnt = 0;
     foreach $file (@ARGV) {
-	$cnt = countChain($file); 
+	$cnt = countChain($file);
 	$totalcnt += $cnt;
 	print "$file $cnt\n";
     }
@@ -26,51 +26,51 @@ if ($opt_c) {
 }
 
 foreach $file (@ARGV) {
-    &splitChain($file, $opt_n); 
+    &splitChain($file, $opt_n);
 }
 
 
 # ----------------------------------------------------------------------
 sub splitChain() {
-    ($cifile, $nmax) = @_; 
+    ($cifile, $nmax) = @_;
     open(IN, "$cifile") || die "Cannot open $cifile\n";
-    @lines = <IN>; 
-    close(IN); 
+    @lines = <IN>;
+    close(IN);
     my $ccnt= "00";
-    # -- split off possible path 
+    # -- split off possible path
     $tmp = $cifile; @tmp = split(/\//, $cifile); $cfile = pop(@tmp);
 
     # -- for the final cross check
-    my $splitChainCnt = 0; 
-    my $bigChainCnt = 0; 
+    my $splitChainCnt = 0;
+    my $bigChainCnt = 0;
 
     open(OUT, ">$cfile-$ccnt") || die "Cannot open $cfile-$ccnt\n";
 
-    my $icnt = 0; 
-    my $fcnt = 0; 
-    my $fileOpen = 1; 
+    my $icnt = 0;
+    my $fcnt = 0;
+    my $fileOpen = 1;
     for ($iline = 0; $iline <= $#lines; $iline++) {
 	($iname, $icnt) = split(/\s{1,99}/, $lines[$iline]);
-	$bigChainCnt += $icnt; 
+	$bigChainCnt += $icnt;
 	print OUT "$iname $icnt\n";
-	$fcnt += $icnt; 
+	$fcnt += $icnt;
 	if ($fcnt > $nmax) {
-	    $splitChainCnt += $fcnt; 
+	    $splitChainCnt += $fcnt;
 	    print "  $cfile-$ccnt: $fcnt\n";
-	    close(OUT); 
-	    $fileOpen = 0; 
+	    close(OUT);
+	    $fileOpen = 0;
 	    $ccnt++;
 	    if ($iline < $#lines) {
 		open(OUT, ">$cfile-$ccnt") || die "Cannot open $cfile-$ccnt\n";
-		$fileOpen = 1; 
-		$fcnt = 0; 
+		$fileOpen = 1;
+		$fcnt = 0;
 	    }
 	}
     }
     if ($fileOpen) {
-	$splitChainCnt += $fcnt; 
+	$splitChainCnt += $fcnt;
 	print "  $cfile-$ccnt: $fcnt\n";
-	close(OUT); 
+	close(OUT);
     }
 
     print "Big chain has $bigChainCnt <-> $splitChainCnt from split chains\n";
@@ -80,14 +80,14 @@ sub splitChain() {
 
 # ----------------------------------------------------------------------
 sub countChain() {
-    ($cfile, $nmax) = @_; 
+    ($cfile, $nmax) = @_;
     open(IN, "$cfile") || die "Cannot open $cfile\n";
-    @lines = <IN>; 
-    close(IN); 
-    my $cnt = 0; 
+    @lines = <IN>;
+    close(IN);
+    my $cnt = 0;
     foreach $line (@lines) {
 	($fname, $fcnt) = split(/\s{1,99}/, $line);
-	$cnt += $fcnt; 
+	$cnt += $fcnt;
     }
     return $cnt;
 }

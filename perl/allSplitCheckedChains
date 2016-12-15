@@ -1,14 +1,18 @@
 #!/usr/bin/env perl
 
 # ----------------------------------------------------------------------
-# usage: 
+# usage:
 #         cd chains/jobs
 #         allSplitCheckedChains
 #
 #
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
-use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
@@ -38,32 +42,32 @@ if ($opt_y eq "2011") {
 	"cbmm-2011-$opt_v-2e33-accBu2JpsiK"  => "signal MC",
 	"cbmm-2011-$opt_v-2e33-accBs2JpsiPhi"  => "signal MC",
 	"cbmm-2011-$opt_v-mix-Bs2JpsiPhi" => "signal MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-2e33-Bd2PiPi" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bd2KPi" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bd2KK" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bd2PiMuNu" => "bg MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-2e33-Bd2DstarPi" => "other MC",
 	"cbmm-2011-$opt_v-2e33-Bd2RhoPi" => "other MC",
 	"cbmm-2011-$opt_v-2e33-Bu2JpsiPi" => "other MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-2e33-Bs2KPi" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bs2KK" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bs2PiPi" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bs2KMuNu" => "bg MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-2e33-Lb2PMuNu" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Lb2PiP" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Lb2KP" => "bg MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-2e33-Bu2KMuMu" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bu2PiMuMu" => "bg MC",
 	"cbmm-2011-$opt_v-2e33-Bs2PhiMuMu" => "bg MC",
-	# 
+	#
 	"cbmm-2011-$opt_v-MuOnia__Run2011A-08Nov2011-v1" => "data",
 	"cbmm-2011-$opt_v-MuOnia__Run2011B-19Nov2011-v1" => "data"
-	); 
+	);
 }
 
 
@@ -148,17 +152,17 @@ if ($opt_y eq "2012") {
 	"cbmm-2012-v16-MuOnia__Run2012D-PromptReco-v1" => "data",
 	"cbmm-2012-v16-MuOnia__Run2012D-16Jan2013-v1" => "data",
 
-	); 
+	);
 }
 
-	
+
 
 
 foreach $chain (keys %catalog) {
-    $chunk = $opt_m; 
+    $chunk = $opt_m;
     if ($catalog{$chain} =~ /data/) {
 	$chunk = $opt_n;
     }
     print "splitCheckedChain -n $chunk $chain\n";
-    system("splitCheckedChain -n $chunk ../$chain"); 
+    system("splitCheckedChain -n $chunk ../$chain");
 }

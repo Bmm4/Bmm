@@ -3,6 +3,11 @@
 # Usage:       filterEff dir*
 # ------
 #              determine filter efficiency from all directories and *.sge.log files in there
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
 my $fileglob = "sge.log";
 my $pattern = "Filter efficiency (event-level)= ";

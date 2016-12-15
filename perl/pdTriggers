@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # -- first create the ASCII files by running cmsRun **at CERN**, **in a sufficiently high CMSSW release**
-# $BMMBASE/perl/pdTriggers -a -s /frozen/... 
+# $BMMBASE/perl/pdTriggers -a -s /frozen/...
 #
 # -- dump all triggers ever in a version of the PDs interesting for us
 # $BMMBASE/perl/pdTriggers -B
@@ -20,19 +20,19 @@
 #
 #
 # ----------------------------------------------------------------------
-# Send all questions, wishes and complaints to the 
+# Send all questions, wishes and complaints to the
 #
-# Author    Urs Langenegger <urs.langenegger@gmail.com>
+# Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
 
-use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
 getopts('abBcDp:s:t:v');
 
-my $commandFrozen = "hltConfigFromDB --offline --configName "; 
-my $commandCdaq   = "hltConfigFromDB --adg --v2 --configName "; 
+my $commandFrozen = "hltConfigFromDB --offline --configName ";
+my $commandCdaq   = "hltConfigFromDB --adg --v2 --configName ";
 
 
 # -- allow either /frozen/... or menu__frozen__... version
@@ -43,27 +43,27 @@ if ($opt_s =~ /__/) {
 }
 
 my @skipPD = (
-    "Commissioning", 
+    "Commissioning",
     "HLTPhysics", "HLTMonitor", "LookAreaPD", "OnlineMonitor", "InitialPD", "L1Accept",
     "RPCMonitor",
-    "FullTrack", "Templates", 
+    "FullTrack", "Templates",
     "HighMultiplicity85", "HighMultplicity85",
-    "MonteCarlo", 
-    "ParkingHT1", "ParkingHT2", "ParkingHT3", "ParkingHT4", "ParkingHT5", "ParkingMonitor", 
-    "AlCaP0", "AlCaPhiSym", "AlCaLumiPixels", "AlCaElectron", 
-    "DQMOfflinePD", "TestEnablesEcalHcalDQM", 
-    "HINCaloJetsOther", "HINCaloJets", "HINPFJets", "HINPFJetsOther", "HINPhoton", "HINMuon", 
-    "Test", "ElectronStream", 
-    "HcalHPDNoise", "HCalNZS", "HcalNZS", "TestEnablesEcalHcal", "TestEnablesEcalHcalDQM", "HcalHPDNoise", 
-    "EcalLaser", "NoBPTX", 
+    "MonteCarlo",
+    "ParkingHT1", "ParkingHT2", "ParkingHT3", "ParkingHT4", "ParkingHT5", "ParkingMonitor",
+    "AlCaP0", "AlCaPhiSym", "AlCaLumiPixels", "AlCaElectron",
+    "DQMOfflinePD", "TestEnablesEcalHcalDQM",
+    "HINCaloJetsOther", "HINCaloJets", "HINPFJets", "HINPFJetsOther", "HINPhoton", "HINMuon",
+    "Test", "ElectronStream",
+    "HcalHPDNoise", "HCalNZS", "HcalNZS", "TestEnablesEcalHcal", "TestEnablesEcalHcalDQM", "HcalHPDNoise",
+    "EcalLaser", "NoBPTX",
     "ToTOTEM",
     "Express", "ExpressPhysics", "EventDisplay"
     );
-    
+
 
 
 # -- from https://twiki.cern.ch/twiki/bin/view/CMS/ConfDB740#Frozen_menus
-my @frozenMenus = ( 
+my @frozenMenus = (
     "/frozen/2015/25ns14e33/v4.0/HLT/V4",
     "/frozen/2015/25ns14e33/v4.0/HLT/V1",
     "/frozen/2015/25ns14e33/v3.3/HLT/V2",
@@ -93,12 +93,12 @@ my @frozenMenus = (
     "/frozen/2015/50ns_5e33/v1.1/HLT/V2",
     "/frozen/2015/50ns_5e33/v1.0/HLT/V3",
     "/frozen/2015/50ns_5e33/v1.0/HLT/V1"
-    ); 
+    );
 
 # -- from http://fwyzard.web.cern.ch/fwyzard/hlt/2012/summary
 #         http://fwyzard.web.cern.ch/fwyzard/hlt/2011/summary
 #    (manual queries to cmswbm with runnumbers from json; to be replaced by list from cmsRun ...
-my @cdaqMenus = ( 
+my @cdaqMenus = (
     # -- 2015
     "/cdaq/physics/firstCollisions15/v9.2/HLT/V12",
     "/cdaq/physics/Run2015/5e33/v2.4/HLT/V2",
@@ -113,7 +113,7 @@ my @cdaqMenus = (
     "/cdaq/physics/Run2015/25ns14e33/v4.2.3/HLT/V2",
     "/cdaq/physics/Run2015/25ns14e33/v4.2.3/HLT/V5",
     "/cdaq/physics/Run2015/25ns14e33/v4.2.4/HLT/V4",
-    "/cdaq/physics/Run2015/25ns14e33/v4.2.5/HLT/V2", 
+    "/cdaq/physics/Run2015/25ns14e33/v4.2.5/HLT/V2",
     # -- 2012
     "/cdaq/physics/Run2012/5e33/v4.4/HLT/V5",
     "/cdaq/physics/Run2012/5e33/v4.4/HLT/V7",
@@ -252,7 +252,7 @@ my @cdaqMenus = (
     "/cdaq/physics/Run2011HI/v1.6/HIHLT/V1",
     "/cdaq/physics/Run2011HI/v1.6/HIHLT/V2",
     "/cdaq/physics/Run2011HI/v1.7/HIHLT/V1"
-    ); 
+    );
 
 
 #my @menus = reverse @frozenMenus;
@@ -265,7 +265,7 @@ my $command = $commandCdaq;
 # -- cmsRun part
 # %%%%%%%%%%%%%%
 if ($opt_a) {
-    my $file = ""; 
+    my $file = "";
     foreach $menu (@menus) {
 	if ($opt_s && ($menu ne $opt_s)) {
 	    next;
@@ -274,7 +274,7 @@ if ($opt_a) {
 	print "$command $menu > $file\n";
 	system("$command $menu > $file");
     }
-    exit(0); 
+    exit(0);
 }
 
 
@@ -284,13 +284,13 @@ if ($opt_a) {
 # %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 if ($opt_B) {
     $pdlist = `$ENV{BMMBASE}/perl/pdTriggers -b`;
-    @pd = split(/\n/, $pdlist); 
+    @pd = split(/\n/, $pdlist);
     foreach (@pd) {
 	system("$ENV{BMMBASE}/perl/pdTriggers -p $_");
     }
-    
+
     print "\n";
-    exit(0); 
+    exit(0);
 }
 
 
@@ -300,15 +300,15 @@ if ($opt_B) {
 my  %pdmenu = ();
 tie %pdmenu, "Tie::IxHash";
 
-my  %pdTrigger = (); 
+my  %pdTrigger = ();
 tie %pdTrigger, "Tie::IxHash";
 
 
-my  %cumulativeTriggers = (); 
+my  %cumulativeTriggers = ();
 tie %cumulativeTriggers, "Tie::IxHash";
 
 # -- set up %pdmenu that contains all PD and trigger menus
-my $file = ""; 
+my $file = "";
 foreach $menu (@menus) {
     if ($opt_s && ($menu ne $opt_s)) {
 	next;
@@ -320,18 +320,18 @@ foreach $menu (@menus) {
 	if (/process.datasets/) {
 	    last;
 	}
-    }	    
+    }
     readPD(IN, $menu);
     close(IN);
 }
 
 
-my  %menus = (); 
+my  %menus = ();
 tie %menus, "Tie::IxHash";
 foreach $key (keys %pdmenu) {
-    ($pd, $menu) = split(/:/, $key); 
-    $menus{$menu} = 1; 
-    $pds{$pd} = 1; 
+    ($pd, $menu) = split(/:/, $key);
+    $menus{$menu} = 1;
+    $pds{$pd} = 1;
 }
 
 
@@ -352,18 +352,18 @@ if ($opt_c) {
 
 # -- print all triggers in PD $opt_p
 if ($opt_p) {
-    my $oldmenu = ""; 
-    my $old     = ""; 
+    my $oldmenu = "";
+    my $old     = "";
     foreach $key (keys %pdmenu) {
-	($pd, $menu) = split(/:/, $key); 
+	($pd, $menu) = split(/:/, $key);
 	#print "$key -> pd = $pd, menu = $menu\n** $pdmenu{$key}\n** $old\n\n";
 	if ($pd ne $opt_p) {next;}
 	if ($menu ne $oldmenu) {
-	    @vMenu = split(/,/, $pdmenu{$key}); 
-	    @vOld = split(/,/, $old); 
+	    @vMenu = split(/,/, $pdmenu{$key});
+	    @vOld = split(/,/, $old);
 	    %adiff = newVsOld(\@vMenu, \@vOld);
 	    $old = $pdmenu{$key};
-	    
+
 	    ($line = $pdmenu{$key}) =~ s/,/\n/g;
 	    ($pd = $key) =~ s/:.*$//g;
 	    print "******** $key ********\n";
@@ -377,7 +377,7 @@ if ($opt_p) {
 		}
 	    }
 
-	    $oldmenu = $menu; 
+	    $oldmenu = $menu;
 	}
     }
 
@@ -388,7 +388,7 @@ if ($opt_p) {
 	foreach (keys %menus) {
 	    print OUT "# $_\n";
 	}
-	
+
 	print OUT "# ***************************************************************\n";
 	print OUT "$cumulativeTriggers{$key}";
 	close OUT;
@@ -403,31 +403,31 @@ exit(0);
 # ----------------------------------------------------------------------
 sub readPD() {
     ($in, $lmenu) = @_;
-    my $hlts = ""; 
-    my $name = ""; 
-    my $fullName = ""; 
+    my $hlts = "";
+    my $name = "";
+    my $fullName = "";
     while (42) {
-	$line = <$in>; 
+	$line = <$in>;
 	if ($line =~ /^\)/) {
 	    last;
 	}
 	if ($line =~ /=/) {
-	    ($name, $rest) = split(/=/, $line); 
+	    ($name, $rest) = split(/=/, $line);
 	    $name =~ s/\s*//g;
-	    $rest =~ /'(.*)'/; 
-	    $hlt = $1; 
+	    $rest =~ /'(.*)'/;
+	    $hlt = $1;
 	} else {
-	    $line =~ /'(.*)'/; 
-	    $hlt = $1; 
+	    $line =~ /'(.*)'/;
+	    $hlt = $1;
 	}
 	$hlt =~ s/_v[0-9]*$//g;
 	if ($opt_t) {
 	    if ($hlt =~ $opt_t) {
-		$hlts = $hlts . $hlt . ","; 
-	    } 
+		$hlts = $hlts . $hlt . ",";
+	    }
 	} else {
-	    $hlts = $hlts . $hlt . ","; 
-	} 
+	    $hlts = $hlts . $hlt . ",";
+	}
 
 	if ($line =~ /\),/) {
 	    $hlts =~ s/,$//g;
@@ -443,8 +443,8 @@ sub readPD() {
 		    $pdmenu{$fullName} = $hlts;
 		}
 	    }
-	    $hlts = ""; 
-	    $name = ""; 
+	    $hlts = "";
+	    $name = "";
 	}
     }
 }
@@ -466,18 +466,18 @@ sub newVsOld {
     #print "size array1: $#array1\n";
     #print "size array2: $#array2\n";
 
-    my %count = (); 
+    my %count = ();
     foreach (@array1) {
 	$count{$_} = 1;
     };
     foreach (@array2) {
 	if ($count{$_} == 1) {
 	    #print "$_ already in array1\n";
-	    $count{$_} = 3; 
+	    $count{$_} = 3;
 	} else {
 	    #print "** $_ not in array1\n";
 	    $count{$_} = 2;
 	}
     }
-    return %count; 
+    return %count;
 }

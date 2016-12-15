@@ -8,12 +8,17 @@
 # collectCrabRootfiles [-o 23] -x DoubleMuon/crab_doubleMuon-2015B/151022_095340/0000/ -n inclb-prompt-Run2015B-SingleMuon
 #
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
-use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib"; 
+
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Cwd;
- 
+
 use Getopt::Std;
 getopts('dn:o:x:');
 
@@ -32,9 +37,9 @@ if ($opt_n) {
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
 
-my $cnt = 0; 
+my $cnt = 0;
 if ($opt_o) {
-    $cnt = $opt_o; 
+    $cnt = $opt_o;
 }
 
 print "dir  = $dir\n";
@@ -42,10 +47,10 @@ print "xdir = $xdir\n";
 print "name = $name\n";
 print "offset = $cnt\n";
 
-chdir("$xdir"); 
+chdir("$xdir");
 print "cd to ", cwd(), "\n";
 @rootfiles = `find . -name "*.root" -print`;
-chdir("$dir"); 
+chdir("$dir");
 print "cd to ", cwd(), "\n";
 
 #@rootfiles;
@@ -54,11 +59,11 @@ unlink("$xdir/collectcrab.$name");
 open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$name\n";
 
 foreach $file (@rootfiles) {
-    chop($file); 
+    chop($file);
     if ($file =~ /failed/) {next;}
     $file =~ s%./%%g;
     $numeral = sprintf("%04i", $cnt);
-    $newrootfilename = "$name-$numeral.root"; 
+    $newrootfilename = "$name-$numeral.root";
     print "mv $xdir/$file $newrootfilename\n";
     print OUT "$xdir/$file -> $newrootfilename\n";
     if (!$opt_d) {
@@ -67,4 +72,4 @@ foreach $file (@rootfiles) {
     $cnt++;
 }
 
-close OUT; 
+close OUT;

@@ -8,6 +8,10 @@
 #          -c  complete (for jobs without compilation)
 #          -s  slim format (not supported at the moment)
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
 # -s slim
 # -c complete (to be invoked from CMSSW_X_Y_Z, allows to be used w/o compilation)

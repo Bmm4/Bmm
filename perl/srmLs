@@ -21,6 +21,10 @@
 #          2016/07/08 migrate to xrootd instead of dcap
 #          2016/07/08 migrate to xrdfs instead of gfal-ls
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
 #$cprefix = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
 $cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";

@@ -3,9 +3,9 @@
 # Usage: lxplus0048>pwd
 # =====  /afs/cern.ch/user/u/ursl/bmm4/CMSSW_8_0_22/src/L1TriggerConfig/Utilities/test
 #
-#        lxplus104>$BMMBASE/perl/l1tkeys .../Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T_MuonPhys.txt 
+#        lxplus104>$BMMBASE/perl/l1tkeys .../Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_NoL1T_MuonPhys.txt
 #
-# Requirements: 
+# Requirements:
 # =============
 #  >= CMSSW_8_0_22
 #
@@ -19,21 +19,25 @@
 #  ---
 #  >        connect = cms.string('sqlite:o2o/l1config.db'),
 # ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
 
 open(IN, "viewTKE-perl.py") || die "cannot open viewTKE-perl.py\n";
-@lines = <IN>; 
-close(IN); 
+@lines = <IN>;
+close(IN);
 
 open(RES, ">l1keys.log") || die "cannot open l1keys.log\n";
 
 open(IN, $ARGV[0]) || die "cannot open $ARGV[0]\n";
 
-my @result; 
+my @result;
 while(<IN>) {
     s/\{//g;
     s/\}//g;
     s/\"//g;
-    ($run, $bla) = split(/:/); 
+    ($run, $bla) = split(/:/);
     $run =~ s/\ //g;
     open(OUT, ">viewTKE-$run.py") || die "cannot open viewTKE-$run.py\n";
     for ($i = 0; $i < $#lines; $i++) {
@@ -42,22 +46,22 @@ while(<IN>) {
 	    $bla =~ s/runnumber/$run/;
 	    print OUT $bla;
 	} else {
-	    print OUT $lines[$i]; 
+	    print OUT $lines[$i];
 	}
     }
-    close(OUT); 
-    @result = (); 
-    print "running viewTKE-$run.py\n"; 
+    close(OUT);
+    @result = ();
+    print "running viewTKE-$run.py\n";
     @result = `cmsRun viewTKE-$run.py`;
-    $basekey = " "; 
-    $menu = " "; 
+    $basekey = " ";
+    $menu = " ";
     for ($i = 0; $i < $#result; $i++) {
 	if ($result[$i] =~ /UGT_BASE_KEY/) {
-	    ($bla, $basekey) = split(/key: /, $result[$i]); 
+	    ($bla, $basekey) = split(/key: /, $result[$i]);
 	    $basekey =~ s/\n//;
 	}
 	if ($result[$i] =~ /L1TUtmTriggerMenuRcd/) {
-	    ($bla, $menu) = split(/L1TUtmTriggerMenuRcd key:/, $result[$i]); 
+	    ($bla, $menu) = split(/L1TUtmTriggerMenuRcd key:/, $result[$i]);
 	    $menu =~ s/\n//;
 	}
     }
@@ -65,5 +69,5 @@ while(<IN>) {
     print RES "$run $basekey $menu\n";
 }
 
-close(IN); 
-close(RES); 
+close(IN);
+close(RES);
