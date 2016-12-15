@@ -791,3 +791,17 @@ void cleanupString(string &s) {
 bool bothAreSpaces(char lhs, char rhs) {
   return (lhs == rhs) && (lhs == ' ');
 }
+
+// ----------------------------------------------------------------------
+double quadraticSum(int n, ...) {
+  va_list vl;
+  va_start(vl, n);
+  double a(0.), sum(0.);
+  for (int i = 0; i < n; ++i) {
+    a = va_arg(vl, double);
+    sum += a*a;
+  }
+
+  va_end(vl);
+  return TMath::Sqrt(sum);
+}

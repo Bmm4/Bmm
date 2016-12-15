@@ -6,6 +6,8 @@
 
 #include "dataset.hh"
 
+#include <cstdarg>
+
 #ifdef __CINT__
 
 #pragma link off all globals;
@@ -79,5 +81,6 @@
 #pragma link C++ function cleanupString(std::string &);
 #pragma link C++ function bothAreSpaces(char , char );
 
+#pragma link C++ function quadraticSum(int n, ...);
 
 #endif

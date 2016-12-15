@@ -13,6 +13,7 @@
 #include "TLatex.h"
 
 #include <vector>
+#include <cstdarg>
 
 
 class dataset;
@@ -115,6 +116,7 @@ double dBF(double, double, double, double, double, double);
 // -- Add up in quadrature the errors of all bins
 double getError(TH1*);
 double getErrorRange(TH1*, int = -1, int = -1);
+double quadraticSum(int n, ...);
 
 // ======================================================================
 // -- gen utilities
