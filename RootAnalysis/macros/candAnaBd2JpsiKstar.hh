@@ -70,7 +70,7 @@ public:
   double       fKaPtGen, fKaEtaGen, fPiPtGen, fPiEtaGen;
   int          fKaGenID, fPiGenID;
   int          fKaTkQuality, fPiTkQuality;
-
+  bool         fKstarFail;
   // -- TM
   int                     fGenKTmi, fGenPiTmi;
   int                     fRecKTmi, fRecPiTmi;
