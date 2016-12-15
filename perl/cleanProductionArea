@@ -1,0 +1,38 @@
+#!/usr/bin/perl
+
+use Getopt::Std;
+getopts('Ccdhlmo:pq:s:t:w:x:y');
+
+
+foreach $dir (@ARGV) {
+    chdir($dir);
+    # -- clean various files
+    system("/bin/rm -f *~");
+    system("/bin/rm -f *jobs.list*");
+    # -- keep first of py files
+    $cnt = 0;
+    $fcnt = 0;
+    @pyfiles = <*.py>;
+    @tmpdirs = <tmp-*>;
+    if ($#pyfiles > 0) {
+	for ($i = 1; $i <= $#pyfiles; $i++) {
+	    if (($i % 100) == 0) {print "now at $dir/$pyfiles[$i] \n";}
+	    unlink($pyfiles[$i]);
+	}
+    }
+    if ($#tmpdirs > 0) {
+	for ($i = 1; $i <= $#tmpdirs; $i++) {
+	    if (($i % 100) == 0) {print "now at $dir/$tmpdirs[$i] \n";}
+	    system("/bin/rm -rf $tmpdirs[$i]");
+	}
+    }
+
+    # -- cleanup the one tmp directory kept
+    if (-d $tmpdirs[0]) {
+	system("/bin/rm -f $tmpdirs[0]/*.tar.gz $tmpdirs[0]/*OK* $tmpdirs[0]/*jobs.list");
+	system("/bin/gzip *.py $tmpdirs[0]/*");
+    }
+    # -- move back up again
+    chdir("..");
+
+}
