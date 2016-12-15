@@ -428,6 +428,11 @@ void candAnaMuMu::efficiencyCalculation() {
     fETm2tmid  = false;
     fETm2mvaid = false;
   }
+  if (m1Matched && m2Matched) {
+    fETchan = detChan(fETm1eta, fETm2eta);
+  } else {
+    fETchan = -1;
+  }
   if (pCand) {
     fETcandMass = pCand->fMass;
     fETtau      = pCand->fTau3d;

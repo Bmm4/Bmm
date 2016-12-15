@@ -671,6 +671,11 @@ void candAnaBs2JpsiPhi::efficiencyCalculation() {
     fETm2tmid  = false;
     fETm2mvaid = false;
   }
+  if (m1Matched && m2Matched) {
+    fETchan = detChan(fETm1eta, fETm2eta);
+  } else {
+    fETchan = -1;
+  }
   if (k1Matched) {
     fETk1pt  = prK1->getP().Perp();
     fETk1eta = prK1->getP().Eta();

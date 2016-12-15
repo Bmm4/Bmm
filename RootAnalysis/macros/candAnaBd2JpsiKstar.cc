@@ -42,10 +42,13 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   vector<int> idx0, idx1;
   getSigTracks(idx0, fpCand);
   int overlap(0);
+  fKstarFail = false;
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     pC = fpEvt->getCand(iC);
-    if (pC->fType != fpCand->fType) continue;
     if (pC == fpCand) continue;
+    if (3000070 != pC->fType) {
+      if (pC->fType != fpCand->fType) continue;
+    }
     idx1.clear();
     getSigTracks(idx1, pC);
     // -- check for the same tracks
@@ -69,7 +72,12 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 	if (0) cout << "other cand " << pC->fIndex << " track indices has better kstar mass: " << mkstarOther << " (" << TMath::Abs(mkstarOther - MKSTAR)
 		    << ") then this cand: " << mkstar  << " (" << TMath::Abs(mkstar - MKSTAR) << ")"
 		    << endl;
-	return;
+	if (3000070 == pC->fType) {
+	  fKstarFail = true;
+	} else {
+	  fKstarFail = true;
+	  return;
+	}
       }
     }
   }
@@ -305,7 +313,7 @@ void candAnaBd2JpsiKstar::genMatch() {
 	}
       }
       if (0 != pM1 && 0 != pM2 && 0 != pK && 0 != pPi && pPsi != 0 && pKstar != 0 && (pPsi->fMom1 == pKstar->fMom1)) {
-	// -- check that there are no other direct daughters than J/psi K (plus possibly photons)
+	// -- check that there are no other direct daughters than J/psi Kstar (plus possibly photons)
 	int nDaughters(0);
 	for (int ij = 0; ij < fpEvt->nGenT(); ++ij) {
 	  pTmp = fpEvt->getGenT(ij);
@@ -596,11 +604,12 @@ void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
 
-  t->Branch("mkpi",   &fMKPI,      "mkpi/D");
-  t->Branch("kstarpt", &fKstarPt,    "kstarpt/D");
-  t->Branch("kstareta",&fKstarEta,   "kstareta/D");
-  t->Branch("kstarphi",&fKstarPhi,   "kstarphi/D");
-  t->Branch("dr",    &fDeltaR,   "dr/D");
+  t->Branch("mkpi",      &fMKPI,      "mkpi/D");
+  t->Branch("kstarpt",   &fKstarPt,    "kstarpt/D");
+  t->Branch("kstareta",  &fKstarEta,   "kstareta/D");
+  t->Branch("kstarphi",  &fKstarPhi,   "kstarphi/D");
+  t->Branch("dr",        &fDeltaR,   "dr/D");
+  t->Branch("kstarfail", &fKstarFail,   "kstarfail/O");
 
   t->Branch("kpt",  &fKaPt,    "kpt/D");
   t->Branch("keta", &fKaEta,   "keta/D");
@@ -783,6 +792,11 @@ void candAnaBd2JpsiKstar::efficiencyCalculation() {
     fETm2id  = false;
     fETm2tmid  = false;
     fETm2mvaid = false;
+  }
+  if (m1Matched && m2Matched) {
+    fETchan = detChan(fETm1eta, fETm2eta);
+  } else {
+    fETchan = -1;
   }
   if (kMatched) {
     fETkpt  = prK->getP().Perp();
