@@ -28,31 +28,31 @@ $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py 
 
 $dataset = "bmmCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016B-moriond17 -s $version -r -e 40000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016B-moriond17 -s $version  -e 40000; ";
 
 $dataset = "bmmCharmonium2016C";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016C-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016C-moriond17 -s $version  -e 30000; ";
 
 $dataset = "bmmCharmonium2016D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016D-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016D-moriond17 -s $version  -e 30000; ";
 
 $dataset = "bmmCharmonium2016E";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016E-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016E-moriond17 -s $version  -e 30000; ";
 
 $dataset = "bmmCharmonium2016F";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016F-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016F-moriond17 -s $version  -e 30000; ";
 
 $dataset = "bmmCharmonium2016G";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Charmonium__Run2016G-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016G-moriond17 -s $version  -e 30000; ";
 
 $dataset = "bmmCharmonium2016H";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016H-XXXX.py -f ../../../catalogs/Charmonium__Run2016H-moriond17 -s $version -r -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-prompt-Run2016H-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016H-moriond17 -s $version -r -e 30000; ";
 
 # -- OLD MC
 $dataset = "Summer12_DR53X";
