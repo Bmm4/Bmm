@@ -4,6 +4,8 @@
 #include <string>
 #include <vector>
 #include <map>
+#include <fstream>
+#include <iostream>
 
 #include <TH1.h>
 #include <TH2.h>
@@ -131,10 +133,6 @@ public:
   virtual bool        mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass = true);
   double              getDetVarComb(TAnaMuon *mu);
 
-  virtual bool        mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass = true);
-  virtual bool        mvaMuonLM(TSimpleTrack *pt, double &result, bool hadronsPass = true);
-  virtual bool        mvaMuonLM(TAnaTrack *pt, double &result, bool hadronsPass = true);
-
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
 
   virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9);
@@ -165,6 +163,7 @@ public:
   virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
 				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
   virtual void        print1();
+  virtual void        printCuts(ostream &OUT);
 
 
 
@@ -234,7 +233,6 @@ public:
   TMVA::Reader *fMvaMuonID, *fMvaMuonID1;
   mvaMuonIDData mrd, mrd1;
   double  fMu1BDT, fMu2BDT, fMu1rBDT, fMu2rBDT;
-  double  fMu1BDTLM, fMu2BDTLM, fMu1rBDTLM, fMu2rBDTLM;
 
   muonData fMuonData;
   muonData fMu1Data, fMu2Data;
@@ -243,8 +241,8 @@ public:
   bool    fJSON, fCowboy, fCandDcand;
   int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
-  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1MvaIdLM, fMu2MvaIdLM, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
-  bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId, fMu1rMvaIdLM, fMu2rMvaIdLM;
+  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
+  bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId;
   double  fMu1TrigM, fMu2TrigM;
 
   double  fDeltaR, fMuDist, fMuDeltaR, fMu1Chi2, fMu2Chi2;

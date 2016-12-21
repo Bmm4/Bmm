@@ -27,8 +27,8 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   cout << "======================================================================" << endl;
   cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << endl;
 
-  MASSMIN = 4.9;
-  MASSMAX = 5.9;
+  MASSMIN = 4.5;
+  MASSMAX = 6.5;
   BLIND = 0;
 
   fL1Seeds = 0;
@@ -248,7 +248,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fHLTmatch=false;
     if (fGoodHLT && fpMuon1 != NULL && fpMuon2 != NULL){ // do only when 2 muons exist
       // check matching for both muons in parallel
-      fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2);
+      // the following can lead to crashes on some data files? The `same' informtion is obtained using "tos"
+      //      fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2);
     }
 
     if (0)
@@ -510,15 +511,10 @@ void candAna::candAnalysis() {
   fMu1rBDT      = -1.;
   fMu1rMvaId    = mvaMuon(p1, fMu1rBDT, false);
 
-  fMu1BDTLM     = -1.;
-  fMu1MvaIdLM   = mvaMuonLM(p1, fMu1BDTLM);
-  fMu1rBDTLM    = -1.;
-  fMu1rMvaIdLM  = mvaMuonLM(p1, fMu1rBDTLM, false);
-
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 1 "<<endl;
   // false - consider only selecetd triggers, true - match to muon trigger objects
-  fMu1TrigM     = doTriggerMatchingR(p1, false, true, false);
+  //  fMu1TrigM     = doTriggerMatchingR(p1, false, true, false);
   if (fTrigMatchDeltaPt > 0.1) fMu1TrigM *= -1.;
 
   //  fMu1Id        = fMu1MvaId && (fMu1TrigM < 0.1) && (fMu1TrigM > 0);
@@ -582,14 +578,9 @@ void candAna::candAnalysis() {
   fMu2rBDT      = -1.;
   fMu2rMvaId    = mvaMuon(p2, fMu2rBDT, false);
 
-  fMu2BDTLM     = -1.;
-  fMu2MvaIdLM   = mvaMuonLM(p2, fMu2BDTLM);
-  fMu2rBDTLM    = -1.;
-  fMu2rMvaIdLM  = mvaMuonLM(p2, fMu2rBDTLM, false);
-
   fTrigMatchDeltaPt = 99.;
   //cout<<" do trigger matching for muon 2 "<<endl;
-  fMu2TrigM     = doTriggerMatchingR(p2, false, true, false);
+  //  fMu2TrigM     = doTriggerMatchingR(p2, false, true, false);
 
   if (fTrigMatchDeltaPt > 0.1) fMu2TrigM *= -1.;
   //  fMu2Id        = fMu2MvaId && (fMu2TrigM < 0.1) && (fMu2TrigM > 0);
@@ -1762,11 +1753,6 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m1mvabdt",&fMu1BDT,            "m1mvabdt/D");
   t->Branch("m1rmvabdt",&fMu1rBDT,          "m1rmvabdt/D");
 
-  t->Branch("m1mvaidlm",   &fMu1MvaIdLM,    "m1mvaidlm/O");
-  t->Branch("m1rmvaidlm",  &fMu1rMvaIdLM,   "m1rmvaidlm/O");
-  t->Branch("m1mvabdtlm",  &fMu1BDTLM,      "m1mvabdtlm/D");
-  t->Branch("m1rmvabdtlm", &fMu1rBDTLM,     "m1rmvabdtlm/D");
-
   t->Branch("m1trigm", &fMu1TrigM,          "m1trigm/D");
 
   t->Branch("m1pt",    &fMu1Pt,             "m1pt/D");
@@ -1793,11 +1779,6 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m2rmvaid",&fMu2rMvaId,         "m2rmvaid/O");
   t->Branch("m2mvabdt",&fMu2BDT,            "m2mvabdt/D");
   t->Branch("m2rmvabdt",&fMu2rBDT,          "m2rmvabdt/D");
-
-  t->Branch("m2mvaidlm",   &fMu2MvaIdLM,    "m2mvaidlm/O");
-  t->Branch("m2rmvaidlm",  &fMu2rMvaIdLM,   "m2rmvaidlm/O");
-  t->Branch("m2mvabdtlm",  &fMu2BDTLM,      "m2mvabdtlm/D");
-  t->Branch("m2rmvabdtlm", &fMu2rBDTLM,     "m2rmvabdtlm/D");
 
   t->Branch("m2trigm", &fMu2TrigM,          "m2trigm/D");
 
@@ -1898,7 +1879,6 @@ void candAna::readCuts(string fileName, int dump) {
 
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
-
     // -- read the baseCuts file to get the channel definition and cuts used for (possible) preselection
     cleanupString(cutLines[i]);
     vector<string> lineItems = split(cutLines[i], ' ');
@@ -1906,8 +1886,44 @@ void candAna::readCuts(string fileName, int dump) {
       continue;
     }
     cutname  = lineItems[0];
+    ok = 0;
     if (static_cast<unsigned int>(fNchan + 1) == lineItems.size()) {
       for (unsigned int j = 1; j < lineItems.size(); ++j) {
+	if (cutname == "index") {
+	  // -- do nothing, indices already assigned above
+	  ok = 1;
+	}
+
+	if (cutname == "mBdLo") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBdLo = cutvalue; ok = 1;
+	}
+
+	if (cutname == "mBdHi") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBdHi = cutvalue; ok = 1;
+	}
+
+	if (cutname == "mBuLo") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBuLo = cutvalue; ok = 1;
+	}
+
+	if (cutname == "mBuHi") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBuHi = cutvalue; ok = 1;
+	}
+
+	if (cutname == "mBsLo") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBsLo = cutvalue; ok = 1;
+	}
+
+	if (cutname == "mBsHi") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->mBsHi = cutvalue; ok = 1;
+	}
+
 	if (cutname == "metaMin") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->metaMin = cutvalue; ok = 1;
@@ -2028,6 +2044,16 @@ void candAna::readCuts(string fileName, int dump) {
 	  fCuts[j-1]->pvlips = cutvalue; ok = 1;
 	}
 
+	if (cutname == "pvip") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pvip = cutvalue; ok = 1;
+	}
+
+	if (cutname == "pvips") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->pvips = cutvalue; ok = 1;
+	}
+
 	if (cutname == "pv2lip") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->pv2lip = cutvalue; ok = 1;
@@ -2042,7 +2068,7 @@ void candAna::readCuts(string fileName, int dump) {
 	  vector<string> vl1seeds = split(lineItems[j], ',');
 	  for (unsigned int is = 0; is < vl1seeds.size(); ++is) {
 	    fCuts[j-1]->l1seeds.push_back(atoi(vl1seeds[is].c_str()));
-	  }
+	  } ok = 1;
 	}
 
 	if (0 == ok) {
@@ -2305,12 +2331,7 @@ void candAna::readCuts(string fileName, int dump) {
 
   }
 
-  if (dump) {
-    for (int i = 0; i < fNchan; ++i) {
-      fCuts[i]->dump();
-    }
-    cout << "------------------------------------" << endl;
-  }
+  printCuts(cout);
 }
 
 
@@ -2539,89 +2560,6 @@ bool candAna::mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass) {
   return false;
 
 }
-
-
-// ----------------------------------------------------------------------
-bool candAna::mvaMuonLM(TAnaMuon *pt, double &result, bool hadronsPass) {
-
-  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
-    return true;
-  }
-
-  if (!tightMuon(pt)) {
-    result = -2.;
-    return false;
-  }
-
-  // -- Luca's variables for TMVA-muonid-2
-  mrd.trkValidFract    = pt->fItrkValidFraction;
-  mrd.glbNChi2         = pt->fGtrkNormChi2;
-  mrd.pt               = pt->fPlab.Perp();
-  mrd.eta              = pt->fPlab.Eta();
-  mrd.segComp          = pt->fSegmentComp;
-  mrd.chi2LocMom       = pt->fChi2LocalMomentum;
-  mrd.chi2LocPos       = pt->fChi2LocalPosition;
-  mrd.glbTrackProb     = pt->fGtrkProb;
-  mrd.NTrkVHits        = static_cast<float>(pt->fNumberOfValidTrkHits);
-  mrd.NTrkEHitsOut     = static_cast<float>(pt->fNumberOfLostTrkHits);
-
-  result = fMvaMuonID->EvaluateMVA("BDT");
-  if (result > MUBDT) return true;
-  return false;
-}
-
-
-// ----------------------------------------------------------------------
-bool candAna::mvaMuonLM(TSimpleTrack *pt, double &result, bool hadronsPass) {
-
-  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
-    result = 99.;
-    return true;
-  }
-
-  if (0 == pt->getMuonID()) {
-    result = -3.;
-    return false;
-  }
-
-  TAnaMuon *pM(0);
-  int idx = pt->getIndex();
-  for (int i = 0; i < fpEvt->nMuons(); ++i) {
-    pM = fpEvt->getMuon(i);
-    if (idx == pM->fIndex) {
-      return mvaMuonLM(pM, result, hadronsPass);
-    }
-  }
-  return false;
-
-}
-
-
-// ----------------------------------------------------------------------
-bool candAna::mvaMuonLM(TAnaTrack *pt, double &result, bool hadronsPass) {
-
-  if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
-    result = 99.;
-    return true;
-  }
-
-  if (0 == pt->fMuID) {
-    result = -3.;
-    return false;
-  }
-
-
-  int idx = pt->fMuIndex;
-  if (idx > -1 && idx < fpEvt->nMuons()) {
-    TAnaMuon *pM = fpEvt->getMuon(idx);
-    return mvaMuonLM(pM, result, hadronsPass);
-  } else {
-    cout << "muon index out of range!!!!!" << endl;
-  }
-  return false;
-
-}
-
 
 
 // ----------------------------------------------------------------------
@@ -5738,4 +5676,221 @@ bool candAna::checkDataCand(TAnaCand *pC0) {
     }
   }
   return false;
+}
+
+
+
+// ----------------------------------------------------------------------
+void candAna::printCuts(ostream &OUT) {
+
+  OUT << "----------------------------------------------------------------------" << endl;
+  OUT << "channel    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  OUT << Form("%10d", fCuts[i]->index);
+  OUT << endl;
+
+  OUT << "metaMin    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->metaMin);
+  }
+  OUT << endl;
+
+  OUT << "metaMax    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->metaMax);
+  }
+  OUT << endl;
+
+  OUT << "l1seeds     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    for (int is = fCuts[i]->l1seeds.size()*2; is < 10; ++is) OUT << " ";
+    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is) OUT << Form("%d ", fCuts[i]->l1seeds[is]);
+  }
+  OUT << endl;
+
+  OUT << "mBdLo      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i) {
+    OUT << Form("%10.3f", fCuts[i]->mBdLo);
+  }
+  OUT << endl;
+
+  OUT << "mBdHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i) {
+    OUT << Form("%10.3f", fCuts[i]->mBdHi);
+  }
+  OUT << endl;
+
+  OUT << "mBsLo      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBsLo);
+  }
+  OUT << endl;
+
+  OUT << "mBsHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBsHi);
+  }
+  OUT << endl;
+
+  OUT << "mBuLo      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBuLo);
+  }
+  OUT << endl;
+
+  OUT << "mBuHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBuHi);
+  }
+  OUT << endl;
+
+
+  OUT << "m1pt       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m1pt);
+  }
+  OUT << endl;
+
+  OUT << "m2pt       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m2pt);
+  }
+  OUT << endl;
+
+
+  OUT << "etaMin     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMin);
+  }
+  OUT << endl;
+
+  OUT << "etaMax     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->etaMax);
+  }
+  OUT << endl;
+
+  OUT << "pt         ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pt);
+  }
+  OUT << endl;
+
+  OUT << "iso        ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->iso);
+  }
+  OUT << endl;
+
+  OUT << "m1iso      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m1iso);
+  }
+  OUT << endl;
+
+  OUT << "m2iso      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->m2iso);
+  }
+  OUT << endl;
+
+  OUT << "chi2dof    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->chi2dof);
+  }
+  OUT << endl;
+
+  OUT << "alpha      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->alpha);
+  }
+  OUT << endl;
+
+  OUT << "fls3d      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->fls3d);
+  }
+  OUT << endl;
+
+  OUT << "flsxy      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->flsxy);
+  }
+  OUT << endl;
+
+  OUT << "docatrk    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->docatrk);
+  }
+  OUT << endl;
+
+  OUT << "closetrk   ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrk);
+  }
+  OUT << endl;
+
+  OUT << "closetrks1 ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks1);
+  }
+  OUT << endl;
+
+  OUT << "closetrks2 ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks2);
+  }
+  OUT << endl;
+
+  OUT << "closetrks3 ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->closetrks3);
+  }
+  OUT << endl;
+
+  OUT << "maxdoca    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->maxdoca);
+  }
+  OUT << endl;
+
+  OUT << "pvip       ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvip);
+  }
+  OUT << endl;
+
+  OUT << "pvips      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvips);
+  }
+  OUT << endl;
+
+  OUT << "pvlip      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlip);
+  }
+  OUT << endl;
+
+  OUT << "pvlips     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pvlips);
+  }
+  OUT << endl;
+
+  OUT << "pv2lip     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pv2lip);
+  }
+  OUT << endl;
+
+  OUT << "pv2lips    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pv2lips);
+  }
+  OUT << endl;
+  OUT << "----------------------------------------------------------------------" << endl;
+
+  OUT.flush();
+
+  return;
 }
