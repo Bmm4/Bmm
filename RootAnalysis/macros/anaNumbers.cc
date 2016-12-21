@@ -6,8 +6,32 @@
 #include <algorithm>
 #include <iterator>
 
+#include "TMath.h"
 
 using namespace std;
+
+// ----------------------------------------------------------------------
+void number::calcEtot() {
+  etot = TMath::Sqrt(estat*estat + esyst*esyst);
+}
+
+
+// ----------------------------------------------------------------------
+void number::setErrors(double sta, double sys) {
+  estat = sta;
+  esyst = sys;
+  calcEtot();
+}
+
+
+// ----------------------------------------------------------------------
+void number::setErrors(double sta, double sys, double tot) {
+  estat = sta;
+  esyst = sys;
+  etot  = tot;
+}
+
+
 
 // ----------------------------------------------------------------------
 anaNumbers::anaNumbers(string name, int ichan) : fName(name), fChan(ichan)
