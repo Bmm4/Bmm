@@ -17,6 +17,7 @@ public:
   void clear(std::string sname) {val = estat = esyst = etot = 0.; name = sname;}
   void setErrors(double sta, double sys);
   void setErrors(double sta, double sys, double tot);
+  void add2Errors(number &);
   void calcEtot();
   double val;
   double estat, esyst, etot;
@@ -30,7 +31,7 @@ public:
   void clear();
   std::string fName, fNameMc, fNameDa;
   int fChan;
-  // -- vectors for mass window yields: lo, Bd, Bs, hi
+  // -- 5-element vectors for mass window yields: lo, Bd, Bs, hi, all
   std::vector<number> fMcYield, fObsYield, fFitYield;
   // -- overall results of fits and scaled yields
   number fSignalFit, fScaledYield;
