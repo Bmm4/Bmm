@@ -1,5 +1,5 @@
 TYPE          1000095
-#TYPE          1313
+DATACAND         1313
 TRUTHCAND         511
 TRIGRANGE    NOTRIGGER
 # -- baseCuts

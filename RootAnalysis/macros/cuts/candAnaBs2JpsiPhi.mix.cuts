@@ -1,5 +1,5 @@
 TYPE          3000067
-#TYPE          300531
+DATACAND       300531
 TRUTHCAND         531
 # -- baseCuts
 +input cuts/baseCuts.cuts
