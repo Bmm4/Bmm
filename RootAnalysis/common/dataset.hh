@@ -20,7 +20,7 @@ public:
   // -- decay/process specifics
   double fXsec, fBf, fBfE, fMass, fLambda;
   // -- generation information
-  double fFilterEff, fLumi;
+  double fFilterEff, fFilterEffE, fLumi;
   // -- display
   int fColor, fLcolor, fFcolor, fSymbol, fFillStyle;
   double fSize, fWidth;
