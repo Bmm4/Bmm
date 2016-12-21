@@ -15,6 +15,9 @@ public:
   number() : val(0), estat(0), esyst(0), etot(0), name("") {};
   ~number() {};
   void clear(std::string sname) {val = estat = esyst = etot = 0.; name = sname;}
+  void setErrors(double sta, double sys);
+  void setErrors(double sta, double sys, double tot);
+  void calcEtot();
   double val;
   double estat, esyst, etot;
   std::string name;
@@ -25,21 +28,27 @@ public:
   anaNumbers(std::string name = "", int ichan = 0);
   ~anaNumbers() {};
   void clear();
-  std::string fName;
+  std::string fName, fNameMc, fNameDa;
   int fChan;
-  // -- vectors for mass window yields
+  // -- vectors for mass window yields: lo, Bd, Bs, hi
   std::vector<number> fMcYield, fObsYield, fFitYield;
-  // -- overall results of fits
-  number fSignalFit;
-  // -- yield numbers for efficiency and acceptance
-  number fGenAccFileYield, fGenAccYield, fGenFileYield, fGenYield, fCombGenYield, fProdGenYield;
-  number fChanYield, fRecoYield, fCandYield, fMuidYield, fTrigYield;
-  number fEffRecoPt;
+  // -- overall results of fits and scaled yields
+  number fSignalFit, fScaledYield;
+  // -- yield numbers for dataset
+  number fGenFileYield, // number of (B) events in file/dataset
+    fGenYield,          // number of (B) events generated (correcting for gen-level filter, but NOT for effFilter!)
+    fTotGenYield, fProdGenYield;
+  // -- yield numbers for corresponding ACC dataset
+  number fAccGenFileYield, // number of (B) events in ACC file/dataset
+    fAccGenYield;          // number of (B) events in ACC generated (correcting for gen-level filter, but NOT for effFilter!)
+  number fAccRecoYield, fAccCandYield;
+  number fCandYield, fAnaYield, fMuidYield, fTrigYield;
   // -- efficiency and acceptance
-  number fAcc, fEffCand, fEffAna, fEffTrigMC, fEffMuidMC, fEffTot, fEffProdMC;
+  number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffMuidMC, fEffTot, fEffProdMC;
   number fEffFilter; // this is the MC filter efficiency, used for eq lumi calculation!
+  number fEffGenSel; // this is the gen-level filter efficiency, needed to go from non-Acc samples to acc samples! Obtained from ratio of effFilter's
   // -- cross feed: pxx signal in signal, pyx other in signal, etc.
-  number fPxx, fPyx, fPlx, fPhx;
+  number fFracLo, fFracBd, fFracBs, fFracHi;
 };
 
 #endif
