@@ -7,7 +7,7 @@ struct cuts {
   int index;
   std::string xmlFile;
   std::vector<int> l1seeds;
-  double mBdLo, mBdHi, mBsLo, mBsHi;
+  double mBdLo, mBdHi, mBsLo, mBsHi, mBuLo, mBuHi;
   double etaMin, etaMax, pt;
   double m1pt, m2pt, metaMin, metaMax;
   double iso, m1iso, m2iso, chi2dof, alpha, fls3d, flxyLo, flxyHi, flsxy, docatrk;
