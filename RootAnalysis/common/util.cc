@@ -155,7 +155,8 @@ void printNonZero(TH1 *h) {
       min = h->GetBinLowEdge(i);
       max = min + h->GetBinWidth(i);
       cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
-	   << Form(" %12.3f", con) << " +/- " << Form("%12.3f", h->GetBinError(i))
+	   << Form(" %12.3f", con) << " +/- " << Form("%12.3f ", h->GetBinError(i))
+	   << h->GetXaxis()->GetBinLabel(i)
            << endl;
     }
   }
@@ -572,7 +573,7 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
   double ratio = expoNE - expoN;
   double mantN  = n / TMath::Power(10, static_cast<int>(expoN));
   double mantNE = nE / TMath::Power(10, static_cast<int>(expoNE-ratio));
-
+  if (nE < 1.e-8) mantNE = 0.;
 
   //  cout << setw(2) << "expoN = " << expoN << " expoNE == " << expoNE << " mantN = " << mantN << " mantNE = " << mantNE << " ratio = " << ratio << endl;
 
