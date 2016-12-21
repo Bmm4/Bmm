@@ -241,7 +241,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpCand = pCand;
     fCandIdx = iC;
 
-    // -- call derived functions
+    // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
     candAnalysis();
 
     // Trigger matching
@@ -315,6 +315,9 @@ void candAna::candAnalysis() {
   fpMuon1 = fpMuon2 = 0;
 
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(1);
+
+  // -- Check whether data cand exists and has 100% overlap
+  fCandDcand = checkDataCand(fpCand);
 
   TAnaVertex *pVtx;
   fPvN = 0;
@@ -1623,6 +1626,7 @@ void candAna::bookHist() {
 
   fEffTree->Branch("m",      &fETcandMass,        "m/F");
   fEffTree->Branch("tau",    &fETtau,             "tau/F");
+  fEffTree->Branch("dcand",  &fETdcand,           "dcand/O");
 
 
   // -- Analysis distributions
@@ -1699,6 +1703,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("chan",    &fChan,              "chan/I");
   t->Branch("q",       &fCandQ,             "q/I");
   t->Branch("type",    &fCandType,          "type/I");
+  t->Branch("dcand",   &fCandDcand,         "dcand/O");
   t->Branch("pt",      &fCandPt,            "pt/D");
   t->Branch("eta",     &fCandEta,           "eta/D");
   t->Branch("phi",     &fCandPhi,           "phi/D");
@@ -2094,8 +2099,16 @@ void candAna::readCuts(string fileName, int dump) {
       TRUTHCAND = int(CutValue);
       if (dump) cout << "TRUTHCAND:           " << TRUTHCAND << endl;
       ibin = 4;
-      hcuts->SetBinContent(ibin, TYPE);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: Candidate type", CutName));
+      hcuts->SetBinContent(ibin, TRUTHCAND);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: TRUTH CAND", CutName));
+    }
+
+    if (!strcmp(CutName, "DATACAND")) {
+      DATACAND = int(CutValue);
+      if (dump) cout << "DATACAND:           " << DATACAND << endl;
+      ibin = 4;
+      hcuts->SetBinContent(ibin, DATACAND);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: DATA CAND", CutName));
     }
 
     if (!strcmp(CutName, "IGNORETRIGGER")) {
@@ -3190,6 +3203,7 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
   // -- loop over daughters
   if (pC->fDau1 > -1) {
     for (int j = pC->fDau1; j <= pC->fDau2; ++j) {
+      if (j < 0) continue;
       pD = fpEvt->getCand(j);
       getSigTracks(bla, pD);
     }
@@ -3199,6 +3213,7 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 
   // -- add direct sigtracks
   for (int i = pC->fSig1; i <= pC->fSig2; ++i) {
+    if (i < 0) continue;
     pT = fpEvt->getSigTrack(i);
     if (v.end() == find(v.begin(), v.end(), pT->fIndex)) {
       v.push_back(pT->fIndex);
@@ -5701,4 +5716,26 @@ double candAna::getDetVarComb(TAnaMuon *mu) {
     }
   }
   return combination;
+}
+
+
+// ----------------------------------------------------------------------
+bool candAna::checkDataCand(TAnaCand *pC0) {
+  if (DATACAND > -1) {
+    vector<int> cIdx, pIdx;
+    getSigTracks(cIdx, pC0);
+    TAnaCand *pC(0);
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      pIdx.clear();
+      pC = fpEvt->getCand(iC);
+      if (DATACAND != pC->fType) continue;
+      getSigTracks(pIdx, pC);
+      sort(cIdx.begin(), cIdx.end());
+      sort(pIdx.begin(), pIdx.end());
+      if (pIdx == cIdx) {
+	return true;
+      }
+    }
+  }
+  return false;
 }

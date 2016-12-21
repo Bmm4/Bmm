@@ -100,6 +100,7 @@ public:
   virtual void        genMatchOld();
   virtual void        recoMatch();
   virtual void        candMatch();
+  virtual bool        checkDataCand(TAnaCand *);
   virtual void        triggerSelection();
   virtual void        fillCandidateHistograms(int offset);
   virtual void        fillRedTreeData();
@@ -205,7 +206,7 @@ public:
     , MUBDT, MUBDT1
     ;
 
-  int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, IGNORETRIGGER, NOPRESELECTION;
+  int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, DATACAND, IGNORETRIGGER, NOPRESELECTION;
 
   std::map<std::string, pair<int, int> > HLTRANGE;
   string DSNAME; // data set name
@@ -239,7 +240,7 @@ public:
   muonData fMu1Data, fMu2Data;
 
   // -- variables for reduced tree, they are from fpCand
-  bool    fJSON, fCowboy;
+  bool    fJSON, fCowboy, fCandDcand;
   int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
   bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1MvaIdLM, fMu2MvaIdLM, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
@@ -289,8 +290,7 @@ public:
   float fETm1pt, fETm1eta, fETg1pt, fETg1eta;
   float fETm2pt, fETm2eta, fETg2pt, fETg2eta;
   float fETgtau, fETtau;
-
-  bool    fGoodEffCand;
+  bool  fETdcand;
 
   TTree       *fMuonIdTree, *fPvStudyTree;
 

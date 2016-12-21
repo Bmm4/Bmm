@@ -332,8 +332,6 @@ void candAnaMuMu::candMatch() {
 
 // ----------------------------------------------------------------------
 void candAnaMuMu::efficiencyCalculation() {
-  fGoodEffCand = false;
-
   // -- gen level
   TGenCand *pB(0), *pM1(0), *pM2(0);
   if (-1 == fGenM1Tmi || -1 == fGenM2Tmi) {
@@ -436,9 +434,11 @@ void candAnaMuMu::efficiencyCalculation() {
   if (pCand) {
     fETcandMass = pCand->fMass;
     fETtau      = pCand->fTau3d;
+    fETdcand    = checkDataCand(pCand);
   } else {
     fETcandMass = -99.;
     fETtau      = -99.;
+    fETdcand    = false;
   }
   if (fVerbose > 2) cout << "Filling effTree" << endl;
   fEffTree->Fill();

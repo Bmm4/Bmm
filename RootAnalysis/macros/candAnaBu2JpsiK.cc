@@ -493,8 +493,6 @@ void candAnaBu2JpsiK::fillCandidateHistograms(int offset) {
 
 // ----------------------------------------------------------------------
 void candAnaBu2JpsiK::efficiencyCalculation() {
-  fGoodEffCand = false;
-
   // -- gen level
   TGenCand *pB(0), *pM1(0), *pM2(0), *pK(0);
   if (-1 == fGenM1Tmi || -1 == fGenM2Tmi || -1 == fGenK1Tmi) {
