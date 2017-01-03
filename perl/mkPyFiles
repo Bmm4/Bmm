@@ -422,7 +422,7 @@ sub createPyFilesPerBlock() {
 	    print OUT "# ######################################################################\n";
             print OUT "# $hostname\n";
 	    print OUT "# $directory\n";
-	    print OUT "# file list contains $runList{$run}->{NEVENTS} events\n";
+	    print OUT "# file list contains $fEvt events\n";
 	    print OUT "# mkPyFiles @args\n";
 	    print OUT "# $fileName with $fEvt events\n";
 	    print OUT "# ######################################################################\n";
