@@ -56,6 +56,7 @@ process.p = cms.Path(
     process.recoStuffSequence*
     process.bmmSequence*
     process.psiDump*
+    process.upsDump*
     process.dstarDump*
     process.ksDump*
     process.phiDump*
