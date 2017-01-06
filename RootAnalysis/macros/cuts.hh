@@ -5,7 +5,8 @@
 
 struct cuts {
   int index;
-  std::string xmlFile;
+  std::string bdtXml;
+  double bdtCut, bdtMuPt;
   std::vector<int> l1seeds;
   double mBdLo, mBdHi, mBsLo, mBsHi, mBuLo, mBuHi;
   double etaMin, etaMax, pt;
