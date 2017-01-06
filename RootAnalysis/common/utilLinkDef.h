@@ -71,7 +71,7 @@
 #pragma link C++ function defVector(int, ...);
 #pragma link C++ function formatTex(double, std::string, std::string);
 #pragma link C++ function formatTex(double, std::string, int, int);
-#pragma link C++ function formatTex(double, double, std::string, int, int);
+#pragma link C++ function formatTexErrSci(double, double, std::string, int, int);
 #pragma link C++ function stamp(double, std::string, std::string, double, std::string, int);
 #pragma link C++ function rmSubString(std::string &, const std::string &);
 #pragma link C++ function rmPath(std::string &);
@@ -81,6 +81,6 @@
 #pragma link C++ function cleanupString(std::string &);
 #pragma link C++ function bothAreSpaces(char , char );
 
-#pragma link C++ function quadraticSum(int n, ...);
+#pragma link C++ function quadraticSum(int, ...);
 
 #endif

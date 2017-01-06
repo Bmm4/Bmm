@@ -242,10 +242,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
       fPar.push_back(f1->GetParameter(i));
       fParE.push_back(f1->GetParError(i));
     }
-    double NSIG  = fg->Integral(5.1, 5.6)/h->GetBinWidth(1);
+    double NSG   = fg->Integral(5.1, 5.6)/h->GetBinWidth(1);
     double NTOT  = h->GetSumOfWeights();
-    fCombS2All   = NSIG/NTOT;
-    fCombS2AllE  = TMath::Sqrt(1./NSIG + 1./NTOT)*fCombS2All;
+    fCombS2All   = NSG/NTOT;
+    fCombS2AllE  = TMath::Sqrt(1./NSG + 1./NTOT)*fCombS2All;
   }
 
   // -- other parameters of interest

@@ -287,6 +287,11 @@ double AnalysisDistribution::fitMass(TH1 *h1, double &error, int mode) {
 
 
 // ----------------------------------------------------------------------
+TH1D* AnalysisDistribution::sbsDistributionPhiKK2(const char *variable, const char *cut) {
+  return 0;
+}
+
+// ----------------------------------------------------------------------
 TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const char *cut) {
   TCanvas *c0(0);
   if (fVerbose > 0) {
