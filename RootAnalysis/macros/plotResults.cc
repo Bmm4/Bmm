@@ -218,47 +218,47 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
 
 
   // -- define systematics, per channel!
-  double fsfu[] {0.078, 0.078, 0.078, 0.078};
+  double fsfu[] = {0.078, 0.078, 0.078, 0.078};
   fSystematics["fsfu"] = vector<double>(fsfu, fsfu + sizeof(fsfu)/sizeof(fsfu[0]));
-  double bfbupsik[] {0.031, 0.031, 0.031, 0.031};
+  double bfbupsik[] = {0.031, 0.031, 0.031, 0.031};
   fSystematics["bfbupsik"] = vector<double>(bfbupsik, bfbupsik + sizeof(bfbupsik)/sizeof(bfbupsik[0]));
-  double bfbspsiphi[] {0.076, 0.076, 0.076, 0.076};
+  double bfbspsiphi[] = {0.076, 0.076, 0.076, 0.076};
   fSystematics["bfbspsiphi"] = vector<double>(bfbspsiphi, bfbspsiphi + sizeof(bfbspsiphi)/sizeof(bfbspsiphi[0]));
 
-  double pxy[] {0.05, 0.05, 0.050, 0.050};
+  double pxy[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["pxy"] = vector<double>(pxy, pxy + sizeof(pxy)/sizeof(pxy[0]));
 
-  double acceptance[] {0.035, 0.035, 0.050, 0.050};
+  double acceptance[] = {0.035, 0.035, 0.050, 0.050};
   fSystematics["acceptance"] = vector<double>(acceptance, acceptance + sizeof(acceptance)/sizeof(acceptance[0]));
-  double effanabupsik[] {0.05, 0.05, 0.050, 0.050};
+  double effanabupsik[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effanabupsik"] = vector<double>(effanabupsik, effanabupsik + sizeof(effanabupsik)/sizeof(effanabupsik[0]));
-  double effanabspsiphi[] {0.05, 0.05, 0.050, 0.050};
+  double effanabspsiphi[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effanabspsiphi"] = vector<double>(effanabspsiphi, effanabspsiphi + sizeof(effanabspsiphi)/sizeof(effanabspsiphi[0]));
-  double effanabsmm[] {0.05, 0.05, 0.050, 0.050};
+  double effanabsmm[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effanabsmm"] = vector<double>(effanabsmm, effanabsmm + sizeof(effanabsmm)/sizeof(effanabsmm[0]));
-  double effanabdmm[] {0.05, 0.05, 0.050, 0.050};
+  double effanabdmm[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effanabdmm"] = vector<double>(effanabdmm, effanabdmm + sizeof(effanabdmm)/sizeof(effanabdmm[0]));
 
 
-  double effcandbupsik[] {0.05, 0.05, 0.050, 0.050};
+  double effcandbupsik[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effcandbupsik"] = vector<double>(effcandbupsik, effcandbupsik + sizeof(effcandbupsik)/sizeof(effcandbupsik[0]));
-  double effcandbspsiphi[] {0.05, 0.05, 0.050, 0.050};
+  double effcandbspsiphi[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effcandbspsiphi"] = vector<double>(effcandbspsiphi, effcandbspsiphi + sizeof(effcandbspsiphi)/sizeof(effcandbspsiphi[0]));
-  double effcandbsmm[] {0.05, 0.05, 0.050, 0.050};
+  double effcandbsmm[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effcandbsmm"] = vector<double>(effcandbsmm, effcandbsmm + sizeof(effcandbsmm)/sizeof(effcandbsmm[0]));
-  double effcandbdmm[] {0.05, 0.05, 0.050, 0.050};
+  double effcandbdmm[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effcandbdmm"] = vector<double>(effcandbdmm, effcandbdmm + sizeof(effcandbdmm)/sizeof(effcandbdmm[0]));
 
-  double effmuid[] {0.05, 0.05, 0.050, 0.050};
+  double effmuid[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["effmuid"] = vector<double>(effmuid, effmuid + sizeof(effmuid)/sizeof(effmuid[0]));
-  double efftrig[] {0.05, 0.05, 0.050, 0.050};
+  double efftrig[] = {0.05, 0.05, 0.050, 0.050};
   fSystematics["efftrig"] = vector<double>(efftrig, efftrig + sizeof(efftrig)/sizeof(efftrig[0]));
-  double fakemuid[] {0.2, 0.2, 0.2, 0.2};
+  double fakemuid[] = {0.2, 0.2, 0.2, 0.2};
   fSystematics["fakemuid"] = vector<double>(effmuid, effmuid + sizeof(effmuid)/sizeof(effmuid[0]));
 
-  double bunorm[] {0.03, 0.04, 0.05, 0.10};
+  double bunorm[] = {0.03, 0.04, 0.05, 0.10};
   fSystematics["normbupsik"] = vector<double>(bunorm, bunorm + sizeof(bunorm)/sizeof(bunorm[0]));
-  double bsnorm[] {0.04, 0.04, 0.05, 0.06};
+  double bsnorm[] = {0.04, 0.04, 0.05, 0.06};
   fSystematics["normbspsiphi"] = vector<double>(bsnorm, bsnorm + sizeof(bsnorm)/sizeof(bsnorm[0]));
 
 
