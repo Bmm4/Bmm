@@ -96,6 +96,13 @@ void candAnaFake::candAnalysis() {
       fCandMLambda = la.M();
       //      if (TMath::Abs(mla - MLAMBDA_0) < 0.006) skip = true;
 
+      // -- calculate eta -> mu mu  mass
+      TLorentzVector m1, m2, eta;
+      m1.SetPtEtaPhiM(fpMuon1->fPlab.Perp(), fpMuon1->fPlab.Eta(), fpMuon1->fPlab.Phi(), MMUON);
+      m2.SetPtEtaPhiM(fpMuon2->fPlab.Perp(), fpMuon2->fPlab.Eta(), fpMuon2->fPlab.Phi(), MMUON);
+      eta = m1 + m2;
+      fCandMEta = eta.M();
+
       fFakeId[0] = 211;
       fFakeId[1] = 211;
     } else if (333 == TRUTHCAND) {
@@ -362,6 +369,7 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("mks",     &fCandMKS,           "mks/D");
   fFakeTree->Branch("mconv",   &fCandMconv,         "mconv/D");
   fFakeTree->Branch("mlambda", &fCandMLambda,       "mlambda/D");
+  fFakeTree->Branch("meta",    &fCandMEta,          "meta/D");
 
   fFakeTree->Branch("pvip",    &fCandPvIp,          "pvip/D");
   fFakeTree->Branch("pvips",   &fCandPvIpS,         "pvips/D");
