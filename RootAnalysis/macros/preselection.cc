@@ -6,7 +6,7 @@
 using namespace std;
 
 
-        // 502
+// 502
 #define PTMIN 5.0
 #define PTMAX 9999.0
 
@@ -55,7 +55,7 @@ std::string preselection() {
 }
 
 // ----------------------------------------------------------------------
-bool preselection(redTreeData &b, int channel) {
+bool preselection(redTreeData &b) {
   const int verbose(0);
 
   if (b.m1q*b.m2q > 0) return false;
@@ -94,22 +94,13 @@ bool preselection(redTreeData &b, int channel) {
   // NONONO if we want to use the onia for any x-checks!
   //   if (b.m < 4.9) return false;
   //   if (b.m > 5.9) return false;
-  if (verbose > 4) cout << "passed mass cuts" << endl;
+  //   if (verbose > 4) cout << "passed mass cuts" << endl;
 
   // -- physics preselection
   if (b.chi2dof > CHI2DOFMAX) return false;
   if (b.iso < ISOMIN) return false;
   if (b.alpha > ALPHAMAX) return false;
   if (verbose > 0) cout << "passed physics cuts" << endl;
-
-  if (0 == channel) {
-    if (TMath::Abs(b.m1eta) > 1.4) return false;
-    if (TMath::Abs(b.m2eta) > 1.4) return false;
-  } else if (1 == channel) {
-    if (TMath::Abs(b.m1eta) < 1.4 && TMath::Abs(b.m2eta) < 1.4) return false;
-    if (TMath::Abs(b.m1eta) > 2.4 || TMath::Abs(b.m2eta) > 2.4) return false;
-  }
-  if (verbose > 0) cout << "passed channel cuts, return true!" << endl;
 
   return true;
 }
@@ -150,7 +141,6 @@ TH1D* getPreselectionNumbers() {
 // ----------------------------------------------------------------------
 void printRedTreeEvt(redTreeData &b) {
   std::cout << b.run << "/" << b.evt << " mu&hlt: " << b.gmuid << "/" << b.hlt << "/" << b.hltm2
-	    << " mu 1: " << b.m1rmvabdt << "/" << b.m1tmid << " mu 2: " << b.m2rmvabdt << "/" << b.m2tmid
 	    << std::endl << "  "
 	    << " B: " << " " << b.pt << "/" << b.eta << " "
 	    << " mu: " << " " << b.m1q << "/" << b.m2q << " "
