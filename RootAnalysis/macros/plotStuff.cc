@@ -805,10 +805,10 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    double level(f1->GetParameter(9));
 	    double levelE(f1->GetParError(9));
 
-	    double NSIG  = fg->Integral(5.1, 5.5)/h1->GetBinWidth(1);
+	    double NSG   = fg->Integral(5.1, 5.5)/h1->GetBinWidth(1);
 	    double NTOT  = h1->GetSumOfWeights();
-	    double SALL  = NSIG/NTOT;
-	    double SALLE = TMath::Sqrt(1./NSIG + 1./NTOT)*SALL;
+	    double SALL  = NSG/NTOT;
+	    double SALLE = TMath::Sqrt(1./NSG + 1./NTOT)*SALL;
 	    // -- now fit all histograms for the different prescales
 	    double nAll = h1->GetMaximum();
 	    double norm(0.), normE(0.);
