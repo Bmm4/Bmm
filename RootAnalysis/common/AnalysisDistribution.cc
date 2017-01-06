@@ -15,6 +15,8 @@
 #include "TFitResultPtr.h"
 #include "TFitResult.h"
 #include "TPaveStats.h"
+#include "TLatex.h"
+#include "TLine.h"
 
 ClassImp(AnalysisDistribution)
 
@@ -44,42 +46,60 @@ AnalysisDistribution::AnalysisDistribution(const char *name, const char *title, 
   massbin[0] = "signal";
   massbin[1] = "sideband";
   massbin[2] = "all";
+  int ndiv(504);
   for (int i = 0; i < 3; ++i) {
     hSi[i] = new TH1D(Form("%sSi%d", name, i), Form("%s, single cut, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hSi[i]->SetXTitle(title);
-      }
+    hSi[i]->SetNdivisions(ndiv, "X");
+  }
   for (int i = 0; i < 3; ++i) {
     hAo[i] = new TH1D(Form("%sAo%d", name, i), Form("%s, all other cuts, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hAo[i]->SetXTitle(title);
+    hAo[i]->SetNdivisions(ndiv, "X");
   }
   for (int i = 0; i < 3; ++i) {
     hNm[i] = new TH1D(Form("%sNm%d", name, i), Form("%s, n-1 cuts, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hNm[i]->SetXTitle(title);
+    hNm[i]->SetNdivisions(ndiv, "X");
   }
   for (int i = 0; i < 3; ++i) {
     hCu[i] = new TH1D(Form("%sCu%d", name, i), Form("%s, cumulative cuts, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hCu[i]->SetXTitle(title);
+    hCu[i]->SetNdivisions(ndiv, "X");
   }
   for (int i = 0; i < 3; ++i) {
     hHLT[i] = new TH1D(Form("%sHLT%d", name, i), Form("%s, after HLT, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hHLT[i]->SetXTitle(title);
+    hHLT[i]->SetNdivisions(ndiv, "X");
   }
   for (int i = 0; i < 3; ++i) {
     hPresel[i] = new TH1D(Form("%sPresel%d", name, i), Form("%s, after Presel, %s", name, massbin[i].c_str()), nbins, lo, hi);
     hPresel[i]->SetXTitle(title);
+    hPresel[i]->SetNdivisions(ndiv, "X");
   }
 
+  ndiv = 508;
   hMassSi    = new TH1D(Form("%sMassSi", name), Form("%sMassSi", name), NBINS, fMassLo, fMassHi);
+  hMassSi->SetNdivisions(ndiv, "X");
   hMassAo    = new TH1D(Form("%sMassAo", name), Form("%sMassAo", name), NBINS, fMassLo, fMassHi);
+  hMassAo->SetNdivisions(ndiv, "X");
   hMassNm    = new TH1D(Form("%sMassNm", name), Form("%sMassNm", name), NBINS, fMassLo, fMassHi);
+  hMassNm->SetNdivisions(ndiv, "X");
   hMassCu    = new TH1D(Form("%sMassCu", name), Form("%sMassCu", name), NBINS, fMassLo, fMassHi);
+  hMassCu->SetNdivisions(ndiv, "X");
   hMassHLT   = new TH1D(Form("%sMassHLT", name), Form("%sMassHLT", name), NBINS, fMassLo, fMassHi);
+  hMassHLT->SetNdivisions(ndiv, "X");
   hMassPresel= new TH1D(Form("%sMassPresel", name), Form("%sMassPresel", name), NBINS, fMassLo, fMassHi);
+  hMassPresel->SetNdivisions(ndiv, "X");
 
   hMassAll   = new TH1D(Form("%sMassAll", name), Form("%sMassALL", name), NBINS, fMassLo, fMassHi);
+  hMassAll->SetNdivisions(ndiv, "X");
   hMassBGL   = new TH1D(Form("%sMassBGL", name), Form("%sMassBGL", name), NBINS, fMassLo, fMassHi);
+  hMassBGL->SetNdivisions(ndiv, "X");
   hMassSG    = new TH1D(Form("%sMassSG", name), Form("%sMassSG", name), NBINS, fMassLo, fMassHi);
+  hMassSG->SetNdivisions(ndiv, "X");
   hMassBGH   = new TH1D(Form("%sMassBGH", name), Form("%sMassGBH", name), NBINS, fMassLo, fMassHi);
+  hMassBGH->SetNdivisions(ndiv, "X");
 
 }
 
@@ -402,7 +422,6 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
 
     c0->Clear();
     hm->SetTitle("");
-    hm->SetNdivisions(505, "X");
     setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
     hm->Draw();
     cout << "=========> "
@@ -941,7 +960,6 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     c0->Clear();
     c0->Divide(2,2);
   }
-  cout << "hello 3" << endl;
 
   // -- this is not really necessary, could use the class members instead
   TH1D *hm = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
@@ -951,24 +969,25 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
     return 0;
   }
-  cout << "hello 4" << endl;
 
   if (fVerbose > 0) {
     c0->cd(1);
-    h0->Draw("hist");
-    c0->cd(2);
-    h1->Draw("hist");
+    if (h1->GetMaximum() > h0->GetMaximum()) {
+      h0->SetMaximum(1.2*h1->GetMaximum());
+    }
+    h0->SetLineColor(kBlue);
+    h0->DrawCopy("hist");
+    h1->SetLineColor(kRed);
+    h1->DrawCopy("histsame");
     c0->cd(3);
   }
 
-  cout << "hello 5" << endl;
   double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
   double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
   double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
   double s1   = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
   double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
-  cout << "hello 6" << endl;
 
   // -- fit mass distribution
   if (fMassLo > fMassHi) {
@@ -1028,8 +1047,37 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
   h->Add(h0, h1, 1., -sg/(bgl+bgh));
 
   if (fVerbose > 0) {
+    c0->cd(2);
+    h1->Scale(sg/(bgl+bgh));
+    if (h1->GetMaximum() > h0->GetMaximum()) {
+      h0->SetMaximum(1.2*h1->GetMaximum());
+    }
+    h0->SetLineColor(kBlue);
+    h0->DrawCopy("hist");
+    h1->SetLineColor(kRed);
+    h1->DrawCopy("histsame");
+    c0->cd(3);
+  }
+  h->SetLineColor(kBlack);
+
+
+  TLatex tl;
+  tl.DrawLatexNDC(0.2, 0.70, Form("bgl: %5.3f", bgl));
+  tl.DrawLatexNDC(0.2, 0.65, Form("sg:  %5.3f", sg));
+  tl.DrawLatexNDC(0.2, 0.60, Form("bgh: %5.3f", bgh));
+  tl.DrawLatexNDC(0.2, 0.55, Form("scl: %5.3f", -sg/(bgl+bgh)));
+
+  tl.DrawLatexNDC(0.6, 0.70, Form("lo:  %5.3f-%5.3f", l0, l1));
+  tl.DrawLatexNDC(0.6, 0.65, Form("sg:  %5.3f-%5.3f", s0, s1));
+  tl.DrawLatexNDC(0.6, 0.60, Form("bgh: %5.3f-%5.3f", u0, u1));
+
+
+  if (fVerbose > 0) {
     c0->cd(4);
     h->Draw();
+    TLine pl;
+    pl.SetNDC(kFALSE);
+    pl.DrawLine(h->GetBinLowEdge(1), 0., h->GetBinLowEdge(h->GetNbinsX()+1), 0.);
     TString fname = fControlPlotsFileName;
     cout << "=========> "
 	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
@@ -1039,7 +1087,6 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 
     c0->Clear();
     hm->SetTitle("");
-    hm->SetNdivisions(505, "X");
     setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
     hm->Draw();
     cout << "=========> "
@@ -1057,32 +1104,42 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass [GeV]");
+    hm->SetXTitle("mass #it{[GeV]}");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
+    double ymax = hm->GetMaximum();
     double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
-    double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+    double y0 = 1.2*fpol1->Eval(x0);
+    if (y0 < 0.2*ymax) y0 = 0.2*ymax;
     double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
-    double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+    double y1 = 1.2*fpol1->Eval(x1);
+    if (y1 < 0.2*ymax) y1 = 0.2*ymax;
+
     double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
-    double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+    double y2 = 1.2*fpol1->Eval(x2);
+    if (y2 < 0.2*ymax) y2 = 0.2*ymax;
     double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
-    double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.)+1);
+    double y3 = 1.2*fpol1->Eval(x3);
+    if (y3 < 0.2*ymax) y3 = 0.2*ymax;
 
     double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
-    double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
-    double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
-    double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+    double y4 = 1.2*fpol1->Eval(x4);
+    if (y4 < 0.2*ymax) y4 = 0.2*ymax;
 
+    double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+    double y5 = 1.2*fpol1->Eval(x5);
+    if (y5 < 0.2*ymax) y5 = 0.2*ymax;
+
+    aa.SetLineWidth(2);
     aa.SetLineColor(kRed);
     aa.DrawArrow(x0, y0, x0, 0.);
     aa.DrawArrow(x1, y1, x1, 0.);
-    aa.SetLineColor(kBlue);
+    aa.SetLineColor(kBlack);
     aa.DrawArrow(x2, y2, x2, 0.);
     aa.DrawArrow(x3, y3, x3, 0.);
 
-    aa.SetLineColor(kBlack);
+    aa.SetLineColor(kBlue);
     aa.DrawArrow(x4, y4, x4, 0.);
     aa.DrawArrow(x5, y5, x5, 0.);
 

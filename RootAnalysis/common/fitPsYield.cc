@@ -139,6 +139,7 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
+  setTitles(h, "#it{m}_{#it{#mu #mu} K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -158,6 +159,9 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TCanvas *c0(0);
   c0 = (TCanvas*)gROOT->FindObject("c0");
   if (!c0) c0 = new TCanvas("c0","--c0--",0,0,656,700);
+  c0->cd();
+  c0->Clear();
+  shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 4.9;
   fpIF->fHi = 5.9;
