@@ -89,7 +89,7 @@ public :
 
   // -- validation of GM distributions for hadrons and muons from control samples
   void makeSample(std::string dataset, std::string cand, int nevents = -1, int nstart = 0);
-  void makeOverlay(std::string what1, std::string what2, std::string selection = "Cu");
+  void makeOverlay(std::string what1, std::string what2, std::string selection = "Cu", std::string what = "");
   void fillDistributions();
   void bookDistributions();
   AnalysisDistribution* bookDistribution(std::string hn, std::string ht, std::string hc, int nbins, double lo, double hi);

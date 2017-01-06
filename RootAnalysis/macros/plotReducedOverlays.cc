@@ -609,8 +609,8 @@ void plotReducedOverlays::bookDistributions() {
     a->fpCloseTrkS2= bookDistribution(Form("%sclosetrks2", name.c_str()),  "N_{trk}^{close, 2#sigma}", "fGoodCloseTrackS2", 10, 0., 10.);
     a->fpCloseTrkS3= bookDistribution(Form("%sclosetrks3", name.c_str()),  "N_{trk}^{close, 3#sigma}", "fGoodCloseTrackS3", 10, 0., 10.);
 
-    a->fpTau       = bookDistribution(Form("%stau", name.c_str()), "#tau [ps]", "fGoodLastCut", 50, 0., 10.);
-    a->fpLastCut   = bookDistribution(Form("%slastcut", name.c_str()), "lastcut", "fGoodLastCut", 50, 4., 6.);
+    a->fpTau       = bookDistribution(Form("%stau", name.c_str()), "#tau [ps]", "fGoodCNC", 50, 0., 10.);
+    a->fpLastCut   = bookDistribution(Form("%slastcut", name.c_str()), "lastcut", "fGoodCNC", 50, 4., 6.);
 
     fAdMap.insert(make_pair(mapname, a));
     cout << "bookDistributions: mapname = " << mapname << endl;

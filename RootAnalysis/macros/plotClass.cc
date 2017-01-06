@@ -26,6 +26,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   setTdrStyle();
 
+  // without this line the calling of fReaderEvents2[fChan]->EvaluateMVA("BDT") fill crash?!?!
+  fMvaMethod = TString("BDT");
+
   gStyle->SetHatchesSpacing(2);
 
   fDBX = true;
@@ -72,6 +75,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fCrossSection  = 5.679e+01; // mb
   fCrossSection *= 1.0e12;
 
+  fFsfu.val  = 0.256;
+  fFsfu.name = "fsfu";
+  fFsfu.setErrors(0.004, 0.020, 0.020);
 
   fBfPsiMuMu     = 0.05961;
   fBfPsiMuMuE    = 0.00033;
@@ -152,8 +158,8 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAnaCuts.addCut("fGoodCloseTrackS2", "close track s2 veto", fGoodCloseTrackS2);
   fAnaCuts.addCut("fGoodCloseTrackS3", "close track s3 veto", fGoodCloseTrackS3);
 
-  //  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
-  fAnaCuts.addCut("fGoodLastCut", "lastCut", fGoodLastCut);
+  fAnaCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
+  fAnaCuts.addCut("fGoodCNC", "cnc", fGoodCNC);
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
   fVarToTex.insert(make_pair("pt", "p_{T_{B}} #it{[GeV]}"));
@@ -190,6 +196,12 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
 // ----------------------------------------------------------------------
 plotClass::~plotClass() {
+  cout << "plotClass destructor" << endl;
+  for (map<string, dataset*>::iterator imap = fDS.begin(); imap != fDS.end(); ++imap) {
+    cout << "    => closing " << imap->first;
+    cout << ": " << fDS[imap->first]->fF->GetName() << endl;
+    imap->second->fF->Close();
+  }
 }
 
 
@@ -230,6 +242,9 @@ void plotClass::setup(string ds) {
   } else if (string::npos != ds.find("bdmm")) {
     dir = "candAnaMuMu";
     fMode = BDMM;
+  } else if (string::npos != ds.find("Bg")) {
+    dir = "candAnaMuMu";
+    fMode = RARE;
   }
 
   fTreeDir = dir;
@@ -506,6 +521,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("reftrg", &fb.reftrg);
 
   t->SetBranchAddress("tau", &fb.tau);
+  t->SetBranchAddress("taue", &fb.taue);
   t->SetBranchAddress("gtau", &fb.gtau);
 
   t->SetBranchAddress("bdt",&fb.bdt);
@@ -549,7 +565,6 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("cb",     &fb.cb);
   t->SetBranchAddress("json",   &fb.json);
   t->SetBranchAddress("gmuid",  &fb.gmuid);
-  t->SetBranchAddress("gmutmid", &fb.gmutmid);
   t->SetBranchAddress("gmumvaid", &fb.gmumvaid);
   t->SetBranchAddress("gtqual", &fb.gtqual);
   t->SetBranchAddress("tm",     &fb.tm);
@@ -587,16 +602,18 @@ void plotClass::setupTree(TTree *t, string mode) {
 
   t->SetBranchAddress("m1id",     &fb.m1id);
   t->SetBranchAddress("m1rmvaid", &fb.m1rmvaid);
+  t->SetBranchAddress("m1mvaid",  &fb.m1mvaid);
   t->SetBranchAddress("m1trigm",  &fb.m1trigm);
+  t->SetBranchAddress("m1mvabdt", &fb.m1mvabdt);
   t->SetBranchAddress("m1rmvabdt",&fb.m1rmvabdt);
-  t->SetBranchAddress("m1tmid",   &fb.m1tmid);
   t->SetBranchAddress("m1gmid",   &fb.m1gmid);
 
   t->SetBranchAddress("m2id",     &fb.m2id);
   t->SetBranchAddress("m2rmvaid", &fb.m2rmvaid);
+  t->SetBranchAddress("m2mvaid",  &fb.m2mvaid);
   t->SetBranchAddress("m2trigm",  &fb.m2trigm);
+  t->SetBranchAddress("m2mvabdt", &fb.m2mvabdt);
   t->SetBranchAddress("m2rmvabdt",&fb.m2rmvabdt);
-  t->SetBranchAddress("m2tmid",   &fb.m2tmid);
   t->SetBranchAddress("m2gmid",   &fb.m2gmid);
 
   t->SetBranchAddress("m1iso",     &fb.m1iso);
@@ -689,15 +706,15 @@ void plotClass::setupTree(TTree *t, string mode) {
 void plotClass::candAnalysis() {
 
   cuts *pCuts(0);
-  fChan = detChan(fb.m1eta, fb.m2eta);
+  fChan = fb.chan;
   if (fChan < 0) {
     if (0) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     fBDT = -99.;
-    fGoodHLT = fGoodMuonsID = false;
+    fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = false;
     fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
     fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
-    fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+    fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
     fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
     return;
   }
@@ -711,9 +728,9 @@ void plotClass::candAnalysis() {
 
   // -- reset all
   fBDT = -99.;
-  fGoodHLT = fGoodMuonsID = false;
+  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
-  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodLastCut = fPreselection = false;
+  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
 
   fGoodJpsiCuts = true;
@@ -731,8 +748,8 @@ void plotClass::candAnalysis() {
   if (fIsMC) {
     if (fb.g1pt < fAccPt) fGoodAcceptance = false;
     if (fb.g2pt < fAccPt) fGoodAcceptance = false;
-    if (TMath::Abs(fb.g1eta) > 2.5) fGoodAcceptance = false;
-    if (TMath::Abs(fb.g2eta) > 2.5) fGoodAcceptance = false;
+    if (TMath::Abs(fb.g1eta) > fAccEtaGen) fGoodAcceptance = false;
+    if (TMath::Abs(fb.g2eta) > fAccEtaGen) fGoodAcceptance = false;
   } else {
     static int runComplained(-1);
     if (!fb.json) {
@@ -760,11 +777,11 @@ void plotClass::candAnalysis() {
   if (fb.m2pt < pCuts->m2pt) {
     fGoodMuonsPt = false;
   }
-  if (TMath::Abs(fb.m1eta) > 2.4) {
+  if (TMath::Abs(fb.m1eta) > fAccEtaRec) {
     fGoodAcceptance = false;
     fGoodMuonsEta = false;
   }
-  if (TMath::Abs(fb.m2eta) > 2.4) {
+  if (TMath::Abs(fb.m2eta) > fAccEtaRec) {
     fGoodAcceptance = false;
     fGoodMuonsEta = false;
   }
@@ -774,10 +791,10 @@ void plotClass::candAnalysis() {
       // gen-level cuts for Bu2JpsiKp
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
-      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false;
+      if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
       if (fb.g3pt < 0.4) fGoodAcceptance = false;
     }
-    if (TMath::Abs(fb.keta) > 2.4) {
+    if (TMath::Abs(fb.keta) > fAccEtaRec) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
@@ -790,19 +807,19 @@ void plotClass::candAnalysis() {
 
   if (bs2jpsiphi) {
     if (fIsMC) {
-      if (TMath::Abs(fb.g3eta) > 2.5) fGoodAcceptance = false;
-      if (TMath::Abs(fb.g4eta) > 2.5) fGoodAcceptance = false;
+      if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
+      if (TMath::Abs(fb.g4eta) > fAccEtaGen) fGoodAcceptance = false;
       // gen-level cuts for Bs2JpsiPhi
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g3pt < 0.4) fGoodAcceptance = false;
       if (fb.g4pt < 0.4) fGoodAcceptance = false;
     }
-    if (TMath::Abs(fb.k1eta) > 2.4) {
+    if (TMath::Abs(fb.k1eta) > fAccEtaRec) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
-    if (TMath::Abs(fb.k2eta) > 2.4) {
+    if (TMath::Abs(fb.k2eta) > fAccEtaRec) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
@@ -830,28 +847,19 @@ void plotClass::candAnalysis() {
     fGoodJpsiCuts = true;
   }
 
-  if (fDoUseBDT) {
-    if (fGoodAcceptance
-        && fGoodTracks
-        && fGoodTracksPt
-        && fGoodTracksEta
-        && fGoodBdtPt
-        && fGoodJpsiCuts
-        ) {
-      calcBDT();
-      fb.bdt = fBDT;
-    }
-//     else {
-//       cout << "acceptance:    " << fGoodAcceptance  << endl;
-//       cout << "goodtracks:    " << fGoodTracks  << endl;
-//       cout << "goodtrackspt:  " << fGoodTracksPt  << endl;
-//       cout << "goodtrackseta: " << fGoodTracksEta  << endl;
-//       cout << "goodBdtPt:     " << fGoodBdtPt  << endl;
-//       cout << "goodJpsiCuts:  " << fGoodJpsiCuts  << endl;
-//     }
+  if (fGoodAcceptance
+      && fGoodTracks
+      && fGoodTracksPt
+      && fGoodTracksEta
+      && fGoodBdtPt
+      && fGoodJpsiCuts
+      ) {
+    calcBDT();
+    fb.bdt = fBDT;
   }
 
-  fGoodMuonsID  = fb.m1gmid && fb.m2gmid;
+  fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
+  fGoodMuonsID     = fb.m1mvaid && fb.m2mvaid;
 
   fW8 = 1.;
   fW8MmuID = fW8Mtrig = fW8DmuID = fW8Dtrig = -1.;
@@ -859,18 +867,6 @@ void plotClass::candAnalysis() {
 
   if (fIsMC) {
     PidTable *pT, *pT1, *pT2;
-
-    // -- Weights with data PidTables
-    // if (fIsCowboy) {
-    //   pT  = fptCbM;
-    //   pT1 = fptCbT1;
-    //   pT2 = fptCbT2;
-    // } else {
-    //   pT  = fptSgM;
-    //   pT1 = fptSgT1;
-    //   pT2 = fptSgT2;
-    // }
-
     pT  = fptM;
     pT1 = fptT1;
     pT2 = fptT2;
@@ -887,16 +883,6 @@ void plotClass::candAnalysis() {
     w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
     fW8Dtrig = w1*w2;
 
-    // -- Weights with MC PidTables
-    // if (fIsCowboy) {
-    //   pT  = fptCbMMC;
-    //   pT1 = fptCbT1MC;
-    //   pT2 = fptCbT2MC;
-    // } else {
-    //   pT  = fptSgMMC;
-    //   pT1 = fptSgT1MC;
-    //   pT2 = fptSgT2MC;
-    // }
     pT  = fptM;
     pT1 = fptT1;
     pT2 = fptT2;
@@ -952,7 +938,7 @@ void plotClass::candAnalysis() {
   fGoodLipS       = (TMath::Abs(fb.pvlips) < pCuts->pvlips);
 
   fGoodPt         = (fb.pt > pCuts->pt);
-  fGoodEta        = ((fb.eta > -2.40) && (fb.eta < 2.40));
+  fGoodEta        = ((fb.eta > -fAccEtaRec) && (fb.eta < fAccEtaRec));
   fGoodAlpha      = (fb.alpha < pCuts->alpha);
   fGoodChi2       = (fb.chi2/fb.dof < pCuts->chi2dof);
   fGoodFLS        = (fb.fls3d > pCuts->fls3d);
@@ -966,14 +952,36 @@ void plotClass::candAnalysis() {
   fGoodM1Iso        = (fb.m1iso > pCuts->m1iso);
   fGoodM2Iso        = (fb.m2iso > pCuts->m2iso);
   fGoodDocaTrk      = (fb.docatrk > pCuts->docatrk);
-  fGoodLastCut      = true;
+  fGoodCNC          =
+    fGoodQ
+    && fGoodMuonsPt
+    && fGoodMuonsEta
+    && fGoodJpsiCuts
+    && fGoodPvAveW8
+    && fGoodMaxDoca
+    && fGoodLip
+    && fGoodLipS
+    && fGoodIp
+    && fGoodIpS
+    && fGoodPt
+    && fGoodEta
+    && fGoodAlpha
+    && fGoodChi2
+    && fGoodFLS
+    && fGoodCloseTrack
+    && fGoodIso
+    && fGoodDocaTrk
+    ;
 
-  fGoodBDT        = true;
-  //FIXME  fGoodHLT        = fb.hlt &&fb.hltm;
-  fGoodHLT        = fb.hlt;
+
+
+  fGoodBDT          = (fBDT > pCuts->bdtCut);
+
+  fGoodHLT        = fb.hlt1 && fb.tos;
 
   // -- no trigger matching for rare decays!
-  if (RARE == fMode) fGoodHLT = fb.hlt;
+  if (RARE == fMode) fGoodHLT = true;
+  if (RARE == fMode) fGoodMuonsID = true;
 
   fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && (fb.alpha < 0.2) && (fb.fls3d > 5));
   if (bs2jpsiphi || bp2jpsikp) {
@@ -1072,21 +1080,7 @@ void plotClass::makeCanvas(int i) {
 void plotClass::calcBDT() {
   fBDT = -99.;
 
-  if (!preselection(fb, fChan)) return;
-
-  //??  if (5 == mode && 5.2 < mass && mass < 5.45 && fb.iso < 0.7) continue;
-  //  if (rejectInvIso && 5.2 < fb.m && fb.m < 5.45 && fb.iso < 0.7) return;
-  //   if (fb.pt > 100) return;
-  //   if (fb.pt < 6) return;
-  //   if (fb.m1pt < 4) return;
-  //   if (fb.m2pt < 4) return;
-  //   if (fb.fl3d > 1.5) return;
-  //   if (fb.m > 5.9) return;
-  //   if (fb.m < 4.9) return;
-
-  //   if (!fb.hlt) return;
-  //   if (!fb.gmuid) return;
-
+  if (!preselection(fb)) return;
   frd.pt = fb.pt;
   frd.eta = fb.eta;
   frd.m1eta = fb.m1eta;
@@ -1124,6 +1118,8 @@ void plotClass::calcBDT() {
   } else {
     cout << "all hell break loose" << endl;
   }
+
+  //  cout << "fBDT = " << fBDT << endl;
 }
 
 
@@ -1398,6 +1394,16 @@ void plotClass::readCuts(string filename) {
 	if (dump) cout << j-1 << " " << "mBsHi:                " << cutvalue << endl;
       }
 
+      if (cutname == "mBuLo") {
+	a->mBuLo = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBuLo:                " << cutvalue << endl;
+      }
+
+      if (cutname == "mBuHi") {
+	a->mBuHi = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "mBuHi:                " << cutvalue << endl;
+      }
+
       if (cutname == "etaMin") {
 	a->etaMin = cutvalue; ok = 1;
 	if (dump) cout << j-1 << " " << "etaMin:               " << cutvalue << endl;
@@ -1525,6 +1531,36 @@ void plotClass::readCuts(string filename) {
 	if (dump) cout << j-1 << " " << "pv2lips:              " << cutvalue << endl;
       }
 
+      if (cutname == "bdtxml") {
+	a->bdtXml = lineItems[j]; ok = 1;
+	if (dump) cout << j-1 << " " << "bdtxml:              " << a->bdtXml << endl;
+
+	string sXmlName = "weights/" + a->bdtXml + "-Events0_BDT.weights.xml";
+	TMVA::Reader *ar = setupReader(sXmlName, frd);
+	fReaderEvents0[a->index] = ar;
+	sXmlName = "weights/" + a->bdtXml + "-Events1_BDT.weights.xml";
+
+	ar = setupReader(sXmlName, frd);
+	fReaderEvents1[a->index] = ar;
+	if (dump) cout << "xml:                   " << sXmlName << endl;
+	sXmlName = "weights/" + a->bdtXml + "-Events2_BDT.weights.xml";
+
+	ar = setupReader(sXmlName, frd);
+	fReaderEvents2[a->index] = ar;
+	if (dump) cout << "xml:                   " << sXmlName << endl;
+
+      }
+
+      if (cutname == "bdtcut") {
+	a->bdtCut = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "bdtcut:              " << cutvalue << endl;
+      }
+
+      if (cutname == "bdtmupt") {
+	a->bdtMuPt = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "bdtmupt:              " << cutvalue << endl;
+      }
+
       if (cutname == "l1seeds") {
 	vector<string> vl1seeds = split(lineItems[j], ',');
 	for (unsigned int is = 0; is < vl1seeds.size(); ++is) {
@@ -1542,30 +1578,6 @@ void plotClass::readCuts(string filename) {
 
 }
 
-// ----------------------------------------------------------------------
-int plotClass::detChan(double m1eta, double m2eta) {
-
-  double m1 = TMath::Abs(m1eta);
-  double m2 = TMath::Abs(m2eta);
-
-  int im1(-1), im2(-1);
-  for (int ichan = 0; ichan < fNchan; ++ichan) {
-    if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-      im1 = ichan;
-      break;
-    }
-  }
-
-  for (int ichan = 0; ichan < fNchan; ++ichan) {
-    if ((m2 > fCuts[ichan]->metaMin) && (m2 < fCuts[ichan]->metaMax)) {
-      im2 = ichan;
-      break;
-    }
-  }
-  if ((im1 < 0) || (im2 < 0)) return -1;
-  return (im1>im2?im1:im2);
-}
-
 
 // ----------------------------------------------------------------------
 void plotClass::printCuts(ostream &OUT) {
@@ -1575,25 +1587,25 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  OUT << Form("%10d", fCuts[i]->index);
   OUT << endl;
 
-  OUT << "etaMin     ";
-  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
+  OUT << "metaMin    ";
+  fTEX << Form("\\vdef{%s:etamuf:var}  {\\ensuremath{{|\\eta(\\mu_f)| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->etaMin);
-    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
+    OUT << Form("%10.3f", fCuts[i]->metaMin);
+    fTEX <<  Form("\\vdef{%s:metaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMin) << endl;
   }
   OUT << endl;
 
-  OUT << "etaMax     ";
+  OUT << "metaMax    ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->etaMax);
-    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMax) << endl;
+    OUT << Form("%10.3f", fCuts[i]->metaMax);
+    fTEX <<  Form("\\vdef{%s:metaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMax) << endl;
   }
   OUT << endl;
 
   OUT << "l1seeds     ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is) OUT << Form("%d ", fCuts[i]->l1seeds[is]);
     for (int is = fCuts[i]->l1seeds.size()*2; is < 10; ++is) OUT << " ";
+    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is) OUT << Form("%d ", fCuts[i]->l1seeds[is]);
     for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is)
       fTEX <<  Form("\\vdef{%s:l1seeds:%d}   {\\ensuremath{{%d } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->l1seeds[is]) << endl;
   }
@@ -1629,13 +1641,21 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "pt         ";
-  fTEX << Form("\\vdef{%s:ptb:var}  {\\ensuremath{{\\ptb } } }", fSuffix.c_str()) << endl;
+  OUT << "mBuLo      ";
+  fTEX << Form("\\vdef{%s:mBu:var}  {\\ensuremath{{m(\\Bs) } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->pt);
-    fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
+    OUT << Form("%10.3f", fCuts[i]->mBuLo);
+    fTEX <<  Form("\\vdef{%s:mBuLo:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBuLo) << endl;
   }
   OUT << endl;
+
+  OUT << "mBuHi      ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->mBuHi);
+    fTEX <<  Form("\\vdef{%s:mBuHi:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->mBuHi) << endl;
+  }
+  OUT << endl;
+
 
   OUT << "m1pt       ";
   fTEX << Form("\\vdef{%s:ptmuone:var}  {\\ensuremath{{\\ptmuone } } }", fSuffix.c_str()) << endl;
@@ -1653,18 +1673,26 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "metaMin    ";
-  fTEX << Form("\\vdef{%s:etamuf:var}  {\\ensuremath{{|\\eta(\\mu_f)| } } }", fSuffix.c_str()) << endl;
+  OUT << "etaMin     ";
+  fTEX << Form("\\vdef{%s:etaB:var}  {\\ensuremath{{|\\eta| } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->metaMin);
-    fTEX <<  Form("\\vdef{%s:metaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMin) << endl;
+    OUT << Form("%10.3f", fCuts[i]->etaMin);
+    fTEX <<  Form("\\vdef{%s:etaMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMin) << endl;
   }
   OUT << endl;
 
-  OUT << "metaMax    ";
+  OUT << "etaMax     ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->metaMax);
-    fTEX <<  Form("\\vdef{%s:metaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMax) << endl;
+    OUT << Form("%10.3f", fCuts[i]->etaMax);
+    fTEX <<  Form("\\vdef{%s:etaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->etaMax) << endl;
+  }
+  OUT << endl;
+
+  OUT << "pt         ";
+  fTEX << Form("\\vdef{%s:ptb:var}  {\\ensuremath{{\\ptb } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->pt);
+    fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
   }
   OUT << endl;
 
@@ -1676,16 +1704,16 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "m1iso        ";
-  fTEX << Form("\\vdef{%s:m1iso:var}  {\\ensuremath{{\\m1iso } } }", fSuffix.c_str()) << endl;
+  OUT << "m1iso      ";
+  fTEX << Form("\\vdef{%s:m1iso:var}  {\\ensuremath{{\\isomuone } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m1iso);
     fTEX <<  Form("\\vdef{%s:m1iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m1iso) << endl;
   }
   OUT << endl;
 
-  OUT << "m2iso        ";
-  fTEX << Form("\\vdef{%s:m2iso:var}  {\\ensuremath{{\\m2iso } } }", fSuffix.c_str()) << endl;
+  OUT << "m2iso      ";
+  fTEX << Form("\\vdef{%s:m2iso:var}  {\\ensuremath{{\\isomutwo } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->m2iso);
     fTEX <<  Form("\\vdef{%s:m2iso:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->m2iso) << endl;
@@ -1740,7 +1768,7 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "closetrks1   ";
+  OUT << "closetrks1 ";
   fTEX << Form("\\vdef{%s:closetrks1:var}  {\\ensuremath{{\\closetrksI } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrks1);
@@ -1748,7 +1776,7 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "closetrks2   ";
+  OUT << "closetrks2 ";
   fTEX << Form("\\vdef{%s:closetrks2:var}  {\\ensuremath{{\\closetrksII } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrks2);
@@ -1756,7 +1784,7 @@ void plotClass::printCuts(ostream &OUT) {
   }
   OUT << endl;
 
-  OUT << "closetrks3   ";
+  OUT << "closetrks3 ";
   fTEX << Form("\\vdef{%s:closetrks3:var}  {\\ensuremath{{\\closetrksIII } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->closetrks3);
@@ -1773,7 +1801,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvip       ";
-  fTEX << Form("\\vdef{%s:ip:var}  {\\ensuremath{{\\pvip } } }", fSuffix.c_str()) << endl;
+  fTEX << Form("\\vdef{%s:pvip:var}  {\\ensuremath{{\\pvip } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvip);
     fTEX <<  Form("\\vdef{%s:pvip:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvip) << endl;
@@ -1781,7 +1809,7 @@ void plotClass::printCuts(ostream &OUT) {
   OUT << endl;
 
   OUT << "pvips      ";
-  fTEX << Form("\\vdef{%s:ips:var}  {\\ensuremath{{\\pvips } } }", fSuffix.c_str()) << endl;
+  fTEX << Form("\\vdef{%s:pvips:var}  {\\ensuremath{{\\pvips } } }", fSuffix.c_str()) << endl;
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pvips);
     fTEX <<  Form("\\vdef{%s:pvips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pvips) << endl;
@@ -1819,6 +1847,24 @@ void plotClass::printCuts(ostream &OUT) {
     fTEX <<  Form("\\vdef{%s:pv2lips:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pv2lips) << endl;
   }
   OUT << endl;
+
+  OUT << "bdtXml     ";
+  fTEX << Form("\\vdef{%s:bdtxml:var}  {\\tt{{\\bdtxml } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10s", fCuts[i]->bdtXml.c_str());
+    fTEX <<  Form("\\vdef{%s:bdtxml:%d}   {\\tt{{%s } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtXml.c_str()) << endl;
+  }
+  OUT << endl;
+
+  OUT << "bdtCut     ";
+  fTEX << Form("\\vdef{%s:bdtcut:var}  {\\tt{{\\bdtcut } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtCut);
+    fTEX <<  Form("\\vdef{%s:bdtcut:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->bdtCut) << endl;
+  }
+  OUT << endl;
+
+  OUT << "----------------------------------------------------------------------" << endl;
 
   OUT.flush();
 
@@ -1946,6 +1992,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1958,9 +2005,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1973,9 +2021,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu*fBfPhiKpKm;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfPhiKpKmE*fBfPhiKpKmE/fBfPhiKpKm/fBfPhiKpKm);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -1988,9 +2037,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu*fBfKstarKpPim;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfKstarKpPimE*fBfKstarKpPimE/fBfKstarKpPim/fBfKstarKpPim);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -2006,6 +2056,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -2029,6 +2080,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	ds->fLumi   = atof(slumi.c_str());
@@ -2044,9 +2096,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
       }
@@ -2060,9 +2113,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu*fBfPhiKpKm;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfPhiKpKmE*fBfPhiKpKmE/fBfPhiKpKm/fBfPhiKpKm);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2078,6 +2132,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
@@ -2095,6 +2150,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2111,90 +2167,248 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm0,")) {
-        sname = "bsmm0Mc";
+      if (string::npos != stype.find("bsmm80,")) {
+        sname = "bsmm80Mc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "B^{0}_{s}(482.9) #rightarrow #it{#mu#mu}";
-        ldecay = "\\bsmmZ";
+        sdecay = "B^{0}_{s}(1.80ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm2,")) {
-        sname = "bsmm2Mc";
+      if (string::npos != stype.find("bsmm75,")) {
+        sname = "bsmm75Mc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "B^{0}_{s}(503.7) #rightarrow #it{#mu#mu}";
-        ldecay = "\\bsmmII";
+        sdecay = "B^{0}_{s}(1.75ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm3,")) {
-        sname = "bsmm3Mc";
+      if (string::npos != stype.find("bsmm70,")) {
+        sname = "bsmm70Mc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "B^{0}_{s}(503.7,twice) #rightarrow #it{#mu#mu}";
-        ldecay = "\\bsmmIII";
+        sdecay = "B^{0}_{s}(1.70ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm4,")) {
-        sname = "bsmm4Mc";
+      if (string::npos != stype.find("bsmm69,")) {
+        sname = "bsmm69Mc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "B^{0}_{s}(503.7,everywhere) #rightarrow #it{#mu#mu}";
-        ldecay = "\\bsmmIV";
+        sdecay = "B^{0}_{s}(1.69ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
-      if (string::npos != stype.find("bsmm5,")) {
-        sname = "bsmm5Mc";
+      if (string::npos != stype.find("bsmm68,")) {
+        sname = "bsmm68Mc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "B^{0}_{s}(503.7,L&H) #rightarrow #it{#mu#mu}";
-        ldecay = "\\bsmmV";
+        sdecay = "B^{0}_{s}(1.68ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bsmm67,")) {
+        sname = "bsmm67Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.67ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm66,")) {
+        sname = "bsmm66Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.66ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm65,")) {
+        sname = "bsmm65Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.65ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm60,")) {
+        sname = "bsmm60Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.60ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm55,")) {
+        sname = "bsmm55Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.55ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm50,")) {
+        sname = "bsmm50Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.50ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm45,")) {
+        sname = "bsmm45Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.45ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm40,")) {
+        sname = "bsmm40Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.40ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bsmm35,")) {
+        sname = "bsmm35Mc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s}(1.35ps) #rightarrow #it{#mu#mu}";
+        ldecay = "\\bsmm";
+	ds->fColor = kGreen-2;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarMc";
@@ -2205,9 +2419,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf*fBfPsiMuMu*fBfKstarKpPim;
-	ds->fBfE    = ds->fBf * TMath::Sqrt(bfE*bfE/bf/bf + fBfPsiMuMuE*fBfPsiMuMuE/fBfPsiMuMu/fBfPsiMuMu + fBfKstarKpPimE*fBfKstarKpPimE/fBfKstarKpPim/fBfKstarKpPim);
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2224,6 +2439,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2241,6 +2457,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2258,6 +2475,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2275,6 +2493,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2292,6 +2511,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2311,6 +2531,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2328,6 +2549,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2345,6 +2567,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2362,6 +2585,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2379,6 +2603,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2396,6 +2621,7 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2413,6 +2639,25 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBf     = bf;
 	ds->fBfE    = bfE;
 	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
+      if (string::npos != stype.find("bcpsimunu,")) {
+	sname = "bcpsimunuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B_{c} #rightarrow J #it{#psi} #it{#mu} #it{#nu}";
+        ldecay = "\\bcpsimunu";
+	ds->fColor = kBlue;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
       }
@@ -2582,4 +2827,17 @@ TStyle * plotClass::setTdrStyle() {
   tdrStyle->cd();
 
   return tdrStyle;
+}
+
+
+// ----------------------------------------------------------------------
+double plotClass::getValueByLabel(TH1D *h, string label) {
+  string axislabel;
+  if (h) {
+    for (int i = 1; i <= h->GetNbinsX(); ++i) {
+      axislabel = h->GetXaxis()->GetBinLabel(i);
+      if (string::npos != axislabel.find(label)) return h->GetBinContent(i);
+    }
+  }
+  return -999.;
 }

@@ -149,9 +149,15 @@ void plotFake::makeAll(string what) {
 
   if (what == "dbx") {
     //      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
-    makeSample("fakeData", "ks");
-    makeSample("fakeMc", "ks");
-    makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
+    makeSample("fakeData", "psi", 1.e6);
+    makeSample("fakeMc", "psi", 1e6);
+    makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
+    // makeSample("fakeData", "ks");
+    // makeSample("fakeMc", "ks", 1e6);
+    // makeSample("fakeData", "lambda");
+    // makeSample("fakeMc", "lambda", 1e6);
+    // makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
+    // makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
   }
 
   if (what == "all" || string::npos != what.find("sample")) {
@@ -161,12 +167,12 @@ void plotFake::makeAll(string what) {
       makeSample("fakeMc", "ks");
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("psi")))) {
-       makeSample("fakeData", "psi");
-       makeSample("fakeMc", "psi");
+      makeSample("fakeData", "psi", 2e6);
+      makeSample("fakeMc", "psi", 2e6);
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("phi")))) {
-      makeSample("fakeData", "phi");
-      makeSample("fakeMc", "phi");
+      makeSample("fakeData", "phi", 2e6);
+      makeSample("fakeMc", "phi", 2e6);
     }
 
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("lambda")))) {
@@ -366,45 +372,21 @@ void plotFake::makeSample(std::string dataset, std::string sample, int nevents, 
   if (string::npos != sample.find("ks")) {
     fMode = FAKEKS;
     dir = "candAnaFake310";
-    // BGLBOXMIN = 0.450;
-    // BGLBOXMAX = 0.465;
-    // SIGBOXMIN = 0.480;
-    // SIGBOXMAX = 0.515;
-    // BGHBOXMIN = 0.530;
-    // BGHBOXMAX = 0.550;
   }
 
   if (string::npos != sample.find("psi")) {
     fMode = FAKEPSI;
     dir = "candAnaFake443";
-    // BGLBOXMIN = 2.800;
-    // BGLBOXMAX = 2.900;
-    // SIGBOXMIN = 3.050;
-    // SIGBOXMAX = 3.150;
-    // BGHBOXMIN = 3.200;
-    // BGHBOXMAX = 3.300;
   }
 
   if (string::npos != sample.find("phi")) {
     fMode = FAKEPHI;
     dir = "candAnaFake333";
-    // BGLBOXMIN = 0.990;
-    // BGLBOXMAX = 1.005;
-    // SIGBOXMIN = 1.010;
-    // SIGBOXMAX = 1.030;
-    // BGHBOXMIN = 1.035;
-    // BGHBOXMAX = 1.045;
   }
 
   if (string::npos != sample.find("lambda")) {
     fMode = FAKELAMBDA;
     dir = "candAnaFake3122";
-    // BGLBOXMIN = 1.095;
-    // BGLBOXMAX = 1.105;
-    // SIGBOXMIN = 1.110;
-    // SIGBOXMAX = 1.122;
-    // BGHBOXMIN = 1.130;
-    // BGHBOXMAX = 1.140;
   }
 
 
@@ -430,23 +412,28 @@ void plotFake::makeSample(std::string dataset, std::string sample, int nevents, 
 
 
 // ----------------------------------------------------------------------
-void plotFake::makeOverlay(string what1, string what2, string selection) {
+void plotFake::makeOverlay(string what1, string what2, string selection, string what) {
 
   cout << "fHistFileName: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str());
   cout << " opened " << endl;
 
+  bool restricted = (what != "");
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
+    //  for (unsigned int i = 0; i < 1; ++i) {
     cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), what1.c_str()) << endl;
-    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what1.c_str()), selection);
-    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what2.c_str()), selection);
+    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what1.c_str()), selection, what);
+    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what2.c_str()), selection, what);
 
     for (unsigned int id = 0; id < fDoList.size(); ++id) {
+      if (restricted) {
+	if (string::npos == fDoList[id].find(what)) continue;
+      }
       c0->cd();
       overlay(Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()),
 	      Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str())
 	      );
-      savePad(Form("fakeoverlay_%s_ad%s_%s_ad%s_%s.pdf", fDoList[id].c_str(), fChannelList[i].c_str(), what1.c_str(), fChannelList[i].c_str(), what2.c_str()));
+      savePad(Form("fakeoverlay_ad%s_%s_ad%s_%s_%s-%s.pdf", fChannelList[i].c_str(), what1.c_str(), fChannelList[i].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str()));
     }
   }
   fHistFile->Close();
@@ -474,23 +461,116 @@ void plotFake::bookDistributions() {
 	SIGBOXMIN = 0.482;
 	SIGBOXMAX = 0.510;
 	BGLBOXMIN = 0.450;
-	BGLBOXMAX = 0.465;
-	BGHBOXMIN = 0.530;
+	BGLBOXMAX = 0.475;
+	BGHBOXMIN = 0.515;
 	BGHBOXMAX = 0.550;
       } else if (1 == i) {
 	SIGBOXMIN = 0.480;
 	SIGBOXMAX = 0.515;
 	BGLBOXMIN = 0.450;
-	BGLBOXMAX = 0.465;
-	BGHBOXMIN = 0.530;
+	BGLBOXMAX = 0.475;
+	BGHBOXMIN = 0.520;
 	BGHBOXMAX = 0.550;
       } else {
 	SIGBOXMIN = 0.475;
 	SIGBOXMAX = 0.520;
 	BGLBOXMIN = 0.450;
-	BGLBOXMAX = 0.465;
-	BGHBOXMIN = 0.530;
+	BGLBOXMAX = 0.470;
+	BGHBOXMIN = 0.520;
 	BGHBOXMAX = 0.550;
+      }
+    }
+
+    if (string::npos != fSample.find("lambda")) {
+      // BGLBOXMIN = 1.095;
+      // BGLBOXMAX = 1.105;
+      // SIGBOXMIN = 1.110;
+      // SIGBOXMAX = 1.122;
+      // BGHBOXMIN = 1.130;
+      // BGHBOXMAX = 1.140;
+      if (0 == i) {
+	BGLBOXMIN = 1.095;
+	BGLBOXMAX = 1.105;
+	SIGBOXMIN = 1.110;
+	SIGBOXMAX = 1.122;
+	BGHBOXMIN = 1.130;
+	BGHBOXMAX = 1.140;
+      } else if (1 == i) {
+	BGLBOXMIN = 1.095;
+	BGLBOXMAX = 1.105;
+	SIGBOXMIN = 1.110;
+	SIGBOXMAX = 1.122;
+	BGHBOXMIN = 1.130;
+	BGHBOXMAX = 1.140;
+      } else {
+	BGLBOXMIN = 1.095;
+	BGLBOXMAX = 1.105;
+	SIGBOXMIN = 1.110;
+	SIGBOXMAX = 1.122;
+	BGHBOXMIN = 1.130;
+	BGHBOXMAX = 1.140;
+      }
+    }
+
+    if (string::npos != fSample.find("psi")) {
+      // BGLBOXMIN = 2.800;
+      // BGLBOXMAX = 2.900;
+      // SIGBOXMIN = 3.050;
+      // SIGBOXMAX = 3.150;
+      // BGHBOXMIN = 3.200;
+      // BGHBOXMAX = 3.300;
+      if (0 == i) {
+	BGLBOXMIN = 2.920;
+	BGLBOXMAX = 2.960;
+	SIGBOXMIN = 3.000;
+	SIGBOXMAX = 3.200;
+	BGHBOXMIN = 3.240;
+	BGHBOXMAX = 3.300;
+      } else if (1 == i) {
+	BGLBOXMIN = 2.920;
+	BGLBOXMAX = 2.960;
+	SIGBOXMIN = 3.000;
+	SIGBOXMAX = 3.200;
+	BGHBOXMIN = 3.240;
+	BGHBOXMAX = 3.300;
+      } else {
+	BGLBOXMIN = 2.920;
+	BGLBOXMAX = 2.960;
+	SIGBOXMIN = 3.000;
+	SIGBOXMAX = 3.200;
+	BGHBOXMIN = 3.240;
+	BGHBOXMAX = 3.300;
+      }
+    }
+
+    if (string::npos != fSample.find("phi")) {
+      // BGLBOXMIN = 0.990;
+      // BGLBOXMAX = 1.005;
+      // SIGBOXMIN = 1.010;
+      // SIGBOXMAX = 1.030;
+      // BGHBOXMIN = 1.035;
+      // BGHBOXMAX = 1.045;
+      if (0 == i) {
+	BGLBOXMIN = 0.990;
+	BGLBOXMAX = 1.005;
+	SIGBOXMIN = 1.010;
+	SIGBOXMAX = 1.030;
+	BGHBOXMIN = 1.035;
+	BGHBOXMAX = 1.045;
+      } else if (1 == i) {
+	BGLBOXMIN = 0.990;
+	BGLBOXMAX = 1.005;
+	SIGBOXMIN = 1.010;
+	SIGBOXMAX = 1.030;
+	BGHBOXMIN = 1.035;
+	BGHBOXMAX = 1.045;
+      } else {
+	BGLBOXMIN = 0.990;
+	BGLBOXMAX = 1.005;
+	SIGBOXMIN = 1.010;
+	SIGBOXMAX = 1.030;
+	BGHBOXMIN = 1.035;
+	BGHBOXMAX = 1.045;
       }
     }
 
@@ -500,38 +580,38 @@ void plotFake::bookDistributions() {
     cout << "BGH: " << BGHBOXMIN << " .. " << BGHBOXMAX << endl;
 
     a = new adsetFake();
-    a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 40, -2.4, 2.4);
-    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GoodFake", 40, 0., 20.);
-    a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 40, -2.4, 2.4);
-    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} [GeV]", "Good", 40, 0., 20.);
+    a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 48, -2.4, 2.4);
+    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GoodFake", 20, 0., 20.);
+    a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 48, -2.4, 2.4);
+    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} [GeV]", "Good", 20, 0., 20.);
 
-    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 50, -1., 1.);
-    a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 50, 0., 2.);
-    a->fpFakeLip       = bookDistribution(Form("%sFakeLip", name.c_str()), "LIP [cm]", "GlobalMuon", 50, 0., 2.);
-    a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 51, 0., 20.);
-    a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 51, 0., 02.);
+    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, -0.5, 0.5);
+    a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 20, 0., 2.);
+    a->fpFakeLip       = bookDistribution(Form("%sFakeLip", name.c_str()), "LIP [cm]", "GlobalMuon", 20, 0., 2.);
+    a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 21, 0., 20.);
+    a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 21, 0., 02.);
 
-    a->fpFakeChi2LocalPosition = bookDistribution(Form("%sFakeChi2LocalPosition", name.c_str()), "local position #chi^{2}", "GlobalMuon", 51, 0., 102.);
-    a->fpFakeChi2LocalMomentum = bookDistribution(Form("%sFakeChi2LocalMomentum", name.c_str()), "local momentum #chi^{2}", "GlobalMuon", 51, 0., 102.);
+    a->fpFakeChi2LocalPosition = bookDistribution(Form("%sFakeChi2LocalPosition", name.c_str()), "local position #chi^{2}", "GlobalMuon", 21, 0., 102.);
+    a->fpFakeChi2LocalMomentum = bookDistribution(Form("%sFakeChi2LocalMomentum", name.c_str()), "local momentum #chi^{2}", "GlobalMuon", 21, 0., 102.);
     a->fpFakeStaTrkMult = bookDistribution(Form("%sFakeStaTrkMult", name.c_str()), "STA trk multipicity", "GlobalMuon", 12, -2., 10.);
     a->fpFakeTmTrkMult = bookDistribution(Form("%sFakeTmTrkMult", name.c_str()), "TM trk multiplicity", "GlobalMuon", 20, 0., 20.);
 
-    a->fpFakeDeltaR = bookDistribution(Form("%sFakeDeltaR", name.c_str()), "deltaR", "GlobalMuon", 40, 0., 1.0);
-    a->fpFakeItrkValidFraction = bookDistribution(Form("%sFakeItrkValidFraction", name.c_str()), "inner track valid fraction", "GlobalMuon", 50, 0., 1.02);
-    a->fpFakeSegmentComp = bookDistribution(Form("%sFakeSegmentComp", name.c_str()), "segment compatibility", "GlobalMuon", 50, 0., 1.02);
-    a->fpFakeGtrkNormChi2 = bookDistribution(Form("%sFakeGtrkNormChi2", name.c_str()), "global track norm. #chi^{2}", "GlobalMuon", 40, 0., 12.);
-    a->fpFakeDzRef = bookDistribution(Form("%sFakeDzRef", name.c_str()), "dzrf", "GlobalMuon", 40, -20., 20.);
-    a->fpFakeDxyRef = bookDistribution(Form("%sFakeDxyRef", name.c_str()), "dxyref", "GlobalMuon", 100, -1., 1.);
-    a->fpFakeGtrkProb = bookDistribution(Form("%sFakeGtrkProb", name.c_str()), "global track prob", "GlobalMuon", 51, 0., 102.);
-    a->fpFakeMuonChi2 = bookDistribution(Form("%sFakeMuonChi2", name.c_str()), "muon #chi^{2}", "GlobalMuon", 51, 0., 1020.);
-    a->fpFakeGlbKinkFinder = bookDistribution(Form("%sFakeGlbKinkFinder", name.c_str()), "log10(GlbKinkFinder)", "GlobalMuon", 50, -5., 15.);
-    a->fpFakeStaRelChi2 = bookDistribution(Form("%sFakeStaRelChi2", name.c_str()), "StaRelChi2", "GlobalMuon", 51, 0., 102.);
-    a->fpFakeTrkRelChi2 = bookDistribution(Form("%sFakeTrkRelChi2", name.c_str()), "TrkRelChi2", "GlobalMuon", 50, 0., 20.);
-    a->fpFakeGlbDeltaEtaPhi = bookDistribution(Form("%sFakeGlbDeltaEtaPhi", name.c_str()), "GlbDeltaEtaPhi", "GlobalMuon", 50, -2., 4.);
-    a->fpFakeTimeInOut = bookDistribution(Form("%sFakeTimeInOut", name.c_str()), "TimeInOut", "GlobalMuon", 50, -200., 200.);
-    a->fpFakeTimeInOutE = bookDistribution(Form("%sFakeTimeInOutE", name.c_str()), "TimeInOutE", "GlobalMuon", 50, 0., 10.);
-    a->fpFakeTimeInOutS = bookDistribution(Form("%sFakeTimeInOutS", name.c_str()), "TimeInOut/TimeInOutE", "GlobalMuon", 50, -100., 100.);
-    a->fpFakeNvalidMuonHits = bookDistribution(Form("%sFakeNvalidMuonHits", name.c_str()), "NvalidMuonHits", "GlobalMuon", 51, 0., 51.);
+    a->fpFakeDeltaR = bookDistribution(Form("%sFakeDeltaR", name.c_str()), "deltaR", "GlobalMuon", 20, 0., 1.0);
+    a->fpFakeItrkValidFraction = bookDistribution(Form("%sFakeItrkValidFraction", name.c_str()), "inner track valid fraction", "GlobalMuon", 21, 0., 1.02);
+    a->fpFakeSegmentComp = bookDistribution(Form("%sFakeSegmentComp", name.c_str()), "segment compatibility", "GlobalMuon", 21, 0., 1.02);
+    a->fpFakeGtrkNormChi2 = bookDistribution(Form("%sFakeGtrkNormChi2", name.c_str()), "global track norm. #chi^{2}", "GlobalMuon", 24, 0., 12.);
+    a->fpFakeDzRef = bookDistribution(Form("%sFakeDzRef", name.c_str()), "dzrf", "GlobalMuon", 20, -20., 20.);
+    a->fpFakeDxyRef = bookDistribution(Form("%sFakeDxyRef", name.c_str()), "dxyref", "GlobalMuon", 50, -1., 1.);
+    a->fpFakeGtrkProb = bookDistribution(Form("%sFakeGtrkProb", name.c_str()), "global track prob", "GlobalMuon", 21, 0., 102.);
+    a->fpFakeMuonChi2 = bookDistribution(Form("%sFakeMuonChi2", name.c_str()), "muon #chi^{2}", "GlobalMuon", 21, 0., 1020.);
+    a->fpFakeGlbKinkFinder = bookDistribution(Form("%sFakeGlbKinkFinder", name.c_str()), "log10(GlbKinkFinder)", "GlobalMuon", 20, -5., 15.);
+    a->fpFakeStaRelChi2 = bookDistribution(Form("%sFakeStaRelChi2", name.c_str()), "StaRelChi2", "GlobalMuon", 21, 0., 102.);
+    a->fpFakeTrkRelChi2 = bookDistribution(Form("%sFakeTrkRelChi2", name.c_str()), "TrkRelChi2", "GlobalMuon", 20, 0., 20.);
+    a->fpFakeGlbDeltaEtaPhi = bookDistribution(Form("%sFakeGlbDeltaEtaPhi", name.c_str()), "GlbDeltaEtaPhi", "GlobalMuon", 20, -2., 4.);
+    a->fpFakeTimeInOut = bookDistribution(Form("%sFakeTimeInOut", name.c_str()), "TimeInOut", "GlobalMuon", 20, -200., 200.);
+    a->fpFakeTimeInOutE = bookDistribution(Form("%sFakeTimeInOutE", name.c_str()), "TimeInOutE", "GlobalMuon", 20, 0., 10.);
+    a->fpFakeTimeInOutS = bookDistribution(Form("%sFakeTimeInOutS", name.c_str()), "TimeInOut/TimeInOutE", "GlobalMuon", 20, -100., 100.);
+    a->fpFakeNvalidMuonHits = bookDistribution(Form("%sFakeNvalidMuonHits", name.c_str()), "NvalidMuonHits", "GlobalMuon", 21, 0., 51.);
     a->fpFakeNmatchedStations = bookDistribution(Form("%sFakeNmatchedStations", name.c_str()), "NmatchedStations", "GlobalMuon", 10, 0., 10.);
     a->fpFakeLayersWithHits = bookDistribution(Form("%sFakeLayersWithHits", name.c_str()), "LayersWithHits", "GlobalMuon", 20, 0., 20.);
     a->fpFakeNumberOfValidTrkHits = bookDistribution(Form("%sFakeNumberOfValidTrkHits", name.c_str()), "NumberOfValidTrkHits", "GlobalMuon", 30, 0., 30.);
@@ -543,20 +623,20 @@ void plotFake::bookDistributions() {
     a->fpFakeRPChits4 = bookDistribution(Form("%sFakeRPChits4", name.c_str()), "RPChits4", "GlobalMuon", 10, 0., 10.);
     a->fpFakeCombHits = bookDistribution(Form("%sFakeCombHits", name.c_str()), "CombHits", "GlobalMuon", 35, 0., 35.);
 
-    a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 40, -2.4, 2.4);
-    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} [GeV]", "TIS", 40, 0., 20.);
-    a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 40, -2.4, 2.4);
-    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} [GeV]", "TISFAKE", 40, 0., 20.);
+    a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 48, -2.4, 2.4);
+    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} [GeV]", "TIS", 20, 0., 20.);
+    a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 48, -2.4, 2.4);
+    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} [GeV]", "TISFAKE", 20, 0., 20.);
 
-    a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 40, -2.4, 2.4);
-    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} [GeV]", "TISDT", 40, 0., 20.);
-    a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 40, -2.4, 2.4);
-    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} [GeV]", "TISDTFAKE", 40, 0., 20.);
+    a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 48, -2.4, 2.4);
+    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} [GeV]", "TISDT", 20, 0., 20.);
+    a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 48, -2.4, 2.4);
+    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} [GeV]", "TISDTFAKE", 20, 0., 20.);
 
-    a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 40, -2.4, 2.4);
-    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} [GeV]", "TISDTDM", 40, 0., 20.);
-    a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 40, -2.4, 2.4);
-    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} [GeV]", "TISDTDMFAKE", 40, 0., 20.);
+    a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 48, -2.4, 2.4);
+    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} [GeV]", "TISDTDM", 20, 0., 20.);
+    a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 48, -2.4, 2.4);
+    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} [GeV]", "TISDTDMFAKE", 20, 0., 20.);
 
 
     fAdMap.insert(make_pair(mapname, a));
@@ -578,12 +658,12 @@ AnalysisDistribution* plotFake::bookDistribution(string hn, string ht, std::stri
     masshi = 1.05;
   }
   if (string::npos != fSample.find("lambda")) {
-    masslo = 1.08;
-    masshi = 1.15;
+    masslo = 1.095;
+    masshi = 1.145;
   }
   if (string::npos != fSample.find("psi")) {
-    masslo = 2.75;
-    masshi = 3.35;
+    masslo = 2.90;
+    masshi = 3.30;
   }
 
   AnalysisDistribution *p = new AnalysisDistribution(hn.c_str(), ht.c_str(), nbins, lo, hi, masslo, masshi);
@@ -601,7 +681,7 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
   cout << "plotFake::sbsDistributions(" << sample << ", " << selection << ", " << what << ")" << endl;
   string sbsControlPlotsFileName = Form("sbsctrl");
   AnalysisDistribution a(Form("%s_FakePt", sample.c_str()));
-  a.fVerbose = 1;
+  a.fVerbose = 0;
   a.fControlPlotsFileName = sbsControlPlotsFileName;
   a.fDirectory = fDirectory;
 
@@ -618,8 +698,8 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     type = 1;
     a.fMassPeak  = 3.097;
     a.fMassSigma = 0.030;
-    a.fMassLo    = 2.930;
-    a.fMassHi    = 3.280;
+    a.fMassLo    = 2.920;
+    a.fMassHi    = 3.300;
   } else if (string::npos != sample.find("lambda")) {
     type = 1;
     a.fMassPeak  = 1.116;
@@ -1092,7 +1172,7 @@ void plotFake::playLambda(string cuts, string name) {
   if (h) delete h;
 
   TH1D *h1 = new TH1D("h1", "", 100, 1.105, 1.125); h1->Sumw2();
-  h1->SetNdivisions(505, "X");
+  h1->SetNdivisions(504, "X");
   h1->SetMinimum(0.);
   T->Draw("m>>h1", cuts.c_str());
   fitLambda(h1);
@@ -1185,12 +1265,14 @@ void plotFake::loopFunction1() {
 
   fGoodCand = true;
   if (fMode == FAKELAMBDA) {
-    if (fCandPvIp > 0.01) fGoodCand = false;
-    if (fCandPvIpS > 2)   fGoodCand = false;
-    if (fCandFLSxy < 15)  fGoodCand = false;
-    if (fCandFLS3d < 15)  fGoodCand = false;
+    if (fCandPvIp  > 0.006) fGoodCand = false;
+    if (fCandFLS3d < 25)  fGoodCand = false;
+    if (fCandFLxy  > 3.9)  fGoodCand = false;
   }
-
+  if (fMode == FAKEKS) {
+    if (fCandPvIp > 0.006) fGoodCand = false;
+    if (fCandFLS3d < 20)   fGoodCand = false;
+  }
 
   double mass = fCandM;
 
@@ -1200,15 +1282,25 @@ void plotFake::loopFunction1() {
 
   string mapname("xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx");
 
-  //  cout << "cand m = " << fCandM << endl;
+
+  int nfakes(0);
+  for (int i = 0; i < fFakeNtrk; ++i) {
+    if (fFakeGm[i]>0) ++nfakes;
+  }
+
+  bool singleFake = (nfakes == 1);
+  if (fMode == FAKEPSI) singleFake = true;
+
 
   for (int i = 0; i < fFakeNtrk; ++i) {
-    if (TMath::Abs(fFakeEta[i]) < 0.8) {
+    if (TMath::Abs(fFakeEta[i]) < 0.7) {
       fChan = 0;
-    } else if (0.8 < TMath::Abs(fFakeEta[i])  && TMath::Abs(fFakeEta[i]) < 1.3) {
+    } else if (0.7 < TMath::Abs(fFakeEta[i])  && TMath::Abs(fFakeEta[i]) < 1.4) {
       fChan = 1;
-    } else {
+    } else if (1.4 < TMath::Abs(fFakeEta[i])  && TMath::Abs(fFakeEta[i]) < 2.0) {
       fChan = 2;
+    } else {
+      continue;
     }
 
     if (fIsMC) {
@@ -1225,13 +1317,13 @@ void plotFake::loopFunction1() {
 
     mapname = fChannelSample[fChan];
 
-    fGlobalMuon  = (fFakeGm[i]>0);
+    fGlobalMuon  = (fFakeGm[i] > 0) && singleFake;
     fGoodPt      = (fFakePt[i] > 4.);
     fGoodDtrig   = (fFakeDtrig[i] > 0.01);
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
     if (fIsMC) {
       fTIS       = true;
-      fGoodDtrig = true; // FIXME?
+      //      fGoodDtrig = true; // FIXME?
     }
 
     fGood     = fGoodCand && fGoodPt;
@@ -1245,6 +1337,11 @@ void plotFake::loopFunction1() {
 
     fGoodTISDTDM     = fGoodTISDT   && fGoodDmuon;
     fGoodTISDTDMFake = fGoodTISDTDM && fGlobalMuon;
+
+    if ((fMode == FAKELAMBDA) && fFakeId[i] != 2212) {
+      //      cout << "discarding i = " << i << " fFakeId[i] = " << fFakeId[i] << endl;
+      continue;
+    }
 
     fAnaCuts.update();
 
