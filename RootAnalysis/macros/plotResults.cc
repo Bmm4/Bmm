@@ -1263,8 +1263,8 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   cout << " calculateB2JpsiNumbers for name: " << a.fName << ", chan: " << a.fChan << endl;
   c0->Clear();
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier + fSuffix;
-
+  fSuffixSel = modifier;
+  cout << "___________________ plotResults::calculateB2JpsiNumbers: " << fSuffixSel << endl;
 
   // -- MC: efficiency and acceptance
   char mode[200];
@@ -1272,7 +1272,6 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   fSetup = a.fNameMc;
   int chan = a.fChan;
   numbersFromHist(a, "bupsik");
-
   printNumbers(a, cout);
 
   // -- data: fit yields
@@ -1289,7 +1288,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
 
   cout << "chan " << a.fChan << " total yield: " << fpy.getSignalYield() << " +/- "  << fpy.getSignalError() << endl;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  fTEX << "% -- " << mode << " chan " << chan << endl;
+  fTEX << "% -- mode: " << mode << " chan: " << chan << " fSuffixSel: " << fSuffixSel << endl;
   dumpTex(a.fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
   dumpTex(a.fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
   dumpTex(a.fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
@@ -1318,7 +1317,7 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   cout << " calculateSgNumbers for name: " << a.fName << ", chan: " << a.fChan << endl;
   c0->Clear();
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier + fSuffix;
+  fSuffixSel = modifier;
 
   // -- MC: efficiency and acceptance
   char mode[200];
@@ -1372,7 +1371,7 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
 void plotResults::calculateRareBgNumbers(int chan) {
   int nloop(0);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier + fSuffix;
+  fSuffixSel = modifier;
   char mode[200];
   // -- loop over all (effective) two-body backgrounds
   int start(0);
