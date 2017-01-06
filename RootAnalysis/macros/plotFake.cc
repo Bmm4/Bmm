@@ -108,8 +108,8 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fAnaCuts.addCut("GoodPt", "good pt", fGoodPt);
   fAnaCuts.addCut("GlobalMuon", "global muon ID", fGlobalMuon);
 
-  fAnaCuts.addCut("Good", "all, triggered independently of signal", fGood);
-  fAnaCuts.addCut("GoodFake", "fake, triggered independently of signal", fGoodFake);
+  fAnaCuts.addCut("Good", "all, good pt", fGood);
+  fAnaCuts.addCut("GoodFake", "fake, good pt", fGoodFake);
 
   fAnaCuts.addCut("TIS", "all, triggered independently of signal", fGoodTIS);
   fAnaCuts.addCut("TISFAKE", "fake, triggered independently of signal", fGoodTISFake);
@@ -167,12 +167,12 @@ void plotFake::makeAll(string what) {
       makeSample("fakeMc", "ks");
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("psi")))) {
-      makeSample("fakeData", "psi", 2e6);
-      makeSample("fakeMc", "psi", 2e6);
+      makeSample("fakeData", "psi");
+      makeSample("fakeMc", "psi");
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("phi")))) {
-      makeSample("fakeData", "phi", 2e6);
-      makeSample("fakeMc", "phi", 2e6);
+      makeSample("fakeData", "phi");
+      makeSample("fakeMc", "phi");
     }
 
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("lambda")))) {
@@ -1323,20 +1323,21 @@ void plotFake::loopFunction1() {
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
     if (fIsMC) {
       fTIS       = true;
-      //      fGoodDtrig = true; // FIXME?
+      fGoodDtrig = true; // does not work on MC (PD not well defined there)
     }
 
     fGood     = fGoodCand && fGoodPt;
     fGoodFake = fGood && fGlobalMuon;
+    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.);
 
-    fGoodTIS         = fTIS       && fGoodCand && fGoodPt;
-    fGoodTISFake     = fGoodTIS   && fGlobalMuon;
+    fGoodTIS         = fTIS       && fGood;
+    fGoodTISFake     = fGoodTIS   && fGoodFake;
 
     fGoodTISDT       = fGoodTIS   && fGoodDtrig;
-    fGoodTISDTFake   = fGoodTISDT && fGlobalMuon;
+    fGoodTISDTFake   = fGoodTISDT && fGoodFake;
 
     fGoodTISDTDM     = fGoodTISDT   && fGoodDmuon;
-    fGoodTISDTDMFake = fGoodTISDTDM && fGlobalMuon;
+    fGoodTISDTDMFake = fGoodTISDTDM && fGoodFake;
 
     if ((fMode == FAKELAMBDA) && fFakeId[i] != 2212) {
       //      cout << "discarding i = " << i << " fFakeId[i] = " << fFakeId[i] << endl;
