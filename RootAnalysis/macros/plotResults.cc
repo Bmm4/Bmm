@@ -1520,7 +1520,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
     dumpTex(fHhNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-HH-chan%d", fSuffixSel.c_str(), i, chan), 3);
   }
-  for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
+  for (unsigned i = 0; i < fSlNumbers[chan].fMcYield.size(); ++i) {
     dumpTex(fSlNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-SL-chan%d", fSuffixSel.c_str(), i, chan), 3);
   }
 
