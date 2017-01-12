@@ -563,21 +563,33 @@ string formatTex(double n, string name, int digits, int sgn) {
 // ----------------------------------------------------------------------
 string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
 
+  char line[200];
+
+  if (TMath::Abs(n) < 1.e-12) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{0} }", name.c_str());
+    return string(line);
+  }
+
+  bool negative(false);
+  if (n < 0) {
+    n *= -1.;
+    negative = true;
+  }
   double expoN  = TMath::Log10(n);
   //  cout << "original expoN = " << expoN << endl;
-  if (expoN < 0) expoN -= 1;
+  //  if (negative) expoN -= 1;
   double expoNE = TMath::Log10(nE);
   //  cout << "original expoNE = " << expoNE << endl;
   if (expoNE < 0) expoNE -= 1;
 
   double ratio = expoNE - expoN;
   double mantN  = n / TMath::Power(10, static_cast<int>(expoN));
+  if (negative) mantN *= -1.;
   double mantNE = nE / TMath::Power(10, static_cast<int>(expoNE-ratio));
   if (nE < 1.e-8) mantNE = 0.;
 
   //  cout << setw(2) << "expoN = " << expoN << " expoNE == " << expoNE << " mantN = " << mantN << " mantNE = " << mantNE << " ratio = " << ratio << endl;
 
-  char line[200];
   if (TMath::IsNaN(n) || TMath::IsNaN(nE)) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
   } else if (1 == digits ) {
@@ -805,4 +817,28 @@ double quadraticSum(int n, ...) {
 
   va_end(vl);
   return TMath::Sqrt(sum);
+}
+
+
+// ----------------------------------------------------------------------
+TLegend* newLegend(string title, double x1, double y1, double x2, double y2,
+		   vector<TH1*> hists, vector<string> names, vector<string> options) {
+  if (hists.size() != names.size()) {
+    cout << "hists and names vectors do not match size" << endl;
+    return 0;
+  }
+  if (hists.size() != options.size()) {
+    cout << "hists and options vectors do not match size" << endl;
+    return 0;
+  }
+  TLegend *legg = new TLegend(x1, y1, x2, y2, title.c_str());
+  legg->SetFillStyle(0);
+  legg->SetBorderSize(0);
+  legg->SetTextSize(0.04);
+  legg->SetFillColor(0);
+  legg->SetTextFont(52);
+  for (unsigned int i = 0; i < hists.size(); ++i) {
+    legg->AddEntry(hists[i], names[i].c_str(), options[i].c_str());
+  }
+  return legg;
 }
