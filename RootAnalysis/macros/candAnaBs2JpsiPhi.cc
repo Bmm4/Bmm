@@ -119,7 +119,7 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     fKa2EtaGen    = -99.;
   }
 
-  fDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
+  fPhiDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
 
   TLorentzVector ka1, ka2, pi1, pi2;
   ka1.SetPtEtaPhiM(fKa1Pt, fKa1Eta, fKa1Phi, MKAON);
@@ -512,7 +512,7 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("phipt", &fPhiPt,    "phipt/D");
   t->Branch("phieta",&fPhiEta,   "phieta/D");
   t->Branch("phiphi",&fPhiPhi,   "phiphi/D");
-  t->Branch("dr",    &fDeltaR,   "dr/D");
+  t->Branch("phidr", &fPhiDeltaR,"phidr/D");
 
 
 
