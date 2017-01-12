@@ -173,7 +173,8 @@ public :
 
   int fRunMin, fRunMax; // if you want to look at a specific run range
 
-  AnalysisCuts fAnaCuts;
+  AnalysisCuts fCncCuts;
+  AnalysisCuts fBdtCuts;
 
 
 
