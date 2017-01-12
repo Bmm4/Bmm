@@ -103,24 +103,24 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeRPChits4");
   fDoList.push_back("FakeCombHits");
 
-  fAnaCuts.clear();
-  fAnaCuts.addCut("GoodCand", "good cand", fGoodCand);
-  fAnaCuts.addCut("GoodPt", "good pt", fGoodPt);
-  fAnaCuts.addCut("GlobalMuon", "global muon ID", fGlobalMuon);
+  fCncCuts.clear();
+  fCncCuts.addCut("GoodCand", "good cand", fGoodCand);
+  fCncCuts.addCut("GoodPt", "good pt", fGoodPt);
+  fCncCuts.addCut("GlobalMuon", "global muon ID", fGlobalMuon);
 
-  fAnaCuts.addCut("Good", "all, good pt", fGood);
-  fAnaCuts.addCut("GoodFake", "fake, good pt", fGoodFake);
+  fCncCuts.addCut("Good", "all, good pt", fGood);
+  fCncCuts.addCut("GoodFake", "fake, good pt", fGoodFake);
 
-  fAnaCuts.addCut("TIS", "all, triggered independently of signal", fGoodTIS);
-  fAnaCuts.addCut("TISFAKE", "fake, triggered independently of signal", fGoodTISFake);
+  fCncCuts.addCut("TIS", "all, triggered independently of signal", fGoodTIS);
+  fCncCuts.addCut("TISFAKE", "fake, triggered independently of signal", fGoodTISFake);
 
-  fAnaCuts.addCut("TISDT", "all, triggered independently of signal, dist(trigger)", fGoodTISDT);
-  fAnaCuts.addCut("TISDTFAKE", "fake, triggered independently of signal, dist(trigger)", fGoodTISDTFake);
+  fCncCuts.addCut("TISDT", "all, triggered independently of signal, dist(trigger)", fGoodTISDT);
+  fCncCuts.addCut("TISDTFAKE", "fake, triggered independently of signal, dist(trigger)", fGoodTISDTFake);
 
-  fAnaCuts.addCut("TISDTDM", "all, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDM);
-  fAnaCuts.addCut("TISDTDMFAKE", "fake, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDMFake);
+  fCncCuts.addCut("TISDTDM", "all, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDM);
+  fCncCuts.addCut("TISDTDMFAKE", "fake, triggered independently of signal, dist(trigger), dist(muon)", fGoodTISDTDMFake);
 
-  fAnaCuts.dumpAll();
+  fCncCuts.dumpAll();
 }
 
 
@@ -670,7 +670,7 @@ AnalysisDistribution* plotFake::bookDistribution(string hn, string ht, std::stri
   p->setSigWindow(SIGBOXMIN, SIGBOXMAX);
   p->setBg1Window(BGLBOXMIN, BGLBOXMAX);
   p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
-  p->setAnalysisCuts(&fAnaCuts, hc.c_str());
+  p->setAnalysisCuts(&fCncCuts, hc.c_str());
   p->setPreselCut(&fGoodCand);
   return p;
 }
@@ -1344,7 +1344,7 @@ void plotFake::loopFunction1() {
       continue;
     }
 
-    fAnaCuts.update();
+    fCncCuts.update();
 
 
     fAdMap[mapname]->fpAllPt->fill(fFakePt[i], mass);

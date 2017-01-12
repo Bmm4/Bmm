@@ -135,11 +135,18 @@ void plotReducedOverlays::makeAll(string what) {
     init();
 
     printCuts(cout);
-    // -- data vs official MC
-    makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
-    makeSampleOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
-    makeSampleOverlay("bupsikData", "bupsikMcOff", "Ao");
-    makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
+    // -- data vs combined MC
+    if (0) {
+      makeSampleOverlay("bmmData", "bdmmMcOff", "Presel");
+      makeSampleOverlay("bspsiphiData", "bspsiphiMcComb", "Ao");
+      makeSampleOverlay("bupsikData", "bupsikMcComb", "Ao");
+      makeSampleOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
+    }
+
+    makeSampleOverlay("bmmRereco", "bdmmMcOff", "Presel");
+    makeSampleOverlay("bspsiphiRereco", "bspsiphiMcComb", "Ao");
+    makeSampleOverlay("bupsikRereco", "bupsikMcComb", "Ao");
+    makeSampleOverlay("bdpsikstarRereco", "bdpsikstarMc", "Ao");
 
     // -- validation of private MC vs official MC
     makeSampleOverlay("bupsikMc", "bupsikMcOff", "Ao");
@@ -155,16 +162,28 @@ void plotReducedOverlays::makeAll(string what) {
     system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
 
     printCuts(cout);
-    makeOverlay("bspsiphiData", "bspsiphiMcOff", "Ao");
-    makeOverlay("bmmData", "bdmmMcOff", "Presel");
-    makeOverlay("bupsikData", "bupsikMcOff", "Ao");
-    makeOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
+    if (0) {
+      makeOverlay("bspsiphiData", "bspsiphiMcComb", "Ao");
+      makeOverlay("bmmData", "bdmmMcOff", "Presel");
+      makeOverlay("bupsikData", "bupsikMcComb", "Ao");
+      makeOverlay("bdpsikstarData", "bdpsikstarMc", "Ao");
+    }
+    makeOverlay("bspsiphiRereco", "bspsiphiMcComb", "Ao");
+    makeOverlay("bmmRereco", "bdmmMcOff", "Presel");
+    makeOverlay("bupsikRereco", "bupsikMcComb", "Ao");
+    makeOverlay("bdpsikstarRereco", "bdpsikstarMc", "Ao");
   }
 
-  plotMass("bspsiphiData", "Cu");
-  plotMass("bupsikData", "Cu");
-  plotMass("bdpsikstarData", "Cu");
-  plotMass("bmmData", "Presel");
+  if (0) {
+    plotMass("bspsiphiData", "Cu");
+    plotMass("bupsikData", "Cu");
+    plotMass("bdpsikstarData", "Cu");
+    plotMass("bmmData", "Presel");
+  }
+  plotMass("bspsiphiRereco", "Cu");
+  plotMass("bupsikRereco", "Cu");
+  plotMass("bdpsikstarRereco", "Cu");
+  plotMass("bmmRereco", "Presel");
 }
 
 
@@ -486,11 +505,11 @@ void plotReducedOverlays::loopFunction1() {
   }
 
   if (fMode == BD2JPSIKSTAR) {
-    fGoodHLT = fGoodHLT && fb.kpt > 0.6 && fb.pipt > 0.6;
+    fGoodHLT = fGoodHLT && fb.kpt > 0.8 && fb.pipt > 0.8;
   }
 
   // -- update ana cuts!
-  fAnaCuts.update();
+  fCncCuts.update();
 
   // bool loPU = (fb.pvn <  6);
   // bool hiPU = (fb.pvn > 15);
@@ -1296,7 +1315,7 @@ AnalysisDistribution* plotReducedOverlays::bookDistribution(string hn, string ht
   p->setSigWindow(SIGBOXMIN, SIGBOXMAX);
   p->setBg1Window(BGLBOXMIN, BGLBOXMAX);
   p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
-  p->setAnalysisCuts(&fAnaCuts, hc.c_str());
+  p->setAnalysisCuts(&fCncCuts, hc.c_str());
   p->setPreselCut(&fPreselection);
   return p;
 }
@@ -1308,7 +1327,7 @@ AnalysisDistribution* plotReducedOverlays::bookSpecialDistribution(string hn, st
   p->setSigWindow(SIGBOXMIN, SIGBOXMAX);
   p->setBg1Window(BGLBOXMIN, BGLBOXMAX);
   p->setBg2Window(BGHBOXMIN, BGHBOXMAX);
-  p->setAnalysisCuts(&fAnaCuts, hc.c_str());
+  p->setAnalysisCuts(&fCncCuts, hc.c_str());
   p->setPreselCut(presel);
 
   return p;
