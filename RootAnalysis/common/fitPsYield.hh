@@ -60,9 +60,10 @@ public:
   TH1D* getWeightedCombination()   {return fCombinedW8;}
 
   void fitBu2JpsiKp(int limitpars, std::string pdfprefix);
+  void fitBs2JpsiPhi(int limitpars, std::string pdfprefix);
 
   void  fit0_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".");
-  void  fit0_Bs2JpsiPhi(int limitpars = 0);
+  void  fit0_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".");
 
 private:
   int         fVerbose;
