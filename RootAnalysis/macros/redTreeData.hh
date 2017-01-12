@@ -47,8 +47,9 @@ struct redTreeData {
   double psicosa, psiflsxy, psiprob, psimaxdoca;
 
   // -- other resonances
-  double mkk, mkpi;
+  double mkk, mkpi, mkpi1, mkpi2;
   double phipt, phieta, phiphi, dr;
+  double phidr;
 
   double md0, dm, ptd0;
 
