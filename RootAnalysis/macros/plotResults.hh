@@ -41,12 +41,14 @@ public :
   void getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int proc);
   void numbersFromHist(anaNumbers &a, std::string syst);
   std::string rareAccName(std::string sname);
+  bool skipThisBg(std::string name);
   void calculateNumbers(std::string mode);
   void calculateB2JpsiNumbers(anaNumbers &a);
   void calculateSgNumbers(anaNumbers &a);
+  void calculateCombBgNumbers(anaNumbers &a, int mode = 0, double lo = 5.45, double hi = 5.9);
   void calculateRareBgNumbers(int chan);
 
-  enum INTMODE {LO, BD, BS, HI, ALL};
+  enum INTMODE {LO=0, BD, BS, HI, ALL};
   double massIntegral(TH1* h, INTMODE i, int chan);
   void printNumbers(anaNumbers &a, ostream &OUT);
   void dumpTex(number &a, const std::string &s, int ndigits = 3, int sgn = 0);
@@ -61,7 +63,7 @@ public :
 
 private:
 
-  static const int NBINS = 120;
+  static const int NBINS = 100;
   double fMassLo, fMassHi
     , fBgLo, fBgHi
     , fSgLo, fSgHi
@@ -89,7 +91,17 @@ private:
   bool fSaveSmallTree;
 
   // -- vector for each channel
-  std::vector<anaNumbers> fNoNumbers, fCsNumbers, fB0Numbers, fBsmmNumbers, fBdmmNumbers, fHhNumbers, fSlNumbers;
+  std::vector<anaNumbers>
+  fNoNumbers,     // B+ normalization
+    fCsNumbers,   // Bs normalization
+    fB0Numbers,   // B0 -> J/psi K*0
+    fBsmmNumbers, // Bs -> mu mu signal
+    fBdmmNumbers, // B0 -> mu mu signal
+    fHhNumbers,   // peaking background
+    fSlNumbers,   // semileptonic background
+    fCombNumbers, // combinatorial background (from data)
+    fNpNumbers,   // non-peaking background: SL (from MC) and combinatorial background (from data)
+    fBgNumbers;   // background: SL and HH (from MC) and  combinatorial background (from data)
   std::map<std::string, std::vector<anaNumbers*> > fRareNumbers;
   // -- map (name) -> (vector with per-channel errors) for all relative systematic uncertainties
   std::map<std::string, std::vector<double> > fSystematics;
