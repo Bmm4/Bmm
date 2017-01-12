@@ -7,7 +7,7 @@
 #include <map>
 
 // the number of mass region windows: low sideband, high sideband, B0 window, Bs window
-#define NWIN 4
+#define NWIN 5
 
 
 class number {
@@ -31,7 +31,7 @@ public:
   void clear();
   std::string fName, fNameMc, fNameDa;
   int fChan;
-  // -- 5-element vectors for mass window yields: lo, Bd, Bs, hi, all
+  // -- NWIN-element vectors for mass window yields: lo, Bd, Bs, hi, all
   std::vector<number> fMcYield, fObsYield, fFitYield;
   // -- overall results of fits and scaled yields
   number fSignalFit, fScaledYield;

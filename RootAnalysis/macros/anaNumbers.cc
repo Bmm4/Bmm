@@ -61,6 +61,7 @@ void anaNumbers::clear() {
   names.push_back("bd");
   names.push_back("bs");
   names.push_back("hi");
+  names.push_back("all");
   vector<vector<number> *> p;
   p.push_back(&fMcYield);
   p.push_back(&fObsYield);
