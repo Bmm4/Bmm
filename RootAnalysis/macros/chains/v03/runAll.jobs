@@ -64,6 +64,14 @@ $combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2015
 $combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
 $combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016-$version.root dstar-data-dstarCharmonium2016?-*.root; cd -  ";
 
+$combine{"combined"} = "cd $SCRATCH; hadd -f bmm-mc-combined-LambdaBToPMuNu-$version.root bmm-mc-Summer16_private-LambdaBToPMuNu-$version.root bmm-mc-RunIISpring16DR80-LambdaBToPMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToKMuNu-$version.root bmm-mc-Summer16_private-BsToKMuNu-$version.root bmm-mc-RunIISpring16DR80-BsToKMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-$version.root bmm-mc-Summer16_private-BuToJpsiKp-$version.root bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-$version.root ; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-v03.root ; cd - ; ";
+
 
 # -----------------------------------------------
 $dataset = "bmmCharmonium2015B";
