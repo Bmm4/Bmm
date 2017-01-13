@@ -71,6 +71,8 @@ private:
     , fCsLo, fCsHi
     ;
 
+  std::string fHistWithAllCuts;
+
   std::map<std::string, std::vector<TH2D*> > fhAccAll, fhAccPass;
   std::map<std::string, std::vector<TH1D*> > fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
 
@@ -82,8 +84,14 @@ private:
   std::map<std::string, std::vector<TH1D*> > fhMassWithTriggerCuts;
   std::map<std::string, std::vector<TH1D*> > fhMassWithAllCuts;
   std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsBlind;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsSeagull;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsSeagullBlind;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsCowboy;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsCowboyBlind;
 
   std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCuts;
+  std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsSeagull;
+  std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsCowboy;
 
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
@@ -92,16 +100,17 @@ private:
 
   // -- vector for each channel
   std::vector<anaNumbers>
-  fNoNumbers,     // B+ normalization
-    fCsNumbers,   // Bs normalization
-    fB0Numbers,   // B0 -> J/psi K*0
-    fBsmmNumbers, // Bs -> mu mu signal
-    fBdmmNumbers, // B0 -> mu mu signal
-    fHhNumbers,   // peaking background
-    fSlNumbers,   // semileptonic background
-    fCombNumbers, // combinatorial background (from data)
-    fNpNumbers,   // non-peaking background: SL (from MC) and combinatorial background (from data)
-    fBgNumbers;   // background: SL and HH (from MC) and  combinatorial background (from data)
+  fNoNumbers,        // B+ normalization
+    fCsNumbers,      // Bs normalization
+    fB0Numbers,      // B0 -> J/psi K*0
+    fBsmmNumbers,    // Bs -> mu mu signal
+    fBdmmNumbers,    // B0 -> mu mu signal
+    fHhNumbers,      // peaking background
+    fSlNumbers,      // semileptonic background
+    fCombNumbers,    // combinatorial background (from data)
+    fNpNumbers,      // non-peaking background: SL (from MC) and combinatorial background (from data)
+    fBgNumbers,      // background: SL and HH (from MC) and  combinatorial background (from data)
+    fSgAndBgNumbers; // background and signal
   std::map<std::string, std::vector<anaNumbers*> > fRareNumbers;
   // -- map (name) -> (vector with per-channel errors) for all relative systematic uncertainties
   std::map<std::string, std::vector<double> > fSystematics;

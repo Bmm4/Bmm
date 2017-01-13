@@ -41,7 +41,8 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
 									       fSlNumbers(4),
 									       fCombNumbers(4),
 									       fNpNumbers(4),
-									       fBgNumbers(4)
+									       fBgNumbers(4),
+									       fSgAndBgNumbers(4)
 {
   plotClass::loadFiles(files);
   plotResults::loadFiles(files);
@@ -126,8 +127,27 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
       h = new TH1D(Form("h%sMassWithAllCutsBlind%d", mode.c_str(), i), Form("h%sMassWithAllCutsBlind%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
       fhMassWithAllCutsBlind[mode].push_back(h);
 
+      h = new TH1D(Form("h%sMassWithAllCutsSeagull%d", mode.c_str(), i), Form("h%sMassWithAllCutsSeagull%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhMassWithAllCutsSeagull[mode].push_back(h);
+
+      h = new TH1D(Form("h%sMassWithAllCutsSeagullBlind%d", mode.c_str(), i), Form("h%sMassWithAllCutsSeagullBlind%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhMassWithAllCutsSeagullBlind[mode].push_back(h);
+
+      h = new TH1D(Form("h%sMassWithAllCutsCowboy%d", mode.c_str(), i), Form("h%sMassWithAllCutsCowboy%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhMassWithAllCutsCowboy[mode].push_back(h);
+
+      h = new TH1D(Form("h%sMassWithAllCutsCowboyBlind%d", mode.c_str(), i), Form("h%sMassWithAllCutsCowboyBlind%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhMassWithAllCutsCowboyBlind[mode].push_back(h);
+
+      // -- weighted with misid
       h = new TH1D(Form("h%sW8MassWithAllCuts%d", mode.c_str(), i), Form("h%sW8MassWithAllCuts%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
       fhW8MassWithAllCuts[mode].push_back(h);
+
+      h = new TH1D(Form("h%sW8MassWithAllCutsSeagull%d", mode.c_str(), i), Form("h%sW8MassWithAllCutsSeagull%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhW8MassWithAllCutsSeagull[mode].push_back(h);
+
+      h = new TH1D(Form("h%sW8MassWithAllCutsCowboy%d", mode.c_str(), i), Form("h%sW8MassWithAllCutsCowboy%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
+      fhW8MassWithAllCutsCowboy[mode].push_back(h);
 
       h = new TH1D(Form("h%sMassWithMassCuts%d", mode.c_str(), i), Form("h%sW8MassWithMassCuts%d", mode.c_str(), i), NBINS, fMassLo, fMassHi);
       fhMassWithMassCuts[mode].push_back(h);
@@ -158,26 +178,36 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
     fNoNumbers[i].fName   = "bupsik";
     fNoNumbers[i].fNameMc = "bupsikMcComb";
     fNoNumbers[i].fNameDa = "bupsikData";
+    fNoNumbers[i].fMcYield.clear();
+    fNoNumbers[i].fFrac.clear();
 
     fCsNumbers[i].fChan = i;
     fCsNumbers[i].fName = "bspsiphi";
     fCsNumbers[i].fNameMc = "bspsiphiMcComb";
     fCsNumbers[i].fNameDa = "bspsiphiData";
+    fCsNumbers[i].fMcYield.clear();
+    fCsNumbers[i].fFrac.clear();
 
     fB0Numbers[i].fChan = i;
     fB0Numbers[i].fName = "bdpsikstar";
     fB0Numbers[i].fNameMc = "bdpsikstarMc";
     fB0Numbers[i].fNameDa = "bdpsikstarData";
+    fB0Numbers[i].fMcYield.clear();
+    fB0Numbers[i].fFrac.clear();
 
     fBsmmNumbers[i].fChan = i;
     fBsmmNumbers[i].fName = "bsmm";
     fBsmmNumbers[i].fNameMc = "bsmmMcOff";
     fBsmmNumbers[i].fNameDa = "bmmData";
+    fBsmmNumbers[i].fMcYield.clear();
+    fBsmmNumbers[i].fFrac.clear();
 
     fBdmmNumbers[i].fChan = i;
     fBdmmNumbers[i].fName = "bdmm";
     fBdmmNumbers[i].fNameMc = "bdmmMcOff";
     fBdmmNumbers[i].fNameDa = "bmmData";
+    fBdmmNumbers[i].fMcYield.clear();
+    fBdmmNumbers[i].fFrac.clear();
 
     fSlNumbers[i].fChan = i;
     fSlNumbers[i].fName = "sl";
@@ -196,23 +226,50 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
     fNpNumbers[i].fNameDa = "nada";
 
     fBgNumbers[i].fChan = i;
-    fBgNumbers[i].fName = "sl";
+    fBgNumbers[i].fName = "bg";
     fBgNumbers[i].fNameMc = "nada";
     fBgNumbers[i].fNameDa = "nada";
+
+    fSgAndBgNumbers[i].fChan = i;
+    fSgAndBgNumbers[i].fName = "sgandbg";
+    fSgAndBgNumbers[i].fNameMc = "nada";
+    fSgAndBgNumbers[i].fNameDa = "nada";
+
 
     fHhNumbers[i].fMcYield.clear();
     fSlNumbers[i].fMcYield.clear();
     fNpNumbers[i].fMcYield.clear();
     fBgNumbers[i].fMcYield.clear();
     fBgNumbers[i].fObsYield.clear();
+    fSgAndBgNumbers[i].fMcYield.clear();
+    fSgAndBgNumbers[i].fObsYield.clear();
     for (int j = 0; j < NWIN; ++j) {
       number aaa;
       fHhNumbers[i].fMcYield.push_back(aaa);
       fSlNumbers[i].fMcYield.push_back(aaa);
 
       fNpNumbers[i].fMcYield.push_back(aaa);
+
       fBgNumbers[i].fMcYield.push_back(aaa);
       fBgNumbers[i].fObsYield.push_back(aaa);
+
+      fSgAndBgNumbers[i].fMcYield.push_back(aaa);
+      fSgAndBgNumbers[i].fObsYield.push_back(aaa);
+
+      fNoNumbers[i].fFrac.push_back(aaa);
+      fNoNumbers[i].fMcYield.push_back(aaa);
+
+      fCsNumbers[i].fFrac.push_back(aaa);
+      fCsNumbers[i].fMcYield.push_back(aaa);
+
+      fB0Numbers[i].fFrac.push_back(aaa);
+      fB0Numbers[i].fMcYield.push_back(aaa);
+
+      fBdmmNumbers[i].fFrac.push_back(aaa);
+      fBdmmNumbers[i].fMcYield.push_back(aaa);
+
+      fBsmmNumbers[i].fFrac.push_back(aaa);
+      fBsmmNumbers[i].fMcYield.push_back(aaa);
     }
 
     fCombNumbers[i].fChan = i;
@@ -237,10 +294,12 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
       a->fNameMc = it->first;
       number aaa;
       a->fName = it->first;
+      a->fFrac.clear();
       a->fMcYield.clear();
       a->fObsYield.clear();
       a->fFitYield.clear();
       for (int j = 0; j < 5; ++j) {
+	a->fFrac.push_back(aaa);
 	a->fMcYield.push_back(aaa);
 	a->fObsYield.push_back(aaa);
 	a->fFitYield.push_back(aaa);
@@ -395,6 +454,7 @@ void plotResults::makeAll(string what) {
 
   if (what == "all" || what == "ana") {
     dumpDatasets();
+    fHistWithAllCuts = "hMassWithAllCuts";
     calculateNumbers("cnc" + fSuffix);
     calculateNumbers("bdt" + fSuffix);
   }
@@ -746,7 +806,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 
 // ----------------------------------------------------------------------
 void plotResults::initNumbers(anaNumbers &a) {
-
+  a.clear();
 }
 
 
@@ -1079,9 +1139,9 @@ void plotResults::getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int
 //          BF(Bs -> mu mu)  epstot(Bs)              ( fs)
 //   n_s = ----------------- ----------  N(B+) pRatio(=--)
 //          BF(B+ -> mu muK) epstot(B+)		     ( fu)
+// ----------------------------------------------------------------------
 void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio) {
-
-  cout << "scaleYield: " << aSig.fNameMc << " wrt " << aNorm.fNameMc << endl;
+  cout << "+++ scaleYield: " << aSig.fNameMc << " wrt " << aNorm.fNameMc << endl;
   double sgBf  = fDS[aSig.fNameMc]->fBf;
   double sgBfE = fDS[aSig.fNameMc]->fBfE;
 
@@ -1090,17 +1150,29 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio)
 
   double yield  = (sgBf/noBf) * pRatio * (aSig.fEffTot.val/aNorm.fEffTot.val) * aNorm.fSignalFit.val;
   //  -- FIXME: error propagation!
-
   aSig.fScaledYield.val = yield;
   aSig.fScaledYield.setErrors(0.05*yield, 0.05*yield);
 
-  cout << " sgBf = " << sgBf << " noBf = " << noBf << " pRatio = " << pRatio
+  // -- scale fMcYield
+  if (aSig.fMcYield[4].val > 0.) {
+    double scaleFactor = yield/aSig.fMcYield[4].val;
+    cout << "+++ fMcYield[4] = " << aSig.fMcYield[4].val << " new scaled signal yield = " << yield << " -> scale factor = " << scaleFactor << endl;
+    for (int i = 0; i < NWIN; ++i) {
+      cout << "[" << i << "] " << aSig.fMcYield[i].val << " -> ";
+      aSig.fMcYield[i].val = aSig.fMcYield[i].val*scaleFactor;
+      cout << aSig.fMcYield[i].val;
+    }
+    cout << endl;
+  } else {
+    cout << "+++ fMcYield[4] = " << aSig.fMcYield[4].val << " (not larger than 0), not scaling fMcYield" << endl;
+  }
+
+  cout << "+++ sgBf = " << sgBf << " noBf = " << noBf << " pRatio = " << pRatio
        << " sgEffTot = " << aSig.fEffTot.val
        << " noEffTot = " << aNorm.fEffTot.val
        << " noSignalFit = " << aNorm.fSignalFit.val
        << " ->  scaled Yield = " << aSig.fScaledYield.val
        << endl;
-  // -- FIXME: fill counts in mass windows!
 }
 
 
@@ -1123,11 +1195,17 @@ void plotResults::calculateNumbers(string mode) {
   for (unsigned int chan = 0; chan < fNchan; ++chan) {
     cout << "calculateNumbers for channel " << chan << endl;
     fChan = chan;
-    initNumbers(fCsNumbers[chan]);
     initNumbers(fNoNumbers[chan]);
+    initNumbers(fCsNumbers[chan]);
     initNumbers(fB0Numbers[chan]);
     initNumbers(fBsmmNumbers[chan]);
     initNumbers(fBdmmNumbers[chan]);
+    initNumbers(fHhNumbers[chan]);
+    initNumbers(fSlNumbers[chan]);
+    initNumbers(fCombNumbers[chan]);
+    initNumbers(fNpNumbers[chan]);
+    initNumbers(fBgNumbers[chan]);
+    initNumbers(fSgAndBgNumbers[chan]);
 
     // -- first to provide scaleYield base
     calculateB2JpsiNumbers(fNoNumbers[chan]);
@@ -1168,7 +1246,7 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
   TH1D *hMassWithAnaCuts         = (TH1D*)gDirectory->Get(Form("hMassWithAnaCuts_%s_chan%d", modifier.c_str(), chan));
   TH1D *hMassWithMuonCuts        = (TH1D*)gDirectory->Get(Form("hMassWithMuonCuts_%s_chan%d", modifier.c_str(), chan));
   TH1D *hMassWithTriggerCuts     = (TH1D*)gDirectory->Get(Form("hMassWithTriggerCuts_%s_chan%d", modifier.c_str(), chan));
-  TH1D *hMassWithAllCuts         = (TH1D*)gDirectory->Get(Form("hMassWithAllCuts_%s_chan%d", modifier.c_str(), chan));
+  TH1D *hMassWithAllCuts         = (TH1D*)gDirectory->Get(Form("%s_%s_chan%d", fHistWithAllCuts.c_str(), modifier.c_str(), chan));
   TH1D *hMassWithMassCuts        = (TH1D*)gDirectory->Get(Form("hMassWithMassCuts_%s_chan%d", modifier.c_str(), chan));
 
   TH1D *hMuId                    = (TH1D*)gDirectory->Get(Form("hMuId_%s_chan%d", modifier.c_str(), chan));
@@ -1264,43 +1342,26 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
   aa.fProdGenYield.val     = e/(aa.fEffTot.val);
   aa.fProdGenYield.setErrors(0.001*aa.fProdGenYield.val, 0.001*aa.fProdGenYield.val); //FIXME
 
+  double tot   = massIntegral(hMassWithAllCuts, ALL, chan);
+  double lo    = massIntegral(hMassWithAllCuts, LO, chan);
+  double hi    = massIntegral(hMassWithAllCuts, HI, chan);
+  double bd    = massIntegral(hMassWithAllCuts, BD, chan);
+  double bs    = massIntegral(hMassWithAllCuts, BS, chan);
 
-  if (string::npos != aa.fName.find("bsmm")) {
-    double tot   = massIntegral(hMassWithAllCuts, ALL, chan);
-    double lo    = massIntegral(hMassWithAllCuts, LO, chan);
-    double hi    = massIntegral(hMassWithAllCuts, HI, chan);
-    double bd    = massIntegral(hMassWithAllCuts, BD, chan);
-    double bs    = massIntegral(hMassWithAllCuts, BS, chan);
+  aa.fFrac[0].val   = lo/tot;
+  aa.fFrac[0].estat = dEff(static_cast<int>(lo), static_cast<int>(tot));
+  aa.fFrac[1].val   = bd/tot;
+  aa.fFrac[1].estat = dEff(static_cast<int>(bd), static_cast<int>(tot));
+  aa.fFrac[2].val   = bs/tot;
+  aa.fFrac[2].estat = dEff(static_cast<int>(bs), static_cast<int>(tot));
+  aa.fFrac[3].val   = hi/tot;
+  aa.fFrac[3].estat = dEff(static_cast<int>(hi), static_cast<int>(tot));
 
-    aa.fFracBs.val   = bs/tot;
-    aa.fFracBs.estat = dEff(static_cast<int>(bs), static_cast<int>(tot));
-    aa.fFracBd.val   = bd/tot;
-    aa.fFracBd.estat = dEff(static_cast<int>(bd), static_cast<int>(tot));
-    aa.fFracLo.val   = lo/tot;
-    aa.fFracLo.estat = dEff(static_cast<int>(lo), static_cast<int>(tot));
-    aa.fFracHi.val   = hi/tot;
-    aa.fFracHi.estat = dEff(static_cast<int>(hi), static_cast<int>(tot));
-  }
-
-  if (string::npos != aa.fName.find("bdmm")) {
-    double tot   = massIntegral(hMassWithAllCuts, ALL, chan);
-    double lo    = massIntegral(hMassWithAllCuts, LO, chan);
-    double hi    = massIntegral(hMassWithAllCuts, HI, chan);
-    double bd    = massIntegral(hMassWithAllCuts, BD, chan);
-    double bs    = massIntegral(hMassWithAllCuts, BS, chan);
-
-    aa.fFracBs.val   = bd/tot;
-    aa.fFracBs.estat = dEff(static_cast<int>(bd), static_cast<int>(tot));
-    aa.fFracBd.val   = bs/tot;
-    aa.fFracBd.estat = dEff(static_cast<int>(bs), static_cast<int>(tot));
-    aa.fFracLo.val   = lo/tot;
-    aa.fFracLo.estat = dEff(static_cast<int>(lo), static_cast<int>(tot));
-    aa.fFracHi.val   = hi/tot;
-    aa.fFracHi.estat = dEff(static_cast<int>(hi), static_cast<int>(tot));
-  }
-
-  //  printNumbers(*aa, cout);
-
+  aa.fMcYield[0].val   = lo;
+  aa.fMcYield[1].val   = bd;
+  aa.fMcYield[2].val   = bs;
+  aa.fMcYield[3].val   = hi;
+  aa.fMcYield[4].val   = tot;
 }
 
 
@@ -1342,7 +1403,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
 
   cout << "chan " << a.fChan << " total yield: " << fpy.getSignalYield() << " +/- "  << fpy.getSignalError() << endl;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  fTEX << "% -- mode: " << mode << " chan: " << chan << " fSuffixSel: " << fSuffixSel << endl;
+  fTEX << "% -- NORMALIZATION: " << mode << " chan: " << chan << endl;
   dumpTex(a.fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
   dumpTex(a.fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
   dumpTex(a.fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
@@ -1368,7 +1429,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
 
 // ----------------------------------------------------------------------
 void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, double hi) {
-  string hname = "hMassWithAllCutsBlind";
+  string hname = fHistWithAllCuts;
 
   c0->Clear();
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
@@ -1416,9 +1477,11 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   a.fFitYield[4].val = lF2->Integral(fBgLo, fBgHi)/binw;
 
   // -- dump numbers
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- DATA/COMBINATORIAL " << mode << " chan " << a.fChan << endl;
   for (unsigned i = 0; i < NWIN; ++i) {
     dumpTex(a.fFitYield[i], Form("%s:N-FIT-MBIN%d-CB-chan%d", fSuffixSel.c_str(), i, a.fChan), 3);
-    dumpTex(a.fObsYield[i], Form("%s:N-OBS-MBIN%d-BG-chan%d", fSuffixSel.c_str(), i, a.fChan), 0);
+    dumpTex(a.fObsYield[i], Form("%s:N-OBS-MBIN%d-DATA-chan%d", fSuffixSel.c_str(), i, a.fChan), 0);
   }
 
   double tsize = tl->GetTextSize();
@@ -1455,7 +1518,7 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   fSetup = a.fNameDa;
 
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  fTEX << "% -- " << mode << " chan " << chan << endl;
+  fTEX << "% -- SIGNAL " << mode << " chan " << chan << endl;
   dumpTex(a.fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
   dumpTex(a.fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
   dumpTex(a.fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
@@ -1471,6 +1534,10 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   dumpTex(a.fProdGenYield, Form("%s:N-PRODYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
   dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
 
+  for (unsigned i = 0; i < a.fMcYield.size(); ++i) {
+    dumpTex(a.fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-%s-chan%d", fSuffixSel.c_str(), i, mode, chan), 3);
+  }
+
   //  dumpTex(a.fSignalFit, Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
 
   c0->Modified();
@@ -1481,6 +1548,10 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
 
 // ----------------------------------------------------------------------
 void plotResults::calculateRareBgNumbers(int chan) {
+  string hname = fHistWithAllCuts; // "hMassWithAllCutsBlind";
+  string uname = fHistWithAllCuts; // "hMassWithAllCuts";
+  string wname = fHistWithAllCuts; replaceAll(wname, "hMass", "hW8Mass");
+
   cout << "==> calculateRareBgNumbers for chan: " << chan << endl;
   int nloop(0);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
@@ -1488,9 +1559,11 @@ void plotResults::calculateRareBgNumbers(int chan) {
   char mode[200];
   // -- book summed histograms
   THStack hSl("hSl", "rare semileptonic decays");
+  TH1D *h1Sl = new TH1D("h1Sl", "h1Sl", NBINS/5, fMassLo, fMassHi); h1Sl->Sumw2();
   vector<TH1*> vSl;
   vector<string> vSlnames, vSloptions;
   THStack hHh("hHh", "rare peaking decays");
+  TH1D *h1Hh = new TH1D("h1Hh", "h1Hh", NBINS/5, fMassLo, fMassHi); h1Hh->Sumw2();
   vector<TH1*> vHh;
   vector<string> vHhnames, vHhoptions;
   THStack hBg("hBg", "rare decays");
@@ -1511,8 +1584,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
     double genYield  = getValueByLabel(h1,  "genYield");
     double acc       = getValueByLabel(h1,  "acc");
 
-    u8name = Form("%s/hMassWithAllCuts_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan);
-    w8name = Form("%s/hW8MassWithAllCuts_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan);
+    u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), modifier.c_str(), it->first.c_str(), chan);
+    w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), modifier.c_str(), it->first.c_str(), chan);
     TH1D *hu = (TH1D*)fHistFile->Get(u8name.c_str());
     TH1D *hw = (TH1D*)fHistFile->Get(w8name.c_str());
 
@@ -1529,15 +1602,20 @@ void plotResults::calculateRareBgNumbers(int chan) {
     a->fEffTot.val = eTot;
 
     if (utot > 0) {
-      a->fFracLo.val = ulo/utot;
-      a->fFracBd.val = ubd/utot;
-      a->fFracBs.val = ubs/utot;
-      a->fFracHi.val = uhi/utot;
+      a->fFrac[0].val   = ulo/utot;
+      a->fFrac[0].estat = dEff(static_cast<int>(ulo), static_cast<int>(utot));
+      a->fFrac[1].val   = ubd/utot;
+      a->fFrac[1].estat = dEff(static_cast<int>(ubd), static_cast<int>(utot));
+      a->fFrac[2].val   = ubs/utot;
+      a->fFrac[2].estat = dEff(static_cast<int>(ubs), static_cast<int>(utot));
+      a->fFrac[3].val   = uhi/utot;
+      a->fFrac[3].estat = dEff(static_cast<int>(uhi), static_cast<int>(utot));
     } else {
-      a->fFracLo.val = 0.;
-      a->fFracBs.val = 0.;
-      a->fFracBd.val = 0.;
-      a->fFracHi.val = 0.;
+      a->fFrac[0].val = 0.;
+      a->fFrac[1].val = 0.;
+      a->fFrac[2].val = 0.;
+      a->fFrac[3].val = 0.;
+      a->fFrac[4].val = 0.;
     }
 
     double pRatio(0.);
@@ -1600,12 +1678,14 @@ void plotResults::calculateRareBgNumbers(int chan) {
     setFilledHist(hw, it->second->fLcolor, it->second->fFcolor, it->second->fFillStyle, 1);
     TH1D *hwrb = (TH1D*)hw->Clone(Form("hwrb_%s", hw->GetName()));
     hwrb->Rebin(5);
+    hwrb->SetNdivisions(510, "XYZ");
     setTitles(hwrb, "m_{#mu #mu} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
     if (0 == nmuons) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fHhNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
 	fHhNumbers[chan].fMcYield[im].add2Errors(a->fMcYield[im]);
       }
+      h1Hh->Add(hwrb);
       hHh.Add(hwrb);
       vHh.insert(vHh.begin(), hw);
       vHhnames.insert(vHhnames.begin(), it->second->fName);
@@ -1619,6 +1699,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
 	fSlNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
 	fSlNumbers[chan].fMcYield[im].add2Errors(a->fMcYield[im]);
       }
+      h1Sl->Add(hwrb);
       hSl.Add(hwrb);
       vSl.insert(vSl.begin(), hw);
       vSlnames.insert(vSlnames.begin(), it->second->fName);
@@ -1630,7 +1711,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     }
     sprintf(mode, "%s", a->fName.c_str());
     fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-    fTEX << "% -- " << mode << " chan " << chan << endl;
+    fTEX << "% -- RARE " << mode << " chan " << chan << endl;
     dumpTex(a->fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
     dumpTex(a->fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
     dumpTex(a->fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), 5);
@@ -1669,22 +1750,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
     fBgNumbers[chan].fMcYield[im].val +=  fHhNumbers[chan].fMcYield[im].val;
     fBgNumbers[chan].fMcYield[im].val +=  fNpNumbers[chan].fMcYield[im].val;
-  }
 
-
-
-  // -- dump combined/summed numbers: rare sl decays and rare hadronic (peaking) decays
-  for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
-    dumpTex(fHhNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-HH-chan%d", fSuffixSel.c_str(), i, chan), 3);
-  }
-  for (unsigned i = 0; i < fSlNumbers[chan].fMcYield.size(); ++i) {
-    dumpTex(fSlNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-SL-chan%d", fSuffixSel.c_str(), i, chan), 3);
-  }
-  for (unsigned i = 0; i < fNpNumbers[chan].fMcYield.size(); ++i) {
-    dumpTex(fNpNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-NP-chan%d", fSuffixSel.c_str(), i, chan), 3);
-  }
-  for (unsigned i = 0; i < fBgNumbers[chan].fMcYield.size(); ++i) {
-    dumpTex(fBgNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-BG-chan%d", fSuffixSel.c_str(), i, chan), 3);
+    fSgAndBgNumbers[chan].fMcYield[im].val +=  fNpNumbers[chan].fMcYield[im].val;
   }
 
   c0->Clear();
@@ -1725,6 +1792,130 @@ void plotResults::calculateRareBgNumbers(int chan) {
     savePad(Form("%s-rare-bg-chan%d.pdf", fSuffixSel.c_str(), chan));
   }
 
+  // -- create overlay of data and the stacked (and scaled) backgrounds
+  fSetup = fCombNumbers[chan].fNameDa;
+  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSetup.c_str(), chan);
+  cout << "getting  histogram ->" << Form("%s/%s", fSetup.c_str(), name.c_str()) << "<-" << endl;
+  TH1D *h1e = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSetup.c_str(), name.c_str())))->Clone("h1erebin");
+  h1e->Rebin(5);
+  TH1D *h1c = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSetup.c_str(), name.c_str())))->Clone("h1crebin");
+  h1c->Clear();
+  h1c->Rebin(5);
+  double bgtot(0.);
+  for (int i = 0; i < 4; ++i) {
+    bgtot += fCombNumbers[chan].fFitYield[i].val;
+  }
+  bgtot = bgtot/h1c->GetNbinsX();
+  for (int i = 1; i <= h1c->GetNbinsX(); ++i) {
+    h1c->SetBinContent(i, bgtot);
+  }
+
+  setHist(h1e, kBlack, 0, 0, 2.5);
+  h1e->Draw("hist");
+  THStack hCombBg("hCombBg", "comb + rare decays");
+  setFilledHist(h1c, kGray, kGray, 1000);
+  hCombBg.Add(h1c);
+  setFilledHist(h1Sl, kYellow-3, kYellow-3, 1000);
+  hCombBg.Add(h1Sl);
+  setFilledHist(h1Hh, kMagenta-2, kMagenta-2, 1000);
+  hCombBg.Add(h1Hh);
+
+  newLegend(0.4, 0.6, 0.86, 0.86, "Background");
+  legg->AddEntry(h1e, "Data", "l");
+  legg->AddEntry(h1Hh, "rare hadronic", "f");
+  legg->AddEntry(h1Sl, "rare semileptonic", "f");
+  legg->AddEntry(h1c, "combinatorial", "f");
+  legg->Draw();
+
+  hCombBg.Draw("histsame");
+  h1e->Draw("histsame");
+  h1e->Draw("axissame");
+  c0->Modified();
+  c0->Update();
+  if (1) {
+    savePad(Form("%s-data-background-chan%d.pdf", fSuffixSel.c_str(), chan));
+  }
+
+  // -- and now the scaled version
+  double bgLo   = massIntegral(h1c, LO, chan) + massIntegral(h1Sl, LO, chan) + massIntegral(h1Hh, LO, chan);
+  double diffLo = fCombNumbers[chan].fObsYield[0].val - bgLo;
+  double scale  = diffLo/massIntegral(h1Sl, LO, chan);
+
+  setHist(h1e, kBlack);
+  h1e->Draw("hist");
+  THStack hCombScBg("hCombScBg", "comb + scaled rare decays");
+  h1Sl->Add(h1Sl, scale);
+  setFilledHist(h1c, kGray, kGray, 1000);
+  hCombScBg.Add(h1c);
+  setFilledHist(h1Sl, kYellow-3, kYellow-3, 1000);
+  hCombScBg.Add(h1Sl);
+  setFilledHist(h1Hh, kMagenta-2, kMagenta-2, 1000);
+  hCombScBg.Add(h1Hh);
+
+  newLegend(0.4, 0.6, 0.86, 0.86, "Background");
+  legg->AddEntry(h1e, "Data", "l");
+  legg->AddEntry(h1Hh, "rare hadronic", "f");
+  legg->AddEntry(h1Sl, "scal. rare semileptonic", "f");
+  legg->AddEntry(h1c, "combinatorial", "f");
+  legg->Draw();
+
+  tl->SetTextSize(0.035);
+  tl->DrawLatexNDC(0.65, 0.92, Form("scale = %3.1f", scale));
+
+  hCombScBg.Draw("histsame");
+  h1e->Draw("histsame");
+  h1e->Draw("axissame");
+  c0->Modified();
+  c0->Update();
+  if (1) {
+    savePad(Form("%s-data-scaled-background-chan%d.pdf", fSuffixSel.c_str(), chan));
+  }
+
+
+  // -- calculate scaled numbers
+  fSlNumbers[chan].fScaleFactor = 1. + scale;
+  for (int iw = 0; iw < NWIN; ++iw) {
+    fSlNumbers[chan].fFitYield[iw].val = fSlNumbers[chan].fMcYield[iw].val * fSlNumbers[chan].fScaleFactor;
+    fNpNumbers[chan].fFitYield[iw].val = fNpNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
+    fBgNumbers[chan].fFitYield[iw].val = fBgNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
+    fSgAndBgNumbers[chan].fFitYield[iw].val = fSgAndBgNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
+  }
+  // -- add signal
+  for (int iw = 0; iw < NWIN; ++iw) {
+    fSgAndBgNumbers[chan].fFitYield[iw].val = fSgAndBgNumbers[chan].fMcYield[iw].val
+      + fBsmmNumbers[chan].fMcYield[iw].val
+      + fBdmmNumbers[chan].fMcYield[iw].val;
+  }
+
+  // -- dump combined/summed numbers: rare sl decays and rare hadronic (peaking) decays
+    fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+    fTEX << "% -- SUMMARY BACKGROUND " << mode << " chan " << chan << endl;
+  for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
+    dumpTex(fHhNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-HH-chan%d", fSuffixSel.c_str(), i, chan), 3);
+  }
+
+  fTEX << formatTex(fSlNumbers[chan].fScaleFactor, Form("%s:SCALEFACTOR-SL-chan%d:val", fSuffixSel.c_str(), chan), 3) << endl;
+  for (unsigned i = 0; i < fSlNumbers[chan].fMcYield.size(); ++i) {
+    dumpTex(fSlNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-SL-chan%d", fSuffixSel.c_str(), i, chan), 3);
+    dumpTex(fSlNumbers[chan].fFitYield[i], Form("%s:N-FITSCLYIELD-MBIN%d-SL-chan%d", fSuffixSel.c_str(), i, chan), 3);
+  }
+  for (unsigned i = 0; i < fNpNumbers[chan].fMcYield.size(); ++i) {
+    dumpTex(fNpNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-NP-chan%d", fSuffixSel.c_str(), i, chan), 3);
+    dumpTex(fNpNumbers[chan].fFitYield[i], Form("%s:N-FITSCLYIELD-MBIN%d-NP-chan%d", fSuffixSel.c_str(), i, chan), 3);
+  }
+  for (unsigned i = 0; i < fBgNumbers[chan].fMcYield.size(); ++i) {
+    dumpTex(fBgNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-BG-chan%d", fSuffixSel.c_str(), i, chan), 3);
+    dumpTex(fBgNumbers[chan].fFitYield[i], Form("%s:N-FITSCLYIELD-MBIN%d-BG-chan%d", fSuffixSel.c_str(), i, chan), 3);
+  }
+
+  for (unsigned i = 0; i < fBgNumbers[chan].fMcYield.size(); ++i) {
+    dumpTex(fSgAndBgNumbers[chan].fFitYield[i], Form("%s:N-FITSCLYIELD-MBIN%d-SGANDBG-chan%d", fSuffixSel.c_str(), i, chan), 3);
+  }
+
+
+
+  delete h1e;
+  delete h1c;
 
 }
 
@@ -1791,14 +1982,30 @@ void plotResults::loopFunction1() {
       if (fGoodHLT) {
 	fhMassWithTriggerCuts[modifier[0]][fChan]->Fill(mass);
 	fhMassWithAllCuts[modifier[0]][fChan]->Fill(mass);
+	if (fIsCowboy) {
+	  fhMassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass);
+	} else {
+	  fhMassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass);
+	}
+
 	// -- blind version (to have the possibility to make a blind plot also after unblinding)
 	if ((5.2 < mass) && (mass < 5.45)) {
 	} else {
 	  fhMassWithAllCutsBlind[modifier[0]][fChan]->Fill(mass);
+	  if (fIsCowboy) {
+	    fhMassWithAllCutsCowboyBlind[modifier[0]][fChan]->Fill(mass);
+	  } else {
+	    fhMassWithAllCutsSeagullBlind[modifier[0]][fChan]->Fill(mass);
+	  }
 	}
 
 	// -- weighted with fake rate
 	fhW8MassWithAllCuts[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	if (fIsCowboy) {
+	  fhW8MassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	} else {
+	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	}
 
 	// - include prescale values on y axis
 	if ((fMode == BS2JPSIPHI)
@@ -1860,14 +2067,29 @@ void plotResults::loopFunction1() {
       if (fGoodHLT) {
 	fhMassWithTriggerCuts[modifier[1]][fChan]->Fill(mass);
 	fhMassWithAllCuts[modifier[1]][fChan]->Fill(mass);
+	if (fIsCowboy) {
+	  fhMassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass);
+	} else {
+	  fhMassWithAllCutsSeagull[modifier[1]][fChan]->Fill(mass);
+	}
 	// -- blind version
 	if ((5.2 < mass) && (mass < 5.45)) {
 	} else {
 	  fhMassWithAllCutsBlind[modifier[1]][fChan]->Fill(mass);
+	  if (fIsCowboy) {
+	    fhMassWithAllCutsCowboyBlind[modifier[0]][fChan]->Fill(mass);
+	  } else {
+	    fhMassWithAllCutsSeagullBlind[modifier[0]][fChan]->Fill(mass);
+	  }
 	}
 
 	// -- weighted with fake rate
 	fhW8MassWithAllCuts[modifier[1]][fChan]->Fill(mass, fW8MisId);
+	if (fIsCowboy) {
+	  fhW8MassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass, fW8MisId);
+	} else {
+	  fhW8MassWithAllCutsSeagull[modifier[1]][fChan]->Fill(mass, fW8MisId);
+	}
 
 	// - include prescale values on y axis
 	if ((fMode == BS2JPSIPHI)
@@ -2223,20 +2445,53 @@ void plotResults::saveHistograms(string smode) {
       h1->SetDirectory(dir);
       h1->Write();
 
+      h1 = (TH1D*)(fhMassWithAllCutsBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhMassWithAllCutsSeagull[modifier[im]][i]->Clone(Form("hMassWithAllCutsSeagull_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsSeagull_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhMassWithAllCutsSeagullBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhMassWithAllCutsCowboy[modifier[im]][i]->Clone(Form("hMassWithAllCutsCowboy_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsCowboy_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhMassWithAllCutsCowboyBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
       h1 = (TH1D*)(fhW8MassWithAllCuts[modifier[im]][i]->Clone(Form("hW8MassWithAllCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
       h1->SetTitle(Form("hW8MassWithAllCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
+
+
+      h1 = (TH1D*)(fhW8MassWithAllCutsSeagull[modifier[im]][i]->Clone(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhW8MassWithAllCutsCowboy[modifier[im]][i]->Clone(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
 
       h1 = (TH1D*)(fhMassWithMassCuts[modifier[im]][i]->Clone(Form("hMassWithMassCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
       h1->SetTitle(Form("hMassWithMassCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
-      h1->SetDirectory(dir);
-      h1->Write();
 
 
       if ((string::npos != fSetup.find("bupsik"))
@@ -2303,8 +2558,24 @@ void plotResults::resetHistograms(bool deleteThem) {
       fhMassWithAllCutsBlind[modifier[im]][i]->Reset();
       if (deleteThem) delete fhMassWithAllCutsBlind[modifier[im]][i];
 
+      fhMassWithAllCutsSeagull[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsSeagull[modifier[im]][i];
+      fhMassWithAllCutsSeagullBlind[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsSeagullBlind[modifier[im]][i];
+
+      fhMassWithAllCutsCowboy[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsCowboy[modifier[im]][i];
+      fhMassWithAllCutsCowboyBlind[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsCowboyBlind[modifier[im]][i];
+
       fhW8MassWithAllCuts[modifier[im]][i]->Reset();
       if (deleteThem) delete fhW8MassWithAllCuts[modifier[im]][i];
+
+      fhW8MassWithAllCutsSeagull[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhW8MassWithAllCutsSeagull[modifier[im]][i];
+
+      fhW8MassWithAllCutsCowboy[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhW8MassWithAllCutsCowboy[modifier[im]][i];
 
       fhMassWithMassCuts[modifier[im]][i]->Reset();
       if (deleteThem) delete fhMassWithMassCuts[modifier[im]][i];

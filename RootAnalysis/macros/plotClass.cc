@@ -682,7 +682,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("mkk",  &fb.mkk);
     t->SetBranchAddress("mkpi1",  &fb.mkpi1);
     t->SetBranchAddress("mkpi2",  &fb.mkpi2);
-    //FIXME    t->SetBranchAddress("phidr",&fb.phidr);
+    t->SetBranchAddress("phidr",&fb.phidr);
     t->SetBranchAddress("k1pt", &fb.k1pt);
     t->SetBranchAddress("k1gt", &fb.k1gt);
     t->SetBranchAddress("k1eta",&fb.k1eta);
@@ -854,9 +854,9 @@ void plotClass::candAnalysis() {
     if (0 == fb.k1gt)  fGoodAcceptance = false;
     if (0 == fb.k2gt)  fGoodAcceptance = false;
 
-    //FIXME    if (fb.phidr   > 0.3) fGoodJpsiCuts = false;
-    if (fb.mkk  < 1.01) fGoodJpsiCuts = false;
-    if (fb.mkk  > 1.03) fGoodJpsiCuts = false;
+    if (fb.phidr > 0.3)  fGoodJpsiCuts = false;
+    if (fb.mkk   < 1.01) fGoodJpsiCuts = false;
+    if (fb.mkk   > 1.03) fGoodJpsiCuts = false;
   }
 
   if (bs2jpsiphi || bp2jpsikp) {

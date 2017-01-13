@@ -33,8 +33,11 @@ public:
   int fChan;
   // -- NWIN-element vectors for mass window yields: lo, Bd, Bs, hi, all
   std::vector<number> fMcYield, fObsYield, fFitYield;
+  // -- NWIN-element vector for signal migration
+  std::vector<number> fFrac;
   // -- overall results of fits and scaled yields
   number fSignalFit, fScaledYield;
+  double fScaleFactor;
   // -- yield numbers for dataset
   number fGenFileYield, // number of (B) events in file/dataset
     fGenYield,          // number of (B) events generated (correcting for gen-level filter, but NOT for effFilter!)
@@ -48,8 +51,6 @@ public:
   number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffMuidMC, fEffTot, fEffProdMC;
   number fEffFilter; // this is the MC filter efficiency, used for eq lumi calculation!
   number fEffGenSel; // this is the gen-level filter efficiency, needed to go from non-Acc samples to acc samples! Obtained from ratio of effFilter's
-  // -- cross feed: pxx signal in signal, pyx other in signal, etc.
-  number fFracLo, fFracBd, fFracBs, fFracHi;
 };
 
 #endif

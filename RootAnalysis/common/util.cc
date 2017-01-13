@@ -614,6 +614,7 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
   } else {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.0f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
   }
 
   return string(line);
