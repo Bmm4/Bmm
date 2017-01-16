@@ -2189,8 +2189,8 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   TFile *fLocal(0);
   if (fSaveSmallTree) {
     string tname(fSetup);
-    // replaceAll(tname, "McOff", "");
-    // replaceAll(tname, "Mc", "");
+    replaceAll(tname, "Off", "");
+    replaceAll(tname, "Comb", "");
 
     dir = gDirectory;
     fLocal = TFile::Open(Form("%s/small-%s.root", fDirectory.c_str(), tname.c_str()), "RECREATE");
