@@ -1,25 +1,21 @@
 # -- B+
-type=bupsik,data        lumi=36.7          file=scratch/bmm-data-bmmCharmonium2016-v03.root
-type=bupsik,rereco      lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
+type=bupsik,data        lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bupsik,acc,mcOff   bf=(6.12,0.19)e-5  eff=(9.43,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BuToJpsiK-v03.root
 type=bupsik,mc          bf=(6.12,0.19)e-5  eff=(5.65,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BuToJpsiKp-v03.root
 type=bupsik,mcOff       bf=(6.12,0.19)e-5  eff=(5.65,0.17)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-v03.root
 type=bupsik,mcComb      bf=(6.12,0.19)e-5  eff=(5.65,0.17)e-4 file=scratch/bmm-mc-combined-BuToJpsiKp-v03.root
 # -- Bs
-type=bspsiphi,data      lumi=36.7          file=scratch/bmm-data-bmmCharmonium2016-v03.root
-type=bspsiphi,rereco    lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
+type=bspsiphi,data      lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bspsiphi,acc,mcOff bf=(3.12,0.24)e-5  eff=(2.59,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToJpsiPhi-v03.root
 type=bspsiphi,mc        bf=(3.12,0.24)e-5  eff=(1.21,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToJpsiPhi-v03.root
 type=bspsiphi,mcOff     bf=(3.12,0.24)e-5  eff=(1.21,0.07)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-v03.root
 type=bspsiphi,mcComb    bf=(3.12,0.24)e-5  eff=(1.21,0.01)e-4 file=scratch/bmm-mc-combined-BsToJpsiPhi-v03.root
 # -- B0
-type=bdpsikstar,data    lumi=36.7          file=scratch/bmm-data-bmmCharmonium2016-v03.root
-type=bdpsikstar,rereco  lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
+type=bdpsikstar,data    lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bdpsikstar,mc      bf=(5.08,0.20)e-6  eff=(3.62,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstar-v03.root
 type=bdpsikstar,acc,mc  bf=(5.08,0.20)e-6  eff=(9.53,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstarAcc-v03.root
 # -- dimuons
-type=bmm,data           lumi=36.7          file=scratch/bmm-data-bmmCharmonium2016-v03.root
-type=bmm,rereco         lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
+type=bmm,data           lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bdmm,mc            bf=(1.06,0.09)e-10 eff=(1.48,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToMuMu-v03.root
 type=bdmm,mcOff         bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v03.root
 type=bdmm,acc,mcOff     bf=(1.06,0.09)e-10 eff=(9.47,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu-v03.root
