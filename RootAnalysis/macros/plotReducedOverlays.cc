@@ -428,7 +428,7 @@ void plotReducedOverlays::makeSample(string sample, string selection, int nevent
   // nevents = 2e6;
   // nstart = 0;
   setupTree(t, fSample);
-  fCds = fSample;
+  fCds = fDS[fSample];
   loopOverTree(t, 1, nevents, nstart);
 
   fHistFile->Write();
@@ -464,7 +464,7 @@ void plotReducedOverlays::loopOverTree(TTree *t, int ifunc, int nevts, int nstar
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotReducedOverlays::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotReducedOverlays::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << endl;
