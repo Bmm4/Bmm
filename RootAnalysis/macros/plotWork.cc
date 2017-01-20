@@ -441,7 +441,7 @@ void plotWork::plotL1Seeds(std::string dsname) {
     fpHL1All = new TH1D(Form("h_%s_%s", "All", dsname.c_str()), Form("h_%s_%s", "All", dsname.c_str()), 7236, 273150, 280385);
 
     setupTree(t, fSample);
-    fCds = fSample;
+    fCds = fDS[fSample];
     loopOverTree(t, 4);
 
     fpHL1s0->Write();
@@ -696,7 +696,7 @@ void plotWork::runTisEfficiency(string dsname) {
 
 
   setupTree(t, fSample);
-  fCds = fSample;
+  fCds = fDS[fSample];
   loopOverTree(t, 1);
 
 
@@ -946,7 +946,7 @@ void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
     }
 
     setupTree(t, fSample);
-    fCds = fSample;
+    fCds = fDS[fSample];
     loopOverTree(t, 3, nevt, nstart);
 
     fHistFile->Write();
@@ -1380,7 +1380,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend
