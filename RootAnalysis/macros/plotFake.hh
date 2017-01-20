@@ -99,6 +99,8 @@ public :
 		std::string var = "FakeTisFakePt", std::string varA = "FakeTisAllPt",
 		double ymax = 0.02);
   void  massPlots(std::string varname = "AllPtMassSi");
+  void  mkPidTables(std::string name = "");
+  void  plotPidTables(std::string name = "");
 
   // -- utilities for control sample optimization
   void   playKs(std::string cuts = "flxy<4&&flsxy>15&&pvips<3&&prob>0.01&&abs(m1ips)>5&&abs(m2ips)>5&&m1q*m2q<0", std::string name = "");
@@ -109,7 +111,8 @@ public :
   void   fitLambda(TH1D*);
 
 
-  void   loopFunction1();
+  void   loopFunction1(); // for the fake studies
+  void   loopFunction2(); // for the PidTables
 
   void   setupTree(TTree *t);
 
@@ -134,6 +137,7 @@ private:
   bool   fTIS, fCowboy;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
   float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDtrig[NTRKMAX], fFakeDmuon[NTRKMAX];
+  bool   fFakeHP[NTRKMAX];
   float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX], fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
     , fFakeChi2LocalPosition[NTRKMAX]
@@ -176,7 +180,7 @@ private:
   bool fGoodTISDT, fGoodTISDTDM, fGoodTISDTFake, fGoodTISDTDMFake;
 
   double fYield, fYieldE;
-
+  double fMuBdtCutB, fMuBdtCutE;
 
   // ----------------------------------------------------------------------
   ClassDef(plotFake,1)

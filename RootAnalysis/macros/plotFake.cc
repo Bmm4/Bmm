@@ -146,18 +146,24 @@ void plotFake::init() {
 
 // ----------------------------------------------------------------------
 void plotFake::makeAll(string what) {
+  if (what == "dbx0") {
+    mkPidTables("");
+  }
 
-  if (what == "dbx") {
+  if (what == "dbx1") {
+    //    mkPidTables("");
+    plotPidTables("bla");
     //      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
-    makeSample("fakeData", "psi", 1.e6);
-    makeSample("fakeMc", "psi", 1e6);
-    makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
+    // makeSample("fakeData", "psi", 1.e6);
+    // makeSample("fakeMc", "psi", 1e6);
+    // makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
     // makeSample("fakeData", "ks");
     // makeSample("fakeMc", "ks", 1e6);
     // makeSample("fakeData", "lambda");
     // makeSample("fakeMc", "lambda", 1e6);
     // makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
     // makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
+    return;
   }
 
   if (what == "all" || string::npos != what.find("sample")) {
@@ -402,7 +408,7 @@ void plotFake::makeSample(std::string dataset, std::string sample, int nevents, 
     return;
   }
   setupTree(t);
-  fCds = fSample;
+  fCds = fDS[fSample];
   loopOverTree(t, 1, nevents, nstart);
 
   fHistFile->Write();
@@ -900,7 +906,6 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 }
 
 
-
 // ----------------------------------------------------------------------
 void plotFake::fakeRate(string dataset1, string dataset2, string varF, string varA, double ymax) {
 
@@ -1317,10 +1322,10 @@ void plotFake::loopFunction1() {
 
     mapname = fChannelSample[fChan];
 
-    fGlobalMuon  = (fFakeGm[i] > 0) && singleFake;
     fGoodPt      = (fFakePt[i] > 4.);
     fGoodDtrig   = (fFakeDtrig[i] > 0.01);
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
+    fGlobalMuon  = (fFakeGm[i] > 0) && singleFake && fGoodDtrig;
     if (fIsMC) {
       fTIS       = true;
       fGoodDtrig = true; // does not work on MC (PD not well defined there)
@@ -1413,6 +1418,339 @@ void plotFake::loopFunction1() {
 }
 
 
+
+// ----------------------------------------------------------------------
+void plotFake::mkPidTables(string prefix) {
+
+  if ("" == prefix) prefix = "bmm4-19";
+  init();
+
+  fHists.clear();
+  vector<int> vIds;
+  vIds.push_back(13);
+  vIds.push_back(211);
+  vIds.push_back(321);
+  vIds.push_back(2212);
+  vector<string> q;
+  q.push_back("Pos");
+  q.push_back("Neg");
+
+  cout << "fHistFileName: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+  TH2D *h2(0);
+  string name, title;
+  name = Form("allNegId13");
+  h2 = (TH2D*)fHistFile->Get(name.c_str());
+
+  fMuBdtCutB = fCuts[0]->muonbdt;
+  fMuBdtCutE = fCuts[3]->muonbdt;
+
+  // -- create histograms first if not already present
+  if (0 == h2) {
+    for (unsigned int i = 0; i < vIds.size(); ++i) {
+      for (unsigned int iq = 0; iq < q.size(); ++iq) {
+	name = Form("all%sId%d", q[iq].c_str(), vIds[i]);
+	title = Form("bdt > %4.2f,%4.2f", fMuBdtCutB, fMuBdtCutE);
+	h2 = new TH2D(name.c_str(), title.c_str(), 21, 0., 2.1, 100, 0., 50.);
+	setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+	fHists[name] = h2;
+	name = Form("pass%sId%d", q[iq].c_str(), vIds[i]);
+	h2 = new TH2D(name.c_str(), title.c_str(), 21, 0., 2.1, 100, 0., 50.);
+	setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+	fHists[name] = h2;
+      }
+    }
+    TTree *t = getTree("fakeMc", "candAnaFakeMC", "fakeTree");
+    fCds = fDS["fakeMc"];
+    if (0 == t) {
+      return;
+    }
+    setupTree(t);
+    fIsMC = true;
+
+    int nevents(0), nstart(0);
+    cout << "Running loopOverTree with fMuBdtCutB = " << fMuBdtCutB << " and fMuBdtCutE = " << fMuBdtCutE << endl;
+    loopOverTree(t, 2, nevents, nstart);
+
+    for (map<string, TH1*>::iterator it = fHists.begin(); it != fHists.end(); ++it) {
+      it->second->Write();
+    }
+  }
+
+  // -- analyze histograms and write PidTables
+  PidTable a("fakeTemplate.dat");
+  PidTable A("effTemplate.dat");
+  PidTable b;
+  PidTable c;
+  string aname, pname;
+
+  for (unsigned int i = 0; i < vIds.size(); ++i) {
+    if (13 == vIds[i]) continue; // use special template for muons
+    for (unsigned int iq = 0; iq < q.size(); ++iq) {
+      aname = Form("all%sId%d", q[iq].c_str(), vIds[i]);
+      pname = Form("pass%sId%d", q[iq].c_str(), vIds[i]);
+      a.flush();
+      b.flush();
+      b.readFromHist(fHistFile, pname.c_str(), aname.c_str());
+      a.fillEff(b);
+      h2 = (TH2D*)fHistFile->Get(pname.c_str());
+      a.setComment(h2->GetTitle());
+      name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, vIds[i], q[iq].c_str(), prefix.c_str());
+      cout << name << endl;
+      a.dumpToFile(name.c_str());
+    }
+  }
+
+
+  for (unsigned int iq = 0; iq < q.size(); ++iq) {
+    aname = Form("all%sId%d", q[iq].c_str(), 13);
+    pname = Form("pass%sId%d", q[iq].c_str(), 13);
+    A.flush();
+    b.flush();
+    b.readFromHist(fHistFile, pname.c_str(), aname.c_str());
+    A.fillEff(b);
+    h2 = (TH2D*)fHistFile->Get(pname.c_str());
+    A.setComment(h2->GetTitle());
+    name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, 13, q[iq].c_str(), prefix.c_str());
+    cout << name << endl;
+    A.dumpToFile(name.c_str());
+  }
+
+
+  fHistFile->Close();
+}
+
+// ----------------------------------------------------------------------
+void plotFake::plotPidTables(string prefix) {
+
+  // -- Dump exactly what is used in the analysis
+  PidTable *a;
+  gStyle->SetOptTitle(0);
+  tl->SetTextSize(0.07);
+
+  // -- hadrons
+  if ("" == prefix) {
+    gStyle->SetPaintTextFormat("5.4f");
+    double xbins[] = {0., 0.7, 1.4, 2.1};
+    double ybins[] = {0., 4., 5., 7., 10., 20., 30.};
+    TH2D *h2 = new TH2D("h2", "", 3, xbins, 6, ybins);
+    setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+    h2->SetMinimum(0.0);
+    h2->SetMaximum(0.002);
+    h2->SetMarkerSize(1.3);
+    h2->SetMarkerColor(kBlack);
+
+    gStyle->SetOptStat(0);
+    shrinkPad(0.15, 0.15, 0.25);
+    tl->SetTextSize(0.04);
+
+    a = fptFakePosKaons;  h2->Reset(); h2->SetTitle(Form("pos. kaons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakePosKaons.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakePosKaons.pdf", fDirectory.c_str(), fYear));
+
+    a = fptFakeNegKaons;  h2->Reset(); h2->SetTitle(Form("neg. kaons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakeNegKaons.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakeNegKaons.pdf", fDirectory.c_str(), fYear));
+
+    a = fptFakePosPions;  h2->Reset(); h2->SetTitle(Form("pos. pions (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakePosPions.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakePosPions.pdf", fDirectory.c_str(), fYear));
+
+    a = fptFakeNegPions;  h2->Reset(); h2->SetTitle(Form("neg. pions (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakeNegPions.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakeNegPions.pdf", fDirectory.c_str(), fYear));
+
+    a = fptFakePosProtons;  h2->Reset(); h2->SetTitle(Form("pos. protons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakePosProtons.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakePosProtons.pdf", fDirectory.c_str(), fYear));
+
+    a = fptFakeNegProtons;  h2->Reset(); h2->SetTitle(Form("neg. protons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effFakeNegProtons.pdf", fDirectory.c_str(), fYear));
+    a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-errFakeNegProtons.pdf", fDirectory.c_str(), fYear));
+  }
+
+
+  // -- muons
+  if ("" == prefix) {
+    gStyle->SetPaintTextFormat("3.2f");
+    double xbins[] = {0.0, 0.3, 0.60, 0.90, 1.2, 1.5, 1.8, 2.1};
+    double ybins[] = {4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10., 15., 20., 30.};
+    TH2D *h2 = new TH2D("h2", "", 7, xbins, 10, ybins);
+    setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+    h2->SetMinimum(0.0);
+    h2->SetMaximum(1.0);
+    h2->SetMarkerSize(1.3);
+    //    h2->SetMarkerColor(kWhite);
+
+    gStyle->SetOptStat(0);
+
+    shrinkPad(0.15, 0.15, 0.25);
+    gPad->SetLogy(1);
+
+    // -- muon id
+    a = fptPosMuons;  h2->Reset(); h2->SetTitle(Form("pos. muons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effPosMuons.pdf", fDirectory.c_str(), fYear));
+
+    a = fptNegMuons;  h2->Reset(); h2->SetTitle(Form("neg. muons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-effNegMuons.pdf", fDirectory.c_str(), fYear));
+  }
+
+
+
+
+  // -- and now the custom display of non-standard PidTables
+  vector<int> vIds;
+  vIds.push_back(13);
+  vIds.push_back(211);
+  vIds.push_back(321);
+  vIds.push_back(2212);
+  vector<string> sIds;
+  sIds.push_back("muons");
+  sIds.push_back("pions");
+  sIds.push_back("kaons");
+  sIds.push_back("protons");
+  vector<string> q;
+  q.push_back("Pos");
+  q.push_back("Neg");
+  // -- hadrons
+  if ("" != prefix) {
+    gStyle->SetPaintTextFormat("5.4f");
+    double xbins[] = {0., 0.7, 1.4, 2.1};
+    double ybins[] = {0., 4., 5., 7., 10., 20., 30.};
+    TH2D *h2 = new TH2D("h2", "", 3, xbins, 6, ybins);
+    setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+    h2->SetMinimum(0.0);
+    h2->SetMaximum(0.002);
+    h2->SetMarkerSize(1.3);
+    h2->SetMarkerColor(kBlack);
+
+    gStyle->SetOptStat(0);
+    shrinkPad(0.15, 0.15, 0.25);
+    tl->SetTextSize(0.04);
+    string name("");
+    for (unsigned int i = 0; i < vIds.size(); ++i) {
+      if (13 == vIds[i]) continue; // use special template for muons
+      for (unsigned int iq = 0; iq < q.size(); ++iq) {
+	name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, vIds[i], q[iq].c_str(), prefix.c_str());
+	cout << "pidtable with name = " << name << endl;
+	PidTable *a = new PidTable(Form(name.c_str()));
+
+	h2->Reset(); h2->SetTitle(Form("%s %s (%d, %s)", q[iq].c_str(), sIds[i].c_str(), fYear, a->getComment().Data()));
+	a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+	c0->SaveAs(Form("%s/%d-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, vIds[i], q[iq].c_str(), prefix.c_str()));
+	a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+	c0->SaveAs(Form("%s/%d-err-%d%s-%s.pdf", fDirectory.c_str(), fYear, vIds[i], q[iq].c_str(), prefix.c_str()));
+      }
+    }
+  }
+
+
+  // -- muons
+  if ("" != prefix) {
+    gStyle->SetPaintTextFormat("3.2f");
+    double xbins[] = {0.0, 0.3, 0.60, 0.90, 1.2, 1.5, 1.8, 2.1};
+    double ybins[] = {4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10., 15., 20., 30.};
+    TH2D *h2 = new TH2D("h2", "", 7, xbins, 10, ybins);
+    setTitles(h2, "#it{|#eta|}", "p_{T} #it{[GeV]}");
+    h2->SetMinimum(0.0);
+    h2->SetMaximum(1.0);
+    h2->SetMarkerSize(1.3);
+    //    h2->SetMarkerColor(kWhite);
+
+    gStyle->SetOptStat(0);
+
+    shrinkPad(0.15, 0.15, 0.25);
+    gPad->SetLogy(1);
+
+    // -- muon id
+    string name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, 13, "Pos", prefix.c_str());
+    PidTable *a = new PidTable(Form(name.c_str()));
+    h2->Reset(); h2->SetTitle(Form("Pos muons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, 13, "Pos", prefix.c_str()));
+
+    name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, 13, "Neg", prefix.c_str());
+    a = new PidTable(Form(name.c_str()));
+    h2->Reset(); h2->SetTitle(Form("Neg muons (%d, %s)", fYear, a->getComment().Data()));
+    a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.14, 0.92, h2->GetTitle());
+    c0->SaveAs(Form("%s/%d-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, 13, "Neg", prefix.c_str()));
+  }
+
+
+
+
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotFake::loopFunction2() {
+  string aname("all"), pname("pass");
+  string name(""), h0name(""), h1name("");
+
+  for (int i = 0; i < fFakeNtrk; ++i) {
+    if (fFakePt[i] < 4.0) continue;
+    if (TMath::Abs(fFakeEta[i]) > 2.1) continue;
+    if (0 == fFakeHP[i]) continue;
+    if (13    == fFakeId[i]) {
+      if (fFakeQ[i] < 0) {
+	name = "NegId13";
+      } else {
+	name = "PosId13";
+      }
+    } else if (211   == fFakeId[i]) {
+      if (fFakeQ[i] < 0) {
+	name = "NegId211";
+      } else {
+	name = "PosId211";
+      }
+    } else if (321  == fFakeId[i]) {
+      if (fFakeQ[i] < 0) {
+	name = "NegId321";
+      } else {
+	name = "PosId321";
+      }
+    } else if (2212  == fFakeId[i]) {
+      if (fFakeQ[i] < 0) {
+	name = "NegId2212";
+      } else {
+	name = "PosId2212";
+      }
+    } else {
+      //      cout << "unknown particle: " << fFakeId[i] << endl;
+      continue;
+    }
+    h0name = aname + name;
+    //    cout << h0name << endl;
+    fHists[h0name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
+    h1name = pname + name;
+    //    cout << h1name << endl;
+    if (TMath::Abs(fFakeEta[i]) < 0.9) {
+      if (fFakeBdt[i] > fMuBdtCutB) fHists[h1name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
+    } else {
+      if (fFakeBdt[i] > fMuBdtCutE) fHists[h1name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
+    }
+  }
+}
+
+
+
 // ----------------------------------------------------------------------
 void plotFake::analysis() {
 
@@ -1448,7 +1786,7 @@ void plotFake::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotFake::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotFake::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << endl;
@@ -1457,6 +1795,7 @@ void plotFake::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   //    (this is the reason why this function is NOT in plotClass!)
   void (plotFake::*pF)(void);
   if (ifunc == 1) pF = &plotFake::loopFunction1;
+  if (ifunc == 2) pF = &plotFake::loopFunction2;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
@@ -1590,6 +1929,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("phi",     fFakePhi);
   t->SetBranchAddress("dtrig",   fFakeDtrig);
   t->SetBranchAddress("dmuon",   fFakeDmuon);
+  t->SetBranchAddress("hp",      fFakeHP);
   t->SetBranchAddress("bdt",     fFakeBdt);
 
   t->SetBranchAddress("tip", fFakeTip);
