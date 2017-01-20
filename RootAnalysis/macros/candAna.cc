@@ -2441,7 +2441,6 @@ bool candAna::tightMuon(TSimpleTrack *pT, bool hadronsPass) {
 
 // ----------------------------------------------------------------------
 bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
-  bool doNow(true);
   if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
     return true;
   }
@@ -2454,6 +2453,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
     return false;
   }
 
+  bool doNow(true);
   if (doNow) {
     // -- Stephan's developing set of variables
     if (TMath::Abs(pt->fPlab.Eta()) < 0.9) {
@@ -3946,34 +3946,6 @@ void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &
   dr = dm1 = dm2 = -1.;
   int verbose(0);
   TVector3 pT = pS->getP();
-  // TAnaMuon *pM = fpEvt->getSimpleTrackMuon(pS->getIndex());
-  // TVector3 rm1, rm2;
-  // if (pM) {
-  //   rm1 = pM->fPositionAtM2;
-  // } else {
-  //   rm1.SetXYZ(0., 0., 0.);
-  // }
-
-  // cout << "--- trg objects -------------------------------------------------------------------" << endl;
-  // for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
-  //   pTO = fpEvt->getTrgObjv2(i);
-  //   cout << "trgobjv2 type = " << pTO->fType << ", label = " << pTO->fLabel << " num = " << pTO->fP.size()
-  // 	 << " pt/eta/phi = " << pTO->fP[0].Perp() << "/" << pTO->fP[0].Eta() << "/" << pTO->fP[0].Phi()
-  // 	 << endl;
-  //   continue;
-  //   if (pTO->fType.Contains("l3muon")) {
-  //     vector<int> muonIndex = pTO->fIndex;
-  //     vector<int> muonID = pTO->fID;
-  //     vector<TLorentzVector> muonP = pTO->fP;
-  //     int num = muonIndex.size();
-  //     cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-  //     for (int j = 0; j < num; ++j) {
-  // 	dr = muonP[j].Vect().DeltaR(pT);
-  // 	cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j] << endl;
-  //     }
-  //   }
-  // }
-
 
   // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
   TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
@@ -3981,9 +3953,10 @@ void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &
   string hltPath("nada");
   if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
   for (int j = 1; j <= ht->GetNbinsX(); ++j) {
-    hltPath =  ht->GetXaxis()->GetBinLabel(j);
     // -- determine trigger objects for this path
-    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+    hltPath =  ht->GetXaxis()->GetBinLabel(j);
+    // -- loop over all saved hlt objects
+    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
       pTO = fpEvt->getTrgObjv2(i);
       if (hltPath == pTO->fHltPath) {
 	vector<int> muonIndex = pTO->fIndex;
