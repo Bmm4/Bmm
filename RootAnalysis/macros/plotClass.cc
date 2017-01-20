@@ -109,22 +109,6 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   fIF = new initFunc();
 
-  if (1) {
-    int year(2012);
-    string directory("../common/pidtables/");
-    string name("");
-    name = directory + Form("%d-kaonPosFakeRate-mvaMuon.dat", year); fptFakePosKaons     = new PidTable(Form(name.c_str()));
-    name = directory + Form("%d-kaonNegFakeRate-mvaMuon.dat", year); fptFakeNegKaons     = new PidTable(Form(name.c_str()));
-    name = directory + Form("%d-pionPosFakeRate-mvaMuon.dat", year); fptFakePosPions     = new PidTable(Form(name.c_str()));
-    name = directory + Form("%d-pionNegFakeRate-mvaMuon.dat", year); fptFakeNegPions     = new PidTable(Form(name.c_str()));
-    name = directory + Form("%d-protonPosFakeRate-mvaMuon.dat", year); fptFakePosProtons = new PidTable(Form(name.c_str()));
-    name = directory + Form("%d-protonNegFakeRate-mvaMuon.dat", year); fptFakeNegProtons = new PidTable(Form(name.c_str()));
-
-    name = directory + Form("%d-L1L2_data_all.dat", year);        fptT1     = new PidTable(name.c_str());
-    name = directory + Form("%d-L3_data_all.dat", year);          fptT2     = new PidTable(name.c_str());
-    name = directory + Form("%d-MuonID_data_all.dat", year);      fptM      = new PidTable(name.c_str());
-  }
-
   fCncCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
   fCncCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
   fCncCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
@@ -526,6 +510,8 @@ void plotClass::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 // ----------------------------------------------------------------------
 void plotClass::setupTree(TTree *t, string mode) {
 
+  fCds = fDS[fSetup];
+
   if (string::npos != mode.find("Mc")) {
     fIsMC = true;
   } else {
@@ -727,7 +713,7 @@ void plotClass::candAnalysis() {
 
   cuts *pCuts(0);
   fChan = fb.chan;
-  if (fChan < 0) {
+  if (fChan < 0 || fChan > fNchan) {
     if (0) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     fBDT = -99.;
@@ -739,7 +725,6 @@ void plotClass::candAnalysis() {
     return;
   }
   pCuts = fCuts[fChan];
-
   bool bp2jpsikp(false), bs2jpsiphi(false);
   if (BU2JPSIKP == fMode)  {
     bp2jpsikp = true;
@@ -877,7 +862,8 @@ void plotClass::candAnalysis() {
   }
 
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
-  fGoodMuonsID     = fb.m1mvaid && fb.m2mvaid;
+  //  fGoodMuonsID     = fb.m1mvaid && fb.m2mvaid;
+  fGoodMuonsID     = (fb.m1mvabdt > fCuts[0]->muonbdt) && (fb.m2mvabdt > fCuts[0]->muonbdt);
 
   fW8 = 1.;
   fW8MmuID = fW8Mtrig = fW8DmuID = fW8Dtrig = -1.;
@@ -885,34 +871,11 @@ void plotClass::candAnalysis() {
 
   if (fIsMC) {
     PidTable *pT, *pT1, *pT2;
-    pT  = fptM;
-    pT1 = fptT1;
-    pT2 = fptT2;
-
 
     double am1eta = TMath::Abs(fb.m1eta);
     double am2eta = TMath::Abs(fb.m2eta);
 
-    w1       = pT->effD(fb.m1pt, am1eta, fb.m1phi);
-    w2       = pT->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8DmuID = w1*w2;
-
-    w1       = pT1->effD(fb.m1pt, am1eta, fb.m1phi) * pT2->effD(fb.m1pt, am1eta, fb.m1phi);
-    w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8Dtrig = w1*w2;
-
     pT  = fptM;
-    pT1 = fptT1;
-    pT2 = fptT2;
-
-    w1       = pT->effD(fb.m1pt, am1eta, fb.m1phi);
-    w2       = pT->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8MmuID = w1*w2;
-
-    w1       = pT1->effD(fb.m1pt, am1eta, fb.m1phi) * pT2->effD(fb.m1pt, am1eta, fb.m1phi);
-    w2       = pT1->effD(fb.m2pt, am2eta, fb.m2phi) * pT2->effD(fb.m2pt, am2eta, fb.m2phi);
-    fW8Mtrig = w1*w2;
-
     if (RARE == fMode) {
       w1 = w2 = -1.;
       // -- track 1
@@ -1384,6 +1347,11 @@ void plotClass::readCuts(string filename) {
 	if (dump) cout << j-1 << " " << "metaMax:              " << cutvalue << endl;
       }
 
+      if (cutname == "muonbdt") {
+	a->muonbdt = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "muonbdt:              " << cutvalue << endl;
+      }
+
       if (cutname == "mBdLo") {
 	a->mBdLo = cutvalue; ok = 1;
 	if (dump) cout << j-1 << " " << "mBdLo:                " << cutvalue << endl;
@@ -1614,6 +1582,13 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->metaMax);
     fTEX <<  Form("\\vdef{%s:metaMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->metaMax) << endl;
+  }
+  OUT << endl;
+
+  OUT << "muonbdt    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->muonbdt);
+    fTEX <<  Form("\\vdef{%s:muonbdt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->muonbdt) << endl;
   }
   OUT << endl;
 
@@ -2065,77 +2040,6 @@ void plotClass::loadFiles(string afiles) {
         sname = "fakeData";
         sdecay = "fake";
 	ldecay = "fake";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
-	ds->fFilterEff = eff;
-	ds->fFilterEffE = effE;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-	ds->fLumi   = atof(slumi.c_str());
-      }
-
-    } else if (string::npos != stype.find("rereco")) {
-      // -- RERECO
-      pF = loadFile(sfile);
-
-      ds = new dataset();
-      ds->fSize = 1.2;
-      ds->fWidth = 2;
-      if (string::npos != stype.find("bmm,")) {
-        sname = "bmmRereco";
-        sdecay = "dimuon";
-	ldecay = "dimuon";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
-	ds->fFilterEff = eff;
-	ds->fFilterEffE = effE;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-	ds->fLumi   = atof(slumi.c_str());
-      }
-
-       if (string::npos != stype.find("bupsik,")) {
-        sname = "bupsikRereco";
-        sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
-        ldecay = "\\bupsik";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
-	ds->fFilterEff = eff;
-	ds->fFilterEffE = effE;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-	ds->fLumi   = atof(slumi.c_str());
-      }
-
-      if (string::npos != stype.find("bspsiphi,")) {
-        sname = "bspsiphiRereco";
-        sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}}#it{#phi}";
-	ldecay = "\\bspsiphi";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
-	ds->fFilterEff = eff;
-	ds->fFilterEffE = effE;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-	ds->fLumi   = atof(slumi.c_str());
-      }
-
-      if (string::npos != stype.find("bdpsikstar,")) {
-        sname = "bdpsikstarRereco";
-        sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
-	ldecay = "\\bdpsikstar";
 	ds->fColor = kBlack;
 	ds->fSymbol = 20;
 	ds->fF      = pF;
@@ -2798,6 +2702,47 @@ void plotClass::loadFiles(string afiles) {
   }
 
   is.close();
+
+
+  if (1) {
+    string directory("../common/pidtables/");
+    string name("");
+    if (2012 == fYear) {
+      name = directory + Form("%d-kaonPosFakeRate-mvaMuon.dat", fYear); fptFakePosKaons     = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-kaonNegFakeRate-mvaMuon.dat", fYear); fptFakeNegKaons     = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-pionPosFakeRate-mvaMuon.dat", fYear); fptFakePosPions     = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-pionNegFakeRate-mvaMuon.dat", fYear); fptFakeNegPions     = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-protonPosFakeRate-mvaMuon.dat", fYear); fptFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-protonNegFakeRate-mvaMuon.dat", fYear); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-L1L2_data_all.dat", fYear);        fptT1     = new PidTable(name.c_str());
+      name = directory + Form("%d-L3_data_all.dat", fYear);          fptT2     = new PidTable(name.c_str());
+      name = directory + Form("%d-MuonID_data_all.dat", fYear);      fptM      = new PidTable(name.c_str());
+    } else if (2016 == fYear) {
+      directory = string("weights/pidtables/");
+      TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
+      string prefixB("bmm4-19"), prefixE("bmm4-19");
+      double cutB(0.0), cutE(0.0);
+      if (0 && hcuts) {
+	muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
+	cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
+      }
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); fptFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
+      fptM = fptNegMuons;
+    }
+  }
+
+
 }
 
 
@@ -2958,4 +2903,52 @@ double plotClass::getValueByLabel(TH1D *h, string label) {
     }
   }
   return -999.;
+}
+
+
+// ----------------------------------------------------------------------
+void plotClass::muonBdtSetup(TH1D *hcuts, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE) {
+  string prefix("");
+  for (int i = 1; i < hcuts->GetNbinsX(); ++i) {
+    prefix = hcuts->GetXaxis()->GetBinLabel(i);
+    if (string::npos != prefix.find("MUBDTXML ::")) {
+      replaceAll(prefix, "MUBDTXML :: ", "");
+      replaceAll(prefix, "muonid-", "");
+      replaceAll(prefix, "-B", "");
+      replaceAll(prefix, "-E", "");
+      prefixB = prefix;
+      break;
+    }
+  }
+
+  for (int i = 1; i < hcuts->GetNbinsX(); ++i) {
+    prefix = hcuts->GetXaxis()->GetBinLabel(i);
+    if (string::npos != prefix.find("MUBDTXML1 ::")) {
+      replaceAll(prefix, "MUBDTXML1 :: ", "");
+      replaceAll(prefix, "muonid-", "");
+      replaceAll(prefix, "-B", "");
+      replaceAll(prefix, "-E", "");
+      prefixE = prefix;
+      break;
+    }
+  }
+
+  for (int i = 1; i < hcuts->GetNbinsX(); ++i) {
+    prefix = hcuts->GetXaxis()->GetBinLabel(i);
+    if (string::npos != prefix.find("MUBDT ::")) {
+      replaceAll(prefix, "MUBDT :: BDT(#mu) :: ", "");
+      cutB = atof(prefix.c_str());
+      break;
+    }
+  }
+
+  for (int i = 1; i < hcuts->GetNbinsX(); ++i) {
+    prefix = hcuts->GetXaxis()->GetBinLabel(i);
+    if (string::npos != prefix.find("MUBDT1 ::")) {
+      replaceAll(prefix, "MUBDT1 :: BDT(#mu) :: ", "");
+      cutE = atof(prefix.c_str());
+      break;
+    }
+  }
+
 }

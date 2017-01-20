@@ -89,6 +89,7 @@ public :
 
   void           changeSetup(std::string dir, std::string name, std::string setup);
   void           insertDataset(std::string dsname, dataset *);
+  void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
@@ -153,8 +154,8 @@ public :
   PidTable *fptCbT1, *fptCbT2, *fptCbM;
   PidTable *fptCbT1MC, *fptCbT2MC, *fptCbMMC;
 
-  PidTable *fptFakePosKaons, *fptFakePosPions, *fptFakePosProtons;
-  PidTable *fptFakeNegKaons, *fptFakeNegPions, *fptFakeNegProtons;
+  PidTable *fptFakePosKaons, *fptFakePosPions, *fptFakePosProtons, *fptPosMuons;
+  PidTable *fptFakeNegKaons, *fptFakeNegPions, *fptFakeNegProtons, *fptNegMuons;
 
 
   // -- setup and cuts
@@ -206,7 +207,7 @@ public :
   // -- datasets (files and associated information)
   std::map<std::string, dataset*> fDS;
   // -- current dataset for analysis
-  std::string fCds;
+  dataset* fCds;
   initFunc *fIF;
 
   // -- Display utilities
