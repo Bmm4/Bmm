@@ -452,6 +452,10 @@ void plotResults::makeAll(string what) {
     fillAndSaveHistograms();
   }
 
+  if (what == "dbx") {
+    fillAndSaveHistograms(0, 1e5);
+  }
+
   if (what == "all" || what == "ana") {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
@@ -744,15 +748,14 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     setup("bupsikData");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
-    //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bupsikData";
     saveHistograms(fSetup);
 
     resetHistograms();
     setup("bupsikMcComb");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
-    //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, nevents, start);
     otherNumbers(fSetup);
     saveHistograms(fSetup);
@@ -762,6 +765,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bmmData";
     saveHistograms(fSetup);
 
     resetHistograms();
@@ -786,6 +790,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bspsiphiData";
     saveHistograms(fSetup);
 
     resetHistograms();
@@ -2170,7 +2175,7 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotResults::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotResults::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend
@@ -2510,6 +2515,13 @@ void plotResults::saveHistograms(string smode) {
       }
     }
   }
+
+  TH1D *hcuts = fDS["fakeMc"]->getHist("candAnaFakeMC/hcuts");
+  hcuts->SetName("hcuts");
+  hcuts->SetDirectory(fHistFile);
+  cout << "writing hcuts " << hcuts << " name: " << hcuts->GetName() << " to " << fHistFile->GetName() << endl;
+  hcuts->Write();
+
 }
 
 // ----------------------------------------------------------------------
