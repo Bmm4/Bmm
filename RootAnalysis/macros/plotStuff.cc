@@ -234,7 +234,7 @@ void plotStuff::puStudy(string dsname) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotStuff::loopOverPvTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotStuff::loopOverPvTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend
@@ -570,6 +570,131 @@ void plotStuff::pvStudy(string dsname, string selection, string fmod) {
 
 // ----------------------------------------------------------------------
 void plotStuff::yieldStability(string dsname, string trg) {
+  double MINLUMI(1000.);
+  double mBp(5.28), sBp(0.015), stepBp(5.15);
+  double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
+
+  fSample = dsname;
+  fMode = BMM;
+  setup(dsname);
+  if (string::npos != fSample.find("bspsiphi")) {
+    mBp    = 5.369;
+    sBp    = 0.015;
+    stepBp = 5.15;
+  }
+
+
+  // -- check whether there are any histograms pre-produced already
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  bool ok = fHistFile->cd(fTreeDir.c_str());
+  cout << "OK = " << ok << endl;
+  TH2D *h2(0), *hBlock(0);
+  if (!ok) {
+    TDirectory *hDir = fHistFile->mkdir(fTreeDir.c_str());
+    fHistFile->cd(fTreeDir.c_str());
+    hDir = gDirectory;
+    cout << "created " << hDir->GetName() << endl;
+
+    TTree *t = getTree(fSample, fTreeDir);
+    if (0 == t) {
+      cout << "tree for sample = " << fSample << " not found" << endl;
+      return;
+    }
+    setupTree(t, fSample);
+    fCds = fDS[fSample];
+    loopOverTree(t, 1);
+
+    cout << "writing output histograms: " << fYieldHLT.size() << endl;
+    for (map<string, TH2D*>::iterator it = fYieldHLT.begin(); it != fYieldHLT.end(); ++it) {
+      cout << "run " << it->first << endl;
+      it->second->Draw("colz");
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+    for (map<string, TH2D*>::iterator it = fYieldRTR.begin(); it != fYieldRTR.end(); ++it) {
+      it->second->Draw("colz");
+      it->second->SetDirectory(hDir);
+      it->second->Write();
+    }
+
+    fYieldHLT.clear();
+    fYieldRTR.clear();
+  } else {
+    cout << "histograms exist already, looping over them" << endl;
+    TIter next(gDirectory->GetListOfKeys());
+    TKey *key(0);
+    int run(-1), runMin(9999999), runMax(0), firstLumiRun(99), lastLumiRun(99);
+    vector<int> vruns;
+    while ((key = (TKey*)next())) {
+      if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
+      if (TString(key->GetName()).Contains("_HLT_")) {
+	string hname = key->GetName();
+	if (0 == hBlock) {
+	  hBlock = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()))->Clone("hBlock");
+	  hBlock->Reset();
+	}
+	replaceAll(hname, "h_HLT_", "");
+	run = atoi(hname.c_str());
+	if (run > runMax) runMax = run;
+	if (run < runMin) runMin = run;
+	if (find(vruns.begin(), vruns.end(), run) == vruns.end()) {
+	  vruns.push_back(run);
+	  //if (run == 283946) vruns.push_back(run);
+	}
+	//	if (run < 278800) continue;
+	//	if (run > 274000) break;
+      }
+    }
+    fHistFile->Close();
+
+    if (vruns.size() > 0) {
+      cout << "analyzing runs " << runMin << " .. " <<  runMax << endl;
+
+      // -- create run blocks based on integrated lumi
+      Lumi lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      firstLumiRun = lumi.firstRun();
+      lastLumiRun  = lumi.lastRun();
+      cout << "lumiRuns = " << firstLumiRun << " .. " << lastLumiRun << endl;
+      double intLumi(0.);
+      map<pair<int, double>, vector<int> > runBlocks;
+      vector<int> segment;
+      for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
+	intLumi += lumi.lumi(vruns[irun]);
+	segment.push_back(vruns[irun]);
+	if (intLumi > MINLUMI) {
+	  runBlocks.insert(make_pair(make_pair(segment[0], intLumi), segment));
+	  intLumi = 0.;
+	  segment.clear();
+	}
+      }
+
+      // -- get the histograms
+      fHistFile = TFile::Open(fHistFileName.c_str());
+      string hname("");
+      for (int ichan = 0; ichan < fNchan; ++ichan) {
+	cout << "--> chan " << ichan << endl;
+	for (map<pair<int, double>, vector<int> >::iterator it = runBlocks.begin(); it != runBlocks.end(); ++it) {
+	  cout << Form("new block: %d %4.1f: ", it->first.first, it->first.second) << endl;
+	  for (unsigned int i = 0; i < it->second.size(); ++i) {
+	    hname = Form("%s/h_%s_%d_chan%d", fTreeDir.c_str(), trg.c_str(), it->second[i], ichan);
+	    h2 = (TH2D*)(fHistFile->Get(hname.c_str()));
+	    cout << it->second[i] << " (" << hname << ": " << h2 << ") ";
+	    if (0 == h2) continue;
+	    h2->Draw("colz");
+	    c0->Modified();
+	    c0->Update();
+	  }
+	  cout << endl;
+	}
+      }
+    }
+  }
+
+
+}
+
+// ----------------------------------------------------------------------
+void plotStuff::yieldStabilityOld(string dsname, string trg) {
   int MAXPS(20);
   double MINLUMI(1000.);
   double mBp(5.28), sBp(0.015), stepBp(5.15);
@@ -958,7 +1083,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
       return;
     }
     setupTree(t, fSample);
-    fCds = fSample;
+    fCds = fDS[fSample];
     loopOverTree(t, 1);
 
     cout << "writing output histograms: " << fYieldHLT.size() << endl;
@@ -1050,8 +1175,7 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 // ----------------------------------------------------------------------
 void plotStuff::loopFunction1() {
 
-
-  //  if (!fGoodMuonsID) return;
+  if (!fGoodMuonsID) return;
 
   if (!fGoodQ) return;
   if (!fGoodPvAveW8) return;
@@ -1082,16 +1206,16 @@ void plotStuff::loopFunction1() {
     if (TMath::Abs(fb.psipt) < 6.9) return;
     if (TMath::Abs(fb.psicosa) < 0.9) return;
     if (TMath::Abs(fb.psiprob) < 0.1) return;
-    if (TMath::Abs(fb.psiflsxy) < 3) return;
+    if (TMath::Abs(fb.psiflsxy) < 4) return;
     if (fMode == BS2JPSIPHI) {
-      if (fb.mkk < 1.01) return;
-      if (fb.mkk > 1.03) return;
-      if (fb.dr  > 0.80) return;
-      if (fb.k1pt < 0.70) return;
-      if (fb.k2pt < 0.70) return;
+      if (fb.mkk   < 1.01) return;
+      if (fb.mkk   > 1.03) return;
+      if (fb.phidr > 0.30) return;
+      if (fb.k1pt  < 0.80) return;
+      if (fb.k2pt  < 0.80) return;
     }
 
-    if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR)) {
+    if (fMode == BU2JPSIKP) {
       if (fb.kpt < 0.70) return;
     }
 
@@ -1100,7 +1224,6 @@ void plotStuff::loopFunction1() {
       if (fb.pipt < 0.70) return;
       if (fb.mkpi < 0.86) return;
       if (fb.mkpi > 0.94) return;
-
     }
 
     m = fb.cm;
@@ -1116,7 +1239,7 @@ void plotStuff::loopFunction1() {
   }
 
 
-  if (fb.hlt) {
+  if (fb.hlt1 && fb.tos) {
     fYieldHLT[Form("%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
     fYieldHLT[Form("%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
     fYieldHLT[Form("%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
@@ -1219,7 +1342,7 @@ void plotStuff::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotStuff::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotStuff::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend

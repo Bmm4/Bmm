@@ -30,6 +30,7 @@ public :
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg = "HLT");
+  void yieldStabilityOld(std::string dsname, std::string trg = "HLT");
   void yieldStabilityRatios(std::string trg = "HLT");
 
   // -- code for loops
