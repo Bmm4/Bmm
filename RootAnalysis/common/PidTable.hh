@@ -28,36 +28,38 @@ public:
   // Instantiation based on a PidTable in an ascii file
   PidTable(const char *filename, int mode = 0);
 
-  // -- Input 
+  // -- Input
   // --------
   // from a file containing a PidTable
   void readFromFile(const char *filename = "bla.dat", int mode = 0);
   // open a rootfile containing a 2d efficiency histogram
   void readFromEffHist(TDirectory *f, const char *histname = "e6003", double fMin = -180., double fMax = 180., int mode = 0);
-  // open a rootfile containing 2d histograms of 'pass' and 'total' 
-  void readFromHist(TDirectory *f, const char *pass = "h6003f1", const char *total = "h1003f1", 
+  // open a rootfile containing 2d histograms of 'pass' and 'total'
+  void readFromHist(TDirectory *f, const char *pass = "h6003f1", const char *total = "h1003f1",
 		    double fMin = -180., double fMax = 180., int mode = 0);
-  // define grid for PidTables with array 
+  // define grid for PidTables with array
   void setAxes(int nP, double *pAxis, int nT, double *tAxis, int nF, double *fAxis);
   // define regular grid for PidTables with nbins, min, and max
-  void setAxes(int nP, double pmin, double pmax, int nT, double tmin, double tmax, 
+  void setAxes(int nP, double pmin, double pmax, int nT, double tmin, double tmax,
 	       int nF, double fmin, double fmax);
   // fill an empty table (i.e. no cells defined) with input from another table
-  void fillTable(PidTable &);                       
+  void fillTable(PidTable &);
   // keep the format, fill efficiency from another table
-  void fillEff(PidTable &);                         
+  void fillEff(PidTable &);
+  // add comment
+  void setComment(const char *s = "") {fComment = TString(s);}
 
   // -- Management
   // -------------
   // remove all cells and reset the data container
-  void     clear();    
+  void     clear();
   // clear all cells and fill them with 0-0-0-0
-  void     flush();    
+  void     flush();
   // concatenate adjacent (in momentum) 0-0-0-0 bins
   void     compress();
   // output into ascii file
-  void dumpToFile(const char *filename = "bla.dat"); 
-  void scale(double scaleFactor); 
+  void dumpToFile(const char *filename = "bla.dat");
+  void scale(double scaleFactor);
 
   // -- Utilities
   void     setVerbosity(int t) {fVerbose = t;}
@@ -69,14 +71,15 @@ public:
   TH2D*    get2dHist(const char *hname, const char *title, int mode = 0);
   void     setEffAndErrMode(int mode = 0);
   void     recalculate();
-  void     shiftPmax(double oldMax, double newMax); 
-  void     shiftTmax(double oldMax, double newMax); 
-  TIter    next() {return TIter(fDataVector);} 
-  
-  double   getMean(); 
-  
+  void     shiftPmax(double oldMax, double newMax);
+  void     shiftTmax(double oldMax, double newMax);
+  TIter    next() {return TIter(fDataVector);}
+
+  double   getMean();
+
   TString  getHistName() {return fHistName;}
   TString  getFileName() {return fFileName;}
+  TString  getComment() {return fComment;}
   PidData* getData(double p, double t, double f);
   PidData* getDataRange(PidData);
   PidData* getDataRange(double pmin, double pmax, double tmin, double tmax, double fmin, double fmax);
@@ -84,7 +87,7 @@ public:
   TH1D*    getMomentumHist(double tmin, double tmax, double fmin, double fmax, int absVal = 0);
 
 
-  // -- Operations 
+  // -- Operations
   // -------------
   // modify table, cell efficiency no longer 'consistent' with cell content
   void contEmptyBins(double cut = 1);
@@ -100,7 +103,7 @@ public:
   // if (tot == 0), then eff and err are the weighted mean and error on it
   void combine(PidTable &);
 
-  // divide this table by another table 
+  // divide this table by another table
   // this is useful only for eff and err
   void divide(PidTable &);
 
@@ -109,36 +112,36 @@ public:
   void subtract(PidTable &);
 
   // replace cell efficiency by smeared (gaussian with sigma = err) value
-  void smear(int mode = 0);                         
+  void smear(int mode = 0);
 
   // replace cell efficiency by shifted (oldvalue +/- shift*oldvalue) value
-  void shiftRel(double shift = 0.1);                
+  void shiftRel(double shift = 0.1);
 
 
   // -- 1-d Histograms of ...
   // ------------------------
   // ... efficiency
-  void effHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4, 
+  void effHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4,
 	       double fmin = -180., double fmax = 180.);
 
-  // ... error 
-  void errHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4, 
+  // ... error
+  void errHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4,
 	       double fmin = -180., double fmax = 180.);
 
   // ... relative error
-  void relErrHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4, 
+  void relErrHist(TH1 *h = 0, double pmin = 3.0, double pmax = 15., double tmin = -2.4, double tmax = 2.4,
 		  double fmin = -180., double fmax = 180.);
 
 
   // -- Graphical displays of the table vs momentum-(th)eta
   // ------------------------------------------------------
-  // efficiency 
+  // efficiency
   void eff2d(TH2 *h = 0, double fmin = -180., double fmax = 180.);
 
-  // error 
+  // error
   void err2d(TH2 *h = 0, double fmin = -180., double fmax = 180.);
 
-  // relative error 
+  // relative error
   void relErr2d(TH2 *h = 0, double fmin = -180., double fmax = 180.);
 
   // the number of 'passing' candidates
@@ -162,12 +165,12 @@ public:
 
   // -- Access to table contents (efficiency and error) indexes with p/theta/phi
   // ---------------------------------------------------------------------------
-  int idD(double momentum, double theta, double phi);  
-  int idR(double momentum, double theta, double phi);  
+  int idD(double momentum, double theta, double phi);
+  int idR(double momentum, double theta, double phi);
 
   // default (think 'eta' for CMS and 'degrees' for BABAR)
-  double effD(double momentum, double theta, double phi, int sigma = 0);  
-  double errD(double momentum, double theta, double phi, int sigma = 0);  
+  double effD(double momentum, double theta, double phi, int sigma = 0);
+  double errD(double momentum, double theta, double phi, int sigma = 0);
   // in radians (not meaningful for CMS)
   double effR(double momentum, double theta, double phi, int sigma = 0);
   double errR(double momentum, double theta, double phi, int sigma = 0);
@@ -185,8 +188,9 @@ private:
 
   TString fHistName;
   TString fFileName;
+  TString fComment;
   // -- base directory for pidtables
-  TString fPidTablesDir; 
+  TString fPidTablesDir;
 
   // -- maximum and minimum efficiency
   double fMaxEff, fMinEff, fMeanEff, fMeanEffErr;
@@ -195,19 +199,19 @@ private:
   // -- SetMinimum and SetMaximum ranges
   double fHistMin, fHistMax;
   // -- validity range
-  long fMinRun, fMaxRun;  
+  long fMinRun, fMaxRun;
   int fVerbose, fMode;
-  
-  double Tmax;  
+
+  double Tmax;
   double Tmin;
   int Tbin;
   double Pmax;
   double Pmin;
   int Pbin;
- 
+
   TF1 *fRandom;
   TF1 *fFlat;
-  
+
   ClassDef(PidTable,1) //Testing PidTable
 
 };
