@@ -1798,6 +1798,8 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("g2phi",   &fMu2PhiGen,         "g2phi/D");
   t->Branch("gmass",   &fGenMass,           "gmass/D");
   t->Branch("gtau",    &fGenLifeTime,       "gtau/D");
+  t->Branch("gfl3d",   &fGenFl3d,           "gfl3d/D");
+
   t->Branch("g1id",    &fMu1GenID,          "g1id/I");
   t->Branch("g2id",    &fMu2GenID,          "g2id/I");
 
