@@ -66,7 +66,7 @@ type=lbpmunu,mcComb,bg    bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm
 # -- other backgrounds
 type=bcpsimunu,mc,bg      bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-Summer16_private-BcToJpsiMuNu-v03.root
 # -- fake
-type=fake,data            lumi=36.7  file=scratch/dstar-data-dstarCharmonium2016-v03.root
+type=fake,data            lumi=36.7  file=/scratch/ursl/bmm4/v04/dstar-data-dstarCharmonium2016-v04.root
 type=fake,mc              lumi=36.7  file=scratch/fakeMC-v03.root
 
 #bskmunuMcAccBg
