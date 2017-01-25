@@ -51,9 +51,10 @@ private:
 
   static const int NTRKMAX = 10;
   TTree *fFakeTree;
-  double  fCandMKS, fCandMconv, fCandMLambda;
+  double  fCandMKS, fCandMconv, fCandMLambda, fCandMEta;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
   float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDistTrig[NTRKMAX], fFakeDistMuon[NTRKMAX];
+  bool   fFakeHP[NTRKMAX];
 
   float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX]
     , fFakeInnerChi2[NTRKMAX]

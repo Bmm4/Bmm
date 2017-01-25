@@ -5,6 +5,11 @@
 #include "common/dataset.hh"
 #include "common/AnalysisDistribution.hh"
 #include "redTreeData.hh"
+#include "anaNumbers.hh"
+
+#include <fstream>
+#include <iostream>
+
 
 // ----------------------------------------------------------------------
 class plotResults: public plotClass {
@@ -26,9 +31,27 @@ public :
   void genSummary(std::string dsname, std::string dir);
 
   // -- main results
-  void fillAndSaveHistograms(int nevents = -1);
+  void fillAndSaveHistograms(int nevents = -1, int start = 0);
   void saveHistograms(std::string smode);
-  void resetHistograms();
+  void resetHistograms(bool deleteThem = false);
+  void initNumbers(anaNumbers &a);
+  void otherNumbers(string ds);
+  void rareBgHists(string ds, int nevents = -1);
+  void scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio = 1.0);
+  void getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int proc);
+  void numbersFromHist(anaNumbers &a, std::string syst);
+  std::string rareAccName(std::string sname);
+  bool skipThisBg(std::string name);
+  void calculateNumbers(std::string mode);
+  void calculateB2JpsiNumbers(anaNumbers &a);
+  void calculateSgNumbers(anaNumbers &a);
+  void calculateCombBgNumbers(anaNumbers &a, int mode = 0, double lo = 5.45, double hi = 5.9);
+  void calculateRareBgNumbers(int chan);
+
+  enum INTMODE {LO=0, BD, BS, HI, ALL};
+  double massIntegral(TH1* h, INTMODE i, int chan);
+  void printNumbers(anaNumbers &a, ostream &OUT);
+  void dumpTex(number &a, const std::string &s, int ndigits = 3, int sgn = 0);
 
 
   // -- code for loops
@@ -48,26 +71,49 @@ private:
     , fCsLo, fCsHi
     ;
 
-  std::vector<TH2D*> fhAccAll, fhAccPass;
-  std::vector<TH1D*> fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
+  std::string fHistWithAllCuts;
 
-  std::vector<TH1D*> fhGenAndAccNumbers;
-  std::vector<TH1D*> fhMassAbsNoCuts;
-  std::vector<TH1D*> fhMassNoCuts;
-  std::vector<TH1D*> fhMassWithAnaCuts;
-  std::vector<TH1D*> fhMassWithMuonCuts;
-  std::vector<TH1D*> fhMassWithTriggerCuts;
-  std::vector<TH1D*> fhMassWithAllCuts;
-  std::vector<TH1D*> fhMassWithAllCutsBlind;
+  std::map<std::string, std::vector<TH2D*> > fhAccAll, fhAccPass;
+  std::map<std::string, std::vector<TH1D*> > fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
 
-  std::vector<TH1D*> fhW8MassWithAllCuts;
-  std::vector<TH1D*> fhW8MassWithAllCutsBlind;
+  std::map<std::string, std::vector<TH1D*> > fhGenAndAccNumbers;
+  std::map<std::string, std::vector<TH1D*> > fhMassAbsNoCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassNoCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAnaCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithMuonCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithTriggerCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCuts;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsBlind;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsSeagull;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsSeagullBlind;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsCowboy;
+  std::map<std::string, std::vector<TH1D*> > fhMassWithAllCutsCowboyBlind;
 
-  std::vector<TH1D*> fhMassWithMassCuts;
-  std::vector<TH1D*> fhNo, fhNoC;
-  std::vector<TH1D*> fhCs, fhCsC;
-  std::vector<TH1D*> fhB0, fhB0C;
+  std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCuts;
+  std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsSeagull;
+  std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsCowboy;
 
+  std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
+  std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
+
+  bool fSaveSmallTree;
+
+  // -- vector for each channel
+  std::vector<anaNumbers>
+  fNoNumbers,        // B+ normalization
+    fCsNumbers,      // Bs normalization
+    fB0Numbers,      // B0 -> J/psi K*0
+    fBsmmNumbers,    // Bs -> mu mu signal
+    fBdmmNumbers,    // B0 -> mu mu signal
+    fHhNumbers,      // peaking background
+    fSlNumbers,      // semileptonic background
+    fCombNumbers,    // combinatorial background (from data)
+    fNpNumbers,      // non-peaking background: SL (from MC) and combinatorial background (from data)
+    fBgNumbers,      // background: SL and HH (from MC) and  combinatorial background (from data)
+    fSgAndBgNumbers; // background and signal
+  std::map<std::string, std::vector<anaNumbers*> > fRareNumbers;
+  // -- map (name) -> (vector with per-channel errors) for all relative systematic uncertainties
+  std::map<std::string, std::vector<double> > fSystematics;
   // ----------------------------------------------------------------------
   ClassDef(plotResults,1)
 

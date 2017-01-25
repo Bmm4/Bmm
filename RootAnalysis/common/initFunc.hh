@@ -90,8 +90,6 @@ public:
   TF1* pol1Err2Gauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
 
   TF1* pol1Err2gauss2c(double lo, double hi);
-  //  TF1* pol1Err2Gauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
-
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* crystalBallGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);

@@ -11,6 +11,7 @@
 #include "TDirectory.h"
 #include "TColor.h"
 #include "TLatex.h"
+#include "TLegend.h"
 
 #include <vector>
 #include <cstdarg>
@@ -73,7 +74,10 @@ void setFilledHist(TH1 *h, int lcol = kBlack, int fcol = kYellow, int fstyle = 1
 void setMaximum(double scale = 1.2, TH1 *h1 = 0, TH1 *h2 = 0);
 void showOverflow(TH1 *h);
 
-TH1D *unmix(TH1D *rightSign, TH1D *wrongSign, double chid = 0.181);
+TH1D* unmix(TH1D *rightSign, TH1D *wrongSign, double chid = 0.181);
+
+TLegend* newLegend(std::string title, double x1, double y1, double x2, double y2,
+		   std::vector<TH1*> hists, std::vector<std::string> names, std::vector<std::string> options);
 
 // ======================================================================
 // Utitilities for calculations

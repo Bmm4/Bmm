@@ -63,6 +63,7 @@ struct mvaMuonIDData {
   float dxyRef, dzRef;
   float kinkFinder, glbKinkFinder, timeAtIpInOutErr, outerChi2;
   float valPixHits, TMTrkMult100; //int
+  float innerChi2, trkRelChi2;
   float vMuonHitComb;
 };
 
@@ -241,8 +242,8 @@ public:
   bool    fJSON, fCowboy, fCandDcand;
   int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
-  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu1TmId, fMu2GmId, fMu2TmId;
-  bool    fMu1rTmId, fMu1rMvaId, fMu2rTmId, fMu2rMvaId;
+  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu2GmId;
+  bool    fMu1rMvaId, fMu2rMvaId;
   double  fMu1TrigM, fMu2TrigM;
 
   double  fDeltaR, fMuDist, fMuDeltaR, fMu1Chi2, fMu2Chi2;
@@ -281,7 +282,7 @@ public:
 
   // -- another reduced tree
   TTree       *fEffTree;
-  bool fETm1gt, fETm2gt, fETm1id, fETm1tmid, fETm1mvaid, fETm2id, fETm2tmid, fETm2mvaid;
+  bool fETm1gt, fETm2gt, fETm1id, fETm1mvaid, fETm2id, fETm2mvaid;
   int fETm1q, fETm2q, fETchan;
   float fETgm, fETgpt, fETgeta;
   float fETcandMass;
@@ -304,12 +305,12 @@ public:
 
   string  fHLTPath;
   int     fL1Seeds, fHltPrescale;
-  bool    fGoodHLT, fGoodMuonsID, fGoodMuonsTmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
+  bool    fGoodHLT, fGoodMuonsID, fGoodMuonsGmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
   bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger;
-  bool    fPreselAlpha;
+  bool    fPreselAlpha, fPreselFLS;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
   string  fHLT1Path, fL1SeedString;

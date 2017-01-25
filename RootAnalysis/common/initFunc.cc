@@ -1496,6 +1496,12 @@ TF1* initFunc::pol1Err2Gauss(double lo, double hi) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::pol1Err2Gauss(TH1 *h, double peak, double sigma, double preco) {
+  cout << "FIXME: missing implementation!" << endl;
+  return 0;
+}
+
+// ----------------------------------------------------------------------
 TF1* initFunc::pol1Err2gauss2c(double lo, double hi) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_pol1_err2_gauss2c", fName.c_str())))) if (f) delete f;

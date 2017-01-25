@@ -37,6 +37,7 @@
 
 #include "redTreeData.hh"
 #include "cuts.hh"
+#include "anaNumbers.hh"
 
 // -- TMVA related
 #include "TMVA/Factory.h"
@@ -62,7 +63,7 @@ public :
   plotClass(std::string dir = "results",
 	    std::string files = "plotClass.files",
 	    std::string cuts = "plotClass.2016.cuts",
-	    std::string setup = "m");
+	    std::string setup = "");
   virtual        ~plotClass();
 
   enum MODE {UNSET, BMM, BDMM, BSMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
@@ -77,8 +78,7 @@ public :
   virtual void   loopFunction2();
 
   // -- physics utilities
-
-  int            detChan(double m1eta, double m2eta);
+  virtual double getValueByLabel(TH1D *h, std::string label);
   void           closeHistFile();
   virtual void   readCuts(std::string filename);
   void           readFile(std::string filename, std::vector<std::string> &lines);
@@ -89,6 +89,7 @@ public :
 
   void           changeSetup(std::string dir, std::string name, std::string setup);
   void           insertDataset(std::string dsname, dataset *);
+  void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
@@ -136,6 +137,7 @@ public :
   TMVA::Reader* fReaderEvents0[2];
   TMVA::Reader* fReaderEvents1[2];
   TMVA::Reader* fReaderEvents2[2];
+  TString fMvaMethod;
   bool fIsMC, fIsSignal;
   double fBDT;
   readerData frd;
@@ -152,19 +154,19 @@ public :
   PidTable *fptCbT1, *fptCbT2, *fptCbM;
   PidTable *fptCbT1MC, *fptCbT2MC, *fptCbMMC;
 
-  PidTable *fptFakePosKaons, *fptFakePosPions, *fptFakePosProtons;
-  PidTable *fptFakeNegKaons, *fptFakeNegPions, *fptFakeNegProtons;
+  PidTable *fptFakePosKaons, *fptFakePosPions, *fptFakePosProtons, *fptPosMuons;
+  PidTable *fptFakeNegKaons, *fptFakeNegPions, *fptFakeNegProtons, *fptNegMuons;
 
 
   // -- setup and cuts
   double MASSMIN, MASSMAX, SIGBOXMIN, SIGBOXMAX, BGLBOXMIN, BGLBOXMAX, BGHBOXMIN, BGHBOXMAX;
 
-  bool fGoodAcceptance, fPreselection, fWideMass, fGoodHLT, fGoodMuonsID,
+  bool fGoodAcceptance, fPreselection, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons,
     fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
     fGoodPt, fGoodEta, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;
   bool fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3,
-    fGoodDocaTrk, fGoodJpsiCuts, fGoodBDT, fGoodLastCut;
+    fGoodDocaTrk, fGoodJpsiCuts, fGoodCNC, fGoodBDT;
 
   bool fIsCowboy;
 
@@ -172,7 +174,8 @@ public :
 
   int fRunMin, fRunMax; // if you want to look at a specific run range
 
-  AnalysisCuts fAnaCuts;
+  AnalysisCuts fCncCuts;
+  AnalysisCuts fBdtCuts;
 
 
 
@@ -189,6 +192,7 @@ public :
 		 LUMI        // according to the number provided in fLumi       [/fb]!!
   };
   double fNorm, fLumi; // [fLumi] = 1/fb!!!
+  number fFsfu;
   double fCrossSection;
   double fBfPsiMuMu, fBfPsiMuMuE,
     fBfPhiKpKm, fBfPhiKpKmE,
@@ -198,12 +202,12 @@ public :
   int    fVerbose;
   double fEpsilon;
 
-  std::string fDirectory, fSetup, fSuffix, fSample, fNumbersFileName, fTreeDir;
+  std::string fDirectory, fSetup, fSuffix, fSuffixSel, fSample, fNumbersFileName, fTreeDir;
 
   // -- datasets (files and associated information)
   std::map<std::string, dataset*> fDS;
   // -- current dataset for analysis
-  std::string fCds;
+  dataset* fCds;
   initFunc *fIF;
 
   // -- Display utilities
@@ -220,6 +224,9 @@ public :
   TLegendEntry *legge;
 
   enum MODE fMode;
+
+
+  static const int MAXPS = 20;
 
   // ----------------------------------------------------------------------
   ClassDef(plotClass,1)

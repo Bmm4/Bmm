@@ -27,8 +27,8 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   cout << "======================================================================" << endl;
   cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << endl;
 
-  MASSMIN = 4.5;
-  MASSMAX = 6.5;
+  MASSMIN = 2.5;
+  MASSMAX = 10.5;
   BLIND = 0;
 
   fL1Seeds = 0;
@@ -503,12 +503,10 @@ void candAna::candAnalysis() {
 
   fMu1TrkLayer  = fpReader->numberOfTrackerLayers(p1);
   fMu1GmId      = ((p1->fMuID & 2) == 2);
-  fMu1TmId      = tightMuon(p1);
 
-  fMu1BDT       = -1.;
+  fMu1BDT       = -3.;
   fMu1MvaId     = mvaMuon(p1, fMu1BDT);
-  fMu1rTmId     = tightMuon(p1, false);
-  fMu1rBDT      = -1.;
+  fMu1rBDT      = -3.;
   fMu1rMvaId    = mvaMuon(p1, fMu1rBDT, false);
 
   fTrigMatchDeltaPt = 99.;
@@ -517,7 +515,6 @@ void candAna::candAnalysis() {
   //  fMu1TrigM     = doTriggerMatchingR(p1, false, true, false);
   if (fTrigMatchDeltaPt > 0.1) fMu1TrigM *= -1.;
 
-  //  fMu1Id        = fMu1MvaId && (fMu1TrigM < 0.1) && (fMu1TrigM > 0);
   fMu1Id        = fMu1MvaId;
   if (HLTRANGE.begin()->first == "NOTRIGGER") fMu1Id = true;
 
@@ -570,12 +567,10 @@ void candAna::candAnalysis() {
   //  fMu2Id        = goodMuon(p2);
   fMu2TrkLayer  = fpReader->numberOfTrackerLayers(p2);
   fMu2GmId      = ((p2->fMuID & 2) == 2);
-  fMu2TmId      = tightMuon(p2);
 
-  fMu2BDT       = -1.;
+  fMu2BDT       = -3.;
   fMu2MvaId     = mvaMuon(p2, fMu2BDT);
-  fMu2rTmId     = tightMuon(p2, false);
-  fMu2rBDT      = -1.;
+  fMu2rBDT      = -3.;
   fMu2rMvaId    = mvaMuon(p2, fMu2rBDT, false);
 
   fTrigMatchDeltaPt = 99.;
@@ -605,19 +600,17 @@ void candAna::candAnalysis() {
   fMu2IPS       = p2->fTip/p2->fTipE;
 
   // -- fill tree for muon id MVA studies
-  if (0 && (fMu1rTmId || fMu2rTmId)) {
+  if (0) {
     TAnaMuon *pt(0);
     for (int i = 0; i < 2; ++i) {
       pt = 0;
       if (0 == i) {
-	if (!fMu1rTmId) continue;
 	int idx = p1->fMuIndex;
 	if (idx > -1 && idx < fpEvt->nMuons()) {
 	  pt = fpEvt->getMuon(idx);
 	}
       }
       if (1 == i) {
-	if (!fMu2rTmId) continue;
 	int idx = p2->fMuIndex;
 	if (idx > -1 && idx < fpEvt->nMuons()) {
 	  pt = fpEvt->getMuon(idx);
@@ -823,12 +816,6 @@ void candAna::candAnalysis() {
 
   }
 
-  // if (BLIND && fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX  && fCandIso < 0.7) {
-  //   calcBDT();
-  // } else {
-  //   calcBDT();
-  // }
-
   fChan = detChan(fMu1Eta, fMu2Eta);
 
   if (0 && fMu2Pt < 4.0) {
@@ -846,10 +833,9 @@ void candAna::candAnalysis() {
 
 
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX));
-
   fGoodMuonsID    = (fMu1Id && fMu2Id);
-  fGoodMuonsTmID  = (fMu1TmId && fMu2TmId);
   fGoodMuonsMvaID = (fMu1MvaId && fMu2MvaId);
+  fGoodMuonsGmID  = (fMu1GmId && fMu2GmId);
   fGoodMuonsPt    = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
   double etaLead(TMath::Abs(fMu1Eta));
   if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
@@ -871,10 +857,17 @@ void candAna::candAnalysis() {
   fGoodPt         = (fCandPt > fCuts[fChan]->pt);
   fGoodEta        = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
   fGoodAlpha      = (fCandA < fCuts[fChan]->alpha);
-  fPreselAlpha    = (fCandA < 0.2);
   fGoodChi2       = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
-  fGoodFLS        =  ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
-  if (TMath::IsNaN(fCandFLS3d)) fGoodFLS = false;
+  fGoodFLS        = ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
+
+  fPreselAlpha    = (fCandA < 0.2);
+  fPreselFLS      = ((fCandFLS3d > 4) && (fCandFLSxy > 4));
+
+  if (TMath::IsNaN(fCandFLS3d)) {
+    fGoodFLS   = false;
+    fPreselFLS = false;
+  }
+
 
   fGoodCloseTrack   = (fCandCloseTrk < fCuts[fChan]->closetrk);
   fGoodCloseTrackS1 = (fCandCloseTrkS1 < fCuts[fChan]->closetrks1);
@@ -893,7 +886,7 @@ void candAna::candAnalysis() {
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
-  fPreselection = fGoodQ && fGoodMuonsEta && fWideMass && fPreselAlpha;
+  fPreselection = fGoodQ && fGoodMuonsGmID && fGoodTracksPt && fGoodTracksEta && fGoodMuonsEta && fWideMass && fPreselAlpha && fPreselFLS;
   if (0) cout << "fGoodQ = " << fGoodQ
 	      << " fGoodMuonsEta = " << fGoodMuonsEta
 	      << Form(" (%3.1f, %3.1f)", fMu1Eta, fMu2Eta)
@@ -904,7 +897,8 @@ void candAna::candAnalysis() {
 	      << endl;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
-  fPreselection = fPreselection && fGoodHLT1;
+  fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
+  //  fPreselection = true;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(3.);
 
 }
@@ -1602,7 +1596,6 @@ void candAna::bookHist() {
   fEffTree->Branch("m1q",    &fETm1q,             "m1q/I");
   fEffTree->Branch("m1gt",   &fETm1gt,            "m1gt/O");
   fEffTree->Branch("m1id",   &fETm1id,            "m1id/O");
-  fEffTree->Branch("m1tmid", &fETm1tmid,          "m1tmid/O");
   fEffTree->Branch("m1mvaid",&fETm1mvaid,         "m1mvaid/O");
 
   fEffTree->Branch("m2pt",   &fETm2pt,            "m2pt/F");
@@ -1612,7 +1605,6 @@ void candAna::bookHist() {
   fEffTree->Branch("m2q",    &fETm2q,             "m2q/I");
   fEffTree->Branch("m2gt",   &fETm2gt,            "m2gt/O");
   fEffTree->Branch("m2id",   &fETm2id,            "m2id/O");
-  fEffTree->Branch("m2tmid", &fETm2tmid,          "m2tmid/O");
   fEffTree->Branch("m2mvaid",&fETm2mvaid,         "m2mvaid/O");
 
   fEffTree->Branch("m",      &fETcandMass,        "m/F");
@@ -1672,8 +1664,8 @@ void candAna::setupReducedTree(TTree *t) {
 
   // -- global cuts and weights
   t->Branch("gmuid",   &fGoodMuonsID,       "gmuid/O");
-  t->Branch("gmutmid", &fGoodMuonsTmID,     "gmutmid/O");
   t->Branch("gmumvaid",&fGoodMuonsMvaID,    "gmumvaid/O");
+  t->Branch("gmugmid", &fGoodMuonsGmID,     "gmugmid/O");
   t->Branch("gmupt",   &fGoodMuonsPt,       "gmupt/O");
   t->Branch("gmueta",  &fGoodMuonsEta,      "gmueta/O");
   t->Branch("gtqual",  &fGoodTracks,        "gtqual/O");
@@ -1746,10 +1738,8 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m1q",     &fMu1Q,              "m1q/I");
   t->Branch("m1id",    &fMu1Id,             "m1id/O");
   t->Branch("m1gmid",  &fMu1GmId,           "m1gmid/O");
-  t->Branch("m1tmid",  &fMu1TmId,           "m1tmid/O");
   t->Branch("m1mvaid", &fMu1MvaId,          "m1mvaid/O");
-  t->Branch("m1rtmid", &fMu1rTmId,          "m1rtmid/O");
-  t->Branch("m1rmvaid",&fMu1rMvaId,          "m1rmvaid/O");
+  t->Branch("m1rmvaid",&fMu1rMvaId,         "m1rmvaid/O");
   t->Branch("m1mvabdt",&fMu1BDT,            "m1mvabdt/D");
   t->Branch("m1rmvabdt",&fMu1rBDT,          "m1rmvabdt/D");
 
@@ -1773,9 +1763,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m2q",     &fMu2Q,              "m2q/I");
   t->Branch("m2id",    &fMu2Id,             "m2id/O");
   t->Branch("m2gmid",  &fMu2GmId,           "m2gmid/O");
-  t->Branch("m2tmid",  &fMu2TmId,           "m2tmid/O");
   t->Branch("m2mvaid", &fMu2MvaId,          "m2mvaid/O");
-  t->Branch("m2rtmid", &fMu2rTmId,          "m2rtmid/O");
   t->Branch("m2rmvaid",&fMu2rMvaId,         "m2rmvaid/O");
   t->Branch("m2mvabdt",&fMu2BDT,            "m2mvabdt/D");
   t->Branch("m2rmvabdt",&fMu2rBDT,          "m2rmvabdt/D");
@@ -2070,6 +2058,11 @@ void candAna::readCuts(string fileName, int dump) {
 	    fCuts[j-1]->l1seeds.push_back(atoi(vl1seeds[is].c_str()));
 	  } ok = 1;
 	}
+
+	if (string::npos != cutname.find("bdt")) {
+	  cout << "ignoring selection BDT setup" << endl;
+	}
+
 
 	if (0 == ok) {
 	  cout << "XXXX unknown cut or cannot parse ->" << cutLines[i] << "<-" << endl;
@@ -2448,11 +2441,19 @@ bool candAna::tightMuon(TSimpleTrack *pT, bool hadronsPass) {
 
 // ----------------------------------------------------------------------
 bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
-  bool doNow(true);
   if (hadronsPass && HLTRANGE.begin()->first == "NOTRIGGER") {
     return true;
   }
 
+  // -- muon MVA is on top of global muon, so require this first
+  if ((pt->fMuID & 2) == 2) {
+    result = -2.;
+  } else {
+    result = -3.;
+    return false;
+  }
+
+  bool doNow(true);
   if (doNow) {
     // -- Stephan's developing set of variables
     if (TMath::Abs(pt->fPlab.Eta()) < 0.9) {
@@ -2472,7 +2473,9 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.outerChi2        = pt->fOuterChi2;
       mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
       mrd.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
-      mrd.vMuonHitComb     = getDetVarComb(pt); //FIXME
+      mrd.innerChi2        = pt->fInnerChi2;
+      mrd.trkRelChi2       = pt->fTrkRelChi2;
+      mrd.vMuonHitComb     = getDetVarComb(pt);
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2492,7 +2495,9 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.outerChi2        = pt->fOuterChi2;
       mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
       mrd1.TMTrkMult100     = static_cast<float>(pt->fTmTrkMult);
-      mrd1.vMuonHitComb     = getDetVarComb(pt); // FIXME
+      mrd1.innerChi2        = pt->fInnerChi2;
+      mrd1.trkRelChi2       = pt->fTrkRelChi2;
+      mrd1.vMuonHitComb     = getDetVarComb(pt);
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }
@@ -3164,39 +3169,6 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 // ----------------------------------------------------------------------
 void candAna::calcBDT() {
   fBDT = -99.;
-  if (fChan < 0) return;
-  if (0 == fReaderEvents0.size()) {
-    cout << "no BDT defined" << endl;
-    return;
-  }
-  if (!preselection(fRTD, fChan)) return;
-  frd.pt = fCandPt;
-  frd.eta = fCandEta;
-  frd.m1eta = fMu1Eta;
-  frd.m2eta = fMu2Eta;
-  frd.m1pt = fMu1Pt;
-  frd.m2pt = fMu2Pt;
-  frd.fls3d = fCandFLS3d;
-  frd.alpha = fCandA;
-  frd.maxdoca = fCandDoca;
-  frd.pvip = fCandPvIp;
-  frd.pvips = fCandPvIpS;
-  frd.iso = fCandIso;
-  frd.docatrk = fCandDocaTrk;
-  frd.chi2dof = fCandChi2/fCandDof;
-  frd.closetrk = fCandCloseTrk;
-  frd.m  = fCandM;
-  fBDT = 0.;
-  return;
-  if (0 == fEvt%3) {
-    fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT");
-  } else if (1 == fEvt%3) {
-    fBDT   = fReaderEvents1[fChan]->EvaluateMVA("BDT");
-  } else if (2 == fEvt%3) {
-    fBDT   = fReaderEvents2[fChan]->EvaluateMVA("BDT");
-  } else {
-    cout << "all hell break loose" << endl;
-  }
 }
 
 
@@ -3339,6 +3311,16 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	if (stype == "TMTrkMult100") {
 	  cout << "  adding TMTrkMult100" << endl;
 	  reader->AddVariable("TMTrkMult100", &d.TMTrkMult100);
+	  continue;
+	}
+	if (stype == "innerChi2") {
+	  cout << "  adding innerChi2" << endl;
+	  reader->AddVariable("innerChi2", &d.innerChi2);
+	  continue;
+	}
+	if (stype == "trkRelChi2") {
+	  cout << "  adding trkRelChi2" << endl;
+	  reader->AddVariable("trkRelChi2", &d.trkRelChi2);
 	  continue;
 	}
 	if (stype == "vMuonHitComb") {
@@ -3964,34 +3946,6 @@ void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &
   dr = dm1 = dm2 = -1.;
   int verbose(0);
   TVector3 pT = pS->getP();
-  // TAnaMuon *pM = fpEvt->getSimpleTrackMuon(pS->getIndex());
-  // TVector3 rm1, rm2;
-  // if (pM) {
-  //   rm1 = pM->fPositionAtM2;
-  // } else {
-  //   rm1.SetXYZ(0., 0., 0.);
-  // }
-
-  // cout << "--- trg objects -------------------------------------------------------------------" << endl;
-  // for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
-  //   pTO = fpEvt->getTrgObjv2(i);
-  //   cout << "trgobjv2 type = " << pTO->fType << ", label = " << pTO->fLabel << " num = " << pTO->fP.size()
-  // 	 << " pt/eta/phi = " << pTO->fP[0].Perp() << "/" << pTO->fP[0].Eta() << "/" << pTO->fP[0].Phi()
-  // 	 << endl;
-  //   continue;
-  //   if (pTO->fType.Contains("l3muon")) {
-  //     vector<int> muonIndex = pTO->fIndex;
-  //     vector<int> muonID = pTO->fID;
-  //     vector<TLorentzVector> muonP = pTO->fP;
-  //     int num = muonIndex.size();
-  //     cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-  //     for (int j = 0; j < num; ++j) {
-  // 	dr = muonP[j].Vect().DeltaR(pT);
-  // 	cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j] << endl;
-  //     }
-  //   }
-  // }
-
 
   // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
   TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
@@ -3999,9 +3953,10 @@ void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &
   string hltPath("nada");
   if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
   for (int j = 1; j <= ht->GetNbinsX(); ++j) {
-    hltPath =  ht->GetXaxis()->GetBinLabel(j);
     // -- determine trigger objects for this path
-    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+    hltPath =  ht->GetXaxis()->GetBinLabel(j);
+    // -- loop over all saved hlt objects
+    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
       pTO = fpEvt->getTrgObjv2(i);
       if (hltPath == pTO->fHltPath) {
 	vector<int> muonIndex = pTO->fIndex;

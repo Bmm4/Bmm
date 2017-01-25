@@ -11,8 +11,7 @@ std::string preselection();
 TH1D* getPreselectionNumbers();
 
 // ----------------------------------------------------------------------
-bool preselection(redTreeData &b, int channel);
+bool preselection(redTreeData &b);
 void printRedTreeEvt(redTreeData &b);
 
 #endif
-

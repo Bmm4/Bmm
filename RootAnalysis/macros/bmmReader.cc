@@ -74,7 +74,7 @@ void bmmReader::eventProcessing() {
 
   if (fIsMC) {
     json = 1;
-    processType();
+    processTypePythia8();
   } else if (fIgnoreJson) {
     json = 1;
   } else {
@@ -280,8 +280,73 @@ void bmmReader::readCuts(TString filename, int dump) {
 }
 
 
+
 // ----------------------------------------------------------------------
-void bmmReader::processType() {
+// http://home.thep.lu.se/~torbjorn/pythia82html/ParticleProperties.html
+void bmmReader::processTypePythia8() {
+
+  TGenCand *pG;
+
+  // hard-scatter partons (entries { d, u, s, c, b, t } )
+  double hsPartCnt[6];
+  double hsAntiCnt[6];
+
+  // partons
+  double parPartCnt[6];
+  double parAntiCnt[6];
+
+  for (int i = 0; i < 6; i++) {
+    hsPartCnt[i] = 0;
+    hsAntiCnt[i] = 0;
+    parPartCnt[i] = 0;
+    parAntiCnt[i] = 0;
+  }
+  int aid(0);
+  for (int i = 0; i < fpEvt->nGenCands(); ++i) {
+    pG = fpEvt->getGenCand(i);
+    // -- in PYTHIA8 the hard scatter particles are 21-29
+    if (pG->fStatus > 20 && pG->fStatus < 30) {
+      aid = TMath::Abs(pG->fID);
+
+      for (int j = 0; j < 6; j++) {
+        if (pG->fID == j+1) {
+          hsPartCnt[j]++;
+        }
+        if (pG->fID == -(j+1)) {
+          hsAntiCnt[j]++;
+        }
+      }
+      //      pG->dump();
+    }
+  }
+
+  // -- beauty
+  if (hsPartCnt[4] >= 1 && hsAntiCnt[4] >= 1) {
+    fProcessType = 40; // gluon fusion
+    //    cout << Form("====> b: GGF (%i)", fProcessType) << endl;
+    return;
+  }
+
+  if ((hsPartCnt[4] >= 1 && hsAntiCnt[4] == 0) || (hsPartCnt[4] == 0 && hsAntiCnt[4] >= 1) ) {
+    fProcessType = 41; // flavor excitation
+    //    cout << Form("====> b: FEX (%i)", fProcessType) << endl;
+    return;
+  }
+
+  if (hsPartCnt[4] == 0 && hsAntiCnt[4] == 0) {
+    fProcessType = 42; // gluon splitting
+    //    cout << Form("====> b: GSP (%i)", fProcessType) << endl;
+
+    return;
+  }
+
+  fpEvt->dumpGenBlock();
+
+}
+
+
+// ----------------------------------------------------------------------
+void bmmReader::processTypePythia6() {
 
   TGenCand *pG;
 
@@ -301,42 +366,41 @@ void bmmReader::processType() {
   }
 
   int aid(0);
-  for (int i = 0; i < fpEvt->nGenCands(); ++i) {
-
-    pG = fpEvt->getGenCand(i);
-
+  for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    pG = fpEvt->getGenT(i);
     aid = TMath::Abs(pG->fID);
     if ( aid == 1 || aid == 2 ||
          aid == 3 || aid == 4 ||
          aid == 5 || aid == 6 ||
          aid == 21) {
-      if ( pG->fStatus == 3 ) {
-        //      cout << "quark/gluon from documentation #" << i << "(ID: " << pG->fID << ")" << endl;
+      //      cout << "pG = " << pG << " id = " << pG->fID << " status = " << pG->fStatus << endl;
+      if (pG->fStatus == 3 ) {
+	//	cout << "quark/gluon from documentation #" << i << "(ID: " << pG->fID << ")" << endl;
       }
-      if ( pG->fStatus == 2 &&  TMath::Abs(pG->fID) != 21) {
-        //      cout << "decayed quark/gluon #" << i << " (ID: " << pG->fID << ")" << endl;
+      if (pG->fStatus == 2 &&  TMath::Abs(pG->fID) != 21) {
+	//	cout << "decayed quark/gluon #" << i << " (ID: " << pG->fID << ")" << endl;
       }
-      if ( pG->fStatus == 1 ) {
-        //      cout << "undecayed (?) quark/gluon #" << i << " (ID: " << pG->fID  << ")" << endl;
+      if (pG->fStatus == 1 ) {
+	//	cout << "undecayed (?) quark/gluon #" << i << " (ID: " << pG->fID  << ")" << endl;
       }
     }
 
     for (int j = 0; j < 6; j++) {
 
-      if ( pG->fStatus == 3 ) {
+      if (pG->fStatus == 3 ) {
         if ( pG->fID == j+1 ) {
           docPartCnt[j]++;
         }
-        if ( pG->fID == -(j+1) ) {
+        if (pG->fID == -(j+1) ) {
           docAntiCnt[j]++;
         }
       }
 
-      if ( pG->fStatus == 2 ) {
+      if (pG->fStatus == 2 ) {
         if ( pG->fID == j+1 ) {
           parPartCnt[j]++;
         }
-        if ( pG->fID == -(j+1) ) {
+        if (pG->fID == -(j+1) ) {
           parAntiCnt[j]++;
         }
       }
