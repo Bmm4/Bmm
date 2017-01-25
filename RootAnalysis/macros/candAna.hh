@@ -222,7 +222,7 @@ public:
   int     fCandTmi;
   int     fGenBpartial;
   int     fProcessType;
-  double  fGenLifeTime, fGenMass;
+  double  fGenLifeTime, fGenMass, fGenFl3d;
 
   // -- BDT
   std::vector<TMVA::Reader*> fReaderEvents0;
