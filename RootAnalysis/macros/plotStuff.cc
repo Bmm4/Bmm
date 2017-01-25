@@ -23,6 +23,7 @@
 #include "common/dataset.hh"
 #include "common/util.hh"
 #include "common/Lumi.hh"
+#include "common/fitPsYield.hh"
 
 ClassImp(plotStuff)
 
@@ -75,8 +76,8 @@ void plotStuff::makeAll(string what) {
     //    changeSetup("results", "yieldstability", "");
     yieldStability("bupsikData", "HLT");
     yieldStability("bmmData", "HLT");
-    yieldStability("bspsiphiData", "HLT");
-    yieldStability("bdpsikstarData", "HLT");
+    //    yieldStability("bspsiphiData", "HLT");
+    // yieldStability("bdpsikstarData", "HLT");
   }
 
   if (what == "all" || what == "yieldstability") {
@@ -574,6 +575,8 @@ void plotStuff::yieldStability(string dsname, string trg) {
   double mBp(5.28), sBp(0.015), stepBp(5.15);
   double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
 
+  int nchan = 1;
+
   fSample = dsname;
   fMode = BMM;
   setup(dsname);
@@ -645,7 +648,6 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	//	if (run > 274000) break;
       }
     }
-    fHistFile->Close();
 
     if (vruns.size() > 0) {
       cout << "analyzing runs " << runMin << " .. " <<  runMax << endl;
@@ -668,28 +670,75 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	}
       }
 
+      // -- the result histograms
+      vector<TH1D *> vRunHLT;
+      for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
+	vRunHLT.push_back(new TH1D(Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				   Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				   lastLumiRun-firstLumiRun+1, firstLumiRun, lastLumiRun));
+	vRunHLT[ichan]->Sumw2();
+      }
+
       // -- get the histograms
       fHistFile = TFile::Open(fHistFileName.c_str());
       string hname("");
-      for (int ichan = 0; ichan < fNchan; ++ichan) {
+      TDirectory *pDir = fHistFile->GetDirectory(fTreeDir.c_str());
+      for (int ichan = 0; ichan < nchan; ++ichan) {
 	cout << "--> chan " << ichan << endl;
 	for (map<pair<int, double>, vector<int> >::iterator it = runBlocks.begin(); it != runBlocks.end(); ++it) {
-	  cout << Form("new block: %d %4.1f: ", it->first.first, it->first.second) << endl;
+	  int iblock = it->first.first;
+	  cout << Form("new block: %d (%d) %4.1f: ", it->first.first, iblock, it->first.second) << endl;
+	  hBlock->Reset();
+	  hBlock->SetName(Form("hBlock_%s_%d_chan%d", dsname.c_str(), iblock, ichan));
 	  for (unsigned int i = 0; i < it->second.size(); ++i) {
 	    hname = Form("%s/h_%s_%d_chan%d", fTreeDir.c_str(), trg.c_str(), it->second[i], ichan);
 	    h2 = (TH2D*)(fHistFile->Get(hname.c_str()));
 	    cout << it->second[i] << " (" << hname << ": " << h2 << ") ";
 	    if (0 == h2) continue;
-	    h2->Draw("colz");
-	    c0->Modified();
-	    c0->Update();
+	    cout << "adding " << hname << endl;
+	    hBlock->Add(h2);
 	  }
 	  cout << endl;
+
+	  double result(0.), resultE(0.);
+	  if (string::npos != dsname.find("bupsik") || string::npos != dsname.find("bspsiphi")) {
+	    fitPsYield fpy(hBlock, 0);
+	    if (string::npos != dsname.find("bupsik")) {
+	      fpy.fitBu2JpsiKp(5, fDirectory + "/");
+	    } else if (string::npos != dsname.find("bspsiphi")) {
+	      fpy.fitBs2JpsiPhi(5, fDirectory + "/");
+	    }
+	    result  = fpy.getSignalYield();
+	    resultE = fpy.getSignalError();
+	  } else {
+	    result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
+	    resultE = TMath::Sqrt(result);
+	    c0->Clear();
+	    hBlock->Draw("colz");
+	    savePad(Form("hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
+	  }
+	  cout << "result = " << result << " +/- " << resultE << endl;
+	  vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result);
+	  vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE);
 	}
       }
+
+      gStyle->SetOptStat(0);
+      gStyle->SetOptFit(0);
+      for (unsigned ichan = 0; ichan < nchan; ++ichan) {
+	setTitles(vRunHLT[ichan], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 1.9);
+	vRunHLT[ichan]->Draw();
+	savePad(Form("yieldVsBlock-%s-%s-chan%d.pdf", trg.c_str(), dsname.c_str(), ichan));
+	if (1) {
+	  vRunHLT[ichan]->SetDirectory(gDirectory);
+	  vRunHLT[ichan]->Write();
+	}
+      }
+
     }
   }
 
+  fHistFile->Close();
 
 }
 
@@ -1184,12 +1233,16 @@ void plotStuff::loopFunction1() {
   if (!fb.json) return;
 
   if (fb.flsxy    < fCuts[fChan]->flsxy) return;
-  if (fb.fls3d    < fCuts[fChan]->fls3d) return;
+  //  if (fb.fls3d    < fCuts[fChan]->fls3d) return;
+  if (fb.fls3d    < 10.) return;
 
   if (fb.chi2dof  > fCuts[fChan]->chi2dof) return;
-  if (fb.alpha    > fCuts[fChan]->alpha) return;
-  if (fb.pvip     > fCuts[fChan]->pvip) return;
-  if (fb.pvips    > fCuts[fChan]->pvips) return;
+  //  if (fb.alpha    > fCuts[fChan]->alpha) return;
+  if (fb.alpha    > 0.07) return;
+  //  if (fb.pvip     > fCuts[fChan]->pvip) return;
+  if (fb.pvip     > 0.02) return;
+  //  if (fb.pvips    > fCuts[fChan]->pvips) return;
+  if (fb.pvips    > 4.) return;
 
   if (fb.iso      < fCuts[fChan]->iso) return;
   if (fb.docatrk  < fCuts[fChan]->docatrk) return;
@@ -1226,7 +1279,7 @@ void plotStuff::loopFunction1() {
       if (fb.mkpi > 0.94) return;
     }
 
-    m = fb.cm;
+    //    m = fb.cm;
   }
 
 
@@ -1309,9 +1362,63 @@ void plotStuff::loopFunction2() {
   }
 }
 
+// ----------------------------------------------------------------------
+// -- this is the puStudy on the events tree!!!
+void plotStuff::loopFunction3() {
+
+  int ic = fb.chan;
+  int idx[] = {4, ic};
+  int imax = (ic > -1?2:1);
+  // -- we are only interested in 'real' candidates (else you get strange effects, e.g. back-to-back low-pT muons with large eta-B)
+  if (!fb.hlt1) return;
+
+  if (fb.m1pt < 4.0) return;
+  if (fb.m2pt < 4.0) return;
+
+  // -- fill per-channel and combined histograms
+  for (int i = 0; i < imax; ++i) {
+    if (TMath::Abs(fb.dzmin) > 1.0) fpHmultFar[idx[i]]->Fill(fb.pvntrk);
+    if (TMath::Abs(fb.dzmin) < 0.05) fpHmultClose05[idx[i]]->Fill(fb.pvntrk);
+
+    // -- vs dzmin
+    fpHdzmin[idx[i]]->Fill(TMath::Abs(fb.dzmin));
+    fpP1Mult[idx[i]]->Fill(fb.dzmin, fb.pvntrk);
+    fpP1flsxy[idx[i]]->Fill(fb.dzmin, fb.flsxy);
+    fpP1fls3d[idx[i]]->Fill(fb.dzmin, fb.fls3d);
+    fpP1fl3d[idx[i]]->Fill(fb.dzmin, fb.fl3d);
+    fpP1dfl3d[idx[i]]->Fill(fb.dzmin, fb.fl3d - fb.gfl3d);
+
+    fpP1tau[idx[i]]->Fill(fb.dzmin,  fb.tau);
+    fpP1dtau[idx[i]]->Fill(fb.dzmin, fb.tau - fb.gtau);
+
+    // -- vs lz2
+    if (TMath::Abs(fb.pv2lip) > 1.0) fpHmultFar2[idx[i]]->Fill(fb.pvntrk);
+    if (TMath::Abs(fb.pv2lip) < 0.05) fpHmultClose2[idx[i]]->Fill(fb.pvntrk);
+
+    fpHlz1[idx[i]]->Fill(TMath::Abs(fb.pvlip));
+    if (1) {
+      fpHtmlz1[idx[i]]->Fill(TMath::Abs(fb.pvlip));
+    }
+    fpHlz2[idx[i]]->Fill(TMath::Abs(fb.pv2lip));
+    fpP2Mult[idx[i]]->Fill(fb.pv2lip, fb.pvntrk);
+    fpP2flsxy[idx[i]]->Fill(fb.pv2lip, fb.flsxy);
+    fpP2fls3d[idx[i]]->Fill(fb.pv2lip, fb.fls3d);
+    fpP2fl3d[idx[i]]->Fill(fb.pv2lip, fb.fl3d);
+    fpP2dfl3d[idx[i]]->Fill(fb.pv2lip, fb.fl3d - fb.gfl3d);
+
+    fpP2tau[idx[i]]->Fill(fb.pv2lip,  fb.tau);
+    fpP2dtau[idx[i]]->Fill(fb.pv2lip, fb.tau - fb.gtau);
+
+    // -- cutting on fls3d > 10
+    if (fb.fls3d > 5) {
+      fpP3tau[idx[i]]->Fill(fb.dzmin,  fb.tau);
+      fpP3dtau[idx[i]]->Fill(fb.dzmin,  fb.tau - fb.gtau);
+    }
+  }
+}
 
 
-void plotStuff::loopFunction3() { }
+
 void plotStuff::loopFunction4() { }
 
 // ----------------------------------------------------------------------
