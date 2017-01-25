@@ -13,19 +13,38 @@ sub runCommand() {
 }
 
 
-# -- BMM data jobs
-$dataset = "bmmCharmonium2015B";
+# -- 2011 BMM data jobs
+$dataset = "bmmMuOnia2011A";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015B-16Dec2015-v1 -s $version -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012A-22Jan2013 -s $version -e 30000; ";
 
-$dataset = "bmmCharmonium2015C";
+$dataset = "bmmMuOnia2011B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015C-16Dec2015-v1 -s $version -e 30000; ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012B-22Jan2013 -s $version -e 30000; ";
 
+# -- 2012 BMM data jobs
+$dataset = "bmmMuOnia2012A";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012A-22Jan2013 -s $version -e 30000; ";
+
+$dataset = "bmmMuOnia2012B";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012B-22Jan2013 -s $version -e 30000; ";
+
+$dataset = "bmmMuOnia2012C";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012C-22Jan2013 -s $version -e 30000; ";
+
+$dataset = "bmmMuOnia2012D";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012D-22Jan2013 -s $version -e 30000; ";
+
+# -- 2015 BMM data jobs
 $dataset = "bmmCharmonium2015D";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2015-XXXX.py -f ../../../catalogs/Run2015__Charmonium__16Dec2015/Charmonium__Run2015D-16Dec2015-v1 -s $version -e 30000; ";
 
+# -- 2016  BMM data jobs
 $dataset = "bmmCharmonium2016B";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2016-XXXX.py -f ../../../catalogs/Run2016__Charmonium__moriond17/Charmonium__Run2016B-moriond17 -s $version  -e 40000; ";
