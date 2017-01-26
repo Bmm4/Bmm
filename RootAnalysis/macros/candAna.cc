@@ -1069,10 +1069,12 @@ void candAna::triggerHLT() {
   TString a;
   int ps(0);
   bool result(false), wasRun(false), error(false);
+  int verbose(fVerbose);
+  verbose = 2;
 
   // -- NOTRIGGER, just accept the event
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
-    if (fVerbose>2) cout << "NOTRIGGER requested... " << endl;
+    if (verbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT1 = true;
     fHltPrescale = 1;
     return;
@@ -1087,7 +1089,7 @@ void candAna::triggerHLT() {
     error  = fpEvt->fHLTError[i];
 
     if (wasRun && result) { // passed
-      if (fVerbose>1  || (-32 == fVerbose) ) cout << "passed: " << a << endl;
+      if (verbose>1  || (-32 == verbose) ) cout << "passed: " << a << endl;
 
       bool good = false;
       string spath;
@@ -1102,14 +1104,14 @@ void candAna::triggerHLT() {
 	  //      << " event: " << fEvt << " run: " << fRun
 	  //      << endl;
 	  good = true;
-	  if (fVerbose > 1 || -32 == fVerbose  )
+	  if (verbose > 1 || -32 == verbose  )
 	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << endl;
 	  break;
 	}
 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
 	  good = true;
-	  if (fVerbose > 1 || -32 == fVerbose)
+	  if (verbose > 1 || -32 == verbose)
 	    cout << "close match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << " in run " << fRun << endl;
 	  break;
@@ -4091,8 +4093,13 @@ bool candAna::tos(TAnaCand *pC) {
   bool result(false);
   int verbose(0);
 
+  if (fCandM < 4.0) {
+    verbose = 1;
+    cout << "Something fishy, TOS with m < 4.0???" << endl;
+  }
+
   if (fHLT1Path == "nada" || !fGoodHLT1) {
-    if (verbose) cout << "event not triggered: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path << endl;
+    if (verbose) cout << "event not signal triggered: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path << endl;
     return false;
   }
   // -- get list of indices of tracks making up candidate
@@ -4102,11 +4109,13 @@ bool candAna::tos(TAnaCand *pC) {
   string hltPath(fHLT1Path);
   TTrgObjv2 *pTO(0);
   if (verbose) cout << "==> candAna::tos> trigger objects for this path ->" << hltPath << "<-  for cand type = " << pC->fType << endl;
-  // cout << "cand tracks = ";
-  // for (unsigned int i = 0; i < sigIdx.size(); ++i) {
-  //   cout << sigIdx[i] << " ";
-  // }
-  // cout << endl;
+  if (verbose) {
+    cout << "cand tracks = ";
+    for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+      cout << sigIdx[i] << " ";
+    }
+    cout << endl;
+  }
 
   map<string, set<int> > trgTrkIdx;
   // -- determine trigger objects for this path
@@ -4167,6 +4176,27 @@ bool candAna::tos(TAnaCand *pC) {
     if (verbose) cout << endl;
 
   }
+
+  if (fCandM < 4.0) {
+    cout << "Something fishy above, TOS with m < 4.0???" << endl;
+    TAnaCand *pc(0);
+    vector<int> sigidx;
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      pc = fpEvt->getCand(iC);
+      if (pc->fType == 1313) {
+	pc->dump();
+	getSigTracks(sigidx, pc);
+	cout << "cand tracks = ";
+	for (unsigned int i = 0; i < sigidx.size(); ++i) {
+	  cout << sigidx[i] << " ";
+	}
+	cout << endl;
+
+      }
+    }
+
+  }
+
   return result;
 }
 
