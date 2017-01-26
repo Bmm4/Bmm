@@ -1132,6 +1132,9 @@ void candAna::triggerL1T() {
   fL1SeedString = "";
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
+    if (fVerbose == -32) {
+      cout << "L1 trigger fired: " << fpEvt->fL1TNames[i] << endl;
+    }
     if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1;
       fL1SeedString += fpEvt->fL1TNames[i];
@@ -1799,6 +1802,8 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("g2phi",   &fMu2PhiGen,         "g2phi/D");
   t->Branch("gmass",   &fGenMass,           "gmass/D");
   t->Branch("gtau",    &fGenLifeTime,       "gtau/D");
+  t->Branch("gfl3d",   &fGenFl3d,           "gfl3d/D");
+
   t->Branch("g1id",    &fMu1GenID,          "g1id/I");
   t->Branch("g2id",    &fMu2GenID,          "g2id/I");
 
