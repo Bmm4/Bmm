@@ -884,6 +884,8 @@ void candAna::candAnalysis() {
 
   fillRedTreeData();
 
+  calcBDT();
+
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
@@ -1330,7 +1332,7 @@ void candAna::triggerSelection() {
 	isMuonTrigger = a.Contains("Mu") || a.Contains("mu") || a.Contains("MU");
 	//if (ps!=1) cout<<"prescale not one "<<a.Data()<<" "<<ps<<endl;
 
-	if(!pdTrigger) continue; // skip, so only when pdTrigger is selected 
+	if(!pdTrigger) continue; // skip, so only when pdTrigger is selected
 
 	bool foundHltObject = false;
 	int countModules=0, lastIndex=-1;
@@ -1874,6 +1876,9 @@ void candAna::readCuts(string fileName, int dump) {
     fCuts.push_back(a);
   }
 
+  fReaderEvents0.reserve(fNchan);
+  fReaderEvents1.reserve(fNchan);
+  fReaderEvents2.reserve(fNchan);
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
     // -- read the baseCuts file to get the channel definition and cuts used for (possible) preselection
@@ -1929,6 +1934,11 @@ void candAna::readCuts(string fileName, int dump) {
 	if (cutname == "metaMax") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->metaMax = cutvalue; ok = 1;
+	}
+
+	if (cutname == "muonbdt") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->muonbdt = cutvalue; ok = 1;
 	}
 
 	if (cutname == "m1pt") {
@@ -2068,8 +2078,32 @@ void candAna::readCuts(string fileName, int dump) {
 	  } ok = 1;
 	}
 
-	if (string::npos != cutname.find("bdt")) {
-	  cout << "ignoring selection BDT setup" << endl;
+	if (cutname == "bdtxml") {
+	  fCuts[j-1]->bdtXml = lineItems[j]; ok = 1;
+
+	  string sXmlName = "weights/" + fCuts[j-1]->bdtXml + "-Events0_BDT.weights.xml";
+	  TMVA::Reader *ar = setupReader(sXmlName, frd);
+	  fReaderEvents0[fCuts[j-1]->index] = ar;
+
+	  sXmlName = "weights/" + fCuts[j-1]->bdtXml + "-Events1_BDT.weights.xml";
+	  ar = setupReader(sXmlName, frd);
+	  fReaderEvents1[fCuts[j-1]->index] = ar;
+
+	  sXmlName = "weights/" + fCuts[j-1]->bdtXml + "-Events2_BDT.weights.xml";
+	  ar = setupReader(sXmlName, frd);
+	  fReaderEvents2[fCuts[j-1]->index] = ar;
+	}
+
+	if (cutname == "bdtcut") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->bdtCut = cutvalue; ok = 1;
+	  if (dump) cout << j-1 << " " << "bdtcut:              " << cutvalue << endl;
+	}
+
+	if (cutname == "bdtmupt") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->bdtMuPt = cutvalue; ok = 1;
+	  if (dump) cout << j-1 << " " << "bdtmupt:              " << cutvalue << endl;
 	}
 
 
@@ -3177,6 +3211,47 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 // ----------------------------------------------------------------------
 void candAna::calcBDT() {
   fBDT = -99.;
+
+  if (!preselection(fRTD)) return;
+  frd.pt = fCandPt;
+  frd.eta = fCandEta;
+  frd.m1eta = fMu1Eta;
+  frd.m2eta = fMu2Eta;
+  frd.m1pt = fMu1Pt;
+  frd.m2pt = fMu2Pt;
+  frd.fls3d = fCandFLS3d;
+  frd.alpha = fCandA;
+  frd.maxdoca = fCandDoca;
+  frd.pvip = fCandPvIp;
+  frd.pvips = fCandPvIpS;
+  frd.iso = fCandIso;
+  frd.docatrk = fCandDocaTrk;
+  frd.chi2dof = fCandChi2Dof;
+  frd.closetrk = fCandCloseTrk;
+
+  frd.m1iso = fMu1Iso;
+  frd.m2iso = fMu2Iso;
+
+  frd.closetrks1 = fCandCloseTrkS1;
+  frd.closetrks2 = fCandCloseTrkS2;
+  frd.closetrks3 = fCandCloseTrkS3;
+
+  frd.pv2lip  = fCandPv2Lip;
+  frd.pv2lips = fCandPv2LipS;
+
+  frd.m  = fCandM;
+  int remainder = TMath::Abs(fEvt%3);
+  if (0 == remainder) {
+    fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT");
+  } else if (1 == remainder) {
+    fBDT   = fReaderEvents1[fChan]->EvaluateMVA("BDT");
+  } else if (2 == remainder) {
+    fBDT   = fReaderEvents2[fChan]->EvaluateMVA("BDT");
+  } else {
+    cout << "all hell break loose" << endl;
+  }
+
+  //  cout << "fBDT = " << fBDT << endl;
 }
 
 
@@ -4096,7 +4171,7 @@ bool candAna::tos(TAnaCand *pC) {
 
   if (fCandM < 4.0) {
     verbose = 1;
-    cout << "Something fishy, TOS with m < 4.0???" << endl;
+    cout << "Something fishy, TOS with m < 4.0??? BDT = " << fBDT << endl;
   }
 
   if (fHLT1Path == "nada" || !fGoodHLT1) {
@@ -5690,6 +5765,12 @@ void candAna::printCuts(ostream &OUT) {
     OUT << Form("%10.3f", fCuts[i]->metaMax);
   }
   OUT << endl;
+
+  OUT << "muonBDT    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->muonbdt);
+  }
+  OUT << " (ignored) " << endl;
 
   OUT << "l1seeds     ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
