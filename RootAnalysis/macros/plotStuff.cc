@@ -1418,8 +1418,66 @@ void plotStuff::loopFunction3() {
 }
 
 
+// ----------------------------------------------------------------------
+void plotStuff::loopFunction4() {
+  if (!fb.hlt1) return;
+  if (!fb.tos) return;
+  if (0 != fb.chan) return;
 
-void plotStuff::loopFunction4() { }
+  if (fb.flsxy < 4.) return;
+  if (fb.m < 4.9) return;
+  if (fb.m > 5.9) return;
+
+  string prf("RRA_");
+
+  if (fb.run > fSplitRun) {
+    prf = "RRB_";
+  }
+  fPlots[prf + "run"]->Fill(0.001*fb.run);
+
+  fPlots[prf + "m1pt"]->Fill(fb.m1pt);
+  fPlots[prf + "m1eta"]->Fill(fb.m1eta);
+  fPlots[prf + "m1phi"]->Fill(fb.m1phi);
+  fPlots[prf + "m2pt"]->Fill(fb.m2pt);
+  fPlots[prf + "m2eta"]->Fill(fb.m2eta);
+  fPlots[prf + "m2phi"]->Fill(fb.m2phi);
+  fPlots[prf + "m1pix"]->Fill(fb.m1pix);
+  fPlots[prf + "m1bpix"]->Fill(fb.m1bpix);
+  fPlots[prf + "m1bpixl1"]->Fill(fb.m1bpixl1);
+  fPlots[prf + "m2pix"]->Fill(fb.m2pix);
+  fPlots[prf + "m2bpix"]->Fill(fb.m2bpix);
+  fPlots[prf + "m2bpixl1"]->Fill(fb.m2bpixl1);
+
+  fPlots[prf + "m"]->Fill(fb.m);
+  fPlots[prf + "pt"]->Fill(fb.pt);
+  fPlots[prf + "eta"]->Fill(fb.eta);
+  fPlots[prf + "phi"]->Fill(fb.phi);
+  fPlots[prf + "tau"]->Fill(fb.tau);
+  fPlots[prf + "taue"]->Fill(fb.taue);
+  fPlots[prf + "bdt"]->Fill(fb.bdt);
+
+  fPlots[prf + "lip"]->Fill(fb.lip);
+  fPlots[prf + "lipe"]->Fill(fb.lipE);
+  fPlots[prf + "tip"]->Fill(fb.tip);
+  fPlots[prf + "tipe"]->Fill(fb.tipE);
+
+  fPlots[prf + "closetrk"]->Fill(fb.closetrk);
+  fPlots[prf + "pvlip"]->Fill(fb.pvlip);
+  fPlots[prf + "pvlips"]->Fill(fb.pvlips);
+  fPlots[prf + "maxdoca"]->Fill(fb.maxdoca);
+  fPlots[prf + "pvip"]->Fill(fb.pvip);
+  fPlots[prf + "pvips"]->Fill(fb.pvips);
+  fPlots[prf + "alpha"]->Fill(fb.alpha);
+  fPlots[prf + "fls3d"]->Fill(fb.fls3d);
+  fPlots[prf + "fl3d"]->Fill(fb.fl3d);
+  fPlots[prf + "fl3de"]->Fill(fb.fl3dE);
+  fPlots[prf + "docatrk"]->Fill(fb.docatrk);
+  fPlots[prf + "iso"]->Fill(fb.iso);
+  fPlots[prf + "m1iso"]->Fill(fb.m1iso);
+  fPlots[prf + "m2iso"]->Fill(fb.m2iso);
+  fPlots[prf + "chi2dof"]->Fill(fb.chi2dof);
+
+}
 
 // ----------------------------------------------------------------------
 void plotStuff::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
@@ -1759,4 +1817,115 @@ void plotStuff::setupPvTree(TTree *t) {
   t->SetBranchAddress("a3",  &fpv.a3);
 
 
+}
+
+// ----------------------------------------------------------------------
+void plotStuff::yieldStudy(int run, string ds) {
+  fSplitRun = run;
+
+  TH1::SetDefaultSumw2(kTRUE);
+  vector<string> range;
+  range.push_back("RRA_");
+  range.push_back("RRB_");
+  string var("");
+  for (unsigned int i = 0; i < range.size(); ++i) {
+    var = range[i] + "run"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 13, 271., 284.)));
+    var = range[i] + "m1pt"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 40.)));
+    var = range[i] + "m1eta"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -2.5, 2.5)));
+    var = range[i] + "m1phi"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -3.15, 3.15)));
+    var = range[i] + "m2pt"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 20.)));
+    var = range[i] + "m2eta"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -2.5, 2.5)));
+    var = range[i] + "m2phi"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -3.15, 3.15)));
+    var = range[i] + "m1pix"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+    var = range[i] + "m1bpix"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+    var = range[i] + "m1bpixl1"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+    var = range[i] + "m2pix"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+    var = range[i] + "m2bpix"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+    var = range[i] + "m2bpixl1"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 5, 0., 5)));
+
+
+    var = range[i] + "m"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 4.9, 5.9)));
+    var = range[i] + "pt"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 50.)));
+    var = range[i] + "eta"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -2.5, 2.5)));
+    var = range[i] + "phi"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, -3.15, 3.15)));
+    var = range[i] + "tau"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 100, 0., 1.5e-12)));
+    var = range[i] + "taue"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 100, 0., 0.2e-12)));
+    var = range[i] + "bdt"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, -1., 1.)));
+
+    var = range[i] + "lip"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 0.1)));
+    var = range[i] + "lipe"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 0.01)));
+    var = range[i] + "tip"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 0.04)));
+    var = range[i] + "tipe"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 40, 0., 0.005)));
+
+    var = range[i] + "closetrk"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 20, 0., 20.)));
+    var = range[i] + "pvlip"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.02)));
+    var = range[i] + "pvlips"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 5.)));
+    var = range[i] + "maxdoca"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.05)));
+    var = range[i] + "pvip"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.04)));
+    var = range[i] + "pvips"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 5)));
+
+    var = range[i] + "alpha"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.2)));
+    var = range[i] + "fls3d"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 60, 0., 40.)));
+    var = range[i] + "fl3d"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.8)));
+    var = range[i] + "fl3de"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.04)));
+    var = range[i] + "docatrk"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 0.08)));
+    var = range[i] + "iso"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 1.02)));
+    var = range[i] + "m1iso"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 1.02)));
+    var = range[i] + "m2iso"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 1.02)));
+    var = range[i] + "chi2dof"; fPlots.insert(make_pair(var, new TH1D(Form("%s", var.c_str()), Form("%s", var.c_str()), 50, 0., 5.)));
+
+  }
+
+  fSample = ds;
+  setup(fSample);
+  fCds = fDS[fSample];
+  TTree *t = getTree(fSample, fTreeDir);
+  setupTree(t, fSample);
+  loopOverTree(t, 4);
+
+  c0->Clear();
+  c0->Divide(1,2);
+
+  for (map<string, TH1D*>::iterator it = fPlots.begin(); it != fPlots.end(); ++it) {
+    string A = it->first;
+    if (string::npos != A.find("RRB_")) continue;
+    cout << "A = " << A << endl;
+    string B = A;
+    replaceAll(B, "RRA_", "RRB_");
+    cout << "B = " << B << endl;
+    TH1D *ha = it->second;
+    TH1D *hb = fPlots[B];
+    cout << "ha = " << ha << " hb = " << hb << endl;
+    setFilledHist(hb, kBlue, kBlue, 3354);
+    setFilledHist(ha, kRed, kRed, 3365);
+
+    ha->Scale(1./ha->GetSumOfWeights());
+    hb->Scale(1./hb->GetSumOfWeights());
+    if (hb->GetMaximum() > ha->GetMaximum()) ha->SetMaximum(1.2*hb->GetMaximum());
+
+    c0->cd(1);
+    ha->SetMinimum(0.);
+    ha->Draw("hist");
+    hb->Draw("histsame");
+    tl->DrawLatexNDC(0.24, 0.02, fSample.c_str());
+    tl->DrawLatexNDC(0.60, 0.02, B.c_str());
+
+    newLegend(0.71, 0.7, 0.81, 0.90);
+    legg->SetTextSize(0.05);
+    legg->AddEntry(ha, Form("< %d", fSplitRun), "f");
+    legg->AddEntry(hb, Form("> %d", fSplitRun), "f");
+    legg->Draw();
+
+
+    TH1D *hratio = (TH1D*)ha->Clone("ratio");
+    hratio->Reset();
+    hratio->Divide(hb, ha, 1., 1.);
+    setHist(hratio, kBlack, kBlack);
+    c0->cd(2);
+    hratio->SetMinimum(0.);
+    hratio->SetMaximum(1.5);
+    hratio->Draw("e");
+    replaceAll(B, "RRB_", "");
+    savePad(Form("yieldStudy-%s-%d-%s.pdf", B.c_str(), fSplitRun, fSample.c_str()), c0);
+  }
 }

@@ -32,6 +32,7 @@ public :
   void yieldStability(std::string dsname, std::string trg = "HLT");
   void yieldStabilityOld(std::string dsname, std::string trg = "HLT");
   void yieldStabilityRatios(std::string trg = "HLT");
+  void yieldStudy(int run = 278273, string ds = "bmmData");
 
   // -- code for loops
   void setupPvTree(TTree *t);
@@ -55,7 +56,12 @@ private:
   double fSsigma, fSRMS;
   double fEntries;
 
+  double* fpX;
+  int*    fpI;
+  bool*   fpB;
   std::map<std::string, TH2D*> fYieldRTR, fYieldHLT;
+  std::map<std::string, TH1D*> fPlots;
+  int fSplitRun;
 
   int fRefTrigger;
 
