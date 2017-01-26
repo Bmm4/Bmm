@@ -20,14 +20,16 @@ using namespace std;
 fitPsYield::fitPsYield(string hname, TDirectory *pD, int verbose): fVerbose(verbose), fBaseName(hname), fpIF(new initFunc),
 								   fCombined(0), fCombinedW8(0) {
   fData.clear();
-  TIter next(pD->GetListOfKeys());
+  TDirectory *pDir = pD;
+  if (0 == pDir) pDir = gDirectory;
+  TIter next(pDir->GetListOfKeys());
   TKey *key(0);
-  if (fVerbose > 0) cout << "fitPsYield: looking for histogram ->" << hname << "<- in directory " << pD->GetName() << endl;
+  if (fVerbose > 0) cout << "fitPsYield: looking for histogram ->" << hname << "<- in directory " << pDir->GetName() << endl;
   while ((key = (TKey*)next())) {
     if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
     if (TString(key->GetName()).Contains(hname.c_str())) {
       string hname = key->GetName();
-      TH2D *h2     = (TH2D*)pD->Get(hname.c_str());
+      TH2D *h2     = (TH2D*)pDir->Get(hname.c_str());
       if (h2) {
 	initFromHist(h2);
 	break;
