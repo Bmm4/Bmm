@@ -1131,6 +1131,9 @@ void candAna::triggerL1T() {
   fL1SeedString = "";
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
+    if (fVerbose == -32) {
+      cout << "L1 trigger fired: " << fpEvt->fL1TNames[i] << endl;
+    }
     if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
       fL1Seeds |= 0x1;
       fL1SeedString += fpEvt->fL1TNames[i];
