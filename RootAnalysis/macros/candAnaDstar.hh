@@ -26,7 +26,7 @@ public:
   ~candAnaDstar();
 
   //void        evtAnalysis(TAna01Event *evt);
-  bool        anaMC();
+  bool        anaMC(bool);
   void        candAnalysis();
   void        moreBasicCuts();
 
@@ -75,6 +75,10 @@ private:
   bool fmatchTrigs, fb2, fb3,fb4,fb5,fb6,fb7,fb8,fb9;
   bool ftmp1,ftmp2,ftmp3,ftmp4,ftmp5,ftmp6,ftmp7,ftmp8,ftmp9; 
   int fitmp1, fitmp2, fitmp3, fitmp4, fitmp5;
+
+  // mc
+  float fmcmds, fmcmdz;
+  float fmcpt,fmcptdz,fmcptpis,fmcptpi,fmcptk;
  
   vector<int> hltMatchedMuons;
   vector<int> hltInfo;
