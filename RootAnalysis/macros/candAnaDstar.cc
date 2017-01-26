@@ -6,6 +6,7 @@
 #include "danekUtils.h"
 
 #define DO_TESTS
+//#define MC_HISTOS
 //#define OLD_OBJ_MARK  // old way of marking active hlt modules
 
 using namespace std;
@@ -13,7 +14,7 @@ using namespace std;
 namespace {
   TVector3 DSVertex(0,0,0), DZVertex(0,0,0), PV(0,0,0);
   TVector3 DSMom(0,0,0), DZMom(0,0,0), PiSlowMom(0,0,0), PiMom(0,0,0), KMom(0,0,0);
-  const bool MYDEBUG=false;
+  bool MYDEBUG=false;
 }
 
 // ----------------------------------------------------------------------
@@ -21,6 +22,7 @@ candAnaDstar::candAnaDstar(bmmReader *pReader, std::string name, std::string cut
   cout << "==> candAnaDstar: name = " << name << ", reading cutsfile " << cutsFile << endl;
 
   readCuts(cutsFile, 1);
+  if (fVerbose>10) MYDEBUG=true;
 
 }
 
@@ -36,6 +38,7 @@ candAnaDstar::~candAnaDstar() {
 void candAnaDstar::candAnalysis() {
   static int count0=0, count1=0, count2=0, count3=0, count4=0, count5=0, count6=0;
   //static int tcount1=0, tcount2=0;
+  if(MYDEBUG) cout<<" In candAnaDstar::candAnalysis "<<endl;
 
   fPreselection = false;  //  reset
   fmds=0.; // this is to singal for MC that the event did not pass presselection
@@ -44,7 +47,7 @@ void candAnaDstar::candAnalysis() {
 
   if (0 == fpCand) return; // skip if no cand
 
-  if(MYDEBUG) cout<<" Call canAna::candAnalysis "<<endl;
+  if(MYDEBUG) cout<<" In candAnaDstar::candAnalysis, call candAna::candAnalysis "<<endl;
   candAna::candAnalysis();  // call the main analysis
 
   // now do Dstar specific
@@ -61,7 +64,7 @@ void candAnaDstar::candAnalysis() {
       cout << "DUMP HFDstarCandidate  " <<endl;
       dumpHFDstarCand(fpCand);
       //dumpHFTruthCand(fpCand);
-      doTest(fpCand,0); // testing all collections
+      //doTest(fpCand,0); // testing all collections
     }
   }
 
@@ -87,7 +90,7 @@ void candAnaDstar::candAnalysis() {
 
   if (fVerbose>8 ) {
     cout<<" found D0 "<<pC->fType<<endl;
-    cout<<" found slow pi "<<pPisId<<" "<<pPis->fMCID<<" "
+    cout<<" found slow pi "<<pPis->fMCID<<" "
 	<<pPis->fPlab.Perp()<<" "<<pPis->fPlab.Eta()<<" "<<pPis->fPlab.Phi()<<" "
 	<<piSlowIndex<<endl;
   }
@@ -121,15 +124,28 @@ void candAnaDstar::candAnalysis() {
 
 
   int tm = 0;
-  bool ok = false;
-  // truthMatch return an interger, 0-no match, 1-correct match, -1-pi&K swapped
+  int mcOk = false;
   if(fIsMC) {
-    tm = truthMatch(fpCand,fVerbose); // check truth matching
-    if ( tm == 1 ) { // do only for matched MC
-      ok = anaMC();
-      if (fVerbose>1) cout << " MC matched -> " << fpCand->fType <<endl;
+    mcOk = anaMC(false);  // check if dstar in MC
+
+    if(mcOk==1) {
+      //truthMatch return an interger, 0-no match, 1-correct match, -1-pi&K swapped
+      tm = truthMatch(fpCand,fVerbose); // check truth matching
+      if ( tm == 1 ) { // do only for matched MC
+	if (fVerbose>10) cout << " MC matched -> " << fpCand->fType <<endl;
+      } if (tm==-1) {
+	cout<<" mixed pi-K"<<endl;
+      } else {
+	if (fVerbose>1) cout<<" Dstar cand not matched "<<endl;
+	//anaMC(true); //dumpHFTruthCand(fpCand);
+      }
+            
+    } else { // no clean Dstar in MC
+      if(fVerbose>10) cout<<" Clean Dstar does not exist in MC "<<mcOk<<endl;
+      //anaMC(true); //dumpHFTruthCand(fpCand);
     }
-  } // end if
+    
+  } // end if MC
 
   // Pt, eta
   double pt    = fpCand->fPlab.Perp(); // D* cand pt
@@ -220,19 +236,24 @@ void candAnaDstar::candAnalysis() {
 
   // Cuts always done
   // skip wrong sign decys
-  if( (qpi+qpis)==0 ) {if(fVerbose>3) cout<<" failed qpi+qpis cut "<<qpi<<" "<<qpis<<endl; return;}
+  int fVerbose0 = fVerbose;
+  if( (qpi+qpis)==0 ) {if(fVerbose0>3) cout<<" failed qpi+qpis cut "<<qpi<<" "<<qpis<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(11.);  //11
   // check sign
-  if( (qk+qpi)!=0 ) {if(fVerbose>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;}
+  if( (qk+qpi)!=0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // normal cuts 
+  //if( (qk+qpi)==0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // reversed cuts 
   ((TH1D*)fHistDir->Get("Status"))->Fill(12.);
   // limit dm to +-160MeV
-  if( dm<0.130 || dm>0.160 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;}
+  if( dm<0.130 || dm>0.160 ) {if(fVerbose0>3) cout<<" failed dm cut "<<dm<<endl; return;}
+  //if(fVerbose0>3 ) cout<<"Passed qcut "<<endl;
   ((TH1D*)fHistDir->Get("Status"))->Fill(13.);
   // Restablish mass cuts from MSSW
-  if( mdz<1.76 || mdz>1.96 ) {if(fVerbose>3) cout<<" failed mdz cut "<<mdz<<endl; return;}
+  if( mdz<1.76 || mdz>1.96 ) {if(fVerbose0>3) cout<<" failed mdz cut "<<mdz<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(14.);
-  if( mdstar<1.91 || mdstar>2.11 ) {if(fVerbose>3) cout<<" failed mdstar cut "<<mdstar<<endl; return;}
+  if( mdstar<1.91 || mdstar>2.11 ) {if(fVerbose0>3) cout<<" failed mdstar cut "<<mdstar<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(15.);
+
+  if(fVerbose0>3 ) cout<<"Passed init-cuts "<<endl;
 
   // Now histogram
   if(doHisto) {  //
@@ -265,7 +286,7 @@ void candAnaDstar::candAnalysis() {
     ((TH1D*)fHistDir->Get("ptK"))->Fill(ptK);
 
     if(tm==1) ((TH1D*)fHistDir->Get("dm1"))->Fill(dm);
-    if(ok) ((TH1D*)fHistDir->Get("dm2"))->Fill(dm);
+    if(mcOk) ((TH1D*)fHistDir->Get("dm2"))->Fill(dm);
 
     //if(tm==1) tcount1++;
   }  // if
@@ -276,31 +297,31 @@ void candAnaDstar::candAnalysis() {
     //if (prob < 0.05) {if(fVerbose>3) cout<<" failed prob "<<prob<endl; return;}
     //((TH1D*)fHistDir->Get("Status"))->Fill(14.);
 
-    if(ptPi<3.5 || ptK<3.5) {if(fVerbose>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}
+    if(ptPi<3.5 || ptK<3.5) {if(fVerbose0>3) cout<<" failed pi/k pt cut "<<ptPi<<" "<<ptK<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(16.);
 
-    if (ptPis < 0.4) {if(fVerbose>3) cout<<" failed pt slow pt cut "<<ptPis<<endl; return;}
+    if (ptPis < 0.4) {if(fVerbose0>3) cout<<" failed pt slow pt cut "<<ptPis<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(17.);
 
-    if (dr > 0.15) {if(fVerbose>3) cout<<" failed dr cut "<<dr<<endl; return;}
+    if (dr > 0.15) {if(fVerbose0>3) cout<<" failed dr cut "<<dr<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(18.);
 
-    if (chi2 > 2.0) {if(fVerbose>3) cout<<" failed chis2 cut "<<chi2<<endl; return;}
+    if (chi2 > 2.0) {if(fVerbose0>3) cout<<" failed chis2 cut "<<chi2<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(19.);
 
-    if (pt < 5) {if(fVerbose>3) cout<<" failed pt cut "<<pt<<endl; return;}
+    if (pt < 5) {if(fVerbose0>3) cout<<" failed pt cut "<<pt<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(20.);
 
-    if (alpha > 0.3) {if(fVerbose>3) cout<<" failed alpha cut "<<alpha<<endl; return;}
+    if (alpha > 0.3) {if(fVerbose0>3) cout<<" failed alpha cut "<<alpha<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(21.);
 
-    if (fls3d < 2) {if(fVerbose>3) cout<<" failed fls3d cut "<<fls3d<<endl; return;}
+    if (fls3d < 2) {if(fVerbose0>3) cout<<" failed fls3d cut "<<fls3d<<endl; return;}
     ((TH1D*)fHistDir->Get("Status"))->Fill(22.);
 
   } // skip for testing
   // no cuts after this step
 
-  if(fVerbose>8 ) cout<<"Passed pre-cuts "<<endl;
+  if(fVerbose0>3 ) cout<<"Passed pre-cuts "<<endl;
   count2++;
 
   // do some printing
@@ -738,7 +759,8 @@ void candAnaDstar::candAnalysis() {
   if(MYDEBUG) cout<<" preselection "<<fPreselection<<" "<<fGoodHLT<<endl;
 
   //
-  ftm= tm;
+  fCandTM = tm; // candidate matched to MC
+  ftm= int(mcOk); // candidate exist in MC
   fmds=mdstar;
   fmdz=mdz;
   fchi2=chi2;
@@ -920,75 +942,106 @@ int candAnaDstar::getJpsi(int &idx1, int &idx2) {
 }
 //---------------------------------------------------
 // To analyze the MC event
-bool candAnaDstar::anaMC() {
-  const bool print = false;
+// Looks for a clean Dstar->pi + D0->pi+K (clean means not other particles, e.g. gammas)
+// Exits with True whenever at least one clean Dstar is found.
+bool candAnaDstar::anaMC(bool print) {
+  if(MYDEBUG) print = true;
+  
+#ifdef MC_HISTOS
+  fmcmds=-1;
+  fmcmdz=-1;
+  fmcpt=-1;
+  fmcptdz=-1;
+  fmcptpis=-1;
+  fmcptpi=-1;
+  fmcptk=-1;
+#endif
 
-  int numGenCands = fpEvt->nGenT();
+  //int numGenCands = fpEvt->nGenT();
+  int numGenCands = fpEvt->nGenCands();
+  if(print) cout<<" candAnaDstar::anaMC found gen cands "<<numGenCands<<endl;
+  if(numGenCands<=0) return (false);
 
-  if(print) cout<<" found gen cands "<<numGenCands<<endl;
-
-  //TGenCand *pC(0), *pM1(0), *pM2(0), *pB(0);
   TGenCand *pCand=0;
   bool foundDs = false, foundDz = false, foundPiSlow = false, foundPi=false, foundK=false, foundPV=false;
-  //TVector3 DSVertex(0,0,0), DSMom(0,0,0), DZVertex(0,0,0), DZMom(0,0,0), PV(0,0,0);
+  int indexDs=-1, indexDz=-1, indexSlowPi=-1, indexPi=-1, indexK=-1;
   int qds =0, qk=0, qpi=0, qpis=0;
   int pC0 = 0;
 
   for (int it = 0; it < numGenCands; ++it) {
-    pCand = fpEvt->getGenT(it);
-    if(print) pCand->dump();
+    //pCand = fpEvt->getGenT(it);
+    pCand = fpEvt->getGenCand(it);
+    //if(print) pCand->dump();   
+    //if(print) cout <<it<< " "<<pCand->fID<<endl;
+
+    //<<pCand->fQ<<" "<<pCand->fStatus<<" "
+    //		   <<pCand->fMom1<<" "<<pCand->fMom2<<" "<<pCand->fDau1<<" "<<pCand->fDau2<<" "
 
     //if (TRUTHCAND == TMath::Abs(pC->fID)) {
     //for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
     //pC = fpEvt->getGenTWithIndex(id);
-
+    
     foundDs = false, foundDz = false, foundPiSlow = false, foundPi=false, foundK=false;
 
     if( !foundPV && ( abs(pCand->fID) == 5 || abs(pCand->fID) == 4  ) )
       {foundPV=true; PV=pCand->fV; if(print) cout<<" PV "<<PV.Z()<<endl;}   // get PV
 
-    if( ( abs(pCand->fID) != 413) ) continue;        // skip others
+    if( ( abs(pCand->fID) != 413) ) continue;        // look for Dstar,  skip others
 
-    if(print) cout <<" DS "<<it<< " " << pCand->fNumber << " "<<pCand->fID<<" "<<pCand->fQ<<" "<<pCand->fStatus<<" "
+    //if(print) cout <<it<< " "<<pCand->fID<<endl;
+    if(print) cout <<" DS "<<it<< " " 
+		   << pCand->fNumber << " "<<pCand->fID<<" "<<pCand->fQ<<" "<<pCand->fStatus<<" "
 		   <<pCand->fMom1<<" "<<pCand->fMom2<<" "<<pCand->fDau1<<" "
-		   <<pCand->fDau2<<" "<<pCand->fP.Perp()<<" "<<pCand->fV.Z()<<endl;
-
-
+		   <<pCand->fDau2<<" "<<pCand->fP.Perp()<<" "<<pCand->fV.Z()<<" "
+		   <<pCand->fTag<<" "<<pCand->fMass<<" "<<pCand->fTime<<" "<<endl;
 
     qds = pCand->fQ;
     DSVertex = (pCand->fV);
     DSMom = (pCand->fP.Vect());
     foundDs = true;
+    indexDs=it;
     pC0 = it;
 
-    int i1 = (pCand->fDau2)-(pCand->fDau1)+1;
-    if(i1!=2) {continue;} // fpEvt->dumpGenBlock();}
-    //if(i1!=2) {cout<<" number of daughters1 "<<i1<<endl;continue;} // fpEvt->dumpGenBlock();}
+    //int i1 = (pCand->fDau2)-(pCand->fDau1)+1;
+    //if(i1!=2) {cout<<" number of daughters1 "<<i1<<endl;}
+    //if(i1!=2) {continue;} // fpEvt->dumpGenBlock();}
 
     for(int id=(pCand->fDau1);id<=(pCand->fDau2);++id) { // check daughters
       //TGenCand *dau = fpEvt->getGenT(id);
-      TGenCand *dau = fpEvt->getGenTWithIndex(id);
+      //TGenCand *dau = fpEvt->getGenTWithIndex(id);
+      TGenCand *dau = fpEvt->getGenCand(id);
+      if(print) cout<<" index "<<id<<endl;
 
       if( abs(dau->fID) == 421 ) { //  D0
 
 	foundDz=true;
+	indexDz=id;
 	if(print) cout <<" D0 "<<dau->fNumber << " "<<dau->fID<<" "<<dau->fQ<<" "
 		       <<dau->fMom1<<" "<<dau->fMom2<<" "<<dau->fDau1<<" "
 		       <<dau->fDau2<<" "<<dau->fP.Perp()<<" "<<dau->fV.Z()<<endl;
 	//TVector3 v1 = dau->fP.Vect();
 	DZMom = (dau->fP.Vect());
 
-
+	// D0 should have 2 daughters pi&K
+	// Sometimes there is also a gamma in addition, reject it
 	int i2 = (dau->fDau2)-(dau->fDau1)+1;
-	if(i2!=2) {continue;} // fpEvt->dumpGenBlock();}
-	//if(i2!=2) {cout<<" number of daughters2 "<<i2<<endl;continue;} // fpEvt->dumpGenBlock();}
-	for(int igd=(dau->fDau1);igd<=(dau->fDau2);++igd) { // check grand-daughters
-	  TGenCand *gdau = fpEvt->getGenTWithIndex(igd);
-	  //TGenCand * gdau = fpEvt->getGenT(igd);
-	  //TVector3 v2 = gdau->fP.Vect();
+	if(i2!=2) 
+	  {if(print)cout<<" number of D0 daughters not 2: "<<i2<<" skip"<<endl;continue;}
 
+	for(int igd=(dau->fDau1);igd<=(dau->fDau2);++igd) { // check grand-daughters
+	  //TGenCand *gdau = fpEvt->getGenTWithIndex(igd);
+	  //TGenCand * gdau = fpEvt->getGenT(igd);
+	  TGenCand *gdau = fpEvt->getGenCand(igd);
+	  
+	  if(print) cout<<" index "<<igd<<" "<<id<<endl;
+
+	  //TVector3 v2 = gdau->fP.Vect();
 	  if( abs(gdau->fID) == 321) {  // kaon
 	    foundK = true;
+	    indexK=igd;
+	    id++;
+	    if(print) cout<<" index "<<igd<<" "<<id<<endl;
+
 	    KMom = (gdau->fP.Vect());
 	    //float pt = v2.Perp();
 	    //float eta = v2.Eta();
@@ -1001,7 +1054,10 @@ bool candAnaDstar::anaMC() {
 	    qk = gdau->fQ;
 
 	  } else if( abs(gdau->fID) == 211) {  // pion
+	    if(print) cout<<" index "<<igd<<" "<<id<<endl;
 	    foundPi = true;
+	    indexPi=igd;
+	    id++;
 	    PiMom = (gdau->fP.Vect());
 	    qpi = gdau->fQ;
 	    //float pt = v2.Perp();
@@ -1014,12 +1070,13 @@ bool candAnaDstar::anaMC() {
 	  } //
 
 	  if( foundPi && foundK) break;
-
 	} // end granddaughter loop
 
       } else if( (abs(dau->fID)) == 211) { // slow pion
 
+	if(print) cout<<" index "<<id<<endl;
 	foundPiSlow = true;
+	indexSlowPi=id;
 	if(print) cout <<" Slow pi "<<dau->fNumber << " "<<dau->fID<<" "<<dau->fQ<<" "
 		       <<dau->fMom1<<" "<<dau->fMom2<<" "<<dau->fDau1<<" "
 		       <<dau->fDau2<<" "<<dau->fP.Perp()<<" "<<dau->fV.Z()<<endl;
@@ -1038,26 +1095,29 @@ bool candAnaDstar::anaMC() {
 
   } // gen part loop
 
-
   bool ok = foundPV && foundDs && foundDz && foundPiSlow && foundPi && foundK;
 
-  if(!ok) cout<<" not ok "<<foundPV<<" "<<foundDs<<" "<<foundDz<<" "<<foundPiSlow<<" "<<foundPi<<" "<<foundK<<" "<<fEvt<<endl;
+  if(!ok) { 
+    if(print) cout<<" not ok "<<foundPV<<" "<<foundDs<<" "<<foundDz<<" "<<foundPiSlow<<" "<<foundPi<<" "<<foundK<<endl;
 
-  if(ok) {
+  } else {
+
+    if(print) cout<<" found Dstar "<<indexDs<<" "<<indexDz<<" "<<indexK<<" "<<indexPi<<" "<<indexSlowPi<<endl;
 
     if( (qds != qpis) || (qds != -qk) || ( qpis != -qk) || (qpis != qpi) ) {
-      cout<<pC0<<" wrong charge Ds,K,pi,pi_slow ";
+      cout<<pC0<<" wrong charge in MC Ds,K,pi,pi_slow ";
       cout<<qds<<" "<<qk<<" "<<qpi<<" "<<qpis<<endl;
     }
+
+#ifdef MC_HISTOS
     int tmp = qpi + qpis;
     ((TH1D*)fHistDir->Get("h300"))->Fill(float(tmp));
 
-    TVector3 t1(DSVertex-PV), t2(DZVertex-PV), t3(DZVertex-DSVertex);
+    //TVector3 t1(DSVertex-PV), t2(DZVertex-PV), t3(DZVertex-DSVertex);
     //double a1 = t1.Angle(DSMom);  // D* pointing angle
     //double a2 = t2.Angle(DZMom);  // D0 pointing angle
     //double a3 = t3.Angle(DZMom);  // D0 pointing angle with respect PV
     //double a4 = t1.Angle(t3);     // SV1 versus SV2
-
 //     ((TH1D*)fHistDir->Get("h311"))->Fill(t1.Mag());
 //     ((TH1D*)fHistDir->Get("h312"))->Fill(t2.Mag());
 //     ((TH1D*)fHistDir->Get("h313"))->Fill(t3.Mag());
@@ -1065,32 +1125,31 @@ bool candAnaDstar::anaMC() {
 //     ((TH1D*)fHistDir->Get("h317"))->Fill(a2);
 //     ((TH1D*)fHistDir->Get("h318"))->Fill(a3);
 //     ((TH1D*)fHistDir->Get("h319"))->Fill(a4);
-
 //     ((TH1D*)fHistDir->Get("h314"))->Fill(PiSlowMom.Perp());
 //     ((TH1D*)fHistDir->Get("h315"))->Fill(PiSlowMom.Angle(DZMom));
 //     ((TH1D*)fHistDir->Get("h316"))->Fill(PiSlowMom.Angle(DSMom));
-
 //     ((TH1D*)fHistDir->Get("h321"))->Fill(DZMom.Angle(DSMom));
 //     //((TH1D*)fHistDir->Get("h323"))->Fill(t3.Angle(DSMom));
 //     ((TH1D*)fHistDir->Get("h325"))->Fill(t2.Angle(DSMom));
-
 //     ((TH1D*)fHistDir->Get("h328"))->Fill(DSMom.Perp());
 //     ((TH1D*)fHistDir->Get("h329"))->Fill(DZMom.Perp());
 //     ((TH1D*)fHistDir->Get("h330"))->Fill(KMom.Perp());
 //     ((TH1D*)fHistDir->Get("h330"))->Fill(PiMom.Perp());
-
+    fmcpt=DSMom.Perp();
+    fmcptdz=DZMom.Perp();
+    fmcptpis=PiSlowMom.Perp();
+    fmcptpi=PiMom.Perp();
+    fmcptk=KMom.Perp();
     //double angle = danekUtils::twoBodyDecayAngle(KMom, PiMom);
     //double pt    = danekUtils::twoBodyDecayMomPerp(KMom, PiMom);
-    //double m1    = danekUtils::twoBodyDecayMass(KMom, PiMom, MKAON, MPION);
-    //double m2    = danekUtils::twoBodyDecayMass(KMom, PiMom, MPION, MKAON);
+    double m1    = danekUtils::twoBodyDecayMass(KMom, PiMom, MKAON, MPION);
+    double m2    = danekUtils::twoBodyDecayMass(KMom, PiMom, MPION, MKAON);
+    fmcmdz=m1;
     //TVector3 t4(KMom+PiMom);
-
 //     ((TH1D*)fHistDir->Get("h341"))->Fill(pt);
 //     ((TH1D*)fHistDir->Get("h343"))->Fill(t4.Perp());
-
-//     ((TH1D*)fHistDir->Get("h342"))->Fill(m2);
-//     ((TH1D*)fHistDir->Get("h344"))->Fill(m1);
-
+    ((TH1D*)fHistDir->Get("h342"))->Fill(m2); //broad
+    ((TH1D*)fHistDir->Get("h344"))->Fill(m1); // narrow
 //     tmp = DSMom.Perp();
 //     ((TH2D*)fHistDir->Get("h351"))->Fill(tmp,m2);
 //     ((TH2D*)fHistDir->Get("h352"))->Fill(angle,m2);
@@ -1103,21 +1162,18 @@ bool candAnaDstar::anaMC() {
 //     ((TH2D*)fHistDir->Get("h356"))->Fill(tmp,m2);
 //     tmp = PiSlowMom.Angle(DZMom);
 //     ((TH2D*)fHistDir->Get("h357"))->Fill(tmp,m2);
-
-
-//     double m21    = danekUtils::twoBodyDecayMass(PiSlowMom, DZMom, MPION, m1);
-//     double m22    = danekUtils::twoBodyDecayMass(PiSlowMom, DZMom, MPION, m2);
+     double m21    = danekUtils::twoBodyDecayMass(PiSlowMom, DZMom, MPION, m1);
+     double m22    = danekUtils::twoBodyDecayMass(PiSlowMom, DZMom, MPION, m2);
+     fmcmds=m21;
 //     double angle2 = danekUtils::twoBodyDecayAngle(DZMom, PiSlowMom);
 //     double pt2    = danekUtils::twoBodyDecayMomPerp(DZMom, PiSlowMom);
-
-//     ((TH1D*)fHistDir->Get("h345"))->Fill(m21);
-//     ((TH1D*)fHistDir->Get("h346"))->Fill(m22);
+     ((TH1D*)fHistDir->Get("h345"))->Fill(m21); // narrrow
+     ((TH1D*)fHistDir->Get("h346"))->Fill(m22); // wide 
 //     ((TH1D*)fHistDir->Get("h347"))->Fill(angle2);
 //     ((TH1D*)fHistDir->Get("h348"))->Fill(pt2);
 //     ((TH1D*)fHistDir->Get("h349"))->Fill(m21-m1);
 //     ((TH1D*)fHistDir->Get("h350"))->Fill(m22-m2);
-
-
+#endif // MC_HISTOS
   }
   return ok;
 }
@@ -1126,7 +1182,9 @@ bool candAnaDstar::anaMC() {
 // ----------------------------------------------------------------------
 // Missused for various testing and debugging
 void candAnaDstar::dumpHFTruthCand(TAnaCand *pC) {
-  //const bool PRINT = false;
+  // misused 
+  fpEvt->dumpGenBlock();
+
 }
 
 //----------------------------------------------------------------------
@@ -1535,37 +1593,45 @@ int candAnaDstar::doTest(TAnaCand *pC, int mode) {
     else if(mode==54) status = hltObjL3NoMuMap.size();
     else              status = count_final;
 
-
-
-
-
-
   } // end printHLTMuObj
 
   // Print old HLT object
-  if(printHLTMuObj) {  // mode 60-69
-    int countl1=0, countl2=0, countl3=0;
+  // if(printHLTMuObj) {  // mode 60-69
+  //   int countl1=0, countl2=0, countl3=0;
+  //   TTrgObj *p;
+  //   if(PRINT) cout<<" Dump TTrgObj "<<fpEvt->nTrgObj()<<endl;
+  //   for (int i = 0; i < fpEvt->nTrgObj(); ++i) {
+  //     p = fpEvt->getTrgObj(i);
+  //     if(PRINT) p->dump();
+  //     //cout<<i<<"  "<< p->fLabel << " number " << p->fNumber <<" ID = "
+  //     //    << p->fID << " pT = " << p->fP.Perp()
+  //     //    << " eta = " << p->fP.Eta()<< " phi = " << p->fP.Phi() << " "
+  //     //    <<p->fID << endl;
 
-    if(mode==61) status=countl1;
-    else if(mode==62) status=countl2;
-    else  status=countl3;
+  //     if( (p->fLabel).Contains("L3") )      {countl3++;}
+  //     else if( (p->fLabel).Contains("L2") ) {countl2++;}
+  //     else if( (p->fLabel).Contains("L1") ) {countl1++;}
+  //   } // end for
 
-    // Check L1, not really used
-    if(0) {
-      cout << "--------------------  L1" << endl;
-      for (int i = 0; i < NL1T; ++i) {
-	//result = wasRun = error = false;
-	auto a = fpEvt->fL1TNames[i];
-	auto ps = fpEvt->fL1TPrescale[i];
-	auto result = fpEvt->fL1TResult[i];
-	auto mask  = fpEvt->fL1TMask[i];
-	//if (a.Contains("Mu"))
-	if (result) {
-	  cout << a <<  " mask: " << mask << " result: " << result << " ps: " << ps << endl;
-	}
-      }
-    }
-  } // printHLTMuObj
+  //   if(mode==61) status=countl1;
+  //   else if(mode==62) status=countl2;
+  //   else  status=countl3;
+  //   // Check L1, not really used
+  //   if(0) {
+  //     cout << "--------------------  L1" << endl;
+  //     for (int i = 0; i < NL1T; ++i) {
+  // 	//result = wasRun = error = false;
+  // 	auto a = fpEvt->fL1TNames[i];
+  // 	auto ps = fpEvt->fL1TPrescale[i];
+  // 	auto result = fpEvt->fL1TResult[i];
+  // 	auto mask  = fpEvt->fL1TMask[i];
+  // 	//if (a.Contains("Mu"))
+  // 	if (result) {
+  // 	  cout << a <<  " mask: " << mask << " result: " << result << " ps: " << ps << endl;
+  // 	}
+  //     }
+  //   }
+  // } // printHLTMuObj
 
   // print the hlt-info vector 70-79
   if(printHLTInfo) {
@@ -1698,193 +1764,166 @@ void candAnaDstar::dumpHFDstarCand(TAnaCand *pC) {
 // ----------------------------------------------------------------------
 // -- works ONLY for this dedicated decay mode with the seq vtx fitter!
 int candAnaDstar::truthMatch(TAnaCand *pCand, int verbose) {
-
-  if(verbose>1) cout<<" truthMatch "<<verbose<<endl;
-
-  // -- check slow pion
+  const int verboseOffset=9;
+  if(verbose>(1+verboseOffset)) cout<<" truthMatch "<<verbose<<endl;
+  
+  // -- check slow pion, the signal track for Dstar should be the slow pion 
   int index = pCand->fSig1;
   TAnaTrack *pT = fpEvt->getSigTrack(index);
   //pT->dump();
   int genIndex = pT->fGenIndex;
+  
+  // if not gen index exit
+  if (genIndex < 0) {if(verbose > verboseOffset) cout << "pT->fGenIndex < 0" << endl;return 0;}
+  
+  if(verbose>(1+verboseOffset)) cout<<" pi slow "<<index<<" "<<genIndex<<endl;
+  
+  // Pi slow gen info
+  //TGenCand *candGenSlowPi = fpEvt->getGenTWithIndex(genIndex); // gen cand slow
+  TGenCand *candGenSlowPi = fpEvt->getGenCand(genIndex); // gen cand 
+  
+  // exit if empty 
+  if (0 == candGenSlowPi) 
+    {if(verbose > verboseOffset)cout << "0 == candGenSlowPi" << endl;return 0;}
+  // check PID, that it is a pion in MC
+  if(211 != TMath::Abs(candGenSlowPi->fID)) 
+    {if(verbose>verboseOffset) cout << "211 != TMath::Abs(pG->fID)" << endl;return 0;}
 
-  if (genIndex < 0) {
-    if (verbose > 0) cout << "pT->fGenIndex < 0" << endl;
-    return 0;
-  }
-
-  if(verbose>1) {
-    cout<<" pi slow "<<index<<" "<<genIndex<<endl;
-  }
-
-  // Pi slow
-  TGenCand *candGenSlowPi = fpEvt->getGenTWithIndex(genIndex); // gen cand slow
-
-  if (0 == candGenSlowPi) { // exit if empty
-    if (verbose > 0) cout << "0 == pG" << endl;
-    return 0;
-  }
-  int moSlowPion = candGenSlowPi->fMom1; // save index of mother
-
-  if (211 != TMath::Abs(candGenSlowPi->fID)) { // check PID
-    if (verbose > 0) cout << "211 != TMath::Abs(pG->fID)" << endl;
-    return 0;
-  }
-
-  if(verbose > 1) cout << "slow pion " << pT->fIndex << " OK, fGenIndex = " << pT->fGenIndex << " "
-			<<moSlowPion<<" "<<candGenSlowPi->fID<<" "<<endl;
-
-
+  int moSlowPion = candGenSlowPi->fMom1; // save index of the mother of slow
+  if(verbose > 1+verboseOffset) 
+    cout << "slow pion " << pT->fIndex << " OK, fGenIndex = " << pT->fGenIndex << " "
+	 <<moSlowPion<<" "<<candGenSlowPi->fID<<" "<<endl;
+  
   // Look for mother (Dstar)
-  TGenCand *pDS = fpEvt->getGenTWithIndex(moSlowPion);  // Dstar
-  if ((0 == pDS) || 413 != TMath::Abs(pDS->fID)) { // selecte Dstar
-    if (verbose > 0) cout << "(0 == pG) || 413 != pG->fID, pG->fID = " << " moSlowPion = " << moSlowPion << endl;
+  //TGenCand *pDS = fpEvt->getGenTWithIndex(moSlowPion);  // Dstar
+  TGenCand *pDS = fpEvt->getGenCand(moSlowPion);  // Dstar 
+  if ((0 == pDS) || 413 != TMath::Abs(pDS->fID)) { // not a Dstar
+    if (verbose > verboseOffset) 
+      cout << "(0 == pDS) || 413 != pG->fID, pG->fID"<<" moSlowPion = " << moSlowPion << endl;
     return 0;
   }
-  if (pDS->fDau2 - pDS->fDau1 > 1) { // Dstar has more daughters
-    if (verbose > 0) cout << "pG->fDau2 - pG->fDau1 > 1" << endl;
-    return 0;
-  }
-
-
-
+  
   // -- Now look at the data Dstar candidate, it should have a daughter D0
-  if (pCand->fDau1 < 0) {
-    if (verbose > 0) cout << "no pCand->fDau1" << endl;
-    return 0;
-  }
-
+  if (pCand->fDau1 < 0) 
+    {if (verbose >verboseOffset) cout << "no pCand->fDau1" << endl;return 0;}
+  
   // Look at DATA D0 tracks
   TAnaCand *pC = fpEvt->getCand(pCand->fDau1); // D0
   // Check D0 tracks
-  if(verbose>1) cout<<" loop over D0 tracks "<<endl;
+  if(verbose>1+verboseOffset) cout<<" loop over D0 tracks "<<endl;
   // -- check D0 daughters
-  int type(0), moIdx(-1);
+  int moIdx(-1);
   int count=0, countPi=0, countK=0, missK=0, missPi=0;
 
-  for (int id = pC->fSig1; id <= pC->fSig2; ++id) {
-
+  // Loop over the 2 signal tracks from D0
+  for (int id = pC->fSig1; id <= pC->fSig2; ++id) { // should be pi+K
+    
     pT = fpEvt->getSigTrack(id); // this gives TAnaTrack
     //pT->dump(); // so all normal TAnaTracks work
     //cout <<id<<" "<<pT->fIndex <<" "<<pT->fMCID<<" "<<pT->fGenIndex<<" "<<pT->fPlab.Perp()<<" "<<pT->fQ<<" "
     // <<pT->fChi2 <<" "<<pT->fDof<<" "<<pT->fTrackQuality<<" "<<pT->fAlgorithm<<" "<<pT->fMuID<<" "
     // <<pT->fMuIndex << " "<<pT->fPvIdx<<endl;
-
+    
     int index = pT->fIndex; // index of the SimpleTrack
     int genidx = pT->fGenIndex;
-    type = pT->fMCID;
-
-
-    if (genidx < 0) {
-      if (verbose > 0) cout << "no pT->fGenIndex" << endl;
-      return 0;
-    }
-
-    TGenCand *pG = fpEvt->getGenTWithIndex(genidx);  // get GenCand of pi, K
-
-    if(pG<=0) {if (verbose > 0) cout<<" pG invalid "<<endl;  continue;} //
-
+    int type = pT->fMCID;
+    if (genidx < 0) 
+      {if(verbose>verboseOffset) cout << "no pT->fGenIndex" << endl;return 0;}
+    
+    //TGenCand *pG = fpEvt->getGenTWithIndex(genidx);  // get GenCand of pi, K
+    TGenCand *pG = fpEvt->getGenCand(genidx);  // get GenCand of pi, K
+    if(pG<=0) {if (verbose > verboseOffset) cout<<" pG invalid "<<endl;  continue;} //
+    
     if (moIdx < 0) { // find mother
       moIdx = pG->fMom1;
-
     } else { // should be the same
-      if (moIdx != pG->fMom1) {
-	if (verbose > 0) cout << "moIdx != pG->fMom1" << endl;
-	return 0;
-      }
+      if (moIdx != pG->fMom1) 
+	{if(verbose > verboseOffset)
+	    cout<<"pi & K mothers not the same: moIdx != pG->fMom1"<<endl;return 0;}
     }
 
-    if (verbose > 1)
+    if (verbose > 1+verboseOffset)
       cout << "dau cand sigtrack " << id
  	   << " with type = " << type
  	   << " and gen ID = " << pG->fID
  	   << " at gen idx = " << genidx
  	   << endl;
-
-
-    if (TMath::Abs(type) !=  TMath::Abs(pG->fID)) cout<<" should be the same "<<endl;  // this might happen
-    //if (verbose > 0) cout << "TMath::Abs(type) != TMath::Abs(pG->fID), type = " << type << " pG->fID = " << pG->fID
-    //			    << " track " << pT->fIndex << endl;
-    //  return 0;
-    // }
-
+    
+    // the MC ID and the assigned ID from reco do not agree
+    if((verbose>(1+verboseOffset)) && (TMath::Abs(type)!=TMath::Abs(pG->fID)) )
+      cout<<"should be the same:TMath::Abs(type) != TMath::Abs(pG->fID), type=" 
+	  << type << " pG->fID = " << pG->fID<< " track " << pT->fIndex << endl;
+    
     count++;
-
-
     // Look at the GEN PID
     if( TMath::Abs(pG->fID) == 321 ) { // Kaon
       countK++;
-      if(verbose > 1) cout<<" kaon index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()<<" gen " << genidx<<endl;
-      //cout <<count<<" "<<countK;
-      if( TMath::Abs(type) != 321 ) {
-	//cout << " Kaon identified as pion, type = " << type << " pG->fID = " << pG->fID
-	//   << " track " << pT->fIndex;
+      if(verbose > 1+verboseOffset) 
+	{cout<<" kaon index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()<<" gen " << genidx<<endl;}
+      if( TMath::Abs(type) != 321 ) {  // no a kaon
 	missK++;
-	//return 0;
+	if(verbose>verboseOffset) 
+	  {cout << " Kaon identified as pion, type = " << type << " pG->fID = " 
+		<< pG->fID<< " track " << pT->fIndex<<endl;}
       }
-      //cout<<endl;
-
+      
     } else if( TMath::Abs(pG->fID) == 211 ) { // Pion
       countPi++;
-      if(verbose > 1) cout<<" pion index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()<<" gen " << genidx<<endl;
-      //cout <<count<<" "<<countPi;
+      if(verbose > 1+verboseOffset) 
+	{cout<<" pion index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()
+	     <<" gen " << genidx<<endl;}
       if( TMath::Abs(type) != 211 ) {
-	//cout << " Pion identified as kaon, type = " << type << " pG->fID = " << pG->fID
-	//   << " track " << pT->fIndex;
 	missPi++;
-	//return 0;
-      }
-      //cout<<endl;
+	//verbose=100;
+	if(verbose>verboseOffset) 
+	  cout << " Pion identified as kaon, type = " << type << " pG->fID = " 
+	       << pG->fID<< " track " << pT->fIndex<<" "<<missPi<<endl;
+	
+      } // not a pion 
     } // in if id
-
-  }
+  } // for D0 loop 
 
   // We have the D0  Gen
-  TGenCand *candGenD0 = fpEvt->getGenTWithIndex(moIdx);  // get GenCand of D0
-  if(verbose > 1) cout<<" D0 "<<moIdx <<" "<<candGenD0->fMom1<<endl;
-
+  //TGenCand *candGenD0 = fpEvt->getGenTWithIndex(moIdx);  // get GenCand of D0
+  TGenCand *candGenD0 = fpEvt->getGenCand(moIdx);  // get GenCand of D0
+  if(verbose > 1+verboseOffset) 
+    cout<<" D0 "<<moIdx <<" "<<candGenD0->fMom1<<endl;
   // -- Get gen-level D0
   if (moIdx < 0) {
-    if (verbose > 0) cout << "pG->fMom1 < 0" << endl;
+    if (verbose > verboseOffset) cout << "pG->fMom1 < 0" << endl;
     return 0;
   }
 
   //Check that D0 has exacty 2 daughters
   if (candGenD0->fDau2 - candGenD0->fDau1 > 1) { // D0 has more daughters
-    if (verbose > 1) cout << "Do fDau2 - fDau1 > 1" << endl;
+    if (verbose > verboseOffset) cout << "Do fDau2 - fDau1 > 1" << endl;
     return 0;
   }
-
 
   // Get the DStar Gen
   int indexDS = candGenD0->fMom1;
-  TGenCand *candGenDS = fpEvt->getGenTWithIndex(indexDS);  // get GenCand of DS
-
-
+  //TGenCand *candGenDS = fpEvt->getGenTWithIndex(indexDS);  // get GenCand of DS
+  TGenCand *candGenDS = fpEvt->getGenCand(indexDS);  // get GenCand of DS
   // Compare the mother of D0 and the slow pion
-  if (verbose > 1) cout<<"DS "<<indexDS<<" "<<candGenDS->fNumber<<" "<<moSlowPion<<endl;
+  if (verbose > 1+verboseOffset) 
+    cout<<"DS "<<indexDS<<" "<<candGenDS->fNumber<<" "<<moSlowPion<<endl;
   if (indexDS != moSlowPion) {
-    if (verbose > 0) cout << "pG->fMom1 != moSlowPion" << endl;
+    if (verbose >verboseOffset) cout << "pG->fMom1 != moSlowPion" << endl;
     return 0;
   }
 
-  //cout<<candGenD0->fDau2<<" "<<candGenD0->fDau1<<endl;
-  //if (candGenD0->fDau2 - candGenD0->fDau1 > 1) {
-  // if (verbose > 0) cout << "pG->fDau2 - pG->fDau1 > 1" << endl;
-  //return 0;
-  //}
+  //if (missPi>0 || missK>0)   
+  if (verbose > 1+verboseOffset)   
+    cout << "===> truth matching OK"<<" Found kaons:"<< countK<<" Found pions "
+	 <<countPi<<" Found "<<count<<", Miss K/Pi "<<missK<<"/"<<missPi<<endl;
 
-  if (verbose > 1)   cout << "===> truth matching OK"<<" Found kaons:"<< countK<<" Found pions "<<countPi
-			  <<" Found "<<count<<" Miss K/Pi "<<missK<<"/"<<missPi<<endl;
-
-  //if(missK!=0 || missPi!=0) return false; // select righ combination
-  //if(missK!=1 || missPi!=1) return false; // select wrong combination
-
-  if     (missK==0 && missPi==0) return  1; // select righ combination
-  else if(missK==1 && missPi==1) return -1; // select wrong combination
-
+  if     (missK==0 && missPi==0) {return  1;} // select righ combination
+  else if(missK==1 && missPi==1) 
+    {cout<<" mixed pi/K, return -1"<<endl; return -1;} // select wrong combination
+  
   return 0;
-}
-
+  }
+  
 
 // ----------------------------------------------------------------------
 void candAnaDstar::moreBasicCuts() {
@@ -2006,7 +2045,14 @@ void candAnaDstar::bookHist() {
   //h2 = new TH2F("htest19", "htest19", 10,0.,10.,10,0.,10.);
 
   // MC histos
+#ifdef MC_HISTOS
+  cout<<"  HERE HERE "<<endl;
   h = new TH1D("h300", "h300", 10, -5., 5.);
+  h = new TH1D("h342", "h342", 100, 1.5, 2.5);
+  h = new TH1D("h344", "h344", 100, 1.5, 2.5);
+  h = new TH1D("h345", "h345", 100, 1.5, 2.5);
+  h = new TH1D("h346", "h346", 100, 1.5, 2.5);
+#endif
 
   // STD: Add variables to the standard redtrees
   fTree->Branch("ftm",&ftm,"ftm/I");
@@ -2091,6 +2137,18 @@ void candAnaDstar::bookHist() {
   fTree->Branch("ftmp8",&ftmp8,   "ftmp8/O");
   fTree->Branch("ftmp9",&ftmp9,   "ftmp9/O");
 
+  // MC
+#ifdef MC_HISTOS
+  cout<<"  HERE HERE HERE "<<endl;
+
+  fTree->Branch("fmcmds",   &fmcmds,     "fmcmds/F");
+  fTree->Branch("fmcmdz",   &fmcmdz,     "fmcmdz/F");
+  fTree->Branch("fmcpt",    &fmcpt,      "fmcpt/F");
+  fTree->Branch("fmcptdz",  &fmcptdz,    "fmcptdz/F");
+  fTree->Branch("fmcptpis", &fmcptpis,   "fmcptpis/F");
+  fTree->Branch("fmcptpi",  &fmcptpi,    "fmcptpi/F");
+  fTree->Branch("fmcptk",   &fmcptk,     "fmcptk/F");
+#endif
 }
 
 // ----------------------------------------------------------------------
@@ -2857,6 +2915,7 @@ bool candAnaDstar::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 
 //-------------------------
 void candAnaDstar::genMatch() {
+  //cout<<" in candAnaDstar::genMatch "<<endl;
   return;
 }
 void candAnaDstar::recoMatch() {

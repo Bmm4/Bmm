@@ -34,6 +34,7 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fL1Seeds = 0;
   fGenBTmi = fGenM1Tmi = fGenM2Tmi = fNGenPhotons = fRecM1Tmi = fRecM2Tmi = fCandTmi = -1;
 
+  cout<<fName<<endl;
   fHistDir = gFile->mkdir(fName.c_str());
   pvStudy(true);
 
@@ -1283,7 +1284,7 @@ void candAna::triggerSelection() {
 	  // check if this is a L1/L2 type trigger or L3, assume that L1/L2 is always in the definition
 	  bool isL1L2 = a.Contains("L1") || a.Contains("L2");
 	  if (skipL12 && isL1L2) {
-	    if (fVerbose>-1) cout<<" HIT-path os L1/L2 type, skip "<<a.Data()<<endl;
+	    if (fVerbose>1) cout<<" HIT-path os L1/L2 type, skip "<<a.Data()<<endl;
 	    continue;
 	  } else good=true; // accept, assume it is L3
 
@@ -1329,7 +1330,7 @@ void candAna::triggerSelection() {
 	isMuonTrigger = a.Contains("Mu") || a.Contains("mu") || a.Contains("MU");
 	//if (ps!=1) cout<<"prescale not one "<<a.Data()<<" "<<ps<<endl;
 
-	continue;
+	if(!pdTrigger) continue; // skip, so only when pdTrigger is selected 
 
 	bool foundHltObject = false;
 	int countModules=0, lastIndex=-1;
@@ -1823,6 +1824,7 @@ void candAna::readCuts(string fileName, int dump) {
   IGNORETRIGGER  = 0;
   DSNAME = "Charmonium";
 
+  dump = 1;
   // -- set up cut sequence for analysis
   basicCuts();
   moreBasicCuts();
@@ -2333,7 +2335,6 @@ void candAna::readCuts(string fileName, int dump) {
 
   printCuts(cout);
 }
-
 
 // ----------------------------------------------------------------------
 void candAna::readFile(string filename, vector<string> &lines) {
