@@ -21,6 +21,7 @@ struct near_track_t {
 candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fpReader = pReader;
   fVerbose = fpReader->fVerbose;
+  fDbx     = -2;
   fYear    = fpReader->fYear;
   fNchan   = -1;
   fName    = name;
@@ -167,8 +168,23 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
   if (fVerbose>0) {
     cout << "======================================================================" << endl;
+    int cnt(0);
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      TAnaCand *pCand = fpEvt->getCand(iC);
+      if (TYPE == pCand->fType) {
+	cout << "type = " << pCand->fType << ", mass = " << pCand->fMass << " : ";
+	for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
+	  if (i < 0) continue;
+	  TAnaTrack *pT = fpEvt->getSigTrack(i);
+	  cout << "  " << pT->fIndex;
+	}
+	cout << endl;
+	++cnt;
+      }
+    }
+
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
-	 << fVerbose << " MC: " << fIsMC << endl;
+	 << fVerbose << " MC: " << fIsMC << " n(" << TYPE << ") = " << cnt << endl;
   }
 
   // -- trigger selection (trigger matching is done AFTER [or in] candAnalysis)
@@ -249,7 +265,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fHLTmatch=false;
     if (fGoodHLT && fpMuon1 != NULL && fpMuon2 != NULL){ // do only when 2 muons exist
       // check matching for both muons in parallel
-      // the following can lead to crashes on some data files? The `same' informtion is obtained using "tos"
+      // the following can lead to crashes on some data files? The `same' information is obtained using "tos"
       //      fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2);
     }
 
@@ -1073,12 +1089,12 @@ void candAna::triggerHLT() {
   int ps(0);
   bool result(false), wasRun(false), error(false);
   int verbose(fVerbose);
-  verbose = 2;
 
   // -- NOTRIGGER, just accept the event
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (verbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT1 = true;
+    fHLT1Path = "NOTRIGGER";
     fHltPrescale = 1;
     return;
   }
@@ -1092,7 +1108,7 @@ void candAna::triggerHLT() {
     error  = fpEvt->fHLTError[i];
 
     if (wasRun && result) { // passed
-      if (verbose>1  || (-32 == verbose) ) cout << "passed: " << a << endl;
+      if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a << endl;
 
       bool good = false;
       string spath;
@@ -1108,14 +1124,14 @@ void candAna::triggerHLT() {
 	  //      << endl;
 	  good = true;
 	  if (verbose > 1 || -32 == verbose  )
-	    cout << "exact match: " << imap->first.c_str() << " HLT: " << a
+	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << endl;
 	  break;
 	}
 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
 	  good = true;
 	  if (verbose > 1 || -32 == verbose)
-	    cout << "close match: " << imap->first.c_str() << " HLT: " << a
+	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
 		 << " result: " << result << " in run " << fRun << endl;
 	  break;
 	}
@@ -4167,24 +4183,29 @@ bool candAna::tis(TAnaCand *pC) {
 // -- check whether all trigger primitives are matched to the candidate's tracks
 bool candAna::tos(TAnaCand *pC) {
   bool result(false);
-  int verbose(0);
-
-  if (fCandM < 4.0) {
-    verbose = 1;
-    cout << "Something fishy, TOS with m < 4.0??? BDT = " << fBDT << endl;
+  int verbose(fVerbose);
+  TLorentzVector tlv[2];
+  int goldenMatch(-1);
+  if ("NOTRIGGER" == fHLT1Path) {
+    return true;
   }
 
   if (fHLT1Path == "nada" || !fGoodHLT1) {
     if (verbose) cout << "event not signal triggered: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path << endl;
     return false;
   }
+
+  // if (fCandM < 4.0) {
+  //   verbose = 1;
+  //   if (verbose) cout << "event has signal trigger: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path << endl;
+  // }
+
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
   getSigTracks(sigIdx, pC);
 
-  string hltPath(fHLT1Path);
   TTrgObjv2 *pTO(0);
-  if (verbose) cout << "==> candAna::tos> trigger objects for this path ->" << hltPath << "<-  for cand type = " << pC->fType << endl;
+  if (verbose) cout << "==> candAna::tos> trigger objects for this path ->" << fHLT1Path << "<-  for cand type = " << pC->fType << endl;
   if (verbose) {
     cout << "cand tracks = ";
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
@@ -4193,86 +4214,126 @@ bool candAna::tos(TAnaCand *pC) {
     cout << endl;
   }
 
-  map<string, set<int> > trgTrkIdx;
-  // -- determine trigger objects for this path
-  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+  fDbx = -2;
+  set<int> trgTrkIdx;
+  unsigned int nTrgIdx(0);
+  // -- loop over all saved hlt objects and determine trigger objects for this path
+  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
     pTO = fpEvt->getTrgObjv2(i);
-    if (hltPath == pTO->fHltPath) {
+    if (fHLT1Path == pTO->fHltPath) {
       vector<int> muonIndex = pTO->fIndex;
       vector<int> muonID = pTO->fID;
       vector<TLorentzVector> muonP = pTO->fP;
-      int num = muonIndex.size();
+      nTrgIdx = muonIndex.size();
       // -- skip L1 and L2 objects (bad resolution for matching)
       if (pTO->fType.Contains("L1Filter")) continue;
       if (pTO->fType.Contains("L1T")) continue;
       if (pTO->fType.Contains("L2")) continue;
-      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-      for (int j = 0; j < num; ++j) {
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << nTrgIdx << endl;
+      double drMin(99.);
+      for (int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
 	if (trkIdx < 0) {
-	  if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
+	  if (verbose)
+	    cout << "XXXXXXXXX NO MATCHING TRACK FOUND for trigger muon "
+		 << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+		 << " now check " << sigIdx[0] << " and " << sigIdx[1]
+		 << endl;
+	  fDbx = sigIdx[0];
+	  trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	  fDbx = sigIdx[1];
+	  trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	  fDbx = -2;
 	  continue;
+	}
+	if (dr < 0.01) {
+	  if (dr < drMin) {
+	    drMin = dr;
+	    goldenMatch = j;
+	  }
 	}
 	if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
 			  << " matched to track idx " << trkIdx << " pt/eta/phi = "
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << ","
+			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << ","
 			  << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
 			  << " with dr = " << dr
 			  << endl;
-	trgTrkIdx[hltPath].insert(trkIdx);
+	trgTrkIdx.insert(trkIdx);
+	tlv[j] = muonP[j];
       }
 
     }
   }
 
   if (verbose) cout << "==> searching for completely overlapping trigger, trgTrkIdx.size() = " << trgTrkIdx.size() << endl;
-  map<string, set<int> >::iterator it;
-  for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
-    set<int>::iterator is;
-    if (verbose) cout << it->first << " size = " << it->second.size() << ": ";
-    int overlaps(0);
-    for (is = it->second.begin(); is != it->second.end(); ++is) {
-      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
-	if (*is == sigIdx[i]) {
-	  ++overlaps;
-	  if (verbose) cout << "(" << *is << ") ";
-	} else {
-	  if (verbose) cout << " " << *is << " ";
-	}
+  set<int>::iterator is;
+  int overlaps(0);
+  for (is = trgTrkIdx.begin(); is != trgTrkIdx.end(); ++is) {
+    for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+      if (*is == sigIdx[i]) {
+	++overlaps;
+	if (verbose) cout << "(" << *is << ") ";
+      } else {
+	if (verbose) cout << " " << *is << " ";
       }
     }
-    if (static_cast<unsigned int>(overlaps) == it->second.size()) {
-      result = true;
-      if (verbose) {
-	cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
-      }
-    }
-    if (verbose) cout << endl;
-
   }
-
-  if (fCandM < 4.0) {
-    cout << "Something fishy above, TOS with m < 4.0???" << endl;
-    TAnaCand *pc(0);
-    vector<int> sigidx;
-    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      pc = fpEvt->getCand(iC);
-      if (pc->fType == 1313) {
-	pc->dump();
-	getSigTracks(sigidx, pc);
-	cout << "cand tracks = ";
-	for (unsigned int i = 0; i < sigidx.size(); ++i) {
-	  cout << sigidx[i] << " ";
-	}
-	cout << endl;
-
-      }
+  if ((trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
+    result = true;
+    if (verbose) {
+      cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
     }
-
   }
+  if (verbose) cout << endl;
 
+  // if (result && fCandM < 4.0) {
+  //   cout << "Something fishy above, TOS with m < 4.0???" << endl;
+  //   TAnaCand *pc(0);
+  //   vector<int> sigidx;
+  //   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+  //     pc = fpEvt->getCand(iC);
+  //     if (pc->fType == 1313) {
+  // 	pc->dump();
+  // 	getSigTracks(sigidx, pc);
+  // 	cout << "cand tracks = ";
+  // 	for (unsigned int i = 0; i < sigidx.size(); ++i) {
+  // 	  cout << sigidx[i] << " ";
+  // 	}
+  // 	cout << endl;
+
+  //     }
+  //   }
+
+  //   double mtrig = (tlv[0] + tlv[1]).M();
+  //   cout << "trigger level invariant mass: " << mtrig << endl;
+  //   cout << "goldenMatch = " << goldenMatch << endl;
+  //   for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+  //     TSimpleTrack *ps = fpEvt->getSimpleTrack(i);
+  //     if (verbose) {
+  // 	for (int j = 0; j < 2; ++j) {
+  // 	  double dr = tlv[j].Vect().DeltaR(ps->getP());
+  // 	  TLorentzVector t;
+  // 	  t.SetPtEtaPhiM(ps->getP().Perp(), ps->getP().Eta(), ps->getP().Phi(), MMUON);
+  // 	  double mnew = (tlv[goldenMatch] + t).M();
+  // 	  if (dr < 0.3 || ps->getMuonID() || TMath::Abs(mnew - mtrig) < 0.4) {
+  // 	    cout << "j = " << j
+  // 		 << " dr = " << dr
+  // 		 << " dm = " << TMath::Abs(mnew - mtrig)
+  // 		 << " mu = " << ps->getMuonID()
+  // 		 << " track " << i
+  // 		 << " with pT/eta/phi = " << ps->getP().Perp()
+  // 		 << "," << ps->getP().Eta()
+  // 		 << "," << ps->getP().Phi()
+  // 		 << " from PV " << ps->getPvIndex()
+  // 		 << " m(goldenMatch, " << i << ") = " << mnew
+  // 		 << endl;
+  // 	  }
+  // 	}
+  //     }
+  //   }
+  // }
   return result;
 }
 
@@ -4284,11 +4345,22 @@ int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
   TVector3 p3;
   dr = -0.001;
   for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+    if (fDbx > -1 && fDbx != i) continue;
     p3 = fpEvt->getSimpleTrack(i)->getP();
     double dR = p3.DeltaR(t);
     double tPt = t.Perp();
     double pPt = p3.Perp();
     if (pPt > 0) pPt = tPt/pPt;
+    if (fDbx > -1) {
+      cout << " looking at track idx " << fDbx << " pt/eta/phi = "
+	   << fpEvt->getSimpleTrack(fDbx)->getP().Perp() << "/"
+	   << fpEvt->getSimpleTrack(fDbx)->getP().Eta() << "/"
+	   << fpEvt->getSimpleTrack(fDbx)->getP().Phi()
+	   << endl;
+      cout << "dR = " << dR << endl;
+      cout << "tPt = " << tPt << endl;
+      cout << "pPt = " << pPt << endl;
+    }
     if ((dR < dRthrsh) && (dR < dRmin) && (pPt > 0.5) && (pPt < 1.5)) {
       dRmin = dR;
       dRminIdx = i;
@@ -4298,6 +4370,10 @@ int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
     dr = dRmin;
   } else {
     dr = -0.001;
+  }
+  if (fDbx > -1) {
+    cout << "final dRmin    = " << dRmin << endl;
+    cout << "final dRminIdx = " << dRminIdx << endl;
   }
   return dRminIdx;
 }

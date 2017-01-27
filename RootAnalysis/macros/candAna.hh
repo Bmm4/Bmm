@@ -177,7 +177,7 @@ public:
   TAnaCand *fpCand, *fpOsCand;
   int fCandIdx;
 
-  int fVerbose;
+  int fVerbose, fDbx;
   int fIsMC;
 
   Long64_t fRun, fEvt;
