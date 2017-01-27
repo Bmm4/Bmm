@@ -49,6 +49,7 @@ public:
   virtual void       setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
   virtual void       setYear(int f) {std::cout << Form("setYear(%d)", f) << std::endl;  fYear = f;}
   virtual void       setMC(int f) {std::cout << Form("setMC(%d)", f) << std::endl; fIsMC = f;}
+  virtual void       setCheckCandTypes(bool f) {std::cout << "checking cand types: " << f << std::endl; fCheckCandTypes = f;}
   virtual void       runBlind() {std::cout << "running blinded" << std::endl; BLIND = 1;}
   virtual int        numberOfBPixLayers(TAnaTrack *t);
   virtual int        numberOfPixLayers(TAnaTrack *t);
@@ -86,6 +87,8 @@ protected:
   JSON *fpJSON;
   PdTrigger *fpPdTrigger;
   Lumi *fpLumi;
+
+  bool fCheckCandTypes;
 
   // -- Cut values
   double

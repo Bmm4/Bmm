@@ -49,6 +49,7 @@ int main(int argc, char *argv[]) {
   int isMC(0);
   int year(0);
   int json(0);
+  bool testType(0);
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -77,7 +78,8 @@ int main(int argc, char *argv[]) {
 	cout << "-n integer    number of events to run on" << endl;
 	cout << "-r class name which tree reader class to run" << endl;
 	cout << "-s number     seed for random number generator" << endl;
-	cout << "-S start     starting event number" << endl;
+	cout << "-S start      starting event number" << endl;
+	cout << "-t            test for cand type before calling corresponing candAna* (careful: screws mon*!)" << endl;
 	cout << "-o filename   set output file" << endl;
 	cout << "-v level      set verbosity level" << endl;
 	cout << "-y year       set year" << endl;
@@ -92,10 +94,11 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-j"))  {json       = 1; }                               // ignore JSON status
     if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
     if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run
+    if (!strcmp(argv[i],"-o"))  {histfile   = TString(argv[++i]); }              // set output file
     if (!strcmp(argv[i],"-r"))  {readerName = string(argv[++i]); }               // which tree reader class to run
     if (!strcmp(argv[i],"-s"))  {randomSeed = atoi(argv[++i]); }                 // set seed for random gen.
     if (!strcmp(argv[i],"-S"))  {start = atoi(argv[++i]); }                      // set start event number
-    if (!strcmp(argv[i],"-o"))  {histfile   = TString(argv[++i]); }              // set output file
+    if (!strcmp(argv[i],"-t"))  {testType   = true; }                            // check for type before running candAna* class
     if (!strcmp(argv[i],"-v"))  {verbose    = atoi(argv[++i]); }                 // set verbosity level
     if (!strcmp(argv[i],"-y"))  {year       = atoi(argv[++i]); }                 // set year
   }
@@ -215,6 +218,7 @@ int main(int argc, char *argv[]) {
 
   if (a) {
     a->setYear(year);
+    a->setCheckCandTypes(testType);
     if (verbose > -99) a->setVerbosity(verbose);
     a->openHistFile(histfile);
 

@@ -70,46 +70,67 @@ void bmmReader::endAnalysis() {
 void bmmReader::eventProcessing() {
   ((TH1D*)fpHistFile->Get("monEvents"))->Fill(0);
 
-  bool json = false;
-
+  static bool json = false;
+  static int oldRun(-1);
+  static int oldLS(-1);
   if (fIsMC) {
-    json = 1;
+    json = true;
     processTypePythia8();
   } else if (fIgnoreJson) {
-    json = 1;
+    json = true;
   } else {
-    json = fpJSON->good(fRun, fLS);
+    if ((fLS != oldLS) || (fRun != oldRun)) {
+      oldLS = fLS;
+      // do not reset oldRun, this is done below!
+      json = fpJSON->good(fRun, fLS);
+    }
     fProcessType = -98;
   }
 
   double rlumi(-1.);
-  if (!fIsMC && json) {
-    if (0 != fpLumi->contains(fRun)) {
-      rlumi = fpLumi->lumi(fRun);
-    } else {
-      if (fVerbose > 100) {
-	cout << "Run " << fRun << " has no lumi information" << endl;
+  if (fRun != oldRun) {
+    oldRun = fRun;
+    if (!fIsMC && json) {
+      if (0 != fpLumi->contains(fRun)) {
+	rlumi = fpLumi->lumi(fRun);
+      } else {
+	if (fVerbose > 100) {
+	  cout << "Run " << fRun << " has no lumi information" << endl;
+	}
       }
     }
   }
 
-  // -- fill a few basic histograms
-  TSimpleTrack *pT(0);
-  double x(0.);
-  ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks());
-  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i);
-    x = pT->getP().Perp();
-    ((TH1D*)fpHistFile->Get("pt0"))->Fill(x);
-    ((TH1D*)fpHistFile->Get("pt1"))->Fill(x);
-    x = pT->getP().Eta();
-    ((TH1D*)fpHistFile->Get("eta"))->Fill(x);
-    x = pT->getP().Phi();
-    ((TH1D*)fpHistFile->Get("phi"))->Fill(x);
-  }
+  // remove because of timing worries
+  // // -- fill a few basic histograms
+  // TSimpleTrack *pT(0);
+  // double x(0.);
+  // ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks());
+  // for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+  //   pT = fpEvt->getSimpleTrack(i);
+  //   x = pT->getP().Perp();
+  //   ((TH1D*)fpHistFile->Get("pt0"))->Fill(x);
+  //   ((TH1D*)fpHistFile->Get("pt1"))->Fill(x);
+  //   x = pT->getP().Eta();
+  //   ((TH1D*)fpHistFile->Get("eta"))->Fill(x);
+  //   x = pT->getP().Phi();
+  //   ((TH1D*)fpHistFile->Get("phi"))->Fill(x);
+  // }
 
+  if (fCheckCandTypes) {
+    fCandTypes.clear();
+    for (int i = 0; i < fpEvt->nCands(); ++i) {
+      fCandTypes.insert(fpEvt->getCand(i)->fType);
+    }
+  }
   // -- call candidate analyses
   for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+    if (fCheckCandTypes) {
+      if (fCandTypes.find(lCandAnalysis[i]->TYPE) == fCandTypes.end()) {
+	continue;
+      }
+    }
+
     lCandAnalysis[i]->fIsMC        = fIsMC;
     lCandAnalysis[i]->fJSON        = json;
     lCandAnalysis[i]->fRun         = fRun;
@@ -122,7 +143,6 @@ void bmmReader::eventProcessing() {
     lCandAnalysis[i]->fCandTau     = -1.;
     lCandAnalysis[i]->fGenLifeTime = -1.;
 
-    //cout<<" call evtanalysis "<<i<<endl;
     lCandAnalysis[i]->evtAnalysis(fpEvt);
   }
 

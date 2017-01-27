@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <set>
 #include <map>
 
 #include <TROOT.h>
@@ -45,13 +46,12 @@ public:
 
   virtual void   processTypePythia6();
   virtual void   processTypePythia8();
-  virtual void   setYear(int year) {fYear = year;}
 
   std::vector<candAna*> lCandAnalysis;
 
 
   int fProcessType;
-  int fYear;
+  std::set<int> fCandTypes;
 };
 
 #endif
