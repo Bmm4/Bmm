@@ -351,6 +351,7 @@ void candAnaBd2JpsiKstar::genMatch() {
     // use the mother if it has the same PDGID (it oscillated)
     if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -450,6 +451,7 @@ void candAnaBd2JpsiKstar::genMatchOld() {
     // the meson is the original except if it oscillated
     if (511 != TMath::Abs(pM->fID)) pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;

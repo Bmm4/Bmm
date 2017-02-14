@@ -97,7 +97,7 @@ public :
   void overlay(std::string sample1, std::string sample2, std::string what = "");
   void fakeRate(std::string dataset1 = "fakeData_ks", std::string dataset2 = "fakeMc_ks",
 		std::string var = "FakeTisFakePt", std::string varA = "FakeTisAllPt",
-		double ymax = 0.02);
+		double ymax = 0.008);
   void  massPlots(std::string varname = "AllPtMassSi");
   void  mkPidTables(std::string name = "");
   void  plotPidTables(std::string name = "");

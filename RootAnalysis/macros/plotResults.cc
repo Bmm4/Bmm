@@ -1388,6 +1388,11 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   } else if (string::npos != a.fName.find("bspsiphi")) {
     numbersFromHist(a, "bspsiphi");
   }
+  // -- cross check the scaled yield normalized to B+ -> J/psi K+
+  if (string::npos != a.fName.find("bspsiphi")) {
+    double pRatio(fFsfu.val);
+    scaleYield(a, fNoNumbers[chan], pRatio);
+  }
   // -- data: fit yields
   fSetup = a.fNameDa;
   string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSetup.c_str(), chan);
@@ -1423,12 +1428,14 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   dumpTex(a.fTotGenYield, Form("%s:N-TOTYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
   dumpTex(a.fProdGenYield, Form("%s:N-PRODYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
 
+  if (string::npos != a.fName.find("bspsiphi")) {
+    dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
+  }
   dumpTex(a.fSignalFit, Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
 
   c0->Modified();
   c0->Update();
   fHistFile->cd();
-  // fit it
 }
 
 

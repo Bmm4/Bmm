@@ -227,6 +227,7 @@ void candAnaBu2JpsiK::genMatch() {
     // Meson pointer
     TGenCand *pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -324,6 +325,7 @@ void candAnaBu2JpsiK::genMatchOld() {
     // Meson pointer
     TGenCand *pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;

@@ -177,7 +177,7 @@ public:
   TAnaCand *fpCand, *fpOsCand;
   int fCandIdx;
 
-  int fVerbose;
+  int fVerbose, fDbx;
   int fIsMC;
 
   Long64_t fRun, fEvt;
@@ -222,7 +222,7 @@ public:
   int     fCandTmi;
   int     fGenBpartial;
   int     fProcessType;
-  double  fGenLifeTime, fGenMass;
+  double  fGenLifeTime, fGenMass, fGenFl3d;
 
   // -- BDT
   std::vector<TMVA::Reader*> fReaderEvents0;

@@ -17,56 +17,38 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
-fitPsYield::fitPsYield(string hname, TDirectory *pD, int verbose): fVerbose(verbose), fBaseName(hname), fpDir(pD), fpIF(new initFunc),
+fitPsYield::fitPsYield(string hname, TDirectory *pD, int verbose): fVerbose(verbose), fBaseName(hname), fpIF(new initFunc),
 								   fCombined(0), fCombinedW8(0) {
   fData.clear();
-  if (0 == fpDir) fpDir = gDirectory;
-  TIter next(fpDir->GetListOfKeys());
+  TDirectory *pDir = pD;
+  if (0 == pDir) pDir = gDirectory;
+  TIter next(pDir->GetListOfKeys());
   TKey *key(0);
-  if (fVerbose > 0) cout << "fitPsYield: looking for histogram ->" << hname << "<- in directory " << fpDir->GetName() << endl;
+  if (fVerbose > 0) cout << "fitPsYield: looking for histogram ->" << hname << "<- in directory " << pDir->GetName() << endl;
   while ((key = (TKey*)next())) {
     if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
     if (TString(key->GetName()).Contains(hname.c_str())) {
       string hname = key->GetName();
-      TH2D *h2     = (TH2D*)fpDir->Get(hname.c_str());
-      if (!h2) continue;
-      if (fVerbose > 0) cout << "fitPsYield: found histogram " << h2->GetName()
-			     << " with integral = " << h2->Integral(1, h2->GetNbinsX(), 1, h2->GetNbinsY())
-			     << endl;
-      fH2          = (TH2D*)h2->Clone(Form("fpy_%s", hname.c_str()));
-      int chanB    = h2->GetYaxis()->FindBin(+0.1);
-      int chan1    = h2->GetYaxis()->FindBin(1.1);
-      int chan2    = h2->GetYaxis()->FindBin(h2->GetYaxis()->GetXmax()) - 1;
-      fCombined    = h2->ProjectionX(Form("fpy_%s_comb", hname.c_str()), 2, 2);
-      fCombinedW8  = h2->ProjectionX(Form("fpy_%s_combW8", hname.c_str()), 1, 1);
-      for (int ips = chan1; ips <= chan2; ++ips) {
-	double ent   = fH2->Integral(1, fH2->GetNbinsX(), ips, ips);
-	if (ent < 1) continue;
-	psd *a       = new psd();
-	a->fPs       = ips - chanB;
-	a->fEntries  = ent;
-	a->fH1       = h2->ProjectionX(Form("fpy_%s_ps%d", hname.c_str(), a->fPs), ips, ips);
-	a->fH1->SetTitle(Form("fpy_%s_ps%d", hname.c_str(), a->fPs));
-	fData.push_back(a);
+      TH2D *h2     = (TH2D*)pDir->Get(hname.c_str());
+      if (h2) {
+	initFromHist(h2);
+	break;
       }
-      // -- fW8Combined
-      double ent   = fH2->Integral(1, fH2->GetNbinsX(), 1, 1);
-      if (ent < 1) continue;
-      fW8Combined             = new psd();
-      fW8Combined->fPs        = -1;
-      fW8Combined->fEntries   = ent;
-      fW8Combined->fH1        = h2->ProjectionX(Form("fpy_%s_w8", hname.c_str()), 1, 1);
-      fW8Combined->fH1->SetTitle(Form("fpy_%s_w8", hname.c_str()));
-      // -- fUnW8Combined
-      ent   = fH2->Integral(1, fH2->GetNbinsX(), 2, 2);
-      if (ent < 1) continue;
-      fUnW8Combined           = new psd();
-      fUnW8Combined->fPs      = 0;
-      fUnW8Combined->fEntries = ent;
-      fUnW8Combined->fH1      = h2->ProjectionX(Form("fpy_%s_u8", hname.c_str()), 2, 2);
-      fUnW8Combined->fH1->SetTitle(Form("fpy_%s_u8", hname.c_str()));
     }
   }
+
+}
+
+
+// ----------------------------------------------------------------------
+fitPsYield::fitPsYield(TH2D *h2, int verbose): fVerbose(verbose), fpIF(new initFunc), fCombined(0), fCombinedW8(0) {
+  if (!h2) return;
+  fData.clear();
+
+  if (h2) {
+    fBaseName = h2->GetName();
+  }
+  initFromHist(h2);
 
 }
 
@@ -77,6 +59,67 @@ fitPsYield::~fitPsYield() {
   //   delete *it;
   // }
   fData.clear();
+}
+
+// ----------------------------------------------------------------------
+void fitPsYield::initFromHist(TH2D *h2) {
+
+  if (!h2) {
+    cout << "histogram does not exist, returning!" << endl;
+    fH2 = 0;
+    return;
+  }
+  if (fVerbose > 0) cout << "fitPsYield: found histogram " << h2->GetName()
+			     << " with integral = " << h2->Integral(1, h2->GetNbinsX(), 1, h2->GetNbinsY())
+			 << endl;
+  string hname = h2->GetName();
+  fH2          = (TH2D*)h2->Clone(Form("fpy_%s", hname.c_str()));
+  int chanB    = h2->GetYaxis()->FindBin(+0.1);
+  int chan1    = h2->GetYaxis()->FindBin(1.1);
+  int chan2    = h2->GetYaxis()->FindBin(h2->GetYaxis()->GetXmax()) - 1;
+  fCombined    = h2->ProjectionX(Form("fpy_%s_comb", hname.c_str()), 2, 2);
+  fCombinedW8  = h2->ProjectionX(Form("fpy_%s_combW8", hname.c_str()), 1, 1);
+  // -- fW8Combined
+  double ent   = fH2->Integral(1, fH2->GetNbinsX(), 1, 1);
+  if (ent < 1) {
+    cout << "no entries in W8Combined found, deleting and returning" << endl;
+    delete fH2;
+    delete fCombined;
+    delete fCombinedW8;
+    return;
+  }
+  fW8Combined             = new psd();
+  fW8Combined->fPs        = -1;
+  fW8Combined->fEntries   = ent;
+  fW8Combined->fH1        = h2->ProjectionX(Form("fpy_%s_w8", hname.c_str()), 1, 1);
+  fW8Combined->fH1->SetTitle(Form("fpy_%s_w8", hname.c_str()));
+  // -- fUnW8Combined
+  ent   = fH2->Integral(1, fH2->GetNbinsX(), 2, 2);
+  if (ent < 1) {
+    cout << "no entries in U8Combined found, deleting and returning" << endl;
+    delete fH2;
+    delete fW8Combined;
+    delete fCombined;
+    delete fCombinedW8;
+    return;
+  }
+  fUnW8Combined           = new psd();
+  fUnW8Combined->fPs      = 0;
+  fUnW8Combined->fEntries = ent;
+  fUnW8Combined->fH1      = h2->ProjectionX(Form("fpy_%s_u8", hname.c_str()), 2, 2);
+  fUnW8Combined->fH1->SetTitle(Form("fpy_%s_u8", hname.c_str()));
+  // -- per prescale value
+  for (int ips = chan1; ips <= chan2; ++ips) {
+    double ent   = fH2->Integral(1, fH2->GetNbinsX(), ips, ips);
+    if (ent < 1) continue;
+    psd *a       = new psd();
+    a->fPs       = ips - chanB;
+    a->fEntries  = ent;
+    a->fH1       = h2->ProjectionX(Form("fpy_%s_ps%d", hname.c_str(), a->fPs), ips, ips);
+    a->fH1->SetTitle(Form("fpy_%s_ps%d", hname.c_str(), a->fPs));
+    fData.push_back(a);
+  }
+
 }
 
 
@@ -113,6 +156,10 @@ void fitPsYield::printSummary() {
 
 // ----------------------------------------------------------------------
 void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
+  if (0 == fH2) {
+    cout << "no histogram found/setup/defined, returning!" << endl;
+    return;
+  }
   // -- prefit weighted combination:
   fit0_Bu2JpsiKp(fW8Combined, -1, pdfprefix);
   // -- prefit unweighted combination:
@@ -125,10 +172,17 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
 
   fSummary.clear();
   for (unsigned int i = 0; i < fData.size(); ++i) {
+    cout << " -> adding ps = " << fData[i]->fPs
+	 << " signal = " << fData[i]->fResults.fSg
+	 << " +/- " << fData[i]->fResults.fSgE;
     fSummary.fSg += fData[i]->fPs*fData[i]->fResults.fSg;
     fSummary.fSgE += fData[i]->fPs*fData[i]->fPs*fData[i]->fResults.fSgE*fData[i]->fResults.fSgE;
+    cout << " -> " << fSummary.fSg << " +/- " << TMath::Sqrt(fSummary.fSgE)
+      	 << endl;
+
   }
   fSummary.fSgE = TMath::Sqrt(fSummary.fSgE);
+  cout << " => total: " << fSummary.fSg << " +/- " << fSummary.fSgE << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -161,10 +215,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   c0->Clear();
   shrinkPad(0.13, 0.19);
 
-  fpIF->fLo = 4.9;
+  fpIF->fLo = 5.0;
   fpIF->fHi = 5.9;
 
-  double xmin(5.0), xmax(5.9), expoLo(5.16), expoHi(5.85);
+  double xmin(5.0), xmax(5.9), expoLo(5.15), expoHi(5.85);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
 
@@ -175,6 +229,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
     fpIF->fHi = xmax;
     double A   = 0.5*p1*(expoHi*expoHi - expoLo*expoLo) + p0*(expoHi - expoLo);
     double g0 = (h->Integral(h->FindBin(expoLo), h->FindBin(expoHi))*h->GetBinWidth(1) - A);
+    // cout << "p0: " << p0 << " p1: " << p1 << " expoLo: " << expoLo << " expoHi: " << expoHi
+    // 	 << " A: " << A << " g0: " << g0
+    // 	 << " int: " << h->Integral(h->FindBin(expoLo), h->FindBin(expoHi))*h->GetBinWidth(1)
+    // 	 << endl;
     double errN = 0.6*(h->GetBinContent(h->FindBin(expoLo - 0.1)) - h->GetBinContent(h->FindBin(expoLo)));
     f1->SetParameter(0, 0.8*g0); f1->SetParLimits(0, 0., h->GetMaximum());
     f1->SetParameter(1, mBp);    f1->SetParLimits(1, mBp - 1.*sBp, mBp + 1.*sBp);
@@ -209,10 +267,9 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
     f1->SetParameter(9, scale*fPar[9]);	if (limitpars) f1->SetParLimits(9, scale*fPar[9]*(1.-shift), scale*fPar[9]*(1.+shift));
     if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
-
-  cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
+  if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   string fitopt = "lr";
-  if (fVerbose) fitopt += "q";
+  if (0 == fVerbose) fitopt += "q";
   if (h->GetSumOfWeights() > h->GetEntries()) {
     fitopt += "w";
     h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
@@ -264,20 +321,26 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   sigE /= h->GetBinWidth(1);
   if (sigE > sig) {
     sigE = TMath::Sqrt(sig);
-    cout << "rescaled error: " << sigE << " (sig = " << sig << ")"
-	 << endl;
+    if (fVerbose) cout << "rescaled error: " << sigE << " (sig = " << sig << ")"
+		       << endl;
   } else {
-    cout << "integral error from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
-	 << " .. " << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
-	 << ": " << sigE << " (sig = " << sig << ")"
-	 << endl;
+    if (fVerbose) cout << "integral error from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+		       << " .. " << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
+		       << ": " << sigE << " (sig = " << sig << ")"
+		       << endl;
   }
   res->fResults.fSg = sig;
   res->fResults.fSgE = sigE;
 
   TLatex tl;
   tl.SetTextSize(0.03);
-  tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  if (-1 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else if (0 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  }
 
   c0->Modified();
   c0->Update();
@@ -292,6 +355,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
 
 // ----------------------------------------------------------------------
 void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix) {
+  if (0 == fH2) {
+    cout << "no histogram found/setup/defined, returning!" << endl;
+    return;
+  }
   // -- prefit weighted combination:
   fit0_Bs2JpsiPhi(fW8Combined, -1, pdfprefix);
   // -- prefit unweighted combination:
@@ -340,7 +407,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
   c0->Clear();
   shrinkPad(0.13, 0.19);
 
-  fpIF->fLo = 4.9;
+  fpIF->fLo = 5.0;
   fpIF->fHi = 5.9;
 
   double xmin(5.0), xmax(5.9), expoLo(5.16), expoHi(5.85);
@@ -391,7 +458,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
 
   cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   string fitopt = "lr";
-  if (fVerbose) fitopt += "q";
+  if (0 == fVerbose) fitopt += "q";
   if (h->GetSumOfWeights() > h->GetEntries()) {
     fitopt += "w";
     h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
@@ -456,7 +523,13 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
 
   TLatex tl;
   tl.SetTextSize(0.03);
-  tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  if (-1 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else if (0 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  }
 
   c0->Modified();
   c0->Update();

@@ -173,7 +173,7 @@ void plotFake::makeAll(string what) {
       makeSample("fakeMc", "ks");
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("psi")))) {
-      makeSample("fakeData", "psi");
+      makeSample("fakeData", "psi", 5e6);
       makeSample("fakeMc", "psi");
     }
     if ((what == "all") || (what == "sample") || ((string::npos != what.find("sample") && string::npos != what.find("phi")))) {
@@ -408,7 +408,7 @@ void plotFake::makeSample(std::string dataset, std::string sample, int nevents, 
     return;
   }
   setupTree(t);
-  fCds = fDS[fSample];
+  fCds = fDS[dataset];
   loopOverTree(t, 1, nevents, nstart);
 
   fHistFile->Write();
@@ -1296,7 +1296,6 @@ void plotFake::loopFunction1() {
   bool singleFake = (nfakes == 1);
   if (fMode == FAKEPSI) singleFake = true;
 
-
   for (int i = 0; i < fFakeNtrk; ++i) {
     if (TMath::Abs(fFakeEta[i]) < 0.7) {
       fChan = 0;
@@ -1325,10 +1324,17 @@ void plotFake::loopFunction1() {
     fGoodPt      = (fFakePt[i] > 4.);
     fGoodDtrig   = (fFakeDtrig[i] > 0.01);
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
-    fGlobalMuon  = (fFakeGm[i] > 0) && singleFake && fGoodDtrig;
+
     if (fIsMC) {
       fTIS       = true;
       fGoodDtrig = true; // does not work on MC (PD not well defined there)
+    }
+
+    if (fMode == FAKEPSI) {
+      fGlobalMuon  = (fFakeGm[i] > 0) && singleFake;
+    } else {
+      // -- there are no light resonances -> muon triggers in the Charmonium PD!
+      fGlobalMuon  = (fFakeGm[i] > 0) && singleFake && fGoodDtrig;
     }
 
     fGood     = fGoodCand && fGoodPt;

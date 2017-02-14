@@ -24,6 +24,7 @@
 using namespace std;
 
 void skimEvents(TChain *);
+void dumpTriggers(string);
 
 
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -48,6 +49,7 @@ int main(int argc, char *argv[]) {
   int isMC(0);
   int year(0);
   int json(0);
+  bool testType(0);
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -76,7 +78,8 @@ int main(int argc, char *argv[]) {
 	cout << "-n integer    number of events to run on" << endl;
 	cout << "-r class name which tree reader class to run" << endl;
 	cout << "-s number     seed for random number generator" << endl;
-	cout << "-S start     starting event number" << endl;
+	cout << "-S start      starting event number" << endl;
+	cout << "-t            test for cand type before calling corresponing candAna* (careful: screws mon*!)" << endl;
 	cout << "-o filename   set output file" << endl;
 	cout << "-v level      set verbosity level" << endl;
 	cout << "-y year       set year" << endl;
@@ -91,10 +94,11 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-j"))  {json       = 1; }                               // ignore JSON status
     if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
     if (!strcmp(argv[i],"-n"))  {nevents    = atoi(argv[++i]); }                 // number of events to run
+    if (!strcmp(argv[i],"-o"))  {histfile   = TString(argv[++i]); }              // set output file
     if (!strcmp(argv[i],"-r"))  {readerName = string(argv[++i]); }               // which tree reader class to run
     if (!strcmp(argv[i],"-s"))  {randomSeed = atoi(argv[++i]); }                 // set seed for random gen.
     if (!strcmp(argv[i],"-S"))  {start = atoi(argv[++i]); }                      // set start event number
-    if (!strcmp(argv[i],"-o"))  {histfile   = TString(argv[++i]); }              // set output file
+    if (!strcmp(argv[i],"-t"))  {testType   = true; }                            // check for type before running candAna* class
     if (!strcmp(argv[i],"-v"))  {verbose    = atoi(argv[++i]); }                 // set verbosity level
     if (!strcmp(argv[i],"-y"))  {year       = atoi(argv[++i]); }                 // set year
   }
@@ -105,6 +109,11 @@ int main(int argc, char *argv[]) {
   fn.ReplaceAll("cuts/", "");
   fn.ReplaceAll(".cuts", "");
   fn.ReplaceAll("tree", "");
+
+  if ("trigger" == readerName) {
+    dumpTriggers(fileName);
+    return 0;
+  }
 
   // -- Determine filename for output histograms and 'final' small/reduced tree
   TString meta = fileName;
@@ -209,6 +218,7 @@ int main(int argc, char *argv[]) {
 
   if (a) {
     a->setYear(year);
+    a->setCheckCandTypes(testType);
     if (verbose > -99) a->setVerbosity(verbose);
     a->openHistFile(histfile);
 
@@ -329,4 +339,80 @@ void skimEvents(TChain *chain) {
 
   delete newfile;
 
+}
+
+
+// ----------------------------------------------------------------------
+void dumpTriggers(string fileName) {
+  vector<string> tnames;
+  tnames.push_back("Bs");
+  tnames.push_back("Jpsi_Displaced");
+
+  vector<string> files;
+  ifstream INS;
+  string sline;
+  INS.open(fileName);
+  while (getline(INS, sline)) {
+    string::size_type m1 = sline.rfind(".root ");
+    sline = sline.substr(0, m1+6);
+    files.push_back(sline);
+  }
+
+
+  map<string, pair<int, int> > tranges;
+
+  cout << "----------------------------------------------------------------------" << endl;
+  cout << "dumpTriggers: " << endl;
+  for (unsigned int i = 0; i < tnames.size(); ++i) {
+    cout << "trigger name part: " << tnames[i] << endl;
+  }
+  cout << "----------------------------------------------------------------------" << endl;
+
+  TFile *f(0);
+  TH1D *h1(0);
+  TKey *key(0);
+  string st("");
+  int run(0);
+  for (unsigned int i = 0; i < files.size(); ++i) {
+    //  for (unsigned int i = 0; i < 20; ++i) {
+    cout << files[i] << endl;
+    f = TFile::Open(files[i].c_str());
+    if (f && f->IsOpen()) {
+      TIter next(f->GetListOfKeys());
+      while ((key = (TKey*)next())) {
+	if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH1")) continue;
+	if (1 != key->GetCycle()) {
+	  continue;
+	}
+	TString skey = TString(key->GetName());
+	if (skey.Contains("triggers_MuOnia") || skey.Contains("triggers_Charmonium")) {
+	  h1 = (TH1D*)((TH1D*)f->Get(skey));
+	  if (0 == h1) continue;
+	  st = h1->GetName();
+	  st = st.substr(st.rfind("_run")+4);
+	  run = atoi(st.c_str());
+	  for (int ib = 0; ib <= h1->GetNbinsX(); ++ib) {
+	    st = h1->GetXaxis()->GetBinLabel(ib);
+	    for (unsigned int ip = 0; ip < tnames.size(); ++ip) {
+	      if (string::npos != st.find(tnames[ip])) {
+		if (tranges.count(st) != 0) {
+		  int rmin = tranges[st].first;
+		  int rmax = tranges[st].second;
+		  if (run < rmin) tranges[st].first = run;
+		  if (run > rmax) tranges[st].second = run;
+		} else {
+		  tranges.insert(make_pair(st, make_pair(run, run)));
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      f->Close();
+    }
+  }
+
+  for (map<string, pair<int, int> >::iterator it = tranges.begin(); it != tranges.end(); ++it) {
+    cout << it->first << ": " << it->second.first << " .. " << it->second.second << endl;
+  }
 }
