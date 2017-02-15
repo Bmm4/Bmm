@@ -15,12 +15,12 @@ sub runCommand() {
 
 # -- 2011 BMM data jobs
 $dataset = "bmmMuOnia2011A";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012A-22Jan2013 -s $version -e 30000; ";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011A-12Oct2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2011B";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
-$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012B-22Jan2013 -s $version -e 30000; ";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011B-12Oct2013 -s $version -e 30000; ";
 
 # -- 2012 BMM data jobs
 $dataset = "bmmMuOnia2012A";
