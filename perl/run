@@ -64,6 +64,14 @@ $uhome .= "ursl";
 my $glite = "$home/grid/glite.conf";
 my $qsub = "/gridware/sge/bin/lx24-amd64/qsub";
 
+# -- define mode if not provided
+if (!$opt_m) {
+    if ($opt_q) {
+	$opt_m = "batch";
+    } else {
+	$opt_m = "local";
+    }
+}
 
 # -- Default settings
 my $CMSSW = $ENV{'CMSSW_VERSION'};

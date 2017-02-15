@@ -37,13 +37,14 @@ if ($opt_o) {
     $dir = $opt_o;
 }
 
-#if (!$opt_w) {
-#    $opt_w = "all";
-#}
-
-
 if (!$opt_q) {
-    $opt_q = "all.q";
+    $opt_q = "-m batch -q all.q";
+} else {
+    if (!($opt_q =~ "local")) {
+	$opt_q = "-m batch -q $opt_q";
+    } else {
+	$opt_q = "-m $opt_q";
+    }
 }
 
 if (!$opt_C) {
