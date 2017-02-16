@@ -55,12 +55,13 @@ void HFBs2JpsiPhi::analyze(const edm::Event& iEvent, const edm::EventSetup& iSet
 
   fListBuilder->setMinPt(fMuonPt);
   vector<int> muonList = fListBuilder->getMuonList();
+  if (muonList.size() < static_cast<unsigned int>(fPsiMuons)) return;
+
   fListBuilder->setMinPt(fTrackPt);
   fListBuilder->setMaxDocaToTracks(fMaxDoca);
   fListBuilder->setCloseTracks(&muonList);
   vector<int> trkList = fListBuilder->getTrackList();
 
-  if (muonList.size() < static_cast<unsigned int>(fPsiMuons)) return;
   HFTwoParticleCombinatoricsNew a(fTracksHandle,fVerbose);
   HFTwoParticleCombinatoricsSet psiList = a.combine( (fPsiMuons < 1 ? trkList : muonList),MMUON,
 						     (fPsiMuons < 2 ? trkList : muonList),MMUON,
