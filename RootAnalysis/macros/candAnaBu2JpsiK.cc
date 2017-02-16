@@ -109,16 +109,23 @@ void candAnaBu2JpsiK::candAnalysis() {
     }
   }
 
+  fGoodJpsiCuts = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
+
   candAna::candAnalysis();
-  // -- overwrite specific variables
+  // -- overwrite some variables
   fCandChi2  = chi2;
   fCandDof   = ndof;
   fCandChi2Dof = chi2/ndof;
   fCandME      = masse;
 
-  fGoodTracksPt = fGoodTracksPt && ((fKaonPt > TRACKPTLO));
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
+  fGoodTracks    = fGoodTracks    && fKaonTkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((fKaonPt > TRACKPTLO));
+  fGoodTracksEta = fGoodTracksEta && (fKaonEta > TRACKETALO) && (fKaonEta < TRACKETAHI);
+
+  fPreselection  = fPreselection && fGoodJpsiMass && fGoodTracksPt;
+  fPreselection  = fPreselection && fWideMass;
+
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   if(0) { // special misid tests d.k.
 
@@ -469,10 +476,10 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
 
-  t->Branch("kpt",  &fKaonPt,    "kpt/D");
-  t->Branch("keta", &fKaonEta,   "keta/D");
-  t->Branch("kphi", &fKaonPhi,   "kphi/D");
-  t->Branch("kgt",  &fKaonTkQuality,"kgt/I");
+  t->Branch("kpt",  &fKaonPt,        "kpt/D");
+  t->Branch("keta", &fKaonEta,       "keta/D");
+  t->Branch("kphi", &fKaonPhi,       "kphi/D");
+  t->Branch("kgt",  &fKaonTkQuality, "kygt/I");
 
   t->Branch("t3pt", &fKaonPtNrf, "t3pt/D");
   t->Branch("t3eta",&fKaonEtaNrf,"t3eta/D");
