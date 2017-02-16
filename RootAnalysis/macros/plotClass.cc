@@ -797,13 +797,13 @@ void plotClass::candAnalysis() {
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
-      if (fb.g3pt < 0.4) fGoodAcceptance = false;
+      if (fb.g3pt < 0.8) fGoodAcceptance = false;
     }
     if (TMath::Abs(fb.keta) > fAccEtaRec) {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
-    if (fb.kpt < 0.5) {
+    if (fb.kpt < 0.8) {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
@@ -817,8 +817,8 @@ void plotClass::candAnalysis() {
       // gen-level cuts for Bs2JpsiPhi
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
-      if (fb.g3pt < 0.4) fGoodAcceptance = false;
-      if (fb.g4pt < 0.4) fGoodAcceptance = false;
+      if (fb.g3pt < 0.8) fGoodAcceptance = false;
+      if (fb.g4pt < 0.8) fGoodAcceptance = false;
     }
     if (TMath::Abs(fb.k1eta) > fAccEtaRec) {
       fGoodAcceptance = false;
@@ -828,11 +828,11 @@ void plotClass::candAnalysis() {
       fGoodAcceptance = false;
       fGoodTracksEta = false;
     }
-    if (fb.k1pt < 0.5) {
+    if (fb.k1pt < 0.8) {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
-    if (fb.k2pt < 0.5) {
+    if (fb.k2pt < 0.8) {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
