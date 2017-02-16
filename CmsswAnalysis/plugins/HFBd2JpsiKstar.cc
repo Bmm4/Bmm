@@ -56,15 +56,16 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
     cout << "==>HFBd2JpsiKstar> " << e.fMsg << endl;
     return;
   }
-
   fListBuilder->setMinPt(fMuonPt);
   vector<int> muonList = fListBuilder->getMuonList();
+
+  if (muonList.size() < static_cast<unsigned int>(fPsiMuons)) return;
+
   fListBuilder->setMinPt(fTrackPt);
   fListBuilder->setMaxDocaToTracks(fMaxDoca);
   fListBuilder->setCloseTracks(&muonList);
   vector<int> trkList = fListBuilder->getTrackList();
 
-  if (muonList.size() < static_cast<unsigned int>(fPsiMuons)) return;
 
   HFTwoParticleCombinatoricsNew a(fTracksHandle,fVerbose);
   HFTwoParticleCombinatoricsSet psiList = a.combine( (fPsiMuons < 1 ? trkList : muonList), MMUON,
@@ -73,6 +74,8 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
 
   HFTwoParticleCombinatoricsSet kstarList = a.combine(trkList, MKAON, trkList, MPION, fKstarLo, fKstarHi, 0);
 
+
+  if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> run/event: " << iEvent.id().run() << "/" << iEvent.id().event() << endl;
   if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> J/psi list size: " << psiList.size() << endl;
   if (fVerbose > 0) cout << "==>HFBd2JpsiKstar> kstar list size: " << kstarList.size() << endl;
 
@@ -85,7 +88,6 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
   for (HFTwoParticleCombinatoricsNew::iterator psiIt = psiList.begin(); psiIt != psiList.end(); ++psiIt) {
     unsigned int iMuon1 = psiIt->first;
     unsigned int iMuon2 = psiIt->second;
-
     reco::TrackBaseRef mu1TrackView(fTracksHandle, iMuon1);
     reco::Track tMuon1(*mu1TrackView);
     if (tMuon1.pt() < fMuonPt)  continue;
@@ -134,7 +136,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       if (mass < (fCandLo-0.3)) continue;
       if (mass > (fCandHi+0.3)) continue;
 
-      // -- sequential fit: J/Psi kaons
+      // -- sequential fit: muons plus kaon + pion
       theTree.clear(300511, true, MB_0, false, -1.0, true);
 
       iterator = theTree.addDecayTree(300443, false, MJPSI, false);
@@ -159,7 +161,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       pCand = theTree.getAnaCand();
       if (0 == pCand) continue;
 
-      // -- sequential fit: J/Psi (constrained) phi (unconstrained) WILL NOT BE FILLED INTO T1!
+      // -- sequential fit: J/Psi (constrained) kstar0 (unconstrained) WILL NOT BE FILLED INTO T1!
       theTree.clear(400511, true, MB_0, false, -1.0, true);
       iterator = theTree.addDecayTree(400443, true, MJPSI, true);
       iterator->addTrack(iMuon1, 13);
