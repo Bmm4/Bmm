@@ -326,6 +326,27 @@ truthBs2JpsiPiPiAsBsDump = cms.EDAnalyzer(
 # ######################################################################
 
 # ----------------------------------------------------------------------
+truthBd2JpsiKsDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(511),
+    type         = cms.untracked.int32(64),
+    GenType      = cms.untracked.int32(-64),
+    daughtersID  = cms.untracked.vint32(443, 13, -13, 310, 211, 211)
+    )
+
+# ----------------------------------------------------------------------
+truthBs2Jpsif0Dump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(531),
+    type         = cms.untracked.int32(65),
+    GenType      = cms.untracked.int32(-65),
+    daughtersID  = cms.untracked.vint32(443, 9010221, 13, -13, 211, -211)
+    )
+
+
+# ----------------------------------------------------------------------
 truthBu2JpsiPiDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
@@ -365,15 +386,6 @@ truthBd2JpsiKstarDump = cms.EDAnalyzer(
     daughtersID  = cms.untracked.vint32(443, 13, -13, 313, 321, 211)
     )
 
-# ----------------------------------------------------------------------
-truthBd2JpsiKsDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(511),
-    type         = cms.untracked.int32(64),
-    GenType      = cms.untracked.int32(-64),
-    daughtersID  = cms.untracked.vint32(443, 13, -13, 310, 211, 211)
-    )
 
 # ----------------------------------------------------------------------
 truthBd2DstarPiDump = cms.EDAnalyzer(
@@ -608,6 +620,7 @@ truthRareLambdaBSequence = cms.Sequence(truthLambdaBToPPiDump
 truthB2DstarSequence     = cms.Sequence(truthBd2DstarPiDump)
 
 truthB2JpsiSequence      = cms.Sequence(truthBs2JpsiPhiDump
+                                        *truthBs2Jpsif0Dump
                                         *truthBs2JpsiPhiAsBpDump
                                         *truthBs2JpsiPhiAsBdDump
                                         *truthBs2JpsiPiPiAsBsDump
