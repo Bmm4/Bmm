@@ -926,7 +926,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 	vrtxRefit.push_back(tTrk);
       }
     }
-    if (vrtxRefit.size() < 2) throw PVRefitException(); // do not try to fit with less than two tracks
+    if (vrtxRefit.size() < 5) throw PVRefitException(); // do not try to fit with less than five tracks, else problems in CrossingPtBasedLinPtFinder
     if (fVerbose > 5) cout << "==> HFSequentialVertexFit::addCandidate(): refitting with vrtxRefit.size() = " << vrtxRefit.size() << endl;
 
     TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
