@@ -10,6 +10,7 @@
 #include "candAnaMuMu.hh"
 #include "candAnaBu2JpsiK.hh"
 #include "candAnaBs2JpsiPhi.hh"
+#include "candAnaBs2Jpsif0.hh"
 #include "candAnaDstar.hh"
 #include "candAnaHh.hh"
 #include "candAnaBd2DstarPi.hh"
@@ -208,6 +209,11 @@ void bmmReader::readCuts(TString filename, int dump) {
 
     if (!strcmp(className, "candAnaBs2JpsiPhi")) {
       candAna *a = new candAnaBs2JpsiPhi(this, "candAnaBs2JpsiPhi", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
+    if (!strcmp(className, "candAnaBs2Jpsif0")) {
+      candAna *a = new candAnaBs2Jpsif0(this, "candAnaBs2Jpsif0", cutFile);
       lCandAnalysis.push_back(a);
     }
 

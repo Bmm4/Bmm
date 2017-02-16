@@ -573,10 +573,12 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	iterator->addTrack(iPion, 211);
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
-	cout << "correct type unconstrained fit mass: " << theTree7.fTV.mass << " for type = " << 3000000 + fType << endl;
 	TAnaCand *pCand = theTree7.getAnaCand();
+	if (pCand && pCand->fPlab.Perp() < 13.) {
+	  cout << "XXXXXX low-pT candidate" << endl;
+	}
 	if (0 == pCand) {
-	  cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
+	  if (fVerbose > 1) cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
 	} else {
 	  theTree7.clear(400511, true, MB_0, false, -1.0, true);
 	  iterator = theTree7.addDecayTree(400443, true, MJPSI, true);
@@ -589,7 +591,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  aSeq.doFit(&theTree7);
 	  pCand->fMassC  = theTree7.fTV.mass;
 	  pCand->fMassCE = theTree7.fTV.masserr;
-	  cout << "correct type constrained fit mass: " << theTree7.fTV.mass << endl;
 	}
 
 	// -- add the swapped kstar mass hypothesis
@@ -621,10 +622,9 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	  iterator->addTrack(iPion, 211);
 	  if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar with wrong K/pi assignments" << endl;
 	  aSeq.doFit(&theTree8);
-	  cout << "wrong type unconstrained fit mass: " << theTree8.fTV.mass << endl;
 	  TAnaCand *pCand = theTree8.getAnaCand();
 	  if (0 == pCand) {
-	    cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
+	    if (fVerbose > 1) cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
 	  } else {
 	    theTree8.clear(400511, true, MB_0, false, -1.0, true);
 	    iterator = theTree8.addDecayTree(400443, true, MJPSI, true);
@@ -637,10 +637,57 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	    aSeq.doFit(&theTree8);
 	    pCand->fMassC  = theTree8.fTV.mass;
 	    pCand->fMassCE = theTree8.fTV.masserr;
-	    cout << "wrong type constrained fit mass: " << theTree8.fTV.mass << endl;
 	  }
 	}
       }
+
+      // -- special case for the Bs -> J/psi f0
+      if (65 == fType) {
+	int iMuon1(-1), iMuon2(-1), iPion1(-1), iPion2(-1);
+	HFDecayTree theTree4(3000000 + fType, true, MBS, false, -1.0, true);
+	HFDecayTreeIterator iterator = theTree4.addDecayTree(300443, false, MJPSI, false);
+	for (unsigned int ii = 0; ii < trackIndices.size(); ++ii) {
+	  IDX = trackIndices[ii];
+	  ID  = gHFEvent->getSimpleTrackMCID(IDX);
+	  if (13 == TMath::Abs(ID)) {
+	    if (iMuon1 < 0) {
+	      iMuon1 = IDX;
+	    } else {
+	      iMuon2 = IDX;
+	    }
+	  }
+	  if (211 == TMath::Abs(ID)) {
+	    if (iPion1 < 0) {
+	      iPion1 = IDX;
+	    } else {
+	      iPion2 = IDX;
+	    }
+	  }
+	}
+	iterator->addTrack(iMuon1, 13);
+	iterator->addTrack(iMuon2, 13);
+	iterator = theTree4.addDecayTree(300332, false, MF_0, false);
+	iterator->addTrack(iPion1, 211);
+	iterator->addTrack(iPion2, 211);
+	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bs2JpsiPhi" << endl;
+	aSeq.doFit(&theTree4);
+	TAnaCand *pCand = theTree4.getAnaCand();
+	if (0 == pCand) {
+	} else {
+	  theTree4.clear(400531, true, MBS, false, -1.0, true);
+	  iterator = theTree4.addDecayTree(400443, true, MJPSI, true);
+	  iterator->addTrack(iMuon1, 13);
+	  iterator->addTrack(iMuon2, 13);
+	  iterator = theTree4.addDecayTree(400332, false, MF_0, false);
+	  iterator->addTrack(iPion1, 211);
+	  iterator->addTrack(iPion2, 211);
+	  theTree4.addNodeCut(&HFDecayTree::passNever, 1., 1., "never");
+	  aSeq.doFit(&theTree4);
+	  pCand->fMassC  = theTree4.fTV.mass;
+	  pCand->fMassCE = theTree4.fTV.masserr;
+	}
+      }
+
 
       // -- special case for B0 -> J/psi Kstar reconstructed as B+ -> J/psi K (leaving out the pion)
       if (10 == fType) {
