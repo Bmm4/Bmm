@@ -106,11 +106,14 @@ echo " job   rootfiles: $FILE1, $FILE2, $FILE3"
 echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
 lcg-del -b -D srmv2 -l "$PFNS/$STORAGE2/$FILE3"
 # -- switch to data_replica.py
-ls `pwd`/$FILE3 > dr.list
-echo "--> cat dr.list: "
-cat dr.list
-echo "--> AM running data_replica.py: "
-/mnt/t3nfs01/data01/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE2"
+#ls `pwd`/$FILE3 > dr.list
+#echo "--> cat dr.list: "
+#cat dr.list
+#echo "--> AM running data_replica.py: /mnt/t3nfs01/data01/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list $STORAGE3 "
+#/mnt/t3nfs01/data01/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE3"
+
+# -- switch to xrdcp
+xrdcp $FILE3 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE3
 
 echo "--> lcg-ls : $PFNS/$STORAGE2/$FILE3"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE2/$FILE3"
