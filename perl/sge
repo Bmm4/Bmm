@@ -1,6 +1,6 @@
 #!/usr/bin/perl
 
-# -- Usage: $BMMBASE/perl/sge -s [r|p|h] -q [short.q] [-n njobs] [-f first -l last] -c 'qrls $n'
+# -- Usage: $BMMBASE/perl/sge [-s r|p|h] [-q short.q] [-n njobs] [-f first -l last] -c 'qrls $n'
 #
 # Examples: $BMMBASE/perl/sge -q short.q -c 'qdel $n'
 #           $BMMBASE/perl/sge -f 123456 -l 123458 -c 'qhold $n'
@@ -10,6 +10,7 @@
 #           p pending
 #           h hold
 #
+# 2017/02/20   bug fixes, e.g. allow for leading ' ' before job ID
 # 2017/02/02   first shot
 #
 # ----------------------------------------------------------------------
@@ -31,7 +32,7 @@ if ($opt_q) {
 
 my $state = " ";
 if ($opt_s) {
-    $queue = "-s $opt_s";
+    $state = "-s $opt_s";
 }
 
 @joblines = `qstat -u $user $queue $state`;
@@ -39,7 +40,11 @@ my $njobs = 0;
 for ($i = 2; $i <= $#joblines; $i++) {
     $line = $joblines[$i];
     chop($line);
+    $line =~ s/\s{2,99}/\ /g;
+    $line =~ s/^\s//g;
     $number = substr($line, 0, index($line, ' '));
+    if ($opt_f && ($number < $opt_f)) {next;}
+    if ($opt_l && ($number > $opt_l)) {next;}
     ($cmd = $opt_c) =~ s/\$n/$number/g;
     if ($opt_c) {
 	print "$cmd\n";
