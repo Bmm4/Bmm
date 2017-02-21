@@ -39,7 +39,7 @@ generator.PythiaParameters.processParameters.extend(EvtGenExtraParticles)
 configurationMetadata = cms.untracked.PSet(
     version = cms.untracked.string('$Revision: 1.1 $'),
     name = cms.untracked.string('$Source: Configuration/Generator/python/PYTHIA8_Bd2MuMu_EtaPtFilter_CUEP8M1_14TeV_cff.py $'),
-    annotation = cms.untracked.string(Tracker TDR: Pythia8+EvtGen130 generation of B0 --> Mu+Mu-, 14TeV, Tune CUETP8M1')
+    annotation = cms.untracked.string('Tracker TDR: Pythia8+EvtGen130 generation of B0 --> Mu+Mu-, 14TeV, Tune CUETP8M1')
     )
 
 bfilter = cms.EDFilter(
