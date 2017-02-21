@@ -574,9 +574,6 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	if (fVerbose > 5) cout << "==>HFTruthCandidate> sequential fit for Bd2JpsiKstar" << endl;
 	aSeq.doFit(&theTree7);
 	TAnaCand *pCand = theTree7.getAnaCand();
-	if (pCand && pCand->fPlab.Perp() < 13.) {
-	  cout << "XXXXXX low-pT candidate" << endl;
-	}
 	if (0 == pCand) {
 	  if (fVerbose > 1) cout << "unconstrained fit failed, not fitting with J/psi constraint" << endl;
 	} else {
