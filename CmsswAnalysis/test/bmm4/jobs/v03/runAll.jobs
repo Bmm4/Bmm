@@ -104,6 +104,19 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BsToJPsiPhi_2K2MuPtEtaFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Summer12_DR53X-XXXX.py -f ../../../catalogs/Summer12_DR53X/BdToKPi_EtaPtFilter_8TeV-pythia6-evtgen -s $version -n 5 -l;  \ \n";
 
+$dataset = "Fall11_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Fall11_private-XXXX.py -f ../../../catalogs/Fall11_private/BsToMuMu -s $version -n 50 -l; \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Fall11_private-XXXX.py -f ../../../catalogs/Fall11_private/BuToJpsiK -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Fall11_private-XXXX.py -f ../../../catalogs/Fall11_private/BsToJpsiPhi -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Fall11_private-XXXX.py -f ../../../catalogs/Fall11_private/BuToJpsiK -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-Fall11_private-XXXX.py -f ../../../catalogs/Fall11_private/BsToJpsiPhiAcc -s $version -n 50 -l;  \ \n";
+
+# -- Winter17 private MC (for 2012 conditions)
+$dataset = "Winter17_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 10 -l;  \ \n";
+
 # -- Summer15 private MC
 $dataset = "Summer15_private";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
@@ -122,26 +135,29 @@ $dataset = "Summer16_private";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPhi -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0Acc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0 -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarAcc -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 50 -l;  \ \n";
+
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPiPi -s $version -n 50 -l;  \ \n";
+
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToMuMu -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BcToJpsiMuNu -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarAcc -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPiPi -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm0 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm2 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm3 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm4 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm5 -s $version -n 50 -l;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToPiMuNuAcc -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToKMuNuAcc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BcToJpsiMuNu -s $version -n 50 -l;  \ \n";
+
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LambdaBToPK -s $version -n 50 -l;  \ \n";
 
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToKMuNu -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToPiMuNuAcc -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToPiMuNu -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LambdaBToPMuNu -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToPiMuMu -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToPiMuMuAcc -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToPiMuMu -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToKMuNuAcc -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToKMuNu -s $version -n 200 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LambdaBToPMuNu -s $version -n 200 -l;  \ \n";
+
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm35 -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToMuMu_bsmm40 -s $version -n 50 -l;  \ \n";
