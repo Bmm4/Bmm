@@ -11,7 +11,7 @@ bmmDump = cms.EDAnalyzer(
     muonQualityString  = cms.untracked.string("AllGlobalMuons"),
     muonPt             = cms.untracked.double(4.0),
     pt                 = cms.untracked.double(5.),
-    chi2               = cms.untracked.double(10.),
+    chi2               = cms.untracked.double(5.),
     pvips              = cms.untracked.double(5.),
     flsxy              = cms.untracked.double(4.),
     flxy               = cms.untracked.double(9999.),
@@ -35,7 +35,7 @@ bupsikpDump = cms.EDAnalyzer(
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
     muonQualityString  = cms.untracked.string("AllGlobalMuons"),
     muonPt             = cms.untracked.double(4.0),
-    chi2               = cms.untracked.double(10.),
+    chi2               = cms.untracked.double(5.),
     pvips              = cms.untracked.double(5.),
     flsxy              = cms.untracked.double(4.0),
     flxy               = cms.untracked.double(9999.),
@@ -65,7 +65,7 @@ bspsiphiDump = cms.EDAnalyzer(
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
     muonQualityString  = cms.untracked.string("AllGlobalMuons"),
     muonPt             = cms.untracked.double(4.0),
-    chi2               = cms.untracked.double(10.),
+    chi2               = cms.untracked.double(5.),
     pvips              = cms.untracked.double(5.),
     flsxy              = cms.untracked.double(4.0),
     flxy               = cms.untracked.double(9999.),
@@ -98,7 +98,7 @@ bspsif0Dump = cms.EDAnalyzer(
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
     muonQualityString  = cms.untracked.string("AllGlobalMuons"),
     muonPt             = cms.untracked.double(4.0),
-    chi2               = cms.untracked.double(10.),
+    chi2               = cms.untracked.double(5.),
     pvips              = cms.untracked.double(5.),
     flsxy              = cms.untracked.double(4.0),
     flxy               = cms.untracked.double(9999.),
@@ -130,7 +130,7 @@ bdpsikstarDump = cms.EDAnalyzer(
     BeamSpotLabel      = cms.untracked.InputTag("offlineBeamSpot"),
     muonQualityString  = cms.untracked.string("AllGlobalMuons"),
     muonPt             = cms.untracked.double(4.0),
-    chi2               = cms.untracked.double(10.),
+    chi2               = cms.untracked.double(5.),
     pvips              = cms.untracked.double(5.),
     flsxy              = cms.untracked.double(4.0),
     flxy               = cms.untracked.double(9999.),
@@ -151,6 +151,7 @@ bdpsikstarDump = cms.EDAnalyzer(
     pvWeight           = cms.untracked.double(0.6),
     type               = cms.untracked.int32(511)
     )
+
 
 # ######################################################################
 # Sequences
