@@ -156,6 +156,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
       theTree.addNodeCut(&HFDecayTree::passFlsxy, fFlsxy,     1.e9, "flsxy");
       theTree.addNodeCut(&HFDecayTree::passPvips,     -1,   fPvIpS, "pvips");
+      theTree.addNodeCut(&HFDecayTree::passChi2Dof,  -1.,    fChi2, "chi2dof");
 
       fSequentialFitter->doFit(&theTree);
       pCand = theTree.getAnaCand();
@@ -180,6 +181,7 @@ void HFBd2JpsiKstar::analyze(const edm::Event& iEvent, const edm::EventSetup& iS
       theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,  fCandHi, "mass");
       theTree.addNodeCut(&HFDecayTree::passFlsxy, fFlsxy,     1.e9, "flsxy");
       theTree.addNodeCut(&HFDecayTree::passPvips,     -1,   fPvIpS, "pvips");
+      theTree.addNodeCut(&HFDecayTree::passChi2Dof,  -1.,    fChi2, "chi2dof");
       theTree.addNodeCut(&HFDecayTree::passNever,     1.,       1., "never");
 
       fSequentialFitter->doFit(&theTree);
