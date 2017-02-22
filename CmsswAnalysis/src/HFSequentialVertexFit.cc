@@ -229,7 +229,7 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
 
   tree->fTV.setMaxDoca(getMaxDoca(kinParticles));
   tree->fTV.setMinDoca(getMinDoca(kinParticles));
-  tree->fTV.setChi2(kinPart->chiSquared());
+  tree->fTV.setChi2Dof(kinPart->chiSquared()/kinVertex->degreesOfFreedom());
 
   return true;
 
@@ -974,7 +974,11 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     const TVector3 p1(currentPV.position().x(), currentPV.position().y(), currentPV.position().z());
     const TVector3 p2(kinVertex->vertexState().position().x(), kinVertex->vertexState().position().y(), kinVertex->vertexState().position().z());
     const TVector3 pDiff = p2-p1;
-    tree->fTV.vtxDistanceCosAlphaPlab = plab.Dot(pDiff) / (plab.Mag() * pDiff.Mag());
+    const TVector3 pDiffXY = TVector3(pDiff.X(), pDiff.Y(), 0.);
+    const TVector3 ptrans  = TVector3(plab.X(), plab.Y(), 0.);
+
+    tree->fTV.vtxDistanceCosAlphaPlab   = plab.Dot(pDiff) / (plab.Mag() * pDiff.Mag());
+    tree->fTV.vtxDistanceCosAlphaPtrans = ptrans.Dot(pDiffXY) / (ptrans.Mag() * pDiffXY.Mag());
 
     // compute the delta chi2 using the Kalman vertex fitter and only tracks with weight > 0.5
     vrtxRefit.clear();
@@ -1044,6 +1048,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     const double sinTheta = TMath::Sin(plab.Theta());
     const double flightlength2d = (sinTheta != 0 ? tree->fAnaVertex.fDxy / sinTheta : 0);
     double TVtauxy = flightlength2d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPlab * massOverC;
+    TVtauxy = flightlength2d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPtrans * massOverC;
     tree->fTV.tauxy = TVtauxy;
     double TVtauxyE = TMath::Sqrt(ROOT::Math::Similarity(tree->fTV.vtxDistanceCov, tree->fTV.vtxDistanceJac2d)) * massOverC;
     tree->fTV.tauxyE = TVtauxyE;
