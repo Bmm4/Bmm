@@ -65,29 +65,29 @@ typedef ROOT::Math::SVector<double,9> jac9_t;
 // - that are used in the choice of the PV
 class treeVariables {
 public:
-  treeVariables() {}; 
-  ~treeVariables() {}; 
-  bool valid; 
+  treeVariables() {};
+  ~treeVariables() {};
+  bool valid;
   // -- this is always zero to allow failing candidates (avoid saving them, e.g. when only computing the mass-constrained version)
-  double zero; 
-  bool zeroV; 
+  double zero;
+  bool zeroV;
   // -- variables and flags for node cuts
   void setMass(double x) {
     mass = x;
     //    std::cout << "setting mass " << x << " for treeVariables = " << this << " &m = " << &mass << std::endl;
   }
-  double mass; 
+  double mass;
   double massLo, massHi;
   void setPt(double x) {pt = x;}
-  double pt; 
+  double pt;
   double ptLo, ptHi;
   void setMassE(double x) {masserr = x;}
-  double masserr; 
-  void setChi2(double x) {chi2 = x;}
-  double chi2; 
-  double chi2Lo, chi2Hi; 
+  double masserr;
+  void setChi2Dof(double x) {chi2dof = x;}
+  double chi2dof;
+  double chi2dofLo, chi2dofHi;
   void setPvips(double x) {pvips = x;}
-  double pvips; 
+  double pvips;
   double pvipsLo, pvipsHi;
   void setMaxDoca(double x) {maxDoca = x;}
   void setMinDoca(double x) {minDoca = x;}
@@ -96,16 +96,16 @@ public:
   void setFlxy(double x)  {flxy  = x;}
   void setFlsxy(double x) {flsxy = x;}
   void setFls3d(double x) {fls3d = x;}
-  double flxy,  flxyLo,  flxyHi; 
-  double flsxy, flsxyLo, flsxyHi; 
-  double fls3d, fls3dLo, fls3dHi; 
+  double flxy,  flxyLo,  flxyHi;
+  double flsxy, flsxyLo, flsxyHi;
+  double fls3d, fls3dLo, fls3dHi;
   int    pvIx, pvIx2;
   // -- PV choice
-  ImpactParameters pvImpParams, pvImpParams2nd;   
-  double pvLip, pvLip2;   
-  double pvLipE, pvLipE2; 
+  ImpactParameters pvImpParams, pvImpParams2nd;
+  double pvLip, pvLip2;
+  double pvLipE, pvLipE2;
   // -- candidate vertexing
-  double  vtxDistanceCosAlphaPlab;
+  double  vtxDistanceCosAlphaPlab, vtxDistanceCosAlphaPtrans;
   cov99_t vtxDistanceCov;
   jac9_t  vtxDistanceJac3d, vtxDistanceJac2d;
   double  diffChi2, tau3d, tau3dE, tauxy, tauxyE;
@@ -122,8 +122,8 @@ public:
   void clear() {fVar = 0; fVal = 0; fLoCut = fHiCut = 0.; fName = "unset"; }
   double *fVar;
   bool   *fVal; // valid?
-  double fLoCut, fHiCut; 
-  std::string fName; 
+  double fLoCut, fHiCut;
+  std::string fName;
 };
 
 
@@ -137,7 +137,7 @@ public:
   virtual ~HFDecayTree() { delete fpKinTree;}
 
   // -- NodeCuts
-  void addNodeCut(bool (HFDecayTree::*)(), double lo, double hi, const char *name = ""); 
+  void addNodeCut(bool (HFDecayTree::*)(), double lo, double hi, const char *name = "");
   bool passAllCuts();
   bool passMass()    {
     // std::cout << "passMass " << fTV.massLo << " < " << fTV.mass << " < " << fTV.massHi
@@ -156,6 +156,13 @@ public:
     // 	      << " for tree " << particleID() << " at " << this
     // 	      << std::endl;
     return ((fTV.maxDocaLo < fTV.maxDoca) && (fTV.maxDoca < fTV.maxDocaHi));
+  }
+  bool passChi2Dof() {
+    // std::cout << "passChi2Dof " << fTV.chi2dofLo << " < " << fTV.chi2dof << " < " << fTV.chi2dofHi
+    //  	      << " for tree " << particleID() << " at " << this
+    // 	      << " (fTV.maxDoca = " << fTV.maxDoca << ")"
+    //  	      << std::endl;
+    return ((fTV.chi2dofLo < fTV.chi2dof) && (fTV.chi2dof < fTV.chi2dofHi));
   }
   bool passPvips()   {
     // std::cout << "passPvips " << fTV.pvipsLo << " < " << fTV.pvips << " < " << fTV.pvipsHi
@@ -182,41 +189,41 @@ public:
     return false;
   }
 
-  
+
   // Constructing the tree structure: add a track with a given type and massFit
-  void addTrack(int trackIx, int trackID, bool massFit = true); 
+  void addTrack(int trackIx, int trackID, bool massFit = true);
 
   // To append an already constructed decay tree
-  void appendDecayTree(HFDecayTree subTree); 
+  void appendDecayTree(HFDecayTree subTree);
   // To get a reference to the subvertex
   HFDecayTreeIterator addDecayTree(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
-		
+
   void clear();
   // Variant to clear and initialize the tree with same signature as constructor
   void clear(int pID, bool doVertexing, double mass, bool massConstraint, double massSigma = -1.0, bool daughtersToPV = false);
-		
+
   // Accessing the track data
   HFDecayTreeTrackIterator getTrackBeginIterator();
   HFDecayTreeTrackIterator getTrackEndIterator();
-		
+
   HFDecayTreeIterator getVerticesBeginIterator();
   HFDecayTreeIterator getVerticesEndIterator();
-		
+
   void getAllTracks(std::vector<track_entry_t> *out_vector, int onlyThisVertex = 0);
   std::vector<track_entry_t> getAllTracks(int onlyThisVertex = 0);
   std::set<int> getAllTracksIndices(int onlyThisVertex = 0);
-		
+
   // Kinematic Tree associated stuff
   std::map<int,int> *getKinParticleMap();
   void setKinParticleMap(std::map<int,int> newMap);
   RefCountedKinematicTree *getKinematicTree();
   void setKinematicTree(RefCountedKinematicTree newTree);
   void resetKinematicTree(int recursive = 0);
-		
+
   // Reconstruction
   TAnaCand *getAnaCand();
   void setAnaCand(TAnaCand *cand);
-  
+
   // Debugging!
   void dump(unsigned indent = 0);
 
@@ -230,7 +237,7 @@ public:
   double maxDoca() { return fMaxDoca; };
   double minDoca() { return fMinDoca; };
   bool   daughtersToPV() { return fDaughtersToPV; }
-		
+
   void set_vertexing(bool vertexing) { fVertexing = vertexing; };
   void set_particleID(double particleID) { fParticleID = particleID; };
   void set_massConstraint(bool massConstraint) { fMassConstraint = massConstraint; };
@@ -240,12 +247,12 @@ public:
   void set_maxDoca(double maxDoca) { fMaxDoca = maxDoca; };
   void set_minDoca(double minDoca) { fMinDoca = minDoca; };
   void set_daughtersToPV(bool daughtersToPV) { fDaughtersToPV = daughtersToPV; }
-  
+
   void clearTreeVariables();
-  treeVariables fTV; 
+  treeVariables fTV;
   TAnaVertex fAnaVertex;
   double readBackMass() {return fTV.mass;}
-  
+
 private:
   double fParticleID; // if == 0, then no TAnaCandidate should be created.
   bool   fVertexing; // do a vertexing at this node
@@ -258,7 +265,7 @@ private:
   bool   fDaughtersToPV;
 
   void dumpTabs(unsigned indent); // used by dump()
-		
+
   std::set<track_entry_t> fTrackIndices; // added tracks
   std::map<int,int> fKinParticleMap; // map: trackIx -> entry in the daughter kinematic particles...
   std::vector<HFDecayTree> fSubVertices;
