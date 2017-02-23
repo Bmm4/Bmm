@@ -99,7 +99,7 @@ bool HFTrackListBuilder::operator()(int ix) {
 	continue;
 
       reco::TransientTrack tTrkCompare = fTTB->build((*fhTracks)[(*fCloseTracks)[j]]);
-      md.calculate(tTrkCur.initialFreeState(),tTrkCompare.initialFreeState());
+      md.calculate(tTrkCur.initialFreeState(), tTrkCompare.initialFreeState());
       if (md.distance() < minDoca)
 	minDoca = md.distance();
     }
