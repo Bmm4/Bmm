@@ -811,7 +811,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       TrajectoryStateOnSurface tsos = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
 							       RecoVertex::convertPos(currentPV.position()));
 
-      // compute with iptools
+      // compute with iptools (to obtain values and errors)
       currentIp = IPTools::signedDecayLength3D(tsos, GlobalVector(0,0,1), currentPV);
       cur3DIP = IPTools::absoluteImpactParameter(tsos, currentPV, a3d);
 
