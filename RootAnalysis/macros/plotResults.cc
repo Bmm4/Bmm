@@ -2019,6 +2019,10 @@ void plotResults::loopFunction1() {
 	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
 	}
 
+	if (fYear < 2016) {
+	  if (fb.ps == 0) fb.ps = 1;
+	}
+
 	// - include prescale values on y axis
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
