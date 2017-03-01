@@ -527,6 +527,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("taue", &fb.taue);
   t->SetBranchAddress("gtau", &fb.gtau);
+  t->SetBranchAddress("gfl3d", &fb.gfl3d);
 
   t->SetBranchAddress("bdt",&fb.bdt);
   t->SetBranchAddress("lip",&fb.lip);
@@ -546,6 +547,11 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("pvips3d", &fb.pvips3d);
   t->SetBranchAddress("pvw8",    &fb.pvw8);
   t->SetBranchAddress("pvz",     &fb.pvz);
+  t->SetBranchAddress("dzmin",   &fb.dzmin);
+  t->SetBranchAddress("dz12",    &fb.dz12);
+  t->SetBranchAddress("pvntrk",  &fb.pvntrk);
+  t->SetBranchAddress("pv2ntrk", &fb.pv2ntrk);
+
 
   t->SetBranchAddress("m1pix",    &fb.m1pix);
   t->SetBranchAddress("m2pix",    &fb.m2pix);
@@ -2707,22 +2713,44 @@ void plotClass::loadFiles(string afiles) {
   if (1) {
     string directory("../common/pidtables/");
     string name("");
-    if (2012 == fYear) {
-      name = directory + Form("%d-kaonPosFakeRate-mvaMuon.dat", fYear); fptFakePosKaons     = new PidTable(Form(name.c_str()));
-      name = directory + Form("%d-kaonNegFakeRate-mvaMuon.dat", fYear); fptFakeNegKaons     = new PidTable(Form(name.c_str()));
-      name = directory + Form("%d-pionPosFakeRate-mvaMuon.dat", fYear); fptFakePosPions     = new PidTable(Form(name.c_str()));
-      name = directory + Form("%d-pionNegFakeRate-mvaMuon.dat", fYear); fptFakeNegPions     = new PidTable(Form(name.c_str()));
-      name = directory + Form("%d-protonPosFakeRate-mvaMuon.dat", fYear); fptFakePosProtons = new PidTable(Form(name.c_str()));
-      name = directory + Form("%d-protonNegFakeRate-mvaMuon.dat", fYear); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+    if (2011 == fYear) {
+      directory = string("weights/pidtables/");
+      TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
+      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      double cutB(0.0), cutE(0.0);
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
 
-      name = directory + Form("%d-L1L2_data_all.dat", fYear);        fptT1     = new PidTable(name.c_str());
-      name = directory + Form("%d-L3_data_all.dat", fYear);          fptT2     = new PidTable(name.c_str());
-      name = directory + Form("%d-MuonID_data_all.dat", fYear);      fptM      = new PidTable(name.c_str());
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); fptFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
+      fptM = fptNegMuons;
+    } else if (2012 == fYear) {
+      directory = string("weights/pidtables/");
+      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      double cutB(0.0), cutE(0.0);
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); fptFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); fptFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
+      fptM = fptNegMuons;
     } else if (2016 == fYear) {
       directory = string("weights/pidtables/");
       TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-      string prefixB("bmm4-19"), prefixE("bmm4-19");
-      double cutB(0.0), cutE(0.0);
+      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      double cutB(0.08), cutE(0.08);
       if (0 && hcuts) {
 	muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
 	cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
