@@ -66,6 +66,13 @@ $combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2015
 $combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
 $combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016-$version.root dstar-data-dstarCharmonium2016?-*.root; cd -  ";
 
+$combine{"combined"} = "cd $SCRATCH; hadd -f bmm-mc-combined-LambdaBToPMuNu-$version.root bmm-mc-Summer16_private-LambdaBToPMuNu-$version.root bmm-mc-RunIISpring16DR80-LambdaBToPMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToKMuNu-$version.root bmm-mc-Summer16_private-BsToKMuNu-$version.root bmm-mc-RunIISpring16DR80-BsToKMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-$version.root bmm-mc-Summer16_private-BuToJpsiKp-$version.root bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-$version.root ; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-$version.root ; cd - ; ";
 
 # -----------------------------------------------
 # 2011
@@ -227,12 +234,12 @@ $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$odataset -c -p $pattern | sor
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
-
-$dataset  = "test-tauxy";
-$odataset  = "test";
-$mode = "test-tauxy"; $pattern = "bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.fake' c$mode-*  && cd - ";
-$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$odataset -c -p $pattern | sort > $mode " . &mCC;
+# -----------------------------------------------
+$dataset = "fakeMC";
+# -----------------------------------------------
+$mode = "$dataset-$version"; $pattern = "bmm-mc";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v BsToMuMu | grep -v BsToKMuMu | grep -v MuNu | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
@@ -598,3 +605,14 @@ $dataset = "umlLifetime";
 $mode = "$dataset";
 $jobs{$mode}   = "cd $mode && ".&runPlotCommand." -x 'bin/runPlot -p umllifetime -w ' $opt_w* && cd - ";
 $merges{$mode} = "-x $SEDIR/$dataset -p $opt_w";
+
+
+
+
+$dataset  = "test-tauxy";
+$odataset  = "test";
+$mode = "test-tauxy"; $pattern = "bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.fake' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$odataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
