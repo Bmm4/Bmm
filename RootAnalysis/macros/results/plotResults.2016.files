@@ -10,6 +10,11 @@ type=bspsiphi,acc,mcOff bf=(3.12,0.24)e-5  eff=(2.59,0.04)e-3 file=scratch/bmm-m
 type=bspsiphi,mc        bf=(3.12,0.24)e-5  eff=(1.21,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToJpsiPhi-v04.root
 type=bspsiphi,mcOff     bf=(3.12,0.24)e-5  eff=(1.21,0.07)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-v04.root
 type=bspsiphi,mcComb    bf=(3.12,0.24)e-5  eff=(1.21,0.01)e-4 file=scratch/bmm-mc-combined-BsToJpsiPhi-v04.root
+# -- Bs -> J/psi f0
+#type=bspsif,data       lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
+#type=bspsif,acc,mc     bf=(3.12,0.24)e-5  eff=(2.61,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BsToJpsifAcc-v04.root
+#type=bspsif,mc         bf=(3.12,0.24)e-5  eff=(9.50,0.01)e-5 file=scratch/bmm-mc-Winter17_private-BsToJpsif-v04.root
+#type=bspsif,mcOff      bf=(3.12,0.24)e-5  eff=(9.50,0.01)e-5 file=scratch/bmm-mc-Winter17_private-BsToJpsif-v04.root
 # -- B0
 type=bdpsikstar,data    lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bdpsikstar,mc      bf=(5.08,0.20)e-6  eff=(3.62,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BdToJpsiKstar-v04.root
