@@ -206,7 +206,6 @@ void candAnaFake::candAnalysis() {
     dist2PdTrigger(pt[im], d2trig, dm1, dm2);
     fFakeDistTrig[im]          = d2trig;
     fFakeDistMuon[im]          = distToMuon(pt[im]);
-    fFakeTis[im]               = tis(fpCand);
 
     if (0 == pm[im]) {
       fFakeGm[im]                     = -99;
@@ -394,7 +393,6 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("eta",     fFakeEta,            "eta[ntrk]/F");
   fFakeTree->Branch("phi",     fFakePhi,            "phi[ntrk]/F");
   fFakeTree->Branch("hp",      fFakeHP,             "hp[ntrk]/O");
-  fFakeTree->Branch("tis",     fFakeTis,            "tis[ntrk]/F");
   fFakeTree->Branch("dtrig",   fFakeDistTrig,       "dtrig[ntrk]/F");
   fFakeTree->Branch("dmuon",   fFakeDistMuon,       "dmuon[ntrk]/F");
 
