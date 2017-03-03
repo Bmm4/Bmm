@@ -23,6 +23,7 @@ genAnalysis::genAnalysis(TChain *tree, TString evtClassName): treeReader01(tree,
   cout << "==> genAnalysis: constructor..." << endl;
 
   f511Mass = f521Mass = f531Mass = f5122Mass = f541Mass = 0;
+  fB2JpsiCnt = 0;
 }
 
 // ----------------------------------------------------------------------
@@ -45,11 +46,55 @@ void genAnalysis::eventProcessing() {
   if (0) genB();
   if (0) printBdecays();
   if (0) bbbarCrossSection();
-  if (1) validateLb2PMuNu();
+  if (0) validateLb2PMuNu();
+  if (1) nonPromptJpsi();
 
 
 
 }
+
+// ----------------------------------------------------------------------
+void genAnalysis::nonPromptJpsi() {
+
+  TGenCand *pCand(0), *pMother(0), *pBrother(0);
+  int aid(0);
+  cout << "----------------------------------------------------------------------" << endl;
+  string decay("");
+  bool skip(true);
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    aid = TMath::Abs(pCand->fID);
+    if (443 == aid) {
+      pMother = fpEvt->getGenCand(pCand->fMom1);
+      if (((TMath::Abs(pMother->fID)%1000)/100) != 5 ) {
+	skip = true;
+	continue;
+      }
+      decay = "";
+      skip = false;
+      decay += Form("%d ->", TMath::Abs(pMother->fID));
+      ++fB2JpsiCnt;
+      pMother->dump();
+      for (int iD = pMother->fDau1; iD <= pMother->fDau2; ++iD) {
+	pBrother = fpEvt->getGenCand(iD);
+	pBrother->dump();
+	if (pBrother->fID == 22) continue; // ignore photons
+	if (pBrother->fMom1 == pMother->fNumber) {
+	  decay += Form(" %d", TMath::Abs(pBrother->fID));
+	}
+      }
+      fB2Jpsi[decay]++;
+    }
+  }
+
+
+  if (0) {
+    for (map<string, int>::iterator it = fB2Jpsi.begin(); it != fB2Jpsi.end(); ++it) {
+      cout << it->first << ": " << it->second << endl;
+    }
+  }
+}
+
 
 
 // ----------------------------------------------------------------------
@@ -127,7 +172,16 @@ void genAnalysis::yVsEta() {
 
 // ----------------------------------------------------------------------
 void genAnalysis::endAnalysis() {
-  compare2PDG(0, 2014, true);
+  double fraction(0.), fractionSum(0.);
+  for (map<string, int>::iterator it = fB2Jpsi.begin(); it != fB2Jpsi.end(); ++it) {
+    fraction = static_cast<double>(it->second)/fB2JpsiCnt;
+    fractionSum += fraction;
+    cout << it->first << ": " << fraction << endl;
+  }
+  cout << "sum of all fractions: " << fractionSum << endl;
+  //compare2PDG(0, 2014, true);
+
+
 
   for (unsigned int i = 0; i < fRunEvents.size(); ++i) {
     //    cout << fRunEvents[i].first << " " << fRunEvents[i].second << endl;
