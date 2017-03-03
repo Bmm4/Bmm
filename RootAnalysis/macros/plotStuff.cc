@@ -75,7 +75,7 @@ void plotStuff::makeAll(string what) {
   if (what == "dbx") {
     //    changeSetup("results", "yieldstability", "");
     yieldStability("bupsikData", "HLT");
-    yieldStability("bmmData", "HLT");
+    //yieldStability("bmmData", "HLT");
     //    yieldStability("bspsiphiData", "HLT");
     // yieldStability("bdpsikstarData", "HLT");
   }
@@ -1055,10 +1055,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	if (run < runMin) runMin = run;
 	if (find(vruns.begin(), vruns.end(), run) == vruns.end()) {
 	  vruns.push_back(run);
-	  //if (run == 283946) vruns.push_back(run);
 	}
-	//	if (run < 278800) continue;
-	//	if (run > 274000) break;
       }
     }
 
@@ -1077,11 +1074,15 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	intLumi += lumi.lumi(vruns[irun]);
 	segment.push_back(vruns[irun]);
 	if (intLumi > MINLUMI) {
+	  cout << "Adding " << segment[0] << ": " << intLumi << endl;
 	  runBlocks.insert(make_pair(make_pair(segment[0], intLumi), segment));
 	  intLumi = 0.;
 	  segment.clear();
 	}
       }
+      // -- add the last block as well
+      cout << "Final adding " << segment[0] << ": " << intLumi << endl;
+      runBlocks.insert(make_pair(make_pair(segment[0], intLumi), segment));
 
       // -- the result histograms
       vector<TH1D *> vRunHLT;
@@ -1097,10 +1098,13 @@ void plotStuff::yieldStability(string dsname, string trg) {
       string hname("");
       TDirectory *pDir = fHistFile->GetDirectory(fTreeDir.c_str());
       for (int ichan = 0; ichan < nchan; ++ichan) {
+	double lumi(0.), totalLumi(0.);
 	cout << "--> chan " << ichan << endl;
 	for (map<pair<int, double>, vector<int> >::iterator it = runBlocks.begin(); it != runBlocks.end(); ++it) {
 	  int iblock = it->first.first;
-	  cout << Form("new block: %d (%d) %4.1f: ", it->first.first, iblock, it->first.second) << endl;
+	  lumi = it->first.second;
+	  totalLumi += lumi;
+	  cout << Form("new block: %d (%d) Lumi = %4.1f/%4.1f ", it->first.first, iblock, lumi, totalLumi) << endl;
 	  hBlock->Reset();
 	  hBlock->SetName(Form("hBlock_%s_%d_chan%d", dsname.c_str(), iblock, ichan));
 	  for (unsigned int i = 0; i < it->second.size(); ++i) {
@@ -1108,7 +1112,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    h2 = (TH2D*)(fHistFile->Get(hname.c_str()));
 	    cout << it->second[i] << " (" << hname << ": " << h2 << ") ";
 	    if (0 == h2) continue;
-	    cout << "adding " << hname << endl;
+	    cout << "adding " << hname << " with lumi: " << lumi << endl;
 	    hBlock->Add(h2);
 	  }
 	  cout << endl;
@@ -1130,9 +1134,12 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    hBlock->Draw("colz");
 	    savePad(Form("hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
 	  }
-	  cout << "result = " << result << " +/- " << resultE << endl;
-	  vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result);
-	  vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE);
+	  cout << "result = " << result << " +/- " << resultE
+	       << " lumi-normalized = " << result/lumi << " +/- " << resultE/lumi
+	       << " (lumi = " << lumi << ")"
+	       << " filling into bin " << vRunHLT[ichan]->FindBin(static_cast<double>(iblock)) << endl;
+	  vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result/lumi);
+	  vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE/lumi);
 	}
       }
 
