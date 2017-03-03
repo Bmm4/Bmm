@@ -234,13 +234,14 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
     // 	 << " int: " << h->Integral(h->FindBin(expoLo), h->FindBin(expoHi))*h->GetBinWidth(1)
     // 	 << endl;
     double errN = 0.6*(h->GetBinContent(h->FindBin(expoLo - 0.1)) - h->GetBinContent(h->FindBin(expoLo)));
+    if (errN < 0.) errN = 0.1;
     f1->SetParameter(0, 0.8*g0); f1->SetParLimits(0, 0., h->GetMaximum());
     f1->SetParameter(1, mBp);    f1->SetParLimits(1, mBp - 1.*sBp, mBp + 1.*sBp);
     f1->SetParameter(2, sBp);    f1->SetParLimits(2, 0.010, 0.040);
     f1->SetParameter(3, 0.2);    f1->SetParLimits(3, 0.05, 0.60);
     f1->SetParameter(4, 5*sBp);  f1->SetParLimits(4, 0.050, 0.150);
-    f1->SetParameter(5, p0);     //f1->SetParLimits(3, 0., 1.e10);
-    f1->SetParameter(6, p1);     //f1->SetParLimits(4, -1.e10, 2.);
+    f1->SetParameter(5, p0);     f1->SetParLimits(5, 0., -1.);
+    f1->SetParameter(6, p1);     f1->SetParLimits(6, 0., -1.);
     f1->SetParameter(7, stepBp); f1->SetParLimits(7, stepBp - 2.*sBp, stepBp + 2.*sBp);
     f1->SetParameter(8, 2.*sBp); f1->SetParLimits(8, 2.*sBp - sBp, 2.*sBp + 1.5*sBp);
     f1->SetParameter(9, errN);   f1->SetParLimits(9, 0., h->GetMaximum());
@@ -258,18 +259,19 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
     f1->SetParameter(1, fPar[1]);	if (limitpars) f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
     f1->SetParameter(2, fPar[2]);	if (limitpars) f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
     f1->SetParameter(3, fPar[3]);       if (limitpars) f1->SetParLimits(3, 0., 1.);
-    f1->SetParameter(4, fPar[4]);	if (limitpars)  f1->SetParLimits(4, fPar[4] - limitpars*fParE[4], fPar[4] + limitpars*fParE[4]);
+    f1->SetParameter(4, fPar[4]);	if (limitpars)  f1->SetParLimits(4, fPar[2] + limitpars*fParE[2], fPar[4] + limitpars*fParE[4]);
     f1->SetParameter(5, scale*fPar[5]); //f1->SetParLimits(5, pol0 - pol0E, pol0 + pol0E);
     f1->SetParameter(6, scale*fPar[6]); //f1->SetParLimits(6, pol1 - pol1E, pol1 + pol1E);
     f1->FixParameter(7, fPar[7]);
     f1->FixParameter(8, fPar[8]);
-    double shift = (limitpars < 5?limitpars*0.1: 0.6);
-    f1->SetParameter(9, scale*fPar[9]);	if (limitpars) f1->SetParLimits(9, scale*fPar[9]*(1.-shift), scale*fPar[9]*(1.+shift));
+    f1->SetParameter(9, scale*fPar[9]);	if (limitpars) f1->SetParLimits(9, scale*fPar[9]*0.2, scale*fPar[9]*1.5);
     if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
+  //  if (fVerbose) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
+  h->SetMinimum(0.);
   if (h->GetSumOfWeights() > h->GetEntries()) {
     fitopt += "w";
     h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
