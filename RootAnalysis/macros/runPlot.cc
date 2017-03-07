@@ -51,6 +51,20 @@ int main(int argc, char *argv[]) {
     if ("nada" == setup) setup = "";
   }
 
+  if (2012 == year) {
+    if ("nada" == files) files = "plotResults.2012.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "";
+  }
+
+  if (2011 == year) {
+    if ("nada" == files) files = "plotResults.2011.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "";
+  }
+
 
   // -- run everything
   if ("nada" == plot) {

@@ -11,7 +11,7 @@ struct redTreeData {
 
   bool gmuid, gmutmid, gmumvaid, gmupt, gmueta, gtqual, gtpt, gteta;
 
-  double pvlip, pvlips, pv2lip, pv2lips, pvip, pvips, pvip3d, pvips3d, dzmin;
+  double pvlip, pvlips, pv2lip, pv2lips, pvip, pvips, pvip3d, pvips3d, dzmin, dz12;
   int pvntrk, pv2ntrk;
 
   int q, type;

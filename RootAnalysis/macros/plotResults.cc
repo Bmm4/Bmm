@@ -710,7 +710,7 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   tl->DrawLatexNDC(0.2, 0.25, Form("#varepsilon"));
   tl->DrawLatexNDC(0.25, 0.25, Form("= %4.3f ", teta->GetSumOfWeights()/heta->GetSumOfWeights()));
 
-  c1->SaveAs(Form("%s/genSummary-%s.pdf", fDirectory.c_str(), dsname.c_str()));
+  c1->SaveAs(Form("%s/genSummary-%d-%s.pdf", fDirectory.c_str(), fYear, dsname.c_str()));
 
 }
 
@@ -2017,6 +2017,10 @@ void plotResults::loopFunction1() {
 	  fhW8MassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass, fW8MisId);
 	} else {
 	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	}
+
+	if (fYear < 2016) {
+	  if (fb.ps == 0) fb.ps = 1;
 	}
 
 	// - include prescale values on y axis
