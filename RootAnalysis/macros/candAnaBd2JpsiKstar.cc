@@ -10,6 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBd2JpsiKstar::candAnaBd2JpsiKstar(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBd2JpsiKstar");
   fGenKTmi = fGenPiTmi = fRecKTmi = fRecPiTmi = -1;
   BLIND = 0;
   cout << "==> candAnaBd2JpsiKstar: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -105,8 +106,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
     }
-
-    ///////added by jmonroy //////////////////////////////
 
     if (pD->fType == KSTARTYPE ) {                                            //is there a KSTARTYPE ???? I defined it in the .hh
       if ((MKPILO < pD->fMass) && (pD->fMass < MKPIHI)) fGoodMKPI = true;
@@ -205,7 +204,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
     fPiEtaGen    = -99.;
   }
 
-  fDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
+  fKstarDeltaR  = p1->fPlab.DeltaR(p2->fPlab);
 
   TLorentzVector ka, pi;
   ka.SetPtEtaPhiM(fKaPt, fKaEta, fKaPhi, MKAON);
@@ -216,44 +215,23 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fKstarEta  = kstarCand.Eta();
   fKstarPhi  = kstarCand.Phi();
 
-  fGoodDeltaR = (fDeltaR < DELTAR);
+  fGoodDeltaR = (fKstarDeltaR < DELTAR);
   fGoodMKPI    = ((MKPILO < fMKPI ) && (fMKPI < MKPIHI));
 
   candAna::candAnalysis();
-  fGoodTracksPt = fGoodTracksPt && ((fKaPt > TRACKPTLO) && (fPiPt > TRACKPTLO));
-
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKPI && fGoodDeltaR &&fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
 
+  fGoodTracks    = fGoodTracks    && fKaTkQuality && fPiTkQuality;
+  fGoodTracksPt  = fGoodTracksPt && ((TRACKPTLO < fKaPt) && (fKaPt < TRACKPTHI) && (TRACKPTLO < fPiPt) && (fPiPt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaEta ) && (fKaEta < TRACKETAHI) && (TRACKETALO < fPiEta ) && (fPiEta < TRACKETAHI));
 
-  if(0) { // misid test d.k.
-    if( (p1->fIndex == fpMuon1->fIndex) || (p1->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<p1->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<endl;
-    if( (p2->fIndex == fpMuon1->fIndex) || (p2->fIndex ==fpMuon2->fIndex) )
-      cout<<" Pion is a MUON "<<fEvt<<" "<<fpCand<<" "<<p2->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<endl;
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodMKPI && fGoodDeltaR;
 
-    TVector3 muonMom1 = fpMuon1->fPlab;
-    TVector3 muonMom2 = fpMuon2->fPlab;
-
-    TVector3 trackMom = p1->fPlab;  // test track momentum
-    double dR1 = muonMom1.DeltaR(trackMom);
-    double dR2 = muonMom2.DeltaR(trackMom);
-
-    if(dR1<dR2) { fKaMuMatchR4 = dR1; fKaMuMatchR5 = dR2;}
-    else        { fKaMuMatchR4 = dR2; fKaMuMatchR5 = dR1;}
-
-    trackMom = p2->fPlab;  // test track momentum
-    dR1 = muonMom1.DeltaR(trackMom);
-    dR2 = muonMom2.DeltaR(trackMom);
-
-    if(dR1<dR2) { fPiMuMatchR4 = dR1; fPiMuMatchR5 = dR2;}
-    else        { fPiMuMatchR4 = dR2; fPiMuMatchR5 = dR1;}
-  } // end special test
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
