@@ -10,6 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBs2JpsiPhi::candAnaBs2JpsiPhi(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBs2JpsiPhi");
   fGenK1Tmi = fGenK2Tmi = fRecK1Tmi = fRecK2Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBs2JpsiPhi: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -136,28 +137,22 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fMKPi1   = pi1Cand.M();
   fMKPi2   = pi2Cand.M();
 
-  fGoodDeltaR   = (fDeltaR < DELTAR);
+  fGoodDeltaR   = (fPhiDeltaR < DELTAR);
   fGoodMKK      = ((MKKLO < fMKK ) && (fMKK < MKKHI));
 
   candAna::candAnalysis();
-
-  fGoodTracks    = fGoodTracks    && fKaonTkQuality;
-  fGoodTracksPt  = fGoodTracksPt
-    && ((fKa1Pt > TRACKPTLO) && (fKa1Pt > TRACKPTHI))
-    && ((fKa2Pt > TRACKPTLO) && (fKa2Pt > TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta
-    && (fKa1Eta > TRACKETALO) && (fKa1Eta < TRACKETAHI)
-    && (fKa2Eta > TRACKETALO) && (fKa2Eta < TRACKETAHI)
-    ;
-
-
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
+
+  fGoodTracks    = fGoodTracks    && fKa1TkQuality && fKa2TkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKa1Pt)  && (fKa1Pt < TRACKPTHI))  && ((TRACKPTLO < fKa2Pt)  && (fKa2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fKa1Eta) && (fKa1Eta < TRACKETAHI) && (TRACKETALO < fKa2Eta) && (fKa2Eta < TRACKETAHI);
+
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass   && (fJpsiPt > 7.) && fGoodMKK      && fGoodDeltaR;
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
