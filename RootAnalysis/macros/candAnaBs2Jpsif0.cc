@@ -10,6 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBs2Jpsif0::candAnaBs2Jpsif0(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBs2Jpsif0");
   fGenPi1Tmi = fGenPi2Tmi = fRecPi1Tmi = fRecPi2Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBs2Jpsif0: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -137,23 +138,18 @@ void candAnaBs2Jpsif0::candAnalysis() {
 
   candAna::candAnalysis();
 
-  fGoodTracks    = fGoodTracks    && fPi1TkQuality && fPi2TkQuality;
-  fGoodTracksPt  = fGoodTracksPt
-    && ((fPi1Pt > TRACKPTLO) && (fPi1Pt > TRACKPTHI))
-    && ((fPi2Pt > TRACKPTLO) && (fPi2Pt > TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta
-    && (fPi1Eta > TRACKETALO) && (fPi1Eta < TRACKETAHI)
-    && (fPi2Eta > TRACKETALO) && (fPi2Eta < TRACKETAHI)
-    ;
-
-
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMPIPI && fGoodDeltaR && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
+
+  fGoodTracks    = fGoodTracks    && fPi1TkQuality && fPi2TkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fPi1Pt)  && (fPi1Pt < TRACKPTHI)   && (TRACKPTLO < fPi2Pt)   && (fPi2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fPi1Eta) && (fPi1Eta < TRACKETAHI) && (TRACKETALO < fPi2Eta) && (fPi2Eta < TRACKETAHI);
+
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodMPIPI && fGoodDeltaR && fGoodTracksPt && fGoodTracksEta;
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);

@@ -19,6 +19,7 @@ struct near_track_t {
 
 // ----------------------------------------------------------------------
 candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
+  fAnaCuts.setAcName("candAna");
   fpReader = pReader;
   fVerbose = fpReader->fVerbose;
   fDbx     = -2;
@@ -169,10 +170,12 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   if (fVerbose>0) {
     cout << "======================================================================" << endl;
     int cnt(0);
+    double mass(0.);
     for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
       TAnaCand *pCand = fpEvt->getCand(iC);
       if (TYPE == pCand->fType) {
-	cout << "type = " << pCand->fType << ", mass = " << pCand->fMass << " : ";
+	mass = pCand->fMass;
+	cout << "type = " << pCand->fType << ", mass = " << mass << " : ";
 	for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
 	  if (i < 0) continue;
 	  TAnaTrack *pT = fpEvt->getSigTrack(i);
@@ -184,7 +187,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     }
 
     cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
-	 << fVerbose << " MC: " << fIsMC << " n(" << TYPE << ") = " << cnt << endl;
+	 << fVerbose << " MC: " << fIsMC << " n(" << TYPE << ") = " << cnt << " m = " << mass << endl;
   }
 
   // -- trigger selection (trigger matching is done AFTER [or in] candAnalysis)
@@ -834,9 +837,6 @@ void candAna::candAnalysis() {
 
   fChan = detChan(fMu1Eta, fMu2Eta);
 
-  if (0 && fMu2Pt < 4.0) {
-    cout << "======== chan = " << fChan << " hlt1 = " << fGoodHLT1 << " m2pt = " << fMu2Pt << " " << fL1SeedString << endl;
-  }
   fTOS = tos(fpCand);
   fTIS = tis(fpCand);
   fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
@@ -857,8 +857,8 @@ void candAna::candAnalysis() {
   if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
   fGoodMuonsEta   = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
-  fGoodTracksPt   = ((fMu1Pt > TRACKPTLO) && (fMu1Pt < TRACKPTHI) && (fMu2Pt > TRACKPTLO) && (fMu2Pt < TRACKPTHI));
-  fGoodTracksEta  = ((fMu1Eta > TRACKETALO) && (fMu1Eta < TRACKETAHI) && (fMu2Eta > TRACKETALO) && (fMu2Eta < TRACKETAHI));
+  fGoodTracksPt   = ((TRACKPTLO < fMu1Pt) && (fMu1Pt < TRACKPTHI) && (TRACKPTLO < fMu2Pt) && (fMu2Pt < TRACKPTHI));
+  fGoodTracksEta  = ((TRACKETALO < fMu1Eta) && (fMu1Eta < TRACKETAHI) && (TRACKETALO < fMu2Eta) && (fMu2Eta < TRACKETAHI));
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
@@ -897,6 +897,8 @@ void candAna::candAnalysis() {
   fGoodLip          = fGoodPvLip;
   fGoodLipS         = fGoodPvLipS;
   fGoodAcceptance   = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
+
+  fGoodJpsiCuts     = true; // this will be overridden in the derived classes
 }
 
 // ----------------------------------------------------------------------
@@ -904,8 +906,9 @@ void candAna::candEvaluation() {
   fAnaCuts.update();
 
   fGoodCNC          =
-    fGoodQ
-    && fGoodAcceptance
+    fGoodAcceptance
+    && fGoodQ
+    && fGoodMuonsGmID
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
@@ -933,18 +936,31 @@ void candAna::candEvaluation() {
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
-  fPreselection = fGoodQ && fGoodMuonsGmID && fGoodTracksPt && fGoodTracksEta && fGoodMuonsEta && fWideMass && fPreselAlpha && fPreselFLS;
-  if (0) cout << "fGoodQ = " << fGoodQ
-	      << " fGoodMuonsEta = " << fGoodMuonsEta
-	      << Form(" (%3.1f, %3.1f)", fMu1Eta, fMu2Eta)
-	      << " fGoodMuonsPt = " << fGoodMuonsPt
-	      << Form(" (%3.1f, %3.1f)", fMu1Pt, fMu2Pt)
-	      << " fWideMass = " << fWideMass
-	      << " fGoodAlpha = " <<  fGoodAlpha
-	      << endl;
+  fPreselection = fGoodAcceptance && fGoodQ && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta && fWideMass && fPreselAlpha && fPreselFLS;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
+  // -- add trigger and chan cuts
   fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
+  // -- add J/psi and other daughter cuts
+  fPreselection = fPreselection && fGoodJpsiCuts;
+
+
+
+  if (0) cout << "Chan = " << fChan
+	      << " fPresel = " << fPreselection
+	      << " fGoodQ = " << fGoodQ
+	      << " fGoodMuGmID = " << fGoodMuonsGmID
+	      << " fGoodMuEta = " << fGoodMuonsEta
+	      << Form(" (%3.1f, %3.1f)", fMu1Eta, fMu2Eta)
+	      << " fGoodMuPt = " << fGoodMuonsPt
+	      << Form(" (%3.1f, %3.1f)", fMu1Pt, fMu2Pt)
+	      << " tracks = " <<  fGoodTracks << "/" << fGoodTracksPt << "/" << fGoodTracksEta
+	      << " m ok = " << fWideMass
+	      << " fPreselAlpha = " <<  fPreselAlpha
+	      << " fPreselFLS = " <<  fPreselFLS
+	      << " HLT1/TOS = " << fGoodHLT1 << "/" << fTOS
+	      << endl;
+
   //  fPreselection = true;
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(3.);
 
@@ -1138,7 +1154,6 @@ void candAna::triggerHLT() {
 
     if (wasRun && result) { // passed
       if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a << endl;
-
       bool good = false;
       string spath;
       int rmin, rmax;
@@ -1146,7 +1161,9 @@ void candAna::triggerHLT() {
 	spath = imap->first;
 	rmin = imap->second.first;
 	rmax = imap->second.second;
-	if (!a.CompareTo(imap->first.c_str()) && (rmin <= fRun) && (fRun <= rmax) ) {
+	if (fRun < rmin) continue;
+	if (fRun > rmax) continue;
+	if (!a.CompareTo(imap->first.c_str())) {
 	  // cout << "----------------------------------------------------------------------" << endl;
 	  // cout << a << " result = " << result << " prescale: " << ps << " wasRun = " << wasRun
 	  //      << " event: " << fEvt << " run: " << fRun
@@ -1432,8 +1449,8 @@ void candAna::triggerSelection() {
   fhltType = fhltType + (1000 * (foundNumHlts-1));
 
   // Diagnostics printout
-  if ( (fVerbose>9) || (fVerbose==-32))
-    cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<endl;
+  //  if ( (fVerbose>9) || (fVerbose==-32))
+  //    cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<endl;
 
   // Diagnostics printout
   if (pdTrigger && isMuonTrigger && (foundNumHltObjects==0)) {

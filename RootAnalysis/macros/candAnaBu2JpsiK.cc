@@ -11,6 +11,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBu2JpsiK::candAnaBu2JpsiK(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBu2JpsiK");
   fGenK1Tmi = fRecK1Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBu2JpsiK: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -109,9 +110,8 @@ void candAnaBu2JpsiK::candAnalysis() {
     }
   }
 
-  fGoodJpsiCuts = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
-
   candAna::candAnalysis();
+
   // -- overwrite some variables
   fCandChi2  = chi2;
   fCandDof   = ndof;
@@ -119,31 +119,11 @@ void candAnaBu2JpsiK::candAnalysis() {
   fCandME      = masse;
 
   fGoodTracks    = fGoodTracks    && fKaonTkQuality;
-  fGoodTracksPt  = fGoodTracksPt  && ((fKaonPt > TRACKPTLO));
-  fGoodTracksEta = fGoodTracksEta && (fKaonEta > TRACKETALO) && (fKaonEta < TRACKETAHI);
-
-  fPreselection  = fPreselection && fGoodJpsiMass && fGoodTracksPt;
-  fPreselection  = fPreselection && fWideMass;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt) && (fKaonPt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaonEta) && (fKaonEta < TRACKETAHI));
 
   fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
-
-  if(0) { // special misid tests d.k.
-
-    TVector3 trackMom = pk->fPlab;  // test track momentum
-    TVector3 muonMom;
-    muonMom = fpMuon1->fPlab;
-    double dR1 = muonMom.DeltaR(trackMom);
-    muonMom = fpMuon2->fPlab;
-    double dR2 = muonMom.DeltaR(trackMom);
-
-    if( (pk->fIndex == fpMuon1->fIndex) || (pk->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<pk->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
-
-    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR6 = dR2;}
-    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR6 = dR1;}
-
-  } // end testing
-
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(3);
