@@ -176,7 +176,6 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     }
     gHFEvent->fL1TDecision =  finOR;
   } else {
-
     // -- legacy L1
     edm::ESHandle<L1GtTriggerMenu> menuRcd;
     iSetup.get<L1GtTriggerMenuRcd>().get(menuRcd) ;

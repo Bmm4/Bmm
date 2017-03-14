@@ -25,6 +25,7 @@ void candAnaMuMu::candAnalysis() {
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(2);
 
+  fGoodJpsiCuts = true;
 }
 
 // ----------------------------------------------------------------------

@@ -79,6 +79,7 @@ public:
 
   virtual void        evtAnalysis(TAna01Event *evt);
   virtual void        candAnalysis();
+  virtual void        candEvaluation();
   virtual void        endAnalysis();
   virtual void        efficiencyCalculation();
   virtual void        setupReducedTree(TTree *);
@@ -305,15 +306,18 @@ public:
 
   string  fHLTPath;
   int     fL1Seeds, fHltPrescale;
+  bool    fGoodCNC;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsGmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
-  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
+  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS, fGoodLip, fGoodLipS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
-  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
   bool    fPreselAlpha, fPreselFLS;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
   string  fHLT1Path, fL1SeedString;
+  // --
+  double  fHltD1, fHltD2;
 
   bool    fPreselection;
   bool    fBadEvent;

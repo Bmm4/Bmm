@@ -140,7 +140,16 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fGoodMKK      = ((MKKLO < fMKK ) && (fMKK < MKKHI));
 
   candAna::candAnalysis();
-  fGoodTracksPt = fGoodTracksPt && ((fKa1Pt > TRACKPTLO) && (fKa2Pt > TRACKPTLO));
+
+  fGoodTracks    = fGoodTracks    && fKaonTkQuality;
+  fGoodTracksPt  = fGoodTracksPt
+    && ((fKa1Pt > TRACKPTLO) && (fKa1Pt > TRACKPTHI))
+    && ((fKa2Pt > TRACKPTLO) && (fKa2Pt > TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta
+    && (fKa1Eta > TRACKETALO) && (fKa1Eta < TRACKETAHI)
+    && (fKa2Eta > TRACKETALO) && (fKa2Eta < TRACKETAHI)
+    ;
+
 
   fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR && fGoodTracksPt;
   fPreselection = fPreselection && fWideMass;

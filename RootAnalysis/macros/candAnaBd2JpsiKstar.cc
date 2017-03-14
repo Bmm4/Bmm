@@ -46,6 +46,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     pC = fpEvt->getCand(iC);
     if (pC == fpCand) continue;
+    // 3000070 is the swapped K-pi candidate (with MC truth) for the correct 3000069 cand
     if (3000070 != pC->fType) {
       if (pC->fType != fpCand->fType) continue;
     }

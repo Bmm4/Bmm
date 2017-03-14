@@ -11,8 +11,8 @@ class plotWork: public plotClass {
 
 public :
   plotWork(std::string dir = "results",
-	   std::string files = "plotWork.2016.files",
-	   std::string cuts = "plotClass.2016.cuts",
+	   std::string files = "plotResults.2016.files",
+	   std::string cuts = "baseCuts.cuts",
 	   std::string setup = "");
   virtual        ~plotWork();
 
@@ -46,6 +46,7 @@ public :
 			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
 
 
+  void ups1(std::string file1, std::string file2);
 
 
   std::string removeVarFromSelection(std::string var, std::string selection);
@@ -73,6 +74,9 @@ private:
   double fS, fSE, fN, fNE, fW, fWE, fB, fBE, fChi2Dof;
   double fSsigma, fSRMS;
   double fEntries;
+
+  std::vector<TH1D*> fHmass0, fHmass1;
+  TProfile *fpPmass0, *fpPmass1;
 
   int fRefTrigger;
 

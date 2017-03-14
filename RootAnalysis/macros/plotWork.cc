@@ -1287,8 +1287,109 @@ void plotWork::loopFunction1() {
 
 }
 
+
 // ----------------------------------------------------------------------
-void plotWork::loopFunction2() { }
+void plotWork::ups1(std::string file1, std::string file2) {
+  for (int i = 0; i < 20; ++i) {
+    fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta| < %3.1f", i*0.1, (i+1)*0.1), 90, 4.9, 5.8));
+    fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta| < %3.1f", i*0.1, (i+1)*0.1), 90, 4.9, 5.8));
+  }
+
+  TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+  TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
+
+  setupTree(t0);
+  fDBX = 0;
+  loopOverTree(t0, 2);
+
+  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmm-v04-0000.bmmReader.mix-Bs2MuMu.root");
+  cout << "f1 = " << f1 << endl;
+  TTree *t1 = (TTree*)f1->Get("candAnaMuMu/events");
+  cout << "t1 = " << t1 << endl;
+
+  fDBX = 1;
+  setupTree(t1);
+  loopOverTree(t1, 2);
+
+  shrinkPad(0.15, 0.19);
+  double eps(0.01);
+  TH1D *h1 = new TH1D("mass0", "Run 2", 20, 0., 2.0); h1->Sumw2();
+  TH1D *h2 = new TH1D("mass1", "Phase 2", 20, 0.+eps, 2.0+eps); h2->Sumw2();
+  TH1D *s1 = new TH1D("rms0", "Run 2", 20, 0., 2.0); h1->Sumw2();
+  TH1D *s2 = new TH1D("rms1", "Phase 2", 20, 0.+eps, 2.0+eps); h2->Sumw2();
+  for (int i = 0; i < 20; ++i) {
+    cout << "mass = " << fHmass0[i]->GetMean() << " RMS = " << fHmass0[i]->GetRMS() << endl;
+    h1->SetBinContent(i+1, fHmass0[i]->GetMean());
+    h1->SetBinError(i+1, fHmass0[i]->GetRMS());
+    s1->SetBinContent(i+1, fHmass0[i]->GetRMS());
+
+    cout << "mass = " << fHmass1[i]->GetMean() << " RMS = " << fHmass1[i]->GetRMS() << endl;
+    h2->SetBinContent(i+1, fHmass1[i]->GetMean());
+    h2->SetBinError(i+1, fHmass1[i]->GetRMS());
+    s2->SetBinContent(i+1, fHmass1[i]->GetRMS());
+
+    setFilledHist(fHmass0[i], kBlue, kBlue, 3365);
+    setFilledHist(fHmass1[i], kRed, kRed, 3354);
+    if (fHmass0[i]->GetSumOfWeights() > 0.) fHmass0[i]->Scale(1./fHmass0[i]->GetSumOfWeights());
+    if (fHmass1[i]->GetSumOfWeights() > 0.) fHmass1[i]->Scale(1./fHmass1[i]->GetSumOfWeights());
+    fHmass1[i]->Draw();
+    fHmass0[i]->Draw("same");
+    tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.70, Form("RMS: %4.2f MeV", fHmass0[i]->GetRMS()));
+    tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.2, 0.65, Form("RMS: %4.2f MeV", fHmass1[i]->GetRMS()));
+    savePad(Form("ups1-mass-bin%d.pdf", i));
+  }
+
+  c0->Clear();
+  setHist(h1, kBlue, 24);
+  setHist(h2, kRed, 25);
+  h1->SetMinimum(5.2);
+  h1->SetMaximum(5.5);
+  setTitles(h1, "#it{|}#eta#it{|}", "m_{#mu #mu} #it{[GeV]}", 0.05, 1.1, 1.6);
+  h1->Draw("e");
+  h2->Draw("esame");
+
+  newLegend(0.5, 0.75, 0.8, 0.85);
+  legg->SetTextSize(0.05);
+  legg->AddEntry(h1,  "Run 2", "p");
+  legg->AddEntry(h2, "Phase 2", "p");
+  legg->Draw();
+
+  savePad(Form("ups1-mass-vsEta.pdf"));
+
+  c0->Clear();
+  setHist(s1, kBlue, 24);
+  setHist(s2, kRed, 25);
+  setTitles(s1, "#it{|}#eta#it{|}", "RMS(m_{#mu #mu}) #it{[GeV]}", 0.05, 1.1, 1.7);
+  s1->SetMinimum(0.);
+  s1->SetMaximum(0.1);
+  s1->Draw("hist");
+  s2->Draw("histsame");
+
+  newLegend(0.25, 0.7, 0.45, 0.85);
+  legg->SetTextSize(0.05);
+  legg->AddEntry(s1,  "Run 2", "l");
+  legg->AddEntry(s2, "Phase 2", "l");
+  legg->Draw();
+
+  savePad(Form("ups1-massRms-vsEta.pdf"));
+}
+
+// ----------------------------------------------------------------------
+void plotWork::loopFunction2() {
+  // if (TMath::Abs(fb.m1eta) > 1.4) return;
+  // if (TMath::Abs(fb.m2eta) > 1.4) return;
+  if (fb.m2pt < 4.) return;
+
+  int ieta = TMath::Abs(fb.eta)/0.1;
+  //  cout << "eta = " << TMath::Abs(fb.eta) << " -> " << ieta << endl;
+  if (ieta > 19) return;
+  if (0 == fDBX) {
+    fHmass0[ieta]->Fill(fb.m);
+  } else {
+    fHmass1[ieta]->Fill(fb.m);
+  }
+
+}
 
 
 
@@ -1380,7 +1481,7 @@ void plotWork::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotWork::loopOverTree> loop over dataset " << fCds->fName << " in file "
+  cout << "==> plotWork::loopOverTree> loop over dataset " << (fCds?fCds->fName:"undefined") << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend

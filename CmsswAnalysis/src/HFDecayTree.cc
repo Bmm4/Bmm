@@ -51,9 +51,6 @@ HFDecayTree::HFDecayTree(int pID, bool doVertexing, double mass, bool massConstr
 
 // ----------------------------------------------------------------------
 void HFDecayTree::clearTreeVariables() {
-  // for (int i = 0; i < MAXHFSIMPLECUTS; ++i) {
-  //   fSimpleCuts[i].clear();
-  // }
 
   fNodeCuts.clear();
 
@@ -63,7 +60,7 @@ void HFDecayTree::clearTreeVariables() {
   fTV.mass      = -9999.;
   fTV.pt        = -9999.;
   fTV.masserr   = -9999.;
-  fTV.chi2      = -9999.;
+  fTV.chi2dof   = -9999.;
   fTV.pvips     = -9999.;
   fTV.maxDoca   = -9999.;
   fTV.minDoca   = -9999.;
@@ -264,61 +261,8 @@ void HFDecayTree::setAnaCand(TAnaCand *cand) {
 }
 
 
-// // ----------------------------------------------------------------------
-// void HFDecayTree::addSimpleCut(HFSimpleCut a) {
-//   if (fNSimpleCuts < MAXHFSIMPLECUTS) {
-//     fSimpleCuts[fNSimpleCuts] = a;
-//     ++fNSimpleCuts;
-//   } else {
-//     cout << "ERROR: too many HFSimpleCuts for tree " << particleID() << " at " << this << endl;
-//   }
-// }
-
-
-// // ----------------------------------------------------------------------
-// HFSimpleCut* HFDecayTree::getSimpleCut(int i) {
-//   return &(fSimpleCuts[i]);
-// }
-
-
-// // ----------------------------------------------------------------------
-// bool HFDecayTree::passSimpleCuts() {
-//   bool result(true);
-//   int cpass(0);
-//   HFSimpleCut *c(0);
-//   for (unsigned int i = 0; i < nSimpleCuts(); ++i) {
-//     c = getSimpleCut(i);
-//     cpass = c->pass();
-//     if (1) cout << "HFSimpleCut " << i << " at " << c << ", tree = " << this << " fTV = " << &fTV
-// 		<< " name: " << c->fName
-// 		<< " " << c->fLoCut << " < " << *(c->fVar) << " < " << c->fHiCut
-// 		<< " at fVar = " << c->fVar
-// 		<< ", (*fVal) = " << (*(c->fVal)?"true":"false")
-// 		<< " pass: " << cpass
-// 		<< endl;
-//     if (cpass > -1) {
-//       if (0 == cpass) {
-// 	result = false;
-// 	if (1) cout << "   failed " << c->fLoCut << " < " << *(c->fVar) << " < " << c->fHiCut << endl;
-// 	break;
-// 	}
-//     }
-//   }
-//   if (0 && result) cout << "-> all passed! " << endl;
-//   return result;
-// }
-
-
 // ----------------------------------------------------------------------
 void HFDecayTree::addNodeCut(bool (HFDecayTree::*f)(), double lo, double hi, const char *name) {
-  //this does not work here? it did in my toy example??
-  //if (&HFDecayTree::passMass == f) {
-
-  // char line[200];
-  // sprintf(line, "addNodeCut: f = %p, passMass = %p, passMaxDoca = %p",
-  //         (void*)f, (void*)(&HFDecayTree::passMass), (void*)(&HFDecayTree::passMaxDoca));
-  // cout << line << endl;
-
   if (!strcmp(name, "mass")) {
     //    cout << "passMass setting mass limits: " << lo << " .. " << hi << endl;
     fTV.massLo = lo;
@@ -331,6 +275,10 @@ void HFDecayTree::addNodeCut(bool (HFDecayTree::*f)(), double lo, double hi, con
     //    cout << "passMaxDoca setting maxDoca limits" << endl;
     fTV.maxDocaLo = lo;
     fTV.maxDocaHi = hi;
+  } else if (!strcmp(name, "chi2dof")) {
+    //    cout << "passChi2Dof setting chi2dof limits" << endl;
+    fTV.chi2dofLo = lo;
+    fTV.chi2dofHi = hi;
   } else if (!strcmp(name, "flsxy")) {
     //    cout << "passFlsxy setting limits" << endl;
     fTV.flsxyLo = lo;
@@ -363,7 +311,6 @@ bool HFDecayTree::passAllCuts() {
   bool result(true);
   for (unsigned int i = 0; i < fNodeCuts.size(); ++i) {
     bool cut = CALL_MEMBER_FN(*this, fNodeCuts[i])();
-    //    cout << "passAllCuts " << i << ": " << cut << " " << fNodeCutNames[i] << endl;
     result = result && cut;
     if (false == result) return false;
   }
@@ -394,6 +341,8 @@ void HFDecayTree::dump(unsigned indent) {
       cout << "passPt: " << fTV.ptLo << " < " << fTV.pt << " < " << fTV.ptHi << endl;
     } else if (fNodeCutNames[i] == "maxdoca") {
       cout << "passMaxDoca: " << fTV.maxDocaLo << " < " << fTV.maxDoca << " < " << fTV.maxDocaHi << endl;
+    } else if (fNodeCutNames[i] == "chi2dof") {
+      cout << "passChi2Dof: " << fTV.chi2dofLo << " < " << fTV.chi2dof << " < " << fTV.chi2dofHi << endl;
     } else if (fNodeCutNames[i] == "flsxy") {
       cout << "passFlsxy: " << fTV.flsxyLo << " < " << fTV.flsxy << " < " << fTV.flsxyHi << endl;
     } else if (fNodeCutNames[i] == "flxy") {
@@ -406,20 +355,6 @@ void HFDecayTree::dump(unsigned indent) {
       cout << endl;
     }
   }
-
-  // for (unsigned int i = 0; i < nSimpleCuts(); ++i) {
-  //   HFSimpleCut *c = getSimpleCut(i);
-  //   dumpTabs(indent+1);
-  //   cout << "HFSimpleCut " << i << " at " << c << ", tree = " << this << " name: " << c->fName
-  // 	 << " " << c->fLoCut << " < " << ((*(c->fVal))? Form("%f", *(c->fVar)): "...") << " < " << c->fHiCut
-  // 	 << " at fVar = " << c->fVar;
-  //   if (*(c->fVal)) {
-  //     cout <<  (c->pass() ? " -> true": " -> false");
-  //   } else {
-  //     cout << " (undefined)";
-  //   }
-  //   cout << endl;
-  // }
 
   for (trackIt = fTrackIndices.begin(); trackIt!=fTrackIndices.end(); ++trackIt) {
     dumpTabs(indent+1);
