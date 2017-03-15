@@ -15,11 +15,11 @@ sub runCommand() {
 
 # -- 2011 BMM data jobs
 $dataset = "bmmMuOnia2011A";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011A-12Oct2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2011B";
-$jobs{$dataset}   = "cd $dataset && ".&runCommand." -m batch -q $opt_q *.py && cd - ";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011B-12Oct2013 -s $version -e 30000; ";
 
 # -- 2012 BMM data jobs
@@ -113,6 +113,7 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0 -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarAcc -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarHiPt -s $version -n 50 -l;  \ \n";
 
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPiPi -s $version -n 50 -l;  \ \n";
 
