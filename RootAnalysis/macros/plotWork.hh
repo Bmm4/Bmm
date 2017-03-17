@@ -29,12 +29,6 @@ public :
   void  fitStudiesFit0(TH1D *h1, int chan);
   double MKKLO, MKKHI, DR, PTK1, PTK2, PTPSI;
 
-  // -- misreconstructed background
-  void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
-  void plotWrongReco(std::string var, int nbin, double min, double max, std::string selection,
-		     std::string wds, std::string wdir,
-		     std::string cds, std::string cdir);
-
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
   void plotTisEfficiency(std::string dsname);
@@ -44,6 +38,7 @@ public :
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
   void efficiencyVariable(std::string var, std::string effvar = "hlt", int iselection = 10,
 			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
+  void bmm5Trigger(std::string cuts, std::string pdfname);
 
 
   void ups1(std::string file1, std::string file2);
