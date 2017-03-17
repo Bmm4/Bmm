@@ -161,6 +161,36 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  double iF_bigauss(double *x, double *par) {
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigmaL
+    // par[3] -> sigmaH
+
+    if (x[0] > par[1]) {
+      if (par[2] > 0.) {
+	Double_t arg = (x[0] - par[1]) / par[2];
+	Double_t fitval =  par[0]*TMath::Exp(-0.5*arg*arg);
+	return fitval;
+      }
+      else {
+	return -1.;
+      }
+    } else {
+      if (par[3] > 0.) {
+	Double_t arg = (x[0] - par[1]) / par[3];
+	Double_t fitval = par[0]*TMath::Exp(-0.5*arg*arg);
+	return fitval;
+      }
+      else {
+	return -1.;
+      }
+    }
+    return -1.;
+  }
+
+
+  // ----------------------------------------------------------------------
   double iF_Gauss(double *x, double *par) {
     // par[0] -> area
     // par[1] -> mean
@@ -244,6 +274,34 @@ namespace {
     return fitval;
   }
 
+  // ----------------------------------------------------------------------
+  double iF_gauss3(double *x, double *par) {
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> mean of second gaussian
+    // par[5] -> sigma of second gaussian
+    // par[6] -> fraction in third gaussian
+    // par[7] -> mean of third gaussian
+    // par[8] -> sigma of third gaussian
+    Double_t arg1(0.), arg2(0.), arg3(0.), fitval1(0.), fitval2(0.), fitval3(0.);
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[5] > 0.) {
+      arg2 = (x[0] - par[4]) / par[5];
+      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+    if (par[8] > 0.) {
+      arg3 = (x[0] - par[7]) / par[8];
+      fitval3 =  par[6]*par[0]*TMath::Exp(-0.5*arg3*arg3);
+    }
+
+    Double_t fitval = fitval1 + fitval2 + fitval3;
+    return fitval;
+  }
 
   // ----------------------------------------------------------------------
   double iF_pol0(double *x, double *par) {
@@ -313,7 +371,7 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
-  // pol1 and crystal ball
+  // gauss and crystal ball
   double iF_gauss_cb(double *x, double *par) {
     // par[0]:  norm  Gauss, ratio to xball normalization
     // par[1]:  peak  Gauss, ratio to xball peak
@@ -333,6 +391,39 @@ namespace {
     }
 
     return  (fitval + iF_cb(x, &par[3]));
+  }
+
+
+  // ----------------------------------------------------------------------
+  // bigauss and crystal ball
+  double iF_bigauss_cb(double *x, double *par) {
+    // par[0]:  norm  Gauss, ratio to xball normalization
+    // par[1]:  peak  Gauss, ratio to xball peak
+    // par[2]:  sigmaL Gauss, ratio to xball sigma
+    // par[3]:  sigmaH Gauss, ratio to xball sigma
+    // par[4]:  mean
+    // par[5]:  sigma
+    // par[6]:  alpha, crossover point
+    // par[7]:  n, length of tail
+    // par[8]:  N, normalization
+
+    double fitval(-1.);
+    if (x[0] < par[1]) {
+      if (par[2] > 0.) {
+	Double_t arg = (x[0] - par[1]*par[4]) / (par[2]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    } else {
+      if (par[3] > 0.) {
+	Double_t arg = (x[0] - par[1]*par[4]) / (par[3]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    }
+    return  (fitval + iF_cb(x, &par[4]));
   }
 
 
@@ -581,8 +672,6 @@ namespace {
     // 	 << endl;
     return  (iF_err2(x, &par[7]) + iF_pol1(x, &par[5]) + iF_gauss2c(x, &par[0]));
   }
-
-
 
   // ----------------------------------------------------------------------
   // expo and err and gauss
@@ -867,7 +956,35 @@ TF1* initFunc::landau(TH1 *h) {
   f->SetParName(0, "mpvl");
   f->SetParName(1, "sigl");
   f->SetParName(2, "norm");
+  f->SetParameter(0, h->GetBinCenter(h->GetMaximumBin()));
+  f->SetParameter(1, h->GetRMS());
+  f->SetParameter(2, h->GetMaximum());
   return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bigauss(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_bigauss", fName.c_str()), iF_bigauss, lo, hi, 4);
+  f->SetParName(0, "norm");
+  f->SetParName(1, "peak");
+  f->SetParName(2, "sigl");
+  f->SetParName(3, "sigh");
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bigauss(TH1 *h) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_bigauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_bigauss", fName.c_str()), iF_bigauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 4);
+  f->SetParName(0, "norm");
+  f->SetParName(1, "peak");
+  f->SetParName(2, "sigl");
+  f->SetParName(3, "sigh");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), h->GetRMS(), h->GetRMS());
+  return f;
+
 }
 
 // ----------------------------------------------------------------------
@@ -912,10 +1029,35 @@ TF1* initFunc::gauss(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+TF1* initFunc::gauss2(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2, lo, hi, 6);
+  f->SetParNames("const", "peak", "sigma", "fraction", "mean2", "sigma2");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss2(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 6);
+  f->SetParNames("const", "peak", "sigma", "fraction", "mean2", "sigma2");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), 0.2*h->GetRMS(), 0.2, h->GetMean(), 0.6*h->GetRMS());
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
 TF1* initFunc::gauss2c(double lo, double hi) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2c", fName.c_str())))) if (f) delete f;
-  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2c, lo, hi, 5);
+  f = new TF1(Form("%s_gauss2c", fName.c_str()), iF_gauss2c, lo, hi, 5);
   f->SetParNames("const", "peak", "sigma", "fraction", "sigma2");
   return f;
 }
@@ -932,6 +1074,34 @@ TF1* initFunc::gauss2c(TH1 *h) {
   f = new TF1(Form("%s_gauss2c", fName.c_str()), iF_gauss2c, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 5);
   f->SetParNames("const", "peak", "sigma", "fraction", "sigma2");
   f->SetParameters(h->GetMaximum(), h->GetMean(), 0.2*h->GetRMS(), 0.2, 0.6*h->GetRMS());
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss3(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss3", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss3", fName.c_str()), iF_gauss3, lo, hi, 9);
+  f->SetParNames("const", "peak", "sigma", "fraction2", "mean2", "sigma2", "fraction3", "mean3", "sigma3");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss3(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss3", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss3", fName.c_str()), iF_gauss3, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 9);
+  f->SetParNames("const", "peak", "sigma", "fraction2", "mean2", "sigma2", "fraction3", "mean3", "sigma3");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), 0.2*h->GetRMS(),
+		   0.3, h->GetMean(), 0.6*h->GetRMS(),
+		   0.1, h->GetMean(), 1.0*h->GetRMS()
+		   );
   return f;
 }
 
@@ -1240,6 +1410,35 @@ TF1* initFunc::crystalBallGauss(TH1 *h, double peak, double sigma, double alpha,
        << endl;
   f->SetParameters(fracNormG, fracPeakG, fracSigmaG, peak, sigma, alpha, tailLength, g0);
   applyLimits(f, "crystalBallGauss");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::crystalBallBiGauss(TH1 *h, double peak, double sigma, double alpha, double tailLength) {
+  int npar(9);
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_xbbigauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_xbbigauss", fName.c_str()), iF_bigauss_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("fracNormG", "peakG", "fracsigGl", "fracsigGh", "peak", "sigma", "crossover", "tail", "norm.");
+
+  double g0 = h->GetBinContent(h->FindBin(peak));
+  double fracNormG = 0.05;
+  double fracPeakG = 1.;
+  double fracSigmaGl = 2.;
+  double fracSigmaGh = 2.;
+  cout << "fracNormG: " << fracNormG
+       << " peakG: " << fracPeakG
+       << " fracsigmaGl: " << fracSigmaGl
+       << " fracsigmaGh: " << fracSigmaGh
+       << " peak: " << peak
+       << " sigma: " << sigma
+       << " alpha: " << alpha
+       << " tail: " << tailLength
+       << " norm: " << g0
+       << endl;
+  f->SetParameters(fracNormG, fracPeakG, fracSigmaGl, fracSigmaGh, peak, sigma, alpha, tailLength, g0);
+  applyLimits(f, "crystalBallBiGauss");
   return f;
 }
 
