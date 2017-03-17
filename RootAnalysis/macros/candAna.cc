@@ -52,6 +52,7 @@ candAna::~candAna() {
 
 // ----------------------------------------------------------------------
 void candAna::endAnalysis() {
+  cout << "This was for year " << fYear << endl;
   TH1D *h1 = ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())));
   if (h1) {
     cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(1.)))) << endl;
@@ -1201,44 +1202,62 @@ void candAna::triggerL1T() {
     if (fVerbose == -32) {
       cout << "L1 trigger fired: " << fpEvt->fL1TNames[i] << endl;
     }
-    if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<1;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<2;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<3;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<4;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<5;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
-    } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
-      fL1Seeds |= 0x1<<6;
-      fL1SeedString += fpEvt->fL1TNames[i];
-      fL1SeedString += " ";
-      continue;
+    if (2016 == fYear) {
+      if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1; //1
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<1; //2
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<2; //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<3; //8
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<4; //16
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<5; //32
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<6; //64
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      }
+    } else if (fYear == 2012) {
+      if ("L1_DoubleMu0er_HighQ" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1; //1
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_ DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<1; //2
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<2; //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      }
     }
   }
-
 }
 
 
