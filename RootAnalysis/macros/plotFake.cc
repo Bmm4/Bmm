@@ -35,8 +35,6 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   readCuts(cutfile);
   fNchan = fCuts.size();
 
-  printCuts(cout);
-
   fChan = 0;
 
   fChannelList.clear();
@@ -103,6 +101,10 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeRPChits4");
   fDoList.push_back("FakeCombHits");
 
+  fDoList.clear();
+  fDoList.push_back("FakeBdt");
+
+
   fCncCuts.clear();
   fCncCuts.addCut("GoodCand", "good cand", fGoodCand);
   fCncCuts.addCut("GoodPt", "good pt", fGoodPt);
@@ -147,7 +149,10 @@ void plotFake::init() {
 // ----------------------------------------------------------------------
 void plotFake::makeAll(string what) {
   if (what == "dbx0") {
-    mkPidTables("");
+      makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
+      makeOverlay("fakeData_phi", "fakeMc_phi", "Cu");
+      makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
+      makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
   }
 
   if (what == "dbx1") {
@@ -264,13 +269,13 @@ void  plotFake::massPlots(std::string varname) {
       h1 = (TH1D*)fHistFile->Get(hname.c_str());
       cout << "hname = " << hname << endl;
       if (string::npos != modes[im].find("ks")) {
-	setTitles(h1, "m_{#pi#pi} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+	setTitles(h1, "m_{#pi#pi} #it{[GeV]}", "Candidates", 0.05, 1.1, 1.8);
       } else if (string::npos != modes[im].find("phi")) {
-	setTitles(h1, "m_{KK} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+	setTitles(h1, "m_{KK} #it{[GeV]}", "Candidates", 0.05, 1.1, 1.8);
       } else if (string::npos != modes[im].find("lambda")) {
-	setTitles(h1, "m_{p#pi} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+	setTitles(h1, "m_{p#pi} #it{[GeV]}", "Candidates", 0.05, 1.1, 1.8);
       } else if (string::npos != modes[im].find("psi")) {
-	setTitles(h1, "m_{#mu#mu} [GeV]", "Candidates", 0.05, 1.1, 1.8);
+	setTitles(h1, "m_{#mu#mu} #it{[GeV]}", "Candidates", 0.05, 1.1, 1.8);
       }
       shrinkPad(0.15, 0.2);
       if (h1) h1->Draw();
@@ -424,47 +429,97 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
   fHistFile = TFile::Open(fHistFileName.c_str());
   cout << " opened " << endl;
 
+  string label1("bla");
+  if (string::npos != what1.find("psi")) {
+    label1 = "muons";
+  } else if (string::npos != what1.find("ks")) {
+    label1 = "pions";
+  } else if (string::npos != what1.find("phi")) {
+    label1 = "kaons";
+  } else if (string::npos != what1.find("lambda")) {
+    label1 = "protons";
+  }
+
+
   bool restricted = (what != "");
-  for (unsigned int i = 0; i < fChannelList.size(); ++i) {
+  shrinkPad(0.15, 0.18, 0.1);
+  for (unsigned int ic = 0; ic < fChannelList.size(); ++ic) {
     //  for (unsigned int i = 0; i < 1; ++i) {
-    cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), what1.c_str()) << endl;
-    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what1.c_str()), selection, what);
-    sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), what2.c_str()), selection, what);
+    cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[ic].c_str(), what1.c_str()) << endl;
+    sbsDistributions(Form("ad%s_%s", fChannelList[ic].c_str(), what1.c_str()), selection, what);
+    sbsDistributions(Form("ad%s_%s", fChannelList[ic].c_str(), what2.c_str()), selection, what);
 
     for (unsigned int id = 0; id < fDoList.size(); ++id) {
       if (restricted) {
 	if (string::npos == fDoList[id].find(what)) continue;
       }
       c0->cd();
-      overlay(Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()),
-	      Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str())
+      overlay(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()),
+	      Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str())
 	      );
       savePad(Form("fakeoverlay_ad%s_%s_ad%s_%s_%s-%s.pdf",
-		   fChannelList[i].c_str(),
-		   what1.c_str(), fChannelList[i].c_str(),
-		   what2.c_str(), fDoList[id].c_str(),
-		   selection.c_str()));
+		   fChannelList[ic].c_str(), what1.c_str(),
+		   fChannelList[ic].c_str(), what2.c_str(),
+		   fDoList[id].c_str(), selection.c_str()));
 
       // -- determine muon id/misid systematics
       if (string::npos != fDoList[id].find("FakeBdt")) {
-	TH1D *h1 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()));
-	TH1D *h2 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[i].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str()));
+	TH1D *h1 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()));
+	TH1D *h2 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str()));
 	TH1D *hd = (TH1D*)h1->Clone("hd"); hd->Reset();
 	int nmax = h1->GetNbinsX();
-	for (int i = 1; i <= h1->GetNbinsX(); ++i) {
-	  double err1, err2;
-	  double int1 = h1->IntegralAndError(i, nmax, err1);
-	  double int2 = h2->IntegralAndError(i, nmax, err2);
-	  hd->SetBinContent(i, int1-int2);
-	  hd->SetBinError(i, TMath::Sqrt(err1*err1 + err2*err2));
+	double itot = h1->Integral();
+	double imax(0.);
+	for (int ib = 1; ib <= h1->GetNbinsX(); ++ib) {
+	  double int1 = h1->Integral(ib, nmax);
+	  if (int1 < 0.) int1 *= -1.;
+	  double int2 = h2->Integral(ib, nmax);
+	  if (int2 < 0.) int2 *= -1.;
+	  double err1 = dEff(static_cast<int>(int1), static_cast<int>(itot));
+	  double err2 = dEff(static_cast<int>(int2), static_cast<int>(itot));
+	  hd->SetBinContent(ib, (int1-int2)/itot);
+	  hd->SetBinError(ib, TMath::Sqrt(err1*err1 + err2*err2));
+	  cout << "bin " << ib << " center = " << h1->GetBinCenter(ib)
+	       << " itot = " << itot
+	       << " int1 = " << int1 << "+/-" << err1
+	       << " int2 = " << int2 << "+/-" << err2
+	       << " diff = " << (int1-int2)/itot
+	       << " err = " << TMath::Sqrt(err1*err1 + err2*err2)/itot
+	       << " err = " << TMath::Sqrt(err1*err1 + err2*err2)
+	       << endl;
+	  if (TMath::Abs((int1-int2)/itot) > imax) imax = TMath::Abs((int1-int2)/itot);
 	}
+	hd->SetMinimum(-0.25);
+	hd->SetMaximum(0.25);
+	hd->GetXaxis()->SetTitle("BDT > ");
+	hd->GetYaxis()->SetTitle("#varepsilon(cut; data) - #varepsilon(cut; MC)");
+	hd->SetTitleOffset(1.5, "y");
+	hd->SetNdivisions(505, "X");
+	hd->SetNdivisions(505, "Y");
+	gPad->SetGridy(true);
 	hd->Draw();
+	tl->SetTextSize(0.04);
+	tl->DrawLatexNDC(0.2, 0.92, Form("maximum difference:  %4.3f", imax));
+	tl->DrawLatexNDC(0.73, 0.92, Form("%s chan %d", label1.c_str(), ic));
+
+	double err(0.);
+	if (imax < 0.02) err = 0.02;
+	else if (imax < 0.05) err = 0.05;
+	else if (imax < 0.1) err = 0.1;
+	else if (imax < 0.15) err = 0.15;
+	else if (imax < 0.20) err = 0.20;
+	else if (imax < 0.25) err = 0.25;
+	else if (imax < 0.30) err = 0.30;
+	else  err = 0.50;
+	fTEX << formatTex(imax, Form("%s:muonidBdtCut_%s_chan%i:val", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
+	fTEX << formatTex(err, Form("%s:muonidBdtCut_%s_chan%i:err", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
+
 	savePad(Form("systematics_ad%s_%s_ad%s_%s_%s-%s.pdf",
-		     fChannelList[i].c_str(),
-		     what1.c_str(), fChannelList[i].c_str(),
+		     fChannelList[ic].c_str(),
+		     what1.c_str(), fChannelList[ic].c_str(),
 		     what2.c_str(), fDoList[id].c_str(),
 		     selection.c_str()));
-
+	gPad->SetGridy(false);
       }
 
     }
@@ -614,9 +669,9 @@ void plotFake::bookDistributions() {
 
     a = new adsetFake();
     a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 48, -2.4, 2.4);
-    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} [GeV]", "GoodFake", 10, 0., 20.);
+    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} #it{[GeV]}", "GoodFake", 10, 0., 20.);
     a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 48, -2.4, 2.4);
-    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} [GeV]", "Good", 10, 0., 20.);
+    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} #it{[GeV]}", "Good", 10, 0., 20.);
 
     a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, -0.5, 0.5);
     a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 20, 0., 2.);
@@ -657,19 +712,19 @@ void plotFake::bookDistributions() {
     a->fpFakeCombHits = bookDistribution(Form("%sFakeCombHits", name.c_str()), "CombHits", "GlobalMuon", 35, 0., 35.);
 
     a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 48, -2.4, 2.4);
-    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} [GeV]", "TIS", 10, 0., 20.);
+    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TIS", 10, 0., 20.);
     a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} [GeV]", "TISFAKE", 10, 0., 20.);
+    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISFAKE", 10, 0., 20.);
 
     a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 48, -2.4, 2.4);
-    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} [GeV]", "TISDT", 10, 0., 20.);
+    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TISDT", 10, 0., 20.);
     a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} [GeV]", "TISDTFAKE", 10, 0., 20.);
+    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTFAKE", 10, 0., 20.);
 
     a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} [GeV]", "TISDTDM", 10, 0., 20.);
+    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTDM", 10, 0., 20.);
     a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} [GeV]", "TISDTDMFAKE", 10, 0., 20.);
+    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTDMFAKE", 10, 0., 20.);
 
 
     fAdMap.insert(make_pair(mapname, a));
@@ -1343,7 +1398,8 @@ void plotFake::loopFunction1() {
     mapname = fChannelSample[fChan];
 
     fGoodPt      = (fFakePt[i] > 4.);
-    fGoodDtrig   = (fFakeDtrig[i] > 0.01);
+    fGoodDtrig   = (fFakeDtrig[i] > 0.01) && fTIS;
+    //    fGoodDtrig   = fTIS;
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
 
     if (fIsMC) {
