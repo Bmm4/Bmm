@@ -66,7 +66,7 @@ public :
 	    std::string setup = "");
   virtual        ~plotClass();
 
-  enum MODE {UNSET, BMM, BDMM, BSMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
+  enum MODE {UNSET, BMM, BDMM, BSMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, BS2JPSIF, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};
 
   // -- stuff to run over the tree from any derived class
   virtual void   setup(std::string ds);
@@ -161,7 +161,7 @@ public :
   // -- setup and cuts
   double MASSMIN, MASSMAX, SIGBOXMIN, SIGBOXMAX, BGLBOXMIN, BGLBOXMAX, BGHBOXMIN, BGHBOXMAX;
 
-  bool fGoodAcceptance, fPreselection, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons,
+  bool fGoodAcceptance, fPreselection, fPreselectionBDT, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons,
     fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
     fGoodPt, fGoodEta, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;

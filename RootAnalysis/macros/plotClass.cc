@@ -138,11 +138,11 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fCncCuts.addCut("fGoodM1Iso", "I_{trk}^{#mu,1}", fGoodM1Iso);
   fCncCuts.addCut("fGoodM2Iso", "I_{trk}^{#mu,2}", fGoodM2Iso);
   fCncCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
-  fCncCuts.addCut("fGoodCloseTrackS1", "close track s1 veto", fGoodCloseTrackS1);
-  fCncCuts.addCut("fGoodCloseTrackS2", "close track s2 veto", fGoodCloseTrackS2);
-  fCncCuts.addCut("fGoodCloseTrackS3", "close track s3 veto", fGoodCloseTrackS3);
+  // fCncCuts.addCut("fGoodCloseTrackS1", "close track s1 veto", fGoodCloseTrackS1);
+  // fCncCuts.addCut("fGoodCloseTrackS2", "close track s2 veto", fGoodCloseTrackS2);
+  // fCncCuts.addCut("fGoodCloseTrackS3", "close track s3 veto", fGoodCloseTrackS3);
 
-  fCncCuts.addCut("fGoodCNC", "cnc", fGoodCNC);
+  //  fCncCuts.addCut("fGoodCNC", "cnc", fGoodCNC);
 
   fBdtCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
   fBdtCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
@@ -152,7 +152,11 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fBdtCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
   fBdtCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
   fBdtCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
-  fCncCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+
+  fBdtCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+  fBdtCuts.addCut("fGoodPt", "p_{T,B} [GeV]", fGoodTracksPt);
+  fBdtCuts.addCut("fGoodEta", "#eta_{B} ", fGoodTracksEta);
+
   fBdtCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
 
 
@@ -210,13 +214,15 @@ void plotClass::changeSetup(string dir, string name, string setup) {
     fNumbersFileName = fDirectory + Form("/%s.%s.%d.txt", name.c_str(), setup.c_str(), fYear);
   }
 
-  string old = fTexFileName;
   fTexFileName = fNumbersFileName;
   replaceAll(fTexFileName, ".txt", ".tex");
-  system(Form("/bin/mv %s %s", old.c_str(), fTexFileName.c_str()));
+  string old = fTexFileName;
+  old += ".old";
+  cout << "old: " << old << endl;
+  system(Form("/bin/mv %s %s", fTexFileName.c_str(), old.c_str()));
 
   fTEX.open(fTexFileName.c_str(), ios::app);
-  cout << "plotClass::changeSetup: "
+  cout << "plotClass::changeSetup: " << endl
        << "  fHistFileName = " << fHistFileName << endl
        << "  fNumbersFileName = " << fNumbersFileName << endl
        << "  fTexFileName = " << fTexFileName
@@ -235,6 +241,9 @@ void plotClass::setup(string ds) {
   } else if (string::npos != ds.find("bspsiphi")) {
     dir = "candAnaBs2JpsiPhi";
     fMode = BS2JPSIPHI;
+  } else if (string::npos != ds.find("bspsif")) {
+    dir = "candAnaBs2Jpsif0";
+    fMode = BS2JPSIF;
   } else if (string::npos != ds.find("bdpsikstar")) {
     dir = "candAnaBd2JpsiKstar";
     fMode = BD2JPSIKSTAR;
@@ -731,11 +740,16 @@ void plotClass::candAnalysis() {
     return;
   }
   pCuts = fCuts[fChan];
-  bool bp2jpsikp(false), bs2jpsiphi(false);
+  bool bp2jpsikp(false), bs2jpsiphi(false), bd2jpsikstar(false);
   if (BU2JPSIKP == fMode)  {
     bp2jpsikp = true;
   }
-  if (BS2JPSIPHI == fMode)  bs2jpsiphi = true;
+  if (BS2JPSIPHI == fMode)  {
+    bs2jpsiphi = true;
+  }
+  if (BD2JPSIKSTAR == fMode)  {
+    bd2jpsikstar = true;
+  }
 
   // -- reset all
   fBDT = -99.;
@@ -960,19 +974,21 @@ void plotClass::candAnalysis() {
     && fGoodDocaTrk
     ;
 
-  fGoodBDT          = (fBDT > pCuts->bdtCut);
+  fGoodBDT        = (fBDT > pCuts->bdtCut);
   fGoodHLT        = fb.hlt1 && fb.tos;
 
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = true;
   if (RARE == fMode) fGoodMuonsID = true;
 
-  fPreselection   = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && (fb.alpha < 0.2) && (fb.fls3d > 5));
-  if (bs2jpsiphi || bp2jpsikp) {
-    fPreselection = fPreselection && fGoodJpsiCuts;
+  fPreselectionBDT = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
+		      && (fBDT > 0.));
+  fPreselection    = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
+		      && (fb.alpha < 0.2) && (fb.fls3d > 5));
 
-    if (!fGoodJpsiCuts) {
-      //      cout << "dr: " << fb.dr  << " mkk: " << fb.mkk << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt << endl;
+  if (bs2jpsiphi || bp2jpsikp || bd2jpsikstar) {
+    fPreselection = fPreselection && fGoodJpsiCuts;
+    if (!fGoodJpsiCuts) { // cout << "dr: " << fb.dr  << " mkk: " << fb.mkk << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt << endl;
     }
   }
 
@@ -985,6 +1001,7 @@ void plotClass::candAnalysis() {
   }
 
   fCncCuts.update();
+  fBdtCuts.update();
 
 }
 
@@ -2119,11 +2136,30 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 3365;
       }
 
+      if (string::npos != stype.find("bspsif,")) {
+        sname = "bspsifMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("mcComb")) sname += "Comb";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+        sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}} f_{0}";
+        ldecay = "\\bspsif";
+	ds->fColor = kRed;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+      }
+
       if (string::npos != stype.find("bsmm,")) {
         sname = "bsmmMc";
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("Run1")) sname += "Run1";
         sdecay = "B^{0}_{s} #rightarrow #it{#mu#mu}";
         ldecay = "\\bsmm";
 	ds->fColor = kGreen-2;
@@ -2690,6 +2726,24 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFillStyle = 1000;
       }
 
+      if (string::npos != stype.find("bupsipi,")) {
+	sname = "bupsipiMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("mcComb")) sname += "Comb";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("Run1")) sname += "Run1";
+        sdecay = "B^{+} #rightarrow J #it{#psi} #it{#pi}^{+}";
+        ldecay = "\\bcpsimunu";
+	ds->fColor = kMagenta-3;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 1000;
+      }
 
     }
     // -- insert if with a "valid" sname
