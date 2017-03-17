@@ -28,6 +28,7 @@ type=bsmm,mcComb        bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-m
 type=bsmm,acc,mcComb    bf=(3.65,0.23)e-9  eff=(2.64,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu-v04.root
 type=bymm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p7_BMuonFilter-v04.root
 type=bxmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p1_BMuonFilter-v04.root
+type=bsmm,mc,Run1       bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-Winter17_private-BsToMuMu-v04.root
 type=bsmm80,mc          bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm80-v04.root
 type=bsmm75,mc          bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm75-v04.root
 type=bsmm70,mc          bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu_bsmm70-v04.root
@@ -64,6 +65,8 @@ type=lbpmunu,acc,mcComb,bg   bf=(4.10,1.0)e-4   eff=(1.09,0.02)e-3 file=scratch/
 type=lbpmunu,mcComb,bg       bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-combined-LambdaBToPMuNu-v04.root
 # -- other backgrounds
 type=bcpsimunu,mcComb,bg     bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-Summer16_private-BcToJpsiMuNu-v04.root
+type=bupsipi,mc,Run1         bf=(1.00,0.0)e-9   eff=(4.26,0.15)e-4 file=/scratch/ursl/bmm3/v16-2012-cms-BuToJpsiPi.root
 # -- fake
 type=fake,data               lumi=36.7  file=/scratch/ursl/bmm4/v04/dstar-data-dstarCharmonium2016-v04.root
 type=fake,mc                 lumi=36.7  file=/scratch/ursl/bmm4/v04/fakeMC-v04.root
+type=wrongreco,mc            lumi=0.    file=/scratch/ursl/bmm4/v04/bmm-mc-Summer16_private-wrongReco-v04.root
