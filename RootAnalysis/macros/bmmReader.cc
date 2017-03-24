@@ -273,6 +273,11 @@ void bmmReader::readCuts(TString filename, int dump) {
       lCandAnalysis.push_back(a);
     }
 
+    if (!strcmp(className, "candAnaBu2JpsiPiAsBu")) {
+      candAna *a = new candAnaBu2JpsiK(this, "candAnaBu2JpsiPiAsBu", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
     string sclassName(className);
     if (string::npos != sclassName.find("candAnaFake")) {
       candAna *a = new candAnaFake(this, className, cutFile);
