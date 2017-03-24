@@ -2,6 +2,7 @@ TYPE          1000083
 DATACAND         1313
 TRUTHCAND         531
 TRIGRANGE    NOTRIGGER
+PVAVEW8          0.6
 # -- baseCuts
 +input cuts/baseCuts.cuts
 # -- boxes

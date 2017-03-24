@@ -1,6 +1,7 @@
 TYPE          3000065
 DATACAND       300532
 TRUTHCAND         531
+PVAVEW8          0.6
 # -- baseCuts
 +input cuts/baseCuts.cuts
 # -- trigger
