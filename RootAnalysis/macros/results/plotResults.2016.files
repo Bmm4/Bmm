@@ -21,9 +21,11 @@ type=bdpsikstar,acc,mcComb bf=(5.08,0.20)e-6  eff=(9.53,0.01)e-3 file=scratch/bm
 # -- dimuons
 type=bmm,data           lumi=36.7          file=/scratch/ursl/bmm4/v04/bmm-data-bmmCharmonium2016-v04.root
 type=bdmm,mc            bf=(1.06,0.09)e-10 eff=(1.48,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToMuMu-v04.root
+type=bdmm,mcOff         bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v04.root
 type=bdmm,mcComb        bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v04.root
 type=bdmm,acc,mcComb    bf=(1.06,0.09)e-10 eff=(9.47,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu-v04.root
 type=bsmm,mc            bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu-v04.root
+type=bsmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v04.root
 type=bsmm,mcComb        bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v04.root
 type=bsmm,acc,mcComb    bf=(3.65,0.23)e-9  eff=(2.64,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu-v04.root
 type=bymm,mcOff         bf=(3.65,0.23)e-9  eff=(4.84,0.16)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_m5p7_BMuonFilter-v04.root
@@ -69,4 +71,4 @@ type=bupsipi,mc,Run1         bf=(1.00,0.0)e-9   eff=(4.26,0.15)e-4 file=/scratch
 # -- fake
 type=fake,data               lumi=36.7  file=/scratch/ursl/bmm4/v04/dstar-data-dstarCharmonium2016-v04.root
 type=fake,mc                 lumi=36.7  file=/scratch/ursl/bmm4/v04/fakeMC-v04.root
-type=wrongreco,mc            lumi=0.    file=/scratch/ursl/bmm4/v04/bmm-mc-Summer16_private-wrongReco-v04.root
+type=wrongreco,mc            lumi=1.0   file=/scratch/ursl/bmm4/v04/bmm-mc-Summer16_private-wrongReco-v04.root
