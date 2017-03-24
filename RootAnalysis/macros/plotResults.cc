@@ -2344,7 +2344,7 @@ void plotResults::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = -1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
       }
