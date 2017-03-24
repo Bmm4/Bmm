@@ -681,6 +681,12 @@ $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | grep
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
+$mode = "bmm-mc-$dataset-BuToJpsiPiWrong-$version"; $pattern = "BuToJpsiPi";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-BuToJpsiPiWrong -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern  > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 250000 c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
 $mode = "bmm-mc-$dataset-BToJpsi-$version"; $pattern = "BToJpsi";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-Bd2MuMu -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
