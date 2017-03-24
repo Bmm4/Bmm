@@ -943,7 +943,7 @@ void candAna::candEvaluation() {
     && fGoodDocaTrk
     ;
 
-  if (0) {
+  if (300531 == fCandType) {
     cout << " CNC: " << fGoodCNC
 	 << " Acceptance: " << fGoodAcceptance
 	 << " Q: " << fGoodQ
@@ -970,10 +970,9 @@ void candAna::candEvaluation() {
 
 
 
-
-  fillRedTreeData();
-
+  fillRedTreeData(); // this is for the BDT calculation!
   calcBDT();
+
 
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
@@ -984,7 +983,7 @@ void candAna::candEvaluation() {
   // -- add trigger and chan cuts
   fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
   // -- add J/psi and other daughter cuts
-  fPreselection = fPreselection && fGoodJpsiCuts;
+  fPreselection = fPreselection && fGoodJpsiCuts && fGoodPvAveW8;
 
 
 
@@ -3337,9 +3336,27 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 // ----------------------------------------------------------------------
 void candAna::calcBDT() {
   fBDT = -99.;
-
   if (!preselection(fRTD)) return;
+
+  fBDT = -98.;
   if (fChan < 0) return;
+
+  fBDT = -97.;
+  if (fGoodAcceptance
+    && fGoodQ
+    && fGoodMuonsGmID
+    && fGoodMuonsPt
+    && fGoodMuonsEta
+    && fGoodJpsiCuts
+    && fGoodPvAveW8
+      ) {
+    // do nothing
+  } else {
+    return;
+  }
+
+
+
   frd.pt = fCandPt;
   frd.eta = fCandEta;
   frd.m1eta = fMu1Eta;
