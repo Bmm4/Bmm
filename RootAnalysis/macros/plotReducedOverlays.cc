@@ -27,6 +27,7 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   cout << "===> Reading cuts from " << cutfile << endl;
   readCuts(cutfile);
   fNchan = fCuts.size();
+  fNchan = 2;
 
   printCuts(cout);
 
@@ -43,8 +44,9 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   fSel2 = false;
 
   fDoList.clear();
-  fDoList.push_back("muon1pt");
+  fDoList.push_back("fls3d");
   if (1) {
+    fDoList.push_back("muon1pt");
     fDoList.push_back("muon2pt");
 
     fDoList.push_back("muonseta");
@@ -60,7 +62,6 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
 
     fDoList.push_back("chi2dof");
     fDoList.push_back("pchi2dof");
-    fDoList.push_back("fls3d");
     fDoList.push_back("fl3d");
     fDoList.push_back("fl3de");
 
@@ -149,20 +150,20 @@ void plotReducedOverlays::makeAll(string what) {
     system(Form("/bin/rm -f %s", fTexFileName.c_str()));
     fTEX.open(fTexFileName.c_str(), ios::app);
     system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
-    system(Form("/bin/rm -f %s/sbsctrl_ad*_*.pdf", fDirectory.c_str()));
-    system(Form("/bin/rm -f %s/overlay*_ad*_*.pdf", fDirectory.c_str()));
-    system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
+    system(Form("/bin/rm -f %s/sbsctrl%d_ad*_*.pdf", fDirectory.c_str(), fYear));
+    system(Form("/bin/rm -f %s/overlay%d_ad*_*.pdf", fDirectory.c_str(), fYear));
+    system(Form("/bin/rm -f %s/mass%d_ad*_*.pdf", fDirectory.c_str(), fYear));
 
     printCuts(cout);
     makeOverlay("bspsiphiData", "bspsiphiMcComb", "cnc");
     makeOverlay("bmmData", "bdmmMcComb", "cnc");
     makeOverlay("bupsikData", "bupsikMcComb", "cnc");
-    makeOverlay("bdpsikstarData", "bdpsikstarMc", "cnc");
+    makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "cnc");
 
     makeOverlay("bspsiphiData", "bspsiphiMcComb", "bdt");
     makeOverlay("bmmData", "bdmmMcComb", "bdt");
     makeOverlay("bupsikData", "bupsikMcComb", "bdt");
-    makeOverlay("bdpsikstarData", "bdpsikstarMc", "bdt");
+    makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "bdt");
   }
 
   plotMass("bspsiphiData", "Cu");
