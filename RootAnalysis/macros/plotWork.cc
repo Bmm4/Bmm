@@ -767,11 +767,21 @@ void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
 
 
   if (cuts == "all") {
-    bmm5Trigger("m2pt>4&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4", "eta14");
-    bmm5Trigger("m2pt>4&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&fls3d>10", "eta14fls3d");
-    bmm5Trigger("m2pt>4&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&alpha<0.05", "eta14alpha");
-    bmm5Trigger("m2pt>4&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&iso>0.8", "eta14iso");
-    bmm5Trigger("m2pt>4&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&fls3d>10&&alpha<0.05&&iso>0.8", "eta14alphafls3diso");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4", "m2pt4eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>5", "m2pt5eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6", "m2pt6eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>7", "m2pt7eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4&&fls3d>10&&alpha<0.05&&iso>0.8", "m2pt4eta14alphafls3diso");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6&&fls3d>10&&alpha<0.05&&iso>0.8", "m2pt6eta14alphafls3diso");
+
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4", "gmuidm2pt4eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>5", "gmuidm2pt5eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6", "gmuidm2pt6eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>7", "gmuidm2pt7eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4&&fls3d>10&&alpha<0.05&&iso>0.8", "gmuidm2pt4eta14alphafls3diso");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6&&fls3d>10&&alpha<0.05&&iso>0.8", "gmuidm2pt6eta14alphafls3diso");
+
+
     return;
   }
 
@@ -779,21 +789,32 @@ void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
   TEX.open("bmm5Trigger.tex", ios::app);
 
   vector<string> seeds;
-  seeds.push_back("L1_DoubleMu0");
-  seeds.push_back("L1_DoubleMu7_OS");
-  seeds.push_back("L1_DoubleMu_13_6");
-  seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8");
-  seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8_OS");
-  seeds.push_back("L1_DoubleMu0er1p2_dEta_Max1p8_OS");
-  seeds.push_back("L1_DoubleMu0er1p2_OS_MASS0to10");
-  seeds.push_back("L1_DoubleMu0er1p4_dR0to1p8_OS");
-  seeds.push_back("L1_DoubleMu6_OS_MASS0to10");
+  if (1) {
+    seeds.push_back("L1_DoubleMu7_OS");
+    seeds.push_back("L1_DoubleMu_13_6");
+    seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8");
+    seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8_OS");
+    seeds.push_back("L1_DoubleMu0er1p2_dEta_Max1p8_OS");
+    seeds.push_back("L1_DoubleMu0er1p2_OS_MASS0to10");
+    seeds.push_back("L1_DoubleMu0er1p4_dR0to1p8_OS");
+    seeds.push_back("L1_DoubleMu6_OS_MASS0to10");
 
-  seeds.push_back("L1_DoubleMu6_OS_dR0to1");
-  seeds.push_back("L1_DoubleMu0er1p4_OS_MASS0to10");
-  seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p4_OS");
-  seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p2_OS");
-  seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p0_OS");
+    seeds.push_back("L1_DoubleMu6_OS_dR0to1");
+    seeds.push_back("L1_DoubleMu0er1p4_OS_MASS0to10");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p4_OS");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p2_OS");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p0_OS");
+
+    seeds.push_back("L1_DoubleMu0");
+    seeds.push_back("L1_DoubleMu0_bph1");
+    seeds.push_back("L1_DoubleMu0_bph2");
+    seeds.push_back("L1_DoubleMu0_bph3");
+    seeds.push_back("L1_DoubleMu0_bph4");
+    seeds.push_back("L1_DoubleMu0_bph5");
+    seeds.push_back("L1_DoubleMu0_bph6");
+    seeds.push_back("L1_DoubleMu0_bph7");
+    seeds.push_back("L1_DoubleMu0_bph8");
+  }
 
   TFile *f(0);
   TTree *t(0);
@@ -810,7 +831,7 @@ void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
     double pass = t->Draw("m", pcuts.c_str(), "goff");
     double effV = pass/norm;
     double effE = dEff(static_cast<int>(pass), static_cast<int>(norm));
-    cout << "seed: " << seeds[i] << " eff: " << effV << " +/- " <<  effE << endl;
+    cout << "seed: " << seeds[i] << " eff: " << effV << " +/- " <<  effE << " " << texname << endl;
     string useed = seeds[i];
     replaceAll(useed, "_", "\\%");
     replaceAll(useed, "%", "_");
