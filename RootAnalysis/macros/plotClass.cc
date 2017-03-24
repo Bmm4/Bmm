@@ -183,7 +183,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVarToTex.insert(make_pair("closetrks2", "N_{trk}^{close, 2#sigma}"));
   fVarToTex.insert(make_pair("closetrks3", "N_{trk}^{close, 3#sigma}"));
 
-  fVarToTex.insert(make_pair("maxdoca", "d^{max} #it{[cm]}"));
+  fVarToTex.insert(make_pair("maxdoca", "d_{ca}^{max} #it{[cm]}"));
   fVarToTex.insert(make_pair("pvip", "#delta_{3D} #it{[cm]}"));
   fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
 
@@ -2713,7 +2713,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "B_{c} #rightarrow J #it{#psi} #it{#mu} #it{#nu}";
+        sdecay = "B_{c} #rightarrow J/#it{#psi} #it{#mu} #it{#nu}";
         ldecay = "\\bcpsimunu";
 	ds->fColor = kMagenta-3;
 	ds->fSymbol = 24;
@@ -2732,7 +2732,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("Run1")) sname += "Run1";
-        sdecay = "B^{+} #rightarrow J #it{#psi} #it{#pi}^{+}";
+        sdecay = "B^{+} #rightarrow J/#it{#psi} #it{#pi}^{+}";
         ldecay = "\\bcpsimunu";
 	ds->fColor = kMagenta-3;
 	ds->fSymbol = 24;
