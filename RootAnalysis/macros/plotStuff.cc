@@ -2609,7 +2609,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
 
   c0->cd();
-  savePad(Form("tauEff_%s_%s.pdf", varname.c_str(), fSample.c_str()));
+  savePad(Form("tauEff%d_%s_%s.pdf", fYear, varname.c_str(), fSample.c_str()));
 
 
 }
