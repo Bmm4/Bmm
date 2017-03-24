@@ -84,9 +84,9 @@ public:
   // -- Additional variables and cuts for Bd -> J/psi Kstar
   int               KSTARTYPE;
   double            MKPILO, MKPIHI, DELTAR;
-  double            fKstarDeltaR, fMKPI;
+  double            fKstarDeltaR, fMKPI, fMKK, fMPIPI, fMPPI;
   bool              fGoodDeltaR, fGoodMKPI;
-
+  double            fBsJpsiPhiMass;
 
 };
 

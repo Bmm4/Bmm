@@ -61,6 +61,32 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     }
   }
 
+  // -- check for overlap with a Bd -> J/psi Kstar (300511) candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBdJpsiKstarMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300511 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 4 track overlap, get kstar mass of the other cand
+    if (4 == overlap) {
+      fBdJpsiKstarMass = pC->fMass;
+    }
+  }
+
+
   // -- Get Kaons
   TAnaTrack *p0;
   TAnaTrack *p1(0);
@@ -78,10 +104,12 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   if (0 == p1) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 1 found " << endl;
+    fCandM = -98.;
     return;
   }
   if (0 == p2) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 2 found " << endl;
+    fCandM = -98.;
     return;
   }
 
@@ -511,6 +539,8 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+
+  t->Branch("bdpsikstarmass",     &fBdJpsiKstarMass, "bdpsikstarmass/D");
 
   t->Branch("mkk",   &fMKK,      "mkk/D");
   t->Branch("mkpi1", &fMKPi1,    "mkpi1/D");

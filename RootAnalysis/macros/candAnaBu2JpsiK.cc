@@ -41,8 +41,35 @@ void candAnaBu2JpsiK::candAnalysis() {
     }
   }
 
+  // -- check for overlap with a Bd -> J/psi Kstar (300511) candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBdJpsiKstarMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300511 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 3 track overlap, get kstar mass of the other cand
+    if (3 == overlap) {
+      fBdJpsiKstarMass = pC->fMass;
+    }
+  }
+
+
   if (0 == pk) {
     cout << "candAnaBu2JpsiK::candAnalysis:  no kaon found " << endl;
+    fCandM = -98.;
     return;
   }
 
@@ -86,7 +113,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   TAnaCand *pD = 0;
   fGoodJpsiMass = false;
   double chi2(0.);
-  double ndof(0.), masse(0.);
+  double ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
     if (i < 0) break;
     pD = fpEvt->getCand(i);
@@ -105,7 +132,6 @@ void candAnaBu2JpsiK::candAnalysis() {
 
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
-      masse = pD->fMassE;
       break;
     }
   }
@@ -116,7 +142,6 @@ void candAnaBu2JpsiK::candAnalysis() {
   fCandChi2  = chi2;
   fCandDof   = ndof;
   fCandChi2Dof = chi2/ndof;
-  fCandME      = masse;
 
   fGoodTracks    = fGoodTracks    && fKaonTkQuality;
   fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt) && (fKaonPt < TRACKPTHI));
@@ -455,6 +480,7 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+  t->Branch("bdpsikstarmass", &fBdJpsiKstarMass, "bdpsikstarmass/D");
 
   t->Branch("kpt",  &fKaonPt,        "kpt/D");
   t->Branch("keta", &fKaonEta,       "keta/D");

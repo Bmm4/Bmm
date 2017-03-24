@@ -274,15 +274,27 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       //      fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2);
     }
 
-    if (0)
-      cout << " cand " << fpCand->fType
-	   << " run " << fRun << " ls " << fLS << " event " << fEvt << " json " << fJSON
-	   << " chan = " << fChan
-	   << " hlt1 " <<fGoodHLT1 << " TOS " << fTOS
-	   << " presel = " << fPreselection
-	   << endl;
 
     if (fIsMC) {
+
+      if (0) {
+	cout << " cand " << fpCand->fType
+	     << " at " << iC << "/" << fCandIdx
+	     << " run " << fRun << " ls " << fLS << " event " << fEvt << " json " << fJSON
+	     << " chan = " << fChan
+	     << " hlt1 " <<fGoodHLT1 << " TOS " << fTOS
+	     << " presel = " << fPreselection;
+
+	vector<int> sigTrks;
+	getSigTracks(sigTrks, fpCand);
+	cout << " sigtracks: ";
+	for (unsigned int iii = 0; iii < sigTrks.size(); ++iii) {
+	  cout << sigTrks[iii] << " ";
+	}
+	cout << endl;
+      }
+
+
       fTree->Fill();
 
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
@@ -572,15 +584,16 @@ void candAna::candAnalysis() {
   if (fCandTM && fGenM1Tmi < 0) fpEvt->dump();
 
   TGenCand *pg1(0), *pg2(0);
+  fMu1PtGen     = -99.;
+  fMu1EtaGen    = -99.;
+  fMu1PhiGen    = -99.;
   if (fCandTmi > -1) {
     pg1           = fpEvt->getGenTWithIndex(p1->fGenIndex);
-    fMu1PtGen     = pg1->fP.Perp();
-    fMu1EtaGen    = pg1->fP.Eta();
-    fMu1PhiGen    = pg1->fP.Phi();
-  } else {
-    fMu1PtGen     = -99.;
-    fMu1EtaGen    = -99.;
-    fMu1PhiGen    = -99.;
+    if (pg1) {
+      fMu1PtGen     = pg1->fP.Perp();
+      fMu1EtaGen    = pg1->fP.Eta();
+      fMu1PhiGen    = pg1->fP.Phi();
+    }
   }
 
   //cout<<" check muon 2"<<endl;
@@ -691,15 +704,16 @@ void candAna::candAnalysis() {
 
   fMu1W8Mu = fMu2W8Mu = fMu1W8Tr = fMu2W8Tr = -2.;
 
+  fMu2PtGen     = -99.;
+  fMu2EtaGen    = -99.;
+  fMu2PhiGen    = -99.;
   if (fCandTmi > -1) {
     pg2           = fpEvt->getGenTWithIndex(p2->fGenIndex);
-    fMu2PtGen     = pg2->fP.Perp();
-    fMu2EtaGen    = pg2->fP.Eta();
-    fMu2PhiGen    = pg2->fP.Phi();
-  } else {
-    fMu2PtGen     = -99.;
-    fMu2EtaGen    = -99.;
-    fMu2PhiGen    = -99.;
+    if (pg2) {
+      fMu2PtGen     = pg2->fP.Perp();
+      fMu2EtaGen    = pg2->fP.Eta();
+      fMu2PhiGen    = pg2->fP.Phi();
+    }
   }
 
   fGenMass = -99.;
@@ -914,20 +928,47 @@ void candAna::candEvaluation() {
     && fGoodMuonsEta
     && fGoodJpsiCuts
     && fGoodPvAveW8
-    && fGoodMaxDoca
     && fGoodLip
     && fGoodLipS
     && fGoodIp
     && fGoodIpS
     && fGoodPt
     && fGoodEta
-    && fGoodAlpha
+    && fGoodMaxDoca
     && fGoodChi2
+    && fGoodAlpha
     && fGoodFLS
     && fGoodCloseTrack
     && fGoodIso
     && fGoodDocaTrk
     ;
+
+  if (0) {
+    cout << " CNC: " << fGoodCNC
+	 << " Acceptance: " << fGoodAcceptance
+	 << " Q: " << fGoodQ
+	 << " MuonsGmID: " << fGoodMuonsGmID
+	 << " MuonsPt: " << fGoodMuonsPt
+	 << " MuonsEta: " << fGoodMuonsEta
+	 << " JpsiCuts: " << fGoodJpsiCuts
+	 << " PvAveW8: " << fGoodPvAveW8
+	 << " MaxDoca: " << fGoodMaxDoca
+	 << " Lip: " << fGoodLip
+	 << " LipS: " << fGoodLipS
+	 << " Ip: " << fGoodIp
+	 << " IpS: " << fGoodIpS
+	 << " Pt: " << fGoodPt
+	 << " Eta: " << fGoodEta
+	 << " Alpha: " << fGoodAlpha
+	 << " Chi2: " << fGoodChi2
+	 << " FLS: " << fGoodFLS
+	 << " CloseTrack: " << fGoodCloseTrack
+	 << " Iso: " << fGoodIso
+	 << " DocaTrk: " << fGoodDocaTrk
+	 << endl;
+  }
+
+
 
 
   fillRedTreeData();
@@ -1778,6 +1819,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("chan",    &fChan,              "chan/I");
   t->Branch("q",       &fCandQ,             "q/I");
   t->Branch("type",    &fCandType,          "type/I");
+  t->Branch("idx",     &fCandIdx,           "idx/I");
   t->Branch("dcand",   &fCandDcand,         "dcand/O");
   t->Branch("pt",      &fCandPt,            "pt/D");
   t->Branch("eta",     &fCandEta,           "eta/D");

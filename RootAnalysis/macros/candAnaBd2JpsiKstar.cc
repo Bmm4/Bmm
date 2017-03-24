@@ -27,6 +27,14 @@ candAnaBd2JpsiKstar::~candAnaBd2JpsiKstar() {
 // ----------------------------------------------------------------------
 void candAnaBd2JpsiKstar::candAnalysis() {
 
+  fGoodTracks     = false;
+  fGoodTracksPt   = false;
+  fGoodTracksEta  = false;
+
+  fGoodAcceptance = false;
+  fGoodJpsiCuts   = false;
+  fKstarFail      = true;
+
   if (0 == fpCand) return;
 
   TAnaCand *pC(0), *pD(0);
@@ -71,16 +79,40 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 	}
       }
       if (TMath::Abs(mkstarOther - MKSTAR) < TMath::Abs(mkstar - MKSTAR)) {
-	if (0) cout << "other cand " << pC->fIndex << " track indices has better kstar mass: " << mkstarOther << " (" << TMath::Abs(mkstarOther - MKSTAR)
+	if (0) cout << "other cand " << pC->fIndex
+		    << " track indices has better kstar mass: " << mkstarOther << " (" << TMath::Abs(mkstarOther - MKSTAR)
 		    << ") then this cand: " << mkstar  << " (" << TMath::Abs(mkstar - MKSTAR) << ")"
 		    << endl;
 	if (3000070 == pC->fType) {
 	  fKstarFail = true;
 	} else {
 	  fKstarFail = true;
+	  fCandM = -98.;
 	  return;
 	}
       }
+    }
+  }
+
+  // -- check for overlap with a Bs -> J/psi phi candidate
+  fBsJpsiPhiMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    pC = fpEvt->getCand(iC);
+    if (300531 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 4 track overlap, get kstar mass of the other cand
+    if (4 == overlap) {
+      fBsJpsiPhiMass = pC->fMass;
     }
   }
 
@@ -159,6 +191,30 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fPiPtNrf     = p2->fPlab.Perp();
   fPiEtaNrf    = p2->fPlab.Eta();
 
+  // -- calculate alternative masses
+  TLorentzVector pi1, pi2, ks;
+  pi1.SetPtEtaPhiM(p1->fRefPlab.Perp(), p1->fRefPlab.Eta(), p1->fRefPlab.Phi(), MPION);
+  pi2.SetPtEtaPhiM(p2->fRefPlab.Perp(), p2->fRefPlab.Eta(), p2->fRefPlab.Phi(), MPION);
+  ks = pi1 + pi2;
+  fMPIPI = ks.M();
+
+  pi1.SetPtEtaPhiM(p1->fRefPlab.Perp(), p1->fRefPlab.Eta(), p1->fRefPlab.Phi(), MKAON);
+  pi2.SetPtEtaPhiM(p2->fRefPlab.Perp(), p2->fRefPlab.Eta(), p2->fRefPlab.Phi(), MKAON);
+  ks = pi1 + pi2;
+  fMKK = ks.M();
+
+  if (p1->fRefPlab.Perp() > p2->fRefPlab.Perp()) {
+    pi1.SetPtEtaPhiM(p1->fRefPlab.Perp(), p1->fRefPlab.Eta(), p1->fRefPlab.Phi(), MPROTON);
+    pi2.SetPtEtaPhiM(p2->fRefPlab.Perp(), p2->fRefPlab.Eta(), p2->fRefPlab.Phi(), MPION);
+  } else {
+    pi1.SetPtEtaPhiM(p1->fRefPlab.Perp(), p1->fRefPlab.Eta(), p1->fRefPlab.Phi(), MPION);
+    pi2.SetPtEtaPhiM(p2->fRefPlab.Perp(), p2->fRefPlab.Eta(), p2->fRefPlab.Phi(), MPROTON);
+  }
+  ks = pi1 + pi2;
+  fMPPI = ks.M();
+
+
+
   fKaMissid = tightMuon(p1);  // true for tight  muons
   fPiMissid = tightMuon(p2);
   fKaMuMatch = doTriggerMatching(p1); // see if it matches HLT muon
@@ -219,6 +275,43 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fGoodMKPI    = ((MKPILO < fMKPI ) && (fMKPI < MKPIHI));
 
   candAna::candAnalysis();
+
+  // if (3000069 == fpCand->fType
+  //     && fCandM < 5.5 && fCandM > 5.
+  //     && fMKPI > 0.8 && fMKPI < 0.825
+  //     && fJpsiMass > 3.05 && fJpsiMass < 3.14 && fJpsiVtxProb > 0.1
+  //     && TMath::Abs(fMu1Eta) < 2.4 && TMath::Abs(fMu2Eta) < 2.4
+  //     && TMath::Abs(fMu1Pt) > 4. && TMath::Abs(fMu2Pt) > 4.
+  //     && TMath::Abs(fKaEta) < 2.4 && TMath::Abs(fPiEta) < 2.4
+  //     && TMath::Abs(fKaPt) > 0.8 && TMath::Abs(fPiPt) > 0.8
+  //     && fCandIso > 0.8 && fCandDocaTrk > 0.015 && fCandDoca < 0.03
+  //     && fCandA < 0.05 && fCandFLS3d > 10 && fCandProb > 0.1
+  //     && TMath::Abs(fCandEta) < 2.4 && 10 < fCandPt && fCandPt < 13) {
+
+  //   cout << "low mass kstar: " << endl;
+  //   fpCand->dump();
+  //   TAnaTrack *pp, *ppk;
+  //   if (fGenBTmi > -1) {
+  //     for (int it = fpCand->fSig1; it <= fpCand->fSig2; ++it) {
+  // 	pp = fpEvt->getSigTrack(it);
+  // 	cout << pp->fMCID << ": pT = " << pp->fPlab.Perp() << " ref: " << pp->fRefPlab.Perp() << " gen: "
+  // 	     << fpEvt->getGenCand(pp->fGenIndex)->fP.Perp()
+  // 	     << ": eta = " << pp->fPlab.Eta() << " ref: " << pp->fRefPlab.Eta() << " gen: "
+  // 	     << fpEvt->getGenCand(pp->fGenIndex)->fP.Eta()
+  // 	     << ": phi = " << pp->fPlab.Phi() << " ref: " << pp->fRefPlab.Phi() << " gen: "
+  // 	     << fpEvt->getGenCand(pp->fGenIndex)->fP.Phi()
+  // 	     << endl;
+  // 	if (321 == TMath::Abs(pp->fMCID)) ppk = pp;
+  //     }
+
+  //     TGenCand *pgkstar = fpEvt->getGenCand(ppk->fGenIndex);
+  //     pgkstar = fpEvt->getGenCand(pgkstar->fMom1);
+
+  //     cout << "fMKPI = " << fMKPI << " on the gen level: " << pgkstar->fMass << ((pgkstar->fMass > 0.85)?"     ****************":"") << endl;
+
+  //   }
+  // }
+
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
@@ -585,12 +678,16 @@ void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
 
-  t->Branch("mkpi",      &fMKPI,      "mkpi/D");
-  t->Branch("kstarpt",   &fKstarPt,    "kstarpt/D");
-  t->Branch("kstareta",  &fKstarEta,   "kstareta/D");
-  t->Branch("kstarphi",  &fKstarPhi,   "kstarphi/D");
-  t->Branch("dr",        &fDeltaR,   "dr/D");
-  t->Branch("kstarfail", &fKstarFail,   "kstarfail/O");
+  t->Branch("mkpi",      &fMKPI,          "mkpi/D");
+  t->Branch("mpipi",     &fMPIPI,         "mpipi/D");
+  t->Branch("mkk",       &fMKK,           "mkk/D");
+  t->Branch("mppi",      &fMPPI,          "mppi/D");
+  t->Branch("mbsjpsiphi",&fBsJpsiPhiMass, "mbsjpsiphi/D");
+  t->Branch("kstarpt",   &fKstarPt,       "kstarpt/D");
+  t->Branch("kstareta",  &fKstarEta,      "kstareta/D");
+  t->Branch("kstarphi",  &fKstarPhi,      "kstarphi/D");
+  t->Branch("dr",        &fDeltaR,        "dr/D");
+  t->Branch("kstarfail", &fKstarFail,     "kstarfail/O");
 
   t->Branch("kpt",  &fKaPt,    "kpt/D");
   t->Branch("keta", &fKaEta,   "keta/D");
