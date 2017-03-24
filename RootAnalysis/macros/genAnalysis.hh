@@ -40,6 +40,7 @@ public:
   int          muonType(TGenCand *pCand);
   void         bbbarCrossSection();
   void         nonPromptJpsi();
+  void         genKstarMass();
 
   void         printBdecays();
   void         validateLb2PMuNu();
@@ -56,6 +57,8 @@ public:
   std::vector<std::pair<int, int> > fRunEvents;
   std::map<std::string, int>  fB2Jpsi;
   int                         fB2JpsiCnt;
+
+  TH1D *fKstarMass;
 };
 
 #endif
