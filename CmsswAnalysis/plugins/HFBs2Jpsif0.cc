@@ -72,7 +72,7 @@ void HFBs2Jpsif0::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
   if (fVerbose > 0) cout << "==>HFBs2Jpsif0> f0 list size:    " << f0List.size() << endl;
 
   // -- Build J/psi + f0
-  TLorentzVector psi, f0, m1, m2, ka1, ka2, bs;
+  TLorentzVector psi, f0, m1, m2, pi1, pi2, bs;
   double mass(0.);
   TAnaCand *pCand(0);
   HFDecayTreeIterator iterator;
@@ -105,29 +105,29 @@ void HFBs2Jpsif0::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetu
       if (iPion1 == iMuon1 || iPion1 == iMuon2) continue;
       if (iPion2 == iMuon1 || iPion2 == iMuon2) continue;
       reco::TrackBaseRef rTrackView1(fTracksHandle, iPion1);
-      reco::Track tKaon1(*rTrackView1);
-      if (tKaon1.pt() < fTrackPt) continue;
-      if ((fMaxD0 < 90.) && (tKaon1.d0() > fMaxD0)) continue;
-      if ((fMaxDz < 90.) && (tKaon1.dz() > fMaxDz)) continue;
+      reco::Track tPion1(*rTrackView1);
+      if (tPion1.pt() < fTrackPt) continue;
+      if ((fMaxD0 < 90.) && (tPion1.d0() > fMaxD0)) continue;
+      if ((fMaxDz < 90.) && (tPion1.dz() > fMaxDz)) continue;
       reco::TrackBaseRef rTrackView2(fTracksHandle, iPion2);
-      reco::Track tKaon2(*rTrackView2);
-      if (tKaon2.pt() < fTrackPt) continue;
-      if ((fMaxD0 < 90.) && (tKaon2.d0() > fMaxD0)) continue;
-      if ((fMaxDz < 90.) && (tKaon2.dz() > fMaxDz)) continue;
-      if (tKaon1.charge()*tKaon2.charge() > 0) continue;
+      reco::Track tPion2(*rTrackView2);
+      if (tPion2.pt() < fTrackPt) continue;
+      if ((fMaxD0 < 90.) && (tPion2.d0() > fMaxD0)) continue;
+      if ((fMaxDz < 90.) && (tPion2.dz() > fMaxDz)) continue;
+      if (tPion1.charge()*tPion2.charge() > 0) continue;
 
-      ka1.SetXYZM(tKaon1.px(), tKaon1.py(), tKaon1.pz(), MKAON);
-      ka2.SetXYZM(tKaon2.px(), tKaon2.py(), tKaon2.pz(), MKAON);
-      if ((fDeltaR < 90.) && (ka1.DeltaR(ka2) > fDeltaR)) continue;
+      pi1.SetXYZM(tPion1.px(), tPion1.py(), tPion1.pz(), MPION);
+      pi2.SetXYZM(tPion2.px(), tPion2.py(), tPion2.pz(), MPION);
+      if ((fDeltaR < 90.) && (pi1.DeltaR(pi2) > fDeltaR)) continue;
 
-      f0 = ka1 + ka2;
+      f0 = pi1 + pi2;
 
       bs = psi + f0;
       mass = bs.M();
       if (mass < (fCandLo-0.3)) continue;
       if (mass > (fCandHi+0.3)) continue;
 
-      // -- sequential fit: J/Psi kaons
+      // -- sequential fit: J/Psi pions
       theTree.clear(300532, true, MBS, false, -1.0, true);
       iterator = theTree.addDecayTree(300443, false, MJPSI, false);
       iterator->addTrack(iMuon1, 13);

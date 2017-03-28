@@ -328,7 +328,7 @@ sub makeJdlFile {
     print OUT "VirtualOrganisation = \"cms\";\n";
 #    print OUT "PerusalFileEnable = true;\n";
 #    print OUT "PerusalTimeInterval = 30;\n";
-    print OUT "Rank          = other.GlueCEStateFreeCPUs;\n";
+#    print OUT "Rank          = other.GlueCEStateFreeCPUs;\n";
     print OUT "Rank          =-other.GlueCEStateEstimatedResponseTime;\n";
     my $REQ = "(other.GlueCEPolicyMaxWallClockTime > 300)";
 
