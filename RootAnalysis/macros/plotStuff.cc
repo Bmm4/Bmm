@@ -1020,7 +1020,7 @@ void plotStuff::pvStudy(string dsname, string selection, string fmod) {
 
 // ----------------------------------------------------------------------
 void plotStuff::yieldStability(string dsname, string trg) {
-  double MINLUMI(1000.);
+  double MINLUMI(1.);
   double mBp(5.28), sBp(0.015), stepBp(5.15);
   double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
 
@@ -1162,9 +1162,9 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  if (string::npos != dsname.find("bupsik") || string::npos != dsname.find("bspsiphi")) {
 	    fitPsYield fpy(hBlock, 0);
 	    if (string::npos != dsname.find("bupsik")) {
-	      fpy.fitBu2JpsiKp(5, fDirectory + "/");
+	      fpy.fitBu2JpsiKp(0, fDirectory + "/");
 	    } else if (string::npos != dsname.find("bspsiphi")) {
-	      fpy.fitBs2JpsiPhi(5, fDirectory + "/");
+	      fpy.fitBs2JpsiPhi(0, fDirectory + "/");
 	    }
 	    result  = fpy.getSignalYield();
 	    resultE = fpy.getSignalError();
@@ -1883,25 +1883,24 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 // ----------------------------------------------------------------------
 void plotStuff::loopFunction1() {
 
-  bool goodRun(false);
-  if (fb.run == 277194) goodRun = true;
-  if (fb.run == 280385) goodRun = true;
+  // bool goodRun(false);
+  // if (fb.run == 277194) goodRun = true;
+  // if (fb.run == 280385) goodRun = true;
+  // if (!goodRun) return;
 
-  if (!goodRun) return;
-
-  if (!fGoodMuonsID) return;
+  if (!fGoodGlobalMuons) return;
 
   if (!fGoodQ) return;
   if (!fGoodPvAveW8) return;
-  if (!fGoodMaxDoca) return;
 
+  //  if (!fGoodMaxDoca) return;
   //  if (fb.flsxy    < fCuts[fChan]->flsxy) return;
   //  if (fb.fls3d    < fCuts[fChan]->fls3d) return;
-  if (fb.fls3d    < 5.) return;
+  if (fb.fls3d    < 4.) return;
 
   if (fb.chi2dof  > fCuts[fChan]->chi2dof) return;
   //  if (fb.alpha    > fCuts[fChan]->alpha) return;
-  if (fb.alpha    > 0.1) return;
+  if (fb.alpha    > 0.2) return;
 
   if (fb.iso      < fCuts[fChan]->iso) return;
   // if (fb.docatrk  < fCuts[fChan]->docatrk) return;

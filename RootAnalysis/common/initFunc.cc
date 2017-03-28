@@ -452,30 +452,37 @@ namespace {
     // par[9]:  fraction in satellite peak
 
     double fitval(-1.);
-    if (x[0] < par[1]) {
+    if (x[0] < par[4]) {
       if (par[2] > 0.) {
-	Double_t arg = (x[0] - par[1]*par[4]) / (par[2]*par[5]);
+	Double_t arg = (x[0] - /*par[1]* */par[4]) / (par[2]*par[5]);
 	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
       } else {
 	return -1.;
       }
     } else {
       if (par[3] > 0.) {
-	Double_t arg = (x[0] - par[1]*par[4]) / (par[3]*par[5]);
+	Double_t arg = (x[0] - /*par[1]* */par[4]) / (par[3]*par[5]);
 	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
       } else {
 	return -1.;
       }
     }
 
+    double cbval = iF_cb(x, &par[4]);
+    double cbintegral = 2.50663 * par[8] * TMath::Abs(par[5]);
+
+    // -- apppoximate integrals of 'signal' analytically
+    // TMath::Sqrt(TMath::Pi()) * TMath::Sqrt(2.) = 2.50663;
+    double gintegral = 2.50663 * par[0] * TMath::Abs(0.5*(par[2]+par[3]));
+
+
     // -- calculate B+ -> J/psi pi contribution:
-    double g3par[] = {par[9]*par[8], 5.36416e+00, 4.83167e-02,
+    double g3par[] = {par[9]*cbintegral*gintegral, 5.36416e+00, 4.83167e-02,
 		      3.39117e-01,   5.46405e+00, 9.83832e-02,
 		      9.36584e-02,   5.52549e+00, 2.69386e-01};
     double peakingBg = iF_gauss3(x, g3par);
 
-
-    return  (fitval + iF_cb(x, &par[4]) + peakingBg);
+    return  (fitval + cbval + peakingBg);
   }
 
 
@@ -882,7 +889,7 @@ void initFunc::dumpParameters(TF1 *f1) {
 
 // ----------------------------------------------------------------------
 void initFunc::applyLimits(TF1 *f, string name) {
-  cout << "initFunc(" << fName << ") applyLimits:" << endl;
+  if (fVerbose) cout << "initFunc(" << fName << ") applyLimits:" << endl;
   for (int i = 0; i < f->GetNpar(); ++i) {
     if (fFix[i]) {
       if (fVerbose) cout << "initFunc::" << name << "> fixing par " << i << " to " << fLimitLo[i] << endl;
@@ -2536,14 +2543,14 @@ TF1* initFunc::bupsik(TH1 *h) {
   f->SetParName(10, "exp0");
   f->SetParName(11, "exp1");
 
-  f->SetParName(12, "erstep");
-  f->SetParName(13, "erres");
-  f->SetParName(14, "ernorm");
+  f->SetParName(12, "errstep");
+  f->SetParName(13, "errres");
+  f->SetParName(14, "errnorm");
 
   f->SetLineWidth(2);
 
   f->SetParameter(0, 0.1); limitPar(0, 0.1,  0.4);
-  f->SetParameter(1, 1.0); limitPar(1, 0.95, 1.05);
+  f->SetParameter(1, 1.0); limitPar(1, 0.995, 1.005);
   f->SetParameter(2, 1.1); limitPar(2, 1.00, 2.00);
   f->SetParameter(3, 1.1); limitPar(3, 1.00, 2.00);
 
@@ -2562,7 +2569,7 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   fixPar(12, 5.142);
   f->SetParameter(13, 0.05);  limitPar(13, 0.040, 0.060);
-  cout << "set err norm: " << 0.5*h->Integral(1, 5)/5 << endl;
+  //  cout << "set err norm: " << 0.5*h->Integral(1, 5)/5 << endl;
   f->SetParameter(14, 0.5*h->Integral(1, 5)/5);
   applyLimits(f, "bupsik");
   return f;

@@ -74,6 +74,12 @@ $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-$versio
 
 $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-$version.root ; cd - ; ";
 
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-$version.root bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v04.root bmm-mc-Summer16_private-BsToMuMu-v04.root ; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-$version.root bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v04.root bmm-mc-Summer16_private-BdToMuMu-v04.root ; cd - ; ";
+
+
+
 # -----------------------------------------------
 # 2011
 # -----------------------------------------------

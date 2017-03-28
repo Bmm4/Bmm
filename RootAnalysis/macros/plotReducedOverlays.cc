@@ -131,6 +131,11 @@ void plotReducedOverlays::makeAll(string what) {
     makeSampleOverlay("bupsikData", "bupsikMcComb");
   }
 
+  if (what == "official") {
+    comparePrivateAndOfficial();
+  }
+
+
   if (what == "all") {
     init();
 
@@ -177,14 +182,17 @@ void plotReducedOverlays::makeAll(string what) {
 void plotReducedOverlays::comparePrivateAndOfficial() {
 
   changeSetup(fDirectory, "plotReducedOverlays", "comparePrivateAndOfficial");
-  makeSampleOverlay("bdmmMc", "bdmmOfficial", "Ao");
+  makeSampleOverlay("bupsikMc", "bupsikMcOff", "Ao");
 
 }
 
 // ----------------------------------------------------------------------
 void plotReducedOverlays::makeSampleOverlay(string sample1, string sample2, string selection) {
-  makeSample(sample1, 1.e6);
-  makeSample(sample2, 1.e6);
+  makeSample(sample1);
+  makeSample(sample2);
+
+  // makeSample(sample1, 1.e6);
+  // makeSample(sample2, 1.e6);
 
   fStampString = "CNC";
   makeOverlay(sample1, sample2, "cnc");

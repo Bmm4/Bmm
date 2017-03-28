@@ -91,6 +91,8 @@ public :
   void           insertDataset(std::string dsname, dataset *);
   void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
+  std::string    runRange(int run);
+
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
   virtual void   init();
