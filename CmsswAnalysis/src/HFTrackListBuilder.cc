@@ -41,13 +41,17 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
   vector<int>::iterator trackIt;
 
   trackList.reserve(50); // 50 muons should be enough
-
   int ix(0);
   for (muonIt = fMuons->begin(); muonIt != fMuons->end(); ++muonIt) {
     if (!muon::isGoodMuon(*muonIt, fMuonQuality)) continue;
     int ixMu = muonIt->track().index();
-    if (ixMu >= 0) trackList.push_back(ixMu);
-    if (fVerbose > 0) cout << "==>" << fCallerName << "> muon " << ix << " with track index " << ixMu << endl;
+    if (ixMu < 0) continue;
+    if (!(*this)(ixMu)) {
+      trackList.push_back(ixMu);
+    } else {
+      reco::TrackBaseRef rTrackView(fhTracks, ixMu);
+      reco::Track tTrack(*rTrackView);
+    }
     ++ix;
   }
 
@@ -55,9 +59,6 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
     cout << "==>" << fCallerName << "> nMuons = " << fMuons->size() << endl;
     cout << "==>" << fCallerName << "> nMuonIndices = " << trackList.size() << endl;
   }
-
-  trackIt = std::remove_if(trackList.begin(), trackList.end(), *this);
-  trackList.erase(trackIt,trackList.end());
 
   return trackList;
 }
@@ -84,9 +85,9 @@ std::vector<int> HFTrackListBuilder::getTrackList() {
 bool HFTrackListBuilder::operator()(int ix) {
   reco::TrackBaseRef rTrackView(fhTracks,ix);
   reco::Track tTrack(*rTrackView);
-  bool result = tTrack.d0() > fMaxD0 || tTrack.dz() > fMaxDz || tTrack.pt() < fMinPt;
+  bool skip = tTrack.d0() > fMaxD0 || tTrack.dz() > fMaxDz || tTrack.pt() < fMinPt;
 
-  if (!result && fCloseTracks) {
+  if (!skip && fCloseTracks) {
     // check wether this track is nearby anyone in the fCloseTracks vector
     reco::TransientTrack tTrkCur = fTTB->build(tTrack);
     TwoTrackMinimumDistance md;
@@ -98,13 +99,13 @@ bool HFTrackListBuilder::operator()(int ix) {
 	continue;
 
       reco::TransientTrack tTrkCompare = fTTB->build((*fhTracks)[(*fCloseTracks)[j]]);
-      md.calculate(tTrkCur.initialFreeState(),tTrkCompare.initialFreeState());
+      md.calculate(tTrkCur.initialFreeState(), tTrkCompare.initialFreeState());
       if (md.distance() < minDoca)
 	minDoca = md.distance();
     }
 
-    result = minDoca > fMaxDocaToTrks;
+    skip = minDoca > fMaxDocaToTrks;
   }
 
-  return result;
+  return skip;
 }

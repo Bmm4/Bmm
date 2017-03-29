@@ -3,6 +3,7 @@
 #include "TROOT.h"
 #include "TMath.h"
 #include "TCanvas.h"
+#include "TVirtualFitter.h"
 
 #include <iostream>
 #include <iomanip>
@@ -161,6 +162,36 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  double iF_bigauss(double *x, double *par) {
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigmaL
+    // par[3] -> sigmaH
+
+    if (x[0] > par[1]) {
+      if (par[2] > 0.) {
+	Double_t arg = (x[0] - par[1]) / par[2];
+	Double_t fitval =  par[0]*TMath::Exp(-0.5*arg*arg);
+	return fitval;
+      }
+      else {
+	return -1.;
+      }
+    } else {
+      if (par[3] > 0.) {
+	Double_t arg = (x[0] - par[1]) / par[3];
+	Double_t fitval = par[0]*TMath::Exp(-0.5*arg*arg);
+	return fitval;
+      }
+      else {
+	return -1.;
+      }
+    }
+    return -1.;
+  }
+
+
+  // ----------------------------------------------------------------------
   double iF_Gauss(double *x, double *par) {
     // par[0] -> area
     // par[1] -> mean
@@ -244,6 +275,34 @@ namespace {
     return fitval;
   }
 
+  // ----------------------------------------------------------------------
+  double iF_gauss3(double *x, double *par) {
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> mean of second gaussian
+    // par[5] -> sigma of second gaussian
+    // par[6] -> fraction in third gaussian
+    // par[7] -> mean of third gaussian
+    // par[8] -> sigma of third gaussian
+    Double_t arg1(0.), arg2(0.), arg3(0.), fitval1(0.), fitval2(0.), fitval3(0.);
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[5] > 0.) {
+      arg2 = (x[0] - par[4]) / par[5];
+      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+    if (par[8] > 0.) {
+      arg3 = (x[0] - par[7]) / par[8];
+      fitval3 =  par[6]*par[0]*TMath::Exp(-0.5*arg3*arg3);
+    }
+
+    Double_t fitval = fitval1 + fitval2 + fitval3;
+    return fitval;
+  }
 
   // ----------------------------------------------------------------------
   double iF_pol0(double *x, double *par) {
@@ -313,7 +372,7 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
-  // pol1 and crystal ball
+  // gauss and crystal ball
   double iF_gauss_cb(double *x, double *par) {
     // par[0]:  norm  Gauss, ratio to xball normalization
     // par[1]:  peak  Gauss, ratio to xball peak
@@ -333,6 +392,97 @@ namespace {
     }
 
     return  (fitval + iF_cb(x, &par[3]));
+  }
+
+
+  // ----------------------------------------------------------------------
+  // bigauss and crystal ball
+  double iF_bigauss_cb(double *x, double *par) {
+    // par[0]:  norm  Gauss, ratio to xball normalization
+    // par[1]:  peak  Gauss, ratio to xball peak
+    // par[2]:  sigmaL Gauss, ratio to xball sigma
+    // par[3]:  sigmaH Gauss, ratio to xball sigma
+    // par[4]:  mean
+    // par[5]:  sigma
+    // par[6]:  alpha, crossover point
+    // par[7]:  n, length of tail
+    // par[8]:  N, normalization
+
+    double fitval(-1.);
+    if (x[0] < par[1]) {
+      if (par[2] > 0.) {
+	Double_t arg = (x[0] - par[1]*par[4]) / (par[2]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    } else {
+      if (par[3] > 0.) {
+	Double_t arg = (x[0] - par[1]*par[4]) / (par[3]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    }
+    return  (fitval + iF_cb(x, &par[4]));
+  }
+
+
+  // ----------------------------------------------------------------------
+  // satellite peak from B+ -> J/psi pi+
+  double iF_pisat(double *x, double *par) {
+    double g3par[] = {par[0], 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
+		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
+    return iF_gauss3(x, g3par);
+  }
+
+
+  // ----------------------------------------------------------------------
+  // bigauss and crystal ball
+  double iF_bigauss_cb_sat(double *x, double *par) {
+    // par[0]:  norm  Gauss, ratio to xball normalization
+    // par[1]:  peak  Gauss, ratio to xball peak
+    // par[2]:  sigmaL Gauss, ratio to xball sigma
+    // par[3]:  sigmaH Gauss, ratio to xball sigma
+    // par[4]:  mean
+    // par[5]:  sigma
+    // par[6]:  alpha, crossover point
+    // par[7]:  n, length of tail
+    // par[8]:  N, normalization
+    // par[9]:  fraction in satellite peak
+
+    double fitval(-1.);
+    if (x[0] < par[4]) {
+      if (par[2] > 0.) {
+	Double_t arg = (x[0] - /*par[1]* */par[4]) / (par[2]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    } else {
+      if (par[3] > 0.) {
+	Double_t arg = (x[0] - /*par[1]* */par[4]) / (par[3]*par[5]);
+	fitval = par[0]*par[8]*TMath::Exp(-0.5*arg*arg);
+      } else {
+	return -1.;
+      }
+    }
+
+    double cbval = iF_cb(x, &par[4]);
+    double cbintegral = 2.50663 * par[8] * TMath::Abs(par[5]);
+
+    // -- apppoximate integrals of 'signal' analytically
+    // TMath::Sqrt(TMath::Pi()) * TMath::Sqrt(2.) = 2.50663;
+    double gintegral = 2.50663 * par[0] * TMath::Abs(0.5*(par[2]+par[3]));
+
+
+    // -- calculate B+ -> J/psi pi contribution:
+    double g3par[] = {par[9]*cbintegral*gintegral, 5.36416e+00, 4.83167e-02,
+		      3.39117e-01,   5.46405e+00, 9.83832e-02,
+		      9.36584e-02,   5.52549e+00, 2.69386e-01};
+    double peakingBg = iF_gauss3(x, g3par);
+
+    return  (fitval + cbval + peakingBg);
   }
 
 
@@ -582,8 +732,6 @@ namespace {
     return  (iF_err2(x, &par[7]) + iF_pol1(x, &par[5]) + iF_gauss2c(x, &par[0]));
   }
 
-
-
   // ----------------------------------------------------------------------
   // expo and err and gauss
   double iF_pol1_err(double *x, double *par) {
@@ -671,6 +819,13 @@ namespace {
     return  (iF_pol1(x, &par[3]) + iF_landau(x, &par[0]));
   }
 
+  // ----------------------------------------------------------------------
+  // B+ -> J/psi K+ pdf
+  double iF_bupsik(double *x, double *par) {
+    return (iF_bigauss_cb_sat(x, &par[0]) + iF_expo(x, &par[10]) + iF_err2(x, &par[12]));
+  }
+
+
 }
 
 
@@ -734,7 +889,7 @@ void initFunc::dumpParameters(TF1 *f1) {
 
 // ----------------------------------------------------------------------
 void initFunc::applyLimits(TF1 *f, string name) {
-  cout << "initFunc(" << fName << ") applyLimits:" << endl;
+  if (fVerbose) cout << "initFunc(" << fName << ") applyLimits:" << endl;
   for (int i = 0; i < f->GetNpar(); ++i) {
     if (fFix[i]) {
       if (fVerbose) cout << "initFunc::" << name << "> fixing par " << i << " to " << fLimitLo[i] << endl;
@@ -867,7 +1022,35 @@ TF1* initFunc::landau(TH1 *h) {
   f->SetParName(0, "mpvl");
   f->SetParName(1, "sigl");
   f->SetParName(2, "norm");
+  f->SetParameter(0, h->GetBinCenter(h->GetMaximumBin()));
+  f->SetParameter(1, h->GetRMS());
+  f->SetParameter(2, h->GetMaximum());
   return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bigauss(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_bigauss", fName.c_str()), iF_bigauss, lo, hi, 4);
+  f->SetParName(0, "norm");
+  f->SetParName(1, "peak");
+  f->SetParName(2, "sigl");
+  f->SetParName(3, "sigh");
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bigauss(TH1 *h) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_bigauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_bigauss", fName.c_str()), iF_bigauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 4);
+  f->SetParName(0, "norm");
+  f->SetParName(1, "peak");
+  f->SetParName(2, "sigl");
+  f->SetParName(3, "sigh");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), h->GetRMS(), h->GetRMS());
+  return f;
+
 }
 
 // ----------------------------------------------------------------------
@@ -912,10 +1095,35 @@ TF1* initFunc::gauss(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+TF1* initFunc::gauss2(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2, lo, hi, 6);
+  f->SetParNames("const", "peak", "sigma", "fraction", "mean2", "sigma2");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss2(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 6);
+  f->SetParNames("const", "peak", "sigma", "fraction", "mean2", "sigma2");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), 0.2*h->GetRMS(), 0.2, h->GetMean(), 0.6*h->GetRMS());
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
 TF1* initFunc::gauss2c(double lo, double hi) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss2c", fName.c_str())))) if (f) delete f;
-  f = new TF1(Form("%s_gauss2", fName.c_str()), iF_gauss2c, lo, hi, 5);
+  f = new TF1(Form("%s_gauss2c", fName.c_str()), iF_gauss2c, lo, hi, 5);
   f->SetParNames("const", "peak", "sigma", "fraction", "sigma2");
   return f;
 }
@@ -935,6 +1143,43 @@ TF1* initFunc::gauss2c(TH1 *h) {
   return f;
 }
 
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss3(double lo, double hi) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss3", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss3", fName.c_str()), iF_gauss3, lo, hi, 9);
+  f->SetParNames("const", "peak", "sigma", "fraction2", "mean2", "sigma2", "fraction3", "mean3", "sigma3");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::gauss3(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_gauss3", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_gauss3", fName.c_str()), iF_gauss3, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 9);
+  f->SetParNames("const", "peak", "sigma", "fraction2", "mean2", "sigma2", "fraction3", "mean3", "sigma3");
+  f->SetParameters(h->GetMaximum(), h->GetMean(), 0.2*h->GetRMS(),
+		   0.3, h->GetMean(), 0.6*h->GetRMS(),
+		   0.1, h->GetMean(), 1.0*h->GetRMS()
+		   );
+  return f;
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::pisat(double norm) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_pisat", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_pisat", fName.c_str()), iF_pisat, 0., 100., 1);
+  f->SetParNames("norm");
+  f->SetParameter(0, norm);
+  return f;
+}
 
 // ----------------------------------------------------------------------
 TF1* initFunc::pol1(TH1 *h) {
@@ -1240,6 +1485,35 @@ TF1* initFunc::crystalBallGauss(TH1 *h, double peak, double sigma, double alpha,
        << endl;
   f->SetParameters(fracNormG, fracPeakG, fracSigmaG, peak, sigma, alpha, tailLength, g0);
   applyLimits(f, "crystalBallGauss");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::crystalBallBiGauss(TH1 *h, double peak, double sigma, double alpha, double tailLength) {
+  int npar(9);
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_xbbigauss", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_xbbigauss", fName.c_str()), iF_bigauss_cb, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("fracNormG", "peakG", "fracsigGl", "fracsigGh", "peak", "sigma", "crossover", "tail", "norm.");
+
+  double g0 = h->GetBinContent(h->FindBin(peak));
+  double fracNormG = 0.05;
+  double fracPeakG = 1.;
+  double fracSigmaGl = 2.;
+  double fracSigmaGh = 2.;
+  cout << "fracNormG: " << fracNormG
+       << " peakG: " << fracPeakG
+       << " fracsigmaGl: " << fracSigmaGl
+       << " fracsigmaGh: " << fracSigmaGh
+       << " peak: " << peak
+       << " sigma: " << sigma
+       << " alpha: " << alpha
+       << " tail: " << tailLength
+       << " norm: " << g0
+       << endl;
+  f->SetParameters(fracNormG, fracPeakG, fracSigmaGl, fracSigmaGh, peak, sigma, alpha, tailLength, g0);
+  applyLimits(f, "crystalBallBiGauss");
   return f;
 }
 
@@ -1970,8 +2244,7 @@ TF1* initFunc::pol1ErrGauss(TH1 *h, double peak, double sigma, double preco) {
 
   double p0, p1;
   initPol1(p0, p1, h);
-  double A   = p0*(TMath::Exp(p1*fHi) - TMath::Exp(p1*fLo)); // FIXME: should not be exponential!
-
+  double A   = 0.5*p1*(fHi*fHi - fLo*fLo) + p0*(fHi - fLo);
   double g0 = (h->Integral(lbin, hbin)*h->GetBinWidth(1) - A);
 
   double e0(preco),  e0Min(preco-0.01), e0Max(preco+0.01);
@@ -1991,10 +2264,6 @@ TF1* initFunc::pol1ErrGauss(TH1 *h, double peak, double sigma, double preco) {
   f->ReleaseParameter(6);     f->SetParLimits(6, e1Min, e1Max);
   f->ReleaseParameter(7);     f->SetParLimits(7, e2Min, e2Max);
   f->ReleaseParameter(8);     //f->SetParLimits(8, 0, 0.2*g0);
-
-  //        RooRealVar a1("a1","a1",5.14,5.13,5.15);
-  //        RooRealVar a2("a2","a2",0.07,0.06,0.075);
-  //        RooRealVar a3("a3","a3",1.112,1.,1.2);
 
   return f;
 
@@ -2258,5 +2527,50 @@ TF1* initFunc::phiKK(TH1 *h) {
   fixPar(7, -2.*MKAON);
 
   applyLimits(f, "phiKK");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bupsik(TH1 *h) {
+  TVirtualFitter::SetMaxIterations(10000);
+  TVirtualFitter::SetPrecision(1.e-4);
+  int npar(15);
+  TF1 *f = (TF1*)gROOT->FindObject(Form("%s_bupsik", fName.c_str()));
+  if (f) delete f;
+  f = new TF1(Form("%s_bupsik", fName.c_str()), iF_bupsik, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("gnorm", "gpeak", "gsigL", "gsigH", "cbmean", "cbsigma", "cbalpha", "cbtail", "cbnorm", "satBg");
+  f->SetParName(10, "exp0");
+  f->SetParName(11, "exp1");
+
+  f->SetParName(12, "errstep");
+  f->SetParName(13, "errres");
+  f->SetParName(14, "errnorm");
+
+  f->SetLineWidth(2);
+
+  f->SetParameter(0, 0.1); limitPar(0, 0.1,  0.4);
+  f->SetParameter(1, 1.0); limitPar(1, 0.995, 1.005);
+  f->SetParameter(2, 1.1); limitPar(2, 1.00, 2.00);
+  f->SetParameter(3, 1.1); limitPar(3, 1.00, 2.00);
+
+  f->SetParameter(4, 5.28);
+  f->SetParameter(5, 0.03);
+  fixPar(6, 4.); //  f->SetParameter(6, 1.6); //limitPar(6, 1.0, 5.0);
+  fixPar(7, 2.); //f->SetParameter(7, 4.0); //limitPar(7, 2.0, 8.0);
+  f->SetParameter(8, 0.7*h->GetMaximum());
+  fixPar(9, 0.015);
+
+  double a(-1.), b(-1.);
+  fLo = 5.45; fHi = 5.9;
+  initExpo(a, b, h);
+  f->SetParameter(10, a);
+  f->SetParameter(11, b);
+
+  fixPar(12, 5.142);
+  f->SetParameter(13, 0.05);  limitPar(13, 0.040, 0.060);
+  //  cout << "set err norm: " << 0.5*h->Integral(1, 5)/5 << endl;
+  f->SetParameter(14, 0.5*h->Integral(1, 5)/5);
+  applyLimits(f, "bupsik");
   return f;
 }

@@ -11,8 +11,8 @@ class plotWork: public plotClass {
 
 public :
   plotWork(std::string dir = "results",
-	   std::string files = "plotWork.2016.files",
-	   std::string cuts = "plotClass.2016.cuts",
+	   std::string files = "plotResults.2016.files",
+	   std::string cuts = "baseCuts.cuts",
 	   std::string setup = "");
   virtual        ~plotWork();
 
@@ -29,12 +29,6 @@ public :
   void  fitStudiesFit0(TH1D *h1, int chan);
   double MKKLO, MKKHI, DR, PTK1, PTK2, PTPSI;
 
-  // -- misreconstructed background
-  void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
-  void plotWrongReco(std::string var, int nbin, double min, double max, std::string selection,
-		     std::string wds, std::string wdir,
-		     std::string cds, std::string cdir);
-
   // -- trigger efficiency studies
   std::string selectionString(int imode, int itrig);
   void plotTisEfficiency(std::string dsname);
@@ -44,8 +38,10 @@ public :
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
   void efficiencyVariable(std::string var, std::string effvar = "hlt", int iselection = 10,
 			  int nbin = 20, double xmin = 0., double xmax = 20., std::string dsname = "bupsikMc");
+  void bmm5Trigger(std::string cuts, std::string pdfname);
 
 
+  void ups1(std::string file1, std::string file2);
 
 
   std::string removeVarFromSelection(std::string var, std::string selection);
@@ -73,6 +69,9 @@ private:
   double fS, fSE, fN, fNE, fW, fWE, fB, fBE, fChi2Dof;
   double fSsigma, fSRMS;
   double fEntries;
+
+  std::vector<TH1D*> fHmass0, fHmass1;
+  TProfile *fpPmass0, *fpPmass1;
 
   int fRefTrigger;
 

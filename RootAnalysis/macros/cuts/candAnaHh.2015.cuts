@@ -3,6 +3,7 @@ TRUTHCAND         91
 MUON_VETO  1
 HH_MLO 4.
 HH_MHI 7.
+PVAVEW8          0.6
 # -- baseCuts
 +input cuts/baseCuts.cuts
 # -- trigger

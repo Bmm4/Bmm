@@ -11,7 +11,8 @@ struct redTreeData {
 
   bool gmuid, gmutmid, gmumvaid, gmupt, gmueta, gtqual, gtpt, gteta;
 
-  double pvlip, pvlips, pv2lip, pv2lips, pvip, pvips, pvip3d, pvips3d, dzmin;
+  double pvlip, pvlips, pv2lip, pv2lips, pvip, pvips, pvip3d, pvips3d, dzmin, dz12;
+  int pvntrk, pv2ntrk;
 
   int q, type;
   double pt, eta, phi, tau, taue, tauxy, tauxye, m, me, cm, m3, m4, cosa, alpha, iso;
@@ -37,7 +38,7 @@ struct redTreeData {
   int m2pix, m2bpix, m2bpixl1, m2pv;
 
   double mudist, mudeltar;
-  double g1pt, g2pt, g3pt, g4pt, g1eta, g2eta, g3eta, g4eta, gtau;
+  double g1pt, g2pt, g3pt, g4pt, g1eta, g2eta, g3eta, g4eta, gtau, gfl3d;
   int    g1id, g2id;
   double t1pt, t1eta, t2pt, t2eta, t3pt, t3eta, t4pt, t4eta;
 

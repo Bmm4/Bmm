@@ -5,6 +5,7 @@
 #include <string>
 #include <utility>
 #include <vector>
+#include <set>
 #include <map>
 
 #include <TROOT.h>
@@ -28,7 +29,7 @@
 
 #define DR      57.29577951
 
-class PidTable; 
+class PidTable;
 class candAna;
 
 class bmmReader : public treeReader01 {
@@ -43,14 +44,14 @@ public:
   virtual void   readCuts(TString filename, int dump = 1);
   virtual void   bookHist();
 
-  virtual void   processType();
-  virtual void   setYear(int year) {fYear = year;}
+  virtual void   processTypePythia6();
+  virtual void   processTypePythia8();
 
   std::vector<candAna*> lCandAnalysis;
 
 
-  int fProcessType; 
-  int fYear; 
+  int fProcessType;
+  std::set<int> fCandTypes;
 };
 
 #endif

@@ -159,19 +159,6 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
     }
   }
 
-  if (1) {
-    int year(fYear);
-    year = 2012;
-    fptFakePosKaons     = new PidTable(Form("../common/pidtables/%d-kaonPosFakeRate-mvaMuon.dat", year));
-    fptFakeNegKaons     = new PidTable(Form("../common/pidtables/%d-kaonNegFakeRate-mvaMuon.dat", year));
-
-    fptFakePosPions     = new PidTable(Form("../common/pidtables/%d-pionPosFakeRate-mvaMuon.dat", year));
-    fptFakeNegPions     = new PidTable(Form("../common/pidtables/%d-pionNegFakeRate-mvaMuon.dat", year));
-
-    fptFakePosProtons   = new PidTable(Form("../common/pidtables/%d-protonPosFakeRate-mvaMuon.dat", year));
-    fptFakeNegProtons   = new PidTable(Form("../common/pidtables/%d-protonNegFakeRate-mvaMuon.dat", year));
-  }
-
   // -- define names and channels of all anaNumbers
   for (int i = 0; i < fNchan; ++i) {
     fNoNumbers[i].fChan   = i;
@@ -197,14 +184,14 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
 
     fBsmmNumbers[i].fChan = i;
     fBsmmNumbers[i].fName = "bsmm";
-    fBsmmNumbers[i].fNameMc = "bsmmMcOff";
+    fBsmmNumbers[i].fNameMc = "bsmmMcComb";
     fBsmmNumbers[i].fNameDa = "bmmData";
     fBsmmNumbers[i].fMcYield.clear();
     fBsmmNumbers[i].fFrac.clear();
 
     fBdmmNumbers[i].fChan = i;
     fBdmmNumbers[i].fName = "bdmm";
-    fBdmmNumbers[i].fNameMc = "bdmmMcOff";
+    fBdmmNumbers[i].fNameMc = "bdmmMcComb";
     fBdmmNumbers[i].fNameDa = "bmmData";
     fBdmmNumbers[i].fMcYield.clear();
     fBdmmNumbers[i].fFrac.clear();
@@ -405,44 +392,65 @@ void plotResults::makeAll(string what) {
   }
 
   if (what == "all" || what == "genvalidation") {
-    genSummary("bdmmMcOffAcc", "candAnaMuMu");
-    genSummary("bdmmMcOff", "candAnaMuMu");
-    genSummary("bdmmMc", "candAnaMuMu");
-    genSummary("bsmmMcOffAcc", "candAnaMuMu");
-    genSummary("bsmmMcOff", "candAnaMuMu");
-    genSummary("bsmmMc", "candAnaMuMu");
-    genSummary("bsmm80Mc", "candAnaMuMu");
-    genSummary("bsmm75Mc", "candAnaMuMu");
-    genSummary("bsmm70Mc", "candAnaMuMu");
-    genSummary("bsmm69Mc", "candAnaMuMu");
-    genSummary("bsmm68Mc", "candAnaMuMu");
-    genSummary("bsmm67Mc", "candAnaMuMu");
-    genSummary("bsmm66Mc", "candAnaMuMu");
-    genSummary("bsmm65Mc", "candAnaMuMu");
-    genSummary("bsmm60Mc", "candAnaMuMu");
-    genSummary("bsmm55Mc", "candAnaMuMu");
-    genSummary("bsmm50Mc", "candAnaMuMu");
-    genSummary("bsmm45Mc", "candAnaMuMu");
-    genSummary("bsmm40Mc", "candAnaMuMu");
-    genSummary("bsmm35Mc", "candAnaMuMu");
+    if (2016 == fYear) {
+      genSummary("bdmmMcOffAcc", "candAnaMuMu");
+      genSummary("bdmmMcOff", "candAnaMuMu");
+      genSummary("bdmmMc", "candAnaMuMu");
+      genSummary("bsmmMcOffAcc", "candAnaMuMu");
+      genSummary("bsmmMcOff", "candAnaMuMu");
+      genSummary("bsmmMc", "candAnaMuMu");
+      genSummary("bsmm80Mc", "candAnaMuMu");
+      genSummary("bsmm75Mc", "candAnaMuMu");
+      genSummary("bsmm70Mc", "candAnaMuMu");
+      genSummary("bsmm69Mc", "candAnaMuMu");
+      genSummary("bsmm68Mc", "candAnaMuMu");
+      genSummary("bsmm67Mc", "candAnaMuMu");
+      genSummary("bsmm66Mc", "candAnaMuMu");
+      genSummary("bsmm65Mc", "candAnaMuMu");
+      genSummary("bsmm60Mc", "candAnaMuMu");
+      genSummary("bsmm55Mc", "candAnaMuMu");
+      genSummary("bsmm50Mc", "candAnaMuMu");
+      genSummary("bsmm45Mc", "candAnaMuMu");
+      genSummary("bsmm40Mc", "candAnaMuMu");
+      genSummary("bsmm35Mc", "candAnaMuMu");
 
-    genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
-    genSummary("bupsikMcOff", "candAnaBu2JpsiK");
-    genSummary("bupsikMc", "candAnaBu2JpsiK");
-    genSummary("bupsikMcComb", "candAnaBu2JpsiK");
-    genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
-    genSummary("bspsiphiMcComb", "candAnaBs2JpsiPhi");
-    genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
-    genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+      genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
+      genSummary("bupsikMcOff", "candAnaBu2JpsiK");
+      genSummary("bupsikMc", "candAnaBu2JpsiK");
+      genSummary("bupsikMcComb", "candAnaBu2JpsiK");
+      genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcComb", "candAnaBs2JpsiPhi");
+      genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
 
 
-    // -- loop over all (effective) two-body backgrounds
-    for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-      if (string::npos == it->first.find("Bg")) continue;
-      cout << "===> Create genSummary for " << it->first << endl;
-      genSummary(it->first, "candAnaMuMu");
+      // -- loop over all (effective) two-body backgrounds
+      for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+	if (string::npos == it->first.find("Bg")) continue;
+	cout << "===> Create genSummary for " << it->first << endl;
+	genSummary(it->first, "candAnaMuMu");
+      }
+    } else if (2012 == fYear) {
+      genSummary("bupsikMc", "candAnaBu2JpsiK");
+      genSummary("bupsikMcAcc", "candAnaBu2JpsiK");
+
+      genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcAcc", "candAnaBs2JpsiPhi");
+
+      genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
+
+      genSummary("bspsifMc", "candAnaBs2Jpsif0");
+      genSummary("bspsifMcAcc", "candAnaBs2Jpsif0");
+
+      genSummary("bdmmMc", "candAnaMuMu");
+      genSummary("bdmmMcAcc", "candAnaMuMu");
+
+      genSummary("bsmmMc", "candAnaMuMu");
+      genSummary("bsmmMcAcc", "candAnaMuMu");
+
     }
 
   }
@@ -450,6 +458,10 @@ void plotResults::makeAll(string what) {
   // -- this will recreate fHistFile!
   if (what == "all" || what == "fill") {
     fillAndSaveHistograms();
+  }
+
+  if (what == "dbx") {
+    fillAndSaveHistograms(0, 1e5);
   }
 
   if (what == "all" || what == "ana") {
@@ -706,7 +718,7 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   tl->DrawLatexNDC(0.2, 0.25, Form("#varepsilon"));
   tl->DrawLatexNDC(0.25, 0.25, Form("= %4.3f ", teta->GetSumOfWeights()/heta->GetSumOfWeights()));
 
-  c1->SaveAs(Form("%s/genSummary-%s.pdf", fDirectory.c_str(), dsname.c_str()));
+  c1->SaveAs(Form("%s/genSummary-%d-%s.pdf", fDirectory.c_str(), fYear, dsname.c_str()));
 
 }
 
@@ -744,16 +756,16 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     setup("bupsikData");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
-    //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bupsikData";
     saveHistograms(fSetup);
 
     resetHistograms();
     setup("bupsikMcComb");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
-    //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, nevents, start);
+    cout << "done with loopovertree" << endl;
     otherNumbers(fSetup);
     saveHistograms(fSetup);
 
@@ -762,10 +774,11 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bmmData";
     saveHistograms(fSetup);
 
     resetHistograms();
-    setup("bdmmMcOff");
+    setup("bdmmMcComb");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
@@ -773,7 +786,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     saveHistograms(fSetup);
 
     resetHistograms();
-    setup("bsmmMcOff");
+    setup("bsmmMcComb");
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
@@ -786,6 +799,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     t = getTree(fSetup, fTreeDir);
     setupTree(t, fSetup);
     loopOverTree(t, 1, nevents, start);
+    fSetup = "bspsiphiData";
     saveHistograms(fSetup);
 
     resetHistograms();
@@ -840,7 +854,7 @@ void plotResults::rareBgHists(string smode, int nevents) {
 void plotResults::otherNumbers(string smode) {
   int ibin(0);
   string accname = smode + "Acc";
-  replaceAll(accname, "Comb", "Off");
+  //  replaceAll(accname, "Comb", "Off");
   // -- just in case you are running a cross-check on the acceptance sample:
   replaceAll(accname, "AccAcc", "Acc");
   // -- For Bg samples, the situation is more complex:
@@ -1383,6 +1397,11 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   } else if (string::npos != a.fName.find("bspsiphi")) {
     numbersFromHist(a, "bspsiphi");
   }
+  // -- cross check the scaled yield normalized to B+ -> J/psi K+
+  if (string::npos != a.fName.find("bspsiphi")) {
+    double pRatio(fFsfu.val);
+    scaleYield(a, fNoNumbers[chan], pRatio);
+  }
   // -- data: fit yields
   fSetup = a.fNameDa;
   string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSetup.c_str(), chan);
@@ -1418,12 +1437,14 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   dumpTex(a.fTotGenYield, Form("%s:N-TOTYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
   dumpTex(a.fProdGenYield, Form("%s:N-PRODYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
 
+  if (string::npos != a.fName.find("bspsiphi")) {
+    dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
+  }
   dumpTex(a.fSignalFit, Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
 
   c0->Modified();
   c0->Update();
   fHistFile->cd();
-  // fit it
 }
 
 
@@ -1652,27 +1673,31 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
     a->fMcYield[0].val = massIntegral(hw, LO, chan);
     double integral = massIntegral(hu, LO, chan);
-    double estatRel = TMath::Sqrt(integral)/integral;
+    double estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
     a->fMcYield[0].setErrors(a->fMcYield[0].val*estatRel, a->fMcYield[0].val*esystRel);
 
     a->fMcYield[1].val = massIntegral(hw, BD, chan);
     integral = massIntegral(hu, BD, chan);
-    estatRel = TMath::Sqrt(integral)/integral;
+    estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
     a->fMcYield[1].setErrors(a->fMcYield[1].val*estatRel, a->fMcYield[1].val*esystRel);
 
     a->fMcYield[2].val = massIntegral(hw, BS, chan);
     integral = massIntegral(hu, BS, chan);
-    estatRel = TMath::Sqrt(integral)/integral;
+    estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
+    // FIXME
+    if (a->fName == "bdpimunuBg") {
+      cout << "XXX a->fMcYield[2].val = " << a->fMcYield[2].val << " integral = " << integral << " estatRel = " << estatRel << endl;
+    }
     a->fMcYield[2].setErrors(a->fMcYield[2].val*estatRel, a->fMcYield[2].val*esystRel);
 
     a->fMcYield[3].val = massIntegral(hw, HI, chan);
     integral = massIntegral(hu, HI, chan);
-    estatRel = TMath::Sqrt(integral)/integral;
+    estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
     a->fMcYield[3].setErrors(a->fMcYield[3].val*estatRel, a->fMcYield[3].val*esystRel);
 
     a->fMcYield[4].val = massIntegral(hw, ALL, chan);
     integral = massIntegral(hu, ALL, chan);
-    estatRel = TMath::Sqrt(integral)/integral;
+    estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
     a->fMcYield[4].setErrors(a->fMcYield[4].val*estatRel, a->fMcYield[4].val*esystRel);
 
     setFilledHist(hw, it->second->fLcolor, it->second->fFcolor, it->second->fFillStyle, 1);
@@ -1836,7 +1861,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     savePad(Form("%s-data-background-chan%d.pdf", fSuffixSel.c_str(), chan));
   }
 
-  // -- and now the scaled version
+  // -- and now the scaled version FIXME definition of scale
   double bgLo   = massIntegral(h1c, LO, chan) + massIntegral(h1Sl, LO, chan) + massIntegral(h1Hh, LO, chan);
   double diffLo = fCombNumbers[chan].fObsYield[0].val - bgLo;
   double scale  = diffLo/massIntegral(h1Sl, LO, chan);
@@ -1925,7 +1950,6 @@ void plotResults::calculateRareBgNumbers(int chan) {
 void plotResults::loopFunction1() {
 
   if (fChan < 0) return;
-
   double mass = fb.m;
 
   vector<string> modifier;
@@ -2005,6 +2029,10 @@ void plotResults::loopFunction1() {
 	  fhW8MassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass, fW8MisId);
 	} else {
 	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	}
+
+	if (fYear < 2016) {
+	  if (fb.ps == 0) fb.ps = 1;
 	}
 
 	// - include prescale values on y axis
@@ -2169,8 +2197,7 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 100000)   step = 10000;
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
-  step = 500000;
-  cout << "==> plotResults::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotResults::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << " nbegin = " << nbegin << " nend = " << nend
@@ -2189,11 +2216,11 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   TFile *fLocal(0);
   if (fSaveSmallTree) {
     string tname(fSetup);
-    // replaceAll(tname, "McOff", "");
-    // replaceAll(tname, "Mc", "");
+    replaceAll(tname, "Off", "");
+    replaceAll(tname, "Comb", "");
 
     dir = gDirectory;
-    fLocal = TFile::Open(Form("%s/small-%s.root", fDirectory.c_str(), tname.c_str()), "RECREATE");
+    fLocal = TFile::Open(Form("%s/small%d-%s.root", fDirectory.c_str(), fYear, tname.c_str()), "RECREATE");
     small = new TTree(Form("%s", tname.c_str()), Form("%s", tname.c_str()));
     small->SetDirectory(fLocal);
     small->Branch("run",    &fb.run,       "run/I");
@@ -2317,7 +2344,7 @@ void plotResults::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = 1.;
+	ds->fBf     = -1.;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
       }
@@ -2510,6 +2537,13 @@ void plotResults::saveHistograms(string smode) {
       }
     }
   }
+
+  TH1D *hcuts = fDS["fakeMc"]->getHist("candAnaFakeMC/hcuts");
+  hcuts->SetName("hcuts");
+  hcuts->SetDirectory(fHistFile);
+  cout << "writing hcuts " << hcuts << " name: " << hcuts->GetName() << " to " << fHistFile->GetName() << endl;
+  hcuts->Write();
+
 }
 
 // ----------------------------------------------------------------------
@@ -2655,23 +2689,23 @@ string plotResults::rareAccName(string sname) {
   // -- the acceptance sample cannot be determined trivially
   if (string::npos != sname.find("bs")) {
     if (string::npos == sname.find("mu")) {
-      accname = "bskkMcOffAccBg";
+      accname = "bskkMcCombAccBg";
     } else {
-      accname = "bskmunuMcAccBg";
+      accname = "bskmunuMcCombAccBg";
     }
   }
   if (string::npos != sname.find("bd")) {
     if (string::npos == sname.find("mu")) {
-      accname = "bdkpiMcOffAccBg";
+      accname = "bdkpiMcCombAccBg";
     } else {
-      accname = "bdpimunuMcAccBg";
+      accname = "bdpimunuMcCombAccBg";
     }
   }
   if (string::npos != sname.find("lb")) {
     if (string::npos == sname.find("mu")) {
-      accname = "lbpkMcOffAccBg";
+      accname = "lbpkMcCombAccBg";
     } else {
-      accname = "lbpmunuMcOffAccBg";
+      accname = "lbpmunuMcCombAccBg";
     }
   }
   return accname;

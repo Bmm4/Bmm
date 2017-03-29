@@ -1,6 +1,7 @@
 TYPE           300521
 TRUTHCAND         521
 NOPRESELECTION      1
+PVAVEW8          0.6
 # -- baseCuts
 +input cuts/baseCuts.cuts
 # -- trigger

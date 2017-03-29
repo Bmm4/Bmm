@@ -11,6 +11,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBu2JpsiK::candAnaBu2JpsiK(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBu2JpsiK");
   fGenK1Tmi = fRecK1Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBu2JpsiK: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -40,8 +41,35 @@ void candAnaBu2JpsiK::candAnalysis() {
     }
   }
 
+  // -- check for overlap with a Bd -> J/psi Kstar (300511) candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBdJpsiKstarMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300511 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 3 track overlap, get kstar mass of the other cand
+    if (3 == overlap) {
+      fBdJpsiKstarMass = pC->fMass;
+    }
+  }
+
+
   if (0 == pk) {
     cout << "candAnaBu2JpsiK::candAnalysis:  no kaon found " << endl;
+    fCandM = -98.;
     return;
   }
 
@@ -85,7 +113,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   TAnaCand *pD = 0;
   fGoodJpsiMass = false;
   double chi2(0.);
-  double ndof(0.), masse(0.);
+  double ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
     if (i < 0) break;
     pD = fpEvt->getCand(i);
@@ -104,39 +132,23 @@ void candAnaBu2JpsiK::candAnalysis() {
 
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
-      masse = pD->fMassE;
       break;
     }
   }
 
   candAna::candAnalysis();
-  // -- overwrite specific variables
+
+  // -- overwrite some variables
   fCandChi2  = chi2;
   fCandDof   = ndof;
   fCandChi2Dof = chi2/ndof;
-  fCandME      = masse;
 
-  fGoodTracksPt = fGoodTracksPt && ((fKaonPt > TRACKPTLO));
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
+  fGoodTracks    = fGoodTracks    && fKaonTkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt) && (fKaonPt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaonEta) && (fKaonEta < TRACKETAHI));
 
-  if(0) { // special misid tests d.k.
-
-    TVector3 trackMom = pk->fPlab;  // test track momentum
-    TVector3 muonMom;
-    muonMom = fpMuon1->fPlab;
-    double dR1 = muonMom.DeltaR(trackMom);
-    muonMom = fpMuon2->fPlab;
-    double dR2 = muonMom.DeltaR(trackMom);
-
-    if( (pk->fIndex == fpMuon1->fIndex) || (pk->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<pk->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
-
-    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR6 = dR2;}
-    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR6 = dR1;}
-
-  } // end testing
-
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(3);
@@ -227,6 +239,7 @@ void candAnaBu2JpsiK::genMatch() {
     // Meson pointer
     TGenCand *pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -324,6 +337,7 @@ void candAnaBu2JpsiK::genMatchOld() {
     // Meson pointer
     TGenCand *pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -466,11 +480,12 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+  t->Branch("bdpsikstarmass", &fBdJpsiKstarMass, "bdpsikstarmass/D");
 
-  t->Branch("kpt",  &fKaonPt,    "kpt/D");
-  t->Branch("keta", &fKaonEta,   "keta/D");
-  t->Branch("kphi", &fKaonPhi,   "kphi/D");
-  t->Branch("kgt",  &fKaonTkQuality,"kgt/I");
+  t->Branch("kpt",  &fKaonPt,        "kpt/D");
+  t->Branch("keta", &fKaonEta,       "keta/D");
+  t->Branch("kphi", &fKaonPhi,       "kphi/D");
+  t->Branch("kgt",  &fKaonTkQuality, "kygt/I");
 
   t->Branch("t3pt", &fKaonPtNrf, "t3pt/D");
   t->Branch("t3eta",&fKaonEtaNrf,"t3eta/D");

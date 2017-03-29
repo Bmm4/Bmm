@@ -2,19 +2,19 @@
 
 
 # ----------------------------------------------------------------------
-# example submission: 
+# example submission:
 # -------------------
 #  run -t ../../../../130131.tar.gz -m grid -D unl.edu -c ../osg.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/test%SITE T3_CH_PSI' osgtest.py
 # ----------------------------------------------------------------------
 
-setenv CMSSW       
-setenv SCRAM_ARCH  
-setenv SRMCP       
+setenv CMSSW
+setenv SCRAM_ARCH
+setenv SRMCP
 
-setenv JOB      
+setenv JOB
 setenv FILE1    $JOB.root
-setenv STORAGE1 
-setenv PFNS 
+setenv STORAGE1
+setenv PFNS
 setenv SITE
 
 echo "========================"
@@ -31,7 +31,7 @@ date
 hostname
 cat /proc/cpuinfo
 uname -a
-df -kl 
+df -kl
 
 echo $VO_CMS_SW_DIR
 ls -l $VO_CMS_SW_DIR
@@ -63,8 +63,8 @@ echo "--> Extract tar file"
 date
 tar zxf ../../$JOB.tar.gz
 cd AnalysisDataFormats/HeavyFlavorObjects
-make 
-cd - 
+make
+cd -
 scramv1 b
 mv ../../$JOB.py .
 mv ../../data_replica.py .
@@ -81,7 +81,7 @@ echo "cmsRun $JOB.py "
 cmsRun $JOB.py |& tee $JOB.log
 date
 pwd
-ls -rtl 
+ls -rtl
 
 
 setenv ROOTFILE `ls *.root`
@@ -97,20 +97,11 @@ echo " job   rootfile: $FILE1"
 echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
 
-# -- switch to data_replica.py
-ls `pwd`/$FILE1 > dr.list
-echo "--> cat dr.list: " 
-cat dr.list
-echo "--> AM running data_replica.py: " 
-./data_replica.py --from-site LOCAL --to-site $SITE dr.list  "$STORAGE1"
+echo "--> AM running xrdcp: " xrdcp -f -d 3 `pwd`/$FILE1 $XRD/$STORAGE1/$FILE1
+xrdcp -f -d 1 `pwd`/$FILE1 $XRD/$STORAGE1/$FILE1
 
-echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1" 
-echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
-lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
-
-echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1.old" 
-lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1.old"
-lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1.old"
+echo xrdfs root://t3se01.psi.ch:1094 stat $STORAGE1/$FILE1
+xrdfs root://t3se01.psi.ch:1094 stat $STORAGE1/$FILE1
 
 date
 

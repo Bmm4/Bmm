@@ -39,7 +39,7 @@ EXTHEADERS    = -I..
 # -- Files
 CSTUFF = preselection.o
 READER = treeReader01.o bmmReader.o genAnalysis.o \
-         candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
+         candAna.o candAnaMuMu.o candAnaBu2JpsiK.o candAnaBs2JpsiPhi.o candAnaBs2Jpsif0.o candAnaDstar.o candAnaHh.o candAnaBd2DstarPi.o \
          candAnaBd2JpsiKstar.o candAnaRecoil.o candAnaFake.o \
          plotClass.o plotResults.o plotWork.o plotReducedOverlays.o plotRecoil.o plotFake.o plotStuff.o \
          umlLifetime.o anaNumbers.o

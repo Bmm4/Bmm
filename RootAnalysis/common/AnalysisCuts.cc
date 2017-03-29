@@ -7,7 +7,7 @@
 ClassImp(AnalysisCuts)
 
 // ----------------------------------------------------------------------
-AnalysisCuts::AnalysisCuts() {
+AnalysisCuts::AnalysisCuts(TString name) {
   for (int i = 0; i < MAXCUTS; ++i) {
     fCutName[i]     = TString("unused");
     fDescription[i] = TString("nothing said");
@@ -18,6 +18,7 @@ AnalysisCuts::AnalysisCuts() {
  }
   fNcuts   = 0;
   fUpdated = 0;
+  fAcName  = name;
 }
 
 
@@ -153,7 +154,9 @@ void AnalysisCuts::update() {
     }
   }
 
-  if (0 == fUpdated)  cout << "Updating AnalysisCuts for the first time" << endl;
+  if (0 == fUpdated)  {
+    cout << "Updating AnalysisCuts(" << fAcName << ") for the first time" << endl;
+  }
   fUpdated = 1;
 
 }

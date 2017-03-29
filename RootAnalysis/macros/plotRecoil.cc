@@ -107,7 +107,7 @@ void plotRecoil::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   if (nentries < 10000)    step = 1000;
   if (nentries < 1000)     step = 100;
   step = 500000;
-  cout << "==> plotRecoil::loopOverTree> loop over dataset " << fCds << " in file "
+  cout << "==> plotRecoil::loopOverTree> loop over dataset " << fCds->fName << " in file "
        << t->GetDirectory()->GetName()
        << " with " << nentries << " entries"
        << endl;

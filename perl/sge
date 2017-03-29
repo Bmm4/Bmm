@@ -1,0 +1,65 @@
+#!/usr/bin/perl
+
+# -- Usage: $BMMBASE/perl/sge [-s r|p|h] [-q short.q] [-n njobs] [-f first -l last] -c 'qrls $n'
+#
+# Examples: $BMMBASE/perl/sge -q short.q -c 'qdel $n'
+#           $BMMBASE/perl/sge -f 123456 -l 123458 -c 'qhold $n'
+#           $BMMBASE/perl/sge -f 123456 -l 123458 -c 'qrls $n'
+#
+# Note:     r running
+#           p pending
+#           h hold
+#
+#           you have to specify a queue, or all.q will be assumed. If your jobs are in the long queue instead, they will not be shown...
+#
+# 2017/02/20   bug fixes, e.g. allow for leading ' ' before job ID
+# 2017/02/02   first shot
+#
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+
+use Getopt::Std;
+getopts('c:df:l:n:q:s:');
+
+my $user  = $ENV{'USER'};
+
+my $queue = "-q all.q";
+if ($opt_q) {
+    $queue = "-q $opt_q";
+}
+
+my $state = " ";
+if ($opt_s) {
+    $state = "-s $opt_s";
+}
+
+@joblines = `qstat -u $user $queue $state`;
+my $njobs = 0;
+for ($i = 2; $i <= $#joblines; $i++) {
+    $line = $joblines[$i];
+    chop($line);
+    $line =~ s/\s{2,99}/\ /g;
+    $line =~ s/^\s//g;
+    $number = substr($line, 0, index($line, ' '));
+    if ($opt_f && ($number < $opt_f)) {next;}
+    if ($opt_l && ($number > $opt_l)) {next;}
+    ($cmd = $opt_c) =~ s/\$n/$number/g;
+    if ($opt_c) {
+	print "$cmd\n";
+	if (!$opt_d) {
+	    system("$cmd");
+	    if ($opt_n) {
+		$njobs++;
+		if ($njobs > $opt_n) {
+		    last;
+		}
+	    }
+	}
+    } else {
+	print "$number: $line\n";
+    }
+}

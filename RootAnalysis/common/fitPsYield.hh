@@ -49,7 +49,9 @@ class psd {
 class fitPsYield {
 public:
   fitPsYield(std::string hname = "hNo_cnc_bupsikData_chan0", TDirectory *pD = 0, int verbose = 1);
+  fitPsYield(TH2D *h2, int verbose);
   ~fitPsYield();
+  void initFromHist(TH2D *h);
 
   double getSignalYield() {return fSummary.fSg; }
   double getSignalError() {return fSummary.fSgE;}
@@ -68,7 +70,6 @@ public:
 private:
   int         fVerbose;
   std::string fBaseName;
-  TDirectory  *fpDir;
   initFunc    *fpIF;
 
   TH2D        *fH2;

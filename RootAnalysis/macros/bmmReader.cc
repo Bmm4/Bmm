@@ -10,6 +10,7 @@
 #include "candAnaMuMu.hh"
 #include "candAnaBu2JpsiK.hh"
 #include "candAnaBs2JpsiPhi.hh"
+#include "candAnaBs2Jpsif0.hh"
 #include "candAnaDstar.hh"
 #include "candAnaHh.hh"
 #include "candAnaBd2DstarPi.hh"
@@ -70,46 +71,67 @@ void bmmReader::endAnalysis() {
 void bmmReader::eventProcessing() {
   ((TH1D*)fpHistFile->Get("monEvents"))->Fill(0);
 
-  bool json = false;
-
+  static bool json = false;
+  static int oldRun(-1);
+  static int oldLS(-1);
   if (fIsMC) {
-    json = 1;
-    processType();
+    json = true;
+    processTypePythia8();
   } else if (fIgnoreJson) {
-    json = 1;
+    json = true;
   } else {
-    json = fpJSON->good(fRun, fLS);
+    if ((fLS != oldLS) || (fRun != oldRun)) {
+      oldLS = fLS;
+      // do not reset oldRun, this is done below!
+      json = fpJSON->good(fRun, fLS);
+    }
     fProcessType = -98;
   }
 
   double rlumi(-1.);
-  if (!fIsMC && json) {
-    if (0 != fpLumi->contains(fRun)) {
-      rlumi = fpLumi->lumi(fRun);
-    } else {
-      if (fVerbose > 100) {
-	cout << "Run " << fRun << " has no lumi information" << endl;
+  if (fRun != oldRun) {
+    oldRun = fRun;
+    if (!fIsMC && json) {
+      if (0 != fpLumi->contains(fRun)) {
+	rlumi = fpLumi->lumi(fRun);
+      } else {
+	if (fVerbose > 100) {
+	  cout << "Run " << fRun << " has no lumi information" << endl;
+	}
       }
     }
   }
 
-  // -- fill a few basic histograms
-  TSimpleTrack *pT(0);
-  double x(0.);
-  ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks());
-  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-    pT = fpEvt->getSimpleTrack(i);
-    x = pT->getP().Perp();
-    ((TH1D*)fpHistFile->Get("pt0"))->Fill(x);
-    ((TH1D*)fpHistFile->Get("pt1"))->Fill(x);
-    x = pT->getP().Eta();
-    ((TH1D*)fpHistFile->Get("eta"))->Fill(x);
-    x = pT->getP().Phi();
-    ((TH1D*)fpHistFile->Get("phi"))->Fill(x);
-  }
+  // remove because of timing worries
+  // // -- fill a few basic histograms
+  // TSimpleTrack *pT(0);
+  // double x(0.);
+  // ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks());
+  // for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+  //   pT = fpEvt->getSimpleTrack(i);
+  //   x = pT->getP().Perp();
+  //   ((TH1D*)fpHistFile->Get("pt0"))->Fill(x);
+  //   ((TH1D*)fpHistFile->Get("pt1"))->Fill(x);
+  //   x = pT->getP().Eta();
+  //   ((TH1D*)fpHistFile->Get("eta"))->Fill(x);
+  //   x = pT->getP().Phi();
+  //   ((TH1D*)fpHistFile->Get("phi"))->Fill(x);
+  // }
 
+  if (fCheckCandTypes) {
+    fCandTypes.clear();
+    for (int i = 0; i < fpEvt->nCands(); ++i) {
+      fCandTypes.insert(fpEvt->getCand(i)->fType);
+    }
+  }
   // -- call candidate analyses
   for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+    if (fCheckCandTypes) {
+      if (fCandTypes.find(lCandAnalysis[i]->TYPE) == fCandTypes.end()) {
+	continue;
+      }
+    }
+
     lCandAnalysis[i]->fIsMC        = fIsMC;
     lCandAnalysis[i]->fJSON        = json;
     lCandAnalysis[i]->fRun         = fRun;
@@ -122,7 +144,6 @@ void bmmReader::eventProcessing() {
     lCandAnalysis[i]->fCandTau     = -1.;
     lCandAnalysis[i]->fGenLifeTime = -1.;
 
-    //cout<<" call evtanalysis "<<i<<endl;
     lCandAnalysis[i]->evtAnalysis(fpEvt);
   }
 
@@ -191,6 +212,11 @@ void bmmReader::readCuts(TString filename, int dump) {
       lCandAnalysis.push_back(a);
     }
 
+    if (!strcmp(className, "candAnaBs2Jpsif0")) {
+      candAna *a = new candAnaBs2Jpsif0(this, "candAnaBs2Jpsif0", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
     if (!strcmp(className, "candAnaBd2JpsiKstar")) {
       candAna *a = new candAnaBd2JpsiKstar(this, "candAnaBd2JpsiKstar", cutFile);
       lCandAnalysis.push_back(a);
@@ -247,6 +273,11 @@ void bmmReader::readCuts(TString filename, int dump) {
       lCandAnalysis.push_back(a);
     }
 
+    if (!strcmp(className, "candAnaBu2JpsiPiAsBu")) {
+      candAna *a = new candAnaBu2JpsiK(this, "candAnaBu2JpsiPiAsBu", cutFile);
+      lCandAnalysis.push_back(a);
+    }
+
     string sclassName(className);
     if (string::npos != sclassName.find("candAnaFake")) {
       candAna *a = new candAnaFake(this, className, cutFile);
@@ -280,8 +311,73 @@ void bmmReader::readCuts(TString filename, int dump) {
 }
 
 
+
 // ----------------------------------------------------------------------
-void bmmReader::processType() {
+// http://home.thep.lu.se/~torbjorn/pythia82html/ParticleProperties.html
+void bmmReader::processTypePythia8() {
+
+  TGenCand *pG;
+
+  // hard-scatter partons (entries { d, u, s, c, b, t } )
+  double hsPartCnt[6];
+  double hsAntiCnt[6];
+
+  // partons
+  double parPartCnt[6];
+  double parAntiCnt[6];
+
+  for (int i = 0; i < 6; i++) {
+    hsPartCnt[i] = 0;
+    hsAntiCnt[i] = 0;
+    parPartCnt[i] = 0;
+    parAntiCnt[i] = 0;
+  }
+  int aid(0);
+  for (int i = 0; i < fpEvt->nGenCands(); ++i) {
+    pG = fpEvt->getGenCand(i);
+    // -- in PYTHIA8 the hard scatter particles are 21-29
+    if (pG->fStatus > 20 && pG->fStatus < 30) {
+      aid = TMath::Abs(pG->fID);
+
+      for (int j = 0; j < 6; j++) {
+        if (pG->fID == j+1) {
+          hsPartCnt[j]++;
+        }
+        if (pG->fID == -(j+1)) {
+          hsAntiCnt[j]++;
+        }
+      }
+      //      pG->dump();
+    }
+  }
+
+  // -- beauty
+  if (hsPartCnt[4] >= 1 && hsAntiCnt[4] >= 1) {
+    fProcessType = 40; // gluon fusion
+    //    cout << Form("====> b: GGF (%i)", fProcessType) << endl;
+    return;
+  }
+
+  if ((hsPartCnt[4] >= 1 && hsAntiCnt[4] == 0) || (hsPartCnt[4] == 0 && hsAntiCnt[4] >= 1) ) {
+    fProcessType = 41; // flavor excitation
+    //    cout << Form("====> b: FEX (%i)", fProcessType) << endl;
+    return;
+  }
+
+  if (hsPartCnt[4] == 0 && hsAntiCnt[4] == 0) {
+    fProcessType = 42; // gluon splitting
+    //    cout << Form("====> b: GSP (%i)", fProcessType) << endl;
+
+    return;
+  }
+
+  fpEvt->dumpGenBlock();
+
+}
+
+
+// ----------------------------------------------------------------------
+void bmmReader::processTypePythia6() {
 
   TGenCand *pG;
 
@@ -301,42 +397,41 @@ void bmmReader::processType() {
   }
 
   int aid(0);
-  for (int i = 0; i < fpEvt->nGenCands(); ++i) {
-
-    pG = fpEvt->getGenCand(i);
-
+  for (int i = 0; i < fpEvt->nGenT(); ++i) {
+    pG = fpEvt->getGenT(i);
     aid = TMath::Abs(pG->fID);
     if ( aid == 1 || aid == 2 ||
          aid == 3 || aid == 4 ||
          aid == 5 || aid == 6 ||
          aid == 21) {
-      if ( pG->fStatus == 3 ) {
-        //      cout << "quark/gluon from documentation #" << i << "(ID: " << pG->fID << ")" << endl;
+      //      cout << "pG = " << pG << " id = " << pG->fID << " status = " << pG->fStatus << endl;
+      if (pG->fStatus == 3 ) {
+	//	cout << "quark/gluon from documentation #" << i << "(ID: " << pG->fID << ")" << endl;
       }
-      if ( pG->fStatus == 2 &&  TMath::Abs(pG->fID) != 21) {
-        //      cout << "decayed quark/gluon #" << i << " (ID: " << pG->fID << ")" << endl;
+      if (pG->fStatus == 2 &&  TMath::Abs(pG->fID) != 21) {
+	//	cout << "decayed quark/gluon #" << i << " (ID: " << pG->fID << ")" << endl;
       }
-      if ( pG->fStatus == 1 ) {
-        //      cout << "undecayed (?) quark/gluon #" << i << " (ID: " << pG->fID  << ")" << endl;
+      if (pG->fStatus == 1 ) {
+	//	cout << "undecayed (?) quark/gluon #" << i << " (ID: " << pG->fID  << ")" << endl;
       }
     }
 
     for (int j = 0; j < 6; j++) {
 
-      if ( pG->fStatus == 3 ) {
+      if (pG->fStatus == 3 ) {
         if ( pG->fID == j+1 ) {
           docPartCnt[j]++;
         }
-        if ( pG->fID == -(j+1) ) {
+        if (pG->fID == -(j+1) ) {
           docAntiCnt[j]++;
         }
       }
 
-      if ( pG->fStatus == 2 ) {
+      if (pG->fStatus == 2 ) {
         if ( pG->fID == j+1 ) {
           parPartCnt[j]++;
         }
-        if ( pG->fID == -(j+1) ) {
+        if (pG->fID == -(j+1) ) {
           parAntiCnt[j]++;
         }
       }

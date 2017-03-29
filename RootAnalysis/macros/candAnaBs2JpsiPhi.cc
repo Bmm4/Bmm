@@ -10,6 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBs2JpsiPhi::candAnaBs2JpsiPhi(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBs2JpsiPhi");
   fGenK1Tmi = fGenK2Tmi = fRecK1Tmi = fRecK2Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBs2JpsiPhi: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -60,6 +61,32 @@ void candAnaBs2JpsiPhi::candAnalysis() {
     }
   }
 
+  // -- check for overlap with a Bd -> J/psi Kstar (300511) candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBdJpsiKstarMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300511 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 4 track overlap, get kstar mass of the other cand
+    if (4 == overlap) {
+      fBdJpsiKstarMass = pC->fMass;
+    }
+  }
+
+
   // -- Get Kaons
   TAnaTrack *p0;
   TAnaTrack *p1(0);
@@ -77,10 +104,12 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   if (0 == p1) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 1 found " << endl;
+    fCandM = -98.;
     return;
   }
   if (0 == p2) {
     cout << "candAnaBs2JpsiPhi::candAnalysis  no kaon 2 found " << endl;
+    fCandM = -98.;
     return;
   }
 
@@ -136,19 +165,22 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fMKPi1   = pi1Cand.M();
   fMKPi2   = pi2Cand.M();
 
-  fGoodDeltaR   = (fDeltaR < DELTAR);
+  fGoodDeltaR   = (fPhiDeltaR < DELTAR);
   fGoodMKK      = ((MKKLO < fMKK ) && (fMKK < MKKHI));
 
   candAna::candAnalysis();
-  fGoodTracksPt = fGoodTracksPt && ((fKa1Pt > TRACKPTLO) && (fKa2Pt > TRACKPTLO));
-
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMKK && fGoodDeltaR && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
+
+  fGoodTracks    = fGoodTracks    && fKa1TkQuality && fKa2TkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKa1Pt)  && (fKa1Pt < TRACKPTHI))  && ((TRACKPTLO < fKa2Pt)  && (fKa2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fKa1Eta) && (fKa1Eta < TRACKETAHI) && (TRACKETALO < fKa2Eta) && (fKa2Eta < TRACKETAHI);
+
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass   && (fJpsiPt > 7.) && fGoodMKK      && fGoodDeltaR;
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
@@ -248,6 +280,7 @@ void candAnaBs2JpsiPhi::genMatch() {
     // use the mother if it has the same PDGID (it oscillated)
     if (TMath::Abs(pB->fID) != TMath::Abs(pM->fID)) pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -353,6 +386,7 @@ void candAnaBs2JpsiPhi::genMatchOld() {
     // the meson is the original except if it oscillated
     if (531 != TMath::Abs(pM->fID)) pM = pB;
     double x = (pM1->fV - pM->fV).Mag();
+    fGenFl3d = x;
     fGenLifeTime = x*m/p/TMath::Ccgs();
     if (pM1->fP.Perp() > pM2->fP.Perp()) {
       fGenM1Tmi = pM1->fNumber;
@@ -505,6 +539,8 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+
+  t->Branch("bdpsikstarmass",     &fBdJpsiKstarMass, "bdpsikstarmass/D");
 
   t->Branch("mkk",   &fMKK,      "mkk/D");
   t->Branch("mkpi1", &fMKPi1,    "mkpi1/D");

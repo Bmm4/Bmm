@@ -123,10 +123,11 @@ void HFDiTracks::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup
     theTree.addTrack(trkIt->second, idFromMass(fTrack2Mass));
     theTree.addNodeCut(&HFDecayTree::passMaxDoca,   -1., fMaxDoca, "maxdoca");
     theTree.addNodeCut(&HFDecayTree::passMass, fCandLo,   fCandHi, "mass");
-    theTree.addNodeCut(&HFDecayTree::passPt,    fCandPt,     1.e9, "pt");
+    theTree.addNodeCut(&HFDecayTree::passPt,   fCandPt,     1.e9, "pt");
     if (fFlxy > 0)  theTree.addNodeCut(&HFDecayTree::passFlxy,      -1.,    fFlxy, "flxy");
     if (fFlsxy > 0) theTree.addNodeCut(&HFDecayTree::passFlsxy,  fFlsxy,     1.e9, "flsxy");
     if (fPvIpS > 0) theTree.addNodeCut(&HFDecayTree::passPvips,      -1,   fPvIpS, "pvips");
+    if (fChi2 > 0)  theTree.addNodeCut(&HFDecayTree::passChi2Dof,   -1.,    fChi2, "chi2dof");
 
     fSequentialFitter->doFit(&theTree);
     if (fVerbose) {

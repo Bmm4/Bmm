@@ -79,6 +79,7 @@ public:
 
   virtual void        evtAnalysis(TAna01Event *evt);
   virtual void        candAnalysis();
+  virtual void        candEvaluation();
   virtual void        endAnalysis();
   virtual void        efficiencyCalculation();
   virtual void        setupReducedTree(TTree *);
@@ -177,7 +178,7 @@ public:
   TAnaCand *fpCand, *fpOsCand;
   int fCandIdx;
 
-  int fVerbose;
+  int fVerbose, fDbx;
   int fIsMC;
 
   Long64_t fRun, fEvt;
@@ -222,7 +223,7 @@ public:
   int     fCandTmi;
   int     fGenBpartial;
   int     fProcessType;
-  double  fGenLifeTime, fGenMass;
+  double  fGenLifeTime, fGenMass, fGenFl3d;
 
   // -- BDT
   std::vector<TMVA::Reader*> fReaderEvents0;
@@ -273,8 +274,6 @@ public:
   double  fCandPvDeltaChi2;
   double  fCandOtherVtx;
   // NO: They are filled into the "Jpsi" variables in the derived classes!
-  // // -- dimuon variables
-  // double  fmmMass, fmmChi2, fmmDof, fmmProb, fmmFL3d, fmmFL3dE, fmmFLS3d, fmmFLSxy, fmmCosA, fmmMaxDoca;
 
   double  fOsMuonPt, fOsMuonPtRel, fOsIso, fOsRelIso, fOsMuonDeltaR;
 
@@ -305,15 +304,18 @@ public:
 
   string  fHLTPath;
   int     fL1Seeds, fHltPrescale;
+  bool    fGoodCNC;
   bool    fGoodHLT, fGoodMuonsID, fGoodMuonsGmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
-  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS;
+  bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS, fGoodLip, fGoodLipS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
-  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
   bool    fPreselAlpha, fPreselFLS;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
   string  fHLT1Path, fL1SeedString;
+  // --
+  double  fHltD1, fHltD2;
 
   bool    fPreselection;
   bool    fBadEvent;

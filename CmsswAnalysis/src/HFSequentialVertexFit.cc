@@ -229,7 +229,7 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
 
   tree->fTV.setMaxDoca(getMaxDoca(kinParticles));
   tree->fTV.setMinDoca(getMinDoca(kinParticles));
-  tree->fTV.setChi2(kinPart->chiSquared());
+  tree->fTV.setChi2Dof(kinPart->chiSquared()/kinVertex->degreesOfFreedom());
 
   return true;
 
@@ -811,7 +811,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       TrajectoryStateOnSurface tsos = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
 							       RecoVertex::convertPos(currentPV.position()));
 
-      // compute with iptools
+      // compute with iptools (to obtain values and errors)
       currentIp = IPTools::signedDecayLength3D(tsos, GlobalVector(0,0,1), currentPV);
       cur3DIP = IPTools::absoluteImpactParameter(tsos, currentPV, a3d);
 
@@ -874,6 +874,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     }
   }
 
+  Vertex theCurrentPV;
   if (wrtVertexState) {
     // -- Distance to mother vertex
     tree->fAnaVertex.fDxy = axy.distance(*wrtVertexState, kinVertex->vertexState()).value();
@@ -926,7 +927,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 	vrtxRefit.push_back(tTrk);
       }
     }
-    if (vrtxRefit.size() < 2) throw PVRefitException(); // do not try to fit with less than two tracks
+    if (vrtxRefit.size() < 5) throw PVRefitException(); // do not try to fit with less than five tracks, else problems in CrossingPtBasedLinPtFinder
     if (fVerbose > 5) cout << "==> HFSequentialVertexFit::addCandidate(): refitting with vrtxRefit.size() = " << vrtxRefit.size() << endl;
 
     TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
@@ -936,6 +937,7 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       throw PVRefitException();
     }
 
+    theCurrentPV = currentPV;
     tree->fAnaVertex.fDxy = axy.distance(currentPV,  kinVertex->vertexState()).value();
     tree->fAnaVertex.fDxyE = axy.distance(currentPV, kinVertex->vertexState()).error();
     tree->fTV.setFlxy(tree->fAnaVertex.fDxy);
@@ -972,7 +974,11 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     const TVector3 p1(currentPV.position().x(), currentPV.position().y(), currentPV.position().z());
     const TVector3 p2(kinVertex->vertexState().position().x(), kinVertex->vertexState().position().y(), kinVertex->vertexState().position().z());
     const TVector3 pDiff = p2-p1;
-    tree->fTV.vtxDistanceCosAlphaPlab = plab.Dot(pDiff) / (plab.Mag() * pDiff.Mag());
+    const TVector3 pDiffXY = TVector3(pDiff.X(), pDiff.Y(), 0.);
+    const TVector3 ptrans  = TVector3(plab.X(), plab.Y(), 0.);
+
+    tree->fTV.vtxDistanceCosAlphaPlab   = plab.Dot(pDiff) / (plab.Mag() * pDiff.Mag());
+    tree->fTV.vtxDistanceCosAlphaPtrans = ptrans.Dot(pDiffXY) / (ptrans.Mag() * pDiffXY.Mag());
 
     // compute the delta chi2 using the Kalman vertex fitter and only tracks with weight > 0.5
     vrtxRefit.clear();
@@ -1035,14 +1041,47 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
   // TMath::Ccgs() is to convert from cm to s (speed of light in cgs system, CMS uses cm)
   if (plab.Mag() > 0) {
     const double massOverC = tree->fTV.mass/TMath::Ccgs();
-    // from 3d vertexing
+    // -- from 3d vertexing
     tree->fTV.tau3d = tree->fAnaVertex.fD3d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPlab * massOverC;
     tree->fTV.tau3dE = TMath::Sqrt(ROOT::Math::Similarity(tree->fTV.vtxDistanceCov, tree->fTV.vtxDistanceJac3d)) * massOverC;
-    // from 2d vertexing
+    // -- from 2d vertexing (I think this is not what is intended, e.g. tree->fTV.vtxDistanceCosAlphaPlab not in 2D!
     const double sinTheta = TMath::Sin(plab.Theta());
     const double flightlength2d = (sinTheta != 0 ? tree->fAnaVertex.fDxy / sinTheta : 0);
-    tree->fTV.tauxy = flightlength2d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPlab * massOverC;
-    tree->fTV.tauxyE = TMath::Sqrt(ROOT::Math::Similarity(tree->fTV.vtxDistanceCov, tree->fTV.vtxDistanceJac2d)) * massOverC;
+    double TVtauxy = flightlength2d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPlab * massOverC;
+    TVtauxy = flightlength2d / plab.Mag() * tree->fTV.vtxDistanceCosAlphaPtrans * massOverC;
+    tree->fTV.tauxy = TVtauxy;
+    double TVtauxyE = TMath::Sqrt(ROOT::Math::Similarity(tree->fTV.vtxDistanceCov, tree->fTV.vtxDistanceJac2d)) * massOverC;
+    tree->fTV.tauxyE = TVtauxyE;
+
+    // -- using alternate method using beamspot
+    // if (0) {
+    //   if (!wrtVertexState && (tree->fTV.pvIx >= 0)) {
+    // 	TVector3 vtx;
+    // 	TVector3 pvtx;
+    // 	VertexDistanceXY vdistXY;
+    // 	vtx.SetXYZ(tree->fAnaVertex.fPoint.X(), tree->fAnaVertex.fPoint.Y(), 0.);
+    // 	TVector3 pperp(plab.X(), plab.Y(), 0.);
+    // 	AlgebraicVector3 vpperp(pperp.x(), pperp.y(), 0.);
+    // 	pvtx.SetXYZ(theCurrentPV.position().x(), theCurrentPV.position().y(), 0.);
+    // 	TVector3 vdiff = vtx - pvtx;
+    // 	double cosAlpha = vdiff.Dot(pperp)/(vdiff.Perp()*pperp.Perp());
+    // 	cout << "kinVertex: " << kinVertex << endl;
+    // 	cout << "reco(kinVertex): " << reco::Vertex(*kinVertex) << endl;
+    // 	cout << " theCurrentPV x: " << theCurrentPV.position().x() << endl;
+    // 	Measurement1D distXY = vdistXY.distance(reco::VertexState(*kinVertex), theCurrentPV);
+    // 	// VertexState(tsos.globalPosition(), tsos.cartesianError().position()),
+    // 	Measurement1D distXY = vdistXY.distance(VertexState(*kinVertex)
+    // 						VertexState(RecoVertex::convertPos(theCurrentPV.position()),
+    // 							    RecoVertex::convertError(theCurrentPV.error())));
+    // 	tree->fTV.tauxy = distXY.value() * cosAlpha * massOverC / pperp.Perp();
+    // 	GlobalError v1e = (reco::Vertex(*kinVertex)).error();
+    // 	GlobalError v2e = theCurrentPV.error();
+    // 	AlgebraicSymMatrix33 vXYe = v1e.matrix()+ v2e.matrix();
+    // 	tree->fTV.tauxyE = TMath::Sqrt(ROOT::Math::Similarity(vpperp, vXYe)) * massOverC / (pperp.Perp2());
+    // 	cout << "Old setup: " << TVtauxy << " +/- " << TVtauxyE << endl;
+    // 	cout << "New setup: " << tree->fTV.tauxy << " +/- " << tree->fTV.tauxyE << endl;
+    //   }
+    // }
   } else {
     tree->fTV.tau3d = tree->fTV.tauxy = -99.;
   }

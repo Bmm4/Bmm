@@ -52,12 +52,23 @@ public:
   TF1* landau(double lo, double hi);
   TF1* landau(TH1 *h);
 
+  TF1* bigauss(double lo, double hi);
+  TF1* bigauss(TH1 *h);
+
   TF1* gauss(double lo, double hi);
   TF1* gauss(TH1 *h);
   TF1* Gauss(double lo, double hi);
 
+  TF1* gauss2(double lo, double hi);
+  TF1* gauss2(TH1 *h);
+
   TF1* gauss2c(double lo, double hi);
   TF1* gauss2c(TH1 *h);
+
+  TF1* gauss3(double lo, double hi);
+  TF1* gauss3(TH1 *h);
+
+  TF1* pisat(double norm);
 
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
@@ -93,6 +104,7 @@ public:
 
   TF1* crystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* crystalBallGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
+  TF1* crystalBallBiGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1CrystalBall(TH1 *h, double peak = 5.3, double sigma = 0.04, double alpha = 1., double tailLength = 1.);
   TF1* pol1Landau(TH1 *h, double peak = 5.3, double sigma = 0.04);
 
@@ -108,7 +120,7 @@ public:
 
   // -- Specific models
   TF1* phiKK(TH1 *h);
-
+  TF1* bupsik(TH1 *h);
 
   void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);

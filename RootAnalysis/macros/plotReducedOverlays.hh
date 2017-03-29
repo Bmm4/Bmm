@@ -58,18 +58,13 @@ public:
 
   /// run over sample with specified channel and selection and dump AD into rootfile
   void makeSample(std::string sample1,
-		  std::string selection = "Presel",
 		  int nevents = -1, int nstart = 0);
 
   /// overlay two sample previously makeSample'd (read AD in from rootfile)
-  void makeOverlay(std::string sample1,
-		   std::string sample2,
-		   std::string selection);
+  void makeOverlay(std::string sample1, std::string sample2, std::string selection = "");
 
   /// combine the previous two methods
-  void makeSampleOverlay(std::string sample1,
-			 std::string sample2,
-			 std::string selection = "Presel");
+  void makeSampleOverlay(std::string sample1, std::string sample2, std::string selection = "");
 
   /// generate mass plots for illustration of the sbs-subtracted plots
   void plotMass(std::string sample = "bupsikData", std::string selection = "Presel");
@@ -91,20 +86,19 @@ public:
   void compareBsAndBp(std::string file = "2012/anaBmm.plotReducedOverlaysSystematics.2012.root");
 
   // --
-  void bookDistributions();
-  void fillDistributions();
+  void bookDistributions(std::string selmode = "");
+  void fillDistributions(std::string selmode = "");
   void sbsDistributions(std::string sample, std::string selection = "Presel", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2);
-  void overlayOld(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void sbsSingleFile(string file1, string sample1 = "NoData", string channel = "B", string selection = "Presel");
   void overlay2Files(std::string file1, std::string sample1,
 		     std::string file2, std::string sample2,
 		     std::string chan1 = "BLoPU", std::string chan2 = "BHiPU",
 		     std::string selection = "Presel", std::string what = "");
 
-  AnalysisDistribution* bookDistribution(std::string hn, std::string ht, std::string hc, int nbins, double lo, double hi);
-  AnalysisDistribution* bookSpecialDistribution(string hn, string ht, string hc, int nbins, double lo, double hi, bool *presel);
+  AnalysisDistribution* bookDistribution(string hn, string ht, string hc, AnalysisCuts *pCuts,
+					 int nbins, double lo, double hi, bool *presel = 0);
 
 
   TDirectory *fHistDir;
