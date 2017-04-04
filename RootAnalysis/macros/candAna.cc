@@ -856,6 +856,18 @@ void candAna::candAnalysis() {
   fTIS = tis(fpCand);
   fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
 
+
+  if (0) {
+    cout  << "==XX== " << fName  << " hlt1 = " << fGoodHLT1  << " gmuid = " << fGoodMuonsID << " tos = " << fTOS << " chan = " << fChan
+	  << " mu eta: " << fMu1Eta << "/" << fMu2Eta
+	  << " pT: " << fMu1Pt << "/" << fMu2Pt
+	  << " fls3d = " << fCandFLS3d
+	  << " evt = " << fEvt
+	  << endl;
+    fVerbose = -32;
+    triggerL1T();
+    fVerbose = 0;
+  }
   // -- check for good channel, else the cuts array cannot be used!
   if (fChan < 0) {
     //    cout << "Failed chan, l1 seeds = " << fL1SeedString << endl;
@@ -943,7 +955,7 @@ void candAna::candEvaluation() {
     && fGoodDocaTrk
     ;
 
-  if (300531 == fCandType) {
+  if (0) {
     cout << " CNC: " << fGoodCNC
 	 << " Acceptance: " << fGoodAcceptance
 	 << " Q: " << fGoodQ
@@ -1045,10 +1057,9 @@ int candAna::detChan(double m1eta, double m2eta) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
 	for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
 	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
-	    break;
+	    return ichan;
 	  }
 	}
-	return ichan;
       }
     }
     return -1;
@@ -1205,10 +1216,6 @@ void candAna::triggerHLT() {
 	if (fRun < rmin) continue;
 	if (fRun > rmax) continue;
 	if (!a.CompareTo(imap->first.c_str())) {
-	  // cout << "----------------------------------------------------------------------" << endl;
-	  // cout << a << " result = " << result << " prescale: " << ps << " wasRun = " << wasRun
-	  //      << " event: " << fEvt << " run: " << fRun
-	  //      << endl;
 	  good = true;
 	  if (verbose > 1 || -32 == verbose  )
 	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
@@ -1235,6 +1242,7 @@ void candAna::triggerHLT() {
 
 // ----------------------------------------------------------------------
 void candAna::triggerL1T() {
+  if (fVerbose == -32) cout << "___________ " << fName << " new event: " << fEvt << endl;
   fL1Seeds = 0;
   fL1SeedString = "";
   for (int i = 0; i < NL1T; ++i) {
@@ -1243,7 +1251,7 @@ void candAna::triggerL1T() {
       cout << "L1 trigger fired: " << fpEvt->fL1TNames[i] << endl;
     }
     if (2016 == fYear) {
-      if ("L1_DoubleMu0er1p6_dEtaMax1p8" == fpEvt->fL1TNames[i]) {
+      if ("L1_DoubleMu0er1p6_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
 	fL1Seeds |= 0x1; //1
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
@@ -1296,8 +1304,29 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       }
+    } else if (fYear == 2011) {
+      if ("L1_DoubleMu0" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1; //1
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0_HighQ" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<1; //2
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      }
     }
   }
+
+  if (fVerbose == -32) {
+     cout  << "tt " << fName  <<  " summary of L1: " << fL1SeedString << "; ";
+    for (int i = 6; i >= 0; --i) {
+      cout << (fL1Seeds&(0x1<<i)) << " ";
+    }
+    cout << endl;
+  }
+
 }
 
 
@@ -1368,7 +1397,7 @@ void candAna::triggerSelection() {
   // If if it confirmed by our list than match it with an object in the TrgObjv2 list
   // Mark the TrigObjv2 object my add a large number to the index.
   // Like this it can be recogised in the track match search.
-  if ( (fVerbose>9) || (fVerbose==-32) ) cout<<" event "<<fEvt<<endl;
+  //  if ( (fVerbose>9) || (fVerbose==-32) ) cout<<" event "<<fEvt<<endl;
   bool isMuonTrigger=false; // just for diagnostics
   int foundNumHltObjects=0;
   int foundNumHlts=0;
@@ -4324,6 +4353,8 @@ bool candAna::tos(TAnaCand *pC) {
 		      << endl;
     return false;
   }
+  if (verbose) cout << "event signal triggered: fGoodHLT1 = " << fGoodHLT1 << " fHLT1Path = " << fHLT1Path
+		    << endl;
 
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
