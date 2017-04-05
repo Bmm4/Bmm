@@ -17,10 +17,10 @@
 # ----------------------------------------------------------------------
 
 
-my $root    = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 my $dcap    = "dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat";
 my $psi     = "srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat";
-
+my $root    = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
+my $xrdb    = "root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/";
 
 # -- Get arguments
 use Getopt::Std;
@@ -63,11 +63,13 @@ if ($#rootfiles > 0) {
 	system("hadd $output @rootfiles");
     }
 } else {
-    ($oneFile = $rootfiles[0]) =~ s%$root%$psi%g;
-    print "lcg-cp -b -D srmv2 $oneFile $output \n";
+    ($oneFile = $rootfiles[0]) =~ s%$root%$xrdb%g;
+    # print "lcg-cp -b -D srmv2 $oneFile $output \n";
+    print "xrdcp $oneFile $output\n";
     if ($opt_d) {
     } else {
 	if (-e "$output") {unlink("$output"); }
-	system("lcg-cp -b -D srmv2 $oneFile $output");
+#	system("lcg-cp -b -D srmv2 $oneFile $output");
+	system("xrdcp $oneFile $output");
     }
 }

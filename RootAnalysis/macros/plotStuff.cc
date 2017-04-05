@@ -1020,11 +1020,11 @@ void plotStuff::pvStudy(string dsname, string selection, string fmod) {
 
 // ----------------------------------------------------------------------
 void plotStuff::yieldStability(string dsname, string trg) {
-  double MINLUMI(1.);
+  double MINLUMI(2000.);
   double mBp(5.28), sBp(0.015), stepBp(5.15);
   double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
 
-  int nchan = 1;
+  int nchan = fNchan;
 
   fSample = dsname;
   fMode = BMM;
@@ -1168,6 +1168,12 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    }
 	    result  = fpy.getSignalYield();
 	    resultE = fpy.getSignalError();
+	    if (0) {
+	      result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
+	      resultE = TMath::Sqrt(result);
+	    }
+	    result  = fpy.getSignalW8Yield();
+	    resultE = fpy.getSignalW8Error();
 	  } else {
 	    result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
 	    resultE = TMath::Sqrt(result);
@@ -1189,7 +1195,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
       for (unsigned ichan = 0; ichan < nchan; ++ichan) {
 	setTitles(vRunHLT[ichan], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 1.9);
 	vRunHLT[ichan]->Draw();
-	savePad(Form("yieldVsBlock-%s-%s-chan%d.pdf", trg.c_str(), dsname.c_str(), ichan));
+	savePad(Form("yieldVsBlock-%s%d-%s-chan%d.pdf", trg.c_str(), fYear, dsname.c_str(), ichan));
 	if (1) {
 	  vRunHLT[ichan]->SetDirectory(gDirectory);
 	  vRunHLT[ichan]->Write();

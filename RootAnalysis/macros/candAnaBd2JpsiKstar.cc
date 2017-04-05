@@ -213,34 +213,6 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   ks = pi1 + pi2;
   fMPPI = ks.M();
 
-
-
-  fKaMissid = tightMuon(p1);  // true for tight  muons
-  fPiMissid = tightMuon(p2);
-  fKaMuMatch = doTriggerMatching(p1); // see if it matches HLT muon
-  fPiMuMatch = doTriggerMatching(p2); // see if it matches HLT muon
-
-  if(0) { // special tests d.k.
-    double mva=0;
-
-    fKaMissid2 = mvaMuon(p1,mva);  // true for tight  muons
-    fKaMuMatch = doTriggerMatching(p1,false); // see if it matches HLT muon
-    fKaMuMatch2 = doTriggerMatching(p1,true); // see if it matches HLT muon
-    fKaMuMatchR = doTriggerMatchingR(p1,false); // see if it matches HLT muon
-    fKaMuMatchR2 = doTriggerMatchingR(p1,true); // see if it matches HLT muon
-    fKaMuMatchR3 = matchToMuon(p1,true); // see if it matches HLT muon
-
-    // Pion
-    fPiMissid2 = mvaMuon(p2,mva);  // true for tight  muons
-    fPiMuMatch = doTriggerMatching(p2,false); // see if it matches HLT muon
-    fPiMuMatch2 = doTriggerMatching(p2,true); // see if it matches HLT muon
-    fPiMuMatchR = doTriggerMatchingR(p2,false); // see if it matches HLT muon
-    fPiMuMatchR2 = doTriggerMatchingR(p2,true); // see if it matches HLT muon
-    fPiMuMatchR3 = matchToMuon(p2,true); // see if it matches HLT muon
-
-    //if(fKa1Missid || fKa2Missid) cout<<"missid "<<fKa1Missid<<" "<<fKa2Missid<<" "<<fKa1MuMatch<<" "<<fKa2MuMatch<<endl;
-  }
-
   if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
     if (fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex() < fpEvt->nGenT()) {
       TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());

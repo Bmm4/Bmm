@@ -42,6 +42,7 @@ public :
 
 
   void ups1(std::string file1, std::string file2);
+  void ups2(std::string file1, std::string file2);
 
 
   std::string removeVarFromSelection(std::string var, std::string selection);
@@ -71,6 +72,9 @@ private:
   double fEntries;
 
   std::vector<TH1D*> fHmass0, fHmass1;
+  std::vector<TH1D*> fHBd0, fHBd1;
+  std::vector<TH1D*> fHBs0, fHBs1;
+  std::vector<TH1D*> fHBg0, fHBg1;
   TProfile *fpPmass0, *fpPmass1;
 
   int fRefTrigger;

@@ -89,24 +89,6 @@ void candAnaBu2JpsiK::candAnalysis() {
     fKEtaGen    = -99.;
   }
 
-  fKa1Missid = tightMuon(pk);  // true for tight  muons
-  fKa1MuMatch = doTriggerMatching(pk, false,false); // see if it matches HLT muon
-
-#ifdef NEW_MATCHING
-  // match to all trigger particles (use this to select trigger bias)
-  fKa1MuMatchR = doTriggerMatchingR(pk, false, false); // matches only selected HLT path
-  fKa1MuMatchR2 = doTriggerMatchingR(pk, true, false); // matches any passed HLT path
-
-  // match to muon trigger particles  only, testing
-  //fKa1MuMatchR = doTriggerMatchingR(pk, false, true); // matches only selected HLT path
-  //fKa1MuMatchR2 = doTriggerMatchingR(pk, true, true); // matches any passed HLT path
-
-  //cout<<" match kaon "<<fKaonPt<<" "<<fKa1Missid<<" "<<fKa1MuMatch
-  //  <<" "<<fKa1MuMatchR<<" "<<fKa1MuMatchR2<<endl;
-#else
-  fKa1MuMatchR = doTriggerMatchingR_OLD(pk, false); // see if it matches HLT muon
-#endif
-
   // -- Check for J/psi mass
   //cout<<" check jpsi "<<endl;
 
