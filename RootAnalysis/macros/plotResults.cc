@@ -32,17 +32,17 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 plotResults::plotResults(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup),
-									       fNoNumbers(4),
-									       fCsNumbers(4),
-									       fB0Numbers(4),
-									       fBsmmNumbers(4),
-									       fBdmmNumbers(4),
-									       fHhNumbers(4),
-									       fSlNumbers(4),
-									       fCombNumbers(4),
-									       fNpNumbers(4),
-									       fBgNumbers(4),
-									       fSgAndBgNumbers(4)
+									       fNoNumbers(5),
+									       fCsNumbers(5),
+									       fB0Numbers(5),
+									       fBsmmNumbers(5),
+									       fBdmmNumbers(5),
+									       fHhNumbers(5),
+									       fSlNumbers(5),
+									       fCombNumbers(5),
+									       fNpNumbers(5),
+									       fBgNumbers(5),
+									       fSgAndBgNumbers(5)
 {
   plotClass::loadFiles(files);
   plotResults::loadFiles(files);
@@ -393,10 +393,10 @@ void plotResults::makeAll(string what) {
 
   if (what == "all" || what == "genvalidation") {
     if (2016 == fYear) {
-      genSummary("bdmmMcOffAcc", "candAnaMuMu");
+      genSummary("bdmmMcCombAcc", "candAnaMuMu");
       genSummary("bdmmMcOff", "candAnaMuMu");
       genSummary("bdmmMc", "candAnaMuMu");
-      genSummary("bsmmMcOffAcc", "candAnaMuMu");
+      genSummary("bsmmMcCombAcc", "candAnaMuMu");
       genSummary("bsmmMcOff", "candAnaMuMu");
       genSummary("bsmmMc", "candAnaMuMu");
       genSummary("bsmm80Mc", "candAnaMuMu");
@@ -414,16 +414,16 @@ void plotResults::makeAll(string what) {
       genSummary("bsmm40Mc", "candAnaMuMu");
       genSummary("bsmm35Mc", "candAnaMuMu");
 
-      genSummary("bupsikMcOffAcc", "candAnaBu2JpsiK");
+      genSummary("bupsikMcCombAcc", "candAnaBu2JpsiK");
       genSummary("bupsikMcOff", "candAnaBu2JpsiK");
       genSummary("bupsikMc", "candAnaBu2JpsiK");
       genSummary("bupsikMcComb", "candAnaBu2JpsiK");
-      genSummary("bspsiphiMcOffAcc", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcCombAcc", "candAnaBs2JpsiPhi");
       genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
       genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
       genSummary("bspsiphiMcComb", "candAnaBs2JpsiPhi");
-      genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
-      genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMcCombAcc", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMcComb", "candAnaBd2JpsiKstar");
 
 
       // -- loop over all (effective) two-body backgrounds
@@ -433,23 +433,23 @@ void plotResults::makeAll(string what) {
 	genSummary(it->first, "candAnaMuMu");
       }
     } else if (2012 == fYear) {
-      genSummary("bupsikMc", "candAnaBu2JpsiK");
-      genSummary("bupsikMcAcc", "candAnaBu2JpsiK");
+      genSummary("bupsikMcComb", "candAnaBu2JpsiK");
+      genSummary("bupsikMcCombAcc", "candAnaBu2JpsiK");
 
-      genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
-      genSummary("bspsiphiMcAcc", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcComb", "candAnaBs2JpsiPhi");
+      genSummary("bspsiphiMcCombAcc", "candAnaBs2JpsiPhi");
 
-      genSummary("bdpsikstarMc", "candAnaBd2JpsiKstar");
-      genSummary("bdpsikstarMcAcc", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMcComb", "candAnaBd2JpsiKstar");
+      genSummary("bdpsikstarMcCombAcc", "candAnaBd2JpsiKstar");
 
-      genSummary("bspsifMc", "candAnaBs2Jpsif0");
-      genSummary("bspsifMcAcc", "candAnaBs2Jpsif0");
+      genSummary("bspsifMcComb", "candAnaBs2Jpsif0");
+      genSummary("bspsifMcCombAcc", "candAnaBs2Jpsif0");
 
-      genSummary("bdmmMc", "candAnaMuMu");
-      genSummary("bdmmMcAcc", "candAnaMuMu");
+      genSummary("bdmmMcComb", "candAnaMuMu");
+      genSummary("bdmmMcCombAcc", "candAnaMuMu");
 
-      genSummary("bsmmMc", "candAnaMuMu");
-      genSummary("bsmmMcAcc", "candAnaMuMu");
+      genSummary("bsmmMcComb", "candAnaMuMu");
+      genSummary("bsmmMcCombAcc", "candAnaMuMu");
 
     }
 

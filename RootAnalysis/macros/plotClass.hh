@@ -205,7 +205,7 @@ public :
   double fEpsilon;
 
   std::string fDirectory, fSetup, fSuffix, fSuffixSel, fSample, fNumbersFileName, fTreeDir;
-
+  int   fSetupInt;
   // -- datasets (files and associated information)
   std::map<std::string, dataset*> fDS;
   // -- current dataset for analysis
