@@ -1,5 +1,5 @@
 # ======================================================================
-# NOTE: make all
+# NOTE: make all links
 # -----
 #
 # ======================================================================
@@ -60,15 +60,21 @@ $(addprefix obj/,%.o) : %.cc
 
 %Dict.cc : %.hh %LinkDef.h
 	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $^
-#ifneq ($(findstring root/6,$(ROOTSYS)),)
+
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	ln -s ../../src/Bmm/RootAnalysis/common/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	cd -;
 endif
 
 %Dict.cc : %.hh
-	$(ROOTCINT) -f $@ -c $(EXTHEADERS) $<
+	$(ROOTCINT) -f $@ -c  $<
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	ln -s ../../src/Bmm/RootAnalysis/common/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
+	cd -;
 endif
 
 .PHONY: prep all clean vars
@@ -80,6 +86,16 @@ lib: lib/libUtil.so
 
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
+
+# ======================================================================
+links:
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so  && ln -s ../../src/Bmm/RootAnalysis/common/lib/libUtil.so && cd -
+
+copy:
+	mkdir -p ../../../../lib/$(SCRAM_ARCH)
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so  && cp ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so  . && cd -
+
 
 # -- preparatory setup
 prep:

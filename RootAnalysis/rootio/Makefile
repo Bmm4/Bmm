@@ -13,16 +13,16 @@ ROOTGLIBS     = $(shell $(ROOTSYS)/bin/root-config --glibs)
 ROOT6 = $(shell $(ROOTSYS)/bin/root-config --version)
 ifneq ($(findstring 6.,$(ROOT6)),)
 ROOT6         = "yes"
-else 
+else
 ROOT6         = "no"
 endif
 
 ifdef SCRAM_ARCH
   CXX         := $(shell scramv1 tool info gcc-cxxcompiler | grep CXX= | sed s/CXX=//)
-else 
+else
   ifdef CXXCOMPILER
     CXX         := $(CXXCOMPILER)
-  else 
+  else
     CXX         := c++
   endif
 endif
@@ -50,34 +50,34 @@ $(addprefix obj/,%.o) : %.cc %.hh %.icc
 $(addprefix obj/,%.o) : %.cc %.hh
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
-$(addprefix obj/,%.o) : %.cc 
+$(addprefix obj/,%.o) : %.cc
 	$(CXX) $(CXXFLAGS)  -c $< -o $@
 
 %Dict.cc : %.hh %LinkDef.h
-	$(ROOTCINT) -f $@ -c  $^ 
-#ifneq ($(findstring root/6,$(ROOTSYS)),)
+	$(ROOTCINT) -f $@ -c  $^
+
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	cd -; 
+	cd -;
 endif
 
 %Dict.cc : %.hh
-	$(ROOTCINT) -f $@ -c  $< 
+	$(ROOTCINT) -f $@ -c  $<
 ifeq ($(ROOT6),"yes")
 	mv $(subst Dict.cc,Dict_rdict.pcm,$@) lib
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f $(subst Dict.cc,Dict_rdict.pcm,$@) && \
 	ln -s ../../src/Bmm/RootAnalysis/rootio/lib/$(subst Dict.cc,Dict_rdict.pcm,$@) && \
-	cd -; 
+	cd -;
 endif
 
 .PHONY: prep all clean vars
 
 # ----------------------------------------------------------------------
-all: vars prep lib 
+all: vars prep lib
 
-lib: lib/libAna00.so 
+lib: lib/libAna00.so
 
 lib/libAna00.so: $(addprefix obj/, $(ANA00DICT) $(ANA00))
 	$(CXX) $(SOFLAGS) $(GLIBS) $(addprefix obj/,$(ANA00) $(ANA00DICT)) -o lib/libAna00.so
@@ -86,8 +86,7 @@ lib/libAna00.so: $(addprefix obj/, $(ANA00DICT) $(ANA00))
 links:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so && cd -
-
-
+a
 copy:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so . && cd -
@@ -100,9 +99,9 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT)) 
+	rm -f $(addprefix obj/,$(ANA00) $(ANA00DICT))
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so  *_rdict.pcm && cd - 
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so  *_rdict.pcm && cd -
 	rm -f lib/*
 
 # -- ensure that cmsenv has been run

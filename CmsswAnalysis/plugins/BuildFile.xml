@@ -1,4 +1,4 @@
-<flags   LDFLAGS="-lAna00"/>
+<flags   LDFLAGS="-lAna00 -lUtil"/>
 <library   name="BmmCmsswAnalysisPlugins" file="*.cc">
   <use   name="CondFormats/DataRecord"/>
   <use   name="CondFormats/L1TObjects"/>
