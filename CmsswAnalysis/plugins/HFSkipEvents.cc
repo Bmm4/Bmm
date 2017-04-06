@@ -16,6 +16,9 @@
 #include "FWCore/ParameterSet/interface/ParameterSet.h"
 #include "FWCore/ServiceRegistry/interface/Service.h"
 
+
+#include "Bmm/RootAnalysis/common/JSON.hh"
+
 #include <iostream>
 #include <vector>
 
@@ -35,30 +38,38 @@ private:
 
   int          fVerbose;
 
-  int          filterOnPrimaryVertex; 
+  int          filterOnPrimaryVertex;
   InputTag     fPrimaryVertexCollectionLabel;
+  edm::EDGetTokenT<reco::VertexCollection> fTokenVertex;
 
-  int          filterOnTracks; 
+  int          filterOnTracks;
   InputTag     fTrackCollectionLabel;
 
-  int          filterOnMuons; 
+  int          filterOnMuons;
   InputTag     fMuonCollectionLabel;
 
-  int fNpv, fNtk, fNmu; 
-  int fNfailed, fNpassed; 
-  int fEvent; 
+  int          filterOnJSON;
+  edm::FileInPath fJSONFile;
+  JSON           *fpJSON;
+
+
+  int fNpv, fNtk, fNmu, fNjson;
+  int fNfailed, fNpassed;
+  int fEvent;
 
 };
 
 // ----------------------------------------------------------------------
 HFSkipEvents::HFSkipEvents(const edm::ParameterSet& iConfig):
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
-  filterOnPrimaryVertex(iConfig.getUntrackedParameter<int>("filterOnPrimaryVertex", 1)),
+  filterOnPrimaryVertex(iConfig.getUntrackedParameter<int>("filterOnPrimaryVertex", 0)),
   fPrimaryVertexCollectionLabel(iConfig.getUntrackedParameter<InputTag>("primaryVertexCollectionLabel", edm::InputTag("offlinePrimaryVertices"))),
-  filterOnTracks(iConfig.getUntrackedParameter<int>("filterOnTrackMaximum", 1)),
+  filterOnTracks(iConfig.getUntrackedParameter<int>("filterOnTrackMaximum", 0)),
   fTrackCollectionLabel(iConfig.getUntrackedParameter<InputTag>("TrackCollectionLabel", edm::InputTag("generalTracks"))),
-  filterOnMuons(iConfig.getUntrackedParameter<int>("filterOnMuonMinimum", 1)),
-  fMuonCollectionLabel(iConfig.getUntrackedParameter<InputTag>("MuonCollectionLabel", edm::InputTag("muons")))
+  filterOnMuons(iConfig.getUntrackedParameter<int>("filterOnMuonMinimum", 0)),
+  fMuonCollectionLabel(iConfig.getUntrackedParameter<InputTag>("MuonCollectionLabel", edm::InputTag("muons"))),
+  filterOnJSON(iConfig.getUntrackedParameter<int>("filterOnJson", 0)),
+  fJSONFile(iConfig.getUntrackedParameter<edm::FileInPath>("JSONFile"))
 {
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFSkipEvents constructor" << endl;
@@ -68,11 +79,17 @@ HFSkipEvents::HFSkipEvents(const edm::ParameterSet& iConfig):
   cout << "---  filterOnTrackMaximum:            " << filterOnTracks << endl;
   cout << "---  filterOnMuonMinimum:             " << filterOnMuons << endl;
   cout << "---  TrackCollectionLabel:            " << fTrackCollectionLabel << endl;
+  cout << "---  filterOnJSON:                    " << filterOnJSON << endl;
+  cout << "---  JSONFile:                        " << fJSONFile.fullPath() << endl;
   cout << "----------------------------------------------------------------------" << endl;
 
-  fNpv = fNtk = fNmu = 0; 
-  fEvent = fNfailed = fNpassed = 0; 
-  
+  fpJSON = new JSON(fJSONFile.fullPath().c_str(), 1);
+
+  fNpv = fNtk = fNmu = fNjson = 0;
+  fEvent = fNfailed = fNpassed = 0;
+
+  fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexCollectionLabel);
+
 }
 
 
@@ -84,16 +101,32 @@ HFSkipEvents::~HFSkipEvents() {
 
 
 // ----------------------------------------------------------------------
-bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {    
+bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   bool result(true);
-  ++fEvent; 
+  ++fEvent;
+
+  int run = iEvent.id().run();
+  int ls  = iEvent.luminosityBlock();
+
+  bool goodJson(false);
+  if (filterOnJSON > 0) {
+    goodJson = fpJSON->good(run, ls);
+    if (goodJson) {
+      ++fNjson;
+    } else {
+      result = false;
+    }
+  } else {
+    goodJson = true;
+    ++fNjson;
+  }
 
   edm::Handle<reco::VertexCollection> hVertices;
   int goodVertices(-1);
-  try{ 
+  try{
     iEvent.getByLabel(fPrimaryVertexCollectionLabel, hVertices);
     const reco::VertexCollection vertices = *(hVertices.product());
-    goodVertices = 0; 
+    goodVertices = 0;
     for (unsigned int i = 0; i < vertices.size(); ++i) {
       if (vertices[i].isFake()) {
       } else {
@@ -106,26 +139,30 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   edm::Handle<MuonCollection> hMuons;
   int goodMuons(-1);
-  try{ 
+  try{
     iEvent.getByLabel(fMuonCollectionLabel, hMuons);
     goodMuons = (*(hMuons.product())).size();
   } catch (cms::Exception &ex)  {
     if (fVerbose > 1) cout << "No Muon collection with label " << fMuonCollectionLabel << endl;
   }
-  bool goodMu = (goodMuons >= filterOnMuons);
+  bool goodMu(false);
   if (filterOnMuons > 0) {
+    goodMu = (goodMuons >= filterOnMuons);
     if (goodMu) {
       //      result = true;
       ++fNmu;
     } else {
       result = false;
     }
+  } else {
+    goodMu = true;
+    ++fNmu;
   }
 
 
   edm::Handle<reco::TrackCollection> hTracks;
   int goodTracks(-1);
-  try{ 
+  try{
     iEvent.getByLabel(fTrackCollectionLabel, hTracks);
     goodTracks = (*(hTracks.product())).size();
   } catch (cms::Exception &ex) {
@@ -133,29 +170,36 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   }
 
 
-  bool goodPv = (goodVertices >= filterOnPrimaryVertex);
+  bool goodPv(false);
   if (filterOnPrimaryVertex > 0)  {
+    goodPv = (goodVertices >= filterOnPrimaryVertex);
     if (goodPv) {
-      //      result = true;
       ++fNpv;
     } else {
-      result = false; 
+      result = false;
     }
+  } else {
+    goodPv = true;
+    ++fNpv;
   }
 
-  bool goodTk = (goodTracks < filterOnTracks);
+  bool goodTk(false);
   if (filterOnTracks > 0) {
+    goodTk = (goodTracks < filterOnTracks);
     if (goodTk) {
-      //      result = true;
       ++fNtk;
     } else {
       result = false;
     }
+  } else {
+    ++fNtk;
+    goodTk = true;
   }
 
 
+
   if (fVerbose > 0) {
-    char line[20]; 
+    char line[20];
     sprintf(line, "%7d", fEvent);
     cout << "HFSkipEvents: " << line
 	 << " " << iEvent.id().event()
@@ -163,15 +207,16 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	 << " PV: " << (goodPv?1:0) << "(" << goodVertices << ")"
 	 << " Tk: " << (goodTk?1:0) << "(" << goodTracks << ")"
 	 << " Mu: " << (goodMu?1:0) << "(" << goodMuons << ")"
+	 << " JSON: " << (goodJson?1:0) << "(run/ls = " << run << "/" << ls << ")"
 	 << endl;
   }
 
   if (result) {
-    ++fNpassed; 
+    ++fNpassed;
   } else {
     ++fNfailed;
   }
-  
+
   return result;
 }
 
@@ -184,11 +229,13 @@ void  HFSkipEvents::beginJob() {
 // --------------------------------------------------------------------------------
 void  HFSkipEvents::endJob() {
 
-    cout << "HFSkipEvents: " 
+    cout << "HFSkipEvents: "
 	 << " passed events: " << fNpassed
 	 << " failed events: " << fNfailed
-	 << " fNpv: " << fNpv
+	 << " good fNpv: " << fNpv
 	 << " fNtk: " << fNtk
+	 << " fNmu: " << fNmu
+	 << " fNjson: " << fNjson
 	 << endl;
 
 }
