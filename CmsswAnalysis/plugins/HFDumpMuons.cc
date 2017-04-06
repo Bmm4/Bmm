@@ -170,7 +170,6 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
 
   TAnaMuon *pM = gHFEvent->addMuon();
 
-
   if (rm.innerTrack().isNonnull()) {
     Track trk(*iTrack);
     fillAnaTrack(pM, trk, rm.innerTrack().index(), -2, &fVertexCollection, fMuonCollection, &fBeamSpot);
@@ -223,7 +222,6 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     pM->fGlobalPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
     pM->fNvalidMuonHits = gTrack->hitPattern().numberOfValidMuonHits();
 
-
     pM->fNhitsDT  = gTrack->hitPattern().numberOfValidMuonDTHits();
     pM->fNhitsCSC = gTrack->hitPattern().numberOfValidMuonCSCHits();
     pM->fNhitsRPC = gTrack->hitPattern().numberOfValidMuonRPCHits();
@@ -245,6 +243,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
   if (iTrack.isNonnull()) {
     Track trk(*iTrack);
     pM->fInnerPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
+    pM->fInt1 = iTrack->charge();
     //    cout << " ipt = " << trk.pt() << " " <<  trk.eta() << " "  <<  trk.phi() << endl;
   }
 
@@ -252,6 +251,7 @@ void HFDumpMuons::fillMuon(const reco::Muon& rm, int im) {
     Track trk(*oTrack);
     pM->fOuterPlab.SetPtEtaPhi(trk.pt(), trk.eta(), trk.phi());
     pM->fOuterChi2 = oTrack->normalizedChi2();
+    pM->fInt2      = oTrack->charge();
   }
 
   // -- propagate muons to muon system to get their impact point
