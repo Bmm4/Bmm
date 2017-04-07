@@ -274,8 +274,6 @@ public:
   double  fCandPvDeltaChi2;
   double  fCandOtherVtx;
   // NO: They are filled into the "Jpsi" variables in the derived classes!
-  // // -- dimuon variables
-  // double  fmmMass, fmmChi2, fmmDof, fmmProb, fmmFL3d, fmmFL3dE, fmmFLS3d, fmmFLSxy, fmmCosA, fmmMaxDoca;
 
   double  fOsMuonPt, fOsMuonPtRel, fOsIso, fOsRelIso, fOsMuonDeltaR;
 

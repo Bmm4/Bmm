@@ -74,19 +74,25 @@ $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-$versio
 
 $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-$version.root ; cd - ; ";
 
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-$version.root bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v04.root bmm-mc-Summer16_private-BsToMuMu-v04.root ; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-$version.root bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v04.root bmm-mc-Summer16_private-BdToMuMu-v04.root ; cd - ; ";
+
+
+
 # -----------------------------------------------
 # 2011
 # -----------------------------------------------
 $dataset = "bmmMuOnia2011A";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2011-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2011' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2011 -C cuts/bmmReader.2011' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2011B";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2011-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2011' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2011 -C cuts/bmmReader.2011' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -96,28 +102,28 @@ $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 # -----------------------------------------------
 $dataset = "bmmMuOnia2012A";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2012' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012B";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2012' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012C";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2012' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012D";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2012' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -128,49 +134,49 @@ $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 # -----------------------------------------------
 $dataset = "bmmCharmonium2016B";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016C";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016D";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016E";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016F";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016G";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmCharmonium2016H";
 $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-prompt-Run2016H-Charmonium";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -615,6 +621,24 @@ $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
+$mode = "bmm-mc-$dataset-BdToJpsiKstarHiPt-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-Bd2JpsiKstar -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BsToJpsif0-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-Bs2Jpsif0 -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BsToJpsif0Acc-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-Bs2Jpsif0 -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
 $mode = "bmm-mc-$dataset-BcToJpsiMuNu-$version"; $pattern = "$mode";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-Bc2JpsiMuNu -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
@@ -661,6 +685,12 @@ $mode = "bmm-mc-$dataset-wrongReco-$version"; $pattern = "ToJpsi";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-wrongReco -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | grep -v Bc | grep -v Bu | grep -v Acc > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BuToJpsiPiWrong-$version"; $pattern = "BuToJpsiPi";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.mix-BuToJpsiPiWrong -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern  > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n 250000 c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $mode = "bmm-mc-$dataset-BToJpsi-$version"; $pattern = "BToJpsi";

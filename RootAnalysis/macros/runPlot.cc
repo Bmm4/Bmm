@@ -70,9 +70,6 @@ int main(int argc, char *argv[]) {
   if ("nada" == plot) {
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      files = "plotResults.2016.files";
-      cuts  = "baseCuts.cuts";
-      setup = "";
       plotResults a(dir, files, cuts, setup);
       a.makeAll();
       return 0;
@@ -80,16 +77,12 @@ int main(int argc, char *argv[]) {
 
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      files = "plotResults.2016.files";
-      cuts  = "baseCuts.cuts";
       plotReducedOverlays a(dir, files, cuts, setup);
       a.makeAll();
     }
 
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      files = "plotResults.2016.files";
-      cuts  = "baseCuts.cuts";
       plotStuff a(dir, files, cuts, setup);
       a.makeAll();
     }
@@ -126,9 +119,6 @@ int main(int argc, char *argv[]) {
   // -- stuff
   if (string::npos != plot.find("stuff")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    files = "plotResults.2016.files";
-    cuts  = "baseCuts.cuts";
-    setup = "";
     plotStuff a(dir, files, cuts, setup);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
@@ -141,9 +131,6 @@ int main(int argc, char *argv[]) {
   // -- fake
   if (string::npos != plot.find("fake")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    files = "plotResults.2016.files";
-    cuts  = "baseCuts.cuts";
-    setup = "";
     plotFake a(dir, files, cuts, setup);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
@@ -156,9 +143,6 @@ int main(int argc, char *argv[]) {
   // -- work
   if (string::npos != plot.find("work")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    files = "plotResults.2016.files";
-    cuts  = "baseCuts.cuts";
-    setup = "";
     plotWork a(dir, files, cuts, setup);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {

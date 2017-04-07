@@ -29,7 +29,6 @@ genAnalysis::genAnalysis(TChain *tree, TString evtClassName): treeReader01(tree,
 // ----------------------------------------------------------------------
 genAnalysis::~genAnalysis() {
   cout << "==> genAnalysis: destructor..." << endl;
-
 }
 
 // ----------------------------------------------------------------------
@@ -47,10 +46,33 @@ void genAnalysis::eventProcessing() {
   if (0) printBdecays();
   if (0) bbbarCrossSection();
   if (0) validateLb2PMuNu();
-  if (1) nonPromptJpsi();
+  if (0) nonPromptJpsi();
+  if (1) genKstarMass();
 
 
 
+}
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::genKstarMass() {
+
+  cout << fKstarMass << endl;
+
+  TGenCand *pCand(0);
+  int aid(0);
+  cout << "----------------------------------------------------------------------" << endl;
+  string decay("");
+  bool skip(true);
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    aid = TMath::Abs(pCand->fID);
+    if (313 == aid) {
+      cout << pCand << endl;
+      cout << pCand->fMass << endl;
+      fKstarMass->Fill(pCand->fMass);
+    }
+  }
 }
 
 // ----------------------------------------------------------------------
@@ -516,6 +538,7 @@ void genAnalysis::fillHist() {
 // ----------------------------------------------------------------------
 void genAnalysis::bookHist() {
   cout << "==> genAnalysis: bookHist " << endl;
+  fKstarMass = new TH1D("kstarmass", "", 100, 0.5, 1.5);
 
   new TH1D("h1",   "mu type", 20, 0., 20.);
   new TH1D("h100", "mu pt 0", 100, 0., 20.);

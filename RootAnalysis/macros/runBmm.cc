@@ -351,7 +351,7 @@ void dumpTriggers(string fileName) {
   vector<string> files;
   ifstream INS;
   string sline;
-  INS.open(fileName);
+  INS.open(fileName.c_str());
   while (getline(INS, sline)) {
     string::size_type m1 = sline.rfind(".root ");
     sline = sline.substr(0, m1+6);

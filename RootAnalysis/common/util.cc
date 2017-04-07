@@ -652,8 +652,8 @@ string formatTex(double n, string name, string tag) {
 }
 
 // ----------------------------------------------------------------------
-// -- based on the code downloaded on 216/06/07 from the pubcomm twiki
-//    (fails miserably with the top margin does not adhere to GHM's expectation)
+// -- based on the code downloaded on 2016/06/07 from the pubcomm twiki
+//    (fails miserably when the top margin does not adhere to GHM's expectation)
 void stamp(double x1, string text1, string text1a, double x2, string text2, int iPosX) {
 
   TLatex *tl = new TLatex();

@@ -1,0 +1,16 @@
+TYPE          3000066
+DATACAND       300521
+TRUTHCAND         521
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.cuts
+# -- trigger
++input cuts/triggerMixDisplacedJpsi.cuts
+# -- boxes
++input cuts/boxes.Bu2JpsiK.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts

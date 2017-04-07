@@ -48,6 +48,7 @@ public:
   double       fKaonPtNrf, fKaonEtaNrf;
   int          fKaonTkQuality;
   double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi, fJpsiCosA, fJpsiMaxDoca, fJpsiFLSxy, fJpsiVtxProb;
+  double       fBdJpsiKstarMass;
 
   bool         fGoodJpsiMass;
 

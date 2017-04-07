@@ -68,12 +68,13 @@ public:
   int   fETpi1q,  fETpi2q;
   bool  fETpi1gt, fETpi2gt;
 
-  // -- Additional variables and cuts for Bs -> J/psi phi
+  // -- Additional variables and cuts for Bs -> J/psi f0
   int               F0TYPE;
   double            MPIPILO, MPIPIHI, DELTAR;
   double            ff0DeltaR, fMPiPi;
   bool              fGoodDeltaR, fGoodMPIPI;
 
+  double            fBsJpsiPhiMass;
 
 };
 

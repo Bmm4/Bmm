@@ -10,6 +10,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBs2Jpsif0::candAnaBs2Jpsif0(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBs2Jpsif0");
   fGenPi1Tmi = fGenPi2Tmi = fRecPi1Tmi = fRecPi2Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBs2Jpsif0: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -27,6 +28,31 @@ candAnaBs2Jpsif0::~candAnaBs2Jpsif0() {
 void candAnaBs2Jpsif0::candAnalysis() {
 
   if (0 == fpCand) return;
+
+  // -- check for overlap with a Bs -> J/psi phi candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBsJpsiPhiMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300531 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 4 track overlap, get kstar mass of the other cand
+    if (4 == overlap) {
+      fBsJpsiPhiMass = pC->fMass;
+    }
+  }
 
   // -- Check for J/psi mass
   TAnaCand *pD = 0;
@@ -76,15 +102,15 @@ void candAnaBs2Jpsif0::candAnalysis() {
   }
 
   if (0 == p1) {
-    cout << "candAnaBs2Jpsif0::candAnalysis  no kaon 1 found " << endl;
+    cout << "candAnaBs2Jpsif0::candAnalysis  no pion 1 found " << endl;
     return;
   }
   if (0 == p2) {
-    cout << "candAnaBs2Jpsif0::candAnalysis  no kaon 2 found " << endl;
+    cout << "candAnaBs2Jpsif0::candAnalysis  no pion 2 found " << endl;
     return;
   }
 
-  // -- order the kaons according to (refitted) track pT
+  // -- order the pions according to (refitted) track pT
   if (p2->fRefPlab.Perp() > p1->fRefPlab.Perp()) {
     p0 = p2;
     p2 = p1;
@@ -132,28 +158,23 @@ void candAnaBs2Jpsif0::candAnalysis() {
   ff0Eta  = f0Cand.Eta();
   ff0Phi  = f0Cand.Phi();
 
-  fGoodDeltaR   = (fDeltaR < DELTAR);
+  fGoodDeltaR   = (ff0DeltaR < DELTAR);
   fGoodMPIPI    = ((MPIPILO < fMPiPi ) && (fMPiPi < MPIPIHI));
 
   candAna::candAnalysis();
 
-  fGoodTracks    = fGoodTracks    && fPi1TkQuality && fPi2TkQuality;
-  fGoodTracksPt  = fGoodTracksPt
-    && ((fPi1Pt > TRACKPTLO) && (fPi1Pt > TRACKPTHI))
-    && ((fPi2Pt > TRACKPTLO) && (fPi2Pt > TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta
-    && (fPi1Eta > TRACKETALO) && (fPi1Eta < TRACKETAHI)
-    && (fPi2Eta > TRACKETALO) && (fPi2Eta < TRACKETAHI)
-    ;
-
-
-  fPreselection = fPreselection && fGoodJpsiMass && fGoodMPIPI && fGoodDeltaR && fGoodTracksPt;
-  fPreselection = fPreselection && fWideMass;
 
   // -- overwrite specific variables
   fCandChi2    = chi2;
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
+
+  fGoodTracks    = fGoodTracks    && fPi1TkQuality && fPi2TkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fPi1Pt)  && (fPi1Pt < TRACKPTHI)   && (TRACKPTLO < fPi2Pt)   && (fPi2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fPi1Eta) && (fPi1Eta < TRACKETAHI) && (TRACKETALO < fPi2Eta) && (fPi2Eta < TRACKETAHI);
+
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodMPIPI && fGoodDeltaR && fGoodTracksPt && fGoodTracksEta;
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
@@ -518,6 +539,7 @@ void candAnaBs2Jpsif0::moreReducedTree(TTree *t) {
   t->Branch("f0eta", &ff0Eta,     "f0eta/D");
   t->Branch("f0phi", &ff0Phi,     "f0phi/D");
   t->Branch("f0dr",  &ff0DeltaR,  "f0dr/D");
+  t->Branch("mbspsiphi", &fBsJpsiPhiMass,  "mbspsiphi/D");
 
 
 

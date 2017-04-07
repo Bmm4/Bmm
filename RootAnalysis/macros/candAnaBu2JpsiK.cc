@@ -11,6 +11,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaBu2JpsiK::candAnaBu2JpsiK(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaBu2JpsiK");
   fGenK1Tmi = fRecK1Tmi = -1;
   BLIND = 0;
   cout << "==> candAnaBu2JpsiK: name = " << name << ", reading cutsfile " << cutsFile << endl;
@@ -40,8 +41,35 @@ void candAnaBu2JpsiK::candAnalysis() {
     }
   }
 
+  // -- check for overlap with a Bd -> J/psi Kstar (300511) candidate
+  vector<int> idx0, idx1;
+  getSigTracks(idx0, fpCand);
+  int overlap(0);
+  fBdJpsiKstarMass = -99.;
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pC = fpEvt->getCand(iC);
+    if (300511 != pC->fType) continue;
+    idx1.clear();
+    getSigTracks(idx1, pC);
+    // -- check for the same tracks
+    overlap = 0;
+    for (unsigned int i0 = 0; i0 < idx0.size(); ++i0) {
+      for (unsigned int i1 = 0; i1 < idx1.size(); ++i1) {
+	if (idx0[i0] == idx1[i1]) {
+	  ++overlap;
+	}
+      }
+    }
+    // -- if all 3 track overlap, get kstar mass of the other cand
+    if (3 == overlap) {
+      fBdJpsiKstarMass = pC->fMass;
+    }
+  }
+
+
   if (0 == pk) {
     cout << "candAnaBu2JpsiK::candAnalysis:  no kaon found " << endl;
+    fCandM = -98.;
     return;
   }
 
@@ -61,31 +89,13 @@ void candAnaBu2JpsiK::candAnalysis() {
     fKEtaGen    = -99.;
   }
 
-  fKa1Missid = tightMuon(pk);  // true for tight  muons
-  fKa1MuMatch = doTriggerMatching(pk, false,false); // see if it matches HLT muon
-
-#ifdef NEW_MATCHING
-  // match to all trigger particles (use this to select trigger bias)
-  fKa1MuMatchR = doTriggerMatchingR(pk, false, false); // matches only selected HLT path
-  fKa1MuMatchR2 = doTriggerMatchingR(pk, true, false); // matches any passed HLT path
-
-  // match to muon trigger particles  only, testing
-  //fKa1MuMatchR = doTriggerMatchingR(pk, false, true); // matches only selected HLT path
-  //fKa1MuMatchR2 = doTriggerMatchingR(pk, true, true); // matches any passed HLT path
-
-  //cout<<" match kaon "<<fKaonPt<<" "<<fKa1Missid<<" "<<fKa1MuMatch
-  //  <<" "<<fKa1MuMatchR<<" "<<fKa1MuMatchR2<<endl;
-#else
-  fKa1MuMatchR = doTriggerMatchingR_OLD(pk, false); // see if it matches HLT muon
-#endif
-
   // -- Check for J/psi mass
   //cout<<" check jpsi "<<endl;
 
   TAnaCand *pD = 0;
   fGoodJpsiMass = false;
   double chi2(0.);
-  double ndof(0.), masse(0.);
+  double ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
     if (i < 0) break;
     pD = fpEvt->getCand(i);
@@ -104,46 +114,23 @@ void candAnaBu2JpsiK::candAnalysis() {
 
       chi2 = pD->fVtx.fChi2;
       ndof = pD->fVtx.fNdof;
-      masse = pD->fMassE;
       break;
     }
   }
 
-  fGoodJpsiCuts = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
-
   candAna::candAnalysis();
+
   // -- overwrite some variables
   fCandChi2  = chi2;
   fCandDof   = ndof;
   fCandChi2Dof = chi2/ndof;
-  fCandME      = masse;
 
   fGoodTracks    = fGoodTracks    && fKaonTkQuality;
-  fGoodTracksPt  = fGoodTracksPt  && ((fKaonPt > TRACKPTLO));
-  fGoodTracksEta = fGoodTracksEta && (fKaonEta > TRACKETALO) && (fKaonEta < TRACKETAHI);
-
-  fPreselection  = fPreselection && fGoodJpsiMass && fGoodTracksPt;
-  fPreselection  = fPreselection && fWideMass;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt) && (fKaonPt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaonEta) && (fKaonEta < TRACKETAHI));
 
   fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
-
-  if(0) { // special misid tests d.k.
-
-    TVector3 trackMom = pk->fPlab;  // test track momentum
-    TVector3 muonMom;
-    muonMom = fpMuon1->fPlab;
-    double dR1 = muonMom.DeltaR(trackMom);
-    muonMom = fpMuon2->fPlab;
-    double dR2 = muonMom.DeltaR(trackMom);
-
-    if( (pk->fIndex == fpMuon1->fIndex) || (pk->fIndex ==fpMuon2->fIndex) )
-      cout<<" Kaon is a MUON "<<fEvt<<" "<<fpCand<<" "<<pk->fIndex<<" "<<fpMuon1->fIndex<<" "<<fpMuon2->fIndex<<" "<<fEvt<<" "<<dR1<<" "<<dR2<<endl;
-
-    //if(dR1<dR2) { fKa1MuMatchR4 = dR1; fKa1MuMatchR6 = dR2;}
-    //else        { fKa1MuMatchR4 = dR2; fKa1MuMatchR6 = dR1;}
-
-  } // end testing
-
+  fGoodJpsiCuts   = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(3);
@@ -475,6 +462,7 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("psimaxdoca",  &fJpsiMaxDoca, "psimaxdoca/D");
   t->Branch("psiflsxy",    &fJpsiFLSxy,   "psiflsxy/D");
   t->Branch("psiprob",     &fJpsiVtxProb, "psiprob/D");
+  t->Branch("bdpsikstarmass", &fBdJpsiKstarMass, "bdpsikstarmass/D");
 
   t->Branch("kpt",  &fKaonPt,        "kpt/D");
   t->Branch("keta", &fKaonEta,       "keta/D");

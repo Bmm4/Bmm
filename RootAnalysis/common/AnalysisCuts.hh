@@ -35,8 +35,9 @@ class AnalysisCuts: public TObject {
 
 public:
 
-  AnalysisCuts();
+  AnalysisCuts(TString name = "");
   ~AnalysisCuts();
+  void setAcName(TString name) {fAcName = name;}
   void dumpAll();
 
   int getIndex(const char *name);
@@ -69,6 +70,7 @@ private:
 
   int fNcuts;
   int fUpdated;
+  TString fAcName;
   TString fCutName[MAXCUTS];
   TString fDescription[MAXCUTS];
   bool    fCutValue[MAXCUTS];

@@ -63,10 +63,12 @@ plotWork::~plotWork() {
 // ----------------------------------------------------------------------
 string plotWork::removeVarFromSelection(string var, string selection) {
   // this will split on &, not on &&. So every second element in cuts is empty
+  cout << "remove var ->" << var << "<-" << endl;
   vector<string> cuts = split(selection, '&');
   string redcuts("");
   for (unsigned int i = 0; i < cuts.size(); ++i) {
     if (cuts[i] == "") continue;
+    cout << "cuts[i]= ->" << cuts[i] << "<-" << endl;
     if ((string::npos == cuts[i].find(" "+var+"<")) && (string::npos == cuts[i].find(" "+var+">"))) {
       redcuts += cuts[i];
       if (i < cuts.size()-1) redcuts += " && ";
@@ -112,10 +114,10 @@ string plotWork::selectionString(int imode, int itrig) {
   } else if (2 == itrig) {
     selection += " && tis";
   } else if (3 == itrig) {
-    selection += " && hlt";
+    selection += " && hlt1 && tos";
   }
 
-  if (fSample.find("psi")) {
+  if (string::npos != fSample.find("psi")) {
     selection += " && psimaxdoca<0.5 && mpsi>2.9 && mpsi<3.3 && psipt>6.9";
   }
 
@@ -219,23 +221,6 @@ void plotWork::makeAll(string what) {
       fitStudies("bspsiphiData", Form("ptk2%d", i), ndata);
       fitStudies("bspsiphiMc", Form("ptk2%d", i), nmc);
     }
-  }
-
-
-  if (string::npos != what.find("wrongreco")) {
-    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBu", "hlt");
-    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03 && k1pt > 0.7 && k2pt > 0.7");
-    wrongReco("bcpsimunuMc", "candAnaMuMu", "");
-
-    plotWrongReco("alpha", 50, 0., 0.1, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("closetrk", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("iso", 51, 0., 1.01, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("pvip", 50, 0., 0.02, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("pvips", 50, 0., 4., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("closetrks1", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("closetrks2", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("closetrks3", 20, 0., 20., "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
-    plotWrongReco("docatrk", 100, 0., 0.02, "", "wrongReco", "candAnaBd2JpsiKstarAsBu", "bupsikMc", "candAnaBu2JpsiK");
   }
 
   if (what == "relval") {
@@ -484,133 +469,6 @@ void plotWork::plotL1Seeds(std::string dsname) {
 }
 
 
-// ----------------------------------------------------------------------
-void plotWork::plotWrongReco(string var, int nbin, double min, double max, string selection,
-			     string wds, string wdir, string cds, string cdir) {
-
-  string name = var + wds + wdir;
-  TH1D *h1 = new TH1D(name.c_str(), name.c_str(), nbin, min, max);
-  setFilledHist(h1, kRed, kRed, 3365);
-  setTitles(h1, fVarToTex[var].c_str(), "Entries / Bin", 0.05, 1.2, 1.5, 0.05, 52);
-  TTree *t = getTree(wds, wdir);
-  t->Draw(Form("%s>>%s", var.c_str(), name.c_str()), selection.c_str());
-
-  name = var + cds + cdir;
-  TH1D *h2 = new TH1D(name.c_str(), name.c_str(), nbin, min, max);
-  setFilledHist(h2, kBlue, kBlue, 3354);
-  setTitles(h2, fVarToTex[var].c_str(), "Entries / Bin", 0.05, 1.2, 1.5, 0.05, 52);
-  t = getTree(cds, cdir);
-  t->Draw(Form("%s>>%s", var.c_str(), name.c_str()), selection.c_str());
-
-  double int1 = h1->Integral();
-  double int2 = h2->Integral();
-  h1->Scale(1./int1);
-  h2->Scale(1./int2);
-
-  double ymax(h1->GetMaximum());
-  if (h2->GetMaximum() > ymax) ymax = h2->GetMaximum();
-  ymax *= 1.2;
-
-  shrinkPad(0.15, 0.18);
-  h1->SetMaximum(ymax);
-  h1->Draw();
-  h2->Draw("samehist");
-
-  // setRoman();
-  setItalic();
-  tl->DrawLatexNDC(0.2, 0.92, Form("%s candidates", fDS[cds]->fName.c_str()));
-
-  string wrg("bdpsikstarMc");
-
-  newLegend(0.55, 0.7, 0.75, 0.87);
-  legg->SetHeader("true decay");
-  legg->SetTextSize(0.04);
-  legg->AddEntry(h1, fDS[wrg]->fName.c_str(), "f");
-  legg->AddEntry(h2, fDS[cds]->fName.c_str(), "f");
-  legg->Draw();
-
-  savePad(Form("plotWrongReco_%s_%s_%s.pdf", var.c_str(), wds.c_str(), cds.c_str()));
-}
-
-
-
-// ----------------------------------------------------------------------
- void plotWork::wrongReco(string ds1, string mode, string selection) {
-
-  setItalic();
-
-  string mapname = ds1 + "-" + mode.substr(string("candAna").size());
-  cout << "==> mapname: " << mapname << endl;
-  map<string, string> dirs;
-  dirs.insert(make_pair(mapname, "B^{0} #rightarrow J/#it{#psi}K^{*0}"));
-  dirs.insert(make_pair(mapname, "B^{0} #rightarrow J/#it{#psi}K^{*0}"));
-  dirs.insert(make_pair(mapname, "B_{c} #rightarrow J/#it{#psi#mu#nu}"));
-
-  //  //  dirs.insert(make_pair("candAnaBs2JpsiPhiAsBd",   "B^{0}_{s} #rightarrow J/#it{#psi}#it{#phi}"));
-  //  //  dirs.insert(make_pair("candAnaBs2JpsiPhiAsBu",   "B^{0}_{s} #rightarrow J/#it{#psi}#it{#phi}"));
-
-
-  shrinkPad(0.15, 0.2);
-  string name(Form("H1_%s", mapname.c_str()));
-  string xtitle("m_{#it{#mu#mu} K^{+}} #it{[GeV]}");
-  if (string::npos != mapname.find("AsBs")) xtitle = "m_{#it{#mu#mu} K^{+}K^{-}} #it{[GeV]}";
-  if (string::npos != mapname.find("bc")) xtitle = "m_{#it{#mu#mu}} #it{[GeV]}";
-  TH1D *h1 = new TH1D(name.c_str(), name.c_str(), 100, 5.0, 6.0);
-  setTitles(h1, xtitle.c_str(), "Entries / Bin", 0.05, 1.2, 2.0, 0.05, 52);
-  TTree *t = getTree(ds1, mode);
-  t->Draw(Form("m>>%s", name.c_str()), selection.c_str());
-  tl->DrawLatexNDC(0.2, 0.92, dirs[mapname].c_str());
-
-  if (mode == "candAnaBd2JpsiKstarAsBu") {
-    TF1 *f1 = fIF->expoErr(5.0, 6.0);
-    double preco(5.145);
-    double e0(preco),  e0Min(preco-0.01), e0Max(preco+0.01);
-    double e1(0.075),  e1Min(0.050), e1Max(0.100);
-    double e2(1.15), e2Min(1.05),  e2Max(1.25);
-    double e3(h1->GetMaximum());
-    double p0, p1;
-    fIF->fLo = 5.25;
-    fIF->fHi = 5.6;
-    fIF->initExpo(p0, p1, h1);
-
-    f1->SetParameters(p0, p1, e0, e1, e2, e3);
-    f1->FixParameter(0, p0);
-    f1->SetLineWidth(2);
-    fIF->fLo = 5.0;
-    fIF->fHi = 6.0;
-    h1->Fit(f1, "lr", "", 5.02, 6.0);
-  }
-
-  if (mode == "candAnaBd2JpsiKstarAsBs") {
-    fIF->fLo = 5.0;
-    fIF->fHi = 6.0;
-    //      TF1 *f1 = fIF->pol1Landau(h1, 5.4, 0.1);
-    //      TF1 *f1 = fIF->pol1gauss(h1, 5.4, 0.1);
-    TF1 *f1 = fIF->pol1gauss2(h1, 5.4, 0.1, 0.05, 0.05);
-
-    f1->SetLineWidth(2);
-    h1->Fit(f1, "lr", "", 5.0, 6.0);
-  }
-
-  if (mode == "candAnaMuMu") {
-    fIF->fLo = 5.0;
-    fIF->fHi = 6.0;
-    //      TF1 *f1 = fIF->pol1Landau(h1, 5.4, 0.1);
-    //      TF1 *f1 = fIF->pol1gauss(h1, 5.4, 0.1);
-    TF1 *f1 = fIF->expo(h1);
-
-    f1->SetLineWidth(2);
-    h1->Fit(f1, "lr", "", 5.0, 6.0);
-  }
-
-  tl->SetTextAngle(90.);
-  setRoman();
-  tl->DrawLatexNDC(0.95, 0.17, selection.c_str());
-  tl->SetTextAngle(0.);
-
-  savePad(Form("wrongReco-%s.pdf", mapname.c_str()));
-}
-
 
 
 
@@ -812,8 +670,10 @@ void plotWork::refTrgEfficiency(string selection, string dsname) {
 void plotWork::efficiencyVariable(string var, string effvar, int iselection, int nbin, double xmin, double xmax, string dsname) {
 
   fSample = dsname;
+  cout << "==> plotWork::efficiencyVariable> sample = " << fSample << endl;;
+  cout << "==> plotWork::efficiencyVariable> orig selection =  " << selectionString(iselection, 0) << endl;
   string selection = removeVarFromSelection(var, selectionString(iselection, 0));
-  cout << "==> plotWork::efficiencyVariable> selection = " << selection << endl;
+  cout << "==> plotWork::efficiencyVariable> adap selection = " << selection << endl;
 
   if (var == "all") {
     var = "m1pt";     efficiencyVariable(var, effvar, iselection, 40,   0.,  40., dsname);
@@ -841,7 +701,7 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
   fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
   cout << " opened " << endl;
 
-  string dir("");
+  string dir("candAnaMuMu");
   if (string::npos != dsname.find("bupsik")) {
     dir = "candAnaBu2JpsiK";
   }
@@ -850,6 +710,8 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
   if (0 == t) {
     cout << "tree for sample = " << fSample << " not found" << endl;
     return;
+  } else {
+    cout << "tree for sample = " << fSample << " found" << endl;
   }
 
   gStyle->SetHatchesLineWidth(2);
@@ -897,6 +759,93 @@ void plotWork::efficiencyVariable(string var, string effvar, int iselection, int
   fHistFile->Close();
 
 }
+
+
+
+// ----------------------------------------------------------------------
+void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
+
+
+  if (cuts == "all") {
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4", "m2pt4eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>5", "m2pt5eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6", "m2pt6eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>7", "m2pt7eta14");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4&&fls3d>10&&alpha<0.05&&iso>0.8", "m2pt4eta14alphafls3diso");
+    bmm5Trigger("gmugmid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6&&fls3d>10&&alpha<0.05&&iso>0.8", "m2pt6eta14alphafls3diso");
+
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4", "gmuidm2pt4eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>5", "gmuidm2pt5eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6", "gmuidm2pt6eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>7", "gmuidm2pt7eta14");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>4&&fls3d>10&&alpha<0.05&&iso>0.8", "gmuidm2pt4eta14alphafls3diso");
+    bmm5Trigger("gmuid&&TMath::Abs(m1eta)<1.4&&TMath::Abs(m2eta)<1.4&&m2pt>6&&fls3d>10&&alpha<0.05&&iso>0.8", "gmuidm2pt6eta14alphafls3diso");
+
+
+    return;
+  }
+
+  std::ofstream TEX;
+  TEX.open("bmm5Trigger.tex", ios::app);
+
+  vector<string> seeds;
+  if (1) {
+    seeds.push_back("L1_DoubleMu7_OS");
+    seeds.push_back("L1_DoubleMu_13_6");
+    seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8");
+    seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8_OS");
+    seeds.push_back("L1_DoubleMu0er1p2_dEta_Max1p8_OS");
+    seeds.push_back("L1_DoubleMu0er1p2_OS_MASS0to10");
+    seeds.push_back("L1_DoubleMu0er1p4_dR0to1p8_OS");
+    seeds.push_back("L1_DoubleMu6_OS_MASS0to10");
+
+    seeds.push_back("L1_DoubleMu6_OS_dR0to1");
+    seeds.push_back("L1_DoubleMu0er1p4_OS_MASS0to10");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p4_OS");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p2_OS");
+    seeds.push_back("L1_DoubleMu0er1p4_dR_0to1p0_OS");
+
+    seeds.push_back("L1_DoubleMu0");
+    seeds.push_back("L1_DoubleMu0_bph1");
+    seeds.push_back("L1_DoubleMu0_bph2");
+    seeds.push_back("L1_DoubleMu0_bph3");
+    seeds.push_back("L1_DoubleMu0_bph4");
+    seeds.push_back("L1_DoubleMu0_bph5");
+    seeds.push_back("L1_DoubleMu0_bph6");
+    seeds.push_back("L1_DoubleMu0_bph7");
+    seeds.push_back("L1_DoubleMu0_bph8");
+  }
+
+  TFile *f(0);
+  TTree *t(0);
+  for (unsigned int i = 0; i < seeds.size(); ++i) {
+    string fname = Form("T1-rerunHLT-BsToMuMu-%s.bmmReader.mix-Bs2MuMu.root", seeds[i].c_str());
+    f = TFile::Open(fname.c_str());
+    t = (TTree*)(f->Get("candAnaMuMu/events"));
+    if (0 == t) {
+      cout << "tree not found in " << fname;
+      continue;
+    }
+    double norm = t->Draw("m", cuts.c_str(), "goff");
+    string pcuts = cuts + "&&hlt1&&tos";
+    double pass = t->Draw("m", pcuts.c_str(), "goff");
+    double effV = pass/norm;
+    double effE = dEff(static_cast<int>(pass), static_cast<int>(norm));
+    cout << "seed: " << seeds[i] << " eff: " << effV << " +/- " <<  effE << " " << texname << endl;
+    string useed = seeds[i];
+    replaceAll(useed, "_", "\\%");
+    replaceAll(useed, "%", "_");
+    TEX << Form("\\vdef{%s:%s:seed}   {\\tt %s } ",  seeds[i].c_str(), texname.c_str(), useed.c_str()) << endl;
+    TEX << formatTex(effV, Form("%s:%s:val", seeds[i].c_str(), texname.c_str()), 3) << endl;
+    TEX << formatTex(effE, Form("%s:%s:err", seeds[i].c_str(), texname.c_str()), 3) << endl;
+    f->Close();
+  }
+
+  TEX.close();
+
+}
+
+
 
 // ----------------------------------------------------------------------
 void plotWork::fitStudies(string dsname, string tag, int nevt, int nstart) {
@@ -1291,103 +1240,369 @@ void plotWork::loopFunction1() {
 // ----------------------------------------------------------------------
 void plotWork::ups1(std::string file1, std::string file2) {
   for (int i = 0; i < 20; ++i) {
-    fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta| < %3.1f", i*0.1, (i+1)*0.1), 90, 4.9, 5.8));
-    fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta| < %3.1f", i*0.1, (i+1)*0.1), 90, 4.9, 5.8));
+    fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+    fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
   }
 
   TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
   TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
 
   setupTree(t0);
-  fDBX = 0;
-  loopOverTree(t0, 2);
+  fSetupInt = 0;
+  loopOverTree(t0, 2, 1.e5);
 
-  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmm-v04-0000.bmmReader.mix-Bs2MuMu.root");
+  //  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmm-v04-0000.bmmReader.mix-Bs2MuMu.root");
+  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmmExtended.root");
   cout << "f1 = " << f1 << endl;
   TTree *t1 = (TTree*)f1->Get("candAnaMuMu/events");
   cout << "t1 = " << t1 << endl;
 
-  fDBX = 1;
+  fSetupInt = 1;
   setupTree(t1);
-  loopOverTree(t1, 2);
+  loopOverTree(t1, 2, 1.e5);
+
+  gStyle->SetOptFit(0);
 
   shrinkPad(0.15, 0.19);
   double eps(0.01);
-  TH1D *h1 = new TH1D("mass0", "Run 2", 20, 0., 2.0); h1->Sumw2();
-  TH1D *h2 = new TH1D("mass1", "Phase 2", 20, 0.+eps, 2.0+eps); h2->Sumw2();
-  TH1D *s1 = new TH1D("rms0", "Run 2", 20, 0., 2.0); h1->Sumw2();
-  TH1D *s2 = new TH1D("rms1", "Phase 2", 20, 0.+eps, 2.0+eps); h2->Sumw2();
+  TH1D *h1 = new TH1D("mass0", "Run 2", 20, 0., 4.0); h1->Sumw2();
+  TH1D *h2 = new TH1D("mass1", "Phase 2", 20, 0.+eps, 4.0+eps); h2->Sumw2();
+  TH1D *s1 = new TH1D("rms0", "Run 2", 20, 0., 4.0); h1->Sumw2();
+  TH1D *s2 = new TH1D("rms1", "Phase 2", 20, 0.+eps, 4.0+eps); h2->Sumw2();
+  TH1D *p1 = new TH1D("peak0", "Run 2", 20, 0., 4.0); p1->Sumw2();
+  TH1D *p2 = new TH1D("peak1", "Phase 2", 20, 0.+eps, 4.0+eps); p2->Sumw2();
+  TH1D *w1 = new TH1D("sigma0", "Run 2", 20, 0., 4.0); w1->Sumw2();
+  TH1D *w2 = new TH1D("sigma1", "Phase 2", 20, 0.+eps, 4.0+eps); w2->Sumw2();
   for (int i = 0; i < 20; ++i) {
     cout << "mass = " << fHmass0[i]->GetMean() << " RMS = " << fHmass0[i]->GetRMS() << endl;
     h1->SetBinContent(i+1, fHmass0[i]->GetMean());
-    h1->SetBinError(i+1, fHmass0[i]->GetRMS());
+    h1->SetBinError(i+1, fHmass0[i]->GetMeanError());
     s1->SetBinContent(i+1, fHmass0[i]->GetRMS());
+    s1->SetBinError(i+1, fHmass0[i]->GetRMSError());
 
     cout << "mass = " << fHmass1[i]->GetMean() << " RMS = " << fHmass1[i]->GetRMS() << endl;
     h2->SetBinContent(i+1, fHmass1[i]->GetMean());
-    h2->SetBinError(i+1, fHmass1[i]->GetRMS());
+    h2->SetBinError(i+1, fHmass1[i]->GetMeanError());
     s2->SetBinContent(i+1, fHmass1[i]->GetRMS());
+    s2->SetBinError(i+1, fHmass1[i]->GetRMSError());
 
     setFilledHist(fHmass0[i], kBlue, kBlue, 3365);
     setFilledHist(fHmass1[i], kRed, kRed, 3354);
+
+    // -- do the fitting before the scaling
+    double peak0V(0.),  peak0E(0.),  peak1V(0.),  peak1E(0.);
+    double sigma0V(0.), sigma0E(0.), sigma1V(0.), sigma1E(0.);
+    if (fHmass1[i]->GetSumOfWeights() > 0.) {
+      fHmass1[i]->Fit("gaus", "r0", "", 5.37 - fHmass1[i]->GetRMS(), 5.37 + fHmass1[i]->GetRMS());
+      peak1V  = fHmass1[i]->GetFunction("gaus")->GetParameter(1);
+      peak1E  = fHmass1[i]->GetFunction("gaus")->GetParError(1);
+      sigma1V = fHmass1[i]->GetFunction("gaus")->GetParameter(2);
+      sigma1E = fHmass1[i]->GetFunction("gaus")->GetParError(2);
+      fHmass1[i]->GetFunction("gaus")->SetLineColor(kRed);
+      p2->SetBinContent(i+1, peak1V);
+      p2->SetBinError(i+1, peak1E);
+      w2->SetBinContent(i+1, sigma1V);
+      w2->SetBinError(i+1, sigma1E);
+    }
+    if (fHmass0[i]->GetSumOfWeights() > 0.) {
+      fHmass0[i]->Fit("gaus", "r0", "", 5.37 - fHmass0[i]->GetRMS(), 5.37 + fHmass0[i]->GetRMS());
+      peak0V  = fHmass0[i]->GetFunction("gaus")->GetParameter(1);
+      peak0E  = fHmass0[i]->GetFunction("gaus")->GetParError(1);
+      sigma0V = fHmass0[i]->GetFunction("gaus")->GetParameter(2);
+      sigma0E = fHmass0[i]->GetFunction("gaus")->GetParError(2);
+      fHmass0[i]->GetFunction("gaus")->SetLineColor(kBlue);
+      p1->SetBinContent(i+1, peak0V);
+      p1->SetBinError(i+1, peak0E);
+      w1->SetBinContent(i+1, sigma0V);
+      w1->SetBinError(i+1, sigma0E);
+    }
+
     if (fHmass0[i]->GetSumOfWeights() > 0.) fHmass0[i]->Scale(1./fHmass0[i]->GetSumOfWeights());
     if (fHmass1[i]->GetSumOfWeights() > 0.) fHmass1[i]->Scale(1./fHmass1[i]->GetSumOfWeights());
+
+    fHmass1[i]->SetMaximum(1.2*fHmass1[i]->GetMaximum()/fHmass1[i]->GetSumOfWeights());
     fHmass1[i]->Draw();
     fHmass0[i]->Draw("same");
-    tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.70, Form("RMS: %4.2f MeV", fHmass0[i]->GetRMS()));
-    tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.2, 0.65, Form("RMS: %4.2f MeV", fHmass1[i]->GetRMS()));
+
+    tl->SetTextSize(0.04); tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.2, 0.92, Form("%s", fHmass0[i]->GetTitle()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.80, Form("RMS: %4.3f MeV", fHmass0[i]->GetRMS()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.76, Form("peak: %5.4f MeV", peak0V));
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.70, Form("RMS: %4.3f MeV", fHmass1[i]->GetRMS()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.66, Form("peak: %5.4f MeV", peak1V));
     savePad(Form("ups1-mass-bin%d.pdf", i));
   }
 
   c0->Clear();
-  setHist(h1, kBlue, 24);
-  setHist(h2, kRed, 25);
-  h1->SetMinimum(5.2);
-  h1->SetMaximum(5.5);
-  setTitles(h1, "#it{|}#eta#it{|}", "m_{#mu #mu} #it{[GeV]}", 0.05, 1.1, 1.6);
+  setHist(p1, kBlue, 24, 1.2);
+  setHist(p2, kRed, 25, 1.2);
+  p1->SetMinimum(5.3);
+  p1->SetMaximum(5.4);
+  setTitles(p1, "#it{|}#eta_{#it{f}}#it{|}", "#it{MPV}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
+  p1->Draw("e");
+  p2->Draw("esame");
+
+  tl->SetTextColor(kBlack);
+  stamp(0.25, "CMS Phase-2 ", "Simulation Preliminary", 0., "");
+  newLegend(0.25, 0.32, 0.45, 0.42);
+  legg->SetTextSize(0.04);
+  legg->AddEntry(p1,  "Run 2", "p");
+  legg->AddEntry(p2, "Phase 2", "p");
+  legg->Draw();
+
+  savePad(Form("ups1-massMPV-vsEta.pdf"));
+
+
+  c0->Clear();
+  setHist(w1, kBlue, 24, 1.2);
+  setHist(w2, kRed, 25, 1.2);
+  w1->SetMinimum(0.);
+  w1->SetMaximum(0.22);
+  setTitles(w1, "#it{|}#eta_{#it{f}}#it{|}", "#sigma(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
+  w1->Draw("e");
+  w2->Draw("esame");
+
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.25, 0.52, 0.45, 0.62);
+  legg->SetTextSize(0.04);
+  legg->AddEntry(w1,  "Run 2", "p");
+  legg->AddEntry(w2, "Phase 2", "p");
+  legg->Draw();
+
+  savePad(Form("ups1-massSigma-vsEta.pdf"));
+
+
+  c0->Clear();
+  setHist(h1, kBlue, 24, 1.2);
+  setHist(h2, kRed, 25, 1.2);
+  h1->SetMinimum(5.3);
+  h1->SetMaximum(5.4);
+  setTitles(h1, "#it{|}#eta_{#it{f}}#it{|}", "#it{mean}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
   h1->Draw("e");
   h2->Draw("esame");
 
-  newLegend(0.5, 0.75, 0.8, 0.85);
-  legg->SetTextSize(0.05);
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.25, 0.32, 0.45, 0.42);
+  legg->SetTextSize(0.04);
   legg->AddEntry(h1,  "Run 2", "p");
   legg->AddEntry(h2, "Phase 2", "p");
   legg->Draw();
 
-  savePad(Form("ups1-mass-vsEta.pdf"));
+  savePad(Form("ups1-massMean-vsEta.pdf"));
+
 
   c0->Clear();
-  setHist(s1, kBlue, 24);
-  setHist(s2, kRed, 25);
-  setTitles(s1, "#it{|}#eta#it{|}", "RMS(m_{#mu #mu}) #it{[GeV]}", 0.05, 1.1, 1.7);
+  setHist(s1, kBlue, 24, 1.2);
+  setHist(s2, kRed, 25, 1.2);
+  setTitles(s1, "#it{|}#eta_{#it{f}}#it{|}", "#it{RMS}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.7);
   s1->SetMinimum(0.);
-  s1->SetMaximum(0.1);
-  s1->Draw("hist");
-  s2->Draw("histsame");
+  s1->SetMaximum(0.22);
+  s1->Draw("e");
+  s2->Draw("esame");
 
-  newLegend(0.25, 0.7, 0.45, 0.85);
-  legg->SetTextSize(0.05);
-  legg->AddEntry(s1,  "Run 2", "l");
-  legg->AddEntry(s2, "Phase 2", "l");
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.25, 0.52, 0.45, 0.62);
+  legg->SetTextSize(0.04);
+  legg->AddEntry(s1,  "Run 2", "p");
+  legg->AddEntry(s2, "Phase 2", "p");
   legg->Draw();
 
   savePad(Form("ups1-massRms-vsEta.pdf"));
 }
 
+
+
+// ----------------------------------------------------------------------
+void plotWork::ups2(std::string file1, std::string file2) {
+
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+
+  TH1D *h = (TH1D*)fHistFile->Get("HBd0_1");
+  if (0 == h) {
+    cout << "hist not found, unning over files" << endl;
+
+    for (int i = 0; i < 25; ++i) {
+      fHBd0.push_back(new TH1D(Form("HBd0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+      fHBd1.push_back(new TH1D(Form("HBd1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+
+      fHBs0.push_back(new TH1D(Form("HBs0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+      fHBs1.push_back(new TH1D(Form("HBs1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+
+      fHBg0.push_back(new TH1D(Form("HBg0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+      fHBg1.push_back(new TH1D(Form("HBg1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+
+    }
+
+    int NEVT(-1);
+
+    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+    TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
+    setupTree(t0);
+    fSetupInt = 2;
+    loopOverTree(t0, 2, NEVT);
+    f0->Close();
+
+    TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmmExtended.root");
+    TTree *t1 = (TTree*)f1->Get("candAnaMuMu/events");
+    fSetupInt = 3;
+    setupTree(t1);
+    loopOverTree(t1, 2, NEVT);
+    f1->Close();
+
+    TFile *f2 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v03.root");
+    TTree *t2 = (TTree*)f2->Get("candAnaMuMu/events");
+    setupTree(t2);
+    fSetupInt = 4;
+    loopOverTree(t2, 2, NEVT);
+    f2->Close();
+
+    TFile *f3 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bdmmExtended.root");
+    TTree *t3 = (TTree*)f3->Get("candAnaMuMu/events");
+    fSetupInt = 5;
+    setupTree(t3);
+    loopOverTree(t3, 2, NEVT);
+    f3->Close();
+
+    TFile *f4 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BdToPiMuNu_BMuonFilter-v03.root");
+    TTree *t4 = (TTree*)f4->Get("candAnaMuMu/events");
+    setupTree(t4);
+    fSetupInt = 6;
+    loopOverTree(t4, 2, NEVT);
+    f4->Close();
+
+    TFile *f5 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bdpimunuExtended.root");
+    TTree *t5 = (TTree*)f5->Get("candAnaMuMu/events");
+    fSetupInt = 7;
+    setupTree(t5);
+    loopOverTree(t5, 2, NEVT);
+    f5->Close();
+
+    fHistFile->cd();
+    for (int i = 0; i < 25; ++i) {
+      fHBd0[i]->Write();
+      fHBd1[i]->Write();
+
+      fHBs0[i]->Write();
+      fHBs1[i]->Write();
+
+      fHBg0[i]->Write();
+      fHBg1[i]->Write();
+    }
+    fHistFile->Close();
+  }
+
+  fHistFile = TFile::Open(fHistFileName.c_str());
+  gStyle->SetOptFit(0);
+
+  shrinkPad(0.15, 0.19);
+  double eps(0.01);
+  TH1D *h0 = new TH1D("dmass0", "Run 2", 20, 0., 4.0); h0->Sumw2();
+  TH1D *h1 = new TH1D("dmass1", "Phase 2", 20, 0.+eps, 4.0+eps); h1->Sumw2();
+  double nbs, nbd;
+  double nbs0E, nbs1E, nbd0E, nbd1E;
+  for (int i = 0; i < 20; ++i) {
+    TH1D *hbs0 = (TH1D*)fHistFile->Get(Form("HBs0_%d", i));
+    TH1D *hbs1 = (TH1D*)fHistFile->Get(Form("HBs1_%d", i));
+    TH1D *hbd0 = (TH1D*)fHistFile->Get(Form("HBd0_%d", i));
+    TH1D *hbd1 = (TH1D*)fHistFile->Get(Form("HBd1_%d", i));
+    int lobin(hbs0->FindBin(5.2)), hibin(hbs0->FindBin(5.3));
+    // -- scale complete histogram to run-2 expectations
+    if (hbs0->GetEntries() > 0) {
+      nbs0E = TMath::Sqrt(hbs0->Integral(lobin, hibin))/hbs0->Integral(lobin, hibin);
+      hbs0->Scale((6.878 + 12.304)/hbs0->Integral());
+    }
+    if (hbs1->GetEntries() > 0) {
+      nbs1E = TMath::Sqrt(hbs1->Integral(lobin, hibin))/hbs1->Integral(lobin, hibin);
+      hbs1->Scale((6.878 + 12.304)/hbs1->Integral());
+    }
+    if (hbd0->GetEntries() > 0) {
+      nbd0E = TMath::Sqrt(hbd0->Integral(lobin, hibin))/hbd0->Integral(lobin, hibin);
+      hbd0->Scale((0.838 + 1.460)/hbd0->Integral());
+    }
+    if (hbd1->GetEntries() > 0) {
+      nbd1E = TMath::Sqrt(hbd1->Integral(lobin, hibin))/hbd1->Integral(lobin, hibin);
+      hbd1->Scale((0.838 + 1.460)/hbd1->Integral());
+    }
+
+    if (hbs0->Integral() > 0 && hbd0->Integral() > 0) {
+      nbs = hbs0->Integral(lobin, hibin);
+      nbd = hbd0->Integral(lobin, hibin);
+      cout << i << " nbs0 = " << nbs << "/" << nbd << " = " << nbd/nbs << ", err2 = " <<  TMath::Abs(nbd0E*nbd0E + nbs0E*nbs0E) << endl;
+      h0->SetBinContent(i+1, nbd/nbs);
+      h0->SetBinError(i+1, (nbd/nbs)*TMath::Abs(nbd0E*nbd0E + nbs0E*nbs0E));
+    }
+    if (hbs1->Integral() > 0 && hbd1->Integral() > 0) {
+      nbs = hbs1->Integral(lobin, hibin);
+      nbd = hbd1->Integral(lobin, hibin);
+      cout << i << " nbs1 = " << nbs << "/" << nbd << " = " << nbd/nbs << ", err2 = " <<  TMath::Abs(nbd0E*nbd0E + nbs0E*nbs0E) << endl;
+      h1->SetBinContent(i+1, nbd/nbs);
+      h1->SetBinError(i+1, (nbd/nbs)*TMath::Abs(nbd1E*nbd1E + nbs1E*nbs1E));
+    }
+
+  }
+
+  c0->Clear();
+  setHist(h0, kBlue, 24, 1.2);
+  setHist(h1, kRed, 25, 1.2);
+  h0->SetMinimum(0.0);
+  h0->SetMaximum(10.);
+  setTitles(h0, "#it{|}#eta_{#it{f}}#it{|}", "B^{0}/B_{s} in [5.2,5.3] GeV", 0.05, 1.1, 1.6);
+  h0->Draw("e");
+  h1->Draw("esame");
+
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.25, 0.52, 0.45, 0.62);
+  legg->SetTextSize(0.05);
+  legg->AddEntry(h0,  "Run 2", "p");
+  legg->AddEntry(h1, "Phase 2", "p");
+  legg->Draw();
+
+  savePad(Form("ups2-b0-bs-xfeed-vsEta.pdf"));
+
+}
+
 // ----------------------------------------------------------------------
 void plotWork::loopFunction2() {
-  // if (TMath::Abs(fb.m1eta) > 1.4) return;
-  // if (TMath::Abs(fb.m2eta) > 1.4) return;
-  if (fb.m2pt < 4.) return;
+  if ((TMath::Abs(fb.m2eta) < 1.4) && fb.m2pt < 4.) return;
+  if ((TMath::Abs(fb.m2eta) > 1.4) && fb.m2pt < 2.) return;
 
-  int ieta = TMath::Abs(fb.eta)/0.1;
-  //  cout << "eta = " << TMath::Abs(fb.eta) << " -> " << ieta << endl;
+  double meta = fb.m1eta;
+  if (TMath::Abs(meta) < TMath::Abs(fb.m2eta)) meta = fb.m2eta;
+
+  int ieta = TMath::Abs(meta)/0.2;
+  //  cout << "eta = " << TMath::Abs(meta) << " -> " << ieta << endl;
   if (ieta > 19) return;
-  if (0 == fDBX) {
+
+  if (0 == fSetupInt) {
     fHmass0[ieta]->Fill(fb.m);
-  } else {
+  }
+  if (1 == fSetupInt) {
     fHmass1[ieta]->Fill(fb.m);
   }
+
+  if (2 == fSetupInt) {
+    fHBs0[ieta]->Fill(fb.m);
+  }
+  if (3 == fSetupInt) {
+    fHBs1[ieta]->Fill(fb.m);
+  }
+
+  if (4 == fSetupInt) {
+    fHBd0[ieta]->Fill(fb.m);
+  }
+  if (5 == fSetupInt) {
+    fHBd1[ieta]->Fill(fb.m);
+  }
+
+  if (6 == fSetupInt) {
+    fHBg0[ieta]->Fill(fb.m);
+  }
+  if (7 == fSetupInt) {
+    fHBg1[ieta]->Fill(fb.m);
+  }
+
 
 }
 
@@ -1847,18 +2062,6 @@ void plotWork::loadFiles(string afiles) {
       ds = new dataset();
       ds->fSize = 1.2;
       ds->fWidth = 2.;
-
-      if (string::npos != stype.find("wrongreco,")) {
-        sname = "wrongReco";
-        sdecay = "wrongReco";
-	ds->fColor = kGreen-2;
-	ds->fSymbol = 24;
-	ds->fWidth  = 2.;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3354;
-      }
 
       if (string::npos != stype.find("bctopsimunu,")) {
         sname = "bcpsimunuMc";

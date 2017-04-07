@@ -8,6 +8,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 candAnaMuMu::candAnaMuMu(bmmReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
+  fAnaCuts.setAcName("candAnaMuMu");
   cout << "==> candMuMuAna: constructor..." << endl;
   readCuts(cutsFile, 1);
 }

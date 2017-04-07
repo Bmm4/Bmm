@@ -10,6 +10,8 @@
 #           p pending
 #           h hold
 #
+#           you have to specify a queue, or all.q will be assumed. If your jobs are in the long queue instead, they will not be shown...
+#
 # 2017/02/20   bug fixes, e.g. allow for leading ' ' before job ID
 # 2017/02/02   first shot
 #

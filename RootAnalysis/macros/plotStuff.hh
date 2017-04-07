@@ -35,12 +35,24 @@ public :
   void yieldStabilityRatios(std::string trg = "HLT");
   void yieldStudy(int run = 278273, string ds = "bmmData");
 
+  // -- misreconstructed background
+  void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
+  void plotWrongReco(std::string var, int nbin, double min, double max, std::string selection,
+		     std::string wds, std::string wdir,
+		     std::string cds, std::string cdir);
+
+  // -- variety of methods
+  void massResolution(std::string file1, std::string file2);
+  void tauEfficiency(string varname, string cut, string otherSelection, string dsname);
+
+
   // -- code for loops
   void setupPvTree(TTree *t);
   void loopFunction1();
   void loopFunction2();
   void loopFunction3();
   void loopFunction4();
+  void loopFunction5();
 
   void loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
@@ -90,6 +102,10 @@ private:
   // -- vs NPV
   TProfile *fpP3Mult[NCHAN], *fpP3fls3d[NCHAN], *fpP3fl3d[NCHAN], *fpP3dfl3d[NCHAN], *fpP3tau[NCHAN], *fpP3dtau[NCHAN];
   TProfile *fpP3l1[NCHAN], *fpP3l2[NCHAN], *fpP3dzmin[NCHAN], *fpP3Iso[NCHAN], *fpP3Ntrk[NCHAN], *fpP3PvIps[NCHAN], *fpP3Bdt[NCHAN];
+
+  // -- mass resolution
+  std::vector<TH1D*> fHmass0, fHmass1;
+
 
   ClassDef(plotStuff,1)
 
