@@ -935,7 +935,6 @@ void candAna::candEvaluation() {
   fGoodCNC          =
     fGoodAcceptance
     && fGoodQ
-    && fGoodMuonsGmID
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
@@ -997,7 +996,7 @@ void candAna::candEvaluation() {
   // -- add J/psi and other daughter cuts
   fPreselection = fPreselection && fGoodJpsiCuts && fGoodPvAveW8;
 
-
+  fPreselection = true;
 
   if (0) cout << "Chan = " << fChan
 	      << " fPresel = " << fPreselection
