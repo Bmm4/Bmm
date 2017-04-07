@@ -114,6 +114,7 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
     if (goodJson) {
       ++fNjson;
     } else {
+      cout << "==> HFSkipEvent> rejecting run/ls = " << run << "/" << ls << endl;
       result = false;
     }
   } else {
