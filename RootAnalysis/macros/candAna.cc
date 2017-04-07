@@ -1054,9 +1054,13 @@ int candAna::detChan(double m1eta, double m2eta) {
     if (m2 > m1) m1 = m2;
     for (int ichan = 0; ichan < fNchan; ++ichan) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-	for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
-	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
-	    return ichan;
+	if (HLTRANGE.begin()->first == "NOTRIGGER") {
+	  return ichan;
+	} else {
+	  for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
+	    if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
+	      return ichan;
+	    }
 	  }
 	}
       }
