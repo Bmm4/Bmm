@@ -86,8 +86,10 @@ triggerDump = cms.EDAnalyzer(
 # ----------------------------------------------------------------------
 hltrep = cms.EDAnalyzer(
     "HLTrigReport",
-    HLTriggerResults = cms.InputTag("TriggerResults","","HLT")
-    )
+    HLTriggerResults = cms.InputTag("TriggerResults","","HLT"),
+    ReferencePath = cms.untracked.string( "HLTriggerFinalPath" ),
+    ReferenceRate = cms.untracked.double( 100.0 )
+)
 
 
 l1trep = cms.EDAnalyzer(
@@ -102,4 +104,4 @@ l1trep = cms.EDAnalyzer(
 # ######################################################################
 #recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump*hltrep*l1trep)
 #recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump)
-recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump)
+recoStuffSequence     = cms.Sequence(stuffDump*trkDump*muonDump*triggerDump*hltrep)
