@@ -578,6 +578,7 @@ void  HFDumpTrigger::beginRun(const Run &run, const EventSetup &iSetup) {
     return;
   }
 
+  cout << "HFDumpMuons::beginRun: " << run.run() << endl;
   cout << fHltConfig.tableName() << endl;
   vector<string> pds = fHltConfig.datasetNames();
 
