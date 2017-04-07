@@ -895,8 +895,8 @@ void plotClass::candAnalysis() {
   }
 
   if (bs2jpsiphi || bp2jpsikp) {
-    if (fb.mpsi > 3.2) fGoodJpsiCuts = false;
-    if (fb.mpsi < 3.0) fGoodJpsiCuts = false;
+    if (fb.mpsi > 3.15) fGoodJpsiCuts = false;
+    if (fb.mpsi < 3.04) fGoodJpsiCuts = false;
     if (fb.psipt < 7.0) fGoodJpsiCuts = false;
   }
 
