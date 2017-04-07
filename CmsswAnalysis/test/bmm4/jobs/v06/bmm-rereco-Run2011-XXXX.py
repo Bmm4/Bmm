@@ -7,6 +7,7 @@ process = cms.Process("HFA")
 process.load("FWCore.MessageLogger.MessageLogger_cfi")
 process.MessageLogger.cerr.threshold = 'INFO'
 process.MessageLogger.cerr.FwkReport.reportEvery = 1000
+process.MessageLogger.categories.append('HLTrigReport')
 process.options   = cms.untracked.PSet( wantSummary = cms.untracked.bool(True) )
 
 
@@ -50,6 +51,7 @@ process.load("Bmm.CmsswAnalysis.HFBmm_cff")
 process.load("Bmm.CmsswAnalysis.HFOnia_cff")
 process.load("Bmm.CmsswAnalysis.HFHadronic_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
+process.load("Bmm.CmsswAnalysis.HFSkipEvents_cff")
 
 process.skipEvents.filterOnJson = cms.untracked.int32(1)
 process.skipEvents.JSONFile     = cms.untracked.FileInPath("Bmm/RootAnalysis/common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt")

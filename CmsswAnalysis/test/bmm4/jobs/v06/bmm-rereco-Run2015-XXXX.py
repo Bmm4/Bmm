@@ -50,6 +50,7 @@ process.load("Bmm.CmsswAnalysis.HFBmm_cff")
 process.load("Bmm.CmsswAnalysis.HFOnia_cff")
 process.load("Bmm.CmsswAnalysis.HFHadronic_cff")
 process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
+process.load("Bmm.CmsswAnalysis.HFSkipEvents_cff")
 
 process.skipEvents.filterOnJson = cms.untracked.int32(1)
 process.skipEvents.JSONFile     = cms.untracked.FileInPath("Bmm/RootAnalysis/common/json/Cert_251168-260627_13TeV_PromptReco_Collisions15_JSON_MuonPhys.txt")
