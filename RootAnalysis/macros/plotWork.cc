@@ -1223,10 +1223,8 @@ void plotWork::loopFunction1() {
     if (TMath::Abs(fb.mpsi) < 2.9) return;
     if (TMath::Abs(fb.mpsi) > 3.3) return;
 
-    if (TMath::Abs(fb.psipt) < 6.9) return;
-    if (TMath::Abs(fb.psicosa) < 0.9) return;
+    if (TMath::Abs(fb.psipt) < 7.0) return;
     if (TMath::Abs(fb.psiprob) < 0.1) return;
-    if (TMath::Abs(fb.psiflsxy) < 3) return;
   }
 
   fpHnorm->Fill(fb.m);
@@ -1615,7 +1613,7 @@ void plotWork::loopFunction3() {
 
   if (TMath::Abs(fb.mkk) < MKKLO) return;
   if (TMath::Abs(fb.mkk) > MKKHI) return;
-  if (TMath::Abs(fb.dr)  > DR) return;
+  if (TMath::Abs(fb.phidr) > DR) return;
   if (fb.k1pt > fb.k2pt) {
     if (TMath::Abs(fb.k1pt) < PTK1) return;
     if (TMath::Abs(fb.k2pt) < PTK2) return;
