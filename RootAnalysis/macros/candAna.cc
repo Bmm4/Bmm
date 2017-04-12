@@ -988,15 +988,16 @@ void candAna::candEvaluation() {
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
-  fPreselection = fGoodAcceptance && fGoodQ && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta && fWideMass && fPreselAlpha && fPreselFLS;
+  fPreselection = fGoodAcceptance && fGoodQ && fGoodPvAveW8 && fWideMass
+    && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta
+    && fPreselAlpha && fPreselFLS;
+
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
   // -- add trigger and chan cuts
   fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
   // -- add J/psi and other daughter cuts
-  fPreselection = fPreselection && fGoodJpsiCuts && fGoodPvAveW8;
-
-  fPreselection = true;
+  fPreselection = fPreselection && fGoodJpsiCuts;
 
   if (0) cout << "Chan = " << fChan
 	      << " fPresel = " << fPreselection
