@@ -733,7 +733,8 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("mpsi", &fb.mpsi);
     t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("mkpi",  &fb.mkpi);
-    t->SetBranchAddress("dr",   &fb.dr);
+    t->SetBranchAddress("kstardr",   &fb.kstardr);
+    t->SetBranchAddress("kstarfail", &fb.kstarfail);
     t->SetBranchAddress("kpt", &fb.kpt);
     t->SetBranchAddress("kgt", &fb.kgt);
     t->SetBranchAddress("keta",&fb.keta);
@@ -985,6 +986,10 @@ void plotClass::candAnalysis() {
   fGoodDocaTrk      = (fb.docatrk > pCuts->docatrk);
   fGoodCNC          =
     fGoodQ
+    && fGoodAcceptance
+    && fGoodTracks
+    && fGoodTracksPt
+    && fGoodTracksEta
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
@@ -1020,14 +1025,6 @@ void plotClass::candAnalysis() {
     fPreselection = fPreselection && fGoodJpsiCuts;
     if (!fGoodJpsiCuts) { // cout << "dr: " << fb.dr  << " mkk: " << fb.mkk << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt << endl;
     }
-  }
-
-  if (!fPreselection) {
-    if (0)     cout << "HLT: " << fGoodHLT << " muons: " << fGoodMuonsID << " muonspt: " << fGoodMuonsPt
-		    << " a: " << fb.alpha << " fls3d: " << fb.fls3d
-		    << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt
-		    << " dr: " << fb.dr  << " mkk: " << fb.mkk
-		    << endl;
   }
 
   fCncCuts.update();
