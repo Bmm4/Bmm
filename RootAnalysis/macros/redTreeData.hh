@@ -49,8 +49,9 @@ struct redTreeData {
 
   // -- other resonances
   double mkk, mkpi, mkpi1, mkpi2;
-  double phipt, phieta, phiphi, dr;
-  double phidr;
+  double phipt, phieta, phiphi;
+  double phidr, kstardr;
+  bool   kstarfail;
 
   double md0, dm, ptd0;
 
