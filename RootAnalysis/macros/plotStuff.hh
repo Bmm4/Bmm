@@ -31,7 +31,6 @@ public :
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg = "HLT");
-  void yieldStabilityOld(std::string dsname, std::string trg = "HLT");
   void yieldStabilityRatios(std::string trg = "HLT");
   void yieldStudy(int run = 278273, string ds = "bmmData");
 
@@ -72,7 +71,7 @@ private:
   double* fpX;
   int*    fpI;
   bool*   fpB;
-  std::map<std::string, TH2D*> fYieldRTR, fYieldHLT;
+  std::map<std::string, TH2D*> fYieldHists;
   std::map<std::string, TH1D*> fPlots;
   int fSplitRun;
 
