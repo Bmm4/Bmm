@@ -35,13 +35,14 @@ int main(int argc, char *argv[]) {
   // -- command line arguments
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
-    if (!strcmp(argv[i], "-x"))  {remove= true;}
-    if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-f"))  {files = argv[++i];}
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}
-    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
     if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}
     if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];}
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}
+    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
+    if (!strcmp(argv[i], "-x"))  {remove= true;}
+    if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
   }
 
   if (2016 == year) {
