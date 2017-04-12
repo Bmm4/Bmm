@@ -187,7 +187,9 @@ void candAnaBs2Jpsif0::candAnalysis() {
   fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fPi1Eta) && (fPi1Eta < TRACKETAHI) && (TRACKETALO < fPi2Eta) && (fPi2Eta < TRACKETAHI));
 
   fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
-  fGoodJpsiCuts   = fGoodJpsiMass   && (fJpsiPt > 7.) && fGoodMPIPI    && fGoodDeltaR;
+  fGoodJpsiCuts   = fGoodJpsiMass   && fGoodMPIPI     && fGoodDeltaR;
+  //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
+  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
