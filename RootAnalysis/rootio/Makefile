@@ -86,7 +86,7 @@ lib/libAna00.so: $(addprefix obj/, $(ANA00DICT) $(ANA00))
 links:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && ln -s ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so && cd -
-a
+
 copy:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
 	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libAna00.so && cp ../../src/Bmm/RootAnalysis/rootio/lib/libAna00.so . && cd -
