@@ -153,6 +153,14 @@ void plotWork::makeAll(string what) {
     runTisEfficiency("bmmSingleMuon");
   }
 
+  if (what == "work" || string::npos != what.find("ups2")) {
+    ups2("", "");
+  }
+
+  if (what == "work" || string::npos != what.find("ups1")) {
+    ups1("", "");
+  }
+
   if (what == "work" || string::npos != what.find("plottis")) {
     plotTisEfficiency("all");
   }
@@ -789,7 +797,7 @@ void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
   TEX.open("bmm5Trigger.tex", ios::app);
 
   vector<string> seeds;
-  if (1) {
+  if (0) {
     seeds.push_back("L1_DoubleMu7_OS");
     seeds.push_back("L1_DoubleMu_13_6");
     seeds.push_back("L1_DoubleMu0er1p6_dEta_Max1p8");
@@ -815,6 +823,9 @@ void plotWork::bmm5Trigger(std::string cuts, std::string texname) {
     seeds.push_back("L1_DoubleMu0_bph7");
     seeds.push_back("L1_DoubleMu0_bph8");
   }
+
+  seeds.push_back("L1_DoubleMu0");
+  seeds.push_back("L1_DoubleMu0_bph1");
 
   TFile *f(0);
   TTree *t(0);
@@ -1237,28 +1248,47 @@ void plotWork::loopFunction1() {
 
 // ----------------------------------------------------------------------
 void plotWork::ups1(std::string file1, std::string file2) {
-  for (int i = 0; i < 20; ++i) {
-    fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
-    fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+
+  cout << "fHistFile: " << fHistFileName;
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+  cout << " opened " << endl;
+
+  TH1D *h = (TH1D*)fHistFile->Get("Hmass0_1");
+  if (0 == h) {
+      for (int i = 0; i < 20; ++i) {
+	fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+	fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+      }
+
+    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+    TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
+
+    setupTree(t0);
+    fSetupInt = 0;
+    loopOverTree(t0, 2);
+
+    //  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmm-v04-0000.bmmReader.mix-Bs2MuMu.root");
+    TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmmExtended.root");
+    cout << "f1 = " << f1 << endl;
+    TTree *t1 = (TTree*)f1->Get("candAnaMuMu/events");
+    cout << "t1 = " << t1 << endl;
+
+    fSetupInt = 1;
+    setupTree(t1);
+    loopOverTree(t1, 2);
+
+    fHistFile->cd();
+    for (int i = 0; i < 20; ++i) {
+      fHmass0[i]->Write();
+      fHmass1[i]->Write();
+    }
+    fHistFile->Close();
+
+    fHmass0.clear();
+    fHmass1.clear();
   }
 
-  TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
-  TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
-
-  setupTree(t0);
-  fSetupInt = 0;
-  loopOverTree(t0, 2, 1.e5);
-
-  //  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmm-v04-0000.bmmReader.mix-Bs2MuMu.root");
-  TFile *f1 = TFile::Open("/scratch/ursl/bmm4/ups/bmm-mc-ups-bsmmExtended.root");
-  cout << "f1 = " << f1 << endl;
-  TTree *t1 = (TTree*)f1->Get("candAnaMuMu/events");
-  cout << "t1 = " << t1 << endl;
-
-  fSetupInt = 1;
-  setupTree(t1);
-  loopOverTree(t1, 2, 1.e5);
-
+  fHistFile = TFile::Open(fHistFileName.c_str());
   gStyle->SetOptFit(0);
 
   shrinkPad(0.15, 0.19);
@@ -1271,61 +1301,64 @@ void plotWork::ups1(std::string file1, std::string file2) {
   TH1D *p2 = new TH1D("peak1", "Phase 2", 20, 0.+eps, 4.0+eps); p2->Sumw2();
   TH1D *w1 = new TH1D("sigma0", "Run 2", 20, 0., 4.0); w1->Sumw2();
   TH1D *w2 = new TH1D("sigma1", "Phase 2", 20, 0.+eps, 4.0+eps); w2->Sumw2();
+  TH1D *hmass0(0), *hmass1(0);
   for (int i = 0; i < 20; ++i) {
-    cout << "mass = " << fHmass0[i]->GetMean() << " RMS = " << fHmass0[i]->GetRMS() << endl;
-    h1->SetBinContent(i+1, fHmass0[i]->GetMean());
-    h1->SetBinError(i+1, fHmass0[i]->GetMeanError());
-    s1->SetBinContent(i+1, fHmass0[i]->GetRMS());
-    s1->SetBinError(i+1, fHmass0[i]->GetRMSError());
+    hmass0 = (TH1D*)fHistFile->Get(Form("Hmass0_%d", i));
+    hmass1 = (TH1D*)fHistFile->Get(Form("Hmass1_%d", i));
+    cout << "mass = " << hmass0->GetMean() << " RMS = " << hmass0->GetRMS() << endl;
+    h1->SetBinContent(i+1, hmass0->GetMean());
+    h1->SetBinError(i+1, hmass0->GetMeanError());
+    s1->SetBinContent(i+1, hmass0->GetRMS());
+    s1->SetBinError(i+1, hmass0->GetRMSError());
 
-    cout << "mass = " << fHmass1[i]->GetMean() << " RMS = " << fHmass1[i]->GetRMS() << endl;
-    h2->SetBinContent(i+1, fHmass1[i]->GetMean());
-    h2->SetBinError(i+1, fHmass1[i]->GetMeanError());
-    s2->SetBinContent(i+1, fHmass1[i]->GetRMS());
-    s2->SetBinError(i+1, fHmass1[i]->GetRMSError());
+    cout << "mass = " << hmass1->GetMean() << " RMS = " << hmass1->GetRMS() << endl;
+    h2->SetBinContent(i+1, hmass1->GetMean());
+    h2->SetBinError(i+1, hmass1->GetMeanError());
+    s2->SetBinContent(i+1, hmass1->GetRMS());
+    s2->SetBinError(i+1, hmass1->GetRMSError());
 
-    setFilledHist(fHmass0[i], kBlue, kBlue, 3365);
-    setFilledHist(fHmass1[i], kRed, kRed, 3354);
+    setFilledHist(hmass0, kBlue, kBlue, 3365);
+    setFilledHist(hmass1, kRed, kRed, 3354);
 
     // -- do the fitting before the scaling
     double peak0V(0.),  peak0E(0.),  peak1V(0.),  peak1E(0.);
     double sigma0V(0.), sigma0E(0.), sigma1V(0.), sigma1E(0.);
-    if (fHmass1[i]->GetSumOfWeights() > 0.) {
-      fHmass1[i]->Fit("gaus", "r0", "", 5.37 - fHmass1[i]->GetRMS(), 5.37 + fHmass1[i]->GetRMS());
-      peak1V  = fHmass1[i]->GetFunction("gaus")->GetParameter(1);
-      peak1E  = fHmass1[i]->GetFunction("gaus")->GetParError(1);
-      sigma1V = fHmass1[i]->GetFunction("gaus")->GetParameter(2);
-      sigma1E = fHmass1[i]->GetFunction("gaus")->GetParError(2);
-      fHmass1[i]->GetFunction("gaus")->SetLineColor(kRed);
+    if (hmass1->GetSumOfWeights() > 0.) {
+      hmass1->Fit("gaus", "r0", "", 5.37 - hmass1->GetRMS(), 5.37 + hmass1->GetRMS());
+      peak1V  = hmass1->GetFunction("gaus")->GetParameter(1);
+      peak1E  = hmass1->GetFunction("gaus")->GetParError(1);
+      sigma1V = hmass1->GetFunction("gaus")->GetParameter(2);
+      sigma1E = hmass1->GetFunction("gaus")->GetParError(2);
+      hmass1->GetFunction("gaus")->SetLineColor(kRed);
       p2->SetBinContent(i+1, peak1V);
       p2->SetBinError(i+1, peak1E);
       w2->SetBinContent(i+1, sigma1V);
       w2->SetBinError(i+1, sigma1E);
     }
-    if (fHmass0[i]->GetSumOfWeights() > 0.) {
-      fHmass0[i]->Fit("gaus", "r0", "", 5.37 - fHmass0[i]->GetRMS(), 5.37 + fHmass0[i]->GetRMS());
-      peak0V  = fHmass0[i]->GetFunction("gaus")->GetParameter(1);
-      peak0E  = fHmass0[i]->GetFunction("gaus")->GetParError(1);
-      sigma0V = fHmass0[i]->GetFunction("gaus")->GetParameter(2);
-      sigma0E = fHmass0[i]->GetFunction("gaus")->GetParError(2);
-      fHmass0[i]->GetFunction("gaus")->SetLineColor(kBlue);
+    if (hmass0->GetSumOfWeights() > 0.) {
+      hmass0->Fit("gaus", "r0", "", 5.37 - hmass0->GetRMS(), 5.37 + hmass0->GetRMS());
+      peak0V  = hmass0->GetFunction("gaus")->GetParameter(1);
+      peak0E  = hmass0->GetFunction("gaus")->GetParError(1);
+      sigma0V = hmass0->GetFunction("gaus")->GetParameter(2);
+      sigma0E = hmass0->GetFunction("gaus")->GetParError(2);
+      hmass0->GetFunction("gaus")->SetLineColor(kBlue);
       p1->SetBinContent(i+1, peak0V);
       p1->SetBinError(i+1, peak0E);
       w1->SetBinContent(i+1, sigma0V);
       w1->SetBinError(i+1, sigma0E);
     }
 
-    if (fHmass0[i]->GetSumOfWeights() > 0.) fHmass0[i]->Scale(1./fHmass0[i]->GetSumOfWeights());
-    if (fHmass1[i]->GetSumOfWeights() > 0.) fHmass1[i]->Scale(1./fHmass1[i]->GetSumOfWeights());
+    if (hmass0->GetSumOfWeights() > 0.) hmass0->Scale(1./hmass0->GetSumOfWeights());
+    if (hmass1->GetSumOfWeights() > 0.) hmass1->Scale(1./hmass1->GetSumOfWeights());
 
-    fHmass1[i]->SetMaximum(1.2*fHmass1[i]->GetMaximum()/fHmass1[i]->GetSumOfWeights());
-    fHmass1[i]->Draw();
-    fHmass0[i]->Draw("same");
+    hmass1->SetMaximum(1.2*hmass1->GetMaximum()/hmass1->GetSumOfWeights());
+    hmass1->Draw();
+    hmass0->Draw("same");
 
-    tl->SetTextSize(0.04); tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.2, 0.92, Form("%s", fHmass0[i]->GetTitle()));
-    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.80, Form("RMS: %4.3f MeV", fHmass0[i]->GetRMS()));
+    tl->SetTextSize(0.04); tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.2, 0.92, Form("%s", hmass0->GetTitle()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.80, Form("RMS: %4.3f MeV", hmass0->GetRMS()));
     tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.76, Form("peak: %5.4f MeV", peak0V));
-    tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.70, Form("RMS: %4.3f MeV", fHmass1[i]->GetRMS()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.70, Form("RMS: %4.3f MeV", hmass1->GetRMS()));
     tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.66, Form("peak: %5.4f MeV", peak1V));
     savePad(Form("ups1-mass-bin%d.pdf", i));
   }
@@ -1421,7 +1454,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   if (0 == h) {
     cout << "hist not found, unning over files" << endl;
 
-    for (int i = 0; i < 25; ++i) {
+    for (int i = 0; i < 20; ++i) {
       fHBd0.push_back(new TH1D(Form("HBd0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
       fHBd1.push_back(new TH1D(Form("HBd1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
 
@@ -1478,7 +1511,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
     f5->Close();
 
     fHistFile->cd();
-    for (int i = 0; i < 25; ++i) {
+    for (int i = 0; i < 20; ++i) {
       fHBd0[i]->Write();
       fHBd1[i]->Write();
 
@@ -1496,17 +1529,78 @@ void plotWork::ups2(std::string file1, std::string file2) {
 
   shrinkPad(0.15, 0.19);
   double eps(0.01);
+  // -- N(B0) / N(Bs) in B0 signal window
   TH1D *h0 = new TH1D("dmass0", "Run 2", 20, 0., 4.0); h0->Sumw2();
   TH1D *h1 = new TH1D("dmass1", "Phase 2", 20, 0.+eps, 4.0+eps); h1->Sumw2();
+
+  // -- Separation of Bs and B0 in terms of peak / TMath::Sqrt(sig1*sig1 + sig2*sig2)
+  TH1D *hSep0 = new TH1D("hsep0", "Run 2", 20, 0., 4.0); hSep0->Sumw2();
+  TH1D *hSep1 = new TH1D("hsep1", "Phase 2", 20, 0.+eps, 4.0+eps); hSep1->Sumw2();
+
+  // -- EXPO slope of background
+  TH1D *hBg0 = new TH1D("bgslope0", "Run 2", 20, 0., 4.0); hBg0->Sumw2();
+  TH1D *hBg1 = new TH1D("bgslope1", "Phase 2", 20, 0.+eps, 4.0+eps); hBg1->Sumw2();
   double nbs, nbd;
   double nbs0E, nbs1E, nbd0E, nbd1E;
+  double FITRMS(2.0);
+  gStyle->SetOptFit(1);
   for (int i = 0; i < 20; ++i) {
     TH1D *hbs0 = (TH1D*)fHistFile->Get(Form("HBs0_%d", i));
     TH1D *hbs1 = (TH1D*)fHistFile->Get(Form("HBs1_%d", i));
     TH1D *hbd0 = (TH1D*)fHistFile->Get(Form("HBd0_%d", i));
     TH1D *hbd1 = (TH1D*)fHistFile->Get(Form("HBd1_%d", i));
+    TH1D *hbg0 = (TH1D*)fHistFile->Get(Form("HBg0_%d", i));
+    TH1D *hbg1 = (TH1D*)fHistFile->Get(Form("HBg1_%d", i));
     int lobin(hbs0->FindBin(5.2)), hibin(hbs0->FindBin(5.3));
+
+    if (hbs0->Integral() > 0 && hbd0->Integral() > 0) {
+      hbs0->Fit("gaus", "r", "", 5.37 - FITRMS*hbs0->GetRMS(), 5.37 + FITRMS*hbs0->GetRMS());
+      savePad(Form("ups2-temp-hbs0-%d.pdf", i));
+      hbd0->Fit("gaus", "r", "", 5.28 - FITRMS*hbd0->GetRMS(), 5.28 + FITRMS*hbd0->GetRMS());
+      savePad(Form("ups2-temp-hbd0-%d.pdf", i));
+
+      double peakA = hbs0->GetFunction("gaus")->GetParameter(1);
+      double sigA  = hbs0->GetFunction("gaus")->GetParameter(2);
+      double sigAe = hbs0->GetFunction("gaus")->GetParError(2);
+      double peakB = hbd0->GetFunction("gaus")->GetParameter(1);
+      double sigB  = hbd0->GetFunction("gaus")->GetParameter(2);
+      double sigBe = hbd0->GetFunction("gaus")->GetParError(2);
+      double sigC  = TMath::Sqrt(sigA*sigA + sigB*sigB);
+      double sigCe = TMath::Sqrt(4*sigA*sigA*sigAe*sigAe  + 4*sigB*sigB*sigBe*sigBe)/(2.*sigC);
+      hSep0->SetBinContent(i+1, (peakA-peakB)/sigC);
+      double err = (peakA-peakB)/sigC - (peakA-peakB)/(sigC+sigCe);
+      hSep0->SetBinError(i+1, err);
+      cout << hbs0->GetTitle() << ": peakA-peakB = " << peakA << " - " << peakB << " = " << peakA-peakB
+	   << " sigA = " << sigA << " sigB = " << sigB << ", sigC = " << sigC << "+/-" << sigCe << " -> "
+	   << (peakA-peakB)/sigC << " +/- " << err
+	   << endl;
+    }
+    if (hbs1->Integral() > 0 && hbd1->Integral() > 0) {
+      hbs1->Fit("gaus", "r", "", 5.37 - FITRMS*hbs1->GetRMS(), 5.37 + FITRMS*hbs1->GetRMS());
+      savePad(Form("ups2-temp-hbs1-%d.pdf", i));
+      hbd1->Fit("gaus", "r", "", 5.28 - FITRMS*hbd1->GetRMS(), 5.28 + FITRMS*hbd1->GetRMS());
+      savePad(Form("ups2-temp-hbd1-%d.pdf", i));
+
+      double peakA = hbs1->GetFunction("gaus")->GetParameter(1);
+      double sigA  = hbs1->GetFunction("gaus")->GetParameter(2);
+      double sigAe = hbs1->GetFunction("gaus")->GetParError(2);
+      double peakB = hbd1->GetFunction("gaus")->GetParameter(1);
+      double sigB  = hbd1->GetFunction("gaus")->GetParameter(2);
+      double sigBe = hbd1->GetFunction("gaus")->GetParError(2);
+      double sigC  = TMath::Sqrt(sigA*sigA + sigB*sigB);
+      double sigCe = TMath::Sqrt(4*sigA*sigA*sigAe*sigAe  + 4*sigB*sigB*sigBe*sigBe)/(2.*sigC);
+      hSep1->SetBinContent(i+1, (peakA-peakB)/sigC);
+      double err = (peakA-peakB)/sigC - (peakA-peakB)/(sigC+sigCe);
+      hSep1->SetBinError(i+1, err);
+      cout << hbs1->GetTitle() << ": peakA-peakB = " << peakA << " - " << peakB << " = " << peakA-peakB
+	   << " sigA = " << sigA << " sigB = " << sigB << ", sigC = " << sigC << "+/-" << sigCe << " -> "
+	   << (peakA-peakB)/sigC << " +/- " << err
+	   << endl;
+    }
+
+
     // -- scale complete histogram to run-2 expectations
+    //    this normalization is necessary because else the event counts for Bs and B0 are 'given' by the MC production numbers
     if (hbs0->GetEntries() > 0) {
       nbs0E = TMath::Sqrt(hbs0->Integral(lobin, hibin))/hbs0->Integral(lobin, hibin);
       hbs0->Scale((6.878 + 12.304)/hbs0->Integral());
@@ -1546,7 +1640,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   setHist(h1, kRed, 25, 1.2);
   h0->SetMinimum(0.0);
   h0->SetMaximum(10.);
-  setTitles(h0, "#it{|}#eta_{#it{f}}#it{|}", "B^{0}/B_{s} in [5.2,5.3] GeV", 0.05, 1.1, 1.6);
+  setTitles(h0, "#it{|}#eta_{#it{f}}#it{|}", "N(B^{0})/N(B_{s}) in [5.2,5.3] GeV", 0.05, 1.1, 1.6);
   h0->Draw("e");
   h1->Draw("esame");
 
@@ -1558,6 +1652,24 @@ void plotWork::ups2(std::string file1, std::string file2) {
   legg->Draw();
 
   savePad(Form("ups2-b0-bs-xfeed-vsEta.pdf"));
+
+  c0->Clear();
+  setHist(hSep0, kBlue, 24, 1.2);
+  setHist(hSep1, kRed, 25, 1.2);
+  hSep0->SetMinimum(0.0);
+  hSep0->SetMaximum(4.);
+  setTitles(hSep0, "#it{|}#eta_{#it{f}}#it{|}", "separation between B^{0} and B_{s}", 0.05, 1.1, 1.6);
+  hSep0->Draw("e");
+  hSep1->Draw("esame");
+
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.65, 0.62, 0.85, 0.72);
+  legg->SetTextSize(0.05);
+  legg->AddEntry(hSep0,  "Run 2", "p");
+  legg->AddEntry(hSep1, "Phase 2", "p");
+  legg->Draw();
+
+  savePad(Form("ups2-b0-bs-sep-vsEta.pdf"));
 
 }
 
