@@ -47,6 +47,90 @@ plotStuff::plotStuff(string dir, string files, string cuts, string setup): plotC
   printCuts(cout);
 
   fChan = 0;
+
+  if (2011 == fYear) {
+    fLargeRuns.push_back(165993);
+    fLargeRuns.push_back(166950);
+    fLargeRuns.push_back(167898);
+    fLargeRuns.push_back(172822);
+    fLargeRuns.push_back(172868);
+    fLargeRuns.push_back(177730);
+    fLargeRuns.push_back(178100);
+  } else if (2012 == fYear) {
+    fLargeRuns.push_back(194050);
+    fLargeRuns.push_back(194912);
+    fLargeRuns.push_back(195552);
+    fLargeRuns.push_back(199435);
+    fLargeRuns.push_back(201191);
+    fLargeRuns.push_back(201278);
+    fLargeRuns.push_back(202178);
+    fLargeRuns.push_back(203002);
+    fLargeRuns.push_back(205344);
+    fLargeRuns.push_back(206745);
+    fLargeRuns.push_back(207099);
+    fLargeRuns.push_back(207231);
+    fLargeRuns.push_back(207454);
+    fLargeRuns.push_back(207905);
+  } else if (2016 == fYear) {
+    fLargeRuns.push_back(273725); // B
+    fLargeRuns.push_back(274241);
+    fLargeRuns.push_back(274316);
+    fLargeRuns.push_back(274335);
+    fLargeRuns.push_back(274388);
+    fLargeRuns.push_back(274422);
+    fLargeRuns.push_back(274968);
+    fLargeRuns.push_back(275001);
+    fLargeRuns.push_back(275125);
+    fLargeRuns.push_back(275310);
+    fLargeRuns.push_back(275376);
+    fLargeRuns.push_back(275782); // C
+    fLargeRuns.push_back(275836);
+    fLargeRuns.push_back(275847);         // very high
+    fLargeRuns.push_back(275890);
+    fLargeRuns.push_back(276242);         // very low
+    fLargeRuns.push_back(276282);
+    fLargeRuns.push_back(276363);
+    fLargeRuns.push_back(276437); // D
+    fLargeRuns.push_back(276501);
+    fLargeRuns.push_back(276525);
+    fLargeRuns.push_back(276542);
+    fLargeRuns.push_back(276581);
+    fLargeRuns.push_back(276655);
+    fLargeRuns.push_back(276776);
+    fLargeRuns.push_back(276811);
+    fLargeRuns.push_back(276831);
+    fLargeRuns.push_back(276870); // E
+    fLargeRuns.push_back(276950);
+    fLargeRuns.push_back(277096);
+    fLargeRuns.push_back(277194);
+    fLargeRuns.push_back(277305);        // catastrophic run
+    fLargeRuns.push_back(278167); // F
+    fLargeRuns.push_back(278308);
+    fLargeRuns.push_back(278406);
+    fLargeRuns.push_back(278509);
+    fLargeRuns.push_back(278808);
+    fLargeRuns.push_back(278820); // G
+    fLargeRuns.push_back(278822);
+    fLargeRuns.push_back(278969);
+    fLargeRuns.push_back(279694);
+    fLargeRuns.push_back(279931);
+    fLargeRuns.push_back(279975);
+    fLargeRuns.push_back(280249);
+    fLargeRuns.push_back(280385);
+    fLargeRuns.push_back(281693); // H
+    fLargeRuns.push_back(281797);
+    fLargeRuns.push_back(281976);
+    fLargeRuns.push_back(282037);
+    fLargeRuns.push_back(282092);
+    fLargeRuns.push_back(282735);
+    fLargeRuns.push_back(282814);
+    fLargeRuns.push_back(283270);
+    fLargeRuns.push_back(283408);
+    fLargeRuns.push_back(283478);
+    fLargeRuns.push_back(283865);
+    fLargeRuns.push_back(283946);
+  }
+
 }
 
 
@@ -73,11 +157,18 @@ void plotStuff::init() {
 // ----------------------------------------------------------------------
 void plotStuff::makeAll(string what) {
 
-  if (what == "DBX") yieldStability("bupsikData", "DBX");
-  if (what == "NOC") yieldStability("bupsikData", "NOC");
-  if (what == "PRE") yieldStability("bupsikData", "PRE");
-  if (what == "HLT") yieldStability("bupsikData", "HLT");
-  if (what == "TOS") yieldStability("bupsikData", "TOS");
+  if (what == "runs") runStudy("bupsikData");
+  if (what == "ysfill") yieldStability("bupsikData", "ysfill");
+  if (what == "ysplot") {
+    yieldStability("bupsikData", "NOC");
+    yieldStability("bupsikData", "JSN");
+    yieldStability("bupsikData", "QOS");
+    yieldStability("bupsikData", "PVW");
+    yieldStability("bupsikData", "MUO");
+    yieldStability("bupsikData", "PRE");
+    yieldStability("bupsikData", "HLT");
+    yieldStability("bupsikData", "TOS");
+  }
 
   if (what == "all" || what == "massresolution") {
     massResolution("bsmmMcComb", "bsmmMcRun1");
@@ -1111,8 +1202,8 @@ void plotStuff::yieldStability(string dsname, string trg) {
     Lumi *lumi(0);
     if (2016 == fYear) {
       if (string::npos != dsname.find("psi")) {
-	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
-	//	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
+	//	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
       } else {
 	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
       }
@@ -1192,11 +1283,11 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
 	    resultE = TMath::Sqrt(result);
 	  }
-	  if (1) {
+	  if (0) {
 	    result  = fpy.getSignalW8Yield();
 	    resultE = fpy.getSignalW8Error();
 	  }
-	  if (0) {
+	  if (1) {
 	    result  = fpy.getSignalUnW8Yield();
 	    resultE = fpy.getSignalUnW8Error();
 	  }
@@ -1218,21 +1309,14 @@ void plotStuff::yieldStability(string dsname, string trg) {
 
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
+    gPad->SetGridx();
+    gPad->SetGridy();
     for (unsigned ichan = 0; ichan < nchan; ++ichan) {
       setTitles(vRunHLT[ichan], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 1.9);
       vRunHLT[ichan]->Draw();
       if (2016 == fYear) {
 	double ymax(vRunHLT[ichan]->GetMaximum());
-	tl->SetNDC(false);
-	pl->SetLineColor(kRed);
-	tl->DrawLatex(273150., 1.0, "B"); pl->DrawLine(273150., 0., 273150., ymax);
-	tl->DrawLatex(275657., 1.0, "C"); pl->DrawLine(275657., 0., 275657., ymax);
-	tl->DrawLatex(276315., 1.0, "D"); pl->DrawLine(276315., 0., 276315., ymax);
-	tl->DrawLatex(276831., 1.0, "E"); pl->DrawLine(276831., 0., 276831., ymax);
-	tl->DrawLatex(277772., 1.0, "F"); pl->DrawLine(277772., 0., 277772., ymax);
-	tl->DrawLatex(278820., 1.0, "G"); pl->DrawLine(278820., 0., 278820., ymax);
-	tl->DrawLatex(280919., 1.0, "H"); pl->DrawLine(280919., 0., 280919., ymax);
-	cout << "HALLO" << endl;
+	plot2016Eras(ymax);
       }
       savePad(Form("ys-yieldVsBlock-%s%d-%s-chan%d.pdf", trg.c_str(), fYear, dsname.c_str(), ichan));
       if (1) {
@@ -1425,8 +1509,10 @@ void plotStuff::massResolution(std::string file1, std::string file2) {
 
 
 // ----------------------------------------------------------------------
+// massResolution
 void plotStuff::loopFunction5() {
   if (fb.m2pt < 4.) return;
+  if (fb.pvn  > 10) return;
 
   double meta = fb.m1eta;
   if (TMath::Abs(meta) < TMath::Abs(fb.m2eta)) meta = fb.m2eta;
@@ -1513,101 +1599,12 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 void plotStuff::loopFunction1() {
 
   bool goodRun(false);
-  static vector<int> largeRuns;
-  static int first(1);
-  if (1 == first) {
-    first = 0;
-    if (2011 == fYear) {
-      largeRuns.push_back(165993);
-      largeRuns.push_back(166950);
-      largeRuns.push_back(167898);
-      largeRuns.push_back(172822);
-      largeRuns.push_back(172868);
-      largeRuns.push_back(177730);
-      largeRuns.push_back(178100);
-    } else if (2012 == fYear) {
-      largeRuns.push_back(194050);
-      largeRuns.push_back(194912);
-      largeRuns.push_back(195552);
-      largeRuns.push_back(199435);
-      largeRuns.push_back(201191);
-      largeRuns.push_back(201278);
-      largeRuns.push_back(202178);
-      largeRuns.push_back(203002);
-      largeRuns.push_back(205344);
-      largeRuns.push_back(206745);
-      largeRuns.push_back(207099);
-      largeRuns.push_back(207231);
-      largeRuns.push_back(207454);
-      largeRuns.push_back(207905);
-    } else if (2016 == fYear) {
-      largeRuns.push_back(273725); // B
-      largeRuns.push_back(274241);
-      largeRuns.push_back(274316);
-      largeRuns.push_back(274335);
-      largeRuns.push_back(274388);
-      largeRuns.push_back(274422);
-      largeRuns.push_back(274968);
-      largeRuns.push_back(275001);
-      largeRuns.push_back(275125);
-      largeRuns.push_back(275310);
-      largeRuns.push_back(275376);
-      largeRuns.push_back(275782);
-      largeRuns.push_back(275836);
-      largeRuns.push_back(275847);         // very high
-      largeRuns.push_back(275890); // C
-      largeRuns.push_back(276242);         // very low
-      largeRuns.push_back(276282);
-      largeRuns.push_back(276363);
-      largeRuns.push_back(276437); // D
-      largeRuns.push_back(276501);
-      largeRuns.push_back(276525);
-      largeRuns.push_back(276542);
-      largeRuns.push_back(276581);
-      largeRuns.push_back(276655);
-      largeRuns.push_back(276776);
-      largeRuns.push_back(276811);
-      largeRuns.push_back(276831);
-      largeRuns.push_back(276870); // E
-      largeRuns.push_back(276950);
-      largeRuns.push_back(277096);
-      largeRuns.push_back(277194);
-      largeRuns.push_back(277305);        // catastrophic run
-      largeRuns.push_back(278167); // F
-      largeRuns.push_back(278308);
-      largeRuns.push_back(278406);
-      largeRuns.push_back(278509);
-      largeRuns.push_back(278808);
-      largeRuns.push_back(278820); // G
-      largeRuns.push_back(278822);
-      largeRuns.push_back(278969);
-      largeRuns.push_back(279694);
-      largeRuns.push_back(279931);
-      largeRuns.push_back(279975);
-      largeRuns.push_back(280249);
-      largeRuns.push_back(280385);
-      largeRuns.push_back(281693); // H
-      largeRuns.push_back(281797);
-      largeRuns.push_back(281976);
-      largeRuns.push_back(282037);
-      largeRuns.push_back(282092);
-      largeRuns.push_back(282735);
-      largeRuns.push_back(282814);
-      largeRuns.push_back(283270);
-      largeRuns.push_back(283408);
-      largeRuns.push_back(283478);
-      largeRuns.push_back(283865);
-      largeRuns.push_back(283946);
-    }
 
-    //    largeRuns.push_back(280385);
-  }
-
-  if (largeRuns.end() != find(largeRuns.begin(), largeRuns.end(), fb.run)) {
+  if (fLargeRuns.end() != find(fLargeRuns.begin(), fLargeRuns.end(), fb.run)) {
     goodRun = true;
-    //    cout << "found " << fb.run << " in largeRuns" << endl;
+    //    cout << "found " << fb.run << " in fLargeRuns" << endl;
   } else {
-    //    cout << "NOT found " << fb.run << " in largeRuns" << endl;
+    //    cout << "NOT found " << fb.run << " in fLargeRuns" << endl;
   }
 
   if (!goodRun) return;
@@ -1647,7 +1644,7 @@ void plotStuff::loopFunction1() {
   char hname[200];
   if (fYear < 2013.) fb.ps = 1;
 
-  if ((fSample == "DBX") || (fSample == "NOC")) {
+  if ((fSample == "ysfill") || (fSample == "NOC")) {
     // no cut
     sprintf(hname, "NOC_%d_chan%d", static_cast<int>(fb.run), fChan);
     if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
@@ -1656,10 +1653,54 @@ void plotStuff::loopFunction1() {
     fYieldHists[Form("NOC_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
   }
 
-  if (!fGoodQ) return;
-  if (!fGoodPvAveW8) return;
-  if (!fGoodGlobalMuons) return;
-  if (!fb.json) return;
+  if ((fSample == "ysfill") || (fSample == "JSN")) {
+    // after JSON
+    if (fb.json) {
+      sprintf(hname, "JSN_%d_chan%d", static_cast<int>(fb.run), fChan);
+      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
+      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
+      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
+      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
+    }
+  }
+  if ((fSample == "ysfill") || (fSample == "QOS")) {
+    // after opposite sign
+    if (fb.json && fb.m1q*fb.m2q<0) {
+      sprintf(hname, "QOS_%d_chan%d", static_cast<int>(fb.run), fChan);
+      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
+      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
+      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
+      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
+    }
+  }
+
+  if ((fSample == "ysfill") || (fSample == "PVW")) {
+    // after PV w8
+    if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7) {
+      sprintf(hname, "PVW_%d_chan%d", static_cast<int>(fb.run), fChan);
+      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
+      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
+      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
+      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
+    }
+  }
+
+  if ((fSample == "ysfill") || (fSample == "MUO")) {
+    // after global muons
+    if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7 && (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5)) {
+      sprintf(hname, "MUO_%d_chan%d", static_cast<int>(fb.run), fChan);
+      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
+      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
+      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
+      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
+    }
+  }
+
+  if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7 && (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5)) {
+
+  } else {
+    return;
+  }
 
   if (fb.fls3d < 4.) return;
   if (fb.chi2dof  > fCuts[fChan]->chi2dof) return;
@@ -1667,7 +1708,7 @@ void plotStuff::loopFunction1() {
   if (fb.iso      < fCuts[fChan]->iso) return;
 
 
-  if ((fSample == "DBX") || (fSample == "PRE")) {
+  if ((fSample == "ysfill") || (fSample == "PRE")) {
     // no cut beyond preselection above
     sprintf(hname, "PRE_%d_chan%d", static_cast<int>(fb.run), fChan);
     if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
@@ -1676,7 +1717,7 @@ void plotStuff::loopFunction1() {
     fYieldHists[Form("PRE_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
   }
 
-  if ((fSample == "DBX") || (fSample == "HLT")) {
+  if ((fSample == "ysfill") || (fSample == "HLT")) {
     if (fb.hlt1) {
       sprintf(hname, "HLT_%d_chan%d", static_cast<int>(fb.run), fChan);
       if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
@@ -1687,7 +1728,7 @@ void plotStuff::loopFunction1() {
     }
   }
 
-  if ((fSample == "DBX") || (fSample == "TOS")) {
+  if ((fSample == "ysfill") || (fSample == "TOS")) {
     if (fb.hlt1 && fb.tos) {
       sprintf(hname, "TOS_%d_chan%d", static_cast<int>(fb.run), fChan);
       if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
@@ -1702,6 +1743,47 @@ void plotStuff::loopFunction1() {
 
 // ----------------------------------------------------------------------
 void plotStuff::loopFunction2() {
+
+  if (fLargeRuns.end() != find(fLargeRuns.begin(), fLargeRuns.end(), fb.run)) {
+  } else {
+    // -- comment the following line if ALL runs should be looked at
+    //    return;
+  }
+
+  char hname0[200];
+  char hname1[200];
+  sprintf(hname0, "ls0_%d", static_cast<int>(fb.run));
+  sprintf(hname1, "ls1_%d", static_cast<int>(fb.run));
+
+  if (0 == fHLs0.count(hname0)) {
+    fHLs0.insert(make_pair(hname0, new TH2D(hname0, hname0, 3500, 0., 3500., 6, -1., 5.)));
+    fHLs1.insert(make_pair(hname1, new TH2D(hname1, hname1, 3500, 0., 3500., 6, -1., 5.)));
+  }
+
+
+  if (!fb.json) return;
+  if (!fb.hlt1) return;
+  if (!fb.tos) return;
+  if (fb.m1pt < 4.0) return;
+  if (fb.m2pt < 4.0) return;
+  if (TMath::Abs(fb.m1eta) > 1.4) return;
+  if (TMath::Abs(fb.m2eta) > 1.4) return;
+  if (fb.m1q * fb.m2q > 0) return;
+
+  bool doubleMu0(false), highPtMu(false);
+  if (((fb.l1s & 1) == 1) || ((fb.l1s & 2) == 2) || ((fb.l1s & 4) == 4)) {
+    fHLs0[hname0]->Fill(fb.ls, -0.5);
+    if (fb.chan > -1) fHLs0[hname0]->Fill(fb.ls, fb.chan);
+  }
+
+  if (((fb.l1s & 8) == 8) || ((fb.l1s & 16) == 16) || ((fb.l1s & 32) == 32) || ((fb.l1s & 64) == 64)) {
+    fHLs1[hname1]->Fill(fb.ls, -0.5);
+    if (fb.chan > -1) fHLs1[hname1]->Fill(fb.ls, fb.chan);
+  }
+
+  fProf["npv"]->Fill(fb.run, fb.pvn);
+
+
 }
 
 // ----------------------------------------------------------------------
@@ -2217,6 +2299,235 @@ void plotStuff::setupPvTree(TTree *t) {
 
 
 // ----------------------------------------------------------------------
+void plotStuff::runStudy(string ds) {
+
+  fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
+
+  TDirectory *hDir(0);
+  hDir = gDirectory;
+
+  bool ok = false;
+
+  int runStart(273150), runEnd(284044);
+  int runBins = runEnd - runStart + 1;
+
+  TIter next(gDirectory->GetListOfKeys());
+  TKey *key(0);
+  while ((key = (TKey*)next())) {
+    if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH2D")) continue;
+    if (TString(key->GetName()).Contains(Form("ls0_"))) {
+      ok = true;
+      break;
+    }
+  }
+
+  if (!ok) {
+    cout << "Histograms not found" << endl;
+    fProf.insert(make_pair("npv", new TProfile("npv", "npv", runBins, runStart, runEnd)));
+
+    fSample = ds;
+    setup(fSample);
+    fCds = fDS[fSample];
+    TTree *t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
+    loopOverTree(t, 2);
+
+    if (1) {
+      cout << "writing output histograms: " << fYieldHists.size() << endl;
+
+      fProf["npv"]->SetDirectory(hDir);
+      fProf["npv"]->Write();
+
+      for (map<string, TH2D*>::iterator it = fHLs0.begin(); it != fHLs0.end(); ++it) {
+	cout << "name = " << it->first << " hist " << it->second->GetName() << endl;
+	it->second->SetDirectory(hDir);
+	it->second->Write();
+      }
+
+      for (map<string, TH2D*>::iterator it = fHLs1.begin(); it != fHLs1.end(); ++it) {
+	cout << "name = " << it->first << " hist " << it->second->GetName() << endl;
+	it->second->SetDirectory(hDir);
+	it->second->Write();
+      }
+    }
+
+  } else {
+
+    Lumi *lumi(0);
+    if (2016 == fYear) {
+      if (string::npos != ds.find("psi")) {
+	//	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
+      } else {
+	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
+      }
+    } else if (2012 == fYear) {
+      lumi = new Lumi("../common/json/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON_MuonPhys.lumi");
+    } else if (2011 == fYear) {
+      lumi = new Lumi("../common/json/Cert_160404-180252_7TeV_ReRecoNov08_Collisions11_JSON_MuonPhys_v2.lumi");
+    }
+
+
+    shrinkPad(0.1, 0.1, 0.07, 0.12);
+    TH1D *hl = new TH1D("lostLs", "lost lumi sections", runBins, runStart, runEnd);
+    TH1D *h0y = new TH1D("yields", "yields low pT", runBins, runStart, runEnd);
+    TH1D *h1y = new TH1D("yields", "yields high pT", runBins, runStart, runEnd);
+    TH2D *hc0b = new TH2D("hc0b", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0c = new TH2D("hc0c", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0d = new TH2D("hc0d", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0e = new TH2D("hc0e", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0f = new TH2D("hc0f", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0g = new TH2D("hc0g", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc0h = new TH2D("hc0h", "", 50, 0., 50., 50, 0., 1200.);
+
+    TH2D *hc1b = new TH2D("hc1b", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1c = new TH2D("hc1c", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1d = new TH2D("hc1d", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1e = new TH2D("hc1e", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1f = new TH2D("hc1f", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1g = new TH2D("hc1g", "", 50, 0., 50., 50, 0., 1200.);
+    TH2D *hc1h = new TH2D("hc1h", "", 50, 0., 50., 50, 0., 1200.);
+
+    TProfile *hp = (TProfile*)gDirectory->Get("npv");
+    next = gDirectory->GetListOfKeys();
+    while ((key = (TKey*)next())) {
+      if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH2D")) continue;
+      if (TString(key->GetName()).Contains(Form("ls0_"))) {
+	string hname = key->GetName();
+	TH2D *h0 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
+	replaceAll(hname, "ls0", "ls1");
+	TH2D *h1 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
+	TH1D *h0l = h0->ProjectionX(Form("%s_x0", hname.c_str()), 1,1); h0l->SetLineColor(kBlue);
+	TH1D *h1l = h1->ProjectionX(Form("%s_x1", hname.c_str()), 1,1); h1l->SetLineColor(kRed);
+	h0l->Rebin(10);
+	h1l->Rebin(10);
+	replaceAll(hname, "ls1_", "");
+	int run = atoi(hname.c_str());
+	string rr = runRange(run);
+	double hltLumi = lumi->lumi(run);
+	if (hltLumi > 10.) {
+	  if ("B" == rr) {
+	    hc0b->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1b->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("C" == rr) {
+	    hc0c->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1c->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("D" == rr) {
+	    hc0d->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1d->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("E" == rr) {
+	    hc0e->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1e->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("F" == rr) {
+	    hc0f->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1f->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("G" == rr) {
+	    hc0g->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1g->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  } else if ("H" == rr) {
+	    hc0h->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	    hc1h->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	  }
+	  h0y->SetBinContent(h1y->FindBin(run), h0l->Integral()/hltLumi);
+	  h1y->SetBinContent(h1y->FindBin(run), h1l->Integral()/hltLumi);
+
+	  cout << "run = " << run
+	       << " lumi = " << hltLumi
+	       << " nPV: " << hp->GetBinContent(hp->FindBin(run))
+	       << " yield = " <<  h1l->Integral()
+	       << " yield*pb = " <<  h1l->Integral()/hltLumi
+	       << endl;
+	}
+	// -- skip initial runs for the missed ls count
+	if (run > 274000) {
+	  int lsCnt(0), lsTot(0);
+	  double ymax = h1l->GetMaximum();
+	  for (int ib = 0; ib < h0l->GetNbinsX(); ++ib) {
+	    if (h1l->GetBinContent(ib) > 0.05*ymax) {
+	      ++lsTot;
+	      if (h0l->GetBinContent(ib) < h1l->GetBinContent(ib)) ++lsCnt;
+	    }
+	  }
+	  if (lsCnt>1) {
+	    cout << "XXXX Run " << run << " missed ls fraction: " << static_cast<double>(lsCnt)/lsTot << endl;
+	    hl->SetBinContent(hl->FindBin(run), static_cast<double>(lsCnt)/lsTot);
+	  }
+	}
+	TH1D *hr = (TH1D*)h1l->Clone("h1r");
+	hr->Divide(h0l, h1l, 1., 1.);
+	hr->Scale(0.6*h0l->GetMaximum()/hr->GetMaximum());
+	hr->SetLineColor(kBlack);
+	h0l->Draw("hist");
+	h1l->Draw("samehist");
+	hr->Draw("samehist");
+	tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.92, h0l->GetName());
+	tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.6, 0.92, h1l->GetName());
+	savePad(Form("runStudy_l1seeds_%s.pdf", hname.c_str()));
+      }
+    }
+    hl->SetMinimum(0.);
+    hl->Draw();
+    plot2016Eras(hl->GetMaximum());
+    savePad(Form("runStudy_missedLS.pdf"));
+    h0y->SetMinimum(0.);
+    h0y->Draw("e");
+    plot2016Eras(h0y->GetMaximum());
+    savePad(Form("runStudy_yields_DoubleMu0.pdf"));
+    h1y->SetMinimum(0.);
+    h1y->Draw("e");
+    plot2016Eras(h1y->GetMaximum());
+    savePad(Form("runStudy_yields_highPt.pdf"));
+
+    hc0b->SetMarkerColor(kBlack);     hc0b->Draw();
+    hc0c->SetMarkerColor(kGreen+1);   hc0c->Draw("same");
+    hc0d->SetMarkerColor(kRed+1);     hc0d->Draw("same");
+    hc0e->SetMarkerColor(kRed+2);     hc0e->Draw("same");
+    hc0f->SetMarkerColor(kRed+3);     hc0f->Draw("same");
+    hc0g->SetMarkerColor(kBlue+1);    hc0g->Draw("same");
+    hc0h->SetMarkerColor(kBlue+3);    hc0h->Draw("same");
+
+    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu0 seeds");
+    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
+    tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
+    tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
+    tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
+    tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
+    tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
+    tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
+
+    savePad(Form("runStudy_yieldVsNpv_Seed0_allEras.pdf"));
+
+    hc1b->SetMarkerColor(kBlack);     hc1b->Draw();
+    hc1c->SetMarkerColor(kGreen+1);   hc1c->Draw("same");
+    hc1d->SetMarkerColor(kRed+1);     hc1d->Draw("same");
+    hc1e->SetMarkerColor(kRed+2);     hc1e->Draw("same");
+    hc1f->SetMarkerColor(kRed+3);     hc1f->Draw("same");
+    hc1g->SetMarkerColor(kBlue+1);    hc1g->Draw("same");
+    hc1h->SetMarkerColor(kBlue+3);    hc1h->Draw("same");
+
+    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu_1X_Y seeds");
+    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
+    tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
+    tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
+    tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
+    tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
+    tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
+    tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
+
+    savePad(Form("runStudy_yieldVsNpv_Seed1_allEras.pdf"));
+
+
+  }
+
+
+
+  fHistFile->Close();
+
+
+}
+
+
+// ----------------------------------------------------------------------
 void plotStuff::tauEfficiency(string varname, string cut, string otherSelection, string dsname) {
 
   if (varname == "all") {
@@ -2615,4 +2926,18 @@ void plotStuff::o2Profile(TProfile *p, string dsname, string dsname2, int i) {
   legg->AddEntry(p, Form("%s", dsname.c_str()), "p");
   legg->AddEntry(s, Form("%s", dsname2.c_str()), "p");
   legg->Draw();
+}
+
+
+// ----------------------------------------------------------------------
+void plotStuff::plot2016Eras(double ymax) {
+  tl->SetNDC(false);
+  pl->SetLineColor(kRed);
+  tl->DrawLatex(273150., 1.0, "B"); pl->DrawLine(273150., 0., 273150., ymax);
+  tl->DrawLatex(275657., 1.0, "C"); pl->DrawLine(275657., 0., 275657., ymax);
+  tl->DrawLatex(276315., 1.0, "D"); pl->DrawLine(276315., 0., 276315., ymax);
+  tl->DrawLatex(276831., 1.0, "E"); pl->DrawLine(276831., 0., 276831., ymax);
+  tl->DrawLatex(277772., 1.0, "F"); pl->DrawLine(277772., 0., 277772., ymax);
+  tl->DrawLatex(278820., 1.0, "G"); pl->DrawLine(278820., 0., 278820., ymax);
+  tl->DrawLatex(280919., 1.0, "H"); pl->DrawLine(280919., 0., 280919., ymax);
 }
