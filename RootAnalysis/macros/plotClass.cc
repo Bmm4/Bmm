@@ -197,12 +197,13 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 plotClass::~plotClass() {
   cout << "plotClass destructor" << endl;
   for (map<string, dataset*>::iterator imap = fDS.begin(); imap != fDS.end(); ++imap) {
-    cout << "    => closing " << imap->first;
-    cout << ": " << fDS[imap->first]->fF->GetName() << endl;
-    imap->second->fF->Close();
+    if (fDS[imap->first]->fF) {
+      cout << "    => closing " << imap->first;
+      cout << ": " << fDS[imap->first]->fF->GetName() << endl;
+      imap->second->fF->Close();
+    }
   }
 }
-
 
 // ----------------------------------------------------------------------
 void plotClass::changeSetup(string dir, string name, string setup) {
