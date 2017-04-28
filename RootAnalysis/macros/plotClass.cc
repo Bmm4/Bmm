@@ -615,6 +615,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("cb",     &fb.cb);
   t->SetBranchAddress("json",   &fb.json);
   t->SetBranchAddress("gmuid",  &fb.gmuid);
+  t->SetBranchAddress("gmugmid",  &fb.gmugmid);
   t->SetBranchAddress("gmumvaid", &fb.gmumvaid);
   t->SetBranchAddress("gtqual", &fb.gtqual);
   t->SetBranchAddress("tm",     &fb.tm);
