@@ -158,15 +158,13 @@ void plotStuff::init() {
 void plotStuff::makeAll(string what) {
 
   if (what == "runs") runStudy("bupsikData");
-  if (what == "ysfill") yieldStability("bupsikData", "ysfill");
+  if (what == "ysfill") {
+    yieldStability("bupsikData", "ysfill");
+    yieldStability("bmmData", "ysfill");
+    yieldStability("bspsiphiData", "ysfill");
+  }
   if (what == "ysplot") {
     yieldStability("bupsikData", "NOC");
-    yieldStability("bupsikData", "JSN");
-    yieldStability("bupsikData", "QOS");
-    yieldStability("bupsikData", "PVW");
-    yieldStability("bupsikData", "MUO");
-    yieldStability("bupsikData", "PRE");
-    yieldStability("bupsikData", "HLT");
     yieldStability("bupsikData", "TOS");
   }
 
@@ -1639,10 +1637,16 @@ void plotStuff::loopFunction1() {
       if (fb.mkpi > 0.94) return;
     }
 
-    //    m = fb.cm;
   }
+
   char hname[200];
   if (fYear < 2013.) fb.ps = 1;
+
+  if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7 && fb.gmuid) {
+    // do nothing
+  } else {
+    return;
+  }
 
   if ((fSample == "ysfill") || (fSample == "NOC")) {
     // no cut
@@ -1653,80 +1657,10 @@ void plotStuff::loopFunction1() {
     fYieldHists[Form("NOC_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
   }
 
-  if ((fSample == "ysfill") || (fSample == "JSN")) {
-    // after JSON
-    if (fb.json) {
-      sprintf(hname, "JSN_%d_chan%d", static_cast<int>(fb.run), fChan);
-      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-      fYieldHists[Form("JSN_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-    }
-  }
-  if ((fSample == "ysfill") || (fSample == "QOS")) {
-    // after opposite sign
-    if (fb.json && fb.m1q*fb.m2q<0) {
-      sprintf(hname, "QOS_%d_chan%d", static_cast<int>(fb.run), fChan);
-      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-      fYieldHists[Form("QOS_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-    }
-  }
-
-  if ((fSample == "ysfill") || (fSample == "PVW")) {
-    // after PV w8
-    if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7) {
-      sprintf(hname, "PVW_%d_chan%d", static_cast<int>(fb.run), fChan);
-      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-      fYieldHists[Form("PVW_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-    }
-  }
-
-  if ((fSample == "ysfill") || (fSample == "MUO")) {
-    // after global muons
-    if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7 && (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5)) {
-      sprintf(hname, "MUO_%d_chan%d", static_cast<int>(fb.run), fChan);
-      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-      fYieldHists[Form("MUO_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-    }
-  }
-
-  if (fb.json && fb.m1q*fb.m2q<0 && fb.pvw8 > 0.7 && (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5)) {
-
-  } else {
-    return;
-  }
-
   if (fb.fls3d < 4.) return;
   if (fb.chi2dof  > fCuts[fChan]->chi2dof) return;
   if (fb.alpha    > 0.2) return;
   if (fb.iso      < fCuts[fChan]->iso) return;
-
-
-  if ((fSample == "ysfill") || (fSample == "PRE")) {
-    // no cut beyond preselection above
-    sprintf(hname, "PRE_%d_chan%d", static_cast<int>(fb.run), fChan);
-    if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-    fYieldHists[Form("PRE_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-    fYieldHists[Form("PRE_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-    fYieldHists[Form("PRE_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-  }
-
-  if ((fSample == "ysfill") || (fSample == "HLT")) {
-    if (fb.hlt1) {
-      sprintf(hname, "HLT_%d_chan%d", static_cast<int>(fb.run), fChan);
-      if (0 == fYieldHists.count(hname)) fYieldHists.insert(make_pair(hname, new TH2D(hname, hname, 90, 5.0, 5.9, MAXPS+1, -1., MAXPS)));
-      fYieldHists[Form("HLT_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, -0.1, static_cast<double>(fb.ps));
-      fYieldHists[Form("HLT_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, 0.1);
-      fYieldHists[Form("HLT_%d_chan%d", static_cast<int>(fb.run), fChan)]->Fill(m, fb.ps+0.1);
-
-    }
-  }
 
   if ((fSample == "ysfill") || (fSample == "TOS")) {
     if (fb.hlt1 && fb.tos) {
@@ -2434,8 +2368,10 @@ void plotStuff::runStudy(string ds) {
 	  cout << "run = " << run
 	       << " lumi = " << hltLumi
 	       << " nPV: " << hp->GetBinContent(hp->FindBin(run))
-	       << " yield = " <<  h1l->Integral()
-	       << " yield*pb = " <<  h1l->Integral()/hltLumi
+	       << " yield(0) = " <<  h0l->Integral()
+	       << " yield(0)*pb = " <<  h0l->Integral()/hltLumi
+	       << " yield(1) = " <<  h1l->Integral()
+	       << " yield(1)*pb = " <<  h1l->Integral()/hltLumi
 	       << endl;
 	}
 	// -- skip initial runs for the missed ls count
