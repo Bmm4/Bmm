@@ -518,7 +518,7 @@ TAnaCand *HFSequentialVertexFit::addCandidate(HFDecayTree *tree, VertexState *wr
       for (MuonCollection::const_iterator muonIt = fMuons->begin(); muonIt != fMuons->end(); ++muonIt) {
 	if ((int)muonIt->track().index() == allTreeTracks[j].trackIx) {
 	  Vertex secVertex(RecoVertex::convertPos(kinVertex->vertexState().position()),
-			   kinVertex->vertexState().error().matrix_new(),
+			   kinVertex->vertexState().error().matrix(),
 			   kinVertex->chiSquared(),
 			   kinVertex->degreesOfFreedom(),
 			   daughterParticles.size());
