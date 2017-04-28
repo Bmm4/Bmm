@@ -1302,6 +1302,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   TH1D *w1 = new TH1D("sigma0", "Run 2", 20, 0., 4.0); w1->Sumw2();
   TH1D *w2 = new TH1D("sigma1", "Phase 2", 20, 0.+eps, 4.0+eps); w2->Sumw2();
   TH1D *hmass0(0), *hmass1(0);
+  double FITRMS(2.0);
   for (int i = 0; i < 20; ++i) {
     hmass0 = (TH1D*)fHistFile->Get(Form("Hmass0_%d", i));
     hmass1 = (TH1D*)fHistFile->Get(Form("Hmass1_%d", i));
@@ -1324,7 +1325,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
     double peak0V(0.),  peak0E(0.),  peak1V(0.),  peak1E(0.);
     double sigma0V(0.), sigma0E(0.), sigma1V(0.), sigma1E(0.);
     if (hmass1->GetSumOfWeights() > 0.) {
-      hmass1->Fit("gaus", "r0", "", 5.37 - hmass1->GetRMS(), 5.37 + hmass1->GetRMS());
+      hmass1->Fit("gaus", "r0", "", 5.37 - FITRMS*hmass1->GetRMS(), 5.37 + FITRMS*hmass1->GetRMS());
       peak1V  = hmass1->GetFunction("gaus")->GetParameter(1);
       peak1E  = hmass1->GetFunction("gaus")->GetParError(1);
       sigma1V = hmass1->GetFunction("gaus")->GetParameter(2);
@@ -1336,7 +1337,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
       w2->SetBinError(i+1, sigma1E);
     }
     if (hmass0->GetSumOfWeights() > 0.) {
-      hmass0->Fit("gaus", "r0", "", 5.37 - hmass0->GetRMS(), 5.37 + hmass0->GetRMS());
+      hmass0->Fit("gaus", "r0", "", 5.37 - FITRMS*hmass0->GetRMS(), 5.37 + FITRMS*hmass0->GetRMS());
       peak0V  = hmass0->GetFunction("gaus")->GetParameter(1);
       peak0E  = hmass0->GetFunction("gaus")->GetParError(1);
       sigma0V = hmass0->GetFunction("gaus")->GetParameter(2);
@@ -1356,10 +1357,13 @@ void plotWork::ups1(std::string file1, std::string file2) {
     hmass0->Draw("same");
 
     tl->SetTextSize(0.04); tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.2, 0.92, Form("%s", hmass0->GetTitle()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.85, "Run 2");
     tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.80, Form("RMS: %4.3f MeV", hmass0->GetRMS()));
     tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.76, Form("peak: %5.4f MeV", peak0V));
-    tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.70, Form("RMS: %4.3f MeV", hmass1->GetRMS()));
-    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.66, Form("peak: %5.4f MeV", peak1V));
+
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.65, "Phase 2");
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.60, Form("RMS: %4.3f MeV", hmass1->GetRMS()));
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.56, Form("peak: %5.4f MeV", peak1V));
     savePad(Form("ups1-mass-bin%d.pdf", i));
   }
 
@@ -1658,7 +1662,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   setHist(hSep1, kRed, 25, 1.2);
   hSep0->SetMinimum(0.0);
   hSep0->SetMaximum(4.);
-  setTitles(hSep0, "#it{|}#eta_{#it{f}}#it{|}", "separation between B^{0} and B_{s}", 0.05, 1.1, 1.6);
+  setTitles(hSep0, "#it{|}#eta_{#it{f}}#it{|}", "B^{0} and B_{s} separation significance", 0.05, 1.1, 1.6);
   hSep0->Draw("e");
   hSep1->Draw("esame");
 
@@ -1677,6 +1681,14 @@ void plotWork::ups2(std::string file1, std::string file2) {
 void plotWork::loopFunction2() {
   if ((TMath::Abs(fb.m2eta) < 1.4) && fb.m2pt < 4.) return;
   if ((TMath::Abs(fb.m2eta) > 1.4) && fb.m2pt < 2.) return;
+  if (!fb.gmugmid) return;
+
+  //  if (TMath::Abs(fb.fls3d) < 10.) return;
+
+  // if (TMath::Abs(fb.maxdoca) > 0.08) return;
+  // if (TMath::Abs(fb.pvips) > 5.) return;
+
+
 
   double meta = fb.m1eta;
   if (TMath::Abs(meta) < TMath::Abs(fb.m2eta)) meta = fb.m2eta;
