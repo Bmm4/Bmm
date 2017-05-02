@@ -15,6 +15,7 @@
 
 #include "plotReducedOverlays.hh"
 #include "plotWork.hh"
+#include "plotBdt.hh"
 #include "plotResults.hh"
 #include "plotStuff.hh"
 #include "plotFake.hh"
@@ -152,6 +153,21 @@ int main(int argc, char *argv[]) {
       a.makeAll();
     }
   }
+
+  // -- BDT
+  if (string::npos != plot.find("bdt")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    plotBdt a(dir, files, cuts);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (setup != "") {
+      a.setVars(setup);
+    }
+    if (mode != "nada") {
+      a.setBDTParameters(mode);
+    }
+    a.makeAll();
+  }
+
 
   // -- umlLifetime
   if (string::npos != plot.find("umllifetime")) {
