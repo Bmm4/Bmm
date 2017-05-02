@@ -1334,6 +1334,11 @@ void candAna::triggerL1T() {
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
+      } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
+	fL1Seeds |= 0x1<<0; //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
       }
     } else if (fYear == 2011) {
       if ("L1_DoubleMu0" == fpEvt->fL1TNames[i]) {
