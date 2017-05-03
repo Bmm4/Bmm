@@ -1,349 +1,194 @@
-#include "plotBdt.hh"
-
 #include <cstdlib>
-#include <fstream>
 #include <iostream>
-#include <sstream>
-#include <algorithm>
-#include <iterator>
+#include <map>
+#include <string>
 
-
-#include "TROOT.h"
-#include "TStyle.h"
-#include "TKey.h"
-#include "TMath.h"
-#include "TPad.h"
-#include "TRandom3.h"
+#include "TChain.h"
+#include "TFile.h"
+#include "TTree.h"
 #include "TString.h"
-#include "TCanvas.h"
-#include "TLorentzVector.h"
-#include "TPad.h"
-#include "TF1.h"
-#include "TFitResult.h"
+#include "TObjString.h"
+#include "TSystem.h"
+#include "TMath.h"
+#include "TROOT.h"
+#include "TLatex.h"
+#include "TLegend.h"
+#include "TText.h"
+#include "TH2.h"
+#include "TGraph.h"
 #include "TPaveStats.h"
+#include "TMinuit.h"
+#include "TVirtualFitter.h"
 
-#include "TMVA/tmvaglob.h"
+#include "tmva1.hh"
+#include "setupReader.hh"
+#include "common/initFunc.hh"
+
 #include "TMVA/Config.h"
-#include "TMVA/MsgLogger.h"
-#include "TMVA/Config.h"
-#include "TMVA/Tools.h"
 #include "TMVA/Factory.h"
 #include "TMVA/Reader.h"
+#include "TMVA/Tools.h"
+#include "TMVA/tmvaglob.h"
 
-#include "preselection.hh"
-#include "common/dataset.hh"
-#include "common/util.hh"
-#include "common/Lumi.hh"
+//2011
+//#define LUMISCALE 2.01e-4
 
-ClassImp(plotBdt)
+//2012  12/7405 = 0.00162
+//#define LUMISCALE 0.00162
+
+ClassImp(tmva1)
 
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotBdt::plotBdt(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
-  plotClass::loadFiles(files);
-  plotBdt::loadFiles(files);
-
-  changeSetup(dir, "plotBdt", setup);
-  init();
-
-  // -- initialize cuts
-  string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
-  cout << "===> Reading cuts from " << cutfile << endl;
-  readCuts(cutfile);
-  fNchan = fCuts.size();
-
-  printCuts(cout);
-
-  fChan = 0;
-
-  fLumiScale = 37.5/10879.6;
-  if (2012 == fYear) fLumiScale = 20./10000.;
-
-  fVariables = "pt:eta:alpha:fls3d:maxdoca:pvip:pvips:iso:m1iso:m2iso";
-
-}
-
-
+// --
+// -- USAGE: a.makeAll(0, 1); > TMVA-0.log
+// --
 // ----------------------------------------------------------------------
-plotBdt::~plotBdt() {
 
-}
+tmva1::tmva1(int year, string vars, string pars) {
 
-// ----------------------------------------------------------------------
-void plotBdt::init() {
-  fTEX.close();
-  cout << Form("/bin/rm -f %s", fTexFileName.c_str()) << endl;
-  system(Form("/bin/rm -f %s", fTexFileName.c_str()));
-  cout << Form("open for TeX output: %s", fTexFileName.c_str()) << endl;
-  fTEX.open(fTexFileName.c_str(), ios::app);
+  fYear          = 2016;
+  fVariables     = vars;
+  fBDTParameters = pars;
 
-}
+  cout << "tmva1 hello: setup for year = " << year << " with variables: " << vars << endl;
 
+  fVariables = vars;
+  fBDTParameters = "";
 
-// ----------------------------------------------------------------------
-void plotBdt::makeAll(string what) {
-  string filename("empty.root");
-  if (string::npos != what.find("create")) {
-    filename = Form("tmva-trees-0-%d.root", fYear);
-    createInputFiles(filename);
-  } else {
-    if (2011 == fYear) {
-      filename = "/scratch/ursl/bdt/tmva-trees-0-2011.root";
-    }
-    if (2012 == fYear) {
-      filename = "/scratch/ursl/bdt/tmva-trees-0-2012.root";
-    }
-    if (2016 == fYear) {
-      filename = "/scratch/ursl/bdt/tmva-trees-0-2016.root";
-    }
+  legg = 0;
+  legge = 0;
+  tl = new TLatex();
+  tl->SetTextFont(42);
+  tl->SetTextSize(0.03);
+  tl->SetNDC(kTRUE);
+
+  fYear = year;
+
+  if (year == 2011) {
+    fLumiScale = 3.1e-4; // 4.9/16000
+    fInputFiles.sname = "/scratch/ursl/bmm4/v05/";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v05/";
+  } else if (year == 2012) {
+    fLumiScale = 2.8e-4; // 20/714000
+    fInputFiles.sname = "/scratch/ursl/bmm4/v05/";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v05/";
+  } else if (year == 2016) {
+    fLumiScale = 2.8e-4; // 20/714000
+    fInputFiles.sname = "/scratch/ursl/bmm4/v05/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v05.root";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v05/bmm-data-bmmCharmonium2016-v05.root";
   }
 
-  int offset(0), clean(0);
-  cout << "make(" << offset << ", " << filename << " ..." << endl;
-  make(offset, filename, 0, clean);
-  make(offset, filename, 1, clean);
-  make(offset, filename, 2, clean);
+//   // -- BDT setup 108/109
+//   fBdtSetup.NTrees = 800;
+//   fBdtSetup.nEventsMin = 50;
+//   fBdtSetup.MaxDepth = 2;
+//   //  fBdtSetup.MaxDepth = 3;
+//   fBdtSetup.nCuts = 20;
+//   fBdtSetup.AdaBoostBeta = 1.0;
+//   fBdtSetup.NNodesMax = 5;
+//   //  fBdtSetup.NNodesMax = 20;
 
-  return;
-  string oname = Form("TMVA-%d", offset);
-  cout << "-->apply(" << oname.c_str() << ")" << endl;
-  apply(oname.c_str());
-  cout << "-->analyze(\"" << oname.c_str() << "\")" << endl;
-  analyze(oname.c_str());
+  // -- TMVA default
+  fBdtSetup.NTrees = 200;
+  fBdtSetup.nEventsMin = 500;
+  fBdtSetup.MaxDepth = 3;
+  fBdtSetup.nCuts = 20;
+  fBdtSetup.AdaBoostBeta = 1.0;
+  fBdtSetup.NNodesMax = 100000;
 
-  cout << "-->mvas(...)" << endl;
-  string sEvents = oname + "-Events0";
-  mvas(sEvents.c_str());
-  sEvents = oname + "-Events1";
-  mvas(sEvents.c_str());
-  sEvents = oname + "-Events2";
-  mvas(sEvents.c_str());
-
-  if (clean) {
-    cout << "-->cleanup(...)" << endl;
-    cleanup(oname);
-  }
-
-}
-
-
-
-
-// ----------------------------------------------------------------------
-void plotBdt::bookHist(string dsname) {
-
-}
-
-
-
-// ----------------------------------------------------------------------
-void plotBdt::loopFunction1() {
+  fApplyOn0 = false;
+  fApplyOn1 = false;
+  fApplyOn2 = false;
+  fTrainAntiMuon = false;
+  fChannel = 0;
 
 }
 
 
 // ----------------------------------------------------------------------
-void plotBdt::loopFunction2() {
+tmva1::~tmva1() {
+  cout << "tmva1 good bye " << endl;
+}
 
+
+// ----------------------------------------------------------------------
+TCanvas* tmva1::getC0() {
+  TCanvas *c0 = (TCanvas*)gROOT->FindObject("c0");
+  if (0 == c0) c0 = new TCanvas("c0","--c0--",2303,0,656,700);
+  return c0;
 }
 
 
 
 // ----------------------------------------------------------------------
-void plotBdt::loopFunction3() {
+void tmva1::setupTree(TTree *t, redTreeData &b) {
+  t->SetBranchAddress("evt", &b.evt);
+  t->SetBranchAddress("run", &b.run);
+  t->SetBranchAddress("json", &b.json);
+  t->SetBranchAddress("pvw8", &b.pvw8);
+  t->SetBranchAddress("gmuid", &b.gmuid);
+  t->SetBranchAddress("gmugmid", &b.gmugmid);
+  t->SetBranchAddress("gtqual", &b.gtqual);
+  t->SetBranchAddress("hlt1", &b.hlt1);
+  t->SetBranchAddress("tos", &b.tos);
+  t->SetBranchAddress("m1pt", &b.m1pt);
+  t->SetBranchAddress("m1eta", &b.m1eta);
+  t->SetBranchAddress("m1phi", &b.m1phi);
+  t->SetBranchAddress("m1q", &b.m1q);
+  t->SetBranchAddress("m2pt", &b.m2pt);
+  t->SetBranchAddress("m2eta", &b.m2eta);
+  t->SetBranchAddress("m2phi", &b.m2phi);
+  t->SetBranchAddress("m2q", &b.m2q);
+  t->SetBranchAddress("pt", &b.pt);
+  t->SetBranchAddress("eta", &b.eta);
+  t->SetBranchAddress("pvlip", &b.pvlip);
+  t->SetBranchAddress("pvlips", &b.pvlips);
+  t->SetBranchAddress("fl3d", &b.fl3d);
+  t->SetBranchAddress("fls3d", &b.fls3d);
+  t->SetBranchAddress("flsxy", &b.flsxy);
+  t->SetBranchAddress("alpha", &b.alpha);
+  t->SetBranchAddress("maxdoca", &b.maxdoca);
+  t->SetBranchAddress("pvip", &b.pvip);
+  t->SetBranchAddress("pvips", &b.pvips);
+  t->SetBranchAddress("iso", &b.iso);
+  t->SetBranchAddress("docatrk", &b.docatrk);
+  t->SetBranchAddress("chi2dof", &b.chi2dof);
+  t->SetBranchAddress("closetrk", &b.closetrk);
+  t->SetBranchAddress("m", &b.m);
 
+  t->SetBranchAddress("m1iso",&b.m1iso);
+  t->SetBranchAddress("m2iso",&b.m2iso);
+  t->SetBranchAddress("closetrks1", &b.closetrks1);
+  t->SetBranchAddress("closetrks2", &b.closetrks2);
+  t->SetBranchAddress("closetrks3", &b.closetrks3);
+  t->SetBranchAddress("pvdchi2",&b.pvdchi2);
+  t->SetBranchAddress("othervtx",&b.othervtx);
+  t->SetBranchAddress("m1xpdist",&b.m1xpdist);
+  t->SetBranchAddress("m2xpdist",&b.m2xpdist);
+
+  t->SetBranchAddress("pv2lips", &b.pv2lips);
+  t->SetBranchAddress("pv2lip", &b.pv2lip);
 }
 
 
 // ----------------------------------------------------------------------
-void plotBdt::loopFunction4() {
-
-}
-
-// ----------------------------------------------------------------------
-void plotBdt::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
-  int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries);
-  if (nevts > 0 && nentries > nevts) {
-    nentries = nevts;
-    nbegin = 0;
-    nend = nevts;
-  }
-  if (nevts > 0 && nstart > 0) {
-    nentries = nstart + nevts;
-    nbegin = nstart;
-    if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts;
-    } else {
-      nend = t->GetEntries();
-    }
-  }
-
-  nentries = nend - nstart;
-
-  int step(1000000);
-  if (nentries < 5000000)  step = 500000;
-  if (nentries < 1000000)  step = 100000;
-  if (nentries < 100000)   step = 10000;
-  if (nentries < 10000)    step = 1000;
-  if (nentries < 1000)     step = 100;
-  step = 500000;
-  cout << "==> plotBdt::loopOverTree> loop over dataset " << (fCds?fCds->fName:"undefined") << " in file "
-       << t->GetDirectory()->GetName()
-       << " with " << nentries << " entries"
-       << " nbegin = " << nbegin << " nend = " << nend
-       << endl;
-
-  // -- setup loopfunction through pointer to member functions
-  //    (this is the reason why this function is NOT in plotClass!)
-  void (plotBdt::*pF)(void);
-  if (ifunc == 1) pF = &plotBdt::loopFunction1;
-  if (ifunc == 2) pF = &plotBdt::loopFunction2;
-  if (ifunc == 3) pF = &plotBdt::loopFunction3;
-  if (ifunc == 4) pF = &plotBdt::loopFunction4;
-
-  // -- the real loop starts here
-  for (int jentry = nbegin; jentry < nend; jentry++) {
-    t->GetEntry(jentry);
-    if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-
-    candAnalysis();
-    (this->*pF)();
-  }
-
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::make(int offset, string filename, int evt, int clean) {
-
-  if (0 == evt)  setApply0();
-  if (1 == evt)  setApply1();
-  if (2 == evt)  setApply2();
-
-  string type;
-  switch (evt) {
-  case 0:
-    type = "Events0";
-    break;
-  case 1:
-    type = "Events1";
-    break;
-  case 2:
-    type = "Events2";
-    break;
-  default:
-    cout << "All hell break loose" << endl;
-  }
-
-  string oname = Form("TMVA-%d-%s", offset, type.c_str());
-  cout << "======================================================================" << endl;
-  cout << "==> tmva1(" << oname << ", " << filename << ") " << endl;
-  cout << "======================================================================" << endl;
-
-  cout << "-->train(...) with oname = " << oname << " and filename = " << filename << endl;
-  train(oname, filename);
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::createInputFiles(string filename, int randomSeed) {
-  TFile *sinput = fDS["bsmmMcComb"]->getFile();
-  TFile *dinput = fDS["bmmData"]->getFile();
-
-  TCut sgcut = preselection().c_str();
-
-  cout << "new: " << endl;
-  cout << sgcut << endl;
-
-  TCut masscut = "m>4.9&&m<5.9";
-  TCut massbg  = "!(5.2<m&&m<5.45)";
-
-  cout << "==> signal input file:     " << sinput->GetName() << endl;
-  cout << "==> background input file: " << dinput->GetName() << endl;
-
-  TTree *signal      = (TTree*)sinput->Get("candAnaMuMu/events");
-  TTree *cbackground = (TTree*)dinput->Get("candAnaMuMu/events");
-
-  TFile *outFile = TFile::Open(filename.c_str(),"RECREATE");
-
-  // -- channel selection/definition
-  float etaCut(1.6);
-  if (fYear == 2012) etaCut = 2.1;
-  string chanDef[] = {"TMath::Abs(m1eta) < 0.7 && TMath::Abs(m2eta) < 0.7",
-                      Form("(TMath::Abs(m1eta)>0.7 || TMath::Abs(m2eta)>0.7) && TMath::Abs(m1eta)<%3.1f && TMath::Abs(m2eta)<%3.1f",
-			   etaCut, etaCut)
-  };
-
-  int nchan = 2;
-  string sdir, type;
-  TTree *copyTree(0);
-  TCut copyCuts;
-  TCut chanCut, typeCut;
-  if (randomSeed > -1) gRandom->SetSeed(randomSeed);
-  for (int j = 0; j < 3; ++j) {
-    if (0 == j) {
-      type = "Events0";
-      typeCut = "TMath::Abs(evt%3)==0";
-      if (randomSeed > -1) typeCut = "3*rndm%3==0";
-    } else if (1 == j) {
-      type = "Events1";
-      typeCut = "TMath::Abs(evt%3)==1";
-      if (randomSeed > -1) typeCut = "3*rndm%3==1";
-    } else if (2 == j) {
-      type = "Events2";
-      typeCut = "TMath::Abs(evt%3)==2";
-      if (randomSeed > -1) typeCut = "3*rndm%3==2";
-    }
-
-    for (int i = 0; i < nchan; ++i) {
-      // -- signal
-      sdir = Form("signalChan%d%s", i, type.c_str());
-      chanCut = chanDef[i].c_str();
-      outFile->mkdir(sdir.c_str());
-      outFile->cd(sdir.c_str());
-      copyCuts = sgcut + chanCut + typeCut;
-      cout << "sg copyCuts: " << copyCuts << endl;
-      copyTree = signal->CopyTree(copyCuts);
-      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
-
-      // -- background
-      sdir = Form("sidebandChan%d%s", i, type.c_str());
-      chanCut = chanDef[i].c_str();
-      outFile->mkdir(sdir.c_str());
-      outFile->cd(sdir.c_str());
-      copyCuts = sgcut + massbg + masscut + chanCut + typeCut;
-      cout << "bg copyCuts: " << copyCuts << endl;
-      copyTree = cbackground->CopyTree(copyCuts);
-      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
-    }
-
-  }
-
-  outFile->Write();
-  outFile->Close();
-
-  sinput->Close();
-  dinput->Close();
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
+void tmva1::train(string oname, string filename, int nsg, int nbg) {
    // This loads the library
    TMVA::Tools::Instance();
 
-   // (TMVA::gConfig().GetVariablePlotting()).fNbins1D = 40;
-   // (TMVA::gConfig().GetVariablePlotting()).fNbinsMVAoutput = 40;
+   (TMVA::gConfig().GetVariablePlotting()).fNbins1D = 40;
+   (TMVA::gConfig().GetVariablePlotting()).fNbinsMVAoutput = 40;
 
    // -- Create a ROOT output file where TMVA will store ntuples, histograms, etc.
    TString outfileName(Form("%s.root", oname.c_str()));
-   TFile* outputFile = TFile::Open(outfileName, "RECREATE" );
+   TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
 
    TH1D *hSetup = new TH1D("hSetup", "hSetup", 100, 0., 100.);
    int i(0);
    i =  1; hSetup->SetBinContent(i, fTrainAntiMuon?1:0); hSetup->GetXaxis()->SetBinLabel(i, "antimuon");
+   i =  3; hSetup->SetBinContent(i, fRsigma); hSetup->GetXaxis()->SetBinLabel(i, "rsigma");
    i =  5; hSetup->SetBinContent(i, fApplyOn0?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn0");
    i =  6; hSetup->SetBinContent(i, fApplyOn1?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn1");
    i =  7; hSetup->SetBinContent(i, fApplyOn2?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn2");
@@ -356,12 +201,12 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
    i = 21; hSetup->SetBinContent(i, fBdtSetup.NNodesMax); hSetup->GetXaxis()->SetBinLabel(i, "NNodesMax");
 
    cout << "----------------------------------------------------------------------" << endl;
+   cout << "==> oname: " << oname << " antimuon: " << fTrainAntiMuon <<  endl;
 
-   string optstring = "bla"; //V:!Silent:!Color:!DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification";
-   optstring        = "V:!Silent:Color:!DrawProgressBar:Transformations=I:AnalysisType=Classification";
-   cout << "==> oname: " << oname << " outputFile: " << outputFile << " antimuon: " << fTrainAntiMuon <<  endl;
+   string optstring = "V:!Silent:!Color:!DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification";
+   optstring        = "V:!Silent:!Color:!DrawProgressBar:Transformations=I:AnalysisType=Classification";
    cout << "==> Factory: " << optstring << endl;
-   TMVA::Factory *factory = new TMVA::Factory(oname, outputFile,  optstring.c_str());
+   TMVA::Factory *factory = new TMVA::Factory(Form("%s", oname.c_str()), outputFile,  optstring.c_str());
 
    // -- parse string with all variables into a vector
    vector<string> vVar;
@@ -380,15 +225,20 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
    vVar.push_back(var);
 
    for (unsigned int i = 0; i < vVar.size(); ++i) {
-     cout << "  adding to factory: " << vVar[i] << endl;
+     cout << " addVariable:  " << vVar[i] << endl;
+     //      if (string::npos != vVar[i].find("closetrk")) {
+     //        factory->AddVariable(vVar[i].c_str(), 'I');
+     //      } else {
      factory->AddVariable(vVar[i].c_str(), 'F');
+     //      }
    }
 
    factory->AddSpectator("m",  "mass", "GeV", 'F' );
 
+   TFile* inFile;
    TTree *applySg(0), *trainSg(0), *testSg(0), *applyBg(0), *trainBg(0), *testBg(0);
 
-   TFile *inFile = TFile::Open(infilename.c_str());
+   inFile = TFile::Open(filename.c_str());
    if (fApplyOn0) {
      cout << "==============> Apply on events0, train on events1, test on events2" << endl;
      applySg = (TTree*)inFile->Get(Form("signalChan%dEvents0/events", fChannel));
@@ -397,9 +247,9 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
      applyBg = (TTree*)inFile->Get(Form("sidebandChan%dEvents0/events", fChannel));
      trainBg = (TTree*)inFile->Get(Form("sidebandChan%dEvents1/events", fChannel));
      testBg  = (TTree*)inFile->Get(Form("sidebandChan%dEvents2/events", fChannel));
-     cout << "==============> trainBg =  " << trainBg << ": " << trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
-     cout << "==============> testBg  =  " << testBg  << ": " << testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
-     cout << "==============> applyBg =  " << applyBg << ": " << applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
+     cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
+     cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
+     cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
    }
 
 
@@ -465,8 +315,12 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
 
    int seed = static_cast<int>(100*gRandom->Rndm());
 
+   // optstring=Form("nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:V");
+   // optstring=Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=random:SplitSeed=%d:NormMode=None:V",
+   // nSgTrain, nSgTest, nBgTrain, nBgTest, seed);
+
    optstring = Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=Block:NormMode=None:V",
-                    nSgTrain, nSgTest, nBgTrain, nBgTest);
+		    nSgTrain, nSgTest, nBgTrain, nBgTest);
    cout << "==> PrepareTrainingAndTestTree: " << optstring << endl;
    factory->PrepareTrainingAndTestTree("", "", optstring.c_str());
 
@@ -479,11 +333,15 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
      optstring += Form(":NNodesMax=%d", fBdtSetup.NNodesMax);
      //     optstring += Form(":nEventsMin=%d", fBdtSetup.nEventsMin);
    } else {
-     optstring = "VerbosityLevel=Verbose:" + fBDTParameters;
+     optstring = "!H:V" + fBDTParameters;
    }
 
+   // -- Josh's (modified) proposal
+   //    optstring = "!H:!V:NTrees=2000::BoostType=Grad:Shrinkage=0.1";
+   //    optstring += ":UseBaggedGrad=F:nCuts=200:MaxDepth=3:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=1000:";
+
    cout << "==> BookMethod: " << optstring << endl;
-   factory->BookMethod(TMVA::Types::kBDT, "Bmm4BDT", optstring);
+   factory->BookMethod( TMVA::Types::kBDT, "bmm4BDT", optstring);
 
    cout << "==> TrainAllMethods " << endl;
    factory->TrainAllMethods();
@@ -510,12 +368,16 @@ void plotBdt::train(string oname, string infilename, int nsg, int nbg) {
 
 
 // ----------------------------------------------------------------------
-void plotBdt::apply(const char *fname) {
+void tmva1::apply(const char *fname) {
 
   // --- Book the MVA methods
-  string methodName("BDT");
+  string methodName("bmm4BDT");
   string dir("weights");
   string XmlName = Form("%s/%s-Events0_%s.weights.xml", dir.c_str(), fname, methodName.c_str());
+
+  cout << "======================================================================" << endl;
+  cout << "==> apply: " << fname << " XmlName = " << XmlName << endl;
+
   fReader.push_back(setupReader(XmlName, frd));
   XmlName = Form("%s/%s-Events1_%s.weights.xml", dir.c_str(), fname, methodName.c_str());
   fReader.push_back(setupReader(XmlName, frd));
@@ -523,13 +385,15 @@ void plotBdt::apply(const char *fname) {
   fReader.push_back(setupReader(XmlName, frd));
 
   // -- open files
-  TFile *dfile = fDS["bmmData"]->getFile();
+  TFile *dfile(0);
+  dfile = TFile::Open(fInputFiles.dname.c_str());
   if (!dfile) {
     cout << "ERROR: could not open data file" << endl;
     exit(1);
   }
 
-  TFile *sfile = fDS["bsmmMcComb"]->getFile();
+  TFile *sfile(0);
+  sfile = TFile::Open(fInputFiles.sname.c_str());
   if (!sfile) {
     cout << "ERROR: could not open signal file" << endl;
     exit(1);
@@ -540,49 +404,51 @@ void plotBdt::apply(const char *fname) {
   TTree *tt = new TTree("bdtTree", "bdtTree");
   int classID;
   double w8;
-  tt->Branch("run",     &fb.run,   "run/I");
-  tt->Branch("evt",     &fb.evt,   "evt/I");
-  tt->Branch("m",       &fb.m,     "m/D");
-  tt->Branch("me",      &fb.me,    "me/D");
+  tt->Branch("run",     &ftd.run,   "run/I");
+  tt->Branch("evt",     &ftd.evt,   "evt/I");
+  tt->Branch("m",       &ftd.m,     "m/D");
+  tt->Branch("me",      &ftd.me,    "me/D");
   tt->Branch("weight",  &w8,        "weight/D");
   tt->Branch("bdt",     &fBDT,      "bdt/D");
   tt->Branch("bdt0",    &fBDT0,     "bdt0/D");
   tt->Branch("bdt1",    &fBDT1,     "bdt1/D");
   tt->Branch("bdt2",    &fBDT2,     "bdt2/D");
   tt->Branch("classID", &classID,   "classID/I");
-  tt->Branch("hlt1",    &fb.hlt1,   "hlt1/O");
-  tt->Branch("tos",     &fb.tos,    "tos/O");
-  tt->Branch("gmuid",   &fb.gmuid, "gmuid/O");
-  tt->Branch("gtqual",  &fb.gtqual,"gtqual/O");
-  tt->Branch("json",    &fb.json,  "json/O");
-  tt->Branch("pvw8",    &fb.pvw8,  "pvw8/D");
+  tt->Branch("hlt1",    &ftd.hlt1,  "hlt1/O");
+  tt->Branch("tos",     &ftd.tos,   "tos/O");
+  tt->Branch("gmuid",   &ftd.gmuid, "gmuid/O");
+  tt->Branch("gtqual",  &ftd.gtqual,"gtqual/O");
+  tt->Branch("json",    &ftd.json,  "json/O");
+  tt->Branch("pvw8",    &ftd.pvw8,  "pvw8/D");
 
-    // -- add the usual variables
-  tt->Branch("m1pt",    &fb.m1pt,     "m1pt/D");
-  tt->Branch("m2pt",    &fb.m2pt,     "m2pt/D");
-  tt->Branch("m1eta",   &fb.m1eta,    "m1eta/D");
-  tt->Branch("m2eta",   &fb.m2eta,    "m2etat/D");
-  tt->Branch("m1q",     &fb.m1q,      "m1q/I");
-  tt->Branch("m2q",     &fb.m2q,      "m2q/I");
-  tt->Branch("pt",      &fb.pt,       "pt/D");
-  tt->Branch("eta",     &fb.eta,      "eta/D");
+  // -- add the usual variables
+  tt->Branch("m1pt",    &ftd.m1pt,     "m1pt/D");
+  tt->Branch("m2pt",    &ftd.m2pt,     "m2pt/D");
+  tt->Branch("m1eta",   &ftd.m1eta,    "m1eta/D");
+  tt->Branch("m2eta",   &ftd.m2eta,    "m2eta/D");
+  tt->Branch("m1phi",   &ftd.m1phi,    "m1phi/D");
+  tt->Branch("m2phi",   &ftd.m2phi,    "m2phi/D");
+  tt->Branch("m1q",     &ftd.m1q,      "m1q/I");
+  tt->Branch("m2q",     &ftd.m2q,      "m2q/I");
+  tt->Branch("pt",      &ftd.pt,       "pt/D");
+  tt->Branch("eta",     &ftd.eta,      "eta/D");
 
-  tt->Branch("chi2dof", &fb.chi2dof,  "chi2dof/D");
-  tt->Branch("maxdoca", &fb.maxdoca,  "maxdoca/D");
-  tt->Branch("fls3d",   &fb.fls3d,  "fls3d/D");
-  tt->Branch("fl3d",    &fb.fl3d,  "fl3d/D");
-  tt->Branch("flsxy",   &fb.flsxy,  "flsxy/D");
-  tt->Branch("alpha",   &fb.alpha,  "alpha/D");
-  tt->Branch("pvip",    &fb.pvip,  "pvip/D");
-  tt->Branch("pvips",   &fb.pvips,  "pvips/D");
-  tt->Branch("pvlip",   &fb.pvlip,  "pvlip/D");
-  tt->Branch("pvlips",  &fb.pvlips,  "pvlips/D");
+  tt->Branch("chi2dof", &ftd.chi2dof,  "chi2dof/D");
+  tt->Branch("maxdoca", &ftd.maxdoca,  "maxdoca/D");
+  tt->Branch("fls3d",   &ftd.fls3d,  "fls3d/D");
+  tt->Branch("fl3d",    &ftd.fl3d,  "fl3d/D");
+  tt->Branch("flsxy",   &ftd.flsxy,  "flsxy/D");
+  tt->Branch("alpha",   &ftd.alpha,  "alpha/D");
+  tt->Branch("pvip",    &ftd.pvip,  "pvip/D");
+  tt->Branch("pvips",   &ftd.pvips,  "pvips/D");
+  tt->Branch("pvlip",   &ftd.pvlip,  "pvlip/D");
+  tt->Branch("pvlips",  &ftd.pvlips,  "pvlips/D");
 
-  tt->Branch("iso",     &fb.iso,  "iso/D");
-  tt->Branch("m1iso",   &fb.m1iso,  "m1iso/D");
-  tt->Branch("m2iso",   &fb.m2iso,  "m2iso/D");
-  tt->Branch("docatrk", &fb.docatrk,  "docatrk/D");
-  tt->Branch("closetrk",&fb.closetrk,  "closetrk/D");
+  tt->Branch("iso",     &ftd.iso,  "iso/D");
+  tt->Branch("m1iso",   &ftd.m1iso,  "m1iso/D");
+  tt->Branch("m2iso",   &ftd.m2iso,  "m2iso/D");
+  tt->Branch("docatrk", &ftd.docatrk,  "docatrk/D");
+  tt->Branch("closetrk",&ftd.closetrk,  "closetrk/D");
 
 
   TH1D *hd = new TH1D("bdtTreeData", "", 20, 0., 20.);
@@ -591,7 +457,7 @@ void plotBdt::apply(const char *fname) {
 
   // -- data processing
   TTree* t = (TTree*)dfile->Get("candAnaMuMu/events");
-  setupTree(t, fb);
+  setupTree(t, ftd);
   w8 = 1.;
   classID = 1;
   cout << "--- Processing data: " << t->GetEntries() << " events" << endl;
@@ -604,25 +470,24 @@ void plotBdt::apply(const char *fname) {
     t->GetEntry(ievt);
     fBDT = fBDT0 = fBDT1 =  fBDT2 = -99.;
     totalEvents += w8;
-    otherCuts = (fb.m > 4.9 && fb.m < 5.9) && (fb.m1q*fb.m2q < 0) && (fb.pvw8 > 0.7) && (fb.gtqual);
+    otherCuts = (ftd.m > 4.9 && ftd.m < 5.9) && (ftd.m1q*ftd.m2q < 0) && (ftd.pvw8 > 0.7) && (ftd.gtqual);
 
-    if (fb.json && otherCuts && fb.gmuid && fb.hlt1 && fb.tos && preselection(fb)) {
+    if (ftd.json && otherCuts && ftd.gmuid && ftd.hlt1 && ftd.tos && preselection(ftd)) {
       calcBDT();
       tt->Fill();
     } else {
       lostEvents += w8;
-      hd->Fill(TMath::Abs(fb.evt%3), w8);
+      hd->Fill(TMath::Abs(ftd.evt%3), w8);
       hd->Fill(9, w8);
     }
   }
   hd->SetBinContent(10, lostEvents);
   cout << "lost events: " << lostEvents << " out of " << totalEvents << " events in total" << endl;
 
-
   // -- signal MC processing
   t = (TTree*)sfile->Get("candAnaMuMu/events");
   classID = 0;
-  setupTree(t, fb);
+  setupTree(t, ftd);
   w8 = fLumiScale;
   cout << "--- Processing signal: " << t->GetEntries() << " events and weight " << w8 << endl;
   nEvent = t->GetEntries();
@@ -634,13 +499,13 @@ void plotBdt::apply(const char *fname) {
 
     fBDT = fBDT0 = fBDT1 =  fBDT2 = -99.;
     totalEvents += w8;
-    otherCuts = (fb.m > 4.9 && fb.m < 5.9) && (fb.m1q*fb.m2q < 0) && (fb.pvw8 > 0.7) && (fb.gtqual);
-    if (otherCuts && fb.gmuid && fb.hlt1 && fb.tos && preselection(fb)) {
+    otherCuts = (ftd.m > 4.9 && ftd.m < 5.9) && (ftd.m1q*ftd.m2q < 0) && (ftd.pvw8 > 0.7) && (ftd.gtqual);
+    if (otherCuts && ftd.gmuid && ftd.hlt1 && ftd.tos && preselection(ftd)) {
       calcBDT();
       tt->Fill();
     } else {
       lostEvents += w8;
-      hs->Fill(TMath::Abs(fb.evt%3), w8);
+      hs->Fill(TMath::Abs(ftd.evt%3), w8);
       hs->Fill(9, w8);
     }
   }
@@ -655,361 +520,21 @@ void plotBdt::apply(const char *fname) {
 }
 
 
-
 // ----------------------------------------------------------------------
-void plotBdt::setupTree(TTree *t, redTreeData &b) {
-  t->SetBranchAddress("evt", &b.evt);
-  t->SetBranchAddress("run", &b.run);
-  t->SetBranchAddress("json", &b.json);
-  t->SetBranchAddress("pvw8", &b.pvw8);
-  t->SetBranchAddress("gmuid", &b.gmuid);
-  t->SetBranchAddress("gmugmid", &b.gmugmid);
-  t->SetBranchAddress("gtqual", &b.gtqual);
-  t->SetBranchAddress("hlt1", &b.hlt1);
-  t->SetBranchAddress("tos", &b.tos);
-  t->SetBranchAddress("m1pt", &b.m1pt);
-  t->SetBranchAddress("m1eta", &b.m1eta);
-  t->SetBranchAddress("m1q", &b.m1q);
-  t->SetBranchAddress("m2pt", &b.m2pt);
-  t->SetBranchAddress("m2eta", &b.m2eta);
-  t->SetBranchAddress("m2q", &b.m2q);
-  t->SetBranchAddress("pt", &b.pt);
-  t->SetBranchAddress("eta", &b.eta);
-  t->SetBranchAddress("pvlip", &b.pvlip);
-  t->SetBranchAddress("pvlips", &b.pvlips);
-  t->SetBranchAddress("fl3d", &b.fl3d);
-  t->SetBranchAddress("fls3d", &b.fls3d);
-  t->SetBranchAddress("flsxy", &b.flsxy);
-  t->SetBranchAddress("alpha", &b.alpha);
-  t->SetBranchAddress("maxdoca", &b.maxdoca);
-  t->SetBranchAddress("pvip", &b.pvip);
-  t->SetBranchAddress("pvips", &b.pvips);
-  t->SetBranchAddress("iso", &b.iso);
-  t->SetBranchAddress("docatrk", &b.docatrk);
-  t->SetBranchAddress("chi2dof", &b.chi2dof);
-  t->SetBranchAddress("closetrk", &b.closetrk);
-  t->SetBranchAddress("m", &b.m);
+void tmva1::reAnalyze(int imin, int imax) {
 
-  t->SetBranchAddress("m1iso",&b.m1iso);
-  t->SetBranchAddress("m2iso",&b.m2iso);
-  t->SetBranchAddress("closetrks1", &b.closetrks1);
-  t->SetBranchAddress("closetrks2", &b.closetrks2);
-  t->SetBranchAddress("closetrks3", &b.closetrks3);
-  t->SetBranchAddress("pvdchi2",&b.pvdchi2);
-  t->SetBranchAddress("othervtx",&b.othervtx);
-  t->SetBranchAddress("m1xpdist",&b.m1xpdist);
-  t->SetBranchAddress("m2xpdist",&b.m2xpdist);
-
-  t->SetBranchAddress("pv2lips", &b.pv2lips);
-  t->SetBranchAddress("pv2lip", &b.pv2lip);
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::loadFiles(string afiles) {
-
-  string files = fDirectory + string("/") + afiles;
-  cout << "==> plotBdt::loadFile loading files listed in " << files << endl;
-
-  char buffer[1000];
-  ifstream is(files.c_str());
-  while (is.getline(buffer, 1000, '\n')) {
-    if (buffer[0] == '#') {continue;}
-    if (buffer[0] == '/') {continue;}
-
-    string sbuffer = string(buffer);
-    replaceAll(sbuffer, " ", "");
-    replaceAll(sbuffer, "\t", "");
-    if (sbuffer.size() < 1) continue;
-
-    string::size_type m1 = sbuffer.find("lumi=");
-    string stype = sbuffer.substr(5, m1-5);
-
-    string::size_type m2 = sbuffer.find("file=");
-    string slumi = sbuffer.substr(m1+5, m2-m1-6);
-    string sfile = sbuffer.substr(m2+5);
-    string sname("nada"), sdecay("nada");
-
-    TFile *pF(0);
-    dataset *ds(0);
-
-    if (string::npos != stype.find("SingleMuon")) {
-      // -- SingleMuon
-      pF = loadFile(sfile);
-      ds = new dataset();
-      ds->fSize = 1.2;
-      ds->fWidth = 2;
-      if (string::npos != stype.find("bmm")) {
-        sname = "bmmSingleMuon";
-        sdecay = "bmm";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bupsik")) {
-        sname = "bupsikSingleMuon";
-        sdecay = "bupsik";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bspsiphi")) {
-        sname = "bspsiphiSingleMuon";
-        sdecay = "bspsiphi";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bdpsikstar")) {
-        sname = "bdpsikstarSingleMuon";
-        sdecay = "bdpsikstar";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-    } else if (string::npos != stype.find("Charmonium")) {
-      // -- Charmonium
-      pF = loadFile(sfile);
-      ds = new dataset();
-      ds->fSize = 1.2;
-      ds->fWidth = 2;
-      if (string::npos != stype.find("bmm")) {
-        sname = "bmmCharmonium";
-        sdecay = "bmm";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bupsik")) {
-        sname = "bupsikCharmonium";
-        sdecay = "bupsik";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bspsiphi")) {
-        sname = "bspsiphiCharmonium";
-        sdecay = "bspsiphi";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-      if (string::npos != stype.find("bdpsikstar")) {
-        sname = "bdpsikstarCharmonium";
-        sdecay = "bdpsikstar";
-	ds->fColor = kBlack;
-	ds->fSymbol = 20;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3365;
-      }
-
-    } else if (string::npos != stype.find("mc")) {
-      // -- MC
-      pF = loadFile(sfile);
-      ds = new dataset();
-      ds->fSize = 1.2;
-      ds->fWidth = 2.;
-
-      if (string::npos != stype.find("bctopsimunu,")) {
-        sname = "bcpsimunuMc";
-        sdecay = "bcpsimunu";
-	ds->fColor = kGreen-2;
-	ds->fSymbol = 24;
-	ds->fWidth  = 2.;
-	ds->fF      = pF;
-	ds->fBf     = 1.;
-	ds->fMass   = 1.;
-	ds->fFillStyle = 3354;
-      }
-
-    } else if (string::npos != stype.find("relval")) {
-      pF = loadFile(sfile);
-      ds = new dataset();
-      ds->fSize = 1.2;
-      ds->fWidth = 2.;
-      if (string::npos != stype.find("bsmm,relval")) {
-	ds->fF      = pF;
-	sname   = "bsmmrelval";
-      }
-
-      if (string::npos != stype.find("bdmm,relval")) {
-	ds->fF      = pF;
-	sname   = "bdmmrelval";
-      }
-
-      if (string::npos != stype.find("bupsik,relval")) {
-	ds->fF      = pF;
-	sname   = "bupsikrelval";
-      }
-
-      if (string::npos != stype.find("bspsiphi,relval")) {
-	ds->fF      = pF;
-	sname   = "bspsiphirelval";
-      }
-    }
-
-    if (sname != "nada") {
-      ds->fLcolor = ds->fColor;
-      ds->fFcolor = ds->fColor;
-      ds->fName   = sdecay;
-      ds->fFullName = sname;
-      insertDataset(sname, ds);
-    } else {
-      delete ds;
-    }
-
-  }
-
-  is.close();
-
-  int cnt(0);
-  cout << "------------------------------------------------------------------------------------------" << endl;
-  cout << Form("   %30s: %20s: ", "Dataset name", "Decay mode name") << "Filename:" << endl;
-  cout << "------------------------------------------------------------------------------------------" << endl;
-  for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    // cout << it->first << endl;
-    // cout << it->second->fName << endl;
-    // cout << it->second->fF->GetName() << endl;
-    cout << Form("%2d %30s: %20s: ", cnt, it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
-    ++cnt;
-  }
-  cout << "------------------------------------------------------------------------------------------" << endl;
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::writeOut(TFile *f, TH1 *h) {
-  TDirectory *pD = gDirectory;
-  f->cd();
-  h->SetDirectory(f);
-  h->Write();
-  pD->cd();
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::redrawStats(double x, double y, const char *newname, int color) {
-
-  TPaveStats *st = (TPaveStats*)gPad->GetPrimitive("stats");
-  st->SetName(newname);
-  st->SetX1NDC(x);
-  st->SetY1NDC(y);
-  st->SetTextColor(color);
-  //  st->Draw("sames");
-}
-
-
-// ----------------------------------------------------------------------
-void plotBdt::cleanup(string fname) {
-  cout << "     cleanup of " << Form("%s-Events0.root, %s-Events1.root, %s-Events2.root", fname.c_str(), fname.c_str(), fname.c_str()) << endl;
-  TFile *f = TFile::Open(Form("%s-Events0.root", fname.c_str()));
-  if (!f) {
-    cout << "      file not found " << endl;
-    return;
-  }
-  TH1D* h0 = (TH1D*)f->Get("res_ks");
-  if (0 == h0) {
-    cout << "      hist res_ks not found " << endl;
-    return;
-  }
-
-  f = TFile::Open(Form("%s-Events1.root", fname.c_str()));
-  if (!f) {
-    cout << "      file not found " << endl;
-    return;
-  }
-  TH1D* h1 = (TH1D*)f->Get("res_ks");
-  if (0 == h1) {
-    cout << "      hist res_ks not found " << endl;
-    return;
-  }
-
-  f = TFile::Open(Form("%s-Events2.root", fname.c_str()));
-  if (!f) {
-    cout << "      file not found " << endl;
-    return;
-  }
-  TH1D* h2 = (TH1D*)f->Get("res_ks");
-  if (0 == h2) {
-    cout << "      hist res_ks not found " << endl;
-    return;
-  }
-
-  // -- change!
-  f = TFile::Open(Form("%s-combined.root", fname.c_str()));
-  TH1D *H = (TH1D*)f->Get("res_ssb");
-  if (0 == H) {
-    cout << "      hist res_ssb not found " << endl;
-    return;
-  }
-
-  double kssg0 = h0->GetBinContent(1);
-  double ksbg0 = h0->GetBinContent(2);
-  double kssg1 = h1->GetBinContent(1);
-  double ksbg1 = h1->GetBinContent(2);
-  double kssg2 = h2->GetBinContent(1);
-  double ksbg2 = h2->GetBinContent(2);
-  double ssb  = H->GetBinContent(1);
-  cout << fname << " performance: kssg0 = " << kssg0 << " ksbg0 = " << ksbg0
-       << " kssg1 = " << kssg1 << " ksbg1 = " << ksbg1
-       << " kssg2 = " << kssg2 << " ksbg2 = " << ksbg2
-       << " ssb = "  << ssb << endl;
-  double ssbCut = 1.3;
-  if (1 == fChannel) ssbCut = 0.9;
-  if (kssg0 < 0.05 || ksbg0 < 0.05 || kssg1 < 0.05 || ksbg1 < 0.05 || kssg2 < 0.05 || ksbg2 < 0.05 || ssb < ssbCut) {
-    system(Form("/bin/rm -f %s-Events0.root", fname.c_str()));
-    system(Form("/bin/rm -f %s-Events1.root", fname.c_str()));
-    system(Form("/bin/rm -f %s-Events2.root", fname.c_str()));
-    cout << Form("===> REMOVED %s-[Events0,Events1,Events2].root, kssg0 = %f ksbg0 = %f kssg1 = %f ksbg1 = %f kssg2 = %f ksbg2 = %f SSB = %f",
-                 fname.c_str(), kssg0, ksbg0, kssg1, ksbg1, kssg2, ksbg2, ssb) << endl;
-    system(Form("/bin/rm -f weights/%s-Events0_BDT.weights.xml", fname.c_str()));
-    system(Form("/bin/rm -f weights/%s-Events1_BDT.weights.xml", fname.c_str()));
-    system(Form("/bin/rm -f weights/%s-Events2_BDT.weights.xml", fname.c_str()));
-    cout << Form("     REMOVED weights/%s-[Events0,Events1,Events2]_BDT.weights.xml", fname.c_str()) << endl;
-    system(Form("/bin/rm -f weights/%s-Events0_BDT.class.C", fname.c_str()));
-    system(Form("/bin/rm -f weights/%s-Events1_BDT.class.C", fname.c_str()));
-    system(Form("/bin/rm -f weights/%s-Events2_BDT.class.C", fname.c_str()));
-    cout << Form("     REMOVED weights/%s-[Events0,Events1,Events2]_BDT.class.C", fname.c_str()) << endl;
-  } else {
-    cout << Form("===> KEEP %s.root, kssg0 = %f ksbg0 = %f kssg1 = %f ksbg1 = %f kssg0 = %f ksbg0 = %f SSB = %f",
-                 fname.c_str(), kssg0, ksbg0, kssg1, ksbg1, kssg2, ksbg2, ssb) << endl;
+  string name;
+  for (int i = imin; i <= imax; ++i) {
+    name = Form("TMVA-%d", i);
+    cout << name << endl;
+    analyze(name.c_str());
   }
 
 }
 
 
 // ----------------------------------------------------------------------
-void plotBdt::analyze(string fname) {
+void tmva1::analyze(const char *fname) {
 
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
@@ -1029,8 +554,8 @@ void plotBdt::analyze(string fname) {
   TH1D *sm2 = new TH1D("sm2", "m(signal)", 100, 4.9, 5.9); sm2->Sumw2();
   TH1D *dm2 = new TH1D("dm2", "m(data)", 100, 4.9, 5.9); dm2->Sumw2();
 
-  cout << "Open " << Form("%s-combined.root", fname.c_str()) << endl;
-  TFile *f = TFile::Open(Form("%s-combined.root", fname.c_str()), "UPDATE");
+  cout << "Open " << Form("%s-combined.root", fname) << endl;
+  TFile *f = TFile::Open(Form("%s-combined.root", fname), "UPDATE");
   TH1D *hd = (TH1D*)f->Get("bdtTreeData");
   double dLostEvents  = hd->GetBinContent(10);
   TH1D *hs = (TH1D*)f->Get("bdtTreeSignal");
@@ -1050,28 +575,28 @@ void plotBdt::analyze(string fname) {
   TH1D *hroc0 = new TH1D("hroc0", "", 200, 0., 1.);
   TH1D *hroc1 = new TH1D("hroc1", "", 200, 0., 1.);
   TH1D *hroc2 = new TH1D("hroc2", "", 200, 0., 1.);
-  TFile *f0 = TFile::Open(Form("%s-Events0.root", fname.c_str()));
-  TFile *f1 = TFile::Open(Form("%s-Events1.root", fname.c_str()));
-  TFile *f2 = TFile::Open(Form("%s-Events2.root", fname.c_str()));
+  TFile *f0 = TFile::Open(Form("%s-Events0.root", fname));
+  TFile *f1 = TFile::Open(Form("%s-Events1.root", fname));
+  TFile *f2 = TFile::Open(Form("%s-Events2.root", fname));
 
   if (!f0 || !f1 || !f2) {
     cout << "ERROR: could not open a file" << endl;
     exit(1);
   }
 
-  TH1D *hr01 = getRanking(fname.c_str(), "IdTransformation", "events0");
+  TH1D *hr01 = getRanking(fname, "IdTransformation", "events0");
   hr01->SetDirectory(f);
-  TH1D *hr02 =  getRanking(fname.c_str(), "BDT", "events0");
+  TH1D *hr02 =  getRanking(fname, "bmm4BDT", "events0");
   hr02->SetDirectory(f);
 
-  TH1D *hr11 = getRanking(fname.c_str(), "IdTransformation", "events1");
+  TH1D *hr11 = getRanking(fname, "IdTransformation", "events1");
   hr11->SetDirectory(f);
-  TH1D *hr12 =  getRanking(fname.c_str(), "BDT", "events1");
+  TH1D *hr12 =  getRanking(fname, "bmm4BDT", "events1");
   hr12->SetDirectory(f);
 
-  TH1D *hr21 = getRanking(fname.c_str(), "IdTransformation", "events2");
+  TH1D *hr21 = getRanking(fname, "IdTransformation", "events2");
   hr21->SetDirectory(f);
-  TH1D *hr22 =  getRanking(fname.c_str(), "BDT", "events2");
+  TH1D *hr22 =  getRanking(fname, "bmm4BDT", "events2");
   hr22->SetDirectory(f);
 
   TH1F *trainBDT0 = (TH1F*)f0->Get("Method_BDT/BDT/MVA_BDT_Train_B"); trainBDT0->SetLineColor(kBlack);
@@ -1161,6 +686,7 @@ void plotBdt::analyze(string fname) {
   t->SetBranchAddress("evt", &evt);
 
   // -- data (overall) distribution
+  TCanvas *c0 = getC0();
   int nEvent(0);
   nEvent = t->GetEntries();
   for (Long64_t ievt=0; ievt<nEvent; ievt++) {
@@ -1279,7 +805,7 @@ void plotBdt::analyze(string fname) {
   legg->AddEntry(ap2sgBDT, "BDT 2", "l");
   legg->Draw();
 
-  c0->SaveAs(Form("plots/%s-rebinned-bg-overlays.pdf", fname.c_str()));
+  c0->SaveAs(Form("plots/%s-rebinned-bg-overlays.pdf", fname));
 
   hmax = tr0sgBDT->GetMaximum();
   if (tr1sgBDT->GetMaximum() > hmax) hmax = tr1sgBDT->GetMaximum();
@@ -1320,7 +846,7 @@ void plotBdt::analyze(string fname) {
   legg->AddEntry(ap2sgBDT, "BDT 2", "l");
   legg->Draw();
 
-  c0->SaveAs(Form("plots/%s-rebinned-sg-overlays.pdf", fname.c_str()));
+  c0->SaveAs(Form("plots/%s-rebinned-sg-overlays.pdf", fname));
 
 
   writeOut(f, ap0bgBDT);
@@ -1453,7 +979,7 @@ void plotBdt::analyze(string fname) {
       double deff = bsimple/(dLostEvents + dCnt);
       double pbg  = 0.07*s;
 
-      double b = 0.1; // FIXME!!!!!!! bgBlind(h, 3, 4.9, 5.9);
+      double b = bgBlind(h, 3, 4.9, 5.9);
 
       if ((1.-deff) > 0.999998) vSeffBinD99[ie] = seff;
       grocs[ie]->SetPoint(ibin, seff, 1.-deff);
@@ -1573,7 +1099,7 @@ void plotBdt::analyze(string fname) {
   frame->GetXaxis()->SetTitle(" #epsilon_{S}");
   frame->GetYaxis()->SetTitle(" 1 - #epsilon_{B}");
 
-  string texname = fname + ".tex";
+  string texname = string(fname) + ".tex";
   system(Form("/bin/rm -f %s", texname.c_str()));
 
 
@@ -1643,44 +1169,44 @@ void plotBdt::analyze(string fname) {
 
     ofstream TEX(texname.c_str(), ios::app);
 
-    TEX << Form("\\vdef{s%s:ie%d:string}       {%s}", fname.c_str(), ie, fname.c_str()) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:ssb}          {%4.3f}", fname.c_str(), ie, maxSSB) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:maxbdt}       {%4.3f}", fname.c_str(), ie, maxBDT) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:ssbsimple}    {%4.3f}", fname.c_str(), ie, maxSSBsimple) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:maxbdtsimple} {%4.3f}", fname.c_str(), ie, maxBDTsimple) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:ssbfit}       {%4.3f}", fname.c_str(), ie, maxSSBfit) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:maxbdtfit}    {%4.3f}", fname.c_str(), ie, maxBDTfit) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:Smc}          {%4.3f}", fname.c_str(), ie, sMax) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:D}            {%d}", fname.c_str(), ie, dMax) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:Dhi}          {%d}", fname.c_str(), ie, dhiMax) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:B}            {%4.3f}", fname.c_str(), ie, bMax) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:ipart}        {%6.5f}", fname.c_str(), ie, rocInt2) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:itot}         {%6.5f}", fname.c_str(), ie, rocInt) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:epstot}       {%6.5f}", fname.c_str(), ie, seffTot) << endl;
-    TEX << Form("\\vdef{s%s:ie%d:epsbdt}       {%6.5f}", fname.c_str(), ie, seffMax) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:string}       {%s}", fname, ie, fname) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:ssb}          {%4.3f}", fname, ie, maxSSB) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:maxbdt}       {%4.3f}", fname, ie, maxBDT) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:ssbsimple}    {%4.3f}", fname, ie, maxSSBsimple) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:maxbdtsimple} {%4.3f}", fname, ie, maxBDTsimple) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:ssbfit}       {%4.3f}", fname, ie, maxSSBfit) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:maxbdtfit}    {%4.3f}", fname, ie, maxBDTfit) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:Smc}          {%4.3f}", fname, ie, sMax) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:D}            {%d}", fname, ie, dMax) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:Dhi}          {%d}", fname, ie, dhiMax) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:B}            {%4.3f}", fname, ie, bMax) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:ipart}        {%6.5f}", fname, ie, rocInt2) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:itot}         {%6.5f}", fname, ie, rocInt) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:epstot}       {%6.5f}", fname, ie, seffTot) << endl;
+    TEX << Form("\\vdef{s%s:ie%d:epsbdt}       {%6.5f}", fname, ie, seffMax) << endl;
     if (ie == 3) {
-      TEX << Form("\\vdef{s%s:BDTparameters}  {%s}", fname.c_str(), fBDTParameters.c_str()) << endl;
-      TEX << Form("\\vdef{s%s:BDTvariables}  {%s}", fname.c_str(), fVariables.c_str()) << endl;
-      TEX << Form("\\vdef{s%s:sum:Smc}     {%4.3f}", fname.c_str(), sMaxSum) << endl;
-      TEX << Form("\\vdef{s%s:sum:D}       {%d}", fname.c_str(), dMaxSum) << endl;
-      TEX << Form("\\vdef{s%s:sum:B}       {%4.3f}", fname.c_str(), bMaxSum) << endl;
-      TEX << Form("\\vdef{s%s:sum:ssb}     {%4.3f}", fname.c_str(), sMaxSum/sqrt(sMaxSum+bMaxSum)) << endl;
+      TEX << Form("\\vdef{s%s:BDTparameters}  {%s}", fname, fBDTParameters.c_str()) << endl;
+      TEX << Form("\\vdef{s%s:BDTvariables}  {%s}", fname, fVariables.c_str()) << endl;
+      TEX << Form("\\vdef{s%s:sum:Smc}     {%4.3f}", fname, sMaxSum) << endl;
+      TEX << Form("\\vdef{s%s:sum:D}       {%d}", fname, dMaxSum) << endl;
+      TEX << Form("\\vdef{s%s:sum:B}       {%4.3f}", fname, bMaxSum) << endl;
+      TEX << Form("\\vdef{s%s:sum:ssb}     {%4.3f}", fname, sMaxSum/sqrt(sMaxSum+bMaxSum)) << endl;
 
       double ks0 = trainBDT0->KolmogorovTest(testBDT0);
       double ks1 = trainBDT1->KolmogorovTest(testBDT1);
       double ks2 = trainBDT2->KolmogorovTest(testBDT2);
-      TEX << Form("\\vdef{s%s:ie0:ksBg}    {%4.3f}", fname.c_str(), ks0) << endl;
-      TEX << Form("\\vdef{s%s:ie1:ksBg}    {%4.3f}", fname.c_str(), ks1) << endl;
-      TEX << Form("\\vdef{s%s:ie2:ksBg}    {%4.3f}", fname.c_str(), ks2) << endl;
+      TEX << Form("\\vdef{s%s:ie0:ksBg}    {%4.3f}", fname, ks0) << endl;
+      TEX << Form("\\vdef{s%s:ie1:ksBg}    {%4.3f}", fname, ks1) << endl;
+      TEX << Form("\\vdef{s%s:ie2:ksBg}    {%4.3f}", fname, ks2) << endl;
 
       ks0 = trainSgBDT0->KolmogorovTest(testSgBDT0);
       ks1 = trainSgBDT1->KolmogorovTest(testSgBDT1);
       ks2 = trainSgBDT2->KolmogorovTest(testSgBDT2);
-      TEX << Form("\\vdef{s%s:ie0:ksSg}    {%4.3f}", fname.c_str(), ks0) << endl;
-      TEX << Form("\\vdef{s%s:ie1:ksSg}    {%4.3f}", fname.c_str(), ks1) << endl;
-      TEX << Form("\\vdef{s%s:ie2:ksSg}    {%4.3f}", fname.c_str(), ks2) << endl;
-      TEX << Form("\\vdef{s%s:dMaxBDT}     {%4.3f}", fname.c_str(), dMaxBDT) << endl;
-      TEX << Form("\\vdef{s%s:dMaxBDT3}    {%4.3f}", fname.c_str(), dMaxBDT3) << endl;
+      TEX << Form("\\vdef{s%s:ie0:ksSg}    {%4.3f}", fname, ks0) << endl;
+      TEX << Form("\\vdef{s%s:ie1:ksSg}    {%4.3f}", fname, ks1) << endl;
+      TEX << Form("\\vdef{s%s:ie2:ksSg}    {%4.3f}", fname, ks2) << endl;
+      TEX << Form("\\vdef{s%s:dMaxBDT}     {%4.3f}", fname, dMaxBDT) << endl;
+      TEX << Form("\\vdef{s%s:dMaxBDT3}    {%4.3f}", fname, dMaxBDT3) << endl;
     }
 
     TEX.close();
@@ -1697,7 +1223,7 @@ void plotBdt::analyze(string fname) {
     }
     legg->Draw();
 
-    c0->SaveAs(Form("plots/%s-roc-ie%d.pdf", fname.c_str(), ie));
+    c0->SaveAs(Form("plots/%s-roc-ie%d.pdf", fname, ie));
 
     c0->Clear();
     hssb[ie]->Draw();
@@ -1706,7 +1232,7 @@ void plotBdt::analyze(string fname) {
     tl->DrawLatex(0.2, 0.85, Form("SSB_{max} = %4.3f (%4.3f/%4.3f)", maxSSB, maxSSBsimple, maxSSBfit));
     tl->DrawLatex(0.2, 0.80, Form("BDT_{max} > %4.3f (%4.3f/%4.3f)", maxBDT, maxBDTsimple, maxBDTfit));
     tl->DrawLatex(0.2, 0.75, Form("ROC_{int} = %4.3f", rocInt));
-    c0->SaveAs(Form("plots/%s-ssb-ie%d.pdf", fname.c_str(), ie));
+    c0->SaveAs(Form("plots/%s-ssb-ie%d.pdf", fname, ie));
 
     cout << "Write out SSB histograms" << endl;
     cout << "  maxSSB: " << maxSSB << " at BDT > " << maxBDT << endl;
@@ -1724,9 +1250,8 @@ void plotBdt::analyze(string fname) {
 }
 
 
-
 // ----------------------------------------------------------------------
-void plotBdt::mvas(string fname) { //, HistType htype, Bool_t useTMVAStyle ) {
+void tmva1::mvas(string fname) { //, HistType htype, Bool_t useTMVAStyle ) {
    // set style and remove existing canvas'
   TMVA::TMVAGlob::Initialize( kTRUE );
 
@@ -1940,8 +1465,9 @@ void plotBdt::mvas(string fname) { //, HistType htype, Bool_t useTMVAStyle ) {
 }
 
 
+
 // ----------------------------------------------------------------------
-TH1D* plotBdt::getRanking(string fname, string prefix, string type) {
+TH1D* tmva1::getRanking(string fname, string prefix, std::string type) {
   TH1D *h1 = new TH1D(Form("rank_%s_%s", type.c_str(), prefix.c_str()), Form("rank_%s", prefix.c_str()), 100, 0., 100.);
   // -- read in variable ranking from logfile
   vector<string> allLines;
@@ -2004,4 +1530,829 @@ TH1D* plotBdt::getRanking(string fname, string prefix, string type) {
   }
 
   return h1;
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::cleanup(string fname) {
+  cout << "     cleanup of " << Form("%s-Events0.root, %s-Events1.root, %s-Events2.root", fname.c_str(), fname.c_str(), fname.c_str()) << endl;
+  TFile *f = TFile::Open(Form("%s-Events0.root", fname.c_str()));
+  if (!f) {
+    cout << "      file not found " << endl;
+    return;
+  }
+  TH1D* h0 = (TH1D*)f->Get("res_ks");
+  if (0 == h0) {
+    cout << "      hist res_ks not found " << endl;
+    return;
+  }
+
+  f = TFile::Open(Form("%s-Events1.root", fname.c_str()));
+  if (!f) {
+    cout << "      file not found " << endl;
+    return;
+  }
+  TH1D* h1 = (TH1D*)f->Get("res_ks");
+  if (0 == h1) {
+    cout << "      hist res_ks not found " << endl;
+    return;
+  }
+
+  f = TFile::Open(Form("%s-Events2.root", fname.c_str()));
+  if (!f) {
+    cout << "      file not found " << endl;
+    return;
+  }
+  TH1D* h2 = (TH1D*)f->Get("res_ks");
+  if (0 == h2) {
+    cout << "      hist res_ks not found " << endl;
+    return;
+  }
+
+  // -- change!
+  f = TFile::Open(Form("%s-combined.root", fname.c_str()));
+  TH1D *H = (TH1D*)f->Get("res_ssb");
+  if (0 == H) {
+    cout << "      hist res_ssb not found " << endl;
+    return;
+  }
+
+  double kssg0 = h0->GetBinContent(1);
+  double ksbg0 = h0->GetBinContent(2);
+  double kssg1 = h1->GetBinContent(1);
+  double ksbg1 = h1->GetBinContent(2);
+  double kssg2 = h2->GetBinContent(1);
+  double ksbg2 = h2->GetBinContent(2);
+  double ssb  = H->GetBinContent(1);
+  cout << fname << " performance: kssg0 = " << kssg0 << " ksbg0 = " << ksbg0
+       << " kssg1 = " << kssg1 << " ksbg1 = " << ksbg1
+       << " kssg2 = " << kssg2 << " ksbg2 = " << ksbg2
+       << " ssb = "  << ssb << endl;
+  double ssbCut = 1.3;
+  if (1 == fChannel) ssbCut = 0.9;
+  if (kssg0 < 0.05 || ksbg0 < 0.05 || kssg1 < 0.05 || ksbg1 < 0.05 || kssg2 < 0.05 || ksbg2 < 0.05 || ssb < ssbCut) {
+    system(Form("/bin/rm -f %s-Events0.root", fname.c_str()));
+    system(Form("/bin/rm -f %s-Events1.root", fname.c_str()));
+    system(Form("/bin/rm -f %s-Events2.root", fname.c_str()));
+    cout << Form("===> REMOVED %s-[Events0,Events1,Events2].root, kssg0 = %f ksbg0 = %f kssg1 = %f ksbg1 = %f kssg2 = %f ksbg2 = %f SSB = %f",
+		 fname.c_str(), kssg0, ksbg0, kssg1, ksbg1, kssg2, ksbg2, ssb) << endl;
+    system(Form("/bin/rm -f weights/%s-Events0_BDT.weights.xml", fname.c_str()));
+    system(Form("/bin/rm -f weights/%s-Events1_BDT.weights.xml", fname.c_str()));
+    system(Form("/bin/rm -f weights/%s-Events2_BDT.weights.xml", fname.c_str()));
+    cout << Form("     REMOVED weights/%s-[Events0,Events1,Events2]_BDT.weights.xml", fname.c_str()) << endl;
+    system(Form("/bin/rm -f weights/%s-Events0_BDT.class.C", fname.c_str()));
+    system(Form("/bin/rm -f weights/%s-Events1_BDT.class.C", fname.c_str()));
+    system(Form("/bin/rm -f weights/%s-Events2_BDT.class.C", fname.c_str()));
+    cout << Form("     REMOVED weights/%s-[Events0,Events1,Events2]_BDT.class.C", fname.c_str()) << endl;
+  } else {
+    cout << Form("===> KEEP %s.root, kssg0 = %f ksbg0 = %f kssg1 = %f ksbg1 = %f kssg0 = %f ksbg0 = %f SSB = %f",
+		 fname.c_str(), kssg0, ksbg0, kssg1, ksbg1, kssg2, ksbg2, ssb) << endl;
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::makeAll(int offset, string filename, int clean) {
+  // createInputFile(filename);
+
+  if (filename == "") {
+    if (2011 == fYear) {
+      filename = "/scratch/ursl/bdt/tmva-trees-0-2011.root";
+    }
+    if (2012 == fYear) {
+      filename = "/scratch/ursl/bdt/tmva-trees-0-2012.root";
+    }
+    if (2016 == fYear) {
+      filename = "/scratch/ursl/bdt/tmva-trees-0-2016.root";
+    }
+  }
+
+
+  make(offset, filename, 0, clean);
+  make(offset, filename, 1, clean);
+  make(offset, filename, 2, clean);
+
+  string oname = Form("TMVA-%d", offset);
+  cout << "-->apply(" << oname.c_str() << ")" << endl;
+  apply(oname.c_str());
+  return;
+  cout << "-->analyze(" << oname.c_str() << ")" << endl;
+  analyze(oname.c_str());
+
+  cout << "-->mvas(...)" << endl;
+  string sEvents = oname + "-Events0";
+  mvas(sEvents.c_str());
+  sEvents = oname + "-Events1";
+  mvas(sEvents.c_str());
+  sEvents = oname + "-Events2";
+  mvas(sEvents.c_str());
+
+  if (clean) {
+    cout << "-->cleanup(...)" << endl;
+    cleanup(oname);
+  }
+
+}
+
+// ----------------------------------------------------------------------
+void tmva1::make(int offset, string filename, int evt, int clean) {
+
+  if (0 == evt)  setApply0();
+  if (1 == evt)  setApply1();
+  if (2 == evt)  setApply2();
+
+  string type;
+  switch (evt) {
+  case 0:
+    type = "Events0";
+    break;
+  case 1:
+    type = "Events1";
+    break;
+  case 2:
+    type = "Events2";
+    break;
+  default:
+    cout << "All hell break loose" << endl;
+  }
+
+  string oname = Form("TMVA-%d-%s", offset, type.c_str());
+  cout << "======================================================================" << endl;
+  cout << "==> tmva1(" << oname << ", " << filename << ") " << endl;
+  cout << "======================================================================" << endl;
+
+  cout << "-->train(oname, filename) with oname = " << oname << " and filename = " << filename << endl;
+  train(oname, filename);
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::createInputFile(string filename, int randomSeed) {
+  TFile *sinput = TFile::Open(fInputFiles.sname.c_str());
+  TFile *dinput = TFile::Open(fInputFiles.dname.c_str());
+
+  TCut sgcut = preselection().c_str();
+
+  cout << "new: " << endl;
+  cout << sgcut << endl;
+
+  TCut masscut = "m>4.9&&m<5.9";
+  TCut massbg  = "!(5.2<m&&m<5.45)";
+
+  cout << "==> signal input file:     " << sinput->GetName() << std::endl;
+  cout << "==> background input file: " << dinput->GetName() << std::endl;
+
+  TTree *signal      = (TTree*)sinput->Get("candAnaMuMu/events");
+  TTree *cbackground = (TTree*)dinput->Get("candAnaMuMu/events");
+
+  TFile *outFile = TFile::Open(filename.c_str(),"RECREATE");
+
+  // -- channel selection/definition
+  float etaCut(2.4);
+  if (fYear == 2012) etaCut = 2.1;
+  string chanDef[] = {"TMath::Abs(m1eta) < 1.4 && TMath::Abs(m2eta) < 1.4",
+		      Form("(TMath::Abs(m1eta)>1.4||TMath::Abs(m2eta)>1.4)&&TMath::Abs(m1eta)<%3.1f&&TMath::Abs(m2eta)<%3.1f", etaCut, etaCut)
+  };
+
+  int nchan = 2;
+  string sdir, type;
+  TTree *copyTree(0);
+  TCut copyCuts;
+  TCut chanCut, typeCut;
+  if (randomSeed > -1) gRandom->SetSeed(randomSeed);
+  for (int j = 0; j < 3; ++j) {
+    if (0 == j) {
+      type = "Events0";
+      typeCut = "TMath::Abs(evt%3)==0";
+      if (randomSeed > -1) typeCut = "3*rndm%3==0";
+    } else if (1 == j) {
+      type = "Events1";
+      typeCut = "TMath::Abs(evt%3)==1";
+      if (randomSeed > -1) typeCut = "3*rndm%3==1";
+    } else if (2 == j) {
+      type = "Events2";
+      typeCut = "TMath::Abs(evt%3)==2";
+      if (randomSeed > -1) typeCut = "3*rndm%3==2";
+    }
+
+    for (int i = 0; i < nchan; ++i) {
+      // -- signal
+      sdir = Form("signalChan%d%s", i, type.c_str());
+      chanCut = chanDef[i].c_str();
+      outFile->mkdir(sdir.c_str());
+      outFile->cd(sdir.c_str());
+      copyCuts = sgcut + chanCut + typeCut;
+      cout << "sg copyCuts: " << copyCuts << endl;
+      copyTree = signal->CopyTree(copyCuts);
+      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
+
+      // -- background
+      sdir = Form("sidebandChan%d%s", i, type.c_str());
+      chanCut = chanDef[i].c_str();
+      outFile->mkdir(sdir.c_str());
+      outFile->cd(sdir.c_str());
+      copyCuts = sgcut + massbg + masscut + chanCut + typeCut;
+      cout << "bg copyCuts: " << copyCuts << endl;
+      copyTree = cbackground->CopyTree(copyCuts);
+      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
+    }
+
+  }
+
+  outFile->Write();
+  outFile->Close();
+
+  sinput->Close();
+  dinput->Close();
+}
+
+
+
+// ----------------------------------------------------------------------
+void tmva1::calcBDT() {
+  fBDT = fBDT0 = fBDT1 =  fBDT2 = -99.;
+
+  frd.pt = ftd.pt;
+  frd.eta = ftd.eta;
+  frd.m1eta = ftd.m1eta;
+  frd.m2eta = ftd.m2eta;
+  frd.m1pt = ftd.m1pt;
+  frd.m2pt = ftd.m2pt;
+  frd.fls3d = ftd.fls3d;
+  frd.alpha = ftd.alpha;
+  frd.maxdoca = ftd.maxdoca;
+  frd.pvip = ftd.pvip;
+  frd.pvips = ftd.pvips;
+  frd.iso = ftd.iso;
+  frd.docatrk = ftd.docatrk;
+  frd.chi2dof = ftd.chi2dof;
+  frd.closetrk = ftd.closetrk;
+  frd.closetrks1 = ftd.closetrks1;
+  frd.closetrks2 = ftd.closetrks2;
+  frd.closetrks3 = ftd.closetrks3;
+
+  frd.m1iso = ftd.m1iso;
+  frd.m2iso = ftd.m2iso;
+  frd.pvdchi2 = ftd.pvdchi2;
+  frd.othervtx = ftd.othervtx;
+
+  frd.pv2lips = ftd.pv2lips;
+  frd.pv2lip = ftd.pv2lip;
+
+  frd.m  = ftd.m;
+  int ichan = 0;
+
+  if (ftd.evt < 0) {
+    cout << "XXXXXXXXXXXXXXXXXXXXX event number still smaller than zero!!!!!" << endl;
+  }
+  if (TMath::Abs(ftd.evt%3) == 1) ichan = 1;
+  if (TMath::Abs(ftd.evt%3) == 2) ichan = 2;
+  fBDT   = fReader[ichan]->EvaluateMVA("bmm4BDT");
+  fBDT0  = fReader[0]->EvaluateMVA("bmm4BDT");
+  fBDT1  = fReader[1]->EvaluateMVA("bmm4BDT");
+  fBDT2  = fReader[2]->EvaluateMVA("bmm4BDT");
+  //  cout << "calcBDT: evt = " << ichan << " BDT = " <<  fBDT << endl;
+}
+
+
+
+// ----------------------------------------------------------------------
+void tmva1::writeOut(TFile *f, TH1 *h) {
+  TDirectory *pD = gDirectory;
+  f->cd();
+  h->SetDirectory(f);
+  h->Write();
+  pD->cd();
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::redrawStats(double x, double y, const char *newname, int color) {
+
+  TPaveStats *st = (TPaveStats*)gPad->GetPrimitive("stats");
+  st->SetName(newname);
+  st->SetX1NDC(x);
+  st->SetY1NDC(y);
+  st->SetTextColor(color);
+  //  st->Draw("sames");
+}
+
+// ----------------------------------------------------------------------
+void tmva1::newLegend(double x1, double y1, double x2, double y2, string title) {
+  if (legg) delete legg;
+  legg = new TLegend(x1, y1, x2, y2, title.c_str());
+  legg->SetFillStyle(0);
+  legg->SetBorderSize(0);
+  legg->SetTextSize(0.04);
+  legg->SetFillColor(0);
+  legg->SetTextFont(42);
+}
+
+// ----------------------------------------------------------------------
+void setTitles(TH1 *h, const char *sx, const char *sy, float size,
+	       float xoff, float yoff, float lsize, int font) {
+  if (h == 0) {
+    cout << " Histogram not defined" << endl;
+  } else {
+    h->SetXTitle(sx);                  h->SetYTitle(sy);
+    h->SetTitleOffset(xoff, "x");      h->SetTitleOffset(yoff, "y");
+    h->SetTitleSize(size, "x");        h->SetTitleSize(size, "y");
+    h->SetLabelSize(lsize, "x");       h->SetLabelSize(lsize, "y");
+    h->SetLabelFont(font, "x");        h->SetLabelFont(font, "y");
+    h->GetXaxis()->SetTitleFont(font); h->GetYaxis()->SetTitleFont(font);
+    h->SetNdivisions(508, "X");
+  }
+}
+
+// ----------------------------------------------------------------------
+void shrinkPad(double b, double l, double r, double t) {
+  gPad->SetBottomMargin(b);
+  gPad->SetLeftMargin(l);
+  gPad->SetRightMargin(r);
+  gPad->SetTopMargin(t);
+}
+
+
+// ----------------------------------------------------------------------
+void setHist(TH1 *h, Int_t color, Int_t symbol, Double_t size, Double_t width) {
+  h->SetLineColor(color);   h->SetLineWidth(static_cast<Width_t>(width));
+  h->SetMarkerColor(color); h->SetMarkerStyle(symbol);  h->SetMarkerSize(size);
+  h->SetStats(kFALSE);
+  h->SetFillStyle(0); h->SetFillColor(color);
+}
+
+
+// ----------------------------------------------------------------------
+TTree* tmva1::createTree(struct ReaderData &rd) {
+
+  TTree *tree = new TTree("events", "events");
+  tree->Branch("m", &rd.m, "m/F");
+  tree->Branch("pt", &rd.pt, "pt/F");
+  tree->Branch("eta", &rd.eta, "eta/F");
+  tree->Branch("m1eta", &rd.m1eta, "m1eta/F");
+  tree->Branch("m2eta", &rd.m2eta, "m2eta/F");
+  tree->Branch("m1phi", &rd.m1phi, "m1phi/F");
+  tree->Branch("m2phi", &rd.m2phi, "m2phi/F");
+  tree->Branch("m1pt", &rd.m1pt, "m1pt/F");
+  tree->Branch("m2pt", &rd.m2pt, "m2pt/F");
+
+  tree->Branch("fls3d", &rd.fls3d, "fls3d/F");
+  tree->Branch("alpha", &rd.alpha, "alpha/F");
+  tree->Branch("maxdoca", &rd.maxdoca, "maxdoca/F");
+  tree->Branch("pvip", &rd.pvip, "pvip/F");
+  tree->Branch("pvips", &rd.pvips, "pvips/F");
+  tree->Branch("iso", &rd.iso, "iso/F");
+  tree->Branch("docatrk", &rd.docatrk, "docatrk/F");
+  tree->Branch("chi2dof", &rd.chi2dof, "chi2dof/F");
+  tree->Branch("closetrk", &rd.closetrk, "closetrk/F");
+  tree->Branch("closetrks1", &rd.closetrks1, "closetrks1/I");
+  tree->Branch("closetrks2", &rd.closetrks2, "closetrks2/I");
+  tree->Branch("closetrks3", &rd.closetrks3, "closetrks3/I");
+
+  tree->Branch("m1iso", &rd.m1iso, "m1iso/F");
+  tree->Branch("m2iso", &rd.m2iso, "m2iso/F");
+  tree->Branch("pvdchi2", &rd.pvdchi2, "pvdchi2/F");
+  tree->Branch("othervtx", &rd.othervtx, "othervtx/F");
+  tree->Branch("pv2lips", &rd.pv2lips, "pv2lips/F");
+  tree->Branch("pv2lip", &rd.pv2lip, "pv2lip/F");
+
+  return tree;
+}
+
+
+// ----------------------------------------------------------------------
+double tmva1::bgBlind(TH1 *h, int mode, double lo, double hi) {
+
+  TVirtualFitter::SetMaxIterations(20000);
+
+  if (0 == h) {
+    cout << "tmva1::bgBlind(...): No histogram passed! mode = " << mode << endl;
+    return -1.;
+  }
+
+  TF1 *lF1(0), *lF2(0);
+
+  initFunc *pFunc  = new initFunc();
+
+  double BgLo = 4.9;
+  double BgHi = 5.9;
+  double histCount = h->Integral(h->FindBin(BgLo+0.0001), h->FindBin(BgHi-0.0001));
+  cout << "bgBlind: histCount = " << histCount
+       << " starting at " << BgLo+0.0001 << " bin(" << h->FindBin(BgLo+0.0001) << ")"
+       << " to " << BgHi-0.0001 << " bin(" << h->FindBin(BgHi-0.0001) << ")"
+       << " mode: " << mode
+       << endl;
+
+  double BgHist  = histCount;
+  double BgHistE  = TMath::Sqrt(histCount);
+  if (histCount > 0) {
+    BgHistE = TMath::Sqrt(histCount)/histCount*BgHist;
+  } else {
+    BgHistE  = 0.2; // FIXME?!
+    return 0.;
+  }
+
+  if (3 == mode) {
+    pFunc->resetLimits();
+    lF1 = pFunc->pol1BsBlind(h);
+    lF2 = pFunc->pol1(4.9, 5.9);
+  } else {
+    cout << " implement missing code!" << endl;
+  }
+
+  lF2->SetLineStyle(kDashed);
+  h->Fit(lF1, "rl", "", lo, hi);
+  h->DrawCopy();
+  lF2->SetLineColor(kBlue);
+  lF2->Draw("same");
+  lF2->SetParameters(lF1->GetParameters());
+  lF2->SetParErrors(lF1->GetParErrors());
+
+  double BsBgExp;
+  if (!strcmp(gMinuit->fCstatu.Data(), "CONVERGED ")) {
+    lF2->Update();
+    double integral = lF2->Integral(5.30, 5.45);
+    BsBgExp  = integral/h->GetBinWidth(1);
+  } else {
+    BsBgExp  = (5.45-5.30)/(5.9-4.9-0.25)*BgHist;
+    cout << "+++ Fit did not converge, take flat bg interpretation, fCstatu = ->" << gMinuit->fCstatu.Data() << "<-"
+	 << ", BsBgExp = " << BsBgExp
+	 << endl;
+  }
+
+  delete lF1;
+  delete lF2;
+  delete pFunc;
+
+  return BsBgExp;
+}
+
+
+
+// ----------------------------------------------------------------------
+void tmva1::createToyData(string sgfilename, string bgfilename, string ofilename, int seed, int nsg, int nbg) {
+  delete gRandom;
+  gRandom = new TRandom3(seed);
+
+  cout << "==> CREATE TOY DATA for seed = " << seed << endl;
+
+  int channel = 0;
+
+  // -- define variables
+  vector<string> vNames;
+  vector<double> vMin, vMax;
+  vector<int> vNbins;
+  vNames.push_back("m1pt"); vMin.push_back(0.); vMax.push_back(60.); vNbins.push_back(120);
+  vNames.push_back("m2pt"); vMin.push_back(0.); vMax.push_back(40.); vNbins.push_back(80);
+  vNames.push_back("m1eta"); vMin.push_back(-2.5); vMax.push_back(2.5); vNbins.push_back(100);
+  vNames.push_back("m2eta"); vMin.push_back(-2.5); vMax.push_back(2.5); vNbins.push_back(100);
+  vNames.push_back("pt");    vMin.push_back(0.); vMax.push_back(100.); vNbins.push_back(200);
+  vNames.push_back("eta");   vMin.push_back(-2.5); vMax.push_back(2.5); vNbins.push_back(100);
+  vNames.push_back("fls3d"); vMin.push_back(0.); vMax.push_back(150.); vNbins.push_back(150);
+  vNames.push_back("alpha"); vMin.push_back(0.); vMax.push_back(1.); vNbins.push_back(100);
+  vNames.push_back("maxdoca"); vMin.push_back(0.); vMax.push_back(0.1); vNbins.push_back(200);
+  vNames.push_back("pvip"); vMin.push_back(0.); vMax.push_back(0.1); vNbins.push_back(100);
+  vNames.push_back("pvips"); vMin.push_back(0.); vMax.push_back(5); vNbins.push_back(100);
+  vNames.push_back("iso"); vMin.push_back(0.); vMax.push_back(1.01); vNbins.push_back(101);
+  vNames.push_back("m1iso"); vMin.push_back(0.); vMax.push_back(1.01); vNbins.push_back(101);
+  vNames.push_back("m2iso"); vMin.push_back(0.); vMax.push_back(1.01); vNbins.push_back(101);
+  vNames.push_back("closetrk"); vMin.push_back(0.); vMax.push_back(21); vNbins.push_back(21);
+  vNames.push_back("docatrk"); vMin.push_back(0.); vMax.push_back(0.5); vNbins.push_back(100);
+  vNames.push_back("chi2dof"); vMin.push_back(0.); vMax.push_back(10); vNbins.push_back(100);
+
+  TFile *sgFile = TFile::Open(sgfilename.c_str());
+  TTree *tsg = (TTree*)sgFile->Get("candAnaMuMu/events");
+  TFile *bgFile = TFile::Open(bgfilename.c_str());
+  TTree *tbg = (TTree*)bgFile->Get("candAnaMuMu/events");
+
+  // -- create histograms
+  TH1D *hs, *hb;
+  string hsName, hbName;
+  string presel = preselection();
+  TCanvas *c0 = getC0();
+  c0->Clear();
+  c0->Divide(6,6);
+  sgFile->cd();
+  cout << "Preselection: "
+       << endl
+       << presel
+       << endl;
+  for (unsigned int i = 0; i < vNames.size(); ++i) {
+    hsName = Form("hs_%s", vNames[i].c_str());
+    hs  = new TH1D(hsName.c_str(), vNames[i].c_str(), vNbins[i], vMin[i], vMax[i]);
+    setHist(hs, kBlue);
+
+    hbName = Form("hb_%s", vNames[i].c_str());
+    hb  = new TH1D(hbName.c_str(), vNames[i].c_str(), vNbins[i], vMin[i], vMax[i]);
+    setHist(hb, kRed);
+
+    string var = vNames[i];
+    cout << "--> " << var <<  endl;
+    tsg->Draw(Form("%s>>%s", var.c_str(), hsName.c_str()), presel.c_str(), "goff");
+    tbg->Draw(Form("%s>>%s", var.c_str(), hbName.c_str()), presel.c_str(), "goff");
+    c0->cd(2*i+1);
+    hs->Draw("hist");
+    c0->cd(2*i+2);
+    hb->Draw("hist");
+    c0->Modified();
+    c0->Update();
+  }
+
+  c0->SaveAs(Form("toyData-%d-%d-%d.pdf", seed, nsg, nbg));
+
+  c0->cd(vNames.size()+1);
+
+  // -- fill and dump toy trees
+  TFile *outfile = TFile::Open(ofilename.c_str(), "RECREATE");
+  struct ReaderData rd;
+
+  TTree *ts[3], *tb[3];
+  for (int ie = 0; ie < 3; ++ie) {
+    outfile->mkdir(Form("signalChan0Events%d", ie));
+    outfile->cd(Form("signalChan0Events%d", ie));
+    ts[ie] = createTree(rd);
+    for (int i = 0 ; i < nsg; ++i) {
+      rd.m = 5.37;
+      rd.pt = ((TH1D*)sgFile->Get("hs_pt"))->GetRandom();
+      rd.eta = ((TH1D*)sgFile->Get("hs_eta"))->GetRandom();
+      rd.m1eta = ((TH1D*)sgFile->Get("hs_m1eta"))->GetRandom();
+      rd.m2eta = ((TH1D*)sgFile->Get("hs_m2eta"))->GetRandom();
+      rd.m1pt = ((TH1D*)sgFile->Get("hs_m1pt"))->GetRandom();
+      rd.m2pt = ((TH1D*)sgFile->Get("hs_m2pt"))->GetRandom();
+
+      rd.fls3d = ((TH1D*)sgFile->Get("hs_fls3d"))->GetRandom();
+      rd.alpha = ((TH1D*)sgFile->Get("hs_alpha"))->GetRandom();
+      rd.maxdoca = ((TH1D*)sgFile->Get("hs_maxdoca"))->GetRandom();
+      rd.pvip = ((TH1D*)sgFile->Get("hs_pvip"))->GetRandom();
+      rd.pvips = ((TH1D*)sgFile->Get("hs_pvips"))->GetRandom();
+      rd.iso = ((TH1D*)sgFile->Get("hs_iso"))->GetRandom();
+      rd.m1iso = ((TH1D*)sgFile->Get("hs_m1iso"))->GetRandom();
+      rd.m2iso = ((TH1D*)sgFile->Get("hs_m2iso"))->GetRandom();
+      rd.docatrk = ((TH1D*)sgFile->Get("hs_docatrk"))->GetRandom();
+      rd.chi2dof = ((TH1D*)sgFile->Get("hs_chi2dof"))->GetRandom();
+      rd.closetrk = ((TH1D*)sgFile->Get("hs_closetrk"))->GetRandom();
+      ts[ie]->Fill();
+    }
+  }
+
+  for (int ie = 0; ie < 3; ++ie) {
+    outfile->mkdir(Form("sidebandChan0Events%d", ie));
+    outfile->cd(Form("sidebandChan0Events%d", ie));
+
+    tb[ie] = createTree(rd);
+    for (int i = 0 ; i < nbg; ++i) {
+      rd.m = 5.37;
+      rd.pt = ((TH1D*)sgFile->Get("hb_pt"))->GetRandom();
+      rd.eta = ((TH1D*)sgFile->Get("hb_eta"))->GetRandom();
+      rd.m1eta = ((TH1D*)sgFile->Get("hb_m1eta"))->GetRandom();
+      rd.m2eta = ((TH1D*)sgFile->Get("hb_m2eta"))->GetRandom();
+      rd.m1pt = ((TH1D*)sgFile->Get("hb_m1pt"))->GetRandom();
+      rd.m2pt = ((TH1D*)sgFile->Get("hb_m2pt"))->GetRandom();
+
+      rd.fls3d = ((TH1D*)sgFile->Get("hb_fls3d"))->GetRandom();
+      rd.alpha = ((TH1D*)sgFile->Get("hb_alpha"))->GetRandom();
+      rd.maxdoca = ((TH1D*)sgFile->Get("hb_maxdoca"))->GetRandom();
+      rd.pvip = ((TH1D*)sgFile->Get("hb_pvip"))->GetRandom();
+      rd.pvips = ((TH1D*)sgFile->Get("hb_pvips"))->GetRandom();
+      rd.iso = ((TH1D*)sgFile->Get("hb_iso"))->GetRandom();
+      rd.m1iso = ((TH1D*)sgFile->Get("hb_m1iso"))->GetRandom();
+      rd.m2iso = ((TH1D*)sgFile->Get("hb_m2iso"))->GetRandom();
+      rd.docatrk = ((TH1D*)sgFile->Get("hb_docatrk"))->GetRandom();
+      rd.chi2dof = ((TH1D*)sgFile->Get("hb_chi2dof"))->GetRandom();
+      rd.closetrk = ((TH1D*)sgFile->Get("hb_closetrk"))->GetRandom();
+      tb[ie]->Fill();
+    }
+  }
+
+  for (int ie = 0; ie < 3; ++ie) {
+    ts[ie]->Write();
+    tb[ie]->Write();
+  }
+
+  outfile->Write();
+  outfile->Close();
+
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::toyRun(string modifier, string vars, string bdtpars, int seed, int nsg, int nbg) {
+  string oname;
+
+  string sgfilename = "/scratch/ursl/bdt/v16-2011-mix-Bs2MuMu.root";
+  string bgfilename = "/scratch/ursl/bdt/v16-2011-data-bmmLoose-1.root";
+
+  if (!strcmp(vars.c_str(), "")) {
+    fVariables = "pt:eta:alpha:chi2dof:maxdoca:fls3d:pvip:pvips:closetrk:iso:m1iso:m2iso";
+  } else {
+    fVariables = vars;
+  }
+
+  if (!strcmp(bdtpars.c_str(), "")) {
+    fBDTParameters = ":NTrees=200:nCuts=20:BoostType=AdaBoost:AdaBoostBeta=1.0:MaxDepth=3:NNodesMax=100000:nEventsMin=50";
+  } else {
+    fBDTParameters = bdtpars;
+  }
+
+  oname = Form("/scratch/ursl/toys/toy-%d.root", seed);
+
+  ifstream ifile(oname.c_str());
+  if (!ifile) {
+    createToyData(sgfilename, bgfilename, oname, seed, nsg, nbg);
+  } else {
+    ifile.close();
+  }
+
+
+  if (1) {
+    setApply0(); train(Form("toy-%d-0", seed), oname, nsg, nbg);
+    setApply1(); train(Form("toy-%d-1", seed), oname, nsg, nbg);
+    setApply2(); train(Form("toy-%d-2", seed), oname, nsg, nbg);
+  }
+
+  TCanvas *c0 = getC0();
+  c0->Clear();
+  gStyle->SetOptStat(0);
+  gStyle->SetOptTitle(0);
+  double ymax = 0.5;
+  TH2F* frame = new TH2F("frame", "BDT output distributions", 100, -1., 1., 100, 0., ymax);
+  frame->GetXaxis()->SetTitle(" b");
+  frame->GetYaxis()->SetTitle("(1/N) dN^{ }/^{ }dx");
+  frame->Draw();
+
+  int color(0);
+  for (int ie = 0; ie < 3; ++ie) {
+    oname = Form("toy-%d-%d.root", seed, ie);
+    TFile *file = TFile::Open(oname.c_str());
+
+    if (0 == ie) color = kMagenta;
+    if (1 == ie) color = kRed;
+    if (2 == ie) color = kBlue;
+    TH1F *hTrainSg = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_Train_S");
+    hTrainSg->SetLineColor(color);
+    hTrainSg->SetMarkerColor(color);
+    hTrainSg->Scale(1./hTrainSg->GetSumOfWeights());
+    c0->cd();
+    hTrainSg->DrawCopy("histesame");
+
+    TH1F *hTrainBg = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_Train_B");
+    hTrainBg->SetLineColor(color);
+    hTrainBg->SetMarkerColor(color);
+    hTrainBg->Scale(1./hTrainBg->GetSumOfWeights());
+    hTrainBg->DrawCopy("histesame");
+
+    TPad *t = new TPad(Form("pad%d", ie), Form("pad%d", ie), 0.2+0.2*ie, 0.4, 0.2+0.2*ie+0.2, 0.6);
+    t->Draw();
+    t->cd();
+    TH1F *hs0 = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_Train_S"); hs0->SetMarkerColor(color);
+    TH1F *hs1 = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_S"); hs1->SetLineColor(color);
+    hs0->DrawNormalized("e");
+    hs1->DrawNormalized("histsame");
+    Double_t kolS = hs1->KolmogorovTest(hs0);
+
+    TH1F *hb0 = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_Train_B"); hb0->SetMarkerColor(color);
+    TH1F *hb1 = (TH1F*)file->Get("Method_BDT/BDT/MVA_BDT_B"); hb1->SetLineColor(color);
+    hb0->DrawNormalized("esame");
+    hb1->DrawNormalized("histsame");
+    Double_t kolB = hb1->KolmogorovTest(hb0);
+
+
+    tl->SetTextSize(0.1);
+    tl->DrawLatex(0.2, 0.92, Form("%4.3f", kolB));
+    tl->DrawLatex(0.6, 0.92, Form("%4.3f", kolS));
+
+    file->Close();
+  }
+
+  c0->cd();
+  tl->SetTextSize(0.02);
+  tl->DrawLatex(0.13, 0.92, Form("toys-output-%d-%s", seed, modifier.c_str()));
+  tl->SetTextSize(0.02);
+  tl->DrawLatex(0.13, 0.80, Form("Nsg/Nbg %d/%d", nsg, nbg));
+  tl->DrawLatex(0.13, 0.76, fVariables.c_str());
+  tl->SetTextSize(0.014);
+  tl->DrawLatex(0.13, 0.72, fBDTParameters.c_str());
+  c0->SaveAs(Form("toys-output-%d-%s.pdf", seed, modifier.c_str()));
+}
+
+
+// ----------------------------------------------------------------------
+void tmva1::analyzeTexFiles(std::string dir, int start, int end, string what) {
+
+  int ivar(0);
+  if (string::npos != what.find("ssbfit")) {
+    ivar = 1;
+  } else   if (string::npos != what.find("ssbsimple")) {
+    ivar = 2;
+  } else if (string::npos != what.find("ssb")) {
+    ivar = 3;
+  }
+
+  vector<string> lines;
+  double best_x(-1.);
+  int best_idx(-1);
+
+  const double KSCUT(0.05);
+  int combD, combDhi, sumD, sumDhi;
+  double x, ssbfit, ssb, ssbs, combBg, combSg, sumBg, sumSg, sssb;
+  double bks0, bks1, bks2, sks0, sks1, sks2;
+  double dMaxBDT, dMaxBDT3;
+  string setup;
+  for (int i = start; i <= end; ++i) {
+    lines.clear();
+    readTexFile(Form("%s/tmp-%d/TMVA-%d.tex", dir.c_str(), i, i), lines);
+    sumD = sumDhi = combD = combDhi = -99;
+    x = ssbfit = ssb = ssbs = combBg = combSg = sumBg = sumSg = sssb = -99.;
+    sks0 = sks1 = sks2 = bks0 = bks1 = bks2 = -99.;
+    dMaxBDT = dMaxBDT3 = 99.;
+    setup = "";
+
+    for (unsigned int j = 0; j < lines.size(); ++j) {
+      if (string::npos != lines[j].find("ie0:ksBg}")) {bks0 = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie1:ksBg}")) {bks1 = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie2:ksBg}")) {bks2 = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("ie0:ksSg}")) {sks0 = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie1:ksSg}")) {sks1 = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie2:ksSg}")) {sks2 = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("sum:ssb}")) {sssb = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("sum:Smc}")) {sumSg = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("sum:D}"))   {sumD = static_cast<int>(parseTexLine(lines[j])); continue;}
+      if (string::npos != lines[j].find("sum:Dhi}")) {sumDhi = static_cast<int>(parseTexLine(lines[j])); continue;}
+      if (string::npos != lines[j].find("sum:B}"))   {sumBg = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("ie3:Smc}")) {combSg = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie3:Dhi}")) {combDhi = static_cast<int>(parseTexLine(lines[j])); continue;}
+      if (string::npos != lines[j].find("ie3:D}"))   {combD = static_cast<int>(parseTexLine(lines[j])); continue;}
+      if (string::npos != lines[j].find("ie3:B}"))   {combBg = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("dMaxBDT}"))   {dMaxBDT = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("dMaxBDT3}"))   {dMaxBDT3 = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("ie3:ssb}")) {ssb = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie3:ssbfit}")) {ssbfit = parseTexLine(lines[j]); continue;}
+      if (string::npos != lines[j].find("ie3:ssbsimple}")) {ssbs = parseTexLine(lines[j]); continue;}
+
+      if (string::npos != lines[j].find("BDTparameters}")) {
+	setup += lines[j].substr(lines[j].find("BDTparameters} ")+string("BDTparameters} ").length());
+	continue;
+      }
+      if (string::npos != lines[j].find("BDTvariables}")) {
+	setup += lines[j].substr(lines[j].find("BDTvariables} ")+string("BDTvariables} ").length());
+	continue;
+      }
+
+    }
+
+
+    if (bks0 < KSCUT || bks1 < KSCUT || bks2 < KSCUT || sks0 < KSCUT || sks1 < KSCUT || sks2 < KSCUT) {
+      //       cout << "skipping " << i << " because of low KS probs: "
+      // 	   << bks0 << " " << bks1 << " " << bks2 << " " << sks0 << " " << sks1 << " " << sks2
+      // 	   << endl;
+      continue;
+    }
+
+    if (1 == ivar) {
+      x = ssbfit;
+    } else if (2 == ivar) {
+      x = ssbs;
+    } else if (3 == ivar) {
+      x = ssb;
+    }
+
+    if (x > best_x) {
+      cout << "at " << i << " new better " << what << ": " << ssb << "/" << ssbs << "/" << ssbfit
+	   << "S/B/D = " << combSg << "/" << combBg << "/" << combD
+	   << " dmaxBDT = " << dMaxBDT << "/" << dMaxBDT3 << " " << setup << endl;
+      best_x = x;
+      best_idx = i;
+    } else if (x > 0.99*best_x) {
+      cout << "   at " << i << " similar " << what << ": " << ssb << "/" << ssbs << "/" << ssbfit
+	   << "S/B/D = " << combSg << "/" << combBg << "/" << combD
+	   << " dmaxBDT = " << dMaxBDT << "/" << dMaxBDT3 << " " << setup << endl;
+    }
+
+  }
+
+}
+
+// ----------------------------------------------------------------------
+float tmva1::parseTexLine(string line) {
+  //  cout << "0:" << line << endl;
+  string::size_type m1 = line.rfind("{");
+  string::size_type m2 = line.rfind("}");
+  string stype = line.substr(m1+1, m2-m1-1);
+  //  cout << "1:" << stype << endl;
+  return atof(stype.c_str());
+}
+
+// ----------------------------------------------------------------------
+void tmva1::readTexFile(string filename, vector<string> &lines) {
+  ifstream is(filename.c_str());
+  char  buffer[200];
+  while (is.getline(buffer, 200, '\n')) {
+    lines.push_back(string(buffer));
+  }
 }
