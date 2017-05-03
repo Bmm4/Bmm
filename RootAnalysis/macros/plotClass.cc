@@ -16,6 +16,7 @@
 #include "common/util.hh"
 
 #include "preselection.hh"
+#include "setupReader.hh"
 
 ClassImp(plotClass)
 
@@ -1153,165 +1154,166 @@ void plotClass::calcBDT() {
 }
 
 
-// ----------------------------------------------------------------------
-TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
-  TMVA::Reader *reader = new TMVA::Reader( "!Color:Silent" );
+// // ----------------------------------------------------------------------
+// TMVA::Reader* plotClass::setupReader(string xmlFile, readerData &rd) {
+//   TMVA::Reader *reader = new TMVA::Reader( "!Color:Silent" );
 
-  TString dir    = "weights/";
-  TString methodNameprefix = "BDT";
-  TString weightfile = xmlFile;
+//   TString dir    = "weights/";
+//   TString methodNameprefix = "BDT";
+//   TString weightfile = xmlFile;
 
-  // -- read in variables from weight file
-  vector<string> allLines;
-  char  buffer[2000];
-  cout << "setupReader, open file " << weightfile << endl;
-  ifstream is(weightfile);
-  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
-  int nvars(-1);
-  string::size_type m1, m2;
-  string stype;
-  cout << "adding variables: ";
-  for (unsigned int i = 0; i < allLines.size(); ++i) {
-    // -- parse and add variables
-    if (string::npos != allLines[i].find("Variables NVar")) {
-      m1 = allLines[i].find("=\"");
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      nvars = atoi(stype.c_str());
-      if (-1 == nvars) continue;
-      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-        m1 = allLines[j].find("Expression=\"")+10;
-        m2 = allLines[j].find("\" Label=\"");
-        stype = allLines[j].substr(m1+2, m2-m1-2);
-        //      cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
-        if (stype == "m1pt") {
-          cout << " m1pt";
-          reader->AddVariable( "m1pt", &rd.m1pt);
-        }
-        if (stype == "m2pt") {
-          cout << " m2pt";
-          reader->AddVariable( "m2pt", &rd.m2pt);
-        }
-        if (stype == "m1eta") {
-          cout << " m1eta";
-          reader->AddVariable( "m1eta", &rd.m1eta);
-        }
-        if (stype == "m2eta") {
-          reader->AddVariable( "m2eta", &rd.m2eta);
-          cout << " m2eta";
-        }
-        if (stype == "pt") {
-          cout << " pt";
-          reader->AddVariable( "pt", &rd.pt);
-        }
-        if (stype == "eta") {
-          cout << " eta";
-          reader->AddVariable( "eta", &rd.eta);
-        }
-        if (stype == "fls3d") {
-          cout << " fls3d";
-          reader->AddVariable( "fls3d", &rd.fls3d);
-        }
-        if (stype == "alpha") {
-          cout << " alpha";
-          reader->AddVariable( "alpha", &rd.alpha);
-        }
-        if (stype == "maxdoca") {
-          cout << " maxdoca";
-          reader->AddVariable( "maxdoca", &rd.maxdoca);
-        }
-        if (stype == "pvip") {
-          cout << " pvip";
-          reader->AddVariable( "pvip", &rd.pvip);
-        }
-        if (stype == "pvips") {
-          cout << " pvips";
-          reader->AddVariable( "pvips", &rd.pvips);
-        }
-        if (stype == "iso") {
-          cout << " iso";
-          reader->AddVariable( "iso", &rd.iso);
-        }
-        if (stype == "docatrk") {
-          cout << " docatrk";
-          reader->AddVariable( "docatrk", &rd.docatrk);
-        }
-        if (stype == "closetrk") {
-          cout << " closetrk";
-          reader->AddVariable( "closetrk", &rd.closetrk);
-        }
-        if (stype == "chi2dof") {
-          cout << " chi2dof";
-          reader->AddVariable( "chi2dof", &rd.chi2dof);
-        }
-        if (stype == "closetrks1") {
-          cout << " closetrks1";
-          reader->AddVariable( "closetrks1", &rd.closetrks1);
-        }
-        if (stype == "closetrks2") {
-          cout << " closetrks2";
-          reader->AddVariable( "closetrks2", &rd.closetrks2);
-        }
-        if (stype == "closetrks3") {
-          cout << " closetrks3";
-          reader->AddVariable( "closetrks3", &rd.closetrks3);
-        }
-        if (stype == "m1iso") {
-          cout << " m1iso";
-          reader->AddVariable( "m1iso", &rd.m1iso);
-        }
-        if (stype == "m2iso") {
-          cout << " m2iso";
-          reader->AddVariable( "m2iso", &rd.m2iso);
-        }
-        if (stype == "othervtx") {
-          cout << " othervtx";
-          reader->AddVariable( "othervtx", &rd.othervtx);
-        }
-        if (stype == "pvdchi2") {
-          cout << " pvdchi2";
-          reader->AddVariable( "pvdchi2", &rd.pvdchi2);
-        }
-        if (stype == "pv2lip") {
-          cout << " pv2lip";
-          reader->AddVariable( "pv2lip", &rd.pv2lip);
-        }
-        if (stype == "pv2lips") {
-          cout << " pv2lips";
-          reader->AddVariable( "pv2lips", &rd.pv2lips);
-        }
-      }
-      break;
-    }
-  }
-  cout << endl;
+//   // -- read in variables from weight file
+//   vector<string> allLines;
+//   char  buffer[2000];
+//   cout << "setupReader, open file " << weightfile << endl;
+//   ifstream is(weightfile);
+//   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+//   int nvars(-1);
+//   string::size_type m1, m2;
+//   string stype;
+//   cout << "adding variables: ";
+//   for (unsigned int i = 0; i < allLines.size(); ++i) {
+//     // -- parse and add variables
+//     if (string::npos != allLines[i].find("Variables NVar")) {
+//       m1 = allLines[i].find("=\"");
+//       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+//       nvars = atoi(stype.c_str());
+//       if (-1 == nvars) continue;
+//       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+//         m1 = allLines[j].find("Expression=\"")+10;
+//         m2 = allLines[j].find("\" Label=\"");
+//         stype = allLines[j].substr(m1+2, m2-m1-2);
+//         //      cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
+//         if (stype == "m1pt") {
+//           cout << " m1pt";
+//           reader->AddVariable( "m1pt", &rd.m1pt);
+//         }
+//         if (stype == "m2pt") {
+//           cout << " m2pt";
+//           reader->AddVariable( "m2pt", &rd.m2pt);
+//         }
+//         if (stype == "m1eta") {
+//           cout << " m1eta";
+//           reader->AddVariable( "m1eta", &rd.m1eta);
+//         }
+//         if (stype == "m2eta") {
+//           reader->AddVariable( "m2eta", &rd.m2eta);
+//           cout << " m2eta";
+//         }
+//         if (stype == "pt") {
+//           cout << " pt";
+//           reader->AddVariable( "pt", &rd.pt);
+//         }
+//         if (stype == "eta") {
+//           cout << " eta";
+//           reader->AddVariable( "eta", &rd.eta);
+//         }
+//         if (stype == "fls3d") {
+//           cout << " fls3d";
+//           reader->AddVariable( "fls3d", &rd.fls3d);
+//         }
+//         if (stype == "alpha") {
+//           cout << " alpha";
+//           reader->AddVariable( "alpha", &rd.alpha);
+//         }
+//         if (stype == "maxdoca") {
+//           cout << " maxdoca";
+//           reader->AddVariable( "maxdoca", &rd.maxdoca);
+//         }
+//         if (stype == "pvip") {
+//           cout << " pvip";
+//           reader->AddVariable( "pvip", &rd.pvip);
+//         }
+//         if (stype == "pvips") {
+//           cout << " pvips";
+//           reader->AddVariable( "pvips", &rd.pvips);
+//         }
+//         if (stype == "iso") {
+//           cout << " iso";
+//           reader->AddVariable( "iso", &rd.iso);
+//         }
+//         if (stype == "docatrk") {
+//           cout << " docatrk";
+//           reader->AddVariable( "docatrk", &rd.docatrk);
+//         }
+//         if (stype == "closetrk") {
+//           cout << " closetrk";
+//           reader->AddVariable( "closetrk", &rd.closetrk);
+//         }
+//         if (stype == "chi2dof") {
+//           cout << " chi2dof";
+//           reader->AddVariable( "chi2dof", &rd.chi2dof);
+//         }
+//         if (stype == "closetrks1") {
+//           cout << " closetrks1";
+//           reader->AddVariable( "closetrks1", &rd.closetrks1);
+//         }
+//         if (stype == "closetrks2") {
+//           cout << " closetrks2";
+//           reader->AddVariable( "closetrks2", &rd.closetrks2);
+//         }
+//         if (stype == "closetrks3") {
+//           cout << " closetrks3";
+//           reader->AddVariable( "closetrks3", &rd.closetrks3);
+//         }
+//         if (stype == "m1iso") {
+//           cout << " m1iso";
+//           reader->AddVariable( "m1iso", &rd.m1iso);
+//         }
+//         if (stype == "m2iso") {
+//           cout << " m2iso";
+//           reader->AddVariable( "m2iso", &rd.m2iso);
+//         }
+//         if (stype == "othervtx") {
+//           cout << " othervtx";
+//           reader->AddVariable( "othervtx", &rd.othervtx);
+//         }
+//         if (stype == "pvdchi2") {
+//           cout << " pvdchi2";
+//           reader->AddVariable( "pvdchi2", &rd.pvdchi2);
+//         }
+//         if (stype == "pv2lip") {
+//           cout << " pv2lip";
+//           reader->AddVariable( "pv2lip", &rd.pv2lip);
+//         }
+//         if (stype == "pv2lips") {
+//           cout << " pv2lips";
+//           reader->AddVariable( "pv2lips", &rd.pv2lips);
+//         }
+//       }
+//       break;
+//     }
+//   }
+//   cout << endl;
 
-  nvars = -1;
-  for (unsigned int i = 0; i < allLines.size(); ++i) {
-    // -- parse and add spectators
-    if (string::npos != allLines[i].find("Spectators NSpec")) {
-      m1 = allLines[i].find("=\"");
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      //      cout << "==> " << stype << endl;
-      nvars = atoi(stype.c_str());
-      if (-1 == nvars) continue;
-      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-        m1 = allLines[j].find("Expression=\"")+10;
-        m2 = allLines[j].find("\" Label=\"");
-        stype = allLines[j].substr(m1+2, m2-m1-2);
-	//        cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
-        if (stype == "m") {
-	  // cout << "  adding m as spectator" << endl;
-          reader->AddSpectator( "m", &rd.m);
-        }
-      }
-      break;
-    }
-  }
+//   nvars = -1;
+//   for (unsigned int i = 0; i < allLines.size(); ++i) {
+//     // -- parse and add spectators
+//     if (string::npos != allLines[i].find("Spectators NSpec")) {
+//       m1 = allLines[i].find("=\"");
+//       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+//       //      cout << "==> " << stype << endl;
+//       nvars = atoi(stype.c_str());
+//       if (-1 == nvars) continue;
+//       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+//         m1 = allLines[j].find("Expression=\"")+10;
+//         m2 = allLines[j].find("\" Label=\"");
+//         stype = allLines[j].substr(m1+2, m2-m1-2);
+// 	//        cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+//         if (stype == "m") {
+// 	  // cout << "  adding m as spectator" << endl;
+//           reader->AddSpectator( "m", &rd.m);
+//         }
+//       }
+//       break;
+//     }
+//   }
 
-  // --- Book the MVA methods
-  reader->BookMVA("BDT", weightfile);
-  return reader;
-}
+//   // --- Book the MVA methods
+//   reader->BookMVA("BDT", weightfile);
+//   return reader;
+// }
+
 
 // ----------------------------------------------------------------------
 void plotClass::readFile(string filename, vector<string> &lines) {
