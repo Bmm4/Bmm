@@ -108,6 +108,7 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $dataset = "Summer16_private";
 $jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiPi -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsiPhi -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0Acc -s $version -n 50 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BsToJpsif0 -s $version -n 50 -l;  \ \n";
