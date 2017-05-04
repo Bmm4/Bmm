@@ -66,8 +66,8 @@ muonDump = cms.EDAnalyzer(
         useState = cms.string("outermost"),
         useSimpleGeometry = cms.bool(True)
         ),
-    weightFileBarrel               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-B-19.weights.xml"),
-    weightFileEndcap               = cms.untracked.FileInPath("Bmm/RootAnalysis/macros/weights/TMVA-muonid-bmm4-E-19.weights.xml"),
+    weightFileBarrel               = cms.untracked.FileInPath("Bmm/CmsswAnalysis/data/TMVA-muonid-bmm4-B-19.weights.xml"),
+    weightFileEndcap               = cms.untracked.FileInPath("Bmm/CmsswAnalysis/data/TMVA-muonid-bmm4-E-19.weights.xml"),
 )
 
 # ----------------------------------------------------------------------
