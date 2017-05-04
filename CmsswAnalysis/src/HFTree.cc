@@ -55,7 +55,8 @@ HFTree::HFTree(const edm::ParameterSet& iConfig) :
   //  fTree->Branch("TAna01Event", "TAna01Event", &fEvent, 256000/8, 0);
   //  fTree->Bronch("TAna01Event", "TAna01Event", &fEvent, 256000/8, 1);
 
-  new TH1D("h1", "h1", 20, 0., 20.);
+  fH1 = new TH1D("h1", "h1", 20, 0., 20.);
+  fH1->SetDirectory(fFile);
 
   gHFEvent = fEvent;
   gHFFile  = fFile;
@@ -80,6 +81,7 @@ HFTree::~HFTree() {
 void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   ++fEventCounter;
+  fH1->Fill(10.);
   if (fVerbose > 0) {
     if (fEventCounter%fPrintFrequency == 0) {
       pid_t pid = getpid();
@@ -114,6 +116,7 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 	cout << endl;
       }
       fTree->Fill();
+      fH1->Fill(11.);
     }
   } else {
     if (fVerbose > 1) {
@@ -135,6 +138,7 @@ void HFTree::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       }
     }
     fTree->Fill();
+    fH1->Fill(2.);
   }
 
   gHFEvent->Clear();
