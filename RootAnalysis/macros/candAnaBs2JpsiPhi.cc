@@ -27,6 +27,13 @@ candAnaBs2JpsiPhi::~candAnaBs2JpsiPhi() {
 // ----------------------------------------------------------------------
 void candAnaBs2JpsiPhi::candAnalysis() {
 
+  fGoodTracks     = false;
+  fGoodTracksPt   = false;
+  fGoodTracksEta  = false;
+
+  fGoodAcceptance = false;
+  fGoodJpsiCuts   = false;
+
   if (0 == fpCand) return;
 
   // -- Check for J/psi mass
@@ -175,12 +182,14 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
 
-  fGoodTracks    = fGoodTracks    && fKa1TkQuality && fKa2TkQuality;
-  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKa1Pt)  && (fKa1Pt < TRACKPTHI))  && ((TRACKPTLO < fKa2Pt)  && (fKa2Pt < TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fKa1Eta) && (fKa1Eta < TRACKETAHI) && (TRACKETALO < fKa2Eta) && (fKa2Eta < TRACKETAHI);
+  fGoodTracks    = fGoodTracks    && fKa1TkQuality           && fKa2TkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKa1Pt)   && (fKa1Pt < TRACKPTHI)   && (TRACKPTLO < fKa2Pt)  && (fKa2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKa1Eta) && (fKa1Eta < TRACKETAHI) && (TRACKETALO < fKa2Eta) && (fKa2Eta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
-  fGoodJpsiCuts   = fGoodJpsiMass   && (fJpsiPt > 7.) && fGoodMKK      && fGoodDeltaR;
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt     && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass   && fGoodMKK       && fGoodDeltaR;
+  //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
+  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);

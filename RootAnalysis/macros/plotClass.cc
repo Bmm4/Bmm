@@ -197,12 +197,13 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 plotClass::~plotClass() {
   cout << "plotClass destructor" << endl;
   for (map<string, dataset*>::iterator imap = fDS.begin(); imap != fDS.end(); ++imap) {
-    cout << "    => closing " << imap->first;
-    cout << ": " << fDS[imap->first]->fF->GetName() << endl;
-    imap->second->fF->Close();
+    if (fDS[imap->first]->fF) {
+      cout << "    => closing " << imap->first;
+      cout << ": " << fDS[imap->first]->fF->GetName() << endl;
+      imap->second->fF->Close();
+    }
   }
 }
-
 
 // ----------------------------------------------------------------------
 void plotClass::changeSetup(string dir, string name, string setup) {
@@ -614,6 +615,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("cb",     &fb.cb);
   t->SetBranchAddress("json",   &fb.json);
   t->SetBranchAddress("gmuid",  &fb.gmuid);
+  t->SetBranchAddress("gmugmid",  &fb.gmugmid);
   t->SetBranchAddress("gmumvaid", &fb.gmumvaid);
   t->SetBranchAddress("gtqual", &fb.gtqual);
   t->SetBranchAddress("tm",     &fb.tm);
@@ -733,7 +735,8 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("mpsi", &fb.mpsi);
     t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("mkpi",  &fb.mkpi);
-    t->SetBranchAddress("dr",   &fb.dr);
+    t->SetBranchAddress("kstardr",   &fb.kstardr);
+    t->SetBranchAddress("kstarfail", &fb.kstarfail);
     t->SetBranchAddress("kpt", &fb.kpt);
     t->SetBranchAddress("kgt", &fb.kgt);
     t->SetBranchAddress("keta",&fb.keta);
@@ -895,8 +898,8 @@ void plotClass::candAnalysis() {
   }
 
   if (bs2jpsiphi || bp2jpsikp) {
-    if (fb.mpsi > 3.2) fGoodJpsiCuts = false;
-    if (fb.mpsi < 3.0) fGoodJpsiCuts = false;
+    if (fb.mpsi > 3.15) fGoodJpsiCuts = false;
+    if (fb.mpsi < 3.04) fGoodJpsiCuts = false;
     if (fb.psipt < 7.0) fGoodJpsiCuts = false;
   }
 
@@ -985,6 +988,10 @@ void plotClass::candAnalysis() {
   fGoodDocaTrk      = (fb.docatrk > pCuts->docatrk);
   fGoodCNC          =
     fGoodQ
+    && fGoodAcceptance
+    && fGoodTracks
+    && fGoodTracksPt
+    && fGoodTracksEta
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
@@ -1020,14 +1027,6 @@ void plotClass::candAnalysis() {
     fPreselection = fPreselection && fGoodJpsiCuts;
     if (!fGoodJpsiCuts) { // cout << "dr: " << fb.dr  << " mkk: " << fb.mkk << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt << endl;
     }
-  }
-
-  if (!fPreselection) {
-    if (0)     cout << "HLT: " << fGoodHLT << " muons: " << fGoodMuonsID << " muonspt: " << fGoodMuonsPt
-		    << " a: " << fb.alpha << " fls3d: " << fb.fls3d
-		    << " mpsi: " << fb.mpsi << " psipt: " << fb.psipt
-		    << " dr: " << fb.dr  << " mkk: " << fb.mkk
-		    << endl;
   }
 
   fCncCuts.update();

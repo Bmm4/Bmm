@@ -27,16 +27,28 @@ candAnaBs2Jpsif0::~candAnaBs2Jpsif0() {
 // ----------------------------------------------------------------------
 void candAnaBs2Jpsif0::candAnalysis() {
 
+  fGoodTracks     = false;
+  fGoodTracksPt   = false;
+  fGoodTracksEta  = false;
+
+  fGoodAcceptance = false;
+  fGoodJpsiCuts   = false;
+
+
   if (0 == fpCand) return;
 
   // -- check for overlap with a Bs -> J/psi phi candidate
   vector<int> idx0, idx1;
   getSigTracks(idx0, fpCand);
   int overlap(0);
-  fBsJpsiPhiMass = -99.;
+  fBsJpsiPhiMass = fBdJpsiKstarMass = -99.;
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     TAnaCand *pC = fpEvt->getCand(iC);
-    if (300531 != pC->fType) continue;
+    if ((300531 == pC->fType) || (300511 == pC->fType)) {
+      // stay in the loop
+    } else {
+      continue;
+    }
     idx1.clear();
     getSigTracks(idx1, pC);
     // -- check for the same tracks
@@ -50,7 +62,8 @@ void candAnaBs2Jpsif0::candAnalysis() {
     }
     // -- if all 4 track overlap, get kstar mass of the other cand
     if (4 == overlap) {
-      fBsJpsiPhiMass = pC->fMass;
+      if (300531 == pC->fType) fBsJpsiPhiMass   = pC->fMass;
+      if (300511 == pC->fType) fBdJpsiKstarMass = pC->fMass;
     }
   }
 
@@ -170,11 +183,13 @@ void candAnaBs2Jpsif0::candAnalysis() {
   fCandChi2Dof = chi2/ndof;
 
   fGoodTracks    = fGoodTracks    && fPi1TkQuality && fPi2TkQuality;
-  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fPi1Pt)  && (fPi1Pt < TRACKPTHI)   && (TRACKPTLO < fPi2Pt)   && (fPi2Pt < TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta && (TRACKETALO < fPi1Eta) && (fPi1Eta < TRACKETAHI) && (TRACKETALO < fPi2Eta) && (fPi2Eta < TRACKETAHI);
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fPi1Pt)   && (fPi1Pt < TRACKPTHI)   && (TRACKPTLO < fPi2Pt)   && (fPi2Pt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fPi1Eta) && (fPi1Eta < TRACKETAHI) && (TRACKETALO < fPi2Eta) && (fPi2Eta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
-  fGoodJpsiCuts   = fGoodJpsiMass && fGoodMPIPI && fGoodDeltaR && fGoodTracksPt && fGoodTracksEta;
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass   && fGoodMPIPI     && fGoodDeltaR;
+  //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
+  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
@@ -540,6 +555,7 @@ void candAnaBs2Jpsif0::moreReducedTree(TTree *t) {
   t->Branch("f0phi", &ff0Phi,     "f0phi/D");
   t->Branch("f0dr",  &ff0DeltaR,  "f0dr/D");
   t->Branch("mbspsiphi", &fBsJpsiPhiMass,  "mbspsiphi/D");
+  t->Branch("mbdpsikstar", &fBdJpsiKstarMass,  "mbdpsikstar/D");
 
 
 

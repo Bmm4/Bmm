@@ -168,7 +168,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  if (fVerbose>0) {
+  if (fVerbose>0 || fVerbose == -32) {
     cout << "======================================================================" << endl;
     int cnt(0);
     double mass(0.);
@@ -263,9 +263,23 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpCand = pCand;
     fCandIdx = iC;
 
+    //    cout << "hallo: " <<  fpCand->fType << endl;
+
     // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
     candAnalysis();
     candEvaluation();
+
+    if (fVerbose == -32) {
+      cout << "==> cand " << fpCand->fType
+	   << " at " << iC << "/" << fCandIdx
+	   << " run " << fRun << " ls " << fLS << " event " << fEvt << " json " << fJSON
+	   << " chan = " << fChan
+	   << " hlt1 " <<fGoodHLT1 << " TOS " << fTOS
+	   << " presel = " << fPreselection
+	   << endl;
+    }
+
+
     // Trigger matching
     fHLTmatch=false;
     if (fGoodHLT && fpMuon1 != NULL && fpMuon2 != NULL){ // do only when 2 muons exist
@@ -864,9 +878,7 @@ void candAna::candAnalysis() {
 	  << " fls3d = " << fCandFLS3d
 	  << " evt = " << fEvt
 	  << endl;
-    fVerbose = -32;
     triggerL1T();
-    fVerbose = 0;
   }
   // -- check for good channel, else the cuts array cannot be used!
   if (fChan < 0) {
@@ -935,7 +947,6 @@ void candAna::candEvaluation() {
   fGoodCNC          =
     fGoodAcceptance
     && fGoodQ
-    && fGoodMuonsGmID
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
@@ -989,15 +1000,16 @@ void candAna::candEvaluation() {
   // -- to be consistent with the BDT traning
   ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
 
-  fPreselection = fGoodAcceptance && fGoodQ && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta && fWideMass && fPreselAlpha && fPreselFLS;
+  fPreselection = fGoodAcceptance && fGoodQ && fGoodPvAveW8 && fWideMass
+    && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta
+    && fPreselAlpha && fPreselFLS;
+
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
   // -- add trigger and chan cuts
   fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
   // -- add J/psi and other daughter cuts
-  fPreselection = fPreselection && fGoodJpsiCuts && fGoodPvAveW8;
-
-
+  fPreselection = fPreselection && fGoodJpsiCuts;
 
   if (0) cout << "Chan = " << fChan
 	      << " fPresel = " << fPreselection
@@ -1055,9 +1067,13 @@ int candAna::detChan(double m1eta, double m2eta) {
     if (m2 > m1) m1 = m2;
     for (int ichan = 0; ichan < fNchan; ++ichan) {
       if ((m1 > fCuts[ichan]->metaMin) && (m1 < fCuts[ichan]->metaMax)) {
-	for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
-	  if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
-	    return ichan;
+	if (HLTRANGE.begin()->first == "NOTRIGGER") {
+	  return ichan;
+	} else {
+	  for (unsigned int is = 0; is < fCuts[ichan]->l1seeds.size(); ++is) {
+	    if (fL1Seeds & (0x1<<fCuts[ichan]->l1seeds[is])) {
+	      return ichan;
+	    }
 	  }
 	}
       }
@@ -1195,6 +1211,20 @@ void candAna::triggerHLT() {
     fHltPrescale = 1;
     return;
   }
+  if (fVerbose == -32) {
+    for (int i = 0; i < NHLT; ++i) {
+      result = wasRun = error = false;
+      a = fpEvt->fHLTNames[i];
+      ps = fpEvt->fHLTPrescale[i];
+      wasRun = fpEvt->fHLTWasRun[i];
+      result = fpEvt->fHLTResult[i];
+      error  = fpEvt->fHLTError[i];
+
+      if (result) { // passed
+	cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON << endl;
+      }
+    }
+  }
 
   for (int i = 0; i < NHLT; ++i) {
     result = wasRun = error = false;
@@ -1205,7 +1235,9 @@ void candAna::triggerHLT() {
     error  = fpEvt->fHLTError[i];
 
     if (wasRun && result) { // passed
-      if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a << endl;
+      if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
+						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
+						<< endl;
       bool good = false;
       string spath;
       int rmin, rmax;
@@ -1242,13 +1274,12 @@ void candAna::triggerHLT() {
 
 // ----------------------------------------------------------------------
 void candAna::triggerL1T() {
-  if (fVerbose == -32) cout << "___________ " << fName << " new event: " << fEvt << endl;
   fL1Seeds = 0;
   fL1SeedString = "";
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
     if (fVerbose == -32) {
-      cout << "L1 trigger fired: " << fpEvt->fL1TNames[i] << endl;
+      cout << "L1 trigger fired ->" << fpEvt->fL1TNames[i] << "<-" << endl;
     }
     if (2016 == fYear) {
       if ("L1_DoubleMu0er1p6_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
@@ -4343,6 +4374,7 @@ bool candAna::tos(TAnaCand *pC) {
 
   bool result(false);
   int verbose(fVerbose);
+  if (fVerbose == -32) verbose = 1;
   int goldenMatch(-1);
   if ("NOTRIGGER" == fHLT1Path) {
     return true;

@@ -69,6 +69,7 @@ public:
   TF1* gauss3(TH1 *h);
 
   TF1* pisat(double norm);
+  static double iF_int_pisat(double norm);
 
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
@@ -121,6 +122,7 @@ public:
   // -- Specific models
   TF1* phiKK(TH1 *h);
   TF1* bupsik(TH1 *h);
+  TF1* bupsik1(TH1 *h);
 
   void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);

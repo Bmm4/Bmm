@@ -102,28 +102,54 @@ void bmmReader::eventProcessing() {
     }
   }
 
-  // remove because of timing worries
-  // // -- fill a few basic histograms
-  // TSimpleTrack *pT(0);
-  // double x(0.);
-  // ((TH1D*)fpHistFile->Get("ntracks"))->Fill(fpEvt->nSimpleTracks());
-  // for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
-  //   pT = fpEvt->getSimpleTrack(i);
-  //   x = pT->getP().Perp();
-  //   ((TH1D*)fpHistFile->Get("pt0"))->Fill(x);
-  //   ((TH1D*)fpHistFile->Get("pt1"))->Fill(x);
-  //   x = pT->getP().Eta();
-  //   ((TH1D*)fpHistFile->Get("eta"))->Fill(x);
-  //   x = pT->getP().Phi();
-  //   ((TH1D*)fpHistFile->Get("phi"))->Fill(x);
-  // }
-
   if (fCheckCandTypes) {
     fCandTypes.clear();
     for (int i = 0; i < fpEvt->nCands(); ++i) {
       fCandTypes.insert(fpEvt->getCand(i)->fType);
     }
   }
+
+  if (0) {
+    cout << "========== NEW EVENT: " << fEvt << endl;
+    for (int i = 0; i < NL1T; ++i) {
+      if (!fpEvt->fL1TResult[i]) continue;
+      if (fVerbose == -32) {
+	cout << "L1 trigger fired ->" << fpEvt->fL1TNames[i] << "<-" << endl;
+      }
+    }
+    TString a;
+    int ps(0);
+    bool result(false), wasRun(false), error(false);
+    for (int i = 0; i < NHLT; ++i) {
+      result = wasRun = error = false;
+      a = fpEvt->fHLTNames[i];
+      ps = fpEvt->fHLTPrescale[i];
+      wasRun = fpEvt->fHLTWasRun[i];
+      result = fpEvt->fHLTResult[i];
+      error  = fpEvt->fHLTError[i];
+
+      if (wasRun && result) { // passed
+	cout << "HLT path passed: " << a
+	     << " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << json
+	     << endl;
+      }
+    }
+
+    cout << "cands" << endl;
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      cout << fpEvt->getCand(iC)->fType << "(" << fpEvt->getCand(iC)->fMass << ")";
+    }
+    cout << endl;
+
+    cout << "muons" << endl;
+    TAnaMuon *pM(0);
+    for (int i = 0; i < fpEvt->nMuons(); ++i) {
+      pM = fpEvt->getMuon(i);
+      if ((pM->fMuID & 2) == 2) cout << " muon " << i << " is global muon" << endl;
+    }
+  }
+
+
   // -- call candidate analyses
   for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
     if (fCheckCandTypes) {

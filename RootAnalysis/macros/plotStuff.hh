@@ -31,9 +31,9 @@ public :
 
   // -- yield stability
   void yieldStability(std::string dsname, std::string trg = "HLT");
-  void yieldStabilityOld(std::string dsname, std::string trg = "HLT");
   void yieldStabilityRatios(std::string trg = "HLT");
   void yieldStudy(int run = 278273, string ds = "bmmData");
+  void runStudy(std::string dsname);
 
   // -- misreconstructed background
   void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
@@ -57,6 +57,7 @@ public :
   void loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
 
+  void plot2016Eras(double ymax);
 
 private:
 
@@ -72,7 +73,7 @@ private:
   double* fpX;
   int*    fpI;
   bool*   fpB;
-  std::map<std::string, TH2D*> fYieldRTR, fYieldHLT;
+  std::map<std::string, TH2D*> fYieldHists;
   std::map<std::string, TH1D*> fPlots;
   int fSplitRun;
 
@@ -106,6 +107,10 @@ private:
   // -- mass resolution
   std::vector<TH1D*> fHmass0, fHmass1;
 
+  std::vector<int> fLargeRuns;
+
+  std::map<std::string, TH2D*> fHLs0, fHLs1;
+  std::map<std::string, TProfile*> fProf;
 
   ClassDef(plotStuff,1)
 

@@ -436,9 +436,57 @@ namespace {
     return iF_gauss3(x, g3par);
   }
 
+  // ----------------------------------------------------------------------
+  // double gaussian with same mean
+  double iF_gauss2c_sat(double *x, double *par) {
+    // constrained to have the same mean in the second gaussian
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> sigma of second gaussian
+    double fracSat(0.04);
+
+    Double_t arg1(0.), arg2(0.), fitval1(0.), fitval2(0.);
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[4] > 0.) {
+      arg2 = (x[0] - par[1]) / par[4];
+      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+    Double_t fitval = fitval1 + fitval2;
+
+    // -- double Gaussian integral:
+    double sqrt2pi = 2.506628275;
+    double gintegral = sqrt2pi*par[0]*(par[2] + par[3]*par[4]);
+
+    // -- B+ -> J/psi pi normalization:
+    double satintegral = initFunc::iF_int_pisat(1.);
+    double norm        = fracSat*gintegral/satintegral;
+
+    double g3par[] = {norm, 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
+		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
+    double peakingBg = iF_gauss3(x, g3par);
+    double sintegral = initFunc::iF_int_pisat(norm);
+
+    if (0) cout << " satintegral = " << satintegral
+		<< " gintegral = " << gintegral
+		<< " norm = " << norm
+		<< " sintegral = " << sintegral
+		<< " frac = " << sintegral/gintegral
+		<< endl;
+
+    return  (fitval + peakingBg);
+  }
+
+
+
+
 
   // ----------------------------------------------------------------------
-  // bigauss and crystal ball
+  // bigauss and crystal ball and satellite peak
   double iF_bigauss_cb_sat(double *x, double *par) {
     // par[0]:  norm  Gauss, ratio to xball normalization
     // par[1]:  peak  Gauss, ratio to xball peak
@@ -451,6 +499,7 @@ namespace {
     // par[8]:  N, normalization
     // par[9]:  fraction in satellite peak
 
+    // FIXME: This is likely a call for trouble to use par[4] before it's been used in 'its' function call below
     double fitval(-1.);
     if (x[0] < par[4]) {
       if (par[2] > 0.) {
@@ -822,8 +871,15 @@ namespace {
   // ----------------------------------------------------------------------
   // B+ -> J/psi K+ pdf
   double iF_bupsik(double *x, double *par) {
+    return (iF_gauss2c_sat(x, &par[0]) + iF_expo(x, &par[5]) + iF_err2(x, &par[7]));
+  }
+
+  // ----------------------------------------------------------------------
+  // B+ -> J/psi K+ pdf (too complicated)
+  double iF_bupsik1(double *x, double *par) {
     return (iF_bigauss_cb_sat(x, &par[0]) + iF_expo(x, &par[10]) + iF_err2(x, &par[12]));
   }
+
 
 
 }
@@ -2535,10 +2591,49 @@ TF1* initFunc::phiKK(TH1 *h) {
 TF1* initFunc::bupsik(TH1 *h) {
   TVirtualFitter::SetMaxIterations(10000);
   TVirtualFitter::SetPrecision(1.e-4);
-  int npar(15);
+  int npar(10);
   TF1 *f = (TF1*)gROOT->FindObject(Form("%s_bupsik", fName.c_str()));
   if (f) delete f;
   f = new TF1(Form("%s_bupsik", fName.c_str()), iF_bupsik, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("gnorm", "gpeak", "gsig1", "gfrac", "gsig2");
+
+  f->SetParName(5, "exp0");
+  f->SetParName(6, "exp1");
+
+  f->SetParName(7, "errstep");
+  f->SetParName(8, "errres");
+  f->SetParName(9, "errnorm");
+
+  f->SetLineWidth(2);
+
+  f->SetParameter(0, h->GetMaximum());
+  f->SetParameter(1, 5.28);
+  f->SetParameter(2, 0.03); limitPar(2, 0.02, 0.04);
+  f->SetParameter(3, 0.20); limitPar(3, 0.01, 0.40);
+  f->SetParameter(4, 0.05); limitPar(4, 0.04, 0.10);
+
+  double a(-1.), b(-1.);
+  fLo = 5.45; fHi = 5.9;
+  initExpo(a, b, h);
+  f->SetParameter(5, a);
+  f->SetParameter(6, b);
+
+  fixPar(7, 5.142);
+  f->SetParameter(8, 0.04);  limitPar(8, 0.030, 0.060);
+  f->SetParameter(9, 0.5*h->Integral(1, 5)/5);
+  applyLimits(f, "bupsik");
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bupsik1(TH1 *h) {
+  TVirtualFitter::SetMaxIterations(10000);
+  TVirtualFitter::SetPrecision(1.e-4);
+  int npar(15);
+  TF1 *f = (TF1*)gROOT->FindObject(Form("%s_bupsik1", fName.c_str()));
+  if (f) delete f;
+  f = new TF1(Form("%s_bupsik1", fName.c_str()), iF_bupsik1, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
   f->SetParNames("gnorm", "gpeak", "gsigL", "gsigH", "cbmean", "cbsigma", "cbalpha", "cbtail", "cbnorm", "satBg");
   f->SetParName(10, "exp0");
   f->SetParName(11, "exp1");
@@ -2571,6 +2666,15 @@ TF1* initFunc::bupsik(TH1 *h) {
   f->SetParameter(13, 0.05);  limitPar(13, 0.040, 0.060);
   //  cout << "set err norm: " << 0.5*h->Integral(1, 5)/5 << endl;
   f->SetParameter(14, 0.5*h->Integral(1, 5)/5);
-  applyLimits(f, "bupsik");
+  applyLimits(f, "bupsik1");
   return f;
+}
+
+// ----------------------------------------------------------------------=
+double initFunc::iF_int_pisat(double norm) {
+  double g3par[] = {norm, 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
+		    9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
+  double sqrt2pi = 2.506628275;
+  double satintegral = sqrt2pi*g3par[0]*(g3par[2] + g3par[3]*g3par[5] + g3par[6]*g3par[8]);
+  return satintegral;
 }

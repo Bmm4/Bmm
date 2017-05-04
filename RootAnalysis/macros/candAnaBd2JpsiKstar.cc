@@ -290,12 +290,14 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fCandDof     = ndof;
   fCandChi2Dof = chi2/ndof;
 
-  fGoodTracks    = fGoodTracks    && fKaTkQuality && fPiTkQuality;
-  fGoodTracksPt  = fGoodTracksPt && ((TRACKPTLO < fKaPt) && (fKaPt < TRACKPTHI) && (TRACKPTLO < fPiPt) && (fPiPt < TRACKPTHI));
-  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaEta ) && (fKaEta < TRACKETAHI) && (TRACKETALO < fPiEta ) && (fPiEta < TRACKETAHI));
+  fGoodTracks    = fGoodTracks    && fKaTkQuality           && fPiTkQuality;
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaPt)   && (fKaPt < TRACKPTHI)   && (TRACKPTLO < fPiPt)    && (fPiPt < TRACKPTHI));
+  fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaEta) && (fKaEta < TRACKETAHI) && (TRACKETALO < fPiEta ) && (fPiEta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
-  fGoodJpsiCuts   = fGoodJpsiMass && fGoodMKPI && fGoodDeltaR;
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass   && fGoodMKPI      && fGoodDeltaR;
+  //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
+  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
 
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
@@ -658,7 +660,7 @@ void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
   t->Branch("kstarpt",   &fKstarPt,       "kstarpt/D");
   t->Branch("kstareta",  &fKstarEta,      "kstareta/D");
   t->Branch("kstarphi",  &fKstarPhi,      "kstarphi/D");
-  t->Branch("dr",        &fDeltaR,        "dr/D");
+  t->Branch("kstardr",   &fKstarDeltaR,   "kstardr/D");
   t->Branch("kstarfail", &fKstarFail,     "kstarfail/O");
 
   t->Branch("kpt",  &fKaPt,    "kpt/D");

@@ -28,6 +28,14 @@ candAnaBu2JpsiK::~candAnaBu2JpsiK() {
 // ----------------------------------------------------------------------
 void candAnaBu2JpsiK::candAnalysis() {
 
+  fGoodTracks     = false;
+  fGoodTracksPt   = false;
+  fGoodTracksEta  = false;
+
+  fGoodAcceptance = false;
+  fGoodJpsiCuts   = false;
+
+
   if (0 == fpCand) return;
 
   TAnaTrack *p0, *pk(0);
@@ -126,11 +134,13 @@ void candAnaBu2JpsiK::candAnalysis() {
   fCandChi2Dof = chi2/ndof;
 
   fGoodTracks    = fGoodTracks    && fKaonTkQuality;
-  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt) && (fKaonPt < TRACKPTHI));
+  fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt)   && (fKaonPt < TRACKPTHI));
   fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaonEta) && (fKaonEta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks && fGoodTracksPt && fGoodTracksEta;
-  fGoodJpsiCuts   = fGoodJpsiMass && fGoodTracksPt && (fJpsiPt > 7.);
+  fGoodAcceptance = fGoodAcceptance && fGoodTracks     && fGoodTracksPt && fGoodTracksEta;
+  fGoodJpsiCuts   = fGoodJpsiMass;
+  //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
+  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(3);

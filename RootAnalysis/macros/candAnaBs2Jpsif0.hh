@@ -74,7 +74,7 @@ public:
   double            ff0DeltaR, fMPiPi;
   bool              fGoodDeltaR, fGoodMPIPI;
 
-  double            fBsJpsiPhiMass;
+  double            fBsJpsiPhiMass, fBdJpsiKstarMass;
 
 };
 

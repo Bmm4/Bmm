@@ -154,19 +154,24 @@ void fitPsYield::printSummary() {
 
 
 // ----------------------------------------------------------------------
-void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
+void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix, int whichfit) {
   if (0 == fH2) {
     cout << "no histogram found/setup/defined, returning!" << endl;
     return;
   }
+
+  void (fitPsYield::*pF)(psd *, int, string);
+  if (0 == whichfit) pF = &fitPsYield::fit0_Bu2JpsiKp;
+  if (1 == whichfit) pF = &fitPsYield::fit1_Bu2JpsiKp;
+
   // -- prefit weighted combination:
-  fit0_Bu2JpsiKp(fW8Combined, -1, pdfprefix);
+  (this->*pF)(fW8Combined, -1, pdfprefix);
   // -- prefit unweighted combination:
-  fit0_Bu2JpsiKp(fUnW8Combined, -1, pdfprefix);
+  (this->*pF)(fUnW8Combined, -1, pdfprefix);
 
   // -- fit all prescales
   for (unsigned int ips = 0; ips < fData.size(); ++ips) {
-    fit0_Bu2JpsiKp(fData[ips], limitpars, pdfprefix);
+    (this->*pF)(fData[ips], limitpars, pdfprefix);
   }
 
   fSummary.clear();
@@ -185,12 +190,231 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix) {
   printSummary();
 }
 
-
 // ----------------------------------------------------------------------
 // limitpars < 0: determine starting values for fit
 //           = 0: only allow normalizations to float
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
+  TH1D *h = res->fH1;
+  setTitles(h, "#it{m}_{#it{#mu#mu}K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  if (0 == fData.size()) return;
+  fSummary.clear();
+
+  fpIF->fName = "fit";
+  fpIF->fVerbose = false;
+  TF1 *f1 = fpIF->bupsik(h);
+  fpIF->fName = "comp";
+  TF1 *fcnSig  = fpIF->gauss2c(h);
+  fcnSig->SetLineColor(kBlue+1);
+  TF1 *fcnExpo = fpIF->expo(0., 100.);
+  fcnExpo->SetLineColor(kRed+1);
+  fcnExpo->SetLineStyle(kSolid);
+  TF1 *fcnErr2 = fpIF->err2(0., 100.);
+  fcnErr2->SetLineColor(kRed+2);
+  fcnErr2->SetLineStyle(kSolid);
+  TF1 *fcnSat = fpIF->pisat(1.);
+  fcnSat->SetLineColor(kRed+3);
+  fcnSat->SetLineStyle(kSolid);
+
+  TCanvas *c0(0);
+  c0 = (TCanvas*)gROOT->FindObject("c0");
+  if (!c0) c0 = new TCanvas("c0","--c0--",0,0,656,700);
+  c0->cd();
+  c0->Clear();
+  shrinkPad(0.13, 0.19);
+
+  fpIF->fLo = 5.0;
+  fpIF->fHi = 5.9;
+  cout << "==> fitPsYield::fit0_Bu2JpsiKp> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
+  double xmin(5.0), xmax(5.9), expoLo(5.15), expoHi(5.85);
+  if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
+  //  if (fVerbose) fpIF->dumpParameters(f1);
+  string fitopt = "lr";
+  if (0 == fVerbose) fitopt += "q";
+  h->SetMinimum(0.);
+  if (limitpars < 0) {
+    fCombMax = h->GetMaximum();
+  } else {
+    for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
+      f1->ReleaseParameter(ipar);
+    }
+    if (fCombMax < 1) {
+      cout << "FIXME: fCombMax = " << fCombMax << endl;
+      fCombMax = h->GetMaximum();
+    }
+    double scale = h->GetMaximum()/fCombMax;
+    if (fVerbose) cout << "==> limitpars = " << limitpars << endl;
+    if (limitpars > 0) {
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + fParE[0]));
+      f1->SetParameter(1, fPar[1]);        f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
+      f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
+      f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[4] - limitpars*fParE[4], fPar[4] + limitpars*fParE[4]);
+      f1->SetParameter(5, scale*fPar[5]);  f1->SetParLimits(5, 0.,                           scale*(fPar[5] + fParE[5]));
+      f1->SetParameter(6, fPar[6]);        f1->SetParLimits(6, fPar[6] - limitpars*fParE[6], fPar[6] + limitpars*fParE[6]);
+      f1->SetParameter(7, fPar[7]);        f1->SetParLimits(7, fPar[7] - limitpars*fParE[7], fPar[7] + limitpars*fParE[7]);
+      f1->SetParameter(8, fPar[8]);        f1->SetParLimits(8, fPar[8] - limitpars*fParE[8], fPar[8] + limitpars*fParE[8]);
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           scale*(fPar[9] + fParE[9]));
+    } else if (limitpars == 0) {
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0,  0.,                           1.e8);
+      f1->FixParameter(1, fPar[1]);
+      f1->FixParameter(2, fPar[2]);
+      f1->FixParameter(3, fPar[3]);
+      f1->FixParameter(4, fPar[4]);
+      f1->SetParameter(5, scale*fPar[5]);   f1->SetParLimits(5,  0.,                           1.e8);
+      f1->FixParameter(6, fPar[6]);
+      f1->FixParameter(7, fPar[7]);
+      f1->FixParameter(8, fPar[8]);
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           1.e8);
+    } else {
+      // do nothing, boot strap!a
+    }
+    if (fVerbose > 1) fpIF->dumpParameters(f1);
+
+  }
+  if (h->GetSumOfWeights() > 100) {
+    if (h->GetSumOfWeights() > h->GetEntries()) {
+      fitopt += "w";
+      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+    } else {
+      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+    }
+  } else {
+    if (limitpars < 0) {
+      cout << "XX> you are screwed: fitting the (un)weighted combined data and less than 100 entries" << endl;
+    } else {
+
+    }
+  }
+
+  // -- store for possible later usage
+  if (limitpars < 0) {
+    fPar.clear();
+    fParE.clear();
+    for (int i = 0; i < f1->GetNpar(); ++i) {
+      fPar.push_back(f1->GetParameter(i));
+      fParE.push_back(f1->GetParError(i));
+    }
+  }
+
+
+  // -- copy parameters into components and draw them
+  for (int ipar = 0; ipar < fcnSig->GetNpar(); ++ipar) {
+    fcnSig->SetParameter(ipar, f1->GetParameter(ipar));
+    fcnSig->SetParError(ipar, f1->GetParError(ipar));
+  }
+  for (int ipar = 0; ipar < fcnExpo->GetNpar(); ++ipar) {
+    fcnExpo->SetParameter(ipar, f1->GetParameter(ipar+5));
+    fcnExpo->SetParError(ipar, f1->GetParError(ipar+5));
+  }
+  for (int ipar = 0; ipar < fcnErr2->GetNpar(); ++ipar) {
+    fcnErr2->SetParameter(ipar, f1->GetParameter(ipar+7));
+    fcnErr2->SetParError(ipar, f1->GetParameter(ipar+7));
+  }
+
+
+  double sqrt2pi = 2.506628275;
+  double gintegral = sqrt2pi*f1->GetParameter(0)*(f1->GetParameter(2) + f1->GetParameter(3)*f1->GetParameter(4));
+  gintegral = fcnSig->Integral(5.0, 6.0);
+  double fracSat(0.04);
+  double satintegral = initFunc::iF_int_pisat(1.);
+  double norm        = fracSat*gintegral/satintegral;
+  fcnSat->SetParameter(0, norm);
+
+  cout << "f1->GetParameter(5): " << f1->GetParameter(5) << endl;
+  cout << "NORM OF SIG: " << fcnSig->Integral(5.0, 6.0) << endl;
+  cout << "NORM OF SAT: " << fcnSat->Integral(5.0, 6.0) << endl;
+
+  fcnSig->Draw("same");
+  fcnExpo->Draw("same");
+  fcnErr2->Draw("same");
+  fcnSat->Draw("same");
+
+  // -- store for possible later usage
+  if (limitpars < 0) {
+    fPar.clear();
+    fParE.clear();
+    for (int i = 0; i < f1->GetNpar(); ++i) {
+      fPar.push_back(f1->GetParameter(i));
+      fParE.push_back(f1->GetParError(i));
+    }
+    double NSG   = fcnSig->Integral(5.1, 5.6)/h->GetBinWidth(1);
+    double NTOT  = h->GetSumOfWeights();
+    fCombS2All   = NSG/NTOT;
+    fCombS2AllE  = TMath::Sqrt(1./NSG + 1./NTOT)*fCombS2All;
+  }
+
+  // -- other parameters of interest
+  res->fChi2 = f1->GetChisquare();
+  res->fNdof = f1->GetNDF();
+  res->fProb = TMath::Prob(res->fChi2, res->fNdof);
+  res->fResults.fSgPeak = f1->GetParameter(1);
+
+  TH1D *hbla = new TH1D("hbla", "", 100, 4.5, 7.0);
+  for (int i = 0; i < 10000; ++i) hbla->Fill(fcnSig->GetRandom());
+  res->fResults.fSgSigma = hbla->GetRMS();
+  delete hbla;
+
+  // -- double gaussian integral over 3 sigma region
+  double sig   = fcnSig->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+				  res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
+  double sigE  = (fcnSig->GetParError(0)/fcnSig->GetParameter(0)) * sig;
+
+
+  cout << "XXXXX sig = " << sig << " +/- " << sigE
+       << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " to "
+       << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+       << " XXXXX " << endl;
+
+  // -- create 'sensible' errors
+  sig  /= h->GetBinWidth(1);
+  sigE /= h->GetBinWidth(1);
+  if (sigE > sig) {
+    cout << "rescaled error: " << sigE << " (sig = " << sig << ") to ";
+    sigE = TMath::Sqrt(sig);
+    cout << sigE << endl;
+
+  } else {
+    cout << "integral error from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+	 << " .. " << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
+	 << ": " << sigE << " (sig = " << sig << ")"
+	 << endl;
+  }
+  res->fResults.fSg = sig;
+  res->fResults.fSgE = sigE;
+
+  TLatex tl;
+  tl.SetTextSize(0.03);
+  if (-1 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else if (0 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  }
+
+  tl.SetTextAngle(90.);
+  tl.DrawLatexNDC(0.93, 0.15, h->GetName());
+  tl.SetTextAngle(0.);
+
+  c0->Modified();
+  c0->Update();
+  c0->SaveAs(Form("%s%s.pdf", pdfprefix.c_str(), h->GetName()));
+
+  delete f1;
+  delete fcnSig;
+  delete fcnExpo;
+  delete fcnErr2;
+  delete fcnSat;
+
+}
+
+
+// ----------------------------------------------------------------------
+// limitpars < 0: determine starting values for fit
+//           = 0: only allow normalizations to float
+//           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
+void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu}K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
