@@ -880,48 +880,87 @@ void candAna::candAnalysis() {
 	  << endl;
     triggerL1T();
   }
-  // -- check for good channel, else the cuts array cannot be used!
-  if (fChan < 0) {
-    //    cout << "Failed chan, l1 seeds = " << fL1SeedString << endl;
-    return;
-  }
 
 
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX));
   fGoodMuonsID    = (fMu1Id && fMu2Id);
   fGoodMuonsMvaID = (fMu1MvaId && fMu2MvaId);
   fGoodMuonsGmID  = (fMu1GmId && fMu2GmId);
-  fGoodMuonsPt    = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
-  double etaLead(TMath::Abs(fMu1Eta));
-  if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
-  fGoodMuonsEta   = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
+  //  cout << "fMu1GmId: " << fMu1GmId << " fMu2GmId: " << fMu2GmId << " fGoodMuonsGmID: " << fGoodMuonsGmID << endl;
+
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
   fGoodTracksPt   = ((TRACKPTLO < fMu1Pt) && (fMu1Pt < TRACKPTHI) && (TRACKPTLO < fMu2Pt) && (fMu2Pt < TRACKPTHI));
   fGoodTracksEta  = ((TRACKETALO < fMu1Eta) && (fMu1Eta < TRACKETAHI) && (TRACKETALO < fMu2Eta) && (fMu2Eta < TRACKETAHI));
+  fGoodAcceptance = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
-  fGoodPvLip      = (TMath::Abs(fCandPvLip) < fCuts[fChan]->pvlip);
-  fGoodPvLipS     = (TMath::Abs(fCandPvLipS) < fCuts[fChan]->pvlips);
-  fGoodPv2Lip     = (TMath::Abs(fCandPv2Lip) > fCuts[fChan]->pv2lip);
-  fGoodPv2LipS    = (TMath::Abs(fCandPv2LipS) > fCuts[fChan]->pv2lips);
-  fGoodMaxDoca    = (TMath::Abs(fCandDoca) < fCuts[fChan]->maxdoca);
-  fGoodIp         = (TMath::Abs(fCandPvIp) < fCuts[fChan]->pvip);
-  fGoodIpS        = (TMath::Abs(fCandPvIpS) < fCuts[fChan]->pvips);
-
-  fGoodPt         = (fCandPt > fCuts[fChan]->pt);
-  fGoodEta        = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
-  fGoodAlpha      = (fCandA < fCuts[fChan]->alpha);
-  fGoodChi2       = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
-  fGoodFLS        = ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
 
   fPreselAlpha    = (fCandA < 0.2);
-  fPreselFLS      = ((fCandFLS3d > 4) && (fCandFLSxy > 4));
+  fPreselFLS      = ((fCandFLS3d > 4.) && (fCandFLSxy > 4.));
+  fPreselOther    = ((TMath::Abs(fCandPvIpS) < 4) && (TMath::Abs(fCandPvIp) < 0.02));
 
   if (TMath::IsNaN(fCandFLS3d)) {
     fGoodFLS   = false;
     fPreselFLS = false;
   }
+
+  // -- the subsequent cuts NEED a proper channel!
+  if (fChan < 0) {
+    fGoodMuonsPt      = false;
+    fGoodMuonsEta     = false;
+
+    fGoodPvLip        = false;
+    fGoodPvLipS       = false;
+    fGoodPv2Lip       = false;
+    fGoodPv2LipS      = false;
+    fGoodMaxDoca      = false;
+    fGoodIp           = false;
+    fGoodIpS          = false;
+
+    fGoodPt           = false;
+    fGoodEta          = false;
+    fGoodAlpha        = false;
+    fGoodChi2         = false;
+    fGoodFLS          = false;
+
+    fGoodCloseTrack   = false;
+    fGoodCloseTrackS1 = false;
+    fGoodCloseTrackS2 = false;
+    fGoodCloseTrackS3 = false;
+    fGoodIso          = false;
+    fGoodM1Iso        = false;
+    fGoodM2Iso        = false;
+    fGoodDocaTrk      = false;
+    fGoodLastCut      = false;
+
+    fGoodLip          = false;
+    fGoodLipS         = false;
+
+    fGoodJpsiCuts     = false;
+
+    return;
+  }
+
+  double etaLead(TMath::Abs(fMu1Eta));
+  if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
+
+  fGoodMuonsPt      = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
+  fGoodMuonsEta     = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
+
+  fGoodPvLip        = (TMath::Abs(fCandPvLip) < fCuts[fChan]->pvlip);
+  fGoodPvLipS       = (TMath::Abs(fCandPvLipS) < fCuts[fChan]->pvlips);
+  fGoodPv2Lip       = (TMath::Abs(fCandPv2Lip) > fCuts[fChan]->pv2lip);
+  fGoodPv2LipS      = (TMath::Abs(fCandPv2LipS) > fCuts[fChan]->pv2lips);
+  fGoodMaxDoca      = (TMath::Abs(fCandDoca) < fCuts[fChan]->maxdoca);
+  fGoodIp           = (TMath::Abs(fCandPvIp) < fCuts[fChan]->pvip);
+  fGoodIpS          = (TMath::Abs(fCandPvIpS) < fCuts[fChan]->pvips);
+
+  fGoodPt           = (fCandPt > fCuts[fChan]->pt);
+  fGoodEta          = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
+  fGoodAlpha        = (fCandA < fCuts[fChan]->alpha);
+  fGoodChi2         = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
+  fGoodFLS          = ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
 
   fGoodCloseTrack   = (fCandCloseTrk < fCuts[fChan]->closetrk);
   fGoodCloseTrackS1 = (fCandCloseTrkS1 < fCuts[fChan]->closetrks1);
@@ -935,7 +974,6 @@ void candAna::candAnalysis() {
 
   fGoodLip          = fGoodPvLip;
   fGoodLipS         = fGoodPvLipS;
-  fGoodAcceptance   = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   fGoodJpsiCuts     = true; // this will be overridden in the derived classes
 }
@@ -1002,7 +1040,7 @@ void candAna::candEvaluation() {
 
   fPreselection = fGoodAcceptance && fGoodQ && fGoodPvAveW8 && fWideMass
     && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta
-    && fPreselAlpha && fPreselFLS;
+    && fPreselAlpha && fPreselFLS && fPreselOther;
 
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
@@ -1276,6 +1314,14 @@ void candAna::triggerHLT() {
 void candAna::triggerL1T() {
   fL1Seeds = 0;
   fL1SeedString = "";
+
+  if (2026 == fYear) {
+    fL1Seeds |= 0x1;    //1
+    fL1Seeds |= 0x1<<1; //2
+    fL1Seeds |= 0x1<<2; //4
+    return;
+  }
+
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
     if (fVerbose == -32) {
