@@ -1,0 +1,26 @@
+#!/usr/bin/perl
+
+# ----------------------------------------------------------------------
+#
+# usage: xrdcpFiles -x /store/user/ursl/bmm4/reduced/170508 [-p root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat] files*.root
+# -----
+#
+#
+
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
+use Tie::IxHash;
+
+use Getopt::Std;
+getopts('dp:x:');
+
+my $prefix = "root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
+if ($opt_p) {
+    $prefix = $opt_p;
+}
+
+foreach $file (@ARGV) {
+    print "xrdcp $file $prefix/$opt_x/$file\n";
+    if (!$opt_d) {
+	system("xrdcp $file $prefix/$opt_x/$file");
+    }
+}
