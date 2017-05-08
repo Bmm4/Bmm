@@ -3,6 +3,7 @@
 // HFBDT
 // ---------------------
 //
+// 2017/05/08 Stephan Wiederkehr      added variables glbKinkFinderLog & Qprod
 // 2016/09/27 Stephan Wiederkehr      updated variables
 // 2016/08/25 Stephan Wiederkehr      first shot
 // %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -41,7 +42,7 @@ HFBDT::~HFBDT(){
   //delete muon;
 }
 
-void HFBDT::addToReader(TMVA::Reader* reader,string str) {
+void HFBDT::addVarToReader(TMVA::Reader* reader,string str) {
 
   if (isSetup)
     {cout << "ERROR: The reader is already set up." << endl;return;}
@@ -51,6 +52,18 @@ void HFBDT::addToReader(TMVA::Reader* reader,string str) {
   //      << "(" << *(muon->getPtr(str)) << ")" << endl;
   //float *variable = muon->getPtr(str);
   reader->AddVariable(str,muon->getPtr(str));
+}
+
+void HFBDT::addSpecToReader(TMVA::Reader* reader,string str) {
+
+  if (isSetup)
+    {cout << "ERROR: The reader is already set up." << endl;return;}
+
+  cout << " Adding spectator " << str << " to the reader (dummy value)." << endl;
+  // cout << "value: " << muon->getVar(str) 
+  //      << "(" << *(muon->getPtr(str)) << ")" << endl;
+  //float *variable = muon->getPtr(str);
+  reader->AddSpectator(str,muon->getSpecDummy());
 }
 
 void HFBDT::setupReader() {
@@ -98,7 +111,13 @@ void HFBDT::setupReader() {
 	{
 	  string variableName = line.substr(line.find("Expression=\"")+12,line.rfind("Label")-line.find("Expression=\"")-14);
 	  cout << "Found variable: '" << variableName << "'" << endl;
-	  addToReader(reader, variableName);
+	  addVarToReader(reader, variableName);
+	}
+     if (line.find("Spectator SpecIndex") != string::npos)
+	{
+	  string spectatorName = line.substr(line.find("Expression=\"")+12,line.rfind("Label")-line.find("Expression=\"")-14);
+	  cout << "Found spectator: '" << spectatorName << "'" << endl;
+	  addSpecToReader(reader, spectatorName);
 	}
       //stop search
       if (line.find("</Variables") != string::npos)
@@ -154,7 +173,7 @@ BDTmuon::BDTmuon() {
   vRPChits=-42;
   vDThits=-42;
   vCSChits=-42;
-  glbKinkFinder=1;
+  glbKinkFinder=-42;
   staRelChi2=-42;
   trkRelChi2=-42;
   glbDeltaEtaPhi=-42;
@@ -173,6 +192,8 @@ BDTmuon::BDTmuon() {
   vCSChits_3=-42;
   vCSChits_4=-42;
   vMuonHitComb=-42;
+  Qprod=-42;
+  spectatorDummy=-42;
 }
 
 BDTmuon::~BDTmuon(){
@@ -205,6 +226,7 @@ void BDTmuon::createVariableMap() {
   tmpMap["vDThits"] = &vDThits;
   tmpMap["vCSChits"] = &vCSChits;
   tmpMap["glbKinkFinder"] = &glbKinkFinder;
+  tmpMap["TMath::Log(2+glbKinkFinder)"] = &glbKinkFinderLog;
   tmpMap["staRelChi2"] = &staRelChi2;
   tmpMap["trkRelChi2"] = &trkRelChi2;
   tmpMap["glbDeltaEtaPhi"] = &glbDeltaEtaPhi;
@@ -225,6 +247,7 @@ void BDTmuon::createVariableMap() {
   tmpMap["vMuonHitComb"] = &vMuonHitComb;
   tmpMap["STATrkMult150"] = &STATrkMult_150;
   tmpMap["TMTrkMult100"] = &TMTrkMult_100;
+  tmpMap["Qprod"] = &Qprod;
 
   variableMap = tmpMap;
   mapIsSet=true;
@@ -296,6 +319,7 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   kinkFinder = muonQuality.trkKink;
   vRPChits = gHits.numberOfValidMuonRPCHits();
   glbKinkFinder = muonQuality.glbKink;
+  glbKinkFinderLog = TMath::Log(2+muonQuality.glbKink);
   staRelChi2 = muonQuality.staRelChi2;
   glbDeltaEtaPhi = muonQuality.globalDeltaEtaPhi;
   trkRelChi2 = muonQuality.trkRelChi2;
@@ -306,6 +330,7 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   getMuonHitsPerStation(gTrack); //also fills vMuonHitComb
   STATrkMult_150 = staTrkMult_150;
   TMTrkMult_100 = tmTrkMult_100;
+  Qprod = (iTrack->charge() * oTrack->charge());
 
   varsAreSet = true;
 }

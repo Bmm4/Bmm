@@ -22,9 +22,15 @@
 #include <iostream>
 #include <vector>
 
+#include <TH1.h>
+#include <TFile.h>
+
+
 using namespace std;
 using namespace edm;
 using namespace reco;
+
+extern TFile *gHFFile;
 
 class HFSkipEvents : public EDFilter {
 public:
@@ -102,6 +108,7 @@ HFSkipEvents::~HFSkipEvents() {
 
 // ----------------------------------------------------------------------
 bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
+  ((TH1D*)gHFFile->Get("h1"))->Fill(0.1);
   bool result(true);
   ++fEvent;
 
@@ -110,8 +117,10 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   bool goodJson(false);
   if (filterOnJSON > 0) {
+    ((TH1D*)gHFFile->Get("h1"))->Fill(2.);
     goodJson = fpJSON->good(run, ls);
     if (goodJson) {
+      ((TH1D*)gHFFile->Get("h1"))->Fill(3.);
       ++fNjson;
     } else {
       cout << "==> HFSkipEvent> rejecting run/ls = " << run << "/" << ls << endl;
@@ -148,9 +157,11 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
   }
   bool goodMu(false);
   if (filterOnMuons > 0) {
+    ((TH1D*)gHFFile->Get("h1"))->Fill(4.);
     goodMu = (goodMuons >= filterOnMuons);
     if (goodMu) {
       //      result = true;
+      ((TH1D*)gHFFile->Get("h1"))->Fill(5.);
       ++fNmu;
     } else {
       result = false;
@@ -173,8 +184,10 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   bool goodPv(false);
   if (filterOnPrimaryVertex > 0)  {
+    ((TH1D*)gHFFile->Get("h1"))->Fill(6.);
     goodPv = (goodVertices >= filterOnPrimaryVertex);
     if (goodPv) {
+      ((TH1D*)gHFFile->Get("h1"))->Fill(7.);
       ++fNpv;
     } else {
       result = false;
@@ -186,8 +199,10 @@ bool HFSkipEvents::filter(edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   bool goodTk(false);
   if (filterOnTracks > 0) {
+    ((TH1D*)gHFFile->Get("h1"))->Fill(8.);
     goodTk = (goodTracks < filterOnTracks);
     if (goodTk) {
+      ((TH1D*)gHFFile->Get("h1"))->Fill(9.);
       ++fNtk;
     } else {
       result = false;

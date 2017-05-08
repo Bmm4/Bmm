@@ -54,7 +54,7 @@ process.load("Bmm.CmsswAnalysis.HFPhysicsDeclared_cff")
 process.load("Bmm.CmsswAnalysis.HFSkipEvents_cff")
 
 process.skipEvents.filterOnJson = cms.untracked.int32(1)
-process.skipEvents.JSONFile     = cms.untracked.FileInPath("Bmm/RootAnalysis/common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt")
+process.skipEvents.JSONFile     = cms.untracked.FileInPath("Bmm/CmsswAnalysis/data/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt")
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(

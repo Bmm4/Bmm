@@ -14,6 +14,7 @@
 
 class TFile;
 class TTree;
+class TH1D;
 class TAna01Event;
 
 // ----------------------------------------------------------------------
@@ -21,24 +22,25 @@ class HFTree : public edm::EDAnalyzer {
  public:
   explicit HFTree(const edm::ParameterSet&);
   ~HFTree();
-  
+
  private:
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
-  
-  TFile        *fFile; 
+
+  TFile        *fFile;
   TTree        *fTree;
   TAna01Event  *fEvent;
+  TH1D         *fH1;
 
   bool         fRequireCand, fFullGenBlock;
 
   std::string  fFileName;
   std::string  fTreeName;
-  
-  int          fVerbose; 
+
+  int          fVerbose;
   int          fPrintFrequency;
-  int          fEventCounter; 
+  int          fEventCounter;
 
 };
 
