@@ -31,6 +31,7 @@ public:
   void getMuonHitsPerStation(const reco::TrackRef gTrack);
   float getVar(std::string);
   float* getPtr(std::string);
+  float* getSpecDummy() {return &spectatorDummy;}
   bool varsSet() {return varsAreSet;}
   void unsetVars() {varsAreSet = false;}
 
@@ -39,16 +40,16 @@ private:
   float deltaR,gNchi2,vMuHits,mMuStations,dxyRef,dzRef,LWH,valPixHits;
   float innerChi2,outerChi2,iValFrac,segComp,chi2LocMom,chi2LocPos;
   float glbTrackTailProb,NTrkVHits,kinkFinder,vRPChits,vDThits,vCSChits;
-  float glbKinkFinder,staRelChi2,trkRelChi2,glbDeltaEtaPhi;
+  float glbKinkFinder,glbKinkFinderLog,staRelChi2,trkRelChi2,glbDeltaEtaPhi;
   float inverseBeta,inverseBetaErr,timeAtIpInOut,timeAtIpInOutErr;
   //per station (1-4)
   float vDThits_1,vDThits_2,vDThits_3,vDThits_4;
   float vRPChits_1,vRPChits_2,vRPChits_3,vRPChits_4;
   float vCSChits_1,vCSChits_2,vCSChits_3,vCSChits_4;
-  float vMuonHitComb;
+  float vMuonHitComb,Qprod;
   //stand alone muon && tracker muon multiplicity in a radius given in cm
   float STATrkMult_150,TMTrkMult_100; 
-
+  float spectatorDummy;
   
   std::map<std::string,float*> variableMap; //default constructor fine?
   bool mapIsSet;
@@ -71,7 +72,8 @@ public:
   BDTmuon* getMuon() {return muon;}
 
 private:
-  void addToReader(TMVA::Reader* reader,std::string str);
+  void addVarToReader(TMVA::Reader* reader,std::string str);
+  void addSpecToReader(TMVA::Reader* reader,std::string str);
 
   bool verbose_;
   edm::FileInPath weightFile_;
