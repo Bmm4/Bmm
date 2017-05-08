@@ -2696,6 +2696,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.dzRef            = pt->fLip;
       mrd.kinkFinder       = pt->fMuonChi2;
       mrd.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd1.glbKinkFinderLOG    = TMath::Log(2+pt->fGlbKinkFinder);
       mrd.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd.outerChi2        = pt->fOuterChi2;
       mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2703,6 +2704,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.innerChi2        = pt->fInnerChi2;
       mrd.trkRelChi2       = pt->fTrkRelChi2;
       mrd.vMuonHitComb     = getDetVarComb(pt);
+      mrd.Qprod       = static_cast<float>(pt->fInt1 * pt->fInt2); //in v06
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2718,6 +2720,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.dzRef            = pt->fLip;
       mrd1.kinkFinder       = pt->fMuonChi2;
       mrd1.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd1.glbKinkFinderLOG    = TMath::Log(2+pt->fGlbKinkFinder);
       mrd1.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd1.outerChi2        = pt->fOuterChi2;
       mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2725,6 +2728,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.innerChi2        = pt->fInnerChi2;
       mrd1.trkRelChi2       = pt->fTrkRelChi2;
       mrd1.vMuonHitComb     = getDetVarComb(pt);
+      mrd1.Qprod       = static_cast<float>(pt->fInt1 * pt->fInt2); //in v06
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }
@@ -3580,6 +3584,11 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	  reader->AddVariable("glbKinkFinder", &d.glbKinkFinder);
 	  continue;
 	}
+	if (stype == "TMath::Log(2+glbKinkFinder)") {
+	  cout << "  adding TMath::Log(2+glbKinkFinder)" << endl;
+	  reader->AddVariable("TMath::Log(2+glbKinkFinder)", &d.glbKinkFinderLOG);
+	  continue;
+	}
 	if (stype == "timeAtIpInOutErr") {
 	  cout << "  adding timeAtIpInOutErr" << endl;
 	  reader->AddVariable("timeAtIpInOutErr", &d.timeAtIpInOutErr);
@@ -3615,6 +3624,32 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	  reader->AddVariable("vMuonHitComb", &d.vMuonHitComb);
 	  continue;
 	}
+	if (stype == "Qprod") {
+	  cout << "  adding Qprod" << endl;
+	  reader->AddVariable("Qprod", &d.Qprod);
+	  continue;
+	}
+      }
+      break;
+    }
+  }
+
+  nvars = -1;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add spectators
+    if (string::npos != allLines[i].find("Spectators NSpec")) {
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+      //      cout << "==> " << stype << endl;
+      nvars = atoi(stype.c_str());
+      if (-1 == nvars) continue;
+      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+	m1 = allLines[j].find("Expression=\"")+10;
+	m2 = allLines[j].find("\" Label=\"");
+	stype = allLines[j].substr(m1+2, m2-m1-2);
+	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+	cout << " adding " << stype << " as a spectator dummy" << endl;
+	reader->AddSpectator( stype.c_str(), &d.spectatorDummy);
       }
       break;
     }

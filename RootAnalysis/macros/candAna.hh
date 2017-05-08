@@ -61,10 +61,12 @@ struct mvaMuonIDData {
   float glbTrackTailProb, glbDeltaEtaPhi, iValFrac;
   float LWH; //int
   float dxyRef, dzRef;
-  float kinkFinder, glbKinkFinder, timeAtIpInOutErr, outerChi2;
+  float kinkFinder, glbKinkFinder, glbKinkFinderLOG, timeAtIpInOutErr, outerChi2;
   float valPixHits, TMTrkMult100; //int
   float innerChi2, trkRelChi2;
   float vMuonHitComb;
+  float Qprod; //int
+  float spectatorDummy;
 };
 
 class TTree;
