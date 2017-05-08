@@ -57,6 +57,7 @@ if (!$opt_C) {
 
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
+my $SCRATCH = "nada";
 
 # ----------------------------------------------------------------------
 # -- read in (and eval) configuration:
@@ -74,9 +75,22 @@ if ($opt_h) {
     foreach $j (keys %jobs) {
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
 	$command = &srmHadd($j);
-	print "$command\n";
+	if ($opt_C ne " ") {
+	    &dumpMacro();
+	    system(" $ENV{ROOTSYS}/bin/root -n -l -b -q 'checkFile.C(\"$SCRATCH/$j.root\")' ");
+	    if (checkMergedRootFile("$SCRATCH/$j.root")) {
+	    } else {
+		print "  merge again: ";
+		print "$command\n";
+		system("$command");
+	    }
+	    next;
+	}
 	if (!$opt_d) {
+	    print "$command\n";
 	    system("$command");
+	} else {
+	    print "$command\n";
 	}
     }
     exit(0);
@@ -209,4 +223,45 @@ getenv      =  True
 queue
 EOF
 close OUT;
+}
+
+
+# ----------------------------------------------------------------------
+sub checkMergedRootFile {
+    ($rfile) = @_;
+    print "checking $rfile\n";
+    if (!(-e "$rfile")) {
+	print "TODO: $rfile does not exist\n";
+	return 0;
+    }
+
+    return 1;
+}
+
+
+# ----------------------------------------------------------------------
+sub dumpMacro() {
+
+    open(FH, ">checkFile.C") || die "Cannot open checkFile.C\n";
+    print FH <<"EOF";
+
+#include <iostream>
+#include <TString.h>
+
+void checkFile(const char *filename) {
+  char buffer[2000];
+  char meta[2000];
+
+  TFile *f = TFile::Open(filename);
+
+  if (f) {
+    if (f->TestBit(TFile::kRecovered)) {
+      cout << "==> recovered file: " << Form("/bin/rm %s", filename) << endl;
+      system(Form("/bin/rm %s", filename));
+    }
+    f->Close();
+  }
+}
+
+EOF
 }
