@@ -157,7 +157,11 @@ void plotStuff::init() {
 // ----------------------------------------------------------------------
 void plotStuff::makeAll(string what) {
 
-  if (what == "runs") runStudy("bupsikData");
+  if (what == "runs") {
+    runStudy("bupsikData");
+    runStudy("bmmData");
+  }
+
   if (what == "ysfill") {
     yieldStability("bupsikData", "ysfill");
     yieldStability("bmmData", "ysfill");
@@ -166,6 +170,10 @@ void plotStuff::makeAll(string what) {
   if (what == "ysplot") {
     yieldStability("bupsikData", "NOC");
     yieldStability("bupsikData", "TOS");
+    yieldStability("bmmData", "NOC");
+    yieldStability("bmmData", "TOS");
+    yieldStabilityRatios("NOC");
+    yieldStabilityRatios("TOS");
   }
 
   if (what == "all" || what == "massresolution") {
@@ -1200,10 +1208,11 @@ void plotStuff::yieldStability(string dsname, string trg) {
     Lumi *lumi(0);
     if (2016 == fYear) {
       if (string::npos != dsname.find("psi")) {
-	//	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
-	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
+	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+	//this is useless, includes DiMuonX_Y seeds: lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
       } else {
-	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
+	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+	//this is useless, includes DiMuonX_Y seeds: lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
       }
     } else if (2012 == fYear) {
       lumi = new Lumi("../common/json/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON_MuonPhys.lumi");
@@ -1233,12 +1242,17 @@ void plotStuff::yieldStability(string dsname, string trg) {
     }
 
     // -- the result histograms
-    vector<TH1D *> vRunHLT;
+    vector<TH1D *> vRunHLT, vRunHLTLumi;
     for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
       vRunHLT.push_back(new TH1D(Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
 				 Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
 				 lastLumiRun-firstLumiRun+1, firstLumiRun, lastLumiRun));
       vRunHLT[ichan]->Sumw2();
+
+      vRunHLTLumi.push_back(new TH1D(Form("hRunLumi%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				 Form("hRunLumi%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan),
+				 lastLumiRun-firstLumiRun+1, firstLumiRun, lastLumiRun));
+      vRunHLTLumi[ichan]->Sumw2();
     }
 
     // -- get the histograms
@@ -1252,6 +1266,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	int iblock = it->first.first;
 	lumi = it->first.second;
 	totalLumi += lumi;
+	cout << endl;
 	cout << Form("new block: %d (%d) Lumi = %4.1f/%4.1f ", it->first.first, iblock, lumi, totalLumi) << endl;
 	hBlock->Reset();
 	hBlock->SetName(Form("hBlock_%s_%d_chan%d", dsname.c_str(), iblock, ichan));
@@ -1263,8 +1278,6 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  cout << "adding " << hname << " h2 = " << h2 <<  " with lumi: " << lumi << endl;
 	  hBlock->Add(h2);
 	}
-	cout << endl;
-
 	double result(0.), resultE(0.);
 	if (string::npos != dsname.find("bupsik") || string::npos != dsname.find("bspsiphi")) {
 	  fitPsYield fpy(hBlock, 0);
@@ -1273,7 +1286,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  } else if (string::npos != dsname.find("bspsiphi")) {
 	    fpy.fitBs2JpsiPhi(0, fDirectory + "/");
 	  }
-	  if (0) {
+	  if (1) {
 	    result  = fpy.getSignalYield();
 	    resultE = fpy.getSignalError();
 	  }
@@ -1285,7 +1298,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	    result  = fpy.getSignalW8Yield();
 	    resultE = fpy.getSignalW8Error();
 	  }
-	  if (1) {
+	  if (0) {
 	    result  = fpy.getSignalUnW8Yield();
 	    resultE = fpy.getSignalUnW8Error();
 	  }
@@ -1294,14 +1307,17 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  resultE = TMath::Sqrt(result);
 	  c0->Clear();
 	  hBlock->Draw("colz");
-	  savePad(Form("hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
+	  savePad(Form("ys-hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
 	}
 	cout << "result = " << result << " +/- " << resultE
 	     << " lumi-normalized = " << result/lumi << " +/- " << resultE/lumi
 	     << " (lumi = " << lumi << ")"
 	     << " filling into bin " << vRunHLT[ichan]->FindBin(static_cast<double>(iblock)) << endl;
-	vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result/lumi);
-	vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE/lumi);
+	vRunHLTLumi[ichan]->SetBinContent(vRunHLTLumi[ichan]->FindBin(static_cast<double>(iblock)), result/lumi);
+	vRunHLTLumi[ichan]->SetBinError(vRunHLTLumi[ichan]->FindBin(static_cast<double>(iblock)), resultE/lumi);
+
+	vRunHLT[ichan]->SetBinContent(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), result);
+	vRunHLT[ichan]->SetBinError(vRunHLT[ichan]->FindBin(static_cast<double>(iblock)), resultE);
       }
     }
 
@@ -1311,13 +1327,25 @@ void plotStuff::yieldStability(string dsname, string trg) {
     gPad->SetGridy();
     for (unsigned ichan = 0; ichan < nchan; ++ichan) {
       setTitles(vRunHLT[ichan], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 1.9);
-      vRunHLT[ichan]->Draw();
+      setTitles(vRunHLTLumi[ichan], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 1.9);
+      vRunHLTLumi[ichan]->Draw();
       if (2016 == fYear) {
-	double ymax(vRunHLT[ichan]->GetMaximum());
+	double ymax(vRunHLTLumi[ichan]->GetMaximum());
 	plot2016Eras(ymax);
       }
-      savePad(Form("ys-yieldVsBlock-%s%d-%s-chan%d.pdf", trg.c_str(), fYear, dsname.c_str(), ichan));
+      savePad(Form("ys-yieldPerLumi-%s%d-%s-chan%d.pdf", trg.c_str(), fYear, dsname.c_str(), ichan));
+
+      vRunHLT[ichan]->Draw();
+      if (2016 == fYear) {
+	double ymax(vRunHLTLumi[ichan]->GetMaximum());
+	plot2016Eras(ymax);
+      }
+      savePad(Form("ys-yield-%s%d-%s-chan%d.pdf", trg.c_str(), fYear, dsname.c_str(), ichan));
+
       if (1) {
+	vRunHLTLumi[ichan]->SetDirectory(gDirectory);
+	vRunHLTLumi[ichan]->Write();
+
 	vRunHLT[ichan]->SetDirectory(gDirectory);
 	vRunHLT[ichan]->Write();
       }
@@ -1533,10 +1561,7 @@ void plotStuff::loopFunction5() {
 void plotStuff::yieldStabilityRatios(string trgname) {
 
   vector<pair<string, string> > overlays;
-  overlays.push_back(make_pair("bupsikData", "bspsiphiData"));
-  overlays.push_back(make_pair("bupsikData", "bdpsikstarData"));
   overlays.push_back(make_pair("bmmData",    "bupsikData"));
-  overlays.push_back(make_pair("bmmData",    "bspsiphiData"));
 
   cout << "fHistFile: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
@@ -1581,7 +1606,7 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 					  ));
 	tl->DrawLatexNDC(0.80, 0.92, Form("chan %d", ichan));
 
-	savePad(Form("yieldStabilityRatio-%s-%s-chan%d.pdf", it->first.c_str(), it->second.c_str(), ichan));
+	savePad(Form("ys-ratio-%s-%s-%s-chan%d.pdf", trgname.c_str(), it->first.c_str(), it->second.c_str(), ichan));
       }
     }
 
@@ -1686,8 +1711,8 @@ void plotStuff::loopFunction2() {
 
   char hname0[200];
   char hname1[200];
-  sprintf(hname0, "ls0_%d", static_cast<int>(fb.run));
-  sprintf(hname1, "ls1_%d", static_cast<int>(fb.run));
+  sprintf(hname0, "ls0_%s_%d", fSample.c_str(), static_cast<int>(fb.run));
+  sprintf(hname1, "ls1_%s_%d", fSample.c_str(), static_cast<int>(fb.run));
 
   if (0 == fHLs0.count(hname0)) {
     fHLs0.insert(make_pair(hname0, new TH2D(hname0, hname0, 3500, 0., 3500., 6, -1., 5.)));
@@ -1705,7 +1730,7 @@ void plotStuff::loopFunction2() {
   if (fb.m1q * fb.m2q > 0) return;
 
   bool doubleMu0(false), highPtMu(false);
-  if (((fb.l1s & 1) == 1) || ((fb.l1s & 2) == 2) || ((fb.l1s & 4) == 4)) {
+  if (((fb.l1s & 0x1) == 1) || ((fb.l1s & 0x2) == 2) || ((fb.l1s & 0x4) == 4)) {
     fHLs0[hname0]->Fill(fb.ls, -0.5);
     if (fb.chan > -1) fHLs0[hname0]->Fill(fb.ls, fb.chan);
   }
@@ -2227,8 +2252,6 @@ void plotStuff::setupPvTree(TTree *t) {
   t->SetBranchAddress("a2",  &fpv.a2);
   t->SetBranchAddress("d3",  &fpv.d3);
   t->SetBranchAddress("a3",  &fpv.a3);
-
-
 }
 
 
@@ -2249,7 +2272,7 @@ void plotStuff::runStudy(string ds) {
   TKey *key(0);
   while ((key = (TKey*)next())) {
     if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH2D")) continue;
-    if (TString(key->GetName()).Contains(Form("ls0_"))) {
+    if (TString(key->GetName()).Contains(Form("ls0_%s", ds.c_str()))) {
       ok = true;
       break;
     }
@@ -2284,181 +2307,196 @@ void plotStuff::runStudy(string ds) {
 	it->second->Write();
       }
     }
+  }
 
-  } else {
-
-    Lumi *lumi(0);
-    if (2016 == fYear) {
-      if (string::npos != ds.find("psi")) {
-	//	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
-	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
-      } else {
-	lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
-      }
-    } else if (2012 == fYear) {
-      lumi = new Lumi("../common/json/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON_MuonPhys.lumi");
-    } else if (2011 == fYear) {
-      lumi = new Lumi("../common/json/Cert_160404-180252_7TeV_ReRecoNov08_Collisions11_JSON_MuonPhys_v2.lumi");
+  Lumi *lumi(0);
+  if (2016 == fYear) {
+    if (string::npos != ds.find("psi")) {
+      //	lumi = new Lumi("../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.lumi");
+      lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Jpsi_Displaced.lumi");
+    } else {
+      lumi = new Lumi("../common/json/2016-HLT_DoubleMu4_3_Bs.lumi");
     }
-
-
-    shrinkPad(0.1, 0.1, 0.07, 0.12);
-    TH1D *hl = new TH1D("lostLs", "lost lumi sections", runBins, runStart, runEnd);
-    TH1D *h0y = new TH1D("yields", "yields low pT", runBins, runStart, runEnd);
-    TH1D *h1y = new TH1D("yields", "yields high pT", runBins, runStart, runEnd);
-    TH2D *hc0b = new TH2D("hc0b", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0c = new TH2D("hc0c", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0d = new TH2D("hc0d", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0e = new TH2D("hc0e", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0f = new TH2D("hc0f", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0g = new TH2D("hc0g", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc0h = new TH2D("hc0h", "", 50, 0., 50., 50, 0., 1200.);
-
-    TH2D *hc1b = new TH2D("hc1b", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1c = new TH2D("hc1c", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1d = new TH2D("hc1d", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1e = new TH2D("hc1e", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1f = new TH2D("hc1f", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1g = new TH2D("hc1g", "", 50, 0., 50., 50, 0., 1200.);
-    TH2D *hc1h = new TH2D("hc1h", "", 50, 0., 50., 50, 0., 1200.);
-
-    TProfile *hp = (TProfile*)gDirectory->Get("npv");
-    next = gDirectory->GetListOfKeys();
-    while ((key = (TKey*)next())) {
-      if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH2D")) continue;
-      if (TString(key->GetName()).Contains(Form("ls0_"))) {
-	string hname = key->GetName();
-	TH2D *h0 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
-	replaceAll(hname, "ls0", "ls1");
-	TH2D *h1 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
-	TH1D *h0l = h0->ProjectionX(Form("%s_x0", hname.c_str()), 1,1); h0l->SetLineColor(kBlue);
-	TH1D *h1l = h1->ProjectionX(Form("%s_x1", hname.c_str()), 1,1); h1l->SetLineColor(kRed);
-	h0l->Rebin(10);
-	h1l->Rebin(10);
-	replaceAll(hname, "ls1_", "");
-	int run = atoi(hname.c_str());
-	string rr = runRange(run);
-	double hltLumi = lumi->lumi(run);
-	if (hltLumi > 10.) {
-	  if ("B" == rr) {
-	    hc0b->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1b->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("C" == rr) {
-	    hc0c->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1c->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("D" == rr) {
-	    hc0d->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1d->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("E" == rr) {
-	    hc0e->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1e->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("F" == rr) {
-	    hc0f->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1f->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("G" == rr) {
-	    hc0g->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1g->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  } else if ("H" == rr) {
-	    hc0h->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
-	    hc1h->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
-	  }
-	  h0y->SetBinContent(h1y->FindBin(run), h0l->Integral()/hltLumi);
-	  h1y->SetBinContent(h1y->FindBin(run), h1l->Integral()/hltLumi);
-
-	  cout << "run = " << run
-	       << " lumi = " << hltLumi
-	       << " nPV: " << hp->GetBinContent(hp->FindBin(run))
-	       << " yield(0) = " <<  h0l->Integral()
-	       << " yield(0)*pb = " <<  h0l->Integral()/hltLumi
-	       << " yield(1) = " <<  h1l->Integral()
-	       << " yield(1)*pb = " <<  h1l->Integral()/hltLumi
-	       << endl;
-	}
-	// -- skip initial runs for the missed ls count
-	if (run > 274000) {
-	  int lsCnt(0), lsTot(0);
-	  double ymax = h1l->GetMaximum();
-	  for (int ib = 0; ib < h0l->GetNbinsX(); ++ib) {
-	    if (h1l->GetBinContent(ib) > 0.05*ymax) {
-	      ++lsTot;
-	      if (h0l->GetBinContent(ib) < h1l->GetBinContent(ib)) ++lsCnt;
-	    }
-	  }
-	  if (lsCnt>1) {
-	    cout << "XXXX Run " << run << " missed ls fraction: " << static_cast<double>(lsCnt)/lsTot << endl;
-	    hl->SetBinContent(hl->FindBin(run), static_cast<double>(lsCnt)/lsTot);
-	  }
-	}
-	TH1D *hr = (TH1D*)h1l->Clone("h1r");
-	hr->Divide(h0l, h1l, 1., 1.);
-	hr->Scale(0.6*h0l->GetMaximum()/hr->GetMaximum());
-	hr->SetLineColor(kBlack);
-	h0l->Draw("hist");
-	h1l->Draw("samehist");
-	hr->Draw("samehist");
-	tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.92, h0l->GetName());
-	tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.6, 0.92, h1l->GetName());
-	savePad(Form("runStudy_l1seeds_%s.pdf", hname.c_str()));
-      }
-    }
-    hl->SetMinimum(0.);
-    hl->Draw();
-    plot2016Eras(hl->GetMaximum());
-    savePad(Form("runStudy_missedLS.pdf"));
-    h0y->SetMinimum(0.);
-    h0y->Draw("e");
-    plot2016Eras(h0y->GetMaximum());
-    savePad(Form("runStudy_yields_DoubleMu0.pdf"));
-    h1y->SetMinimum(0.);
-    h1y->Draw("e");
-    plot2016Eras(h1y->GetMaximum());
-    savePad(Form("runStudy_yields_highPt.pdf"));
-
-    hc0b->SetMarkerColor(kBlack);     hc0b->Draw();
-    hc0c->SetMarkerColor(kGreen+1);   hc0c->Draw("same");
-    hc0d->SetMarkerColor(kRed+1);     hc0d->Draw("same");
-    hc0e->SetMarkerColor(kRed+2);     hc0e->Draw("same");
-    hc0f->SetMarkerColor(kRed+3);     hc0f->Draw("same");
-    hc0g->SetMarkerColor(kBlue+1);    hc0g->Draw("same");
-    hc0h->SetMarkerColor(kBlue+3);    hc0h->Draw("same");
-
-    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu0 seeds");
-    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
-    tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
-    tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
-    tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
-    tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
-    tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
-    tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
-
-    savePad(Form("runStudy_yieldVsNpv_Seed0_allEras.pdf"));
-
-    hc1b->SetMarkerColor(kBlack);     hc1b->Draw();
-    hc1c->SetMarkerColor(kGreen+1);   hc1c->Draw("same");
-    hc1d->SetMarkerColor(kRed+1);     hc1d->Draw("same");
-    hc1e->SetMarkerColor(kRed+2);     hc1e->Draw("same");
-    hc1f->SetMarkerColor(kRed+3);     hc1f->Draw("same");
-    hc1g->SetMarkerColor(kBlue+1);    hc1g->Draw("same");
-    hc1h->SetMarkerColor(kBlue+3);    hc1h->Draw("same");
-
-    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu_1X_Y seeds");
-    tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
-    tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
-    tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
-    tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
-    tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
-    tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
-    tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
-
-    savePad(Form("runStudy_yieldVsNpv_Seed1_allEras.pdf"));
-
-
+  } else if (2012 == fYear) {
+    lumi = new Lumi("../common/json/Cert_190456-208686_8TeV_22Jan2013ReReco_Collisions12_JSON_MuonPhys.lumi");
+  } else if (2011 == fYear) {
+    lumi = new Lumi("../common/json/Cert_160404-180252_7TeV_ReRecoNov08_Collisions11_JSON_MuonPhys_v2.lumi");
   }
 
 
+  shrinkPad(0.1, 0.1, 0.07, 0.12);
+  TH1D *hl = new TH1D("lostLs", "lost lumi sections", runBins, runStart, runEnd);
+  TH1D *h0y = new TH1D("yields", "yields low pT", runBins, runStart, runEnd);
+  TH1D *h1y = new TH1D("yields", "yields high pT", runBins, runStart, runEnd);
+  TH2D *hc0b = new TH2D("hc0b", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0c = new TH2D("hc0c", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0d = new TH2D("hc0d", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0e = new TH2D("hc0e", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0f = new TH2D("hc0f", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0g = new TH2D("hc0g", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc0h = new TH2D("hc0h", "", 50, 0., 50., 50, 0., 1200.);
+
+  TH2D *hc1b = new TH2D("hc1b", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1c = new TH2D("hc1c", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1d = new TH2D("hc1d", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1e = new TH2D("hc1e", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1f = new TH2D("hc1f", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1g = new TH2D("hc1g", "", 50, 0., 50., 50, 0., 1200.);
+  TH2D *hc1h = new TH2D("hc1h", "", 50, 0., 50., 50, 0., 1200.);
+
+  TProfile *hp = (TProfile*)gDirectory->Get("npv");
+  next = gDirectory->GetListOfKeys();
+  while ((key = (TKey*)next())) {
+    if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TH2D")) continue;
+    if (TString(key->GetName()).Contains(Form("ls0_%s_", ds.c_str()))) {
+      string hname = key->GetName();
+      TH2D *h0 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
+      replaceAll(hname, "ls0", "ls1");
+      TH2D *h1 = (TH2D*)((TH2D*)gDirectory->Get(hname.c_str()));
+      TH1D *h0l = h0->ProjectionX(Form("%s_x0", hname.c_str()), 1,1); h0l->SetLineColor(kBlue);
+      TH1D *h1l = h1->ProjectionX(Form("%s_x1", hname.c_str()), 1,1); h1l->SetLineColor(kRed);
+      h0l->Rebin(10);
+      h1l->Rebin(10);
+      replaceAll(hname, Form("ls1_%s_", ds.c_str()), "");
+      int run = atoi(hname.c_str());
+      string rr = runRange(run);
+      double hltLumi = lumi->lumi(run);
+      if (hltLumi > 10.) {
+	if ("B" == rr) {
+	  hc0b->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1b->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("C" == rr) {
+	  hc0c->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1c->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("D" == rr) {
+	  hc0d->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1d->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("E" == rr) {
+	  hc0e->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1e->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("F" == rr) {
+	  hc0f->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1f->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("G" == rr) {
+	  hc0g->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1g->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	} else if ("H" == rr) {
+	  hc0h->Fill(hp->GetBinContent(hp->FindBin(run)), h0l->Integral()/hltLumi);
+	  hc1h->Fill(hp->GetBinContent(hp->FindBin(run)), h1l->Integral()/hltLumi);
+	}
+	h0y->SetBinContent(h1y->FindBin(run), h0l->Integral()/hltLumi);
+	h1y->SetBinContent(h1y->FindBin(run), h1l->Integral()/hltLumi);
+
+	cout << "run = " << run
+	     << " lumi = " << hltLumi
+	     << " nPV: " << hp->GetBinContent(hp->FindBin(run))
+	     << " yield(0) = " <<  h0l->Integral()
+	     << " yield(0)*pb = " <<  h0l->Integral()/hltLumi
+	     << " yield(1) = " <<  h1l->Integral()
+	     << " yield(1)*pb = " <<  h1l->Integral()/hltLumi
+	     << endl;
+      }
+      // -- skip initial runs for the missed ls count
+      if (run > 274000) {
+	int lsCnt(0), lsTot(0);
+	double ymax = h1l->GetMaximum();
+	for (int ib = 0; ib < h0l->GetNbinsX(); ++ib) {
+	  if (h1l->GetBinContent(ib) > 0.05*ymax) {
+	    ++lsTot;
+	    if (h0l->GetBinContent(ib) < h1l->GetBinContent(ib)) ++lsCnt;
+	  }
+	}
+	if (lsCnt>1) {
+	  cout << "XXXX Run " << run << " missed ls fraction: " << static_cast<double>(lsCnt)/lsTot << endl;
+	  hl->SetBinContent(hl->FindBin(run), static_cast<double>(lsCnt)/lsTot);
+	}
+      }
+      TH1D *hr = (TH1D*)h1l->Clone("h1r");
+      hr->Divide(h0l, h1l, 1., 1.);
+      hr->Scale(0.6*h0l->GetMaximum()/hr->GetMaximum());
+      hr->SetLineColor(kBlack);
+      h0l->Draw("hist");
+      h1l->Draw("samehist");
+      hr->Draw("samehist");
+      tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.2, 0.93, h0l->GetName());
+      tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.2, 0.90, h1l->GetName());
+      savePad(Form("runStudy_%s_l1seeds_%s.pdf", ds.c_str(), hname.c_str()));
+    }
+  }
+
+  hl->SetMinimum(0.);
+  hl->Draw();
+  plot2016Eras(hl->GetMaximum());
+  savePad(Form("runStudy_%s_missedLS.pdf", ds.c_str()));
+  h0y->SetMinimum(0.);
+  h0y->Draw("e");
+  plot2016Eras(h0y->GetMaximum());
+  savePad(Form("runStudy_%s_yields_DoubleMu0.pdf", ds.c_str()));
+  h1y->SetMinimum(0.);
+  h1y->Draw("e");
+  plot2016Eras(h1y->GetMaximum());
+  savePad(Form("runStudy_%s_yields_highPt.pdf", ds.c_str()));
+
+  cout << "MAXIMUM: " << hc0b->GetMaximum() << endl;
+  //  hc0b->SetMaximum(1.2*hc0b->GetMaximum());
+  hc0b->SetMarkerColor(kBlack);     hc0b->Draw();
+  hc0c->SetMarkerColor(kGreen+1);   hc0c->Draw("same");
+  hc0d->SetMarkerColor(kRed+1);     hc0d->Draw("same");
+  hc0e->SetMarkerColor(kRed+2);     hc0e->Draw("same");
+  hc0f->SetMarkerColor(kRed+3);     hc0f->Draw("same");
+  hc0g->SetMarkerColor(kBlue+1);    hc0g->Draw("same");
+  hc0h->SetMarkerColor(kBlue+3);    hc0h->Draw("same");
+
+  tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu0 seeds");
+  tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
+  tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
+  tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
+  tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
+  tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
+  tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
+  tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
+
+  savePad(Form("runStudy_%s_yieldVsNpv_Seed0_allEras.pdf", ds.c_str()));
+
+  hc1b->SetMarkerColor(kBlack);     hc1b->Draw();
+  hc1c->SetMarkerColor(kGreen+1);   hc1c->Draw("same");
+  hc1d->SetMarkerColor(kRed+1);     hc1d->Draw("same");
+  hc1e->SetMarkerColor(kRed+2);     hc1e->Draw("same");
+  hc1f->SetMarkerColor(kRed+3);     hc1f->Draw("same");
+  hc1g->SetMarkerColor(kBlue+1);    hc1g->Draw("same");
+  hc1h->SetMarkerColor(kBlue+3);    hc1h->Draw("same");
+
+  tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.3, 0.92, "DoubleMu_1X_Y seeds");
+  tl->SetTextColor(kBlack);   tl->DrawLatexNDC(0.7, 0.80, "2016B");
+  tl->SetTextColor(kGreen+1); tl->DrawLatexNDC(0.7, 0.72, "2016C");
+  tl->SetTextColor(kRed+1);   tl->DrawLatexNDC(0.7, 0.64, "2016D");
+  tl->SetTextColor(kRed+2);   tl->DrawLatexNDC(0.7, 0.56, "2016E");
+  tl->SetTextColor(kRed+3);   tl->DrawLatexNDC(0.7, 0.48, "2016F");
+  tl->SetTextColor(kBlue+1);  tl->DrawLatexNDC(0.7, 0.40, "2016G");
+  tl->SetTextColor(kBlue+3);  tl->DrawLatexNDC(0.7, 0.32, "2016H");
+
+  savePad(Form("runStudy_%s_yieldVsNpv_Seed1_allEras.pdf", ds.c_str()));
+
+  delete hl;
+  delete h0y;
+  delete h1y;
+  delete hc0b;
+  delete hc0c;
+  delete hc0d;
+  delete hc0e;
+  delete hc0f;
+  delete hc0g;
+  delete hc0h;
+
+  delete hc1b;
+  delete hc1c;
+  delete hc1d;
+  delete hc1e;
+  delete hc1f;
+  delete hc1g;
+  delete hc1h;
 
   fHistFile->Close();
-
 
 }
 
