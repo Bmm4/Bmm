@@ -5,7 +5,7 @@ my $mode    = "bla";
 my $pattern = "bla";
 
 # -- output directory
-my $SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
 # -- grid SE prefix
 my $PSI = $ENV{'PSI'};
 $PSI =~ s/\?/\\\?/g;

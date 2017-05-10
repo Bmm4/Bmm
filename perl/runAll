@@ -32,7 +32,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('Ccdhlmo:pq:s:t:w:x:y');
+getopts('Ccdhi:lmo:pq:s:t:w:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -54,6 +54,12 @@ if (!$opt_C) {
 } else {
     $opt_C = " -C ";
 }
+
+my $jobslist = "jobs.list";
+if ($opt_i) {
+    $jobslist = $opt_i;
+}
+
 
 my $BMMBASE = $ENV{BMMBASE};
 my $USER = $ENV{USER};
@@ -137,6 +143,7 @@ if ($opt_p) {
 
 # -- monSge
 if ($opt_m) {
+    my $nNOK = 0;
     foreach $j (keys %catalogs) {
 	my $chdired = 0;
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
@@ -153,12 +160,39 @@ if ($opt_m) {
 
 	if (!$opt_d) {
 	    system("$BMMBASE/perl/monSge");
+	    # -- now count NOK files in all relevant tmp-* directories
+	    open(IN, $jobslist) || die "Cannot find file $joblist with grid jobs\n";
+	    while(<IN>) {
+		next if (/\#\#\#/);
+		# -- parse one job: one URL/sge and one additional line with information
+		my $url  = $_;   chop($url);
+		my $line = <IN>; chop($line);
+
+		# -- fixed screwed jobs.list input
+		while ($line =~ /https/ || $line =~ /sge/) {
+		    $url = $line;
+		    $line = <IN>; chop($line);
+		}
+
+		if ($url =~ /https/) {next;}
+
+		if ($opt_v) {print "$line\n";}
+		$line =~ s/\# //;
+		($machine, $date, $time, $dir, $jname, $sgeNumber) = split(/ /, $line);
+		my $pwd = `pwd`; chop($pwd);
+		my $mdir = $dir;
+		$mdir =~ s%$pwd/%%;
+
+		if (-e "$mdir/NOK") {
+		    $nNOK++;
+		}
+	    }
 	}
 	if (1 == $chdired) {chdir("..");}
     }
 
+    print "A total of $nNOK jobs had problems\n";
     exit(0);
-
 
 }
 
