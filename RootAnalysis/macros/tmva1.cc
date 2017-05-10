@@ -341,7 +341,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    //    optstring += ":UseBaggedGrad=F:nCuts=200:MaxDepth=3:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=1000:";
 
    cout << "==> BookMethod: " << optstring << endl;
-   factory->BookMethod( TMVA::Types::kBDT, "bmm4BDT", optstring);
+   factory->BookMethod( TMVA::Types::kBDT, "BDT", optstring);
 
    cout << "==> TrainAllMethods " << endl;
    factory->TrainAllMethods();
@@ -371,7 +371,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 void tmva1::apply(const char *fname) {
 
   // --- Book the MVA methods
-  string methodName("bmm4BDT");
+  string methodName("BDT");
   string dir("weights");
   string XmlName = Form("%s/%s-Events0_%s.weights.xml", dir.c_str(), fname, methodName.c_str());
 
@@ -536,6 +536,9 @@ void tmva1::reAnalyze(int imin, int imax) {
 // ----------------------------------------------------------------------
 void tmva1::analyze(const char *fname) {
 
+  cout << "======================================================================" << endl;
+  cout << "==> analyze: " << fname  << endl;
+
   gStyle->SetOptStat(0);
   gStyle->SetOptTitle(0);
 
@@ -586,17 +589,17 @@ void tmva1::analyze(const char *fname) {
 
   TH1D *hr01 = getRanking(fname, "IdTransformation", "events0");
   hr01->SetDirectory(f);
-  TH1D *hr02 =  getRanking(fname, "bmm4BDT", "events0");
+  TH1D *hr02 =  getRanking(fname, "BDT", "events0");
   hr02->SetDirectory(f);
 
   TH1D *hr11 = getRanking(fname, "IdTransformation", "events1");
   hr11->SetDirectory(f);
-  TH1D *hr12 =  getRanking(fname, "bmm4BDT", "events1");
+  TH1D *hr12 =  getRanking(fname, "BDT", "events1");
   hr12->SetDirectory(f);
 
   TH1D *hr21 = getRanking(fname, "IdTransformation", "events2");
   hr21->SetDirectory(f);
-  TH1D *hr22 =  getRanking(fname, "bmm4BDT", "events2");
+  TH1D *hr22 =  getRanking(fname, "BDT", "events2");
   hr22->SetDirectory(f);
 
   TH1F *trainBDT0 = (TH1F*)f0->Get("Method_BDT/BDT/MVA_BDT_Train_B"); trainBDT0->SetLineColor(kBlack);
@@ -805,7 +808,7 @@ void tmva1::analyze(const char *fname) {
   legg->AddEntry(ap2sgBDT, "BDT 2", "l");
   legg->Draw();
 
-  c0->SaveAs(Form("plots/%s-rebinned-bg-overlays.pdf", fname));
+  c0->SaveAs(Form("results/%s-rebinned-bg-overlays.pdf", fname));
 
   hmax = tr0sgBDT->GetMaximum();
   if (tr1sgBDT->GetMaximum() > hmax) hmax = tr1sgBDT->GetMaximum();
@@ -846,7 +849,7 @@ void tmva1::analyze(const char *fname) {
   legg->AddEntry(ap2sgBDT, "BDT 2", "l");
   legg->Draw();
 
-  c0->SaveAs(Form("plots/%s-rebinned-sg-overlays.pdf", fname));
+  c0->SaveAs(Form("results/%s-rebinned-sg-overlays.pdf", fname));
 
 
   writeOut(f, ap0bgBDT);
@@ -1083,8 +1086,8 @@ void tmva1::analyze(const char *fname) {
 
     TF1 *f1 = pFunc->pol2local(hssb[ie], 0.05);
     hssb[ie]->Fit(f1, "r", "", xmin, xmax);
-    double maxfitssbX = hssb[ie]->GetFunction("iF_pol2local")->GetParameter(2);
-    double maxfitssbY = hssb[ie]->GetFunction("iF_pol2local")->GetParameter(0);
+    double maxfitssbX = hssb[ie]->GetFunction("IF_pol2local")->GetParameter(2);
+    double maxfitssbY = hssb[ie]->GetFunction("IF_pol2local")->GetParameter(0);
     vMaxSSBfit[ie] = maxfitssbX;
     vMaxBDTfit[ie] = maxfitssbY;
   }
@@ -1210,7 +1213,7 @@ void tmva1::analyze(const char *fname) {
     }
 
     TEX.close();
-    system(Form("/bin/cp %s plots", texname.c_str()));
+    system(Form("/bin/cp %s results", texname.c_str()));
 
     newLegend(0.22, 0.47, 0.55, 0.67);
 
@@ -1223,7 +1226,7 @@ void tmva1::analyze(const char *fname) {
     }
     legg->Draw();
 
-    c0->SaveAs(Form("plots/%s-roc-ie%d.pdf", fname, ie));
+    c0->SaveAs(Form("results/%s-roc-ie%d.pdf", fname, ie));
 
     c0->Clear();
     hssb[ie]->Draw();
@@ -1232,7 +1235,7 @@ void tmva1::analyze(const char *fname) {
     tl->DrawLatex(0.2, 0.85, Form("SSB_{max} = %4.3f (%4.3f/%4.3f)", maxSSB, maxSSBsimple, maxSSBfit));
     tl->DrawLatex(0.2, 0.80, Form("BDT_{max} > %4.3f (%4.3f/%4.3f)", maxBDT, maxBDTsimple, maxBDTfit));
     tl->DrawLatex(0.2, 0.75, Form("ROC_{int} = %4.3f", rocInt));
-    c0->SaveAs(Form("plots/%s-ssb-ie%d.pdf", fname, ie));
+    c0->SaveAs(Form("results/%s-ssb-ie%d.pdf", fname, ie));
 
     cout << "Write out SSB histograms" << endl;
     cout << "  maxSSB: " << maxSSB << " at BDT > " << maxBDT << endl;
@@ -1529,6 +1532,7 @@ TH1D* tmva1::getRanking(string fname, string prefix, std::string type) {
     }
   }
 
+  is.close();
   return h1;
 }
 
@@ -1636,9 +1640,10 @@ void tmva1::makeAll(int offset, string filename, int clean) {
   string oname = Form("TMVA-%d", offset);
   cout << "-->apply(" << oname.c_str() << ")" << endl;
   apply(oname.c_str());
-  return;
+
   cout << "-->analyze(" << oname.c_str() << ")" << endl;
   analyze(oname.c_str());
+  return;
 
   cout << "-->mvas(...)" << endl;
   string sEvents = oname + "-Events0";
@@ -1808,10 +1813,10 @@ void tmva1::calcBDT() {
   }
   if (TMath::Abs(ftd.evt%3) == 1) ichan = 1;
   if (TMath::Abs(ftd.evt%3) == 2) ichan = 2;
-  fBDT   = fReader[ichan]->EvaluateMVA("bmm4BDT");
-  fBDT0  = fReader[0]->EvaluateMVA("bmm4BDT");
-  fBDT1  = fReader[1]->EvaluateMVA("bmm4BDT");
-  fBDT2  = fReader[2]->EvaluateMVA("bmm4BDT");
+  fBDT   = fReader[ichan]->EvaluateMVA("BDT");
+  fBDT0  = fReader[0]->EvaluateMVA("BDT");
+  fBDT1  = fReader[1]->EvaluateMVA("BDT");
+  fBDT2  = fReader[2]->EvaluateMVA("BDT");
   //  cout << "calcBDT: evt = " << ichan << " BDT = " <<  fBDT << endl;
 }
 
