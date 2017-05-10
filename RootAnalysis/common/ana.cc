@@ -132,7 +132,7 @@ int  numberOfBPixLayer1Hits(TAnaTrack *pTrack) {
 //      bad      = there were many bad strips within the ellipse = 3
 // ----------------------------------------------------------------------
 int  numberOfTrackerLayers(TAnaTrack *pTrack) {
-  cout << "numberOfTrackerLayers: " << pTrack << endl;
+  //  cout << "numberOfTrackerLayers: " << pTrack << endl;
   bool pixl[3], tibl[4], tobl[6];
   bool pixd[2], tidw[3], tecw[9];
 
