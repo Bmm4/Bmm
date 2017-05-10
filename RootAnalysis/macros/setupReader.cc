@@ -169,6 +169,6 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd) {
   }
 
   // --- Book the MVA methods
-  reader->BookMVA("bmm4BDT", xmlFile);
+  reader->BookMVA("BDT", xmlFile);
   return reader;
 }
