@@ -2731,6 +2731,9 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
     return false;
   }
 
+  float qprod  = static_cast<float>(pt->fInt1) * static_cast<float>(pt->fInt2);
+  if (TMath::Abs(qprod) > 2.) qprod = 1.; // add backup in case the variables are not filled
+
   bool doNow(true);
   if (doNow) {
     // -- Stephan's developing set of variables
@@ -2755,7 +2758,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.innerChi2        = pt->fInnerChi2;
       mrd.trkRelChi2       = pt->fTrkRelChi2;
       mrd.vMuonHitComb     = getDetVarComb(pt);
-      mrd.Qprod       = static_cast<float>(pt->fInt1 * pt->fInt2); //in v06
+      mrd.Qprod            = qprod;
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2779,7 +2782,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.innerChi2        = pt->fInnerChi2;
       mrd1.trkRelChi2       = pt->fTrkRelChi2;
       mrd1.vMuonHitComb     = getDetVarComb(pt);
-      mrd1.Qprod       = static_cast<float>(pt->fInt1 * pt->fInt2); //in v06
+      mrd1.Qprod            = qprod;
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }
