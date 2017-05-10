@@ -69,6 +69,7 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeBdt");
   fDoList.push_back("FakeTip");
   fDoList.push_back("FakeLip");
+  fDoList.push_back("FakeQprod");
   fDoList.push_back("FakeInnerChi2");
   fDoList.push_back("FakeOuterChi2");
   fDoList.push_back("FakeChi2LocalPosition");
@@ -100,10 +101,6 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   fDoList.push_back("FakeRPChits3");
   fDoList.push_back("FakeRPChits4");
   fDoList.push_back("FakeCombHits");
-
-  fDoList.clear();
-  fDoList.push_back("FakeBdt");
-
 
   fCncCuts.clear();
   fCncCuts.addCut("GoodCand", "good cand", fGoodCand);
@@ -673,9 +670,10 @@ void plotFake::bookDistributions() {
     a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 48, -2.4, 2.4);
     a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} #it{[GeV]}", "Good", 10, 0., 20.);
 
-    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, -0.5, 0.5);
+    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, 0., 1.0);
     a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 20, 0., 2.);
     a->fpFakeLip       = bookDistribution(Form("%sFakeLip", name.c_str()), "LIP [cm]", "GlobalMuon", 20, 0., 2.);
+    a->fpFakeQprod     = bookDistribution(Form("%sFakeQprod", name.c_str()), "qprod", "GlobalMuon", 2, -1., 1.);
     a->fpFakeInnerChi2 = bookDistribution(Form("%sFakeInnerChi2", name.c_str()), "inner track #chi^{2}", "GlobalMuon", 21, 0., 20.);
     a->fpFakeOuterChi2 = bookDistribution(Form("%sFakeOuterChi2", name.c_str()), "outer track #chi^{2}", "GlobalMuon", 21, 0., 02.);
 
@@ -1416,7 +1414,7 @@ void plotFake::loopFunction1() {
 
     fGood     = fGoodCand && fGoodPt;
     fGoodFake = fGood && fGlobalMuon;
-    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.08);
+    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.00);
 
     fGoodTIS         = fTIS       && fGood;
     fGoodTISFake     = fGoodTIS   && fGoodFake;
@@ -1460,6 +1458,7 @@ void plotFake::loopFunction1() {
     fAdMap[mapname]->fpFakeTip->fill(fFakeTip[i], mass);
     fAdMap[mapname]->fpFakeLip->fill(fFakeLip[i], mass);
 
+    fAdMap[mapname]->fpFakeQprod->fill(fFakeQprod[i], mass);
     fAdMap[mapname]->fpFakeInnerChi2->fill(fFakeInnerChi2[i], mass);
     fAdMap[mapname]->fpFakeOuterChi2->fill(fFakeOuterChi2[i], mass);
 
@@ -2025,6 +2024,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("tip", fFakeTip);
   t->SetBranchAddress("lip", fFakeLip);
 
+  t->SetBranchAddress("qprod", fFakeQprod);
   t->SetBranchAddress("innerchi2", fFakeInnerChi2);
   t->SetBranchAddress("outerchi2", fFakeOuterChi2);
   t->SetBranchAddress("chi2localposition", fFakeChi2LocalPosition);
