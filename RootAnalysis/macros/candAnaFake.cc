@@ -213,6 +213,7 @@ void candAnaFake::candAnalysis() {
       fFakeBdt[im]                    = -99.;
       fFakeTip[im]                    = -99.;
       fFakeLip[im]                    = -99.;
+      fFakeQprod[im]                  = -99.;
       fFakeInnerChi2[im]              = -99.;
       fFakeOuterChi2[im]              = -99.;
       fFakeChi2LocalPosition[im]      = -99.;
@@ -257,6 +258,7 @@ void candAnaFake::candAnalysis() {
 
       fFakeTip[im]                    = pm[im]->fTip;
       fFakeLip[im]                    = pm[im]->fLip;
+      fFakeQprod[im]                  = static_cast<float>(pm[im]->fInt1)*static_cast<float>(pm[im]->fInt2);
       fFakeInnerChi2[im]              = pm[im]->fInnerChi2;
       fFakeOuterChi2[im]              = (pm[im]->fOuterChi2 < 100.?pm[im]->fOuterChi2:101.);
       fFakeChi2LocalPosition[im]      = (pm[im]->fChi2LocalPosition < 100?pm[im]->fChi2LocalPosition:101.);
@@ -408,6 +410,7 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("numberofvalidpixhits", fFakeNumberOfValidPixHits, "numberofvalidpixhits[ntrk]/I");      // tree->valPixHits = swMu->fNumberOfValidPixHits;
   fFakeTree->Branch("tip",                  fFakeTip,                  "tip[ntrk]/F");                       // tree->innerChi2 = swMu->fTip;
   fFakeTree->Branch("lip",                  fFakeLip,                  "lip[ntrk]/F");                       // tree->innerChi2 = swMu->fLip;
+  fFakeTree->Branch("qprod",                fFakeQprod,                "qprod[ntrk]/F");                     //
   fFakeTree->Branch("innerchi2",            fFakeInnerChi2,            "innerchi2[ntrk]/F");                 // tree->innerChi2 = swMu->fInnerChi2;
   fFakeTree->Branch("outerchi2",            fFakeOuterChi2,            "outerchi2[ntrk]/F");                 // tree->outerChi2 = swMu->fOuterChi2;
   fFakeTree->Branch("itrkvalidfraction",    fFakeItrkValidFraction,    "itrkValidFraction[ntrk]/F");         // tree->iValFrac = swMu->fItrkValidFraction;

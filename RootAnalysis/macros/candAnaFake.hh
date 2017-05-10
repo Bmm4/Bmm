@@ -57,6 +57,7 @@ private:
   bool   fFakeHP[NTRKMAX];
 
   float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX]
+    , fFakeQprod[NTRKMAX]
     , fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
     , fFakeChi2LocalPosition[NTRKMAX]
