@@ -2706,7 +2706,7 @@ bool candAna::mvaMuonPassedPreselection(mvaMuonIDData mu) {
   if ( mu.glbKinkFinderLOG > 50 ) {return false;}
   if ( mu.timeAtIpInOutErr > 4 ) {return false;}
   if ( mu.outerChi2 > 1000 ) {return false;}
-  if ( mu.innerChi2 > 10 ) {return false;} 
+  if ( mu.innerChi2 > 10 ) {return false;}
   if ( mu.trkRelChi2 > 3 ) {return false;}
 
   return true;
@@ -2727,7 +2727,10 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
   }
 
   float qprod  = static_cast<float>(pt->fInt1) * static_cast<float>(pt->fInt2);
-  if (TMath::Abs(qprod) > 2.) qprod = 1.; // add backup in case the variables are not filled
+  if (TMath::Abs(qprod) > 2.) {
+    qprod  = 1.; // add backup in case the variables are not filled
+    result = -1.8;
+  }
 
   bool doNow(true);
   if (doNow) {
@@ -2745,7 +2748,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.dzRef            = pt->fLip;
       mrd.kinkFinder       = pt->fMuonChi2;
       mrd.glbKinkFinder    = pt->fGlbKinkFinder;
-      mrd.glbKinkFinderLOG    = TMath::Log(2+pt->fGlbKinkFinder);
+      mrd.glbKinkFinderLOG = TMath::Log(2+pt->fGlbKinkFinder);
       mrd.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd.outerChi2        = pt->fOuterChi2;
       mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2754,7 +2757,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.trkRelChi2       = pt->fTrkRelChi2;
       mrd.vMuonHitComb     = getDetVarComb(pt);
       mrd.Qprod            = qprod;
-      if ( !mvaMuonPassedPreselection(mrd) ) {return false;}
+      if (!mvaMuonPassedPreselection(mrd)) {return false;}
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2770,7 +2773,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.dzRef            = pt->fLip;
       mrd1.kinkFinder       = pt->fMuonChi2;
       mrd1.glbKinkFinder    = pt->fGlbKinkFinder;
-      mrd1.glbKinkFinderLOG    = TMath::Log(2+pt->fGlbKinkFinder);
+      mrd1.glbKinkFinderLOG = TMath::Log(2+pt->fGlbKinkFinder);
       mrd1.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd1.outerChi2        = pt->fOuterChi2;
       mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2779,7 +2782,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.trkRelChi2       = pt->fTrkRelChi2;
       mrd1.vMuonHitComb     = getDetVarComb(pt);
       mrd1.Qprod            = qprod;
-      if ( !mvaMuonPassedPreselection(mrd1) ) {return false;}
+      if (!mvaMuonPassedPreselection(mrd1)) {return false;}
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }

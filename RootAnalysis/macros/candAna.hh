@@ -135,8 +135,8 @@ public:
   virtual bool        mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TSimpleTrack *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass = true);
-  double               getDetVarComb(TAnaMuon *mu);
-  bool                   mvaMuonPassedPreselection(mvaMuonIDData mu);
+  double              getDetVarComb(TAnaMuon *mu);
+  bool                mvaMuonPassedPreselection(mvaMuonIDData mu);
 
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
 
