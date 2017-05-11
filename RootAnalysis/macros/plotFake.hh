@@ -102,6 +102,7 @@ public :
   void  massPlots(std::string varname = "AllPtMassSi");
   void  mkPidTables(std::string name = "");
   void  plotPidTables(std::string name = "");
+  void  fillDoList(string what = "all");
 
   // -- utilities for control sample optimization
   void   playKs(std::string cuts = "flxy<4&&flsxy>15&&pvips<3&&prob>0.01&&abs(m1ips)>5&&abs(m2ips)>5&&m1q*m2q<0", std::string name = "");

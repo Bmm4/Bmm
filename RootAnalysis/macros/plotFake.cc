@@ -43,64 +43,7 @@ plotFake::plotFake(string dir, string files, string cuts, string setup): plotCla
   }
   fNchan = fChannelList.size();
 
-
-  fDoList.clear();
-  fDoList.push_back("FakePt");
-  fDoList.push_back("FakeEta");
-
-  fDoList.push_back("AllPt");
-  fDoList.push_back("AllEta");
-
-  fDoList.push_back("FakeTisFakePt");
-  fDoList.push_back("FakeTisFakeEta");
-  fDoList.push_back("FakeTisAllPt");
-  fDoList.push_back("FakeTisAllEta");
-
-  fDoList.push_back("FakeTisDtFakePt");
-  fDoList.push_back("FakeTisDtFakeEta");
-  fDoList.push_back("FakeTisDtAllPt");
-  fDoList.push_back("FakeTisDtAllEta");
-
-  fDoList.push_back("FakeTisDtDmFakePt");
-  fDoList.push_back("FakeTisDtDmFakeEta");
-  fDoList.push_back("FakeTisDtDmAllPt");
-  fDoList.push_back("FakeTisDtDmAllEta");
-
-  fDoList.push_back("FakeBdt");
-  fDoList.push_back("FakeTip");
-  fDoList.push_back("FakeLip");
-  fDoList.push_back("FakeQprod");
-  fDoList.push_back("FakeInnerChi2");
-  fDoList.push_back("FakeOuterChi2");
-  fDoList.push_back("FakeChi2LocalPosition");
-  fDoList.push_back("FakeChi2LocalMomentum");
-  fDoList.push_back("FakeStaTrkMult");
-  fDoList.push_back("FakeTmTrkMult");
-  fDoList.push_back("FakeDeltaR");
-  fDoList.push_back("FakeItrkValidFraction");
-  fDoList.push_back("FakeSegmentComp");
-  fDoList.push_back("FakeGtrkNormChi2");
-  fDoList.push_back("FakeDzRef");
-  fDoList.push_back("FakeDxyRef");
-  fDoList.push_back("FakeGtrkProb");
-  fDoList.push_back("FakeMuonChi2");
-  fDoList.push_back("FakeGlbKinkFinder");
-  fDoList.push_back("FakeStaRelChi2");
-  fDoList.push_back("FakeTrkRelChi2");
-  fDoList.push_back("FakeGlbDeltaEtaPhi");
-  fDoList.push_back("FakeTimeInOut");
-  fDoList.push_back("FakeTimeInOutE");
-  fDoList.push_back("FakeNvalidMuonHits");
-  fDoList.push_back("FakeNmatchedStations");
-  fDoList.push_back("FakeLayersWithHits");
-  fDoList.push_back("FakeNumberOfValidTrkHits");
-  fDoList.push_back("FakeNumberOfLostTrkHits");
-  fDoList.push_back("FakeNumberOfValidPixHits");
-  fDoList.push_back("FakeRPChits1");
-  fDoList.push_back("FakeRPChits2");
-  fDoList.push_back("FakeRPChits3");
-  fDoList.push_back("FakeRPChits4");
-  fDoList.push_back("FakeCombHits");
+  fillDoList("all");
 
   fCncCuts.clear();
   fCncCuts.addCut("GoodCand", "good cand", fGoodCand);
@@ -128,7 +71,91 @@ plotFake::~plotFake() {
 
 }
 
+// ----------------------------------------------------------------------
+void plotFake::fillDoList(string what) {
 
+  fDoList.clear();
+
+  if (what == "fakerate") {
+    fDoList.push_back("FakeTisDtDmFakeEta");
+    fDoList.push_back("FakeTisDtDmFakePt");
+    fDoList.push_back("FakeTisDtDmAllEta");
+    fDoList.push_back("FakeTisDtDmAllPt");
+    fDoList.push_back("FakeTisDtFakeEta");
+    fDoList.push_back("FakeTisDtFakePt");
+    fDoList.push_back("FakeTisDtAllEta");
+    fDoList.push_back("FakeTisDtAllPt");
+    fDoList.push_back("FakeTisFakeEta");
+    fDoList.push_back("FakeTisFakePt");
+    fDoList.push_back("FakeTisAllEta");
+    fDoList.push_back("FakeTisAllPt");
+    fDoList.push_back("FakePt");
+    fDoList.push_back("FakeEta");
+    fDoList.push_back("AllEta");
+    fDoList.push_back("AllPt");
+  }
+
+  if (what == "all") {
+    fDoList.push_back("FakePt");
+    fDoList.push_back("FakeEta");
+
+    fDoList.push_back("AllPt");
+    fDoList.push_back("AllEta");
+
+    fDoList.push_back("FakeTisFakePt");
+    fDoList.push_back("FakeTisFakeEta");
+    fDoList.push_back("FakeTisAllPt");
+    fDoList.push_back("FakeTisAllEta");
+
+    fDoList.push_back("FakeTisDtFakePt");
+    fDoList.push_back("FakeTisDtFakeEta");
+    fDoList.push_back("FakeTisDtAllPt");
+    fDoList.push_back("FakeTisDtAllEta");
+
+    fDoList.push_back("FakeTisDtDmFakePt");
+    fDoList.push_back("FakeTisDtDmFakeEta");
+    fDoList.push_back("FakeTisDtDmAllPt");
+    fDoList.push_back("FakeTisDtDmAllEta");
+
+    fDoList.push_back("FakeBdt");
+    fDoList.push_back("FakeTip");
+    fDoList.push_back("FakeLip");
+    fDoList.push_back("FakeQprod");
+    fDoList.push_back("FakeInnerChi2");
+    fDoList.push_back("FakeOuterChi2");
+    fDoList.push_back("FakeChi2LocalPosition");
+    fDoList.push_back("FakeChi2LocalMomentum");
+    fDoList.push_back("FakeStaTrkMult");
+    fDoList.push_back("FakeTmTrkMult");
+    fDoList.push_back("FakeDeltaR");
+    fDoList.push_back("FakeItrkValidFraction");
+    fDoList.push_back("FakeSegmentComp");
+    fDoList.push_back("FakeGtrkNormChi2");
+    fDoList.push_back("FakeDzRef");
+    fDoList.push_back("FakeDxyRef");
+    fDoList.push_back("FakeGtrkProb");
+    fDoList.push_back("FakeMuonChi2");
+    fDoList.push_back("FakeGlbKinkFinder");
+    fDoList.push_back("FakeStaRelChi2");
+    fDoList.push_back("FakeTrkRelChi2");
+    fDoList.push_back("FakeGlbDeltaEtaPhi");
+    fDoList.push_back("FakeTimeInOut");
+    fDoList.push_back("FakeTimeInOutE");
+    fDoList.push_back("FakeNvalidMuonHits");
+    fDoList.push_back("FakeNmatchedStations");
+    fDoList.push_back("FakeLayersWithHits");
+    fDoList.push_back("FakeNumberOfValidTrkHits");
+    fDoList.push_back("FakeNumberOfLostTrkHits");
+    fDoList.push_back("FakeNumberOfValidPixHits");
+    fDoList.push_back("FakeRPChits1");
+    fDoList.push_back("FakeRPChits2");
+    fDoList.push_back("FakeRPChits3");
+    fDoList.push_back("FakeRPChits4");
+    fDoList.push_back("FakeCombHits");
+  }
+
+
+}
 
 // ----------------------------------------------------------------------
 void plotFake::init() {
@@ -153,9 +180,7 @@ void plotFake::makeAll(string what) {
   }
 
   if (what == "dbx1") {
-    //    mkPidTables("");
-    plotPidTables("bla");
-    //      fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+    fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
     // makeSample("fakeData", "psi", 1.e6);
     // makeSample("fakeMc", "psi", 1e6);
     // makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
@@ -214,6 +239,7 @@ void plotFake::makeAll(string what) {
   }
 
   if (what == "all" || string::npos != what.find("fakerate")) {
+    fillDoList("fakerate");
     if ((what == "all") || (what == "fakerate") || (string::npos != what.find("ks"))) {
       fakeRate("fakeData_ks", "fakeMc_ks", "FakePt", "AllPt", 0.1);
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeEta", "AllEta", 0.1);
@@ -229,7 +255,7 @@ void plotFake::makeAll(string what) {
     }
 
     if ((what == "all") || (what == "fakerate") || (string::npos != what.find("phi"))) {
-      fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt ");
+      fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
       fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
 
@@ -240,7 +266,10 @@ void plotFake::makeAll(string what) {
 
   }
 
-  // plotMass("fakeData_ks", "Cu");
+  if ((what == "all") || string::npos != what.find("pidtables")) {
+    mkPidTables("");
+    plotPidTables("bla");
+  }
 
 }
 
@@ -823,17 +852,18 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     type = 0; // signal window
   }
 
+  bool restricted = (what != "");
   cout << "----------------------------------------------------------------------" << endl;
-  cout << "type = " << type << endl;
+  cout << "type = " << type << " fDoList.size() = " << fDoList.size() << " restricted = " << restricted << " what = " << what << endl;
   cout << "----------------------------------------------------------------------" << endl;
   TH1D *h(0);
-  bool restricted = (what != "");
   string bla;
   for (unsigned int i = 0; i < fDoList.size(); ++i) {
     if (restricted) {
       if (string::npos == fDoList[i].find(what)) continue;
     }
     bla =  Form("%s_%s", sample.c_str(), fDoList[i].c_str());
+    cout << "bla = " << bla << " selection = " << selection << endl;
     if (0 == type) {
       cout << "=> Looking for signal histogram " << Form("%s%s0", bla.c_str(), selection.c_str()) << endl;
       h = (TH1D*)gDirectory->Get(Form("%s%s0", bla.c_str(), selection.c_str()));
@@ -851,8 +881,14 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     cout << "  Title: " << h->GetTitle() << " with integral: " << h->GetSumOfWeights() << endl;
 
   }
-
-  cout << "sbsDistributions: created histogram with name: " << h->GetName() << " in directory " << h->GetDirectory()->GetName() << endl;
+  if (h) {
+    cout << "sbsDistributions: created histogram with name: " << h->GetName() << " in directory " << h->GetDirectory()->GetName() << endl;
+  } else {
+    cout << "what = " << what << " not in doList: " << endl;
+    for (unsigned int i = 0; i < fDoList.size(); ++i) {
+      cout << "  " << fDoList[i] << endl;
+    }
+  }
 
 }
 
@@ -899,8 +935,9 @@ void plotFake::overlay(string sample1, string sample2, string what) {
     c0->SetLogy(1);
   }
 
-  if (string::npos != sample1.find("NvalidMuonHits")) leftLegend = true;
-  if (string::npos != sample1.find("LayersWithHits")) leftLegend = true;
+  if (string::npos != sample1.find("NvalidMuonHits"))        leftLegend = true;
+  if (string::npos != sample1.find("LayersWithHits"))        leftLegend = true;
+  if (string::npos != sample1.find("FakeItrkValidFraction")) leftLegend = true;
 
   h1->SetStats(0);
   string hname = h1->GetName();
@@ -933,6 +970,17 @@ void plotFake::overlay(string sample1, string sample2, string what) {
   } else if (string::npos != sample2.find("lambda")) {
     label2 = "protons";
     setFilledHist(h2, kRed, kRed, 3365);
+  }
+
+  if (string::npos != sample1.find("OuterChi2") && (string::npos != label1.find("muons")))    doLegend = false;
+  if (string::npos != sample1.find("FakeCombHits") && (string::npos != label1.find("muons"))) leftLegend = true;
+  if (string::npos != sample1.find("SegmentComp") && (string::npos != label1.find("muons")))  leftLegend = true;
+  if (string::npos != sample1.find("Bdt") && (string::npos != label1.find("muons")))          leftLegend = true;
+  if (string::npos != sample1.find("Qprod")) {
+    leftLegend = true;
+    h1->SetMinimum(0.5);
+    ymax *= 5.;
+    c0->SetLogy(1);
   }
 
   string header("");
@@ -1076,6 +1124,7 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     cout << "SYSTEMATIC " << dataset2 << " integral 2: " << h2p->Integral(h2p->FindBin(4.), h2p->FindBin(20.)) << endl;
 
     newLegend(0.21, 0.7, 0.41, 0.87);
+
     legg->SetHeader(header.c_str());
     legg->SetTextSize(0.05);
     legg->AddEntry(h1p, label1.c_str(), loption1);
@@ -1084,6 +1133,8 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
 
     savePad(Form("fakerate_%s_ad%s_%s_ad%s_%s.pdf", varA.c_str(), fChannelList[i].c_str(), dataset1.c_str(), fChannelList[i].c_str(), dataset2.c_str()));
   }
+
+  fHistFile->Close();
 }
 
 // ----------------------------------------------------------------------
@@ -1414,7 +1465,7 @@ void plotFake::loopFunction1() {
 
     fGood     = fGoodCand && fGoodPt;
     fGoodFake = fGood && fGlobalMuon;
-    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.00);
+    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.54);
 
     fGoodTIS         = fTIS       && fGood;
     fGoodTISFake     = fGoodTIS   && fGoodFake;
@@ -1504,8 +1555,7 @@ void plotFake::loopFunction1() {
 // ----------------------------------------------------------------------
 void plotFake::mkPidTables(string prefix) {
 
-  if ("" == prefix) prefix = "bmm4-19";
-  init();
+  if ("" == prefix) prefix = "bmm4-25";
 
   fHists.clear();
   vector<int> vIds;
