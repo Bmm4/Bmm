@@ -3,6 +3,7 @@
 #include <string>
 
 #include "common/HFMasses.hh"
+#include "common/ana.hh"
 
 #include "common/AnalysisDistribution.hh"
 
@@ -33,6 +34,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   fGoodTracksEta  = false;
 
   fGoodAcceptance = false;
+  fGoodJpsiMass = false;
   fGoodJpsiCuts   = false;
 
 
@@ -88,6 +90,10 @@ void candAnaBu2JpsiK::candAnalysis() {
   fKaonPtNrf     = pk->fPlab.Perp();
   fKaonEtaNrf    = pk->fPlab.Eta();
 
+  fHitsBpix      = numberOfBPixLayers(pk);
+  fHitsPix       = numberOfPixLayers(pk);
+  fHitsStrip     = numberOfTrackerLayers(pk);
+
   if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(pk->fIndex)->getGenIndex());
     fKPtGen     = pg1->fP.Perp();
@@ -101,7 +107,6 @@ void candAnaBu2JpsiK::candAnalysis() {
   //cout<<" check jpsi "<<endl;
 
   TAnaCand *pD = 0;
-  fGoodJpsiMass = false;
   double chi2(0.);
   double ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
@@ -137,7 +142,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKaonPt)   && (fKaonPt < TRACKPTHI));
   fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKaonEta) && (fKaonEta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks     && fGoodTracksPt && fGoodTracksEta;
+  fGoodAcceptance = fGoodAcceptance /*&& fGoodTracks*/     && fGoodTracksPt && fGoodTracksEta;
   fGoodJpsiCuts   = fGoodJpsiMass;
   //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
   fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);
@@ -477,7 +482,11 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("kpt",  &fKaonPt,        "kpt/D");
   t->Branch("keta", &fKaonEta,       "keta/D");
   t->Branch("kphi", &fKaonPhi,       "kphi/D");
-  t->Branch("kgt",  &fKaonTkQuality, "kygt/I");
+  t->Branch("kgt",  &fKaonTkQuality, "kgt/I");
+  t->Branch("kbpix",&fHitsBpix,      "kbpix/I");
+  t->Branch("kpix", &fHitsPix,       "kpix/I");
+  t->Branch("ktrk", &fHitsStrip,     "ktrk/I");
+
 
   t->Branch("t3pt", &fKaonPtNrf, "t3pt/D");
   t->Branch("t3eta",&fKaonEtaNrf,"t3eta/D");
