@@ -213,7 +213,7 @@ void plotStuff::makeAll(string what) {
 
   if (string::npos != what.find("wrongreco")) {
     wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBu", "hlt");
-    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03 && k1pt > 0.7 && k2pt > 0.7");
+    wrongReco("wrongReco", "candAnaBd2JpsiKstarAsBs", "1.01 < mkk && mkk < 1.03 && k1pt > 0.6 && k2pt > 0.6");
     wrongReco("bcpsimunuMcCombBg", "candAnaMuMu", "");
     wrongReco("bupsipiMcRun1", "candAnaBu2JpsiK", "gmuid&&abs(m1eta)<1.4&&fabs(m2eta)<1.4&&m2pt>4&&fls3d>10&&iso>0.8&&alpha<0.05");
 
@@ -1643,21 +1643,21 @@ void plotStuff::loopFunction1() {
     if (fb.psipt   < 7.0) return;
     if (fb.psiprob < 0.1) return;
     if (fMode == BU2JPSIKP) {
-      if (fb.kpt < 0.70) return;
+      if (fb.kpt < 0.60) return;
     }
 
     if (fMode == BS2JPSIPHI) {
       if (fb.mkk   < 1.01) return;
       if (fb.mkk   > 1.03) return;
       if (fb.phidr > 0.30) return;
-      if (fb.k1pt  < 0.80) return;
-      if (fb.k2pt  < 0.80) return;
+      if (fb.k1pt  < 0.60) return;
+      if (fb.k2pt  < 0.60) return;
     }
 
     if (fMode == BD2JPSIKSTAR) {
       if (!fb.kstarfail) return;
-      if (fb.kpt < 0.70) return;
-      if (fb.pipt < 0.70) return;
+      if (fb.kpt < 0.60) return;
+      if (fb.pipt < 0.60) return;
       if (fb.mkpi < 0.86) return;
       if (fb.mkpi > 0.94) return;
     }
