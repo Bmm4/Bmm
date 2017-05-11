@@ -56,6 +56,8 @@ public:
   //bool         fKa1Missid2, fKa1MuMatch2;
   float        fKa1MuMatchR, fKa1MuMatchR2;
 
+  // APV debugging
+  int          fHitsBpix, fHitsPix, fHitsStrip;
 
   // -- TM
   int          fGenK1Tmi;
