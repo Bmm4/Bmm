@@ -65,7 +65,7 @@ void addUnderflow(TH1D *);
 // ======================================================================
 // -- Histograms
 void setTitles(TH1 *h, const char *sx, const char *sy,
-	       float size = 0.05, float xoff = 1.1, float yoff = 1.1, float lsize = 0.05, int font = 52);
+	       float size = 0.05, float xoff = 1.1, float yoff = 1.1, float lsize = 0.05, int font = 42);
 void setTitles(TH1 *hold, TH1* hnew);
 void setHist(TH1 *h, int color = kBlack, int symbol = 20, double size = 1., double width = 2.);
 void setHist(TH1 *h, dataset *ds);
