@@ -61,8 +61,12 @@ type=bdpipi,mcComb,bg        bf=(5.12,0.19)e-6  eff=(1.50,0.03)e-3 file=scratch/
 type=bdpimunu,mcComb,bg,acc  bf=(1.45,0.05)e-4  eff=(9.52,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToPiMuNuAcc-v06.root
 type=bdpimunu,mcComb,bg      bf=(1.45,0.05)e-4  eff=(6.85,0.60)e-4 file=scratch/bmm-mc-combined-BdToPiMuNu-v06.root
 type=bdpimunu,mcOff,bg       bf=(1.45,0.05)e-4  eff=(6.85,0.60)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BdToPiMuNu_BMuonFilter-v06.root
-#type=bupimumu,mcComb,bg,acc  bf=(1.45,0.05)e-4  eff=(9.52,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BuToPiMuMuAcc-v06.root
-#type=bupimumu,mcComb,bg      bf=(1.45,0.05)e-4  eff=(6.85,0.60)e-4 file=scratch/bmm-mc-Summer16_private-BuToPiMuMu_BMuonFilter-v06.root
+# BF not known, taking PDG 2016 UL for B0 -> pi0 l+ l-
+type=bdpimumu,mcComb,bg,acc  bf=(5.30,0.53)e-8  eff=(9.88,0.44)e-3 file=scratch/bmm-mc-Summer16_private-BdToPiMuMuAcc-v06.root
+type=bdpimumu,mcComb,bg      bf=(5.30,0.53)e-8  eff=(3.51,0.10)e-4 file=scratch/bmm-mc-Summer16_private-BdToPiMuMu-v06.root
+# -- Bu backgrounds
+type=bupimumu,mcComb,bg,acc  bf=(1.79,0.23)e-8  eff=(9.70,0.44)e-3 file=scratch/bmm-mc-Summer16_private-BuToPiMuMuAcc-v06.root
+type=bupimumu,mcComb,bg      bf=(1.79,0.23)e-8  eff=(3.70,0.10)e-4 file=scratch/bmm-mc-Summer16_private-BuToPiMuMu-v06.root
 # -- Lb backgrounds
 type=lbppi,mcComb,bg         bf=(4.2,0.8)e-6    eff=(1.89,0.10)e-4 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPPi_BMuonFilter-v06.root
 type=lbpk,mcComb,bg,acc      bf=(5.1,1.0)e-6    eff=(1.06,0.02)e-3 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPK-v06.root

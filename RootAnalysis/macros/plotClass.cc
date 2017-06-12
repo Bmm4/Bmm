@@ -2660,6 +2660,28 @@ void plotClass::loadFiles(string afiles) {
 	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
+      if (string::npos != stype.find("bdpimumu,")) {
+        sname = "bdpimumuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("mcComb")) sname += "Comb";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B^{0} #rightarrow #it{#pi^{0} #mu #mu}";
+        ldecay = "\\bdpimumu";
+	ds->fColor = kRed-9;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
+      }
+
 
 
       if (string::npos != stype.find("bspipi,")) {
@@ -2825,6 +2847,28 @@ void plotClass::loadFiles(string afiles) {
         sdecay = "B_{c} #rightarrow J/#it{#psi} #it{#mu} #it{#nu}";
         ldecay = "\\bcpsimunu";
 	ds->fColor = kMagenta-3;
+	ds->fSymbol = 24;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
+      }
+
+      if (string::npos != stype.find("bupimumu,")) {
+        sname = "bupimumuMc";
+	if (string::npos != stype.find("mcOff")) sname += "Off";
+	if (string::npos != stype.find("mcComb")) sname += "Comb";
+	if (string::npos != stype.find("acc")) sname += "Acc";
+	if (string::npos != stype.find("bg")) sname += "Bg";
+        sdecay = "B^{+} #rightarrow #it{#pi^{+} #mu #mu}";
+        ldecay = "\\bdpimumu";
+	ds->fColor = kRed-9;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
 	ds->fBf     = bf;
