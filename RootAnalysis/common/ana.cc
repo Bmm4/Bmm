@@ -132,7 +132,7 @@ int  numberOfBPixLayer1Hits(TAnaTrack *pTrack) {
 //      bad      = there were many bad strips within the ellipse = 3
 // ----------------------------------------------------------------------
 int  numberOfTrackerLayers(TAnaTrack *pTrack) {
-  cout << "numberOfTrackerLayers: " << pTrack << endl;
+  //  cout << "numberOfTrackerLayers: " << pTrack << endl;
   bool pixl[3], tibl[4], tobl[6];
   bool pixd[2], tidw[3], tecw[9];
 
@@ -155,7 +155,7 @@ int  numberOfTrackerLayers(TAnaTrack *pTrack) {
   //  cout << "detmask = " << std::hex << detmask << " laymask = " << layermask << std::dec << endl;
 
   for (int i =0; i<hits; ++i){
-    cout << " ihit = " << i << " " << endl;
+    //    cout << " ihit = " << i << " " << endl;
     unsigned int pat = pTrack->fHitPattern[i];
 
     hit = (pat & hitmask);
@@ -163,7 +163,7 @@ int  numberOfTrackerLayers(TAnaTrack *pTrack) {
     det = (pat & detmask)>>detpos;
     lay = 0;
     lay = (pat & layermask)>>layerpos;
-    cout << "  det = " << det << " lay = " << lay << endl;
+    //    cout << "  det = " << det << " lay = " << lay << endl;
     //    lay = lay - 1; // FIXME this line is necessary to be correct. But you should use TAnaTrack::fNumberOfValidTrkHits anyway!
     if ((1 == det) && (0 == hit)) pixl[lay] = true;
     if ((2 == det) && (0 == hit)) pixd[lay] = true;

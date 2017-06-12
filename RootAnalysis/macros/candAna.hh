@@ -61,10 +61,12 @@ struct mvaMuonIDData {
   float glbTrackTailProb, glbDeltaEtaPhi, iValFrac;
   float LWH; //int
   float dxyRef, dzRef;
-  float kinkFinder, glbKinkFinder, timeAtIpInOutErr, outerChi2;
+  float kinkFinder, glbKinkFinder, glbKinkFinderLOG, timeAtIpInOutErr, outerChi2;
   float valPixHits, TMTrkMult100; //int
   float innerChi2, trkRelChi2;
   float vMuonHitComb;
+  float Qprod; //int
+  float spectatorDummy;
 };
 
 class TTree;
@@ -134,6 +136,7 @@ public:
   virtual bool        mvaMuon(TSimpleTrack *pt, double &result, bool hadronsPass = true);
   virtual bool        mvaMuon(TAnaTrack *pt, double &result, bool hadronsPass = true);
   double              getDetVarComb(TAnaMuon *mu);
+  bool                mvaMuonPassedPreselection(mvaMuonIDData mu);
 
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
 
@@ -310,7 +313,7 @@ public:
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
   bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
-  bool    fPreselAlpha, fPreselFLS;
+  bool    fPreselAlpha, fPreselFLS, fPreselOther;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
   string  fHLT1Path, fL1SeedString;

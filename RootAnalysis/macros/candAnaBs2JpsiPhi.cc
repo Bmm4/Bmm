@@ -33,12 +33,14 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   fGoodAcceptance = false;
   fGoodJpsiCuts   = false;
+  fGoodJpsiMass   = false;
+  fGoodMKK        = false;
+  fGoodDeltaR     = false;
 
   if (0 == fpCand) return;
 
   // -- Check for J/psi mass
   TAnaCand *pD = 0;
-  fGoodJpsiMass = false;
   double chi2(0.), ndof(0.);
   for (int i = fpCand->fDau1; i <= fpCand->fDau2; ++i) {
     if (i < 0) break;
@@ -186,7 +188,7 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fGoodTracksPt  = fGoodTracksPt  && ((TRACKPTLO < fKa1Pt)   && (fKa1Pt < TRACKPTHI)   && (TRACKPTLO < fKa2Pt)  && (fKa2Pt < TRACKPTHI));
   fGoodTracksEta = fGoodTracksEta && ((TRACKETALO < fKa1Eta) && (fKa1Eta < TRACKETAHI) && (TRACKETALO < fKa2Eta) && (fKa2Eta < TRACKETAHI));
 
-  fGoodAcceptance = fGoodAcceptance && fGoodTracks    && fGoodTracksPt     && fGoodTracksEta;
+  fGoodAcceptance = fGoodAcceptance /*&& fGoodTracks*/    && fGoodTracksPt     && fGoodTracksEta;
   fGoodJpsiCuts   = fGoodJpsiMass   && fGoodMKK       && fGoodDeltaR;
   //  fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiCosA > 0.9) &&  (fJpsiFLSxy > 3.) && (fJpsiVtxProb > 0.1);
   fGoodJpsiCuts   = fGoodJpsiCuts   && (fJpsiPt > 7.) && (fJpsiVtxProb > 0.1);

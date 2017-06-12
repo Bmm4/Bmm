@@ -422,6 +422,8 @@ void plotResults::makeAll(string what) {
       genSummary("bspsiphiMcOff", "candAnaBs2JpsiPhi");
       genSummary("bspsiphiMc", "candAnaBs2JpsiPhi");
       genSummary("bspsiphiMcComb", "candAnaBs2JpsiPhi");
+      genSummary("bspsifMcComb", "candAnaBs2Jpsif0");
+      genSummary("bspsifMcCombAcc", "candAnaBs2Jpsif0");
       genSummary("bdpsikstarMcCombAcc", "candAnaBd2JpsiKstar");
       genSummary("bdpsikstarMcComb", "candAnaBd2JpsiKstar");
 

@@ -880,48 +880,87 @@ void candAna::candAnalysis() {
 	  << endl;
     triggerL1T();
   }
-  // -- check for good channel, else the cuts array cannot be used!
-  if (fChan < 0) {
-    //    cout << "Failed chan, l1 seeds = " << fL1SeedString << endl;
-    return;
-  }
 
 
   fWideMass       = ((fpCand->fMass > MASSMIN) && (fpCand->fMass < MASSMAX));
   fGoodMuonsID    = (fMu1Id && fMu2Id);
   fGoodMuonsMvaID = (fMu1MvaId && fMu2MvaId);
   fGoodMuonsGmID  = (fMu1GmId && fMu2GmId);
-  fGoodMuonsPt    = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
-  double etaLead(TMath::Abs(fMu1Eta));
-  if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
-  fGoodMuonsEta   = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
+  //  cout << "fMu1GmId: " << fMu1GmId << " fMu2GmId: " << fMu2GmId << " fGoodMuonsGmID: " << fGoodMuonsGmID << endl;
+
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
   fGoodTracksPt   = ((TRACKPTLO < fMu1Pt) && (fMu1Pt < TRACKPTHI) && (TRACKPTLO < fMu2Pt) && (fMu2Pt < TRACKPTHI));
   fGoodTracksEta  = ((TRACKETALO < fMu1Eta) && (fMu1Eta < TRACKETAHI) && (TRACKETALO < fMu2Eta) && (fMu2Eta < TRACKETAHI));
+  fGoodAcceptance = /*fGoodTracks &&*/ fGoodTracksPt && fGoodTracksEta;
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
-  fGoodPvLip      = (TMath::Abs(fCandPvLip) < fCuts[fChan]->pvlip);
-  fGoodPvLipS     = (TMath::Abs(fCandPvLipS) < fCuts[fChan]->pvlips);
-  fGoodPv2Lip     = (TMath::Abs(fCandPv2Lip) > fCuts[fChan]->pv2lip);
-  fGoodPv2LipS    = (TMath::Abs(fCandPv2LipS) > fCuts[fChan]->pv2lips);
-  fGoodMaxDoca    = (TMath::Abs(fCandDoca) < fCuts[fChan]->maxdoca);
-  fGoodIp         = (TMath::Abs(fCandPvIp) < fCuts[fChan]->pvip);
-  fGoodIpS        = (TMath::Abs(fCandPvIpS) < fCuts[fChan]->pvips);
-
-  fGoodPt         = (fCandPt > fCuts[fChan]->pt);
-  fGoodEta        = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
-  fGoodAlpha      = (fCandA < fCuts[fChan]->alpha);
-  fGoodChi2       = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
-  fGoodFLS        = ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
 
   fPreselAlpha    = (fCandA < 0.2);
-  fPreselFLS      = ((fCandFLS3d > 4) && (fCandFLSxy > 4));
+  fPreselFLS      = ((fCandFLS3d > 4.) && (fCandFLSxy > 4.));
+  fPreselOther    = ((TMath::Abs(fCandPvIpS) < 4) && (TMath::Abs(fCandPvIp) < 0.02));
 
   if (TMath::IsNaN(fCandFLS3d)) {
     fGoodFLS   = false;
     fPreselFLS = false;
   }
+
+  // -- the subsequent cuts NEED a proper channel!
+  if (fChan < 0) {
+    fGoodMuonsPt      = false;
+    fGoodMuonsEta     = false;
+
+    fGoodPvLip        = false;
+    fGoodPvLipS       = false;
+    fGoodPv2Lip       = false;
+    fGoodPv2LipS      = false;
+    fGoodMaxDoca      = false;
+    fGoodIp           = false;
+    fGoodIpS          = false;
+
+    fGoodPt           = false;
+    fGoodEta          = false;
+    fGoodAlpha        = false;
+    fGoodChi2         = false;
+    fGoodFLS          = false;
+
+    fGoodCloseTrack   = false;
+    fGoodCloseTrackS1 = false;
+    fGoodCloseTrackS2 = false;
+    fGoodCloseTrackS3 = false;
+    fGoodIso          = false;
+    fGoodM1Iso        = false;
+    fGoodM2Iso        = false;
+    fGoodDocaTrk      = false;
+    fGoodLastCut      = false;
+
+    fGoodLip          = false;
+    fGoodLipS         = false;
+
+    fGoodJpsiCuts     = false;
+
+    return;
+  }
+
+  double etaLead(TMath::Abs(fMu1Eta));
+  if (TMath::Abs(fMu2Eta) > etaLead) etaLead = TMath::Abs(fMu2Eta);
+
+  fGoodMuonsPt      = ((fMu1Pt > fCuts[fChan]->m1pt) && (fMu1Pt < 14000.) && (fMu2Pt > fCuts[fChan]->m2pt) && (fMu2Pt < 14000.));
+  fGoodMuonsEta     = ((fCuts[fChan]->metaMin < etaLead) && (etaLead < fCuts[fChan]->metaMax));
+
+  fGoodPvLip        = (TMath::Abs(fCandPvLip) < fCuts[fChan]->pvlip);
+  fGoodPvLipS       = (TMath::Abs(fCandPvLipS) < fCuts[fChan]->pvlips);
+  fGoodPv2Lip       = (TMath::Abs(fCandPv2Lip) > fCuts[fChan]->pv2lip);
+  fGoodPv2LipS      = (TMath::Abs(fCandPv2LipS) > fCuts[fChan]->pv2lips);
+  fGoodMaxDoca      = (TMath::Abs(fCandDoca) < fCuts[fChan]->maxdoca);
+  fGoodIp           = (TMath::Abs(fCandPvIp) < fCuts[fChan]->pvip);
+  fGoodIpS          = (TMath::Abs(fCandPvIpS) < fCuts[fChan]->pvips);
+
+  fGoodPt           = (fCandPt > fCuts[fChan]->pt);
+  fGoodEta          = ((fCandEta > fCuts[fChan]->etaMin) && (fCandEta < fCuts[fChan]->etaMax));
+  fGoodAlpha        = (fCandA < fCuts[fChan]->alpha);
+  fGoodChi2         = (fCandChi2/fCandDof < fCuts[fChan]->chi2dof);
+  fGoodFLS          = ((fCandFLS3d > fCuts[fChan]->fls3d) && (fCandFLSxy > fCuts[fChan]->flsxy));
 
   fGoodCloseTrack   = (fCandCloseTrk < fCuts[fChan]->closetrk);
   fGoodCloseTrackS1 = (fCandCloseTrkS1 < fCuts[fChan]->closetrks1);
@@ -935,7 +974,6 @@ void candAna::candAnalysis() {
 
   fGoodLip          = fGoodPvLip;
   fGoodLipS         = fGoodPvLipS;
-  fGoodAcceptance   = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   fGoodJpsiCuts     = true; // this will be overridden in the derived classes
 }
@@ -1002,7 +1040,7 @@ void candAna::candEvaluation() {
 
   fPreselection = fGoodAcceptance && fGoodQ && fGoodPvAveW8 && fWideMass
     && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta
-    && fPreselAlpha && fPreselFLS;
+    && fPreselAlpha && fPreselFLS && fPreselOther;
 
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
@@ -1142,24 +1180,6 @@ bool candAna::highPurity(TAnaTrack *pt) {
   if (pt->fTrackQuality & 4) return true;
   return false;
 
-
-//   if (TRACKQUALITY > 0 && (0 == (pt->fTrackQuality & TRACKQUALITY))) {
-//     if (fVerbose > 5) cout << "track " << pt->fIndex << " failed track quality: " << pt->fTrackQuality << endl;
-//     return false;
-//   }
-
-//   if (TMath::Abs(pt->fTip) > TRACKTIP) {
-//     if (fVerbose > 5) cout << "track " << pt->fIndex << " failed tip: " << pt->fTip
-// 			   << " pointing to PV = "  << pt->fPvIdx  << endl;
-//     return false;
-//   }
-
-//   if (TMath::Abs(pt->fLip) > TRACKLIP) {
-//     if (fVerbose > 5) cout << "track " << pt->fIndex << " failed lip: " << pt->fLip
-// 			   << " pointing to PV = "  << pt->fPvIdx  << endl;
-//     return false;
-//   }
-
   return true;
 }
 
@@ -1276,6 +1296,14 @@ void candAna::triggerHLT() {
 void candAna::triggerL1T() {
   fL1Seeds = 0;
   fL1SeedString = "";
+
+  if (2026 == fYear) {
+    fL1Seeds |= 0x1;    //1
+    fL1Seeds |= 0x1<<1; //2
+    fL1Seeds |= 0x1<<2; //4
+    return;
+  }
+
   for (int i = 0; i < NL1T; ++i) {
     if (!fpEvt->fL1TResult[i]) continue;
     if (fVerbose == -32) {
@@ -1331,6 +1359,11 @@ void candAna::triggerL1T() {
 	continue;
       } else if ("L1_DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
 	fL1Seeds |= 0x1<<2; //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
+	fL1Seeds |= 0x1<<0; //4
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -2663,8 +2696,21 @@ bool candAna::tightMuon(TSimpleTrack *pT, bool hadronsPass) {
   return false;
 }
 
+// ----------------------------------------------------------------------
+bool candAna::mvaMuonPassedPreselection(mvaMuonIDData mu) {
 
+  if ( mu.chi2LocMom > 5000 ) {return false;}
+  if ( mu.chi2LocPos > 2000 ) {return false;}
+  if ( mu.glbTrackTailProb > 5000 ) {return false;}
+  if ( mu.kinkFinder > 900 ) {return false;}
+  if ( mu.glbKinkFinderLOG > 50 ) {return false;}
+  if ( mu.timeAtIpInOutErr > 4 ) {return false;}
+  if ( mu.outerChi2 > 1000 ) {return false;}
+  if ( mu.innerChi2 > 10 ) {return false;}
+  if ( mu.trkRelChi2 > 3 ) {return false;}
 
+  return true;
+}
 
 // ----------------------------------------------------------------------
 bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
@@ -2678,6 +2724,12 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
   } else {
     result = -3.;
     return false;
+  }
+
+  float qprod  = static_cast<float>(pt->fInt1) * static_cast<float>(pt->fInt2);
+  if (TMath::Abs(qprod) > 2.) {
+    qprod  = 1.; // add backup in case the variables are not filled
+    result = -1.8;
   }
 
   bool doNow(true);
@@ -2696,6 +2748,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.dzRef            = pt->fLip;
       mrd.kinkFinder       = pt->fMuonChi2;
       mrd.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd.glbKinkFinderLOG = TMath::Log(2+pt->fGlbKinkFinder);
       mrd.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd.outerChi2        = pt->fOuterChi2;
       mrd.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2703,6 +2756,8 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.innerChi2        = pt->fInnerChi2;
       mrd.trkRelChi2       = pt->fTrkRelChi2;
       mrd.vMuonHitComb     = getDetVarComb(pt);
+      mrd.Qprod            = qprod;
+      if (!mvaMuonPassedPreselection(mrd)) {return false;}
       result = fMvaMuonID->EvaluateMVA("BDT");
       return (result > MUBDT);
     } else {
@@ -2718,6 +2773,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.dzRef            = pt->fLip;
       mrd1.kinkFinder       = pt->fMuonChi2;
       mrd1.glbKinkFinder    = pt->fGlbKinkFinder;
+      mrd1.glbKinkFinderLOG = TMath::Log(2+pt->fGlbKinkFinder);
       mrd1.timeAtIpInOutErr = pt->fTimeInOutE;
       mrd1.outerChi2        = pt->fOuterChi2;
       mrd1.valPixHits       = static_cast<float>(pt->fNumberOfValidPixHits);
@@ -2725,6 +2781,8 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd1.innerChi2        = pt->fInnerChi2;
       mrd1.trkRelChi2       = pt->fTrkRelChi2;
       mrd1.vMuonHitComb     = getDetVarComb(pt);
+      mrd1.Qprod            = qprod;
+      if (!mvaMuonPassedPreselection(mrd1)) {return false;}
       result = fMvaMuonID1->EvaluateMVA("BDT");
       return (result > MUBDT1);
     }
@@ -3488,133 +3546,164 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 	m2 = allLines[j].find("\" Label=\"");
 	stype = allLines[j].substr(m1+2, m2-m1-2);
 	if (stype == "segComp") {
-	  cout << "  adding segComp" << endl;
+	  //	  cout << "  adding segComp" << endl;
 	  reader->AddVariable("segComp", &d.segComp);
 	  continue;
 	}
 	if (stype == "chi2LocMom") {
-	  cout << "  adding chi2LocMom" << endl;
+	  //	  cout << "  adding chi2LocMom" << endl;
 	  reader->AddVariable("chi2LocMom", &d.chi2LocMom);
 	  continue;
 	}
 	if (stype == "chi2LocPos") {
-	  cout << "  adding chi2LocPos" << endl;
+	  //	  cout << "  adding chi2LocPos" << endl;
 	  reader->AddVariable("chi2LocPos", &d.chi2LocPos);
 	  continue;
 	}
 	if (stype == "NTrkVHits") {
-	  cout << "  adding NTrkVHits" << endl;
+	  //	  cout << "  adding NTrkVHits" << endl;
 	  reader->AddVariable("NTrkVHits", &d.NTrkVHits);
 	  continue;
 	}
 
 	if (stype == "trkValidFract") {
-	  cout << "  adding trkValidFract" << endl;
+	  //	  cout << "  adding trkValidFract" << endl;
 	  reader->AddVariable( "trkValidFract", &d.trkValidFract);
 	  continue;
 	}
 	if (stype == "glbNChi2") {
 	  reader->AddVariable("glbNChi2", &d.glbNChi2);
-	  cout << "  adding glbNChi2" << endl;
+	  //	  cout << "  adding glbNChi2" << endl;
 	  continue;
 	}
 	if (stype == "eta") {
-	  cout << "  adding eta" << endl;
+	  //	  cout << "  adding eta" << endl;
 	  reader->AddVariable("eta", &d.eta);
 	  continue;
 	}
 	if (stype == "pt") {
-	  cout << "  adding pt" << endl;
+	  //	  cout << "  adding pt" << endl;
 	  reader->AddVariable("pt", &d.pt);
 	  continue;
 	}
 	if (stype == "glbTrackProb") {
-	  cout << "  adding glbTrackProb" << endl;
+	  //	  cout << "  adding glbTrackProb" << endl;
 	  reader->AddVariable("glbTrackProb", &d.glbTrackProb);
 	  continue;
 	}
 	if (stype == "NTrkEHitsOut") {
-	  cout << "  adding NTrkEHitsOut" << endl;
+	  //	  cout << "  adding NTrkEHitsOut" << endl;
 	  reader->AddVariable("NTrkEHitsOut", &d.NTrkEHitsOut);
 	  continue;
 	}
 
 	// -- variables for SW's BDT
 	if (stype == "glbTrackTailProb") {
-	  cout << "  adding glbTrackTailProb" << endl;
+	  //	  cout << "  adding glbTrackTailProb" << endl;
 	  reader->AddVariable("glbTrackTailProb", &d.glbTrackTailProb);
 	  continue;
 	}
 	if (stype == "glbDeltaEtaPhi") {
-	  cout << "  adding glbDeltaEtaPhi" << endl;
+	  //	  cout << "  adding glbDeltaEtaPhi" << endl;
 	  reader->AddVariable("glbDeltaEtaPhi", &d.glbDeltaEtaPhi);
 	  continue;
 	}
 	if (stype == "iValFrac") {
-	  cout << "  adding iValFrac (aka trkValidFract)" << endl;
+	  //	  cout << "  adding iValFrac (aka trkValidFract)" << endl;
 	  reader->AddVariable("iValFrac", &d.trkValidFract);
 	  continue;
 	}
 	if (stype == "LWH") {
-	  cout << "  adding LWH" << endl;
+	  //	  cout << "  adding LWH" << endl;
 	  reader->AddVariable("LWH", &d.LWH);
 	  continue;
 	}
 	if (stype == "dxyRef") {
-	  cout << "  adding dxyRef" << endl;
+	  //	  cout << "  adding dxyRef" << endl;
 	  reader->AddVariable("dxyRef", &d.dxyRef);
 	  continue;
 	}
 	if (stype == "kinkFinder") {
-	  cout << "  adding kinkFinder" << endl;
+	  //	  cout << "  adding kinkFinder" << endl;
 	  reader->AddVariable("kinkFinder", &d.kinkFinder);
 	  continue;
 	}
 	if (stype == "dzRef") {
-	  cout << "  adding dzRef" << endl;
+	  //	  cout << "  adding dzRef" << endl;
 	  reader->AddVariable("dzRef", &d.dzRef);
 	  continue;
 	}
 	if (stype == "glbKinkFinder") {
-	  cout << "  adding glbKinkFinder" << endl;
+	  //	  cout << "  adding glbKinkFinder" << endl;
 	  reader->AddVariable("glbKinkFinder", &d.glbKinkFinder);
 	  continue;
 	}
+	if (stype == "TMath::Log(2+glbKinkFinder)") {
+	  //	  cout << "  adding TMath::Log(2+glbKinkFinder)" << endl;
+	  reader->AddVariable("TMath::Log(2+glbKinkFinder)", &d.glbKinkFinderLOG);
+	  continue;
+	}
 	if (stype == "timeAtIpInOutErr") {
-	  cout << "  adding timeAtIpInOutErr" << endl;
+	  //	  cout << "  adding timeAtIpInOutErr" << endl;
 	  reader->AddVariable("timeAtIpInOutErr", &d.timeAtIpInOutErr);
 	  continue;
 	}
 	if (stype == "outerChi2") {
-	  cout << "  adding outerChi2" << endl;
+	  //	  cout << "  adding outerChi2" << endl;
 	  reader->AddVariable("outerChi2", &d.outerChi2);
 	  continue;
 	}
 	if (stype == "valPixHits") {
-	  cout << "  adding valPixHits" << endl;
+	  //	  cout << "  adding valPixHits" << endl;
 	  reader->AddVariable("valPixHits", &d.valPixHits);
 	  continue;
 	}
 	if (stype == "TMTrkMult100") {
-	  cout << "  adding TMTrkMult100" << endl;
+	  //	  cout << "  adding TMTrkMult100" << endl;
 	  reader->AddVariable("TMTrkMult100", &d.TMTrkMult100);
 	  continue;
 	}
 	if (stype == "innerChi2") {
-	  cout << "  adding innerChi2" << endl;
+	  //	  cout << "  adding innerChi2" << endl;
 	  reader->AddVariable("innerChi2", &d.innerChi2);
 	  continue;
 	}
 	if (stype == "trkRelChi2") {
-	  cout << "  adding trkRelChi2" << endl;
+	  //	  cout << "  adding trkRelChi2" << endl;
 	  reader->AddVariable("trkRelChi2", &d.trkRelChi2);
 	  continue;
 	}
 	if (stype == "vMuonHitComb") {
-	  cout << "  adding vMuonHitComb" << endl;
+	  //	  cout << "  adding vMuonHitComb" << endl;
 	  reader->AddVariable("vMuonHitComb", &d.vMuonHitComb);
 	  continue;
 	}
+	if (stype == "Qprod") {
+	  //	  cout << "  adding Qprod" << endl;
+	  reader->AddVariable("Qprod", &d.Qprod);
+	  continue;
+	}
+      }
+      break;
+    }
+  }
+
+  nvars = -1;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add spectators
+    if (string::npos != allLines[i].find("Spectators NSpec")) {
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+      //      cout << "==> " << stype << endl;
+      nvars = atoi(stype.c_str());
+      if (-1 == nvars) continue;
+      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+	m1 = allLines[j].find("Expression=\"")+10;
+	m2 = allLines[j].find("\" Label=\"");
+	stype = allLines[j].substr(m1+2, m2-m1-2);
+	//	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+	//	cout << " adding " << stype << " as a spectator dummy" << endl;
+	reader->AddSpectator( stype.c_str(), &d.spectatorDummy);
       }
       break;
     }
@@ -3650,7 +3739,7 @@ TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
     if (string::npos != allLines[i].find("Variables NVar")) {
       m1 = allLines[i].find("=\"");
       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      cout << "  " << stype << " variables" << endl;
+      //      cout << "  " << stype << " variables" << endl;
       nvars = atoi(stype.c_str());
       if (-1 == nvars) continue;
       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
@@ -3659,99 +3748,99 @@ TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
 	stype = allLines[j].substr(m1+2, m2-m1-2);
 	//	cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
 	if (stype == "m1pt") {
-	  cout << "  adding m1pt" << endl;
+	  //	  cout << "  adding m1pt" << endl;
 	  reader->AddVariable( "m1pt", &rd.m1pt);
 	}
 	if (stype == "m2pt") {
-	  cout << "  adding m2pt" << endl;
+	  //	  cout << "  adding m2pt" << endl;
 	  reader->AddVariable( "m2pt", &rd.m2pt);
 	}
 	if (stype == "m1eta") {
-	  cout << "  adding m1eta" << endl;
+	  //	  cout << "  adding m1eta" << endl;
 	  reader->AddVariable( "m1eta", &rd.m1eta);
 	}
 	if (stype == "m2eta") {
 	  reader->AddVariable( "m2eta", &rd.m2eta);
-	  cout << "  adding m2eta" << endl;
+	  //	  cout << "  adding m2eta" << endl;
 	}
 	if (stype == "pt") {
-	  cout << "  adding pt" << endl;
+	  //	  cout << "  adding pt" << endl;
 	  reader->AddVariable( "pt", &rd.pt);
 	}
 	if (stype == "eta") {
-	  cout << "  adding eta" << endl;
+	  //	  cout << "  adding eta" << endl;
 	  reader->AddVariable( "eta", &rd.eta);
 	}
 	if (stype == "fls3d") {
-	  cout << "  adding fls3d" << endl;
+	  //	  cout << "  adding fls3d" << endl;
 	  reader->AddVariable( "fls3d", &rd.fls3d);
 	}
 	if (stype == "alpha") {
-	  cout << "  adding alpha" << endl;
+	  //	  cout << "  adding alpha" << endl;
 	  reader->AddVariable( "alpha", &rd.alpha);
 	}
 	if (stype == "maxdoca") {
-	  cout << "  adding maxdoca" << endl;
+	  //	  cout << "  adding maxdoca" << endl;
 	  reader->AddVariable( "maxdoca", &rd.maxdoca);
 	}
 	if (stype == "pvip") {
-	  cout << "  adding pvip" << endl;
+	  //	  cout << "  adding pvip" << endl;
 	  reader->AddVariable( "pvip", &rd.pvip);
 	}
 	if (stype == "pvips") {
-	  cout << "  adding pvips" << endl;
+	  //	  cout << "  adding pvips" << endl;
 	  reader->AddVariable( "pvips", &rd.pvips);
 	}
 	if (stype == "iso") {
-	  cout << "  adding iso" << endl;
+	  //	  cout << "  adding iso" << endl;
 	  reader->AddVariable( "iso", &rd.iso);
 	}
 	if (stype == "docatrk") {
-	  cout << "  adding docatrk" << endl;
+	  //	  cout << "  adding docatrk" << endl;
 	  reader->AddVariable( "docatrk", &rd.docatrk);
 	}
 	if (stype == "closetrk") {
-	  cout << "  adding closetrk" << endl;
+	  //	  cout << "  adding closetrk" << endl;
 	  reader->AddVariable( "closetrk", &rd.closetrk);
 	}
 	if (stype == "closetrks1") {
-	  cout << "  adding closetrks1" << endl;
+	  //	  cout << "  adding closetrks1" << endl;
 	  reader->AddVariable( "closetrks1", &rd.closetrks1);
 	}
 	if (stype == "closetrks2") {
-	  cout << "  adding closetrks2" << endl;
+	  //	  cout << "  adding closetrks2" << endl;
 	  reader->AddVariable( "closetrks2", &rd.closetrks2);
 	}
 	if (stype == "closetrks3") {
-	  cout << "  adding closetrks3" << endl;
+	  //	  cout << "  adding closetrks3" << endl;
 	  reader->AddVariable( "closetrks3", &rd.closetrks3);
 	}
 	if (stype == "chi2dof") {
-	  cout << "  adding chi2dof" << endl;
+	  //	  cout << "  adding chi2dof" << endl;
 	  reader->AddVariable( "chi2dof", &rd.chi2dof);
 	}
 	if (stype == "m1iso") {
-	  cout << "  adding m1iso" << endl;
+	  //	  cout << "  adding m1iso" << endl;
 	  reader->AddVariable( "m1iso", &rd.m1iso);
 	}
 	if (stype == "m2iso") {
-	  cout << "  adding m2iso" << endl;
+	  //	  cout << "  adding m2iso" << endl;
 	  reader->AddVariable( "m2iso", &rd.m2iso);
 	}
 	if (stype == "pvdchi2") {
-	  cout << "  adding pvdchi2" << endl;
+	  //	  cout << "  adding pvdchi2" << endl;
 	  reader->AddVariable( "pvdchi2", &rd.pvdchi2);
 	}
 	if (stype == "othervtx") {
-	  cout << "  adding othervtx" << endl;
+	  //	  cout << "  adding othervtx" << endl;
 	  reader->AddVariable( "othervtx", &rd.othervtx);
 	}
 	if (stype == "pv2lip") {
-	  cout << "  adding pv2lip" << endl;
+	  //	  cout << "  adding pv2lip" << endl;
 	  reader->AddVariable( "pv2lip", &rd.pv2lip);
 	}
 	if (stype == "pv2lips") {
-	  cout << "  adding pv2lips" << endl;
+	  //	  cout << "  adding pv2lips" << endl;
 	  reader->AddVariable( "pv2lips", &rd.pv2lips);
 	}
       }
@@ -3772,9 +3861,9 @@ TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
 	m1 = allLines[j].find("Expression=\"")+10;
 	m2 = allLines[j].find("\" Label=\"");
 	stype = allLines[j].substr(m1+2, m2-m1-2);
-	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+	//	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
 	if (stype == "m") {
-	  cout << "  adding m as spectator" << endl;
+	  //	  cout << "  adding m as spectator" << endl;
 	  reader->AddSpectator( "m", &rd.m);
 	}
       }

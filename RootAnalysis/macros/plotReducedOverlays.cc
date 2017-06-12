@@ -511,7 +511,7 @@ void plotReducedOverlays::loopFunction1() {
   }
 
   if (fMode == BD2JPSIKSTAR) {
-    cmsswPresel = cmsswPresel && (fb.kpt > 0.8) && (fb.pipt > 0.8);
+    cmsswPresel = cmsswPresel && (fb.kpt > 0.6) && (fb.pipt > 0.6);
   }
 
   fGoodHLT        = fb.hlt1 && fb.tos && cmsswPresel;

@@ -1255,12 +1255,12 @@ void plotWork::ups1(std::string file1, std::string file2) {
 
   TH1D *h = (TH1D*)fHistFile->Get("Hmass0_1");
   if (0 == h) {
-      for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 13; ++i) {
 	fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
 	fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
       }
 
-    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root");
     TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
 
     setupTree(t0);
@@ -1278,7 +1278,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
     loopOverTree(t1, 2);
 
     fHistFile->cd();
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 13; ++i) {
       fHmass0[i]->Write();
       fHmass1[i]->Write();
     }
@@ -1293,17 +1293,17 @@ void plotWork::ups1(std::string file1, std::string file2) {
 
   shrinkPad(0.15, 0.19);
   double eps(0.01);
-  TH1D *h1 = new TH1D("mass0", "Run 2", 20, 0., 4.0); h1->Sumw2();
-  TH1D *h2 = new TH1D("mass1", "Phase 2", 20, 0.+eps, 4.0+eps); h2->Sumw2();
-  TH1D *s1 = new TH1D("rms0", "Run 2", 20, 0., 4.0); h1->Sumw2();
-  TH1D *s2 = new TH1D("rms1", "Phase 2", 20, 0.+eps, 4.0+eps); h2->Sumw2();
-  TH1D *p1 = new TH1D("peak0", "Run 2", 20, 0., 4.0); p1->Sumw2();
-  TH1D *p2 = new TH1D("peak1", "Phase 2", 20, 0.+eps, 4.0+eps); p2->Sumw2();
-  TH1D *w1 = new TH1D("sigma0", "Run 2", 20, 0., 4.0); w1->Sumw2();
-  TH1D *w2 = new TH1D("sigma1", "Phase 2", 20, 0.+eps, 4.0+eps); w2->Sumw2();
+  TH1D *h1 = new TH1D("mass0", "Run 2", 13, 0., 2.6); h1->Sumw2();
+  TH1D *h2 = new TH1D("mass1", "Phase 2", 13, 0.+eps, 2.6+eps); h2->Sumw2();
+  TH1D *s1 = new TH1D("rms0", "Run 2", 13, 0., 2.6); h1->Sumw2();
+  TH1D *s2 = new TH1D("rms1", "Phase 2", 13, 0.+eps, 2.6+eps); h2->Sumw2();
+  TH1D *p1 = new TH1D("peak0", "Run 2", 13, 0., 2.6); p1->Sumw2();
+  TH1D *p2 = new TH1D("peak1", "Phase 2", 13, 0.+eps, 2.6+eps); p2->Sumw2();
+  TH1D *w1 = new TH1D("sigma0", "Run 2", 13, 0., 2.6); w1->Sumw2();
+  TH1D *w2 = new TH1D("sigma1", "Phase 2", 13, 0.+eps, 2.6+eps); w2->Sumw2();
   TH1D *hmass0(0), *hmass1(0);
   double FITRMS(2.0);
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 13; ++i) {
     hmass0 = (TH1D*)fHistFile->Get(Form("Hmass0_%d", i));
     hmass1 = (TH1D*)fHistFile->Get(Form("Hmass1_%d", i));
     cout << "mass = " << hmass0->GetMean() << " RMS = " << hmass0->GetRMS() << endl;
@@ -1377,7 +1377,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   p2->Draw("esame");
 
   tl->SetTextColor(kBlack);
-  stamp(0.25, "CMS Phase-2 ", "Simulation Preliminary", 0., "");
+  //  stamp(0.25, "CMS Phase-2 ", "Simulation Preliminary", 0., "");
   newLegend(0.25, 0.32, 0.45, 0.42);
   legg->SetTextSize(0.04);
   legg->AddEntry(p1,  "Run 2", "p");
@@ -1403,7 +1403,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   legg->AddEntry(w2, "Phase 2", "p");
   legg->Draw();
 
-  savePad(Form("ups1-massSigma-vsEta.pdf"));
+  savePad("ups1-massSigma-vsEta.pdf");
 
 
   c0->Clear();
@@ -1415,7 +1415,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   h1->Draw("e");
   h2->Draw("esame");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  //  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
   newLegend(0.25, 0.32, 0.45, 0.42);
   legg->SetTextSize(0.04);
   legg->AddEntry(h1,  "Run 2", "p");
@@ -1441,7 +1441,8 @@ void plotWork::ups1(std::string file1, std::string file2) {
   legg->AddEntry(s2, "Phase 2", "p");
   legg->Draw();
 
-  savePad(Form("ups1-massRms-vsEta.pdf"));
+  savePad("ups1-massRms-vsEta.pdf");
+
 }
 
 
@@ -1458,7 +1459,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   if (0 == h) {
     cout << "hist not found, unning over files" << endl;
 
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 13; ++i) {
       fHBd0.push_back(new TH1D(Form("HBd0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
       fHBd1.push_back(new TH1D(Form("HBd1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
 
@@ -1472,7 +1473,8 @@ void plotWork::ups2(std::string file1, std::string file2) {
 
     int NEVT(-1);
 
-    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v03/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+    //    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v03.root");
+    TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root");
     TTree *t0 = (TTree*)f0->Get("candAnaMuMu/events");
     setupTree(t0);
     fSetupInt = 2;
@@ -1515,7 +1517,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
     f5->Close();
 
     fHistFile->cd();
-    for (int i = 0; i < 20; ++i) {
+    for (int i = 0; i < 13; ++i) {
       fHBd0[i]->Write();
       fHBd1[i]->Write();
 
@@ -1531,24 +1533,29 @@ void plotWork::ups2(std::string file1, std::string file2) {
   fHistFile = TFile::Open(fHistFileName.c_str());
   gStyle->SetOptFit(0);
 
+  TH1D *hbs0Comb = new TH1D("hbs0Comb", "hbs0Comb", 80, 5.0, 5.8);
+  TH1D *hbs1Comb = new TH1D("hbs1Comb", "hbs1Comb", 80, 5.0, 5.8);
+  TH1D *hbd0Comb = new TH1D("hbd0Comb", "hbd0Comb", 80, 5.0, 5.8);
+  TH1D *hbd1Comb = new TH1D("hbd1Comb", "hbd1Comb", 80, 5.0, 5.8);
+
   shrinkPad(0.15, 0.19);
   double eps(0.01);
   // -- N(B0) / N(Bs) in B0 signal window
-  TH1D *h0 = new TH1D("dmass0", "Run 2", 20, 0., 4.0); h0->Sumw2();
-  TH1D *h1 = new TH1D("dmass1", "Phase 2", 20, 0.+eps, 4.0+eps); h1->Sumw2();
+  TH1D *h0 = new TH1D("dmass0", "Run 2", 13, 0., 2.6); h0->Sumw2();
+  TH1D *h1 = new TH1D("dmass1", "Phase 2", 13, 0.+eps, 2.6+eps); h1->Sumw2();
 
   // -- Separation of Bs and B0 in terms of peak / TMath::Sqrt(sig1*sig1 + sig2*sig2)
-  TH1D *hSep0 = new TH1D("hsep0", "Run 2", 20, 0., 4.0); hSep0->Sumw2();
-  TH1D *hSep1 = new TH1D("hsep1", "Phase 2", 20, 0.+eps, 4.0+eps); hSep1->Sumw2();
+  TH1D *hSep0 = new TH1D("hsep0", "Run 2", 13, 0., 2.6); hSep0->Sumw2();
+  TH1D *hSep1 = new TH1D("hsep1", "Phase 2", 13, 0.+eps, 2.6+eps); hSep1->Sumw2();
 
   // -- EXPO slope of background
-  TH1D *hBg0 = new TH1D("bgslope0", "Run 2", 20, 0., 4.0); hBg0->Sumw2();
-  TH1D *hBg1 = new TH1D("bgslope1", "Phase 2", 20, 0.+eps, 4.0+eps); hBg1->Sumw2();
+  TH1D *hBg0 = new TH1D("bgslope0", "Run 2", 13, 0., 2.6); hBg0->Sumw2();
+  TH1D *hBg1 = new TH1D("bgslope1", "Phase 2", 13, 0.+eps, 2.6+eps); hBg1->Sumw2();
   double nbs, nbd;
   double nbs0E, nbs1E, nbd0E, nbd1E;
   double FITRMS(2.0);
   gStyle->SetOptFit(1);
-  for (int i = 0; i < 20; ++i) {
+  for (int i = 0; i < 13; ++i) {
     TH1D *hbs0 = (TH1D*)fHistFile->Get(Form("HBs0_%d", i));
     TH1D *hbs1 = (TH1D*)fHistFile->Get(Form("HBs1_%d", i));
     TH1D *hbd0 = (TH1D*)fHistFile->Get(Form("HBd0_%d", i));
@@ -1602,6 +1609,13 @@ void plotWork::ups2(std::string file1, std::string file2) {
 	   << endl;
     }
 
+    if (i < 8) {
+      hbs0Comb->Add(hbs0);
+      hbs1Comb->Add(hbs1);
+
+      hbd0Comb->Add(hbd0);
+      hbd1Comb->Add(hbd1);
+    }
 
     // -- scale complete histogram to run-2 expectations
     //    this normalization is necessary because else the event counts for Bs and B0 are 'given' by the MC production numbers
@@ -1655,7 +1669,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   legg->AddEntry(h1, "Phase 2", "p");
   legg->Draw();
 
-  savePad(Form("ups2-b0-bs-xfeed-vsEta.pdf"));
+  savePad("ups2-b0-bs-xfeed-vsEta.pdf");
 
   c0->Clear();
   setHist(hSep0, kBlue, 24, 1.2);
@@ -1673,7 +1687,55 @@ void plotWork::ups2(std::string file1, std::string file2) {
   legg->AddEntry(hSep1, "Phase 2", "p");
   legg->Draw();
 
-  savePad(Form("ups2-b0-bs-sep-vsEta.pdf"));
+  savePad("ups2-b0-bs-sep-vsEta.pdf");
+
+  c0->Clear();
+  //Bs: 6.878 + 12.304
+  //Bz: 0.838 + 1.460
+  double bdratio = (0.838 + 1.460)/(6.878 + 12.304);
+  hbd0Comb->Scale(bdratio/hbd0Comb->Integral(1, hbd0Comb->GetNbinsX()+1));
+  hbd1Comb->Scale(bdratio/hbd1Comb->Integral(1, hbd1Comb->GetNbinsX()+1));
+
+  hbs0Comb->Scale(1./hbs0Comb->Integral(1, hbs0Comb->GetNbinsX()+1));
+  hbs1Comb->Scale(1./hbs1Comb->Integral(1, hbs1Comb->GetNbinsX()+1));
+
+  setFilledHist(hbs0Comb, kBlue+2, kBlue+2, 3365);
+  setFilledHist(hbs1Comb, kBlue+2, kBlue+2, 3365);
+
+  setFilledHist(hbd0Comb, kRed+2, kRed+2, 3354);
+  setFilledHist(hbd1Comb, kRed+2, kRed+2, 3354);
+
+  setTitles(hbs0Comb, "m_{#it{#mu #mu}} #it{[GeV]}", "#it{a.u.}", 0.05, 1.1, 1.6);
+  hbs0Comb->SetMaximum(1.3*hbs0Comb->GetMaximum());
+  hbs0Comb->Draw();
+  hbd0Comb->Draw("same");
+
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.65, 0.52, 0.85, 0.72);
+  legg->SetTextSize(0.05);
+  //  legg->SetHeader("Run 2");
+  legg->SetHeader("#it{|#eta}_{f}#it{|} < #it{1.4}");
+  legg->AddEntry(hbs0Comb, "B_{s}", "f");
+  legg->AddEntry(hbd0Comb, "B_{d}", "f");
+  legg->Draw();
+
+  savePad(Form("ups2-b0-bs-run2-overlay.pdf"));
+
+  setTitles(hbs1Comb, "m_{#it{#mu #mu}} #it{[GeV]}", "#it{a.u.}", 0.05, 1.1, 1.6);
+  hbs1Comb->SetMaximum(1.3*hbs1Comb->GetMaximum());
+  hbs1Comb->Draw();
+  hbd1Comb->Draw("same");
+  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
+  newLegend(0.65, 0.52, 0.85, 0.72);
+  legg->SetTextSize(0.05);
+  //  legg->SetHeader("Phase 2");
+  legg->SetHeader("#it{|#eta}_{f}#it{|} < #it{1.4}");
+  legg->AddEntry(hbs1Comb, "B_{s}", "f");
+  legg->AddEntry(hbd1Comb, "B_{d}", "f");
+  legg->Draw();
+  savePad("ups2-b0-bs-phase2-overlay.pdf");
+
+
 
 }
 
@@ -1695,7 +1757,7 @@ void plotWork::loopFunction2() {
 
   int ieta = TMath::Abs(meta)/0.2;
   //  cout << "eta = " << TMath::Abs(meta) << " -> " << ieta << endl;
-  if (ieta > 19) return;
+  if (ieta > 12) return;
 
   if (0 == fSetupInt) {
     fHmass0[ieta]->Fill(fb.m);

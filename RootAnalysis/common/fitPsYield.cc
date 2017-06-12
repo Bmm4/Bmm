@@ -322,8 +322,9 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   fcnSat->SetParameter(0, norm);
 
   cout << "f1->GetParameter(5): " << f1->GetParameter(5) << endl;
-  cout << "NORM OF SIG: " << fcnSig->Integral(5.0, 6.0) << endl;
-  cout << "NORM OF SAT: " << fcnSat->Integral(5.0, 6.0) << endl;
+  cout << "NORM OF SIG: " << fcnSig->Integral(5.0, 6.0)
+       << "NORM OF SAT: " << fcnSat->Integral(5.0, 6.0)
+       << endl;
 
   fcnSig->Draw("same");
   fcnExpo->Draw("same");

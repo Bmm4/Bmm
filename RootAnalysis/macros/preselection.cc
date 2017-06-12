@@ -6,7 +6,6 @@
 using namespace std;
 
 
-// 502
 #define PTMIN 5.0
 #define PTMAX 9999.0
 
@@ -17,7 +16,7 @@ using namespace std;
 #define M2PTMAX 999.0
 
 #define FL3DMAX 2.0
-#define CHI2DOFMAX 20.0
+#define CHI2DOFMAX 10.0
 
 #define PVIPMAX 0.1
 #define PVIPSMAX 5.0
@@ -25,12 +24,12 @@ using namespace std;
 #define PVLIPMAX  1.0
 #define PVLIPSMAX 5.0
 
-#define MAXDOCAMAX 0.1
+#define MAXDOCAMAX 0.08
 #define CLOSETRKMAX 21
 
-#define FLSXYMIN   3.0
+#define FLSXYMIN   4.0
 
-#define FLS3DMIN   0.0
+#define FLS3DMIN   5.0
 #define FLS3DMAX 200.0
 
 #define DOCATRKMAX 2.5
@@ -42,7 +41,7 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 std::string preselection() {
-  std::string cut = Form("gmuid && (%3.2f<pt)&&(pt<%3.2f) && (%3.2f<m1pt)&&(m1pt<%3.2f) && (%3.2f<m2pt)&&(m2pt<%3.2f)",
+  std::string cut = Form("gmugmid && (%3.2f<pt)&&(pt<%3.2f) && (%3.2f<m1pt)&&(m1pt<%3.2f) && (%3.2f<m2pt)&&(m2pt<%3.2f)",
 			 PTMIN, PTMAX, M1PTMIN, M1PTMAX, M2PTMIN, M2PTMAX);
   cut += Form(" && (flsxy>%3.2f) && (fl3d<%3.2f) && (pvip<%3.2f) && !(TMath::IsNaN(pvips)) && (pvips>0) && (pvips<%3.2f)",
 	      FLSXYMIN, FL3DMAX, PVIPMAX, PVIPSMAX);

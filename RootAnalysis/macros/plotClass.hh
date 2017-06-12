@@ -38,6 +38,7 @@
 #include "redTreeData.hh"
 #include "cuts.hh"
 #include "anaNumbers.hh"
+#include "ReaderData.hh"
 
 // -- TMVA related
 #include "TMVA/Factory.h"
@@ -45,15 +46,15 @@
 #include "TMVA/Tools.h"
 
 
-struct readerData {
-  float pt, eta, m1eta, m2eta, m1pt, m2pt;
-  float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
-  float m;
-  float closetrks1, closetrks2, closetrks3;
-  float m1iso, m2iso;
-  float pvdchi2, othervtx;
-  float pv2lip, pv2lips;
-};
+// struct readerData {
+//   float pt, eta, m1eta, m2eta, m1pt, m2pt;
+//   float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
+//   float m;
+//   float closetrks1, closetrks2, closetrks3;
+//   float m1iso, m2iso;
+//   float pvdchi2, othervtx;
+//   float pv2lip, pv2lips;
+// };
 
 
 // ----------------------------------------------------------------------
@@ -132,7 +133,7 @@ public :
   double fAccPt, fAccEtaGen, fAccEtaRec;
 
   // -- BDT reader setup
-  virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
+  //  virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
   virtual void calcBDT();
 
   struct redTreeData fb;
@@ -142,7 +143,8 @@ public :
   TString fMvaMethod;
   bool fIsMC, fIsSignal;
   double fBDT;
-  readerData frd;
+  // readerData frd;
+  ReaderData frd;
 
 
   // -- PidTables
