@@ -1,0 +1,13 @@
+TYPE          1000078
+DATACAND         1313
+TRUTHCAND         521
+TRIGRANGE    NOTRIGGER
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.cuts
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts
