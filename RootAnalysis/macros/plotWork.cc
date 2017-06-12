@@ -269,7 +269,7 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
   TH1D *mpt   = new TH1D("mpt", "muon pt", 50, 0., 10.0); setHist(mpt, kBlue); setTitles(mpt, fVarToTex["mpt"].c_str(), "", 0.07, 0.9, 1.1, 0.06);
   TH1D *tmpt   = new TH1D("tmpt", "muon pt (HLT)", 50, 0., 10.0); setFilledHist(tmpt, kBlue, kYellow, 1000);
   TH1D *kpt   = new TH1D("kpt", "kaon pt", 50, 0., 10.0); setHist(kpt, kRed);
-  TH1D *tau   = new TH1D("tau", "tau", 100, 0., 20.e-12); setTitles(tau, "#tau #it{[ps]}", "", 0.07, 0.9, 1.1, 0.06);
+  TH1D *tau   = new TH1D("tau", "tau", 100, 0., 20.e-12); setTitles(tau, "#tau [ps]", "", 0.07, 0.9, 1.1, 0.06);
 
   TTree *T = getTree(dsname, dir, "effTree");
   T->Draw("gtau>>tau");
@@ -1256,8 +1256,8 @@ void plotWork::ups1(std::string file1, std::string file2) {
   TH1D *h = (TH1D*)fHistFile->Get("Hmass0_1");
   if (0 == h) {
     for (int i = 0; i < 13; ++i) {
-	fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
-	fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#eta_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+	fHmass0.push_back(new TH1D(Form("Hmass0_%d", i), Form(" %3.1f < |#it{#eta}_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
+	fHmass1.push_back(new TH1D(Form("Hmass1_%d", i), Form(" %3.1f < |#it{#eta}_{f}| < %3.1f", i*0.2, (i+1)*0.2), 80, 5.0, 5.8));
       }
 
     TFile *f0 = TFile::Open("/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root");
@@ -1357,11 +1357,11 @@ void plotWork::ups1(std::string file1, std::string file2) {
     hmass0->Draw("same");
 
     tl->SetTextSize(0.04); tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.2, 0.92, Form("%s", hmass0->GetTitle()));
-    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.85, "Run 2");
+    tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.85, "Run-2");
     tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.80, Form("RMS: %4.3f MeV", hmass0->GetRMS()));
     tl->SetTextSize(0.03); tl->SetTextColor(kBlue);  tl->DrawLatexNDC(0.65, 0.76, Form("peak: %5.4f MeV", peak0V));
 
-    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.65, "Phase 2");
+    tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.65, "Phase-2");
     tl->SetTextSize(0.03); tl->SetTextColor(kRed);   tl->DrawLatexNDC(0.65, 0.60, Form("RMS: %4.3f MeV", hmass1->GetRMS()));
     tl->SetTextSize(0.03); tl->SetTextColor(kRed);  tl->DrawLatexNDC(0.65, 0.56, Form("peak: %5.4f MeV", peak1V));
     savePad(Form("ups1-mass-bin%d.pdf", i));
@@ -1372,35 +1372,35 @@ void plotWork::ups1(std::string file1, std::string file2) {
   setHist(p2, kRed, 25, 1.2);
   p1->SetMinimum(5.3);
   p1->SetMaximum(5.4);
-  setTitles(p1, "#it{|}#eta_{#it{f}}#it{|}", "#it{MPV}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
+  setTitles(p1, "|#it{#eta}_{f}|", "MPV(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
   p1->Draw("e");
   p2->Draw("esame");
 
   tl->SetTextColor(kBlack);
-  //  stamp(0.25, "CMS Phase-2 ", "Simulation Preliminary", 0., "");
-  newLegend(0.25, 0.32, 0.45, 0.42);
-  legg->SetTextSize(0.04);
+  //  stamp(0.25, "CMS Phase-2 ", "Simulation ", 0., "");
+  newLegend(0.25, 0.28, 0.45, 0.42);
+  legg->SetTextSize(0.05);
   legg->AddEntry(p1,  "Run 2", "p");
-  legg->AddEntry(p2, "Phase 2", "p");
+  legg->AddEntry(p2, "Phase-2", "p");
   legg->Draw();
 
   savePad(Form("ups1-massMPV-vsEta.pdf"));
 
 
   c0->Clear();
-  setHist(w1, kBlue, 24, 1.2);
-  setHist(w2, kRed, 25, 1.2);
+  setHist(w1, kBlue, 24, 1.7);
+  setHist(w2, kRed, 25, 1.7);
   w1->SetMinimum(0.);
   w1->SetMaximum(0.22);
-  setTitles(w1, "#it{|}#eta_{#it{f}}#it{|}", "#sigma(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
+  setTitles(w1, "|#it{#eta}_{f}|", "#sigma(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
   w1->Draw("e");
   w2->Draw("esame");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.25, 0.52, 0.45, 0.62);
-  legg->SetTextSize(0.04);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.25, 0.48, 0.45, 0.62);
+  legg->SetTextSize(0.05);
   legg->AddEntry(w1,  "Run 2", "p");
-  legg->AddEntry(w2, "Phase 2", "p");
+  legg->AddEntry(w2, "Phase-2", "p");
   legg->Draw();
 
   savePad("ups1-massSigma-vsEta.pdf");
@@ -1411,34 +1411,34 @@ void plotWork::ups1(std::string file1, std::string file2) {
   setHist(h2, kRed, 25, 1.2);
   h1->SetMinimum(5.3);
   h1->SetMaximum(5.4);
-  setTitles(h1, "#it{|}#eta_{#it{f}}#it{|}", "#it{mean}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.6);
+  setTitles(h1, "|#it{#eta}_{f}|", "mean(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
   h1->Draw("e");
   h2->Draw("esame");
 
-  //  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.25, 0.32, 0.45, 0.42);
-  legg->SetTextSize(0.04);
+  //  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.25, 0.28, 0.45, 0.42);
+  legg->SetTextSize(0.05);
   legg->AddEntry(h1,  "Run 2", "p");
-  legg->AddEntry(h2, "Phase 2", "p");
+  legg->AddEntry(h2, "Phase-2", "p");
   legg->Draw();
 
   savePad(Form("ups1-massMean-vsEta.pdf"));
 
 
   c0->Clear();
-  setHist(s1, kBlue, 24, 1.2);
-  setHist(s2, kRed, 25, 1.2);
-  setTitles(s1, "#it{|}#eta_{#it{f}}#it{|}", "#it{RMS}(m_{#it{#mu #mu}}) #it{[GeV]}", 0.05, 1.1, 1.7);
+  setHist(s1, kBlue, 24, 1.7);
+  setHist(s2, kRed, 25, 1.7);
+  setTitles(s1, "|#it{#eta}_{f}|", "RMS(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.7);
   s1->SetMinimum(0.);
   s1->SetMaximum(0.22);
   s1->Draw("e");
   s2->Draw("esame");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.25, 0.52, 0.45, 0.62);
-  legg->SetTextSize(0.04);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.25, 0.48, 0.45, 0.62);
+  legg->SetTextSize(0.05);
   legg->AddEntry(s1,  "Run 2", "p");
-  legg->AddEntry(s2, "Phase 2", "p");
+  legg->AddEntry(s2, "Phase-2", "p");
   legg->Draw();
 
   savePad("ups1-massRms-vsEta.pdf");
@@ -1654,37 +1654,37 @@ void plotWork::ups2(std::string file1, std::string file2) {
   }
 
   c0->Clear();
-  setHist(h0, kBlue, 24, 1.2);
-  setHist(h1, kRed, 25, 1.2);
+  setHist(h0, kBlue, 24, 1.7);
+  setHist(h1, kRed, 25, 1.7);
   h0->SetMinimum(0.0);
   h0->SetMaximum(10.);
-  setTitles(h0, "#it{|}#eta_{#it{f}}#it{|}", "N(B^{0})/N(B_{s}) in [5.2,5.3] GeV", 0.05, 1.1, 1.6);
+  setTitles(h0, "|#it{#eta}_{f}|", "#it{N(B^{0})}/#it{N(B^{0}_{s})} in [5.2,5.3] GeV", 0.05, 1.1, 1.6);
   h0->Draw("e");
   h1->Draw("esame");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.25, 0.52, 0.45, 0.62);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.6, 0.58, 0.8, 0.72);
   legg->SetTextSize(0.05);
   legg->AddEntry(h0,  "Run 2", "p");
-  legg->AddEntry(h1, "Phase 2", "p");
+  legg->AddEntry(h1, "Phase-2", "p");
   legg->Draw();
 
   savePad("ups2-b0-bs-xfeed-vsEta.pdf");
 
   c0->Clear();
-  setHist(hSep0, kBlue, 24, 1.2);
-  setHist(hSep1, kRed, 25, 1.2);
+  setHist(hSep0, kBlue, 24, 1.7);
+  setHist(hSep1, kRed, 25, 1.7);
   hSep0->SetMinimum(0.0);
   hSep0->SetMaximum(4.);
-  setTitles(hSep0, "#it{|}#eta_{#it{f}}#it{|}", "B^{0} and B_{s} separation significance", 0.05, 1.1, 1.6);
+  setTitles(hSep0, "|#it{#eta}_{f}|", "#it{B^{0}} and #it{B^{0}_{s}} separation significance", 0.05, 1.1, 1.6);
   hSep0->Draw("e");
   hSep1->Draw("esame");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.65, 0.62, 0.85, 0.72);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.6, 0.58, 0.8, 0.72);
   legg->SetTextSize(0.05);
   legg->AddEntry(hSep0,  "Run 2", "p");
-  legg->AddEntry(hSep1, "Phase 2", "p");
+  legg->AddEntry(hSep1, "Phase-2", "p");
   legg->Draw();
 
   savePad("ups2-b0-bs-sep-vsEta.pdf");
@@ -1705,33 +1705,33 @@ void plotWork::ups2(std::string file1, std::string file2) {
   setFilledHist(hbd0Comb, kRed+2, kRed+2, 3354);
   setFilledHist(hbd1Comb, kRed+2, kRed+2, 3354);
 
-  setTitles(hbs0Comb, "m_{#it{#mu #mu}} #it{[GeV]}", "#it{a.u.}", 0.05, 1.1, 1.6);
+  setTitles(hbs0Comb, "m_{#it{#mu #mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
   hbs0Comb->SetMaximum(1.3*hbs0Comb->GetMaximum());
   hbs0Comb->Draw();
   hbd0Comb->Draw("same");
 
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.65, 0.52, 0.85, 0.72);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.65, 0.48, 0.85, 0.72);
   legg->SetTextSize(0.05);
-  //  legg->SetHeader("Run 2");
-  legg->SetHeader("#it{|#eta}_{f}#it{|} < #it{1.4}");
-  legg->AddEntry(hbs0Comb, "B_{s}", "f");
-  legg->AddEntry(hbd0Comb, "B_{d}", "f");
+  //  legg->SetHeader("|#it{#eta}_{f}| < 1.4");
+  legg->SetHeader("Run 2");
+  legg->AddEntry(hbs0Comb, "#it{B^{0}_{s}}", "f");
+  legg->AddEntry(hbd0Comb, "#it{B^{0}}", "f");
   legg->Draw();
 
   savePad(Form("ups2-b0-bs-run2-overlay.pdf"));
 
-  setTitles(hbs1Comb, "m_{#it{#mu #mu}} #it{[GeV]}", "#it{a.u.}", 0.05, 1.1, 1.6);
+  setTitles(hbs1Comb, "#it{m_{#mu #mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
   hbs1Comb->SetMaximum(1.3*hbs1Comb->GetMaximum());
   hbs1Comb->Draw();
   hbd1Comb->Draw("same");
-  stamp(0.25, "CMS Phase-2", "Simulation Preliminary", 0., "");
-  newLegend(0.65, 0.52, 0.85, 0.72);
+  stamp(0.25, "CMS Phase-2", "Simulation ", 0., "");
+  newLegend(0.65, 0.48, 0.85, 0.72);
   legg->SetTextSize(0.05);
-  //  legg->SetHeader("Phase 2");
-  legg->SetHeader("#it{|#eta}_{f}#it{|} < #it{1.4}");
-  legg->AddEntry(hbs1Comb, "B_{s}", "f");
-  legg->AddEntry(hbd1Comb, "B_{d}", "f");
+  //  legg->SetHeader("|#it{#eta}_{f}| < 1.4");
+  legg->SetHeader("Phase-2");
+  legg->AddEntry(hbs1Comb, "#it{B^{0}_{s}}", "f");
+  legg->AddEntry(hbd1Comb, "#it{B^{0}}", "f");
   legg->Draw();
   savePad("ups2-b0-bs-phase2-overlay.pdf");
 
