@@ -215,7 +215,7 @@ public :
   initFunc *fIF;
 
   // -- Display utilities
-  std::map<std::string, std::string> fVarToTex;
+  std::map<std::string, std::string> fVarToTex, fVarToTexSymbol;
   std::string fStampString, fStampCms, fStampLumi;
   int fFont;
   double fSize;

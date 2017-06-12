@@ -106,7 +106,8 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     fYear = 2016;
     fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
-  if (setup == "") fSuffix = Form("%d", fYear);
+  //  if (setup == "") fSuffix = Form("%d", fYear);
+  fSuffix += Form("%d", fYear);
 
   fIF = new initFunc();
 
@@ -163,30 +164,52 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   // -- NOTE: This should be synchronized to AN-16-178/trunk/symbols.tex
   fVarToTex.insert(make_pair("pt", "p_{T_{B}} #it{[GeV]}"));
+  fVarToTexSymbol.insert(make_pair("pt", "\\ptb"));
   fVarToTex.insert(make_pair("eta", "#eta_{B}"));
+  fVarToTexSymbol.insert(make_pair("eta", "\\etab"));
 
   fVarToTex.insert(make_pair("mpt", "p_{T_{#mu}} #it{[GeV]}"));
+  fVarToTexSymbol.insert(make_pair("mpt", "\\ptmu"));
   fVarToTex.insert(make_pair("m1pt", "p_{T_{#mu,1}} #it{[GeV]}"));
+  fVarToTexSymbol.insert(make_pair("m1pt", "\\ptmuone"));
   fVarToTex.insert(make_pair("m2pt", "p_{T_{#mu,2}} #it{[GeV]}"));
+  fVarToTexSymbol.insert(make_pair("m2pt", "\\ptmutwo"));
   fVarToTex.insert(make_pair("meta", "#eta_{#mu}"));
+  fVarToTexSymbol.insert(make_pair("meta", "\\etamu"));
   fVarToTex.insert(make_pair("m1eta", "#eta_{#mu,1}"));
+  fVarToTexSymbol.insert(make_pair("m1eta", "\\etamuone"));
   fVarToTex.insert(make_pair("m2eta", "#eta_{#mu,2}"));
+  fVarToTexSymbol.insert(make_pair("m2eta", "\\etamutwo"));
   fVarToTex.insert(make_pair("fls3d", "l_{3D}/#sigma(l_{3D})"));
+  fVarToTexSymbol.insert(make_pair("fls3d", "\\fls"));
   fVarToTex.insert(make_pair("alpha", "#alpha_{3D}"));
+  fVarToTexSymbol.insert(make_pair("alpha", "\\alpha"));
   fVarToTex.insert(make_pair("chi2dof", "#chi^{2}/dof"));
+  fVarToTexSymbol.insert(make_pair("chi2dof", "\\chidof"));
 
   fVarToTex.insert(make_pair("iso", "isolation"));
+  fVarToTexSymbol.insert(make_pair("iso", "\\iso"));
   fVarToTex.insert(make_pair("m1iso", "#mu_{1} isolation"));
+  fVarToTexSymbol.insert(make_pair("m1iso", "\\isomuone"));
   fVarToTex.insert(make_pair("m2iso", "#mu_{2} isolation"));
+  fVarToTexSymbol.insert(make_pair("m2iso", "\\isomutwo"));
   fVarToTex.insert(make_pair("docatrk", "d_{ca}^{0} #it{[cm]}"));
+  fVarToTexSymbol.insert(make_pair("docatrk", "\\docatrk"));
   fVarToTex.insert(make_pair("closetrk", "N_{trk}^{close}"));
+  fVarToTexSymbol.insert(make_pair("closetrk", "\\closetrk"));
   fVarToTex.insert(make_pair("closetrks1", "N_{trk}^{close, 1#sigma}"));
+  fVarToTexSymbol.insert(make_pair("closetrks1", "\\closetrkA"));
   fVarToTex.insert(make_pair("closetrks2", "N_{trk}^{close, 2#sigma}"));
+  fVarToTexSymbol.insert(make_pair("closetrks2", "\\closetrkB"));
   fVarToTex.insert(make_pair("closetrks3", "N_{trk}^{close, 3#sigma}"));
+  fVarToTexSymbol.insert(make_pair("closetrks3", "\\closetrkC"));
 
   fVarToTex.insert(make_pair("maxdoca", "d_{ca}^{max} #it{[cm]}"));
+  fVarToTexSymbol.insert(make_pair("maxdoca", "\\maxdoca"));
   fVarToTex.insert(make_pair("pvip", "#delta_{3D} #it{[cm]}"));
+  fVarToTexSymbol.insert(make_pair("pvip", "\\pvip"));
   fVarToTex.insert(make_pair("pvips", "#delta_{3D}/#sigma(#delta_{3D})"));
+  fVarToTexSymbol.insert(make_pair("pvips", "\\pvips"));
 
   // -- initialize cuts
   cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
@@ -500,51 +523,7 @@ void plotClass::loopFunction2() {
 
 // ----------------------------------------------------------------------
 void plotClass::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
-  int nentries = Int_t(t->GetEntries());
-  int nbegin(0), nend(nentries);
-  if (nevts > 0 && nentries > nevts) {
-    nentries = nevts;
-    nbegin = 0;
-    nend = nevts;
-  }
-  if (nevts > 0 && nstart > 0) {
-    nentries = nstart + nevts;
-    nbegin = nstart;
-    if (nstart + nevts < t->GetEntries()) {
-      nend = nstart + nevts;
-    } else {
-      nend = t->GetEntries();
-    }
-  }
-
-  nentries = nend - nstart;
-
-  int step(1000000);
-  if (nentries < 5000000)  step = 500000;
-  if (nentries < 1000000)  step = 100000;
-  if (nentries < 100000)   step = 10000;
-  if (nentries < 10000)    step = 1000;
-  if (nentries < 1000)     step = 100;
-  if (2 == ifunc)          step = 10000;
-  cout << "==> plotClass::loopOverTree> loop over dataset " << fCds << " in file "
-       << t->GetDirectory()->GetName()
-       << " with " << nentries << " entries"  << " looping from  " << nbegin << " .. " << nend
-       << endl;
-
-  // -- setup loopfunction through pointer to member functions
-  void (plotClass::*pF)(void);
-  if (ifunc == 1) pF = &plotClass::loopFunction1;
-  if (ifunc == 2) pF = &plotClass::loopFunction2;
-
-  cout << "pF: " << pF << endl;
-
-  // -- the real loop starts here
-  for (int jentry = nbegin; jentry < nend; jentry++) {
-    t->GetEntry(jentry);
-    if (jentry%step == 0) cout << Form(" .. evt = %d", jentry) << endl;
-    (this->*pF)();
-  }
-
+  cout << "wrong function" << endl;
 }
 
 
@@ -1040,7 +1019,7 @@ void plotClass::candAnalysis() {
 // ----------------------------------------------------------------------
 TTree* plotClass::getTree(string ds, string dir, string tree) {
   if (!fDS[ds]) {
-    cout << "xx> plotClass::getTree: dataset " << ds << " not found" << endl;
+    cout << "xx> plotClass::getTree: dataset ->" << ds << "<- not found" << endl;
     return 0;
   }
   TTree *t(0);
@@ -1078,7 +1057,7 @@ void plotClass::newLegend(double x1, double y1, double x2, double y2, string tit
   legg->SetBorderSize(0);
   legg->SetTextSize(0.04);
   legg->SetFillColor(0);
-  legg->SetTextFont(52);
+  legg->SetTextFont(42);
 }
 
 // ----------------------------------------------------------------------
@@ -2147,6 +2126,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3354;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bspsiphi,")) {
@@ -2165,6 +2147,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bspsif,")) {
@@ -2183,6 +2168,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm,")) {
@@ -2202,6 +2190,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fBfE    = bfE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bymm,")) {
@@ -2219,6 +2210,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bxmm,")) {
@@ -2237,6 +2231,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm80,")) {
@@ -2255,6 +2252,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm75,")) {
@@ -2273,6 +2273,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm70,")) {
@@ -2291,6 +2294,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm69,")) {
@@ -2309,6 +2315,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm68,")) {
@@ -2327,6 +2336,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm67,")) {
@@ -2345,6 +2357,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm66,")) {
@@ -2363,6 +2378,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm65,")) {
@@ -2381,6 +2399,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm60,")) {
@@ -2399,6 +2420,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm55,")) {
@@ -2417,6 +2441,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm50,")) {
@@ -2435,6 +2462,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm45,")) {
@@ -2453,6 +2483,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm40,")) {
@@ -2471,6 +2504,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bsmm35,")) {
@@ -2489,6 +2525,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdpsikstar,")) {
@@ -2507,6 +2546,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdmm,")) {
@@ -2525,6 +2567,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdkpi,")) {
@@ -2544,6 +2589,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdkk,")) {
@@ -2563,6 +2611,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdpipi,")) {
@@ -2582,6 +2633,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bdpimunu,")) {
@@ -2601,6 +2655,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
 
@@ -2622,6 +2679,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bskpi,")) {
@@ -2641,6 +2701,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bskk,")) {
@@ -2660,6 +2723,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bskmunu,")) {
@@ -2679,6 +2745,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("lbppi,")) {
@@ -2698,6 +2767,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("lbpk,")) {
@@ -2717,6 +2789,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("lbpmunu,")) {
@@ -2736,6 +2811,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bcpsimunu,")) {
@@ -2755,6 +2833,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
       if (string::npos != stype.find("bupsipi,")) {
@@ -2774,6 +2855,9 @@ void plotClass::loadFiles(string afiles) {
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 1000;
+	TH1D *h1     = ds->getHist("monEvents", false);
+	int nEvtFile = static_cast<int>((h1?h1->GetBinContent(1):1));
+	ds->fLumi    = nEvtFile/fCrossSection/ds->fBf/ds->fFilterEff;
       }
 
     }
@@ -2801,7 +2885,7 @@ void plotClass::loadFiles(string afiles) {
     if (2011 == fYear) {
       directory = string("weights/pidtables/");
       TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      string prefixB("bmm4-25"), prefixE("bmm4-25");
       double cutB(0.0), cutE(0.0);
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
@@ -2817,7 +2901,7 @@ void plotClass::loadFiles(string afiles) {
       fptM = fptNegMuons;
     } else if (2012 == fYear) {
       directory = string("weights/pidtables/");
-      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      string prefixB("bmm4-25"), prefixE("bmm4-25");
       double cutB(0.0), cutE(0.0);
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
@@ -2834,7 +2918,7 @@ void plotClass::loadFiles(string afiles) {
     } else if (2016 == fYear) {
       directory = string("weights/pidtables/");
       TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-      string prefixB("bmm4-19-0.08"), prefixE("bmm4-19-0.08");
+      string prefixB("bmm4-25"), prefixE("bmm4-25");
       double cutB(0.08), cutE(0.08);
       if (0 && hcuts) {
 	muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
@@ -2923,7 +3007,7 @@ TStyle * plotClass::setTdrStyle() {
   tdrStyle->SetOptFile(0);
   tdrStyle->SetOptStat(0); // To display the mean and RMS:   SetOptStat("mr");
   tdrStyle->SetStatColor(kWhite);
-  tdrStyle->SetStatFont(52);
+  tdrStyle->SetStatFont(42);
   tdrStyle->SetStatFontSize(0.025);
   tdrStyle->SetStatTextColor(1);
   tdrStyle->SetStatFormat("6.4g");
@@ -2942,7 +3026,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the Global title:
   tdrStyle->SetOptTitle(0);
-  tdrStyle->SetTitleFont(52);
+  tdrStyle->SetTitleFont(42);
   tdrStyle->SetTitleColor(1);
   tdrStyle->SetTitleTextColor(1);
   tdrStyle->SetTitleFillColor(10);
@@ -2956,7 +3040,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the axis titles:
   tdrStyle->SetTitleColor(1, "XYZ");
-  tdrStyle->SetTitleFont(52, "XYZ");
+  tdrStyle->SetTitleFont(42, "XYZ");
   tdrStyle->SetTitleSize(0.06, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
@@ -2966,7 +3050,7 @@ TStyle * plotClass::setTdrStyle() {
 
   // For the axis labels:
   tdrStyle->SetLabelColor(1, "XYZ");
-  tdrStyle->SetLabelFont(52, "XYZ");
+  tdrStyle->SetLabelFont(42, "XYZ");
   tdrStyle->SetLabelOffset(0.007, "XYZ");
   tdrStyle->SetLabelSize(0.05, "XYZ");
 
