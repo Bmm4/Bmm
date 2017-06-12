@@ -48,7 +48,8 @@ std::string preselection() {
   cut += Form(" && abs(pvlip) < %3.2f && abs(pvlips) < %3.2f", PVLIPMAX, PVLIPSMAX);
   cut += Form(" && (closetrk<%d) && (fls3d>%3.2f) && (fls3d<%3.2f) && (docatrk<%3.2f) && (maxdoca<%3.2f)",
 			  CLOSETRKMAX, FLS3DMIN, FLS3DMAX, DOCATRKMAX, MAXDOCAMAX);
-  cut += Form(" && (chi2dof<%3.2f) && (iso>%3.2f) && (alpha<%3.2f) && (me<%3.2f)", CHI2DOFMAX, ISOMIN, ALPHAMAX, MASSERRORMAX);
+  cut += Form(" && (chi2dof<%3.2f)  && (alpha<%3.2f) && (me<%3.2f)", CHI2DOFMAX, ALPHAMAX, MASSERRORMAX);
+  cut += Form(" && (iso>%3.2f) && (m1iso>%3.2f) && (m2iso>%3.2f)", ISOMIN, ISOMIN, ISOMIN);
   cut += Form(" && (m1q*m2q<0)");
   return cut;
 }
@@ -56,6 +57,8 @@ std::string preselection() {
 // ----------------------------------------------------------------------
 bool preselection(redTreeData &b) {
   const int verbose(0);
+
+  if (!b.gmugmid) return false;
 
   if (b.m1q*b.m2q > 0) return false;
 
@@ -82,7 +85,7 @@ bool preselection(redTreeData &b) {
   if (TMath::Abs(b.pvlips) > PVLIPSMAX) return false;
   if (verbose > 7) cout << "passed pvlip* cuts" << endl;
 
-  if (b.closetrk > CLOSETRKMAX) return false;
+  if (b.closetrk >= CLOSETRKMAX) return false;
   if (b.fls3d < FLS3DMIN) return false;
   if (b.fls3d > FLS3DMAX) return false;
   if (b.docatrk > DOCATRKMAX) return false;
@@ -98,6 +101,8 @@ bool preselection(redTreeData &b) {
   // -- physics preselection
   if (b.chi2dof > CHI2DOFMAX) return false;
   if (b.iso < ISOMIN) return false;
+  if (b.m1iso < ISOMIN) return false;
+  if (b.m2iso < ISOMIN) return false;
   if (b.alpha > ALPHAMAX) return false;
   if (verbose > 0) cout << "passed physics cuts" << endl;
 
