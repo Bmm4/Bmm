@@ -66,9 +66,15 @@ $combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2015
 $combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
 $combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016-$version.root dstar-data-dstarCharmonium2016?-*.root; cd -  ";
 
-$combine{"combined"} = "cd $SCRATCH; hadd -f bmm-mc-combined-LambdaBToPMuNu-$version.root bmm-mc-Summer16_private-LambdaBToPMuNu-$version.root bmm-mc-RunIISpring16DR80-LambdaBToPMuNu_BMuonFilter-$version.root; cd - ; ";
+$combine{"combined"} = "cd $SCRATCH; hadd -f bmm-mc-combined-BdToPiMuNu-$version.root bmm-mc-Summer16_private-BdToPiMuNu-$version.root bmm-mc-RunIISpring16DR80-BdToPiMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-LambdaBToPMuNu-$version.root bmm-mc-Summer16_private-LambdaBToPMuNu-$version.root bmm-mc-RunIISpring16DR80-LambdaBToPMuNu_BMuonFilter-$version.root; cd - ; ";
 
 $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToKMuNu-$version.root bmm-mc-Summer16_private-BsToKMuNu-$version.root bmm-mc-RunIISpring16DR80-BsToKMuNu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-$version.root bmm-mc-Summer16_private-BsToMuMu-$version.root bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-$version.root; cd - ; ";
+
+$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BdToMuMu-$version.root bmm-mc-Summer16_private-BdToMuMu-$version.root bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-$version.root; cd - ; ";
 
 $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-$version.root bmm-mc-Summer16_private-BuToJpsiKp-$version.root bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-$version.root ; cd - ; ";
 
@@ -653,6 +659,33 @@ $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmm
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BdToPiMuMuAcc-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.mix-Bd2PiMuMu -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BdToPiMuMu-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.mix-Bd2PiMuMu -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+
+$mode = "bmm-mc-$dataset-BuToPiMuMuAcc-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.mix-Bu2PiMuMu -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+$mode = "bmm-mc-$dataset-BuToPiMuMu-$version"; $pattern = "$mode";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.mix-Bu2PiMuMu -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+
 
 $mode = "bmm-mc-$dataset-BsToKMuNuAcc-$version"; $pattern = "$mode";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.mix-Bs2KMuNu -m' c$mode-*  && cd - ";
