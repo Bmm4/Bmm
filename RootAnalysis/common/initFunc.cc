@@ -856,6 +856,19 @@ namespace {
     return  (iF_expo(x, &par[6]) + iF_gauss2(x, &par[0]));
   }
 
+  // ----------------------------------------------------------------------
+  // expo and gauss2c
+  double iF_expo_gauss2c(double *x, double *par) {
+    //   par[0] = norm of gaussian
+    //   par[1] = mean of gaussian
+    //   par[2] = sigma of gaussian
+    //   par[3] = fraction in second gaussian
+    //   par[4] = sigma of gaussian
+    //   par[5] = par 0 of expo
+    //   par[6] = par 1 of expo
+    return  (iF_expo(x, &par[5]) + iF_gauss2c(x, &par[0]));
+  }
+
 
   // ----------------------------------------------------------------------
   // pol1 and landau
@@ -2395,6 +2408,46 @@ TF1* initFunc::expogauss2(TH1 *h, double peak, double sigma, double deltaPeak, d
   f->ReleaseParameter(3);     f->SetParLimits(3, 0.01, 2.0);
   f->ReleaseParameter(4);     f->SetParLimits(4, peak+deltaPeak-0.2, peak+deltaPeak+0.2);
   f->ReleaseParameter(5);     f->SetParLimits(5, sigma*1.01, sigma*10.0);
+
+  return f;
+}
+
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::expogauss2c(TH1 *h, double peak, double sigma, double scaleSigma) {
+
+  if (scaleSigma < 1.) {
+    scaleSigma = 1.1;
+    cout << "second gaussian sigma should be larger than for the first Gaussian, resetting scaleSigma = " << scaleSigma << endl;
+  }
+
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_gauss2c", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_expo_gauss2c", fName.c_str()), iF_expo_gauss2c, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 7);
+  f->SetParNames("norm", "peak", "sigma", "fraction", "sigma2", "norm", "exp");
+  f->SetLineWidth(2);
+
+  int lbin(1), hbin(h->GetNbinsX()+1);
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  }
+
+  double p0, p1;
+  initExpo(p0, p1, h);
+  cout << "p0: " << p0 << " p1: " << p1 << endl;
+
+  double gaussN  = h->GetBinContent(h->FindBin(peak));
+
+  f->SetParameters(gaussN, peak, sigma, 0.2, sigma*scaleSigma, p0, p1);
+  f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7);
+  f->ReleaseParameter(1);
+  f->ReleaseParameter(2);     f->SetParLimits(2, 0.2*sigma, sigma*scaleSigma);
+  f->ReleaseParameter(3);     f->SetParLimits(3, 0.01, 0.4);
+  f->ReleaseParameter(4);     f->SetParLimits(4, sigma*scaleSigma*1.01, sigma*scaleSigma*1.4);
+  f->ReleaseParameter(5);     f->SetParLimits(5, 0., 1.e9);
+  f->ReleaseParameter(6);
 
   return f;
 
