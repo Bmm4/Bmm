@@ -2708,6 +2708,15 @@ bool plotResults::skipThisBg(string name) {
 string plotResults::rareAccName(string sname) {
   string accname("");
   // -- the acceptance sample cannot be determined trivially
+  if (string::npos != sname.find("bdpimumuMcCombBg")) {
+    accname = "bdpimumuMcCombAccBg";
+    return accname;
+  }
+  if (string::npos != sname.find("bupimumuMcCombBg")) {
+    accname = "bupimumuMcCombAccBg";
+    return accname;
+  }
+
   if (string::npos != sname.find("bs")) {
     if (string::npos == sname.find("mu")) {
       accname = "bskkMcCombAccBg";
