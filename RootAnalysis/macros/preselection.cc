@@ -58,7 +58,7 @@ std::string preselection() {
 bool preselection(redTreeData &b) {
   const int verbose(0);
 
-  if (!b.gmugmid) return false;
+  //NO?!?!?!?!  if (!b.gmugmid) return false;
 
   if (b.m1q*b.m2q > 0) return false;
 
