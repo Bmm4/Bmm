@@ -103,28 +103,28 @@ $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 # 2012
 # -----------------------------------------------
 $dataset = "bmmMuOnia2012A";
-$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
+$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012A";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012B";
-$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
+$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012B";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012C";
-$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
+$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012C";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 $dataset = "bmmMuOnia2012D";
-$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012-MuOnia";
+$mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012D";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
