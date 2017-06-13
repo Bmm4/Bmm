@@ -196,7 +196,7 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix, int whichfit) {
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu}K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -224,14 +224,15 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 5.9;
+  fpIF->fHi = 5.8;
   cout << "==> fitPsYield::fit0_Bu2JpsiKp> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
-  double xmin(5.0), xmax(5.9), expoLo(5.15), expoHi(5.85);
+  double xmin(5.0), xmax(5.8), expoLo(5.15), expoHi(5.85);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
   h->SetMinimum(0.);
+  h->SetAxisRange(fpIF->fLo, fpIF->fHi);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
   } else {
@@ -297,7 +298,6 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
       fParE.push_back(f1->GetParError(i));
     }
   }
-
 
   // -- copy parameters into components and draw them
   for (int ipar = 0; ipar < fcnSig->GetNpar(); ++ipar) {
@@ -418,7 +418,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu}K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -446,14 +446,15 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
   shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 5.9;
+  fpIF->fHi = 5.8;
   cout << "FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
-  double xmin(5.0), xmax(5.9), expoLo(5.15), expoHi(5.85);
+  double xmin(5.0), xmax(5.8), expoLo(5.15), expoHi(5.85);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
   h->SetMinimum(0.);
+  h->SetAxisRange(fpIF->fLo, fpIF->fHi);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
   } else {
@@ -648,12 +649,12 @@ void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix, int whichfit) {
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu} K K} #it{[GeV]}", Form("#it{Candidates/(%4.3f GeV)}", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 5.9;
+  fpIF->fHi = 5.8;
 
   fpIF->fName = "fit";
   TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.03, 1.1);
@@ -672,7 +673,10 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
   c0->Clear();
   shrinkPad(0.13, 0.19);
 
-  double xmin(5.0), xmax(5.9), expoLo(5.16), expoHi(5.85);
+  h->SetMinimum(0.);
+  h->SetAxisRange(fpIF->fLo, fpIF->fHi);
+
+  double xmin(5.0), xmax(5.8), expoLo(5.16), expoHi(5.85);
   if (limitpars <= 0) {
     fCombMax = h->GetMaximum();
   } else {
