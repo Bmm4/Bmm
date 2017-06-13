@@ -427,7 +427,7 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
 
     c0->Clear();
     hm->SetTitle("");
-    setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
+    setTitles(hm, "#it{m} [GeV]", "Entries/bin", 0.05, 1.1, 1.6);
     hm->Draw();
     cout << "=========> "
 	 << Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
@@ -465,11 +465,10 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
     aa.SetLineColor(kRed);
     aa.DrawArrow(x0, y0, x0, 0.);
     aa.DrawArrow(x1, y1, x1, 0.);
-    aa.SetLineColor(kBlue);
+    aa.SetLineColor(kBlack);
     aa.DrawArrow(x2, y2, x2, 0.);
     aa.DrawArrow(x3, y3, x3, 0.);
-
-    aa.SetLineColor(kBlack);
+    aa.SetLineColor(kBlue);
     aa.DrawArrow(x4, y4, x4, 0.);
     aa.DrawArrow(x5, y5, x5, 0.);
 
@@ -736,7 +735,7 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
-  if (0) {
+  if (1) {
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
       delete c0;
@@ -778,9 +777,9 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -900,7 +899,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
-  if (0) {
+  if (1) {
     gStyle->SetOptTitle(1);
     c0 = (TCanvas*)gROOT->FindObject("c1");
     if (c0) {
@@ -942,9 +941,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
 
     TString fname = fControlPlotsFileName;
     cout << "=========> "
-	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
 	 << endl;
-    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    c0->SaveAs(Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   }
 
   return h;
@@ -1092,7 +1091,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 
     c0->Clear();
     hm->SetTitle("");
-    setTitles(hm, "m #it{[GeV]}", "#it{Entries/bin}", 0.05, 1.1, 1.6);
+    setTitles(hm, "#it{m} [GeV]", "Entries/bin", 0.05, 1.1, 1.6);
     hm->Draw();
     cout << "=========> "
 	 << Form("%s/plotMass-%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
@@ -1109,7 +1108,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass #it{[GeV]}");
+    hm->SetXTitle("mass [GeV]");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
