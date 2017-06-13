@@ -2867,7 +2867,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
         sdecay = "B^{+} #rightarrow #it{#pi^{+} #mu #mu}";
-        ldecay = "\\bdpimumu";
+        ldecay = "\\bupimumu";
 	ds->fColor = kRed-9;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
