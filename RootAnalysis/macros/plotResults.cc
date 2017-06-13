@@ -387,7 +387,7 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
-  if (what == "all" || what == "dumpdatasets" || what == "genvalidation") {
+  if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
     dumpDatasets();
   }
 
@@ -758,6 +758,9 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     resetHistograms();
     rareBgHists("nada", nevents);
   }
+
+  fHistFile->Close();
+  return;
 
   // -- normalization modes
   if (1) {
@@ -1392,7 +1395,6 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
 }
 
 
-
 // ----------------------------------------------------------------------
 void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   c0->Clear();
@@ -1493,7 +1495,7 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
     lF1->SetParameter(0, 3.*binw/(hi-lo));              // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
     lF1->SetParError(0, TMath::Sqrt(3.)*binw/(hi-lo));  // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
   }
-  setTitles(h1, "m_{#it{#mu #mu}} #it{[GeV]}", Form("#it{Candidates / %4.3f GeV}", h1->GetBinWidth(1)));
+  setTitles(h1, "#it{m}_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", h1->GetBinWidth(1)));
 
   h1->DrawCopy();
   lF2->SetParameters(lF1->GetParameters());
@@ -1702,7 +1704,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     a->fMcYield[2].val = massIntegral(hw, BS, chan);
     integral = massIntegral(hu, BS, chan);
     estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
-    // FIXME
+    // FIXME??
     if (a->fName == "bdpimunuBg") {
       cout << "XXX a->fMcYield[2].val = " << a->fMcYield[2].val << " integral = " << integral << " estatRel = " << estatRel << endl;
     }
@@ -1722,7 +1724,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     TH1D *hwrb = (TH1D*)hw->Clone(Form("hwrb_%s", hw->GetName()));
     hwrb->Rebin(5);
     hwrb->SetNdivisions(510, "XYZ");
-    setTitles(hwrb, "m_{#mu #mu} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
+    setTitles(hwrb, "m_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
     if (0 == nmuons) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fHhNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
@@ -1737,7 +1739,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
       vBg.insert(vBg.begin(), hw);
       vBgnames.insert(vBgnames.begin(), it->second->fName);
       vBgoptions.insert(vBgoptions.begin(), "f");
-    } else if (1 == nmuons) {
+    } else if (nmuons >= 1) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fSlNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
 	fSlNumbers[chan].fMcYield[im].add2Errors(a->fMcYield[im]);
@@ -1799,8 +1801,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hSl.Draw("hist");
-  hSl.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hSl.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hSl.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hSl.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lSl = ::newLegend("semileptonic decays", 0.50, 0.6, 0.85, 0.85, vSl, vSlnames, vSloptions);
   lSl->Draw();
   c0->Modified();
@@ -1812,8 +1814,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hHh.Draw("hist");
-  hHh.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hHh.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hHh.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hHh.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lHh = ::newLegend("hadronic decays", 0.56, 0.4, 0.85, 0.85, vHh, vHhnames, vHhoptions);
   lHh->Draw();
   c0->Modified();
@@ -1825,8 +1827,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hBg.Draw("hist");
-  hBg.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hBg.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hBg.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lBg = ::newLegend("rare decays", 0.50, 0.3, 0.85, 0.85, vBg, vBgnames, vBgoptions);
   lBg->Draw();
   c0->Modified();
@@ -2101,9 +2103,6 @@ void plotResults::loopFunction1() {
       && fGoodBdtPt
       && fGoodMuonsEta
       && fGoodJpsiCuts
-      && fGoodTracks
-      && fGoodTracksPt
-      && fGoodTracksEta
       && fGoodBDT
       ) {
     fhMassWithAnaCuts[modifier[1]][fChan]->Fill(mass);
