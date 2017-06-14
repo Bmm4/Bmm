@@ -401,6 +401,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
 
   TCut masscut = "m>4.9&&m<5.9";
   TCut massbg  = "!(5.2<m&&m<5.45)";
+  TCut muonid  = "gmugmid";
 
   cout << "==> signal input file:     " << sinput->GetName() << std::endl;
   cout << "==> background input file: " << dinput->GetName() << std::endl;
@@ -440,7 +441,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
       chanCut = chanDef[i].c_str();
       outFile->mkdir(sdir.c_str());
       outFile->cd(sdir.c_str());
-      copyCuts = sgcut + chanCut + typeCut;
+      copyCuts = sgcut + muonid + chanCut + typeCut;
       cout << "sg copyCuts: " << copyCuts << endl;
       copyTree = signal->CopyTree(copyCuts);
       cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
@@ -450,7 +451,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
       chanCut = chanDef[i].c_str();
       outFile->mkdir(sdir.c_str());
       outFile->cd(sdir.c_str());
-      copyCuts = sgcut + massbg + masscut + chanCut + typeCut;
+      copyCuts = sgcut + muonid + massbg + masscut + chanCut + typeCut;
       cout << "bg copyCuts: " << copyCuts << endl;
       copyTree = cbackground->CopyTree(copyCuts);
       cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
@@ -462,7 +463,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
     chanCut = "(0 == chan) || (1 == chan)";
     outFile->mkdir(sdir.c_str());
     outFile->cd(sdir.c_str());
-    copyCuts = sgcut + chanCut + typeCut;
+    copyCuts = sgcut + muonid + chanCut + typeCut;
     cout << "sg copyCuts: " << copyCuts << endl;
     copyTree = signal->CopyTree(copyCuts);
     cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
@@ -471,7 +472,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
     sdir = Form("sidebandAll%s", type.c_str());
     outFile->mkdir(sdir.c_str());
     outFile->cd(sdir.c_str());
-    copyCuts = sgcut + massbg + masscut + chanCut + typeCut;
+    copyCuts = sgcut + muonid + massbg + masscut + chanCut + typeCut;
     cout << "bg copyCuts: " << copyCuts << endl;
     copyTree = cbackground->CopyTree(copyCuts);
     cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
