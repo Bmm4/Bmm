@@ -56,7 +56,7 @@ std::string preselection() {
 
 // ----------------------------------------------------------------------
 bool preselection(redTreeData &b) {
-  const int verbose(0);
+  const int verbose(-1);
 
   //NO?!?!?!?!  if (!b.gmugmid) return false;
 
@@ -97,6 +97,14 @@ bool preselection(redTreeData &b) {
   //   if (b.m < 4.9) return false;
   //   if (b.m > 5.9) return false;
   //   if (verbose > 4) cout << "passed mass cuts" << endl;
+  if (verbose > 5) {
+    cout << "chi2dof = " << b.chi2dof
+	 << " iso = " << b.iso
+	 << " m1iso = " << b.m1iso
+	 << " m2iso = " << b.m2iso
+	 << " alpha = " << b.alpha
+	 << endl;
+  }
 
   // -- physics preselection
   if (b.chi2dof > CHI2DOFMAX) return false;
