@@ -580,56 +580,56 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m1bpixl1", &fb.m1bpixl1);
   t->SetBranchAddress("m2bpixl1", &fb.m2bpixl1);
 
-  t->SetBranchAddress("rr",     &fb.rr);
-  t->SetBranchAddress("pvn",    &fb.pvn);
-  t->SetBranchAddress("run",    &fb.run);
-  t->SetBranchAddress("l1s",    &fb.l1s);
-  t->SetBranchAddress("evt",    &fb.evt);
-  t->SetBranchAddress("hlt",    &fb.hlt);
-  t->SetBranchAddress("hlt1",   &fb.hlt1);
-  t->SetBranchAddress("tos",    &fb.tos);
-  t->SetBranchAddress("hltm",   &fb.hltm);
-  t->SetBranchAddress("ls",     &fb.ls);
-  t->SetBranchAddress("ps",     &fb.ps);
-  t->SetBranchAddress("chan",   &fb.chan);
-  t->SetBranchAddress("cb",     &fb.cb);
-  t->SetBranchAddress("json",   &fb.json);
-  t->SetBranchAddress("gmuid",  &fb.gmuid);
-  t->SetBranchAddress("gmugmid",  &fb.gmugmid);
-  t->SetBranchAddress("gmumvaid", &fb.gmumvaid);
-  t->SetBranchAddress("gtqual", &fb.gtqual);
-  t->SetBranchAddress("tm",     &fb.tm);
-  t->SetBranchAddress("procid", &fb.procid);
-  t->SetBranchAddress("m",      &fb.m);
-  t->SetBranchAddress("m3",     &fb.m3);
-  t->SetBranchAddress("m4",     &fb.m4);
-  t->SetBranchAddress("me",     &fb.me);
-  t->SetBranchAddress("cm",     &fb.cm);
-  t->SetBranchAddress("pt",     &fb.pt);
-  t->SetBranchAddress("phi",    &fb.phi);
-  t->SetBranchAddress("eta",    &fb.eta);
-  t->SetBranchAddress("cosa",   &fb.cosa);
-  t->SetBranchAddress("alpha",  &fb.alpha);
-  t->SetBranchAddress("iso",    &fb.iso);
-  t->SetBranchAddress("chi2",   &fb.chi2);
-  t->SetBranchAddress("dof",    &fb.dof);
-  t->SetBranchAddress("prob",   &fb.pchi2dof);
-  t->SetBranchAddress("chi2dof",&fb.chi2dof);
-  t->SetBranchAddress("flsxy",  &fb.flsxy);
-  t->SetBranchAddress("fls3d",  &fb.fls3d);
-  t->SetBranchAddress("fl3d",   &fb.fl3d);
-  t->SetBranchAddress("fl3dE",  &fb.fl3dE);
-  t->SetBranchAddress("m1pt",   &fb.m1pt);
-  t->SetBranchAddress("m1gt",   &fb.m1gt);
-  t->SetBranchAddress("m1eta",  &fb.m1eta);
-  t->SetBranchAddress("m1phi",  &fb.m1phi);
-  t->SetBranchAddress("m1q",    &fb.m1q);
-  t->SetBranchAddress("m2pt",   &fb.m2pt);
-  t->SetBranchAddress("m2gt",   &fb.m2gt);
-  t->SetBranchAddress("m2eta",  &fb.m2eta);
-  t->SetBranchAddress("m2phi",  &fb.m2phi);
-  t->SetBranchAddress("m2q",    &fb.m2q);
-  t->SetBranchAddress("docatrk",&fb.docatrk);
+  t->SetBranchAddress("rr",      &fb.rr);
+  t->SetBranchAddress("pvn",     &fb.pvn);
+  t->SetBranchAddress("run",     &fb.run);
+  t->SetBranchAddress("l1s",     &fb.l1s);
+  t->SetBranchAddress("evt",     &fb.evt);
+  t->SetBranchAddress("hlt",     &fb.hlt);
+  t->SetBranchAddress("hlt1",    &fb.hlt1);
+  t->SetBranchAddress("tos",     &fb.tos);
+  t->SetBranchAddress("hltm",    &fb.hltm);
+  t->SetBranchAddress("ls",      &fb.ls);
+  t->SetBranchAddress("ps",      &fb.ps);
+  t->SetBranchAddress("chan",    &fb.chan);
+  t->SetBranchAddress("cb",      &fb.cb);
+  t->SetBranchAddress("json",    &fb.json);
+  t->SetBranchAddress("gmuid",   &fb.gmuid);
+  t->SetBranchAddress("gmugmid", &fb.gmugmid);
+  t->SetBranchAddress("gmumvaid",&fb.gmumvaid);
+  t->SetBranchAddress("gtqual",  &fb.gtqual);
+  t->SetBranchAddress("tm",      &fb.tm);
+  t->SetBranchAddress("procid",  &fb.procid);
+  t->SetBranchAddress("m",       &fb.m);
+  t->SetBranchAddress("m3",      &fb.m3);
+  t->SetBranchAddress("m4",      &fb.m4);
+  t->SetBranchAddress("me",      &fb.me);
+  t->SetBranchAddress("cm",      &fb.cm);
+  t->SetBranchAddress("pt",      &fb.pt);
+  t->SetBranchAddress("phi",     &fb.phi);
+  t->SetBranchAddress("eta",     &fb.eta);
+  t->SetBranchAddress("cosa",    &fb.cosa);
+  t->SetBranchAddress("alpha",   &fb.alpha);
+  t->SetBranchAddress("iso",     &fb.iso);
+  t->SetBranchAddress("chi2",    &fb.chi2);
+  t->SetBranchAddress("dof",     &fb.dof);
+  t->SetBranchAddress("prob",    &fb.pchi2dof);
+  t->SetBranchAddress("chi2dof", &fb.chi2dof);
+  t->SetBranchAddress("flsxy",   &fb.flsxy);
+  t->SetBranchAddress("fls3d",   &fb.fls3d);
+  t->SetBranchAddress("fl3d",    &fb.fl3d);
+  t->SetBranchAddress("fl3dE",   &fb.fl3dE);
+  t->SetBranchAddress("m1pt",    &fb.m1pt);
+  t->SetBranchAddress("m1gt",    &fb.m1gt);
+  t->SetBranchAddress("m1eta",   &fb.m1eta);
+  t->SetBranchAddress("m1phi",   &fb.m1phi);
+  t->SetBranchAddress("m1q",     &fb.m1q);
+  t->SetBranchAddress("m2pt",    &fb.m2pt);
+  t->SetBranchAddress("m2gt",    &fb.m2gt);
+  t->SetBranchAddress("m2eta",   &fb.m2eta);
+  t->SetBranchAddress("m2phi",   &fb.m2phi);
+  t->SetBranchAddress("m2q",     &fb.m2q);
+  t->SetBranchAddress("docatrk", &fb.docatrk);
 
   t->SetBranchAddress("m1id",     &fb.m1id);
   t->SetBranchAddress("m1rmvaid", &fb.m1rmvaid);
@@ -894,9 +894,23 @@ void plotClass::candAnalysis() {
     fb.bdt = fBDT;
   }
 
+  cout << "RARE? " << (fMode == RARE)
+       << " fGoodAcceptance = " << fGoodAcceptance
+       << " fGoodTracks = " << fGoodTracks
+       << " fGoodTracksPt = " << fGoodTracksPt
+       << " fGoodTracksEta = " << fGoodTracksEta
+       << " fGoodBdtPt = " << fGoodBdtPt
+       << " fGoodJpsiCut = " << fGoodJpsiCuts
+       << " BDT = " << fBDT
+       << endl;
+
+
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
-  //  fGoodMuonsID     = fb.m1mvaid && fb.m2mvaid;
   fGoodMuonsID     = (fb.m1mvabdt > fCuts[0]->muonbdt) && (fb.m2mvabdt > fCuts[0]->muonbdt);
+  if (RARE == fMode) {
+    fGoodMuonsID = true;
+    fGoodGlobalMuons = true;
+  }
 
   fW8 = 1.;
   fW8MmuID = fW8Mtrig = fW8DmuID = fW8Dtrig = -1.;
@@ -996,7 +1010,6 @@ void plotClass::candAnalysis() {
 
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = true;
-  if (RARE == fMode) fGoodMuonsID = true;
 
   fPreselectionBDT = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
 		      && (fBDT > 0.));
