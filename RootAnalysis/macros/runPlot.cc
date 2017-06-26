@@ -56,21 +56,21 @@ int main(int argc, char *argv[]) {
 
   if (2016 == year) {
     if ("nada" == files) files = "plotResults.2016.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
   if (2012 == year) {
     if ("nada" == files) files = "plotResults.2012.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2012.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
   if (2011 == year) {
     if ("nada" == files) files = "plotResults.2011.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2011.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
@@ -198,7 +198,7 @@ int main(int argc, char *argv[]) {
   if (string::npos != plot.find("umllifetime")) {
     gROOT->Clear();  gROOT->DeleteAll();
     files = "plotResults.2016.files";
-    cuts  = "baseCuts.cuts";
+    cuts  = "baseCuts.2016.cuts";
     setup = "";
     umlLifetime a(dir, files, cuts, setup);
     if (rootfilename == "nada") {
