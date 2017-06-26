@@ -65,17 +65,22 @@ tmva1::tmva1(int year, string vars, string pars) {
   tl->SetNDC(kTRUE);
 
   fYear = year;
+  int nbins(40);
+  fH1s = new TH1D("h1s", "signal", nbins, -1., 1.);
+  fH1b = new TH1D("h1b", "background", nbins, -1., 1.);
+  fH1r = new TH1D("h1r", "ratio", nbins, -1., 1.);
 
+  fLumiScale = 1.86e-3; // 37/19845
   if (year == 2011) {
     fLumiScale = 3.1e-4; // 4.9/16000
-    fInputFiles.sname = "/scratch/ursl/bmm4/v05/";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v05/";
+    fInputFiles.sname = "/scratch/ursl/bmm4/v06/";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v06/";
   } else if (year == 2012) {
     fLumiScale = 2.8e-4; // 20/714000
-    fInputFiles.sname = "/scratch/ursl/bmm4/v05/";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v05/";
+    fInputFiles.sname = "/scratch/ursl/bmm4/v06/";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v06/";
   } else if (year == 2016) {
-    fLumiScale = 2.8e-4; // 20/714000
+    fLumiScale = 1.86e-3; // 37/19845
     fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root";
     fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
   }
@@ -129,15 +134,32 @@ void tmva1::makeAll(int offset, string filename, int chan) {
     if (2016 == fYear) {
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-0-2016.root"; // first shot
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-1-2016.root"; // preselection on m?iso, "All" = Chan0 + Chan1 also contained
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-3-2016.root"; // corrected m1iso and m2iso calculation that also covers rare backgrounds
     }
   }
 
   string logname = Form("TMVA-%d", offset);
   string oname("");
   oname = Form("TMVA-%d", offset);
+  fKS.clear();
   make(offset, filename, 0);
   make(offset, filename, 1);
   make(offset, filename, 2);
+  cout << "----------------------------------------------------------------------" << endl;
+  cout << "KS probabilities: " << endl;
+  bool good(true);
+  double minKS(99.);
+  for (unsigned int i = 0; i < fKS.size(); i += 2) {
+    cout << "sb/bg = " << fKS[i] << "/" << fKS[i+1] << endl;
+    if (fKS[i] < 0.1) good = false;
+    if (fKS[i+1] < 0.1) good = false;
+    if (fKS[i] < minKS)   minKS = fKS[i];
+    if (fKS[i+1] < minKS) minKS = fKS[i+1];
+  }
+  cout << " ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
+  cout << " bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << endl;
+  cout << "this is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
+  cout << "----------------------------------------------------------------------" << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -379,12 +401,87 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 
    // Save the output
    outputFile->Close();
-
-   cout << "==> Wrote root file: " << outputFile->GetName() << endl;
+   delete factory;
+   gROOT->Clear();
+   gROOT->DeleteAll();
    cout << "==> TMVAClassification is done!" << endl;
 
-   delete factory;
-   gROOT->Clear();  gROOT->DeleteAll();
+
+   outputFile = TFile::Open(outfileName);
+   TString hname = "Method_BDT/BDT/MVA_BDT";
+   TH1 *sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_S" ));
+   TH1 *bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_B" ));
+   cout << "==> Looking for Kolmogorov-Smirnov input: gDirectory = " << gDirectory->GetName()
+	<< " sig = " << sig << " bgd = " << bgd << endl;
+
+   TH1D *hs = (TH1D*)sig->Clone("hs");
+   hs->Scale(1./hs->Integral());
+   TH1D *hb = (TH1D*)bgd->Clone("hb");
+   hb->Scale(1./hs->Integral());
+
+   sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_S" ));
+   bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_B" ));
+   TH1D *hS = (TH1D*)sig->Clone("hS");
+   hS->Scale(1./hS->Integral());
+   TH1D *hB = (TH1D*)bgd->Clone("hB");
+   hB->Scale(1./hB->Integral());
+
+   double kolS = hs->KolmogorovTest(hS);
+   double kolB = hb->KolmogorovTest(hB);
+
+   fKS.push_back(kolS);
+   fKS.push_back(kolB);
+   cout << "KS-probability /" << gDirectory->GetName() << "/ ks-sg = " << kolS << " ks-bg = " << kolB << endl;
+
+   outfileName.ReplaceAll(".root", ".pdf");
+   TTree *t = dynamic_cast<TTree*>(gDirectory->Get("TestTree"));
+   int id;
+   float bdt;
+   t->SetBranchAddress("classID", &id);
+   t->SetBranchAddress("BDT", &bdt);
+   fH1s->Reset();
+   fH1b->Reset();
+   fH1r->Reset();
+   for (int jentry = 0; jentry < t->GetEntries(); jentry++) {
+     t->GetEntry(jentry);
+     if (0 == id) {
+       fH1s->Fill(bdt);
+     } else {
+       fH1b->Fill(bdt);
+     }
+   }
+   fH1s->Scale(fLumiScale);
+
+   fH1s->Draw();
+   gPad->SaveAs(Form("h1s-%s", outfileName.Data()));
+   fH1b->Draw();
+   gPad->SaveAs(Form("h1b-%s", outfileName.Data()));
+
+   double rMax(-1.), rBdt(99);
+   int nbins(fH1s->GetNbinsX()+1);
+   for (int ibin = 1; ibin < nbins; ++ibin) {
+     double s = fH1s->Integral(ibin, nbins);
+     double b = fH1b->Integral(ibin, nbins);
+     double r = 0.;
+     if (s+b > 0.) {
+       r = s/TMath::Sqrt(s+b);
+       fH1r->SetBinContent(ibin, r);
+       if (r > rMax) {
+	 rMax = r;
+	 rBdt = fH1s->GetBinCenter(ibin);
+       }
+     }
+     cout << "s(" << ibin << "," << nbins << ") = " << s << " b = " << b << " r = " << r << endl;
+   }
+   fMaxSSB.push_back(rMax);
+   fMaxBdt.push_back(rBdt);
+   cout << "hello" << endl;
+   // h1r->Write();
+   cout << "hello2" << endl;
+   outputFile->Close();
+   cout << "hello3" << endl;
+   fH1r->Draw();
+   gPad->SaveAs(Form("h1r-%s", outfileName.Data()));
 
 }
 

@@ -76,6 +76,9 @@ class tmva1: public TObject {
   files fInputFiles;
   bdtSetup fBdtSetup;
 
+  std::vector<double> fKS, fMaxSSB, fMaxBdt;
+  TH1D *fH1s, *fH1b, *fH1r;
+
   bool fApplyOn0, fApplyOn1, fApplyOn2;
   bool fTrainAntiMuon;
   int fChannel, fYear;
