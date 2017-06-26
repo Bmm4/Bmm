@@ -72,36 +72,35 @@ void plotBDT::init() {
 // ----------------------------------------------------------------------
 void plotBDT::makeAll(string what) {
 
-  if ("opspt" == what) {
-    opspt("hi");
-    return;
-  }
+  if ("all" == what) {
+    setBdtStrings(0);
+    dumpParameters("Events0");
 
-  if ("apply" == what) {
-    apply("fill");
-    return;
-  }
-
-  setBdtStrings(0);
-  dumpParameters("Events0");
-
-  string old("nada");
-  // -- loop over channels in case they use separate BDTs
-  for (int ichan = 0; ichan < fNchan; ++ichan) {
-    setBdtStrings(ichan);
-    if (old != fCuts[ichan]->bdtXml) {
-      old = fCuts[ichan]->bdtXml;
-      tmvaControlPlots(ichan);
-      getTLFRanking("BDT", "Events0");
-      getTLFRanking("BDT", "Events1");
-      getTLFRanking("BDT", "Events2");
-    } else {
-      cout << "SKIPPING " << ichan << " because it is the same as the previous one!" << endl;
+    string old("nada");
+    // -- loop over channels in case they use separate BDTs
+    for (int ichan = 0; ichan < fNchan; ++ichan) {
+      setBdtStrings(ichan);
+      if (old != fCuts[ichan]->bdtXml) {
+	old = fCuts[ichan]->bdtXml;
+	tmvaControlPlots(ichan);
+	getTLFRanking("BDT", "Events0");
+	getTLFRanking("BDT", "Events1");
+	getTLFRanking("BDT", "Events2");
+      } else {
+	cout << "SKIPPING " << ichan << " because it is the same as the previous one!" << endl;
+      }
     }
+    getTLFParameters();
+    getTLFEventNumbers();
   }
-  getTLFParameters();
-  getTLFEventNumbers();
-  opspt("hi");
+
+  if (("all" == what) || ("apply" == what)) {
+    apply("fill");
+  }
+
+  if (("all" == what) || ("opspt" == what)) {
+    opspt("hi");
+  }
 
 }
 
@@ -216,7 +215,6 @@ void plotBDT::tmvaPlots(string type) {
       TString hname = "MVA_" + methodTitle;
       TH1* sig = dynamic_cast<TH1*>(titDir->Get( hname + "_S" ));
       TH1* bgd = dynamic_cast<TH1*>(titDir->Get( hname + "_B" ));
-
 
       cout << " containing " << hname << "_S/_B" << endl;
       // chop off useless stuff
