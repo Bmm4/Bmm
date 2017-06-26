@@ -244,11 +244,21 @@ $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkC
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # -----------------------------------------------
-$dataset = "fakeMC";
+$dataset = "fakeMC2016";
 # -----------------------------------------------
 $mode = "$dataset-$version"; $pattern = "bmm-mc";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
-$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v BsToMuMu | grep -v BsToKMuMu | grep -v MuNu | sort > $mode " . &mCC;
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v BsToMuMu | grep -v MuNu | sort > $mode " . &mCC;
+$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
+$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+
+
+# -----------------------------------------------
+$dataset = "fakeMC2012";
+# -----------------------------------------------
+$mode = "$dataset-$version"; $pattern = "bmm-mc";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/Winter17_private -c -p $pattern  | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
