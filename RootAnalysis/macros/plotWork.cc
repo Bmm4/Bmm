@@ -1372,7 +1372,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   setHist(p2, kRed, 25, 1.2);
   p1->SetMinimum(5.3);
   p1->SetMaximum(5.4);
-  setTitles(p1, "|#it{#eta}_{f}|", "MPV(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
+  setTitles(p1, "|#it{#eta}_{f}|", "MPV(#it{m_{#mu#mu}}) [GeV]", 0.05, 1.1, 1.6);
   p1->Draw("e");
   p2->Draw("esame");
 
@@ -1392,7 +1392,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   setHist(w2, kRed, 25, 1.7);
   w1->SetMinimum(0.);
   w1->SetMaximum(0.22);
-  setTitles(w1, "|#it{#eta}_{f}|", "#sigma(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
+  setTitles(w1, "|#it{#eta}_{f}|", "#sigma(#it{m_{#mu#mu}}) [GeV]", 0.05, 1.1, 1.6);
   w1->Draw("e");
   w2->Draw("esame");
 
@@ -1411,7 +1411,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   setHist(h2, kRed, 25, 1.2);
   h1->SetMinimum(5.3);
   h1->SetMaximum(5.4);
-  setTitles(h1, "|#it{#eta}_{f}|", "mean(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.6);
+  setTitles(h1, "|#it{#eta}_{f}|", "mean(#it{m_{#mu#mu}}) [GeV]", 0.05, 1.1, 1.6);
   h1->Draw("e");
   h2->Draw("esame");
 
@@ -1428,7 +1428,7 @@ void plotWork::ups1(std::string file1, std::string file2) {
   c0->Clear();
   setHist(s1, kBlue, 24, 1.7);
   setHist(s2, kRed, 25, 1.7);
-  setTitles(s1, "|#it{#eta}_{f}|", "RMS(#it{m_{#mu #mu}}) [GeV]", 0.05, 1.1, 1.7);
+  setTitles(s1, "|#it{#eta}_{f}|", "RMS(#it{m_{#mu#mu}}) [GeV]", 0.05, 1.1, 1.7);
   s1->SetMinimum(0.);
   s1->SetMaximum(0.22);
   s1->Draw("e");
@@ -1705,7 +1705,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
   setFilledHist(hbd0Comb, kRed+2, kRed+2, 3354);
   setFilledHist(hbd1Comb, kRed+2, kRed+2, 3354);
 
-  setTitles(hbs0Comb, "m_{#it{#mu #mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
+  setTitles(hbs0Comb, "#it{m_{#mu#mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
   hbs0Comb->SetMaximum(1.3*hbs0Comb->GetMaximum());
   hbs0Comb->Draw();
   hbd0Comb->Draw("same");
@@ -1721,7 +1721,7 @@ void plotWork::ups2(std::string file1, std::string file2) {
 
   savePad(Form("ups2-b0-bs-run2-overlay.pdf"));
 
-  setTitles(hbs1Comb, "#it{m_{#mu #mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
+  setTitles(hbs1Comb, "#it{m_{#mu#mu}} [GeV]", "a.u.", 0.05, 1.1, 1.6);
   hbs1Comb->SetMaximum(1.3*hbs1Comb->GetMaximum());
   hbs1Comb->Draw();
   hbd1Comb->Draw("same");
