@@ -894,15 +894,15 @@ void plotClass::candAnalysis() {
     fb.bdt = fBDT;
   }
 
-  cout << "RARE? " << (fMode == RARE)
-       << " fGoodAcceptance = " << fGoodAcceptance
-       << " fGoodTracks = " << fGoodTracks
-       << " fGoodTracksPt = " << fGoodTracksPt
-       << " fGoodTracksEta = " << fGoodTracksEta
-       << " fGoodBdtPt = " << fGoodBdtPt
-       << " fGoodJpsiCut = " << fGoodJpsiCuts
-       << " BDT = " << fBDT
-       << endl;
+  if (0) cout << "RARE? " << (fMode == RARE)
+	      << " fGoodAcceptance = " << fGoodAcceptance
+	      << " fGoodTracks = " << fGoodTracks
+	      << " fGoodTracksPt = " << fGoodTracksPt
+	      << " fGoodTracksEta = " << fGoodTracksEta
+	      << " fGoodBdtPt = " << fGoodBdtPt
+	      << " fGoodJpsiCut = " << fGoodJpsiCuts
+	      << " BDT = " << fBDT
+	      << endl;
 
 
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
