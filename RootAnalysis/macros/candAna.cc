@@ -2601,12 +2601,17 @@ void candAna::readFile(string filename, vector<string> &lines) {
     exit(1);
   }
   char input[1000];
+  string sbuffer;
   while (is.getline(buffer, 200, '\n')) {
+    sbuffer = string(buffer);
     if (buffer[0] != '+') {
-      lines.push_back(string(buffer));
+      lines.push_back(sbuffer);
     } else {
-      sscanf(buffer, "+input %s", input);
-      readFile(input, lines);
+      if (string::npos != sbuffer.find("$YEAR")) {
+	replaceAll(sbuffer, "$YEAR", Form("%d", fYear));
+      }
+      replaceAll(sbuffer, "+input ", "");
+      readFile(sbuffer, lines);
     }
   }
 
