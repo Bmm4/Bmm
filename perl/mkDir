@@ -14,7 +14,9 @@ my $dir = shift(@ARGV);
 print "mkdir $dir \n";
 mkdir $dir;
 
-system("/bin/cp cuts/baseCuts.cuts $dir");
+system("/bin/cp cuts/baseCuts.2016.cuts $dir");
+system("/bin/cp cuts/baseCuts.2012.cuts $dir");
+system("/bin/cp cuts/baseCuts.2011.cuts $dir");
 chdir $dir;
 
 symlink("../plotResults.2016.files", "plotResults.2016.files");
@@ -22,6 +24,10 @@ symlink("../plotResults.2012.files", "plotResults.2012.files");
 symlink("../plotResults.2011.files", "plotResults.2011.files");
 
 #print "/usr/bin/perl -pi -e '$opt_s'\n";
-system("/usr/bin/perl -pi -e '$opt_s' baseCuts.cuts");
-print "new <  old > \n";
-system("diff baseCuts.cuts ../cuts/baseCuts.cuts");
+if ($opt_s) {
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2016.cuts");
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2012.cuts");
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2011.cuts");
+    print "new <  old > \n";
+    system("diff baseCuts.2016.cuts ../cuts/baseCuts.2016.cuts");
+}
