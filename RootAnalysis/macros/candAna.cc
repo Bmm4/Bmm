@@ -2607,8 +2607,8 @@ void candAna::readFile(string filename, vector<string> &lines) {
     if (buffer[0] != '+') {
       lines.push_back(sbuffer);
     } else {
-      if (string::npos != sbuffer.find("$YEAR")) {
-	replaceAll(sbuffer, "$YEAR", Form("%d", fYear));
+      if (string::npos != sbuffer.find("YEAR")) {
+	replaceAll(sbuffer, "YEAR", Form("%d", fYear));
       }
       replaceAll(sbuffer, "+input ", "");
       readFile(sbuffer, lines);
