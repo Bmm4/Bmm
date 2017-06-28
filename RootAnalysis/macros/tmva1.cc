@@ -52,10 +52,12 @@ tmva1::tmva1(int year, string vars, string pars) {
   fVariables     = vars;
   fBDTParameters = pars;
 
-  cout << "tmva1 hello: setup for year = " << year << " with variables: " << vars << endl;
+  cout << "tmva1 hello: setup for year = " << year << endl
+       << " with variables:  " << vars << endl
+       << " with parameters: " << fBDTParameters
+       << endl;
 
   fVariables = vars;
-  fBDTParameters = "";
 
   legg = 0;
   legge = 0;
@@ -156,10 +158,18 @@ void tmva1::makeAll(int offset, string filename, int chan) {
     if (fKS[i] < minKS)   minKS = fKS[i];
     if (fKS[i+1] < minKS) minKS = fKS[i+1];
   }
-  cout << " ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
-  cout << " bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << endl;
-  cout << "this is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
+  cout << "ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
+  cout << "bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << endl;
+  cout << "offset = " << offset << " is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
   cout << "----------------------------------------------------------------------" << endl;
+
+
+  ofstream OUT;
+  OUT.open("/shome/ursl/abdt.log", ios::app);
+  OUT << "offset = " << offset << "/" << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0]
+      << "/" << fBDTParameters << "/" << fVariables
+      << endl;
+  OUT.close();
 }
 
 // ----------------------------------------------------------------------
@@ -380,10 +390,6 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    } else {
      optstring = "!H:V" + fBDTParameters;
    }
-
-   // -- Josh's (modified) proposal
-   //    optstring = "!H:!V:NTrees=2000::BoostType=Grad:Shrinkage=0.1";
-   //    optstring += ":UseBaggedGrad=F:nCuts=200:MaxDepth=3:NNodesMax=100000:UseYesNoLeaf=F:nEventsMin=1000:";
 
    cout << "==> BookMethod: " << optstring << endl;
    factory->BookMethod( TMVA::Types::kBDT, "BDT", optstring);
