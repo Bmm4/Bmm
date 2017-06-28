@@ -3,7 +3,7 @@ DATACAND       300521
 TRUTHCAND         521
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- trigger
 +input cuts/triggerMixDisplacedJpsi.cuts
 # -- boxes
