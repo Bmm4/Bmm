@@ -1,5 +1,5 @@
 # ----------------------------------------------------------------------
-# basecuts
+# basecuts 2016
 nchan      5
 index       0         1          2        3         4
 metaMin     0.00      0.70       1.40     0.00	    1.40
@@ -38,8 +38,8 @@ pvlip      99.	     99.        99.      99.	   99.
 pvlips     99.	     99.        99.      99.	   99.
 pv2lip    -99.	    -99.       -99.     -99.	  -99.
 pv2lips   -99.	    -99.       -99.     -99.	  -99.
-bdtxml  TMVA-119  TMVA-119  TMVA-119  TMVA-119  TMVA-119
-bdtcut      0.22      0.22       0.22     0.22      0.22
+bdtxml  TMVA-130  TMVA-130  TMVA-130  TMVA-130  TMVA-130
+bdtcut      0.16      0.16       0.16     0.16      0.16
 bdtmupt     3.5       3.5         3.5     3.5       3.5
 # 0 L1_DoubleMu0er1p6_dEta_Max1p8      1
 # 1 L1_DoubleMu0er1p6_dEta_Max1p8_OS   2
