@@ -5,7 +5,7 @@ BRECOTRUTH        521
 NOPRESELECTION      1
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- trigger
 +input cuts/triggerBs.cuts
 # -- boxes
