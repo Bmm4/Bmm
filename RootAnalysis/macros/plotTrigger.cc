@@ -287,7 +287,7 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
   // -- basic HLT efficiency
   string tselection = selection;
   t->Draw("m >> h_0", tselection.c_str());
-  tselection = selection + " && hlt";
+  tselection = selection + " && hlt1 && tos";
   t->Draw("m >> h_0_hlt", tselection.c_str());
 
   TF1 *f1 = fIF->bupsik(h1);
@@ -328,7 +328,7 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
   c0->cd(3);
   tselection = selection + " && reftrg";
   t->Draw("m >> h_rt", tselection.c_str());
-  tselection = selection + " && reftrg && hlt";
+  tselection = selection + " && reftrg && hlt1 && tos";
   t->Draw("m >> h_rt_hlt", tselection.c_str());
 
   f1 = fIF->bupsik(h3);
