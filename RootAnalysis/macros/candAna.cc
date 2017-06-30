@@ -1311,7 +1311,49 @@ void candAna::triggerL1T() {
     if (fVerbose == -32) {
       cout << "L1 trigger fired ->" << fpEvt->fL1TNames[i] << "<-" << endl;
     }
-    if (2016 == fYear) {
+    if (2017 == fYear) {
+      if ("L1_DoubleMu0er1p4_SQ_OS_dR_Max1p5" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1; //1
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0er1p4_SQ_OS_dR_Max1p4" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<1; //2
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu6_SQ_OS" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<2; //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<4; //16
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<5; //32
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<6; //64
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_15_5" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<7; //128
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu_15_7" == fpEvt->fL1TNames[i]) {
+	fL1Seeds |= 0x1<<8; //256
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      }
+    } else if (2016 == fYear) {
       if ("L1_DoubleMu0er1p6_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
 	fL1Seeds |= 0x1; //1
 	fL1SeedString += fpEvt->fL1TNames[i];
