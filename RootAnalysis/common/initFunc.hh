@@ -86,6 +86,7 @@ public:
 
   TF1* expoGauss(TH1 *h, double peak = 5.3, double sigma = 0.04);
   TF1* expogauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double deltaPeak = 0.1, double deltaSigma = 0.1);
+  TF1* expogauss2c(TH1 *h, double peak = 5.3, double sigma = 0.04, double scaleSigma = 1.6);
 
   TF1* expoErrGauss(TH1 *h, double peak = 5.3, double sigma = 0.04, double preco = 5.14);
   TF1* expoErrgauss2(TH1 *h, double peak = 5.3, double sigma = 0.04, double peak2 = 5.3, double sigma2 = 0.1, double preco = 5.14);

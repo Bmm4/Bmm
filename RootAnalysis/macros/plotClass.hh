@@ -63,7 +63,7 @@ class plotClass: public TObject {
 public :
   plotClass(std::string dir = "results",
 	    std::string files = "plotClass.files",
-	    std::string cuts = "plotClass.2016.cuts",
+	    std::string cuts = "nada",
 	    std::string setup = "");
   virtual        ~plotClass();
 
@@ -92,7 +92,7 @@ public :
   void           insertDataset(std::string dsname, dataset *);
   void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
-  std::string    runRange(int run);
+  std::string    era(int run);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
@@ -215,7 +215,7 @@ public :
   initFunc *fIF;
 
   // -- Display utilities
-  std::map<std::string, std::string> fVarToTex;
+  std::map<std::string, std::string> fVarToTex, fVarToTexSymbol;
   std::string fStampString, fStampCms, fStampLumi;
   int fFont;
   double fSize;

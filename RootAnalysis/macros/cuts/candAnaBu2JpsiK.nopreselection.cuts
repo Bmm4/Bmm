@@ -1,18 +1,16 @@
-TYPE           300532
-TRUTHCAND         531
-#NOPRESELECTION      1
+TYPE           300521
+TRUTHCAND         521
+NOPRESELECTION      1
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- trigger
 +input cuts/triggerDisplacedJpsi.cuts
 # -- boxes
-+input cuts/boxes.Bs2JpsiPhi.cuts
++input cuts/boxes.Bu2JpsiK.cuts
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
 +input cuts/jpsimuons.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts
-# -- f0 cuts
-+input cuts/f0.cuts

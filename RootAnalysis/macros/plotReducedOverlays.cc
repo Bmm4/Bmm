@@ -229,13 +229,14 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
   cuts.push_back("bdt");
   cuts.push_back("cnc");
 
-
+  string hname("");
   for (unsigned int iv = 0; iv < cuts.size(); ++iv) {
     if (string::npos != cuts[iv].find("cnc")) fStampString = "CNC";
     if (string::npos != cuts[iv].find("bdt")) fStampString = "BDT";
 
     for (unsigned int i = 0; i < fNchan; ++i) {
-      h = (TH1D*)gDirectory->Get(Form("ad%d%s_%s_tauMass%s", i, cuts[iv].c_str(), sample.c_str(), selection.c_str()));
+      hname = Form("ad%d%s_%s_tauMass%s", i, cuts[iv].c_str(), sample.c_str(), selection.c_str());
+      h = (TH1D*)gDirectory->Get(hname.c_str());
       if (!h) break;
       TF1 *f1 = fIF->expoErrGauss(h, 5.28, 0.04);
       setTitles(h, "m #it{[GeV]}", Form("#it{Entries / %4.3f GeV}", h->GetBinWidth(1)), 0.05, 1.1, 1.5);
@@ -271,6 +272,42 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
       tl->DrawLatexNDC(xPos, 0.80, header.c_str());
       tl->SetTextSize(0.025);
       tl->DrawLatexNDC(xPos, 0.75, Form("%2.1f < |#eta(#mu_{f})| < %2.1f", fCuts[i]->metaMin, fCuts[i]->metaMax));
+
+      if (1) {
+	TH1D *hMassBGL    = (TH1D*)gDirectory->Get(Form("ad%d%s_%s_tauMassBGL", i, cuts[iv].c_str(), sample.c_str()));
+	TH1D *hMassBGH    = (TH1D*)gDirectory->Get(Form("ad%d%s_%s_tauMassBGH", i, cuts[iv].c_str(), sample.c_str()));
+	TH1D *hMassSG     = (TH1D*)gDirectory->Get(Form("ad%d%s_%s_tauMassSG", i, cuts[iv].c_str(), sample.c_str()));
+	TArrow aa;
+	double ymax = h->GetMaximum();
+	double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+	double y0 = 0.2*ymax;
+	double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+	double y1 = 0.2*ymax;
+
+	double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+	double y2 = 0.2*ymax;
+	double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+	double y3 = 0.2*ymax;
+
+	double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+	double y4 = 0.2*ymax;
+
+	double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+	double y5 = 0.2*ymax;
+
+	aa.SetLineWidth(2);
+	aa.SetLineColor(kRed);
+	aa.DrawArrow(x0, y0, x0, 0.);
+	aa.DrawArrow(x1, y1, x1, 0.);
+	aa.SetLineColor(kBlack);
+	aa.DrawArrow(x2, y2, x2, 0.);
+	aa.DrawArrow(x3, y3, x3, 0.);
+
+	aa.SetLineColor(kBlue);
+	aa.DrawArrow(x4, y4, x4, 0.);
+	aa.DrawArrow(x5, y5, x5, 0.);
+      }
+
 
       stamp(0., fStampCms, fStampString, 0., fStampLumi);
 

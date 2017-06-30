@@ -33,7 +33,7 @@ public :
   void yieldStability(std::string dsname, std::string trg = "HLT");
   void yieldStabilityRatios(std::string trg = "HLT");
   void yieldStudy(int run = 278273, string ds = "bmmData");
-  void runStudy(std::string dsname);
+  void runStudy(std::string dsname, std::string mode = "ana");
 
   // -- misreconstructed background
   void wrongReco(std::string ds1, std::string mode, std::string selection = "hlt");
@@ -111,6 +111,7 @@ private:
 
   std::map<std::string, TH2D*> fHLs0, fHLs1;
   std::map<std::string, TProfile*> fProf;
+  std::map<std::string, TH1D *> fvHists;
 
   ClassDef(plotStuff,1)
 

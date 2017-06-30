@@ -4,9 +4,9 @@
 # Usage examples
 # ==============
 #
-#
-# collectCrabRootfiles [-o 23] -x DoubleMuon/crab_doubleMuon-2015B/151022_095340/0000/ -n inclb-prompt-Run2015B-SingleMuon
-#
+# /scratch/ursl/store/user/ursl/bmm4/cmsRun/v06/bmmMuOnia2011A
+# $BMMBASE/perl/collectCrabRootfiles -x MuOnia/crab_BMM4_Run2011A/170606_062613/ -n bmm-rereco-Run2011A
+# $BMMBASE/perl/collectCrabRootfiles -x MuOnia/crab_BMM4_Run2011A/170606_062613 -n bmm-rereco-Run2011A
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
@@ -61,7 +61,7 @@ open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$nam
 foreach $file (@rootfiles) {
     chop($file);
     if ($file =~ /failed/) {next;}
-    $file =~ s%./%%g;
+    $file =~ s%\.\/%%g;
     $numeral = sprintf("%04i", $cnt);
     $newrootfilename = "$name-$numeral.root";
     print "mv $xdir/$file $newrootfilename\n";

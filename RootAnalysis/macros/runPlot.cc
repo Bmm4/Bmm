@@ -18,6 +18,8 @@
 #include "plotResults.hh"
 #include "plotStuff.hh"
 #include "plotFake.hh"
+#include "plotBDT.hh"
+#include "plotTrigger.hh"
 
 #include "tmva1.hh"
 
@@ -43,7 +45,7 @@ int main(int argc, char *argv[]) {
   // -- command line arguments
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
-    if (!strcmp(argv[i], "-f"))  {files = argv[++i];}
+    if (!strcmp(argv[i], "-f"))  {files = argv[++i];} // for tmva1: offset
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];} // for tmva1: BDT parameters
     if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}
     if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];}
@@ -53,23 +55,30 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
   }
 
+  if (2017 == year) {
+    if ("nada" == files) files = "plotResults.2017.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2017.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "";
+  }
+
   if (2016 == year) {
     if ("nada" == files) files = "plotResults.2016.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
   if (2012 == year) {
     if ("nada" == files) files = "plotResults.2012.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2012.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
   if (2011 == year) {
     if ("nada" == files) files = "plotResults.2011.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.cuts";
+    if ("nada" == cuts)  cuts  = "baseCuts.2011.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
@@ -77,6 +86,7 @@ int main(int argc, char *argv[]) {
 
   // -- run everything
   if ("nada" == plot) {
+    cout << "The FULL show" << endl;
     {
       gROOT->Clear();  gROOT->DeleteAll();
       plotResults a(dir, files, cuts, setup);
@@ -161,11 +171,47 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // -- BDT
-  if (string::npos != plot.find("bdt")) {
+  // -- TMVA training
+  if (string::npos != plot.find("tmva1")) {
     gROOT->Clear();  gROOT->DeleteAll();
     tmva1 a(year, setup, mode);
-    a.makeAll(0, "", 0);
+    int ifiles(100);
+    if ("nada" == files) {
+      ifiles = 100;
+    } else {
+      ifiles = atoi(files.c_str());
+    }
+    int chan = ifiles%10;
+    if (9 == chan) chan = -1;
+    cout << "calling tmva1::makeAll(" << ifiles << ", \"\", " << chan << ")" << endl;
+    a.makeAll(ifiles, "", chan);
+  }
+
+
+  // -- BDT
+  if (string::npos != plot.find("bdt")) {
+    cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
+    gROOT->Clear();  gROOT->DeleteAll();
+    plotBDT a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
+
+  // -- trigger
+  if (string::npos != plot.find("trigger")) {
+    cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
+    gROOT->Clear();  gROOT->DeleteAll();
+    plotBDT a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
   }
 
 
@@ -173,7 +219,7 @@ int main(int argc, char *argv[]) {
   if (string::npos != plot.find("umllifetime")) {
     gROOT->Clear();  gROOT->DeleteAll();
     files = "plotResults.2016.files";
-    cuts  = "baseCuts.cuts";
+    cuts  = "baseCuts.2016.cuts";
     setup = "";
     umlLifetime a(dir, files, cuts, setup);
     if (rootfilename == "nada") {
@@ -191,7 +237,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-
+/*
 int TMVAClassification( TString myMethodList) {
    // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
    // if you use your private .rootrc, or run from a different directory, please copy the
@@ -632,3 +678,4 @@ int TMVAClassification( TString myMethodList) {
 
    return 0;
 }
+*/

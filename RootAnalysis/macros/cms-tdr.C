@@ -61,7 +61,7 @@
   tdrStyle->SetOptFile(0);
   tdrStyle->SetOptStat(111111); // To display the mean and RMS:   SetOptStat("mr");
   tdrStyle->SetStatColor(kWhite);
-  tdrStyle->SetStatFont(52);
+  tdrStyle->SetStatFont(42);
   tdrStyle->SetStatFontSize(0.025);
   tdrStyle->SetStatTextColor(1);
   tdrStyle->SetStatFormat("6.4g");
@@ -86,7 +86,7 @@
 
   // For the axis titles:
   tdrStyle->SetTitleColor(1, "XYZ");
-  tdrStyle->SetTitleFont(52, "XYZ");
+  tdrStyle->SetTitleFont(42, "XYZ");
   tdrStyle->SetTitleSize(0.06, "XYZ");
   // tdrStyle->SetTitleXSize(Float_t size = 0.02); // Another way to set the size?
   // tdrStyle->SetTitleYSize(Float_t size = 0.02);
@@ -96,7 +96,7 @@
 
   // For the axis labels:
   tdrStyle->SetLabelColor(1, "XYZ");
-  tdrStyle->SetLabelFont(52, "XYZ");
+  tdrStyle->SetLabelFont(42, "XYZ");
   tdrStyle->SetLabelOffset(0.007, "XYZ");
   tdrStyle->SetLabelSize(0.05, "XYZ");
 

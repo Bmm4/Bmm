@@ -42,6 +42,7 @@ $exclude .= " --exclude .git";
 $exclude .= " --exclude obj/\\*.o";
 $exclude .= " --exclude chains";
 $exclude .= " --exclude Bmm/CmsswAnalysis/test";
+$exclude .= " --exclude Bmm/RootAnalysis/macros/chains";
 $exclude .= " --exclude \\*.root";
 $exclude .= " --exclude \\*.root.\\*";
 $exclude .= " --exclude \\*.pdf";
@@ -49,6 +50,7 @@ $exclude .= " --exclude \\*.ps";
 $exclude .= " --exclude \\*.eps";
 $exclude .= " --exclude \\*.png";
 $exclude .= " --exclude \\*.log";
+$exclude .= " --exclude \\*.tex";
 $exclude .= " --exclude .nfs\\*";
 $exclude .= " --exclude \\*~";
 if ($opt_x) {

@@ -1,0 +1,33 @@
+#!/usr/bin/env perl
+
+#
+# usage: $BMMBASE/perl/mkDir -s 's%muonbdt     0.54      0.54       0.54     0.54      0.54%muonbdt     0.55      0.55       0.55     0.55      0.55%g' mbdt55
+#        $BMMBASE/perl/mkDir -s 's%bdtxml    TMVA-2    TMVA-2     TMVA-3   TMVA-2    TMVA-3%bdtxml   TMVA-10   TMVA-10    TMVA-10  TMVA-10   TMVA-10%g; s%bdtcut      0.36      0.36       0.38     0.36      0.38%bdtcut      0.23      0.23       0.23     0.23      0.23%g' abdt23
+#
+
+
+use Getopt::Std;
+getopts('s:');
+
+my $dir = shift(@ARGV);
+
+print "mkdir $dir \n";
+mkdir $dir;
+
+system("/bin/cp cuts/baseCuts.2016.cuts $dir");
+system("/bin/cp cuts/baseCuts.2012.cuts $dir");
+system("/bin/cp cuts/baseCuts.2011.cuts $dir");
+chdir $dir;
+
+symlink("../plotResults.2016.files", "plotResults.2016.files");
+symlink("../plotResults.2012.files", "plotResults.2012.files");
+symlink("../plotResults.2011.files", "plotResults.2011.files");
+
+#print "/usr/bin/perl -pi -e '$opt_s'\n";
+if ($opt_s) {
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2016.cuts");
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2012.cuts");
+    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2011.cuts");
+    print "new <  old > \n";
+    system("diff baseCuts.2016.cuts ../cuts/baseCuts.2016.cuts");
+}

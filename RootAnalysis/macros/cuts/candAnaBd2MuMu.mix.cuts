@@ -4,7 +4,7 @@ TRUTHCAND         511
 NOPRESELECTION      1
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- trigger
 +input cuts/triggerMixBs.cuts
 # -- boxes

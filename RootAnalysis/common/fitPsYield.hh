@@ -68,7 +68,7 @@ public:
   TH1D* getWeightedCombination()   {return fCombinedW8;}
 
   void fitBu2JpsiKp(int limitpars, std::string pdfprefix, int whichfit = 0);
-  void fitBs2JpsiPhi(int limitpars, std::string pdfprefix);
+  void fitBs2JpsiPhi(int limitpars, std::string pdfprefix, int whichfit = 0);
 
   void  fit0_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".");
   void  fit1_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".");

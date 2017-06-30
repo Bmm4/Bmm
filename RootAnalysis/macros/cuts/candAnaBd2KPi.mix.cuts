@@ -4,7 +4,7 @@ TRUTHCAND         511
 TRIGRANGE    NOTRIGGER
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks

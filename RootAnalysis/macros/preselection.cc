@@ -41,21 +41,24 @@ using namespace std;
 
 // ----------------------------------------------------------------------
 std::string preselection() {
-  std::string cut = Form("gmugmid && (%3.2f<pt)&&(pt<%3.2f) && (%3.2f<m1pt)&&(m1pt<%3.2f) && (%3.2f<m2pt)&&(m2pt<%3.2f)",
+  std::string cut = Form(" (%3.2f<pt)&&(pt<%3.2f) && (%3.2f<m1pt)&&(m1pt<%3.2f) && (%3.2f<m2pt)&&(m2pt<%3.2f)",
 			 PTMIN, PTMAX, M1PTMIN, M1PTMAX, M2PTMIN, M2PTMAX);
   cut += Form(" && (flsxy>%3.2f) && (fl3d<%3.2f) && (pvip<%3.2f) && !(TMath::IsNaN(pvips)) && (pvips>0) && (pvips<%3.2f)",
 	      FLSXYMIN, FL3DMAX, PVIPMAX, PVIPSMAX);
   cut += Form(" && abs(pvlip) < %3.2f && abs(pvlips) < %3.2f", PVLIPMAX, PVLIPSMAX);
   cut += Form(" && (closetrk<%d) && (fls3d>%3.2f) && (fls3d<%3.2f) && (docatrk<%3.2f) && (maxdoca<%3.2f)",
 			  CLOSETRKMAX, FLS3DMIN, FLS3DMAX, DOCATRKMAX, MAXDOCAMAX);
-  cut += Form(" && (chi2dof<%3.2f) && (iso>%3.2f) && (alpha<%3.2f) && (me<%3.2f)", CHI2DOFMAX, ISOMIN, ALPHAMAX, MASSERRORMAX);
+  cut += Form(" && (chi2dof<%3.2f)  && (alpha<%3.2f) && (me<%3.2f)", CHI2DOFMAX, ALPHAMAX, MASSERRORMAX);
+  cut += Form(" && (iso>%3.2f) && (m1iso>%3.2f) && (m2iso>%3.2f)", ISOMIN, ISOMIN, ISOMIN);
   cut += Form(" && (m1q*m2q<0)");
   return cut;
 }
 
 // ----------------------------------------------------------------------
 bool preselection(redTreeData &b) {
-  const int verbose(0);
+  const int verbose(-1);
+
+  //NO?!?!?!?!  if (!b.gmugmid) return false;
 
   if (b.m1q*b.m2q > 0) return false;
 
@@ -82,7 +85,7 @@ bool preselection(redTreeData &b) {
   if (TMath::Abs(b.pvlips) > PVLIPSMAX) return false;
   if (verbose > 7) cout << "passed pvlip* cuts" << endl;
 
-  if (b.closetrk > CLOSETRKMAX) return false;
+  if (b.closetrk >= CLOSETRKMAX) return false;
   if (b.fls3d < FLS3DMIN) return false;
   if (b.fls3d > FLS3DMAX) return false;
   if (b.docatrk > DOCATRKMAX) return false;
@@ -94,10 +97,20 @@ bool preselection(redTreeData &b) {
   //   if (b.m < 4.9) return false;
   //   if (b.m > 5.9) return false;
   //   if (verbose > 4) cout << "passed mass cuts" << endl;
+  if (verbose > 5) {
+    cout << "chi2dof = " << b.chi2dof
+	 << " iso = " << b.iso
+	 << " m1iso = " << b.m1iso
+	 << " m2iso = " << b.m2iso
+	 << " alpha = " << b.alpha
+	 << endl;
+  }
 
   // -- physics preselection
   if (b.chi2dof > CHI2DOFMAX) return false;
   if (b.iso < ISOMIN) return false;
+  if (b.m1iso < ISOMIN) return false;
+  if (b.m2iso < ISOMIN) return false;
   if (b.alpha > ALPHAMAX) return false;
   if (verbose > 0) cout << "passed physics cuts" << endl;
 

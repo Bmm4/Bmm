@@ -63,3 +63,7 @@ for ($i = 2; $i <= $#joblines; $i++) {
 	print "$number: $line\n";
     }
 }
+
+if ($#joblines < 3) {
+    print "are your jobs running in a different queue than all.q? Use -q in that case!\n";
+}

@@ -1,11 +1,10 @@
-TYPE             1313
-TRUTHCAND         531
-NOPRESELECTION      1
+TYPE          1000078
+DATACAND         1313
+TRUTHCAND         521
+TRIGRANGE    NOTRIGGER
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.cuts
-# -- trigger
-+input cuts/triggerBs.cuts
++input cuts/baseCuts.YEAR.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks

@@ -387,7 +387,7 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
-  if (what == "all" || what == "dumpdatasets" || what == "genvalidation") {
+  if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
     dumpDatasets();
   }
 
@@ -458,7 +458,7 @@ void plotResults::makeAll(string what) {
   }
 
   // -- this will recreate fHistFile!
-  if (what == "all" || what == "fill") {
+  if (what == "all" || string::npos != what.find("fill")) {
     fillAndSaveHistograms();
   }
 
@@ -466,18 +466,20 @@ void plotResults::makeAll(string what) {
     fillAndSaveHistograms(0, 1e5);
   }
 
-  if (what == "all" || what == "ana") {
+  if (what == "all" || string::npos != what.find("ana")) {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
     calculateNumbers("cnc" + fSuffix);
     calculateNumbers("bdt" + fSuffix);
   }
 
-  if (what == "cnc") {
+  if (what == "all" || string::npos != what.find("cnc")) {
+    fHistWithAllCuts = "hMassWithAllCuts";
     calculateNumbers("cnc" + fSuffix);
   }
 
-  if (what == "bdt") {
+  if (what == "all" || string::npos != what.find("bdt")) {
+    fHistWithAllCuts = "hMassWithAllCuts";
     calculateNumbers("bdt" + fSuffix);
   }
 
@@ -496,47 +498,52 @@ void plotResults::bookHist(string dsname) {
 
 // ----------------------------------------------------------------------
 void plotResults::dumpDatasets() {
-  fTEX << "% ----------------------------------------------------------------------" << endl;
-  fTEX << formatTex(fBfPsiMuMu, Form("%s:BfPsiMuMu:val", fSuffix.c_str()), 5) << endl;
-  fTEX << formatTex(fBfPsiMuMuE, Form("%s:BfPsiMuMu:err", fSuffix.c_str()), 5) << endl;
 
-  fTEX << formatTex(fBfPhiKpKm, Form("%s:BfPhiKpKm:val", fSuffix.c_str()), 5) << endl;
-  fTEX << formatTex(fBfPhiKpKmE, Form("%s:BfPhiKpKm:err", fSuffix.c_str()), 5) << endl;
+  std::ofstream TEX;
+  string dsname = Form("%s/%d-datasets.tex", fDirectory.c_str(), fYear);
+  system(Form("/bin/rm -f %s", dsname.c_str()));
+  TEX.open(dsname.c_str(), ios::app);
 
-  fTEX << formatTex(fBfKstarKpPim, Form("%s:BfKstarKpPim:val", fSuffix.c_str()), 5) << endl;
-  fTEX << formatTex(fBfKstarKpPim, Form("%s:BfKstarKpPim:err", fSuffix.c_str()), 5) << endl;
+  TEX << "% ----------------------------------------------------------------------" << endl;
+  TEX << formatTex(fBfPsiMuMu, Form("%s:BfPsiMuMu:val", fSuffix.c_str()), 5) << endl;
+  TEX << formatTex(fBfPsiMuMuE, Form("%s:BfPsiMuMu:err", fSuffix.c_str()), 5) << endl;
 
-  fTEX << formatTexErrSci(fCrossSection, 0., Form("%s:PythiaCrossSection:val", fSuffix.c_str()), -1) << endl;
+  TEX << formatTex(fBfPhiKpKm, Form("%s:BfPhiKpKm:val", fSuffix.c_str()), 5) << endl;
+  TEX << formatTex(fBfPhiKpKmE, Form("%s:BfPhiKpKm:err", fSuffix.c_str()), 5) << endl;
+  TEX << formatTex(fBfKstarKpPim, Form("%s:BfKstarKpPim:val", fSuffix.c_str()), 5) << endl;
+  TEX << formatTex(fBfKstarKpPimE, Form("%s:BfKstarKpPim:err", fSuffix.c_str()), 5) << endl;
 
-  fTEX << "% ----------------------------------------------------------------------" << endl;
+  TEX << formatTexErrSci(fCrossSection, 0., Form("%s:PythiaCrossSection:val", fSuffix.c_str()), -1) << endl;
+
+  TEX << "% ----------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     TH1D *h1 = it->second->getHist("monEvents", false);
     int nEvtFile = static_cast<int>(h1->GetBinContent(1));
     int nCands   = static_cast<int>(h1->GetBinContent(2));
     double epscand  = static_cast<double>(nCands)/nEvtFile;
     double epscandE = dEff(nCands, nEvtFile);
-    fTEX << Form("\\vdef{%s:%s:name} {%s}", fSuffix.c_str(), it->first.c_str(), it->first.c_str()) << endl;
-    fTEX << Form("\\vdef{%s:%s:decay} {%s}", fSuffix.c_str(), it->first.c_str(), it->second->fLatexName.c_str()) << endl;
-    fTEX << formatTex(nEvtFile, Form("%s:%s:nEvtFile", fSuffix.c_str(), it->first.c_str()), 0) << endl;
-    fTEX << formatTex(nCands, Form("%s:%s:nCands", fSuffix.c_str(), it->first.c_str()), 0) << endl;
-    fTEX << formatTex(epscand, Form("%s:%s:epsCand:val", fSuffix.c_str(), it->first.c_str()), 4) << endl;
-    fTEX << formatTex(epscandE, Form("%s:%s:epsCand:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
-    fTEX << formatTex(it->second->fFilterEff, Form("%s:%s:filterEff:val", fSuffix.c_str(), it->first.c_str()), 6) << endl;
-    fTEX << formatTex(0., Form("%s:%s:filterEff:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
+    TEX << Form("\\vdef{%s:%s:name} {%s}", fSuffix.c_str(), it->first.c_str(), it->first.c_str()) << endl;
+    TEX << Form("\\vdef{%s:%s:decay} {%s}", fSuffix.c_str(), it->first.c_str(), it->second->fLatexName.c_str()) << endl;
+    TEX << formatTex(nEvtFile, Form("%s:%s:nEvtFile", fSuffix.c_str(), it->first.c_str()), 0) << endl;
+    TEX << formatTex(nCands, Form("%s:%s:nCands", fSuffix.c_str(), it->first.c_str()), 0) << endl;
+    TEX << formatTex(epscand, Form("%s:%s:epsCand:val", fSuffix.c_str(), it->first.c_str()), 4) << endl;
+    TEX << formatTex(epscandE, Form("%s:%s:epsCand:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
+    TEX << formatTex(it->second->fFilterEff, Form("%s:%s:filterEff:val", fSuffix.c_str(), it->first.c_str()), 6) << endl;
+    TEX << formatTex(0., Form("%s:%s:filterEff:err", fSuffix.c_str(), it->first.c_str()), 4) << endl;
     if (it->second->fBf > 0.) {
-      fTEX << formatTexErrSci(it->second->fBf, it->second->fBfE, Form("%s:%s:bf", fSuffix.c_str(), it->first.c_str()), 2) << endl;
+      TEX << formatTexErrSci(it->second->fBf, it->second->fBfE, Form("%s:%s:bf", fSuffix.c_str(), it->first.c_str()), 2) << endl;
       double eqLumi(0.);
       if (it->second->fFilterEff > 0) {
 	eqLumi = nEvtFile/fCrossSection/it->second->fBf/it->second->fFilterEff;
-	fTEX << formatTex(eqLumi, Form("%s:%s:eqLumi:val", fSuffix.c_str(), it->first.c_str()), 1) << endl;
+	TEX << formatTex(eqLumi, Form("%s:%s:eqLumi:val", fSuffix.c_str(), it->first.c_str()), 1) << endl;
 	cout << it->first << ": eqLumi = " << eqLumi << " filterEff: " << it->second->fFilterEff << endl;
       }
     }
     if (it->second->fLumi > 0.) {
-      fTEX << formatTex(it->second->fLumi, Form("%s:%s:lumi", fSuffix.c_str(), it->first.c_str()), 1) << endl;
+      TEX << formatTex(it->second->fLumi, Form("%s:%s:lumi", fSuffix.c_str(), it->first.c_str()), 1) << endl;
     }
   }
-
+  TEX.close();
 }
 
 
@@ -1198,10 +1205,10 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio)
 void plotResults::calculateNumbers(string mode) {
   cout << "==> calculateNumbers for mode: " << mode << endl;
 
-  if (string::npos != mode.find("bdt")) {
-    fDoUseBDT = true;
-  } else {
+  if (string::npos != mode.find("cnc")) {
     fDoUseBDT = false;
+  } else {
+    fDoUseBDT = true;
   }
   // -- open histogram file
   cout << "fHistFile: " << fHistFileName;
@@ -1248,12 +1255,16 @@ void plotResults::calculateNumbers(string mode) {
 // ----------------------------------------------------------------------
 void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
   // previously mode had been used to differentiate between bdmm, bsmm, no, cs, ...
-  cout << " numbersFromHist for name: " << aa.fName << ", chan: " << aa.fChan << endl;
   int chan = aa.fChan;
 
   // -- efficiency and acceptance
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   modifier += "_" + aa.fNameMc;
+
+  cout << " numbersFromHist for name: " << aa.fName << ", chan: " << aa.fChan
+       << " all cuts hist: " << Form("%s_%s_chan%d", fHistWithAllCuts.c_str(), modifier.c_str(), chan)
+       << endl;
+
   fHistFile->cd(aa.fNameMc.c_str());
   TH1D *hAcceptance              = (TH1D*)gDirectory->Get(Form("hGenAndAccNumbers_%s_chan%d", modifier.c_str(), chan));
 
@@ -1381,7 +1392,6 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
 }
 
 
-
 // ----------------------------------------------------------------------
 void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   c0->Clear();
@@ -1472,18 +1482,25 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   }
 
   lF2->SetLineStyle(kDashed);
+  double binw = h1->GetBinWidth(1);
   TFitResultPtr r;
-  h1->Fit(lF1, "rl", "", lo, hi);
-
-  setTitles(h1, "m_{#it{#mu #mu}} #it{[GeV]}", Form("#it{Candidates / %4.3f GeV}", h1->GetBinWidth(1)));
+  bool notFit(false);
+  if (massIntegral(h1, HI, a.fChan) > 3) {
+    h1->Fit(lF1, "rl", "", lo, hi);
+  } else {
+    notFit = true;
+    lF1->SetParameter(0, 3.*binw/(hi-lo));              // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
+    lF1->SetParError(0, TMath::Sqrt(3.)*binw/(hi-lo));  // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
+  }
+  setTitles(h1, "#it{m}_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", h1->GetBinWidth(1)));
 
   h1->DrawCopy();
   lF2->SetParameters(lF1->GetParameters());
   lF2->SetParErrors(lF1->GetParErrors());
   lF2->SetLineColor(kBlue);
+  if (notFit) lF1->Draw("same");
   lF2->Draw("same");
 
-  double binw = h1->GetBinWidth(1);
   a.fObsYield[0].val = massIntegral(h1, LO, a.fChan);
   a.fFitYield[0].val = lF2->Integral(fBgLo, fCuts[a.fChan]->mBdLo)/binw;
 
@@ -1516,8 +1533,6 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   c0->Modified();
   c0->Update();
   savePad(Form("%s-combBg-mode%d-chan%d.pdf", fSuffixSel.c_str(), mode, a.fChan));
-
-
 }
 
 // ----------------------------------------------------------------------
@@ -1686,7 +1701,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     a->fMcYield[2].val = massIntegral(hw, BS, chan);
     integral = massIntegral(hu, BS, chan);
     estatRel = (integral > 0.?TMath::Sqrt(integral)/integral : 0.);
-    // FIXME
+    // FIXME??
     if (a->fName == "bdpimunuBg") {
       cout << "XXX a->fMcYield[2].val = " << a->fMcYield[2].val << " integral = " << integral << " estatRel = " << estatRel << endl;
     }
@@ -1706,7 +1721,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     TH1D *hwrb = (TH1D*)hw->Clone(Form("hwrb_%s", hw->GetName()));
     hwrb->Rebin(5);
     hwrb->SetNdivisions(510, "XYZ");
-    setTitles(hwrb, "m_{#mu #mu} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
+    setTitles(hwrb, "m_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
     if (0 == nmuons) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fHhNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
@@ -1721,7 +1736,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
       vBg.insert(vBg.begin(), hw);
       vBgnames.insert(vBgnames.begin(), it->second->fName);
       vBgoptions.insert(vBgoptions.begin(), "f");
-    } else if (1 == nmuons) {
+    } else if (nmuons >= 1) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fSlNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
 	fSlNumbers[chan].fMcYield[im].add2Errors(a->fMcYield[im]);
@@ -1783,8 +1798,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hSl.Draw("hist");
-  hSl.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hSl.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hSl.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hSl.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lSl = ::newLegend("semileptonic decays", 0.50, 0.6, 0.85, 0.85, vSl, vSlnames, vSloptions);
   lSl->Draw();
   c0->Modified();
@@ -1796,8 +1811,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hHh.Draw("hist");
-  hHh.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hHh.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hHh.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hHh.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lHh = ::newLegend("hadronic decays", 0.56, 0.4, 0.85, 0.85, vHh, vHhnames, vHhoptions);
   lHh->Draw();
   c0->Modified();
@@ -1809,8 +1824,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hBg.Draw("hist");
-  hBg.GetXaxis()->SetTitle("m_{#it{#mu #mu}} #it{[GeV]}");
-  hBg.GetYaxis()->SetTitle("#it{Candidates / Bin}");
+  hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hBg.GetYaxis()->SetTitle("Candidates / Bin");
   TLegend *lBg = ::newLegend("rare decays", 0.50, 0.3, 0.85, 0.85, vBg, vBgnames, vBgoptions);
   lBg->Draw();
   c0->Modified();
@@ -2085,9 +2100,6 @@ void plotResults::loopFunction1() {
       && fGoodBdtPt
       && fGoodMuonsEta
       && fGoodJpsiCuts
-      && fGoodTracks
-      && fGoodTracksPt
-      && fGoodTracksEta
       && fGoodBDT
       ) {
     fhMassWithAnaCuts[modifier[1]][fChan]->Fill(mass);
@@ -2386,6 +2398,9 @@ void plotResults::loadFiles(string afiles) {
     // cout << it->first << endl;
     // cout << it->second->fName << endl;
     // cout << it->second->fF->GetName() << endl;
+    if (!it->second->fF) {
+      cout << "missing " << it->first << endl;
+    }
     cout << Form("%2d %20s: %70s %15s %8.1f %.2e %.2e",
 		 cnt,
 		 it->first.c_str(),
@@ -2689,6 +2704,15 @@ bool plotResults::skipThisBg(string name) {
 string plotResults::rareAccName(string sname) {
   string accname("");
   // -- the acceptance sample cannot be determined trivially
+  if (string::npos != sname.find("bdpimumuMcCombBg")) {
+    accname = "bdpimumuMcCombAccBg";
+    return accname;
+  }
+  if (string::npos != sname.find("bupimumuMcCombBg")) {
+    accname = "bupimumuMcCombAccBg";
+    return accname;
+  }
+
   if (string::npos != sname.find("bs")) {
     if (string::npos == sname.find("mu")) {
       accname = "bskkMcCombAccBg";

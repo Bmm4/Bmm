@@ -177,20 +177,9 @@ void plotFake::makeAll(string what) {
       makeOverlay("fakeData_phi", "fakeMc_phi", "Cu");
       makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
       makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
-  }
-
-  if (what == "dbx1") {
-    fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
-    // makeSample("fakeData", "psi", 1.e6);
-    // makeSample("fakeMc", "psi", 1e6);
-    // makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
-    // makeSample("fakeData", "ks");
-    // makeSample("fakeMc", "ks", 1e6);
-    // makeSample("fakeData", "lambda");
-    // makeSample("fakeMc", "lambda", 1e6);
-    // makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
-    // makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
-    return;
+      for (unsigned int ic = 0; ic < fChannelList.size(); ++ic) {
+	fTEX << formatTex(fCuts[ic]->muonbdt, Form("%s:muonidBdtCut_responseCut_chan%i:val", fSuffix.c_str(), ic), 3) << endl;
+      }
   }
 
   if (what == "all" || string::npos != what.find("sample")) {
@@ -236,6 +225,10 @@ void plotFake::makeAll(string what) {
     if ((what == "all") || (what == "plot") || (string::npos != what.find("plot") && string::npos != what.find("lambda"))) {
       makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
     }
+
+    for (unsigned int ic = 0; ic < fChannelList.size(); ++ic) {
+      fTEX << formatTex(fCuts[ic]->muonbdt, Form("%s:muonidBdtCut_responseCut_chan%i:val", fSuffix.c_str(), ic), 3) << endl;
+    }
   }
 
   if (what == "all" || string::npos != what.find("fakerate")) {
@@ -268,7 +261,7 @@ void plotFake::makeAll(string what) {
 
   if ((what == "all") || string::npos != what.find("pidtables")) {
     mkPidTables("");
-    plotPidTables("bla");
+    plotPidTables("");
   }
 
 }
@@ -495,7 +488,7 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	TH1D *hd = (TH1D*)h1->Clone("hd"); hd->Reset();
 	int nmax = h1->GetNbinsX();
 	double itot = h1->Integral();
-	double imax(0.);
+	double imax(0.), icut(0.);
 	for (int ib = 1; ib <= h1->GetNbinsX(); ++ib) {
 	  double int1 = h1->Integral(ib, nmax);
 	  if (int1 < 0.) int1 *= -1.;
@@ -514,6 +507,7 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	       << " err = " << TMath::Sqrt(err1*err1 + err2*err2)
 	       << endl;
 	  if (TMath::Abs((int1-int2)/itot) > imax) imax = TMath::Abs((int1-int2)/itot);
+	  if (ib == h1->FindBin(fCuts[ic]->muonbdt)) icut = TMath::Abs((int1-int2)/itot);
 	}
 	hd->SetMinimum(-0.25);
 	hd->SetMaximum(0.25);
@@ -525,7 +519,7 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	gPad->SetGridy(true);
 	hd->Draw();
 	tl->SetTextSize(0.04);
-	tl->DrawLatexNDC(0.2, 0.92, Form("maximum difference:  %4.3f", imax));
+	tl->DrawLatexNDC(0.2, 0.92, Form("#Delta max: %4.3f cut: %4.3f", imax, icut));
 	tl->DrawLatexNDC(0.73, 0.92, Form("%s chan %d", label1.c_str(), ic));
 
 	double err(0.);
@@ -537,7 +531,18 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	else if (imax < 0.25) err = 0.25;
 	else if (imax < 0.30) err = 0.30;
 	else  err = 0.50;
-	fTEX << formatTex(imax, Form("%s:muonidBdtCut_%s_chan%i:val", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
+	fTEX << formatTex(imax, Form("%s:muonidBdtMax_%s_chan%i:val", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
+	fTEX << formatTex(err, Form("%s:muonidBdtMax_%s_chan%i:err", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
+
+	if (icut < 0.02) err = 0.02;
+	else if (icut < 0.05) err = 0.05;
+	else if (icut < 0.1) err = 0.1;
+	else if (icut < 0.15) err = 0.15;
+	else if (icut < 0.20) err = 0.20;
+	else if (icut < 0.25) err = 0.25;
+	else if (icut < 0.30) err = 0.30;
+	else  err = 0.50;
+	fTEX << formatTex(icut, Form("%s:muonidBdtCut_%s_chan%i:val", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
 	fTEX << formatTex(err, Form("%s:muonidBdtCut_%s_chan%i:err", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
 
 	savePad(Form("systematics_ad%s_%s_ad%s_%s_%s-%s.pdf",
@@ -1681,6 +1686,8 @@ void plotFake::plotPidTables(string prefix) {
     tl->SetTextSize(0.04);
 
     a = fptFakePosKaons;  h2->Reset(); h2->SetTitle(Form("pos. kaons (%d, %s)", fYear, a->getComment().Data()));
+    cout << "Hallo" << endl;
+    a->print(cout);
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d-effFakePosKaons.pdf", fDirectory.c_str(), fYear));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());

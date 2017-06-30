@@ -1,0 +1,16 @@
+TYPE          1000080
+TRUTHCAND         531
+BRECOTYPE     3000068
+BRECOTRUTH        521
+NOPRESELECTION      1
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.YEAR.cuts
+# -- trigger
++input cuts/triggerBs.cuts
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts

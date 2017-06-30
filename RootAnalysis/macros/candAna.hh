@@ -143,6 +143,7 @@ public:
   virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9);
   virtual std::pair<int, int> nCloseTracks(TAnaCand*, double dca, double dcaS, double pt = 0.5);
   virtual double      isoMuon(TAnaCand *, TAnaMuon *);
+  virtual double      isoTrack(TAnaCand *pC, TAnaTrack *pTrack, double docaCut = 0.1, double r = 0.5, double pmin = 0.5);
   virtual void        xpDistMuons();
   virtual void        findAllTrackIndices(TAnaCand* pCand, std::map<int,int> *indices);
 
@@ -258,7 +259,7 @@ public:
   double  fMu1PtNrf, fMu2PtNrf, fMu1EtaNrf, fMu2EtaNrf, fMu1PhiNrf, fMu2PhiNrf; // "not refitted"
   int     fMu1TrkLayer, fMu1Pix, fMu1BPix, fMu1BPixL1, fMu2TrkLayer, fMu2Pix, fMu2BPix, fMu2BPixL1;
   double  fMu1W8Mu, fMu1W8Tr, fMu2W8Mu, fMu2W8Tr;
-  double  fMu1Iso, fMu2Iso;
+  double  fMu1Iso, fMu2Iso, fMu1Isold, fMu2Isold;
   double  fMu1VtxProb, fMu2VtxProb;
   bool    fMu1OtherVtx, fMu2OtherVtx;
   double  fMu1XpDist, fMu2XpDist;
