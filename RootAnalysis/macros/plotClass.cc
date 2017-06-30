@@ -212,6 +212,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fVarToTexSymbol.insert(make_pair("pvips", "\\pvips"));
 
   // -- initialize cuts
+  if (cuts == "nada") {
+    cuts = Form("baseCuts.%d.cuts", fYear);
+  }
   cout << "==> Reading cuts from " << Form("%s", cuts.c_str()) << endl;
   readCuts(Form("%s/%s", fDirectory.c_str(), cuts.c_str()));
   fNchan = fCuts.size();
@@ -256,7 +259,7 @@ void plotClass::changeSetup(string dir, string name, string setup) {
 
 
 // ----------------------------------------------------------------------
-string plotClass::runRange(int run) {
+string plotClass::era(int run) {
   // -- 2011
   if (160325 <= run && run <= 173692) return "A";
   if (175832 <= run && run <= 180252) return "B";
@@ -1947,7 +1950,7 @@ void plotClass::insertDataset(std::string dsname, dataset *ds) {
 void plotClass::loadFiles(string afiles) {
 
   string files = fDirectory + string("/") + afiles;
-  cout << "==> plotClass::loadFile loading files listed in " << files << endl;
+  cout << "==> plotClass::loadFiles loading files listed in " << files << endl;
 
   char buffer[1000];
   ifstream is(files.c_str());
@@ -2932,6 +2935,8 @@ void plotClass::loadFiles(string afiles) {
 
 
   }
+
+  cout << "    plotClass::loadFiles loaded " << fDS.size() << " datasets" << endl;
 
   is.close();
 
