@@ -218,6 +218,11 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    (TMVA::gConfig().GetVariablePlotting()).fNbins1D = 40;
    (TMVA::gConfig().GetVariablePlotting()).fNbinsMVAoutput = 40;
 
+   int offset;
+   string sint = oname.substr(oname.find("TMVA-")+5, oname.rfind("-") - oname.find("TMVA-")-5);
+   offset = atoi(sint.c_str());
+   cout << "offset= " << offset << " from ->" << sint << "<-" << endl;
+
    // -- Create a ROOT output file where TMVA will store ntuples, histograms, etc.
    TString outfileName(Form("%s.root", oname.c_str()));
    TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
@@ -233,6 +238,8 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    i = 11; hSetup->SetBinContent(i, fBdtSetup.nEventsMin); hSetup->GetXaxis()->SetBinLabel(i, "nEventsMin");
    i = 12; hSetup->SetBinContent(i, fBdtSetup.nCuts); hSetup->GetXaxis()->SetBinLabel(i, "nCuts");
    i = 13; hSetup->SetBinContent(i, fBdtSetup.AdaBoostBeta); hSetup->GetXaxis()->SetBinLabel(i, "AdaBoostBeta");
+
+   i = 14; hSetup->SetBinContent(i, offset); hSetup->GetXaxis()->SetBinLabel(i, "bdtname");
 
    i = 20; hSetup->SetBinContent(i, fBdtSetup.MaxDepth); hSetup->GetXaxis()->SetBinLabel(i, "MaxDepth");
    i = 21; hSetup->SetBinContent(i, fBdtSetup.NNodesMax); hSetup->GetXaxis()->SetBinLabel(i, "NNodesMax");
