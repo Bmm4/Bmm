@@ -1,0 +1,5 @@
+candAnaMuMu         cuts/candAnaMuMu.nopreselection.cuts
+candAnaBu2JpsiK     cuts/candAnaBu2JpsiK.nopreselection.cuts
+#
+JSON                ../common/json/json_DCSONLY.txt
+DSNAME              Charmonium
