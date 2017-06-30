@@ -10,7 +10,7 @@ class plotBDT: public plotClass {
 public :
   plotBDT(std::string dir = "results",
 	  std::string files = "plotResults.2016.files",
-	  std::string cuts = "baseCuts.cuts",
+	  std::string cuts = "nada",
 	  std::string setup = "");
   virtual ~plotBDT();
 
@@ -46,6 +46,10 @@ public :
   void getTLFEventNumbers();
   void getTLFRanking(std::string prefix = "BDT", std::string type = "events0");
   void getTLFParameters(std::string prefix = "BDT", std::string type = "events0");
+
+  // -- analysis of BDT optimization
+  void bdtOptMakeTree(std::string logfile);
+  void bdtOptAnaTree(std::string rootfile);
 
   // -- code for loops
   void   loopFunction1();

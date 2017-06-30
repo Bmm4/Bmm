@@ -74,7 +74,6 @@ void plotBDT::makeAll(string what) {
 
   if ("all" == what) {
     setBdtStrings(0);
-    dumpParameters("Events0");
 
     string old("nada");
     // -- loop over channels in case they use separate BDTs
@@ -138,7 +137,7 @@ void plotBDT::tmvaControlPlots(int ichan) {
     fRootFile = TFile::Open(rootfile.c_str());
     cout << "fRootFile: " << rootfile << endl;
 
-    dumpParameters(type[j]);
+    if (j == 0) dumpParameters("Events0");
     tmvaPlots(type[j]);
     fRootFile->Close();
   }
@@ -147,12 +146,205 @@ void plotBDT::tmvaControlPlots(int ichan) {
 
 
 // ----------------------------------------------------------------------
+void plotBDT::bdtOptMakeTree(string logfile) {
+
+  string rname("abdt.root");
+
+  vector<string> allLines;
+  ifstream is(logfile);
+  char buffer[2000];
+  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+
+  string bla, qual, rest;
+  int offset, iqual;
+  double minKs, ssb0;
+
+  int ntrees, ncuts, maxdepth;
+  double mns, beta;
+  string variables;
+  bool pt, eta, maxdoca, pvip, docatrk, closetrk, m1iso, m2iso;
+
+  TFile *f = TFile::Open(rname.c_str(), "RECREATE");
+  TTree *t = new TTree("t", "t");
+  t->Branch("offset",  &offset,  "offset/I");
+  t->Branch("minks",   &minKs,   "minks/D");
+  t->Branch("ssb0",    &ssb0,    "ssb0/D");
+  t->Branch("ntrees",  &ntrees,  "ntrees/I");
+  t->Branch("ncuts",   &ncuts,   "ncuts/I");
+  t->Branch("maxdepth",&maxdepth,"maxdepth/I");
+  t->Branch("mns",     &mns,     "mns/D");
+  t->Branch("beta",    &beta,    "beta/D");
+  t->Branch("pt",      &pt,      "pt/O");
+  t->Branch("eta",     &eta,     "eta/O");
+  t->Branch("maxdoca", &maxdoca, "maxdoca/O");
+  t->Branch("pvip",    &pvip,    "pvip/O");
+  t->Branch("docatrk", &docatrk, "docatrk/O");
+  t->Branch("closetrk",&closetrk,"closetrk/O");
+  t->Branch("m1iso",   &m1iso,   "m1iso/O");
+  t->Branch("m2iso",   &m2iso,   "m2iso/O");
+
+  string::size_type m1, m2;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    pt = eta = maxdoca = pvip = docatrk = closetrk = m1iso = m2iso = false;
+    cout << allLines[i] << endl;
+    m1 = allLines[i].find("chi2dof:");
+    if (string::npos != allLines[i].find(":pt", m1)) pt = true;
+    if (string::npos != allLines[i].find(":eta", m1)) eta = true;
+    if (string::npos != allLines[i].find(":maxdoca", m1)) maxdoca = true;
+    if (string::npos != allLines[i].find(":pvip", m1)) pvip = true;
+    if (string::npos != allLines[i].find(":docatrk", m1)) docatrk = true;
+    if (string::npos != allLines[i].find(":closetrk", m1)) closetrk = true;
+    if (string::npos != allLines[i].find(":m1iso", m1)) m1iso = true;
+    if (string::npos != allLines[i].find(":m2iso", m1)) m2iso = true;
+
+    istringstream istring(allLines[i]);
+    istring >> bla >> bla >> offset
+	    >> qual >> bla >> bla >> bla >> minKs >> bla >> bla >> bla >> ssb0 >> rest;
+
+    if (string::npos != qual.find("bad")) {
+      iqual = 0;
+    } else {
+      iqual = 1;
+    }
+    cout << "-> " << offset << " -> " << qual << " = " << iqual << " -> " << minKs << " -> " << ssb0 << endl;
+    m1 = rest.find(":NTrees");   m1 = rest.find("=", m1+1);    m2 = rest.find(":", m1+1);
+    ntrees = atoi(rest.substr(m1+1, m2-m1-1).c_str());
+
+    m1 = rest.find(":nCuts");    m1 = rest.find("=", m1+1);    m2 = rest.find(":", m1+1);
+    ncuts = atoi(rest.substr(m1+1, m2-m1-1).c_str());
+
+    m1 = rest.find(":MaxDepth"); m1 = rest.find("=", m1+1);    m2 = rest.find(":", m1+1);
+    maxdepth = atoi(rest.substr(m1+1, m2-m1-1).c_str());
+
+    m1 = rest.find(":MinNodeSize");      m1 = rest.find("=", m1+1);    m2 = rest.find(":", m1+1);
+    mns = atof(rest.substr(m1+1, m2-m1-1).c_str());
+
+    m1 = rest.find(":AdaBoostBeta"); m1 = rest.find("=", m1+1);    m2 = rest.find(":", m1+1);
+    beta = atof(rest.substr(m1+1, m2-m1-1).c_str());
+
+    cout << "  ntrees: " << ntrees
+	 << "  ncuts: "  << ncuts
+	 << "  maxdepth: "  << maxdepth
+	 << "  mns: "  << mns
+	 << "  beta: "  << beta
+	 << " pt: " << pt << " eta: " << eta << " maxdoca: " << maxdoca << " pvip: " << pvip
+	 << " docatrk: " << docatrk << " closetrk: " << closetrk << " m1iso: " << m1iso << " m2iso: " << m2iso
+	 << endl;
+
+    t->Fill();
+  }
+
+  t->Write();
+  f->Close();
+
+}
+
+
+// ----------------------------------------------------------------------
+// -- first call bdtOptMakeTree()!
+void plotBDT::bdtOptAnaTree(string rootfile) {
+  TFile *f = TFile::Open(rootfile.c_str());
+  TTree *t = (TTree*)f->Get("t");
+
+  int offset, ntrees, ncuts, maxdepth;
+  double minks, ssb0, mns, beta;
+  bool pt, eta, maxdoca, pvip, docatrk, closetrk, m1iso, m2iso;
+  vector<string> otherVars;
+  otherVars.push_back("pvip");
+  otherVars.push_back("pt");
+  otherVars.push_back("eta");
+  otherVars.push_back("m1iso");
+  otherVars.push_back("m2iso");
+  otherVars.push_back("docatrk");
+  otherVars.push_back("closetrk");
+  otherVars.push_back("maxdoca");
+
+  t->SetBranchAddress("offset",  &offset);
+  t->SetBranchAddress("minks",   &minks);
+  t->SetBranchAddress("ssb0",    &ssb0);
+  t->SetBranchAddress("ntrees",  &ntrees);
+  t->SetBranchAddress("ncuts",   &ncuts);
+  t->SetBranchAddress("maxdepth",&maxdepth);
+  t->SetBranchAddress("mns",     &mns);
+  t->SetBranchAddress("beta",    &beta);
+  t->SetBranchAddress("pt",      &pt);
+  t->SetBranchAddress("eta",     &eta);
+  t->SetBranchAddress("maxdoca", &maxdoca);
+  t->SetBranchAddress("pvip",    &pvip);
+  t->SetBranchAddress("docatrk", &docatrk);
+  t->SetBranchAddress("closetrk",&closetrk);
+  t->SetBranchAddress("m1iso",   &m1iso);
+  t->SetBranchAddress("m2iso",   &m2iso);
+
+  int nentries = int(t->GetEntries());
+
+  TH1D *h1(0);
+  TH2D *h2(0);
+
+  double minksCut(0.25);
+  map<string, TH1*> hists;
+  hists.insert(make_pair("ssb0_minks", new TH2D("ssb0_minks", "ssb0_minks", 40, 0., 1., 40, 2.0, 3.0)));
+  for (unsigned int i = 0; i < otherVars.size(); ++i) {
+    hists.insert(make_pair(Form("ssb0_%s", otherVars[i].c_str()),
+			   new TH2D(Form("ssb0_%s", otherVars[i].c_str()),
+				    Form("ssb0_%s", otherVars[i].c_str()),
+				    2, 0., 2., 40, 2.4, 3.0)));
+  }
+
+  // hists.insert(make_pair("ssb0_m1iso", new TH2D("ssb0_m1iso", "ssb0_m1iso", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_m2iso", new TH2D("ssb0_m2iso", "ssb0_m2iso", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_pt", new TH2D("ssb0_pt", "ssb0_pt", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_eta", new TH2D("ssb0_eta", "ssb0_eta", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_maxdoca", new TH2D("ssb0_maxdoca", "ssb0_maxdoca", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_closetrk", new TH2D("ssb0_closetrk", "ssb0_closetrk", 2, 0., 2., 40, 2.0, 3.0)));
+  // hists.insert(make_pair("ssb0_docatrk", new TH2D("ssb0_docatrk", "ssb0_docatrk", 2, 0., 2., 40, 2.0, 3.0)));
+
+  // -- loop over tree
+  for (int jentry = 0; jentry < nentries; jentry++) {
+    t->GetEntry(jentry);
+    hists["ssb0_minks"]->Fill(minks, ssb0);
+    if (minks < minksCut) continue;
+    hists["ssb0_pvip"]->Fill(pvip, ssb0);
+    hists["ssb0_m1iso"]->Fill(m1iso, ssb0);
+    hists["ssb0_m2iso"]->Fill(m2iso, ssb0);
+    hists["ssb0_pt"]->Fill(pt, ssb0);
+    hists["ssb0_eta"]->Fill(eta, ssb0);
+    hists["ssb0_maxdoca"]->Fill(maxdoca, ssb0);
+    hists["ssb0_closetrk"]->Fill(closetrk, ssb0);
+    hists["ssb0_docatrk"]->Fill(docatrk, ssb0);
+ }
+
+  c0->cd();
+  shrinkPad(0.12, 0.15, 0.2, 0.1);
+  for (unsigned int i = 0; i < otherVars.size(); ++i) {
+    setTitles(hists[Form("ssb0_%s", otherVars[i].c_str())],
+	      Form("using %s", otherVars[i].c_str()), "f.o.m.", 0.05, 1.1, 1.5);
+    hists[Form("ssb0_%s", otherVars[i].c_str())]->Draw("colz");
+    tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+    savePad(Form("bdtOpt-ssb0-%s.pdf", otherVars[i].c_str()));
+  }
+
+
+  setTitles(hists["ssb0_minks"], "min KS probability", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_minks"]->Draw("colz");
+  savePad(Form("bdtOpt-ssb0-minks.pdf"));
+}
+
+
+// ----------------------------------------------------------------------
 void plotBDT::dumpParameters(string type) {
-  fTEX << "% -- dumpParameters " << fBdtString << " " << fBdtLogFile << endl;
+  fTEX << "% -- dumpParameters " << fBdtString << " " << fBdtLogFile << " " << type << endl;
   TH1D *h = getPreselectionNumbers();
   for (int i = 1; i < h->GetNbinsX(); ++i) {
     if (!strcmp("", h->GetXaxis()->GetBinLabel(i))) continue;
     fTEX << formatTex(h->GetBinContent(i), Form("%s:%s:%s",  fSuffix.c_str(), fBdtString.c_str(), h->GetXaxis()->GetBinLabel(i)), 2) << endl;
+  }
+  h = (TH1D*)fRootFile->Get("hSetup");
+  for (int i = 1; i < h->GetNbinsX(); ++i) {
+    if (!strcmp("bdtname", h->GetXaxis()->GetBinLabel(i))) {
+      fTEX << formatTex(h->GetBinContent(i), Form("%s:%s:%s",  fSuffix.c_str(), fBdtString.c_str(), h->GetXaxis()->GetBinLabel(i)), 0) << endl;
+      break;
+    }
   }
 }
 
