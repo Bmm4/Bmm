@@ -759,9 +759,6 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     rareBgHists("nada", nevents);
   }
 
-  fHistFile->Close();
-  return;
-
   // -- normalization modes
   if (1) {
     resetHistograms();
