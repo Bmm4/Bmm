@@ -1259,7 +1259,7 @@ void plotStuff::runStudy(string ds, string what) {
       h1l->Rebin(10);
       replaceAll(hname, Form("ls1_%s_", ds.c_str()), "");
       int run = atoi(hname.c_str());
-      string rr = runRange(run);
+      string rr = era(run);
       double hltLumi = lumi->lumi(run);
       cout << "hp = " << hp  << " gDirectory = " << gDirectory->GetName() << endl;
       if (hltLumi > 10.) {
@@ -1590,12 +1590,25 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	      resultE = fpy.getSignalUnW8Error();
 	    }
 	  } else {
-	    result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
-	    resultE = TMath::Sqrt(result);
-	    c0->Clear();
-	    hBlock->Draw("colz");
-	    savePad(Form("ys-hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
+	    if (0) {
+	      // -- all sidebands
+	      result = hBlock->Integral(1, hBlock->GetNbinsX(), 2, 2);
+	      resultE = TMath::Sqrt(result);
+	    }
+	    if (0) {
+	      // -- high sideband
+	      result = hBlock->Integral(hBlock->FindBin(5.45001), hBlock->GetNbinsX(), 2, 2);
+	      resultE = TMath::Sqrt(result);
+	    }
+	    if (1) {
+	      // -- low sideband
+	      result = hBlock->Integral(1, hBlock->FindBin(5.1999), 2, 2);
+	      resultE = TMath::Sqrt(result);
+	    }
 	  }
+	  c0->Clear();
+	  hBlock->Draw("colz");
+	  savePad(Form("ys-hBlock_%s_%d-chan%d.pdf", dsname.c_str(), iblock, ichan));
 	  string hname = Form("hRunLumi%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
 	  cout << "result = " << result << " +/- " << resultE
 	       << " lumi-normalized = " << result/lumi << " +/- " << resultE/lumi
@@ -1621,7 +1634,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
       string rrOld("B"), rr("A");
       vector<int> segment;
       for (unsigned int irun = 0; irun < vruns.size(); ++irun) {
-	rr = runRange(vruns[irun]);
+	rr = era(vruns[irun]);
 	if (rr == rrOld) {
 	  segment.push_back(vruns[irun]);
 	} else {
@@ -1633,7 +1646,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
       }
       // -- add the last block as well
       if (segment[0] > 0) {
-	cout << "Final runrange: " << rr << " adding " << segment[0] << ": " << intLumi << endl;
+	cout << "Final era: " << rr << " adding " << segment[0] << ": " << intLumi << endl;
 	runBlocks.insert(make_pair(rr, segment));
       }
 
