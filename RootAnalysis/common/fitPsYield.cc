@@ -257,16 +257,16 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix) {
       f1->SetParameter(8, fPar[8]);        f1->SetParLimits(8, fPar[8] - limitpars*fParE[8], fPar[8] + limitpars*fParE[8]);
       f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           scale*(fPar[9] + fParE[9]));
     } else if (limitpars == 0) {
-      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0,  0.,                           1.e8);
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0,  0.,                           1.e15);
       f1->FixParameter(1, fPar[1]);
       f1->FixParameter(2, fPar[2]);
       f1->FixParameter(3, fPar[3]);
       f1->FixParameter(4, fPar[4]);
-      f1->SetParameter(5, scale*fPar[5]);   f1->SetParLimits(5,  0.,                           1.e8);
+      f1->SetParameter(5, scale*fPar[5]);   f1->SetParLimits(5,  0.,                           1.e15);
       f1->FixParameter(6, fPar[6]);
       f1->FixParameter(7, fPar[7]);
       f1->FixParameter(8, fPar[8]);
-      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           1.e8);
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           1.e15);
     } else {
       // do nothing, boot strap!
     }
@@ -695,14 +695,27 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix) {
     double s2lo = fPar[4] - limitpars*fParE[4];
     if (s2lo < 0.) s2lo = 0.002;
     if (s2lo < s1hi) s2lo = 1.1*s1hi;
-    f1->SetParameter(0, scale*fPar[0]); if (limitpars) f1->SetParLimits(0, 0., 1.e10);
-    f1->SetParameter(1, fPar[1]);	if (limitpars) f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
-    f1->SetParameter(2, fPar[2]);	if (limitpars) f1->SetParLimits(2, s1lo, s1hi);
-    f1->SetParameter(3, fPar[3]);       if (limitpars) f1->SetParLimits(3, 0.01, 0.4);
-    f1->SetParameter(4, fPar[4]);	if (limitpars) f1->SetParLimits(4, s2lo, fPar[4] + limitpars*fParE[4]);
-    f1->SetParameter(5, scale*fPar[5]); f1->SetParLimits(5, 0., 1.e7);
-    f1->SetParameter(6, scale*fPar[6]); //f1->SetParLimits(6, pol1 - pol1E, pol1 + pol1E);
-    if (fVerbose > 0) fpIF->dumpParameters(f1);
+    if (fVerbose) cout << "==> limitpars = " << limitpars << endl;
+    if (limitpars > 0) {
+      f1->SetParameter(0, scale*fPar[0]); if (limitpars) f1->SetParLimits(0, 0.,                           scale*(fPar[0] + fParE[0]));
+      f1->SetParameter(1, fPar[1]);	  if (limitpars) f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
+      f1->SetParameter(2, fPar[2]);	  if (limitpars) f1->SetParLimits(2, s1lo,                         s1hi);
+      f1->SetParameter(3, fPar[3]);       if (limitpars) f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      f1->SetParameter(4, fPar[4]);	  if (limitpars) f1->SetParLimits(4, s2lo,                         fPar[4] + limitpars*fParE[4]);
+      f1->SetParameter(5, scale*fPar[5]); if (limitpars) f1->SetParLimits(5, 0.,                           scale*(fPar[5] + fParE[5]));
+      f1->SetParameter(6, fPar[6]);       if (limitpars) f1->SetParLimits(6, fPar[6] - limitpars*fParE[6], fPar[6] + limitpars*fParE[6]);
+    } else if (limitpars == 0) {
+      f1->SetParameter(0, scale*fPar[0]); f1->SetParLimits(0, 0., 1.e10);
+      f1->SetParameter(1, fPar[1]);
+      f1->SetParameter(2, fPar[2]);
+      f1->SetParameter(3, fPar[3]);
+      f1->SetParameter(4, fPar[4]);
+      f1->SetParameter(5, scale*fPar[5]); f1->SetParLimits(5, 0., 1.e15);
+      f1->SetParameter(6, fPar[6]);       if (limitpars) f1->SetParLimits(6, -1.e7, 1.e7);
+    } else {
+      // do nothing, boot strap!
+    }
+    if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
 
   cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;

@@ -2440,7 +2440,7 @@ TF1* initFunc::expogauss2c(TH1 *h, double peak, double sigma, double scaleSigma)
 
   double gaussN  = h->GetBinContent(h->FindBin(peak));
 
-  f->SetParameters(gaussN, peak, sigma, 0.2, sigma*scaleSigma, p0, p1);
+  f->SetParameters(gaussN, peak, sigma, 0.2, sigma*scaleSigma*1.02, p0, p1);
   f->ReleaseParameter(0);     f->SetParLimits(0, 0., 1.e7);
   f->ReleaseParameter(1);
   f->ReleaseParameter(2);     f->SetParLimits(2, 0.2*sigma, sigma*scaleSigma);
