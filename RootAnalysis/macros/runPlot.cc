@@ -19,6 +19,7 @@
 #include "plotStuff.hh"
 #include "plotFake.hh"
 #include "plotBDT.hh"
+#include "plotTrigger.hh"
 
 #include "tmva1.hh"
 
@@ -52,6 +53,13 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
+  }
+
+  if (2017 == year) {
+    if ("nada" == files) files = "plotResults.2017.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2017.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "";
   }
 
   if (2016 == year) {
@@ -193,6 +201,19 @@ int main(int argc, char *argv[]) {
     }
   }
 
+  // -- trigger
+  if (string::npos != plot.find("trigger")) {
+    cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
+    gROOT->Clear();  gROOT->DeleteAll();
+    plotBDT a(dir, files, cuts, setup);
+    if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
+    if (mode != "nada") {
+      a.makeAll(mode);
+    } else {
+      a.makeAll();
+    }
+  }
+
 
   // -- umlLifetime
   if (string::npos != plot.find("umllifetime")) {
@@ -216,7 +237,7 @@ int main(int argc, char *argv[]) {
   return 0;
 }
 
-
+/*
 int TMVAClassification( TString myMethodList) {
    // The explicit loading of the shared libTMVA is done in TMVAlogon.C, defined in .rootrc
    // if you use your private .rootrc, or run from a different directory, please copy the
@@ -657,3 +678,4 @@ int TMVAClassification( TString myMethodList) {
 
    return 0;
 }
+*/
