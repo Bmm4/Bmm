@@ -870,9 +870,11 @@ void candAna::candAnalysis() {
 
   fTOS = tos(fpCand);
   fTIS = tis(fpCand);
-  fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi_v2");
-
-
+  if (2016 == fYear) {
+    fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi");
+  } else if (2017 == fYear) {
+    fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi");
+  }
   if (0) {
     cout  << "==XX== " << fName  << " hlt1 = " << fGoodHLT1  << " gmuid = " << fGoodMuonsID << " tos = " << fTOS << " chan = " << fChan
 	  << " mu eta: " << fMu1Eta << "/" << fMu2Eta
@@ -4415,10 +4417,7 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   set<int> trgTrkIdx;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
     pTO = fpEvt->getTrgObjv2(i);
-    if (refTriggerPath == pTO->fHltPath) {
-      if (!triggerFired(refTriggerPath)) {
-	cout << "%^&^%&^%&%&^%&%&^%&^%&^%&^%&^%&  refTrigger in trigger objects, but not fired!" << endl;
-      }
+    if (pTO->fHltPath.Contains(refTriggerPath)) {
       vector<int> muonIndex = pTO->fIndex;
       vector<int> muonID = pTO->fID;
       vector<TLorentzVector> muonP = pTO->fP;
