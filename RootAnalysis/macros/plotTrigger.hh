@@ -27,9 +27,11 @@ public :
   void plotL1Seeds(std::string dsname);
 
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
+  void runStudy(string ds = "bupsikData", string what = "ana");
 
   // -- code for loops
   void   loopFunction1();
+  void   loopFunction2();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 
@@ -51,6 +53,16 @@ private:
   TProfile *fpPmass0, *fpPmass1;
 
   int fRefTrigger;
+
+  std::map<std::string, TH2D*> fYieldHists;
+  std::map<std::string, TH1D*> fPlots;
+
+  std::vector<int> fLargeRuns;
+
+  std::map<std::string, TH2D*> fHLs0, fHLs1;
+  std::map<std::string, TProfile*> fProf;
+  std::map<std::string, TH1D *> fvHists;
+
 
   ClassDef(plotTrigger,1)
 

@@ -106,6 +106,10 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     fYear = 2016;
     fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
+  if (string::npos != sfiles.find("2017")) {
+    fYear = 2017;
+    fStampLumi = "L = XX.X fb^{-1} (#sqrt{s} = 13 TeV)";
+  }
   //  if (setup == "") fSuffix = Form("%d", fYear);
   fSuffix += Form("%d", fYear);
 
@@ -281,6 +285,9 @@ string plotClass::era(int run) {
   if (277772 <= run && run <= 278808) return "F";
   if (278820 <= run && run <= 280385) return "G";
   if (280919 <= run && run <= 284044) return "H";
+  // -- 2017
+  if (294927 <= run && run <= 297019) return "A";
+  if (297046 <= run && run <= 299999) return "B";
 
   return "X";
 
