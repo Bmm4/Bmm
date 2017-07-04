@@ -23,7 +23,7 @@ process.load("Configuration.StandardSequences.FrontierConditions_GlobalTag_condD
 from Configuration.AlCa.GlobalTag_condDBv2 import GlobalTag
 
 # requires >= CMSSW_8_0_19
-process.GlobalTag.globaltag = "80X_dataRun2_Prompt_v12"
+process.GlobalTag.globaltag = "92X_dataRun2_Prompt_v4"
 
 # ----------------------------------------------------------------------
 # POOLSOURCE
