@@ -2363,13 +2363,11 @@ void candAna::readCuts(string fileName, int dump) {
 	if (cutname == "bdtcut") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->bdtCut = cutvalue; ok = 1;
-	  if (dump) cout << j-1 << " " << "bdtcut:              " << cutvalue << endl;
 	}
 
 	if (cutname == "bdtmupt") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->bdtMuPt = cutvalue; ok = 1;
-	  if (dump) cout << j-1 << " " << "bdtmupt:              " << cutvalue << endl;
 	}
 
 
@@ -3668,7 +3666,7 @@ void candAna::calcBDT() {
   } else {
     cout << "all hell break loose" << endl;
   }
-
+  cout << "fBDT= " << fBDT << endl;
   //  cout << "fBDT = " << fBDT << endl;
 }
 
@@ -3883,7 +3881,7 @@ TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
   // -- read in variables from weight file
   vector<string> allLines;
   char  buffer[2000];
-  cout << "setupReader, open file " << weightfile << endl;
+  cout << "setupReader, open file " << weightfile;
   ifstream is(weightfile);
   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
   int nvars(-1);
@@ -6408,6 +6406,26 @@ void candAna::printCuts(ostream &OUT) {
     OUT << Form("%10.3f", fCuts[i]->pv2lips);
   }
   OUT << endl;
+
+  OUT << "bdtXml     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10s", fCuts[i]->bdtXml.c_str());
+  }
+  OUT << endl;
+
+  OUT << "bdtCut     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtCut);
+  }
+  OUT << endl;
+
+  OUT << "bdtMuPt    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtMuPt);
+  }
+  OUT << endl;
+
+
   OUT << "----------------------------------------------------------------------" << endl;
 
   OUT.flush();
