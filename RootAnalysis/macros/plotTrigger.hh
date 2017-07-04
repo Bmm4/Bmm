@@ -25,11 +25,13 @@ public :
   void plotTisEfficiency(std::string dsname);
   void runTisEfficiency(std::string dsname);
   void plotL1Seeds(std::string dsname);
+  void plotTOSHistory(std::string dsname,unsigned int runMin, unsigned int runMax);
 
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
 
   // -- code for loops
   void   loopFunction1();
+  void   loopFunction2();
 
   void   loopOverTree(TTree *t, int ifunc, int nevts = -1, int nstart = 0);
 

@@ -165,6 +165,99 @@ void plotTrigger::plotL1Seeds(std::string dsname) {
 
 
 
+// ----------------------------------------------------------------------
+void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigned int runMax) {
+  //if (string::npos != dsname.find("bupsik")) fMode = BU2JPSIKP;
+
+  // fSample = dsname;
+  // string dir = "candAnaMuMu";
+  // if (string::npos != fSample.find("bupsik")) {
+  //   fMode = BU2JPSIKP;
+  //   dir  = "candAnaBu2JpsiK";
+  // }
+
+  if ( runMin>runMax ) {cout << "The maximum run is smaller than the minimum." << endl;return;}
+
+  setup(dsname);
+  fSample = dsname;
+  zone();
+
+
+  TTree *t = getTree(fSample, fTreeDir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  }
+  setupTree(t, fSample);
+
+  unsigned int histoBins = runMax - runMin;
+  TH2D *h = new TH2D("h","htitle",histoBins,runMin,runMax,40,4.8,6.0);
+  unsigned int tEntries = t->GetEntriesFast();
+  cout << "Found " << tEntries << " entries to loop over." << endl;
+
+  for (unsigned int i=0;i<tEntries;i++)
+    {
+      t->GetEntry(i);
+      if ( fb.hlt1 && fb.tos && (fb.chan==0 || fb.chan==1) && fb.json && fb.pt>6 && fb.m1pt>4 && fb.m2pt>4 && fb.alpha < 0.05 && fb.fls3d>10 && fb.m1gmid && fb.m2gmid ) {h->Fill(fb.run,fb.m);}
+    }
+
+  // c0->cd(1);
+  // //h->Draw("colz");
+  // t->Draw("m:run");
+  // c0->cd(2);
+
+  c0->cd();
+  //used later for TGraph
+  std::vector<double> vruns; 
+  std::vector<double> integrals;
+
+  TAxis *x = h->GetXaxis();
+  Double_t run[histoBins];
+  x->GetLowEdge(run);
+  int xbins = x->GetNbins();
+  cout << "Generated " << xbins << " bins." << endl;
+  int ybins = h->GetYaxis()->GetNbins();
+
+  //get the lumi per run
+  Lumi *pl = new Lumi("../common/json/json_DCSONLY.lumi");
+  //cout << "lumi = " << pl->lumi(297723) << endl;
+
+  //loop over the TH2 histo
+  for (int i=0;i<xbins;i++)
+    {
+      //cout << "edge: " << run[i] << endl;
+      double lumi = pl->lumi(run[i]);
+      double integral = h->Integral(i,i,1,ybins);
+      // if (run[i]>297500 && run[i]<297600)
+      // 	{
+      // 	  cout << "run/integral: " << run[i] << "/" << integral << " (" << h->GetBinContent(i,int(ybins/2)) << endl;
+      // 	}
+
+      //suppress entries == 0 or lumi == 0
+      if (integral>0 && lumi >0)
+	{
+	  double result = integral/lumi;
+	  //cout << "lumi: " << lumi << endl;
+	  cout << "run: integral/lumi:  " << run[i] << "/" << integral << "/" << lumi << " == " << result << endl; 
+	  //Filled together. Must be of same size
+	  vruns.push_back(run[i]);
+	  integrals.push_back(result);
+	}
+      else if ( integral>0 )
+	{cout << "Rejected run: " << run[i] << " with " << integral << " events because of 0 lumi." << endl;}
+    }
+
+  if ( vruns.size() != integrals.size() ) 
+    {cout << "ERROR: Mismatch of the result vector sizes." << endl;return;}
+  double *xData = &vruns[0];
+  double *yData = &integrals[0];
+  TGraph *gg = new TGraph(vruns.size(),xData,yData);
+  gg->SetTitle(Form("%s;run number;#events/lumi [pb]",dsname.c_str()));
+  gg->Draw("a*");
+
+
+  return;
+}
 
 
 // ----------------------------------------------------------------------
@@ -372,6 +465,13 @@ void plotTrigger::loopFunction1() {
 
 }
 
+// ----------------------------------------------------------------------
+void plotTrigger::loopFunction2() {
+
+  
+
+}
+
 
 // ----------------------------------------------------------------------
 void plotTrigger::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
@@ -411,6 +511,7 @@ void plotTrigger::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   //    (this is the reason why this function is NOT in plotClass!)
   void (plotTrigger::*pF)(void);
   if (ifunc == 1) pF = &plotTrigger::loopFunction1;
+  else if (ifunc == 2) pF = &plotTrigger::loopFunction2;
 
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
