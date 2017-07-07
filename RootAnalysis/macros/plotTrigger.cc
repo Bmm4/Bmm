@@ -127,6 +127,30 @@ plotTrigger::plotTrigger(string dir, string files, string cuts, string setup): p
     fLargeRuns.push_back(283478);
     fLargeRuns.push_back(283865);
     fLargeRuns.push_back(283946);
+  } else if (2016 == fYear) {
+    fLargeRuns.push_back(297359);
+    fLargeRuns.push_back(297411);
+    fLargeRuns.push_back(297425);
+    fLargeRuns.push_back(297429);
+    fLargeRuns.push_back(297430);
+    fLargeRuns.push_back(297432);
+    fLargeRuns.push_back(297433);
+    fLargeRuns.push_back(297469);
+    fLargeRuns.push_back(297474);
+    fLargeRuns.push_back(297483);
+    fLargeRuns.push_back(297484);
+    fLargeRuns.push_back(297485);
+    fLargeRuns.push_back(297486);
+    fLargeRuns.push_back(297487);
+    fLargeRuns.push_back(297488);
+    fLargeRuns.push_back(297503);
+    fLargeRuns.push_back(297504);
+    fLargeRuns.push_back(297505);
+    fLargeRuns.push_back(297618);
+    fLargeRuns.push_back(297670);
+    fLargeRuns.push_back(297671);
+    fLargeRuns.push_back(297674);
+    fLargeRuns.push_back(297675);
   }
 
 
@@ -358,19 +382,23 @@ void plotTrigger::runTisEfficiency(string dsname) {
 void plotTrigger::refTrgEfficiency(string selection, string dsname) {
 
 
-  fSample = "bupsikMc";
-  setup(fSample);
 
   zone(2,2);
 
-  TTree *t = getTree(fSample, fTreeDir);
+  string smode("bupsikMc");
+  setup(smode);
+  TTree *t = getTree(smode, fTreeDir);
   if (0 == t) {
     cout << "tree for sample = " << fSample << " not found" << endl;
     return;
   }
+  setupTree(t, smode);
 
-  TH1D *h1 = new TH1D(Form("h_0"), Form("h_0"), 40, 4.8, 6.0);
-  TH1D *h2 = new TH1D(Form("h_0_hlt"), Form("h_0_hlt"), 40, 4.8, 6.0);
+  fvHists.insert(make_pair(string("h_MC"), new TH1D("h_MC", "h_MC", 40, 4.8, 6.0)));
+  fvHists.insert(make_pair(string("h_MC_hlt"), new TH1D("h_MC_hlt", "h_MC_hlt", 40, 4.8, 6.0)));
+  fvHists.insert(make_pair(string("h_rt"), new TH1D("h_rt", "h_rt", 40, 4.8, 6.0)));
+  fvHists.insert(make_pair(string("h_rt_hlt"), new TH1D("h_rt_hlt", "h_rt_hlt", 40, 4.8, 6.0)));
+  fvHists.insert(make_pair(string("h_ps"), new TH1D("h_ps", "h_ps", 40, 0., 20.0)));
 
   gStyle->SetOptStat(0);
 
@@ -380,21 +408,27 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
 
   string fitopt("lm");
 
-  // -- basic HLT efficiency
+  // -- basic MC HLT efficiency
   string tselection = selection;
-  t->Draw("m >> h_0", tselection.c_str());
-  tselection = selection + " && hlt1 && tos";
-  t->Draw("m >> h_0_hlt", tselection.c_str());
 
-  TF1 *f1 = fIF->bupsik(h1);
+  //  t->Draw("m >> h_0", tselection.c_str());
+  //  tselection = selection + " && hlt1 && tos";
+  //  t->Draw("m >> h_0_hlt", tselection.c_str());
+
+  fSample = "h_MC";
+  fDBX = false;
+  loopOverTree(t, 1);
+
+
+  TF1 *f1 = fIF->bupsik(fvHists["h_MC"]);
   c0->cd(1);
-  h1->Fit(f1, fitopt.c_str());
+  fvHists["h_MC"]->Fit(f1, fitopt.c_str());
   f1->SetParameter(5, 0.);
   f1->SetParameter(6, 0.);
   f1->SetParameter(7, 0.);
   f1->SetParameter(8, 0.);
   f1->SetParameter(9, 0.);
-  nNorm = f1->Integral(5.1, 5.4)/h1->GetBinWidth(1);
+  nNorm = f1->Integral(5.1, 5.4)/fvHists["h_MC"]->GetBinWidth(1);
   tl->SetTextSize(0.02);
   tl->DrawLatexNDC(0.25, 0.96, Form("sel0: %s", selection.c_str()));
   tl->SetTextSize(0.05);
@@ -404,14 +438,14 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
 
   c0->cd(2);
   fIF->limitPar(1, 5.1, 5.5);
-  f1 = fIF->bupsik(h2);
-  h2->Fit(f1, fitopt.c_str());
+  f1 = fIF->bupsik(fvHists["h_MC_hlt"]);
+  fvHists["h_MC_hlt"]->Fit(f1, fitopt.c_str());
   f1->SetParameter(5, 0.);
   f1->SetParameter(6, 0.);
   f1->SetParameter(7, 0.);
   f1->SetParameter(8, 0.);
   f1->SetParameter(9, 0.);
-  nPass = f1->Integral(5.1, 5.4)/h2->GetBinWidth(1);
+  nPass = f1->Integral(5.1, 5.4)/fvHists["h_MC_hlt"]->GetBinWidth(1);
   tl->DrawLatexNDC(0.2, 0.96, "sel. 0 && HLT");
   tl->DrawLatexNDC(0.2, 0.80, "MC");
   effMc = nPass/nNorm;
@@ -422,51 +456,42 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
   cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
 
 
-  // -- HLT efficiency derived from reference trigger
-  TH1D *h3 = new TH1D(Form("h_rt"), Form("h_rt"), 40, 4.8, 6.0);
-  TH1D *h4 = new TH1D(Form("h_rt_hlt"), Form("h_rt_hlt"), 40, 4.8, 6.0);
-  TH1D *h5 = new TH1D(Form("h_ps"), Form("h_ps"), 40, 0., 20.0);
-
-
-  fSample = "bupsikData";
-  setup(fSample);
-  t = getTree(fSample, fTreeDir);
-
+  smode = "bupsikData";
+  setup(smode);
+  t = getTree(smode, fTreeDir);
+  fSample = "h_rt";
+  fDBX = true;
+  loopOverTree(t, 1);
 
   c0->cd(3);
-  tselection = selection + " && reftrg";
-  t->Draw("m >> h_rt", tselection.c_str());
-  tselection = selection + " && reftrg && hlt1 && tos";
-  t->Draw("m >> h_rt_hlt", tselection.c_str());
 
-  f1 = fIF->bupsik(h3);
-  h3->Fit(f1, fitopt.c_str());
+  f1 = fIF->bupsik(fvHists["h_rt"]);
+  fvHists["h_rt_hlt"]->Fit(f1, fitopt.c_str());
   f1->SetParameter(5, 0.);
   f1->SetParameter(6, 0.);
   f1->SetParameter(7, 0.);
   f1->SetParameter(8, 0.);
   f1->SetParameter(9, 0.);
-  nNorm = f1->Integral(5.1, 5.4)/h3->GetBinWidth(1);
+  nNorm = f1->Integral(5.1, 5.4)/fvHists["h_rt_hlt"]->GetBinWidth(1);
   tl->DrawLatexNDC(0.2, 0.96, "sel. 0 && reftrg");
   tl->DrawLatexNDC(0.2, 0.80, "2017B");
   savePad("h_rt.pdf");
   delete f1;
 
   c0->cd(4);
-  f1 = fIF->bupsik(h4);
-  h4->Fit(f1, fitopt.c_str());
+  f1 = fIF->bupsik(fvHists["h_rt_hlt"]);
+  fvHists["h_rt_hlt"]->Fit(f1, fitopt.c_str());
   f1->SetParameter(5, 0.);
   f1->SetParameter(6, 0.);
   f1->SetParameter(7, 0.);
   f1->SetParameter(8, 0.);
   f1->SetParameter(9, 0.);
-  nPass = f1->Integral(5.1, 5.4)/h4->GetBinWidth(1);
+  nPass = f1->Integral(5.1, 5.4)/fvHists["h_rt_hlt"]->GetBinWidth(1);
   tl->DrawLatexNDC(0.2, 0.96, "sel. 0 && reftrg && HLT");
   tl->DrawLatexNDC(0.2, 0.80, "2017B");
 
-  t->Draw("ps >> h_ps", tselection.c_str(), "goff");
-  double ps = h5->GetMean();
-  double psE = h5->GetRMS();
+  double ps = fvHists["h_ps"]->GetMean();
+  double psE = fvHists["h_ps"]->GetRMS();
   effRt = ps*nPass/nNorm;
   effRtE = dEff(static_cast<int>(nPass), static_cast<int>(nNorm));
   effRtE = ps*effRtE;
@@ -475,6 +500,8 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
   tl->DrawLatexNDC(0.6, 0.44, Form("ps = %3.1f#pm %3.2f", ps, psE));
   savePad("h_rt_hlt.pdf");
   delete f1;
+
+  savePad("reftrg-efficiencies.pdf");
 
   cout << "==> PRESCALE = " << ps << " +/- " << psE << endl;
   cout << "==> efficiency = " << nPass << "/" << nNorm << " = " << nPass/nNorm << endl;
@@ -835,9 +862,36 @@ void plotTrigger::loopFunction2() {
 // ----------------------------------------------------------------------
 void plotTrigger::loopFunction1() {
 
+  bool goodRun(false);
+
+  if (fLargeRuns.end() != find(fLargeRuns.begin(), fLargeRuns.end(), fb.run)) {
+    goodRun = true;
+    //    cout << "found " << fb.run << " in fLargeRuns" << endl;
+  } else {
+    // -- comment the following if you want to look at large runs only
+    //goodRun = true;
+  }
 
 
+  if (fb.chan < 0 || fb.chan > 1) return;
+  if (fb.m1pt < 8.) return;
+  if (fb.m2pt < 4.) return;
+  if (fb.flsxy < 5.) return;
+  if (fb.maxdoca > 0.08) return;
+  if (fb.pchi2dof < 0.10) return;
+  if (!fb.gmugmid) return;
+  if (fDBX) {
+    if (!fb.reftrg) return;
+  }
+  fvHists[fSample]->Fill(fb.m);
 
+  if (!fb.hlt1) return;
+  if (!fb.tos) return;
+  string hlt = Form("%s_hlt", fSample.c_str());
+  fvHists[hlt]->Fill(fb.m);
+  if (fDBX) {
+    fvHists["h_ps"]->Fill(fb.ps);
+  }
 }
 
 
