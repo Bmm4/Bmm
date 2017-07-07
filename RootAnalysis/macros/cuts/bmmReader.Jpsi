@@ -1,0 +1,5 @@
+candAnaMuMu1313     cuts/candAnaJpsi.cuts
+#candAnaMuMu1302     cuts/candAnaJpsi.cuts
+#
+JSON                ../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+DSNAME              Charmonium
