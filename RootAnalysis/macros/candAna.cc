@@ -99,11 +99,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  if (1236 == fVerbose) {
-    triggerEff("HLT_Dimuon16_Jpsi_v2", "HLT_DoubleMu4_3_Jpsi_Displaced_v2", 1);
-    triggerEff("HLT_Dimuon0er16_Jpsi_NoOS_NoVertexing_v2", "HLT_Dimuon0er16_Jpsi_NoVertexing_v2", 2);
-    return;
-  }
 
   if (1237 == fVerbose) {
     cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
@@ -280,6 +275,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	   << endl;
     }
 
+    nTriggers();
 
     // Trigger matching
     fHLTmatch=false;
@@ -1246,7 +1242,9 @@ void candAna::triggerHLT() {
       error  = fpEvt->fHLTError[i];
 
       if (result) { // passed
-	cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON << endl;
+	cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = "
+	     << fRun << " ls = " << fLS << " json = " << fJSON
+	     << endl;
       }
     }
   }
@@ -1933,6 +1931,11 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("pvntrk",  &fPvNtrk,            "pvntrk/I");
   t->Branch("pv2ntrk", &fPv2Ntrk,           "pv2ntrk/I");
   t->Branch("presel",  &fPreselection,      "presel/O");
+
+  // -- ntriggers
+  t->Branch("ntrg",    &fNtrg,       "ntrg/I");
+  t->Branch("ntrgps",  &fNtrgPs,      "ntrgps[ntrg]/I");
+  t->Branch("ntrgtos", &fNtrgTos,     "ntrgtos[ntrg]/I");
 
   // -- global cuts and weights
   t->Branch("gmuid",   &fGoodMuonsID,       "gmuid/O");
@@ -4394,6 +4397,73 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 
 
 // ----------------------------------------------------------------------
+void candAna::nTriggers() {
+
+  if (0 == ((TH1D*)gFile->Get("ntriggers"))) {
+    TDirectory *pDir = gDirectory;
+    gFile->cd();
+    TH1D *h1 = new TH1D("ntriggers", "ntriggers", NTRGMAX+1, 0., NTRGMAX);
+    int ntrg(1);
+    cout << "nTriggers: " << endl;
+    for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+      cout << " adding " << ntrg << " " << imap->first << endl;
+      h1->GetXaxis()->SetBinLabel(ntrg, imap->first.c_str());
+      ++ntrg;
+      if (ntrg == NTRGMAX) break;
+    }
+    pDir->cd();
+  }
+
+  for (int i = 0; i < NTRGMAX; ++i) {
+    fNtrgPs[i] = fNtrgTos[i] = 0;
+  }
+
+  fNtrg = 0;
+
+  string spath("");
+  int rmin, rmax;
+  int ntrg(-1);
+  bool  reftrg(false);
+  for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+    ++ntrg;
+    if (ntrg == NTRGMAX) break;
+    spath = imap->first;
+    rmin = imap->second.first;
+    rmax = imap->second.second;
+    if (rmin <= fRun && fRun <= rmax) {
+      reftrg = refTrigger(fpCand, spath);
+      if (reftrg) {
+	fNtrgTos[ntrg] = 1;
+      }
+    }
+
+    if (!reftrg) continue;
+    bool result(false), wasRun(false);
+    int ps(-1);
+    TString a;
+    for (int i = 0; i < NHLT; ++i) {
+      result = wasRun = false;
+      a = fpEvt->fHLTNames[i];
+      if (a.Contains(spath.c_str())){
+	ps = fpEvt->fHLTPrescale[i];
+	wasRun = fpEvt->fHLTWasRun[i];
+	result = fpEvt->fHLTResult[i];
+	//	cout << "event: " << fEvt << " reftrg: " << spath << " fired path = " << a << endl;
+	if (reftrg && !result) {
+	  cout << "inconsistent trigger results!" << endl;
+	}
+	if (!reftrg && result) {
+	  cout << "inconsistent trigger results!" << endl;
+	}
+	fNtrgPs[ntrg] = ps;
+      }
+    }
+  }
+  fNtrg = ntrg;
+}
+
+
+// ----------------------------------------------------------------------
 // -- check whether the reftrigger's objects are matched to the candidate's tracks
 bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   bool result(false);
@@ -5284,131 +5354,6 @@ void candAna::play3() {
     }
   }
 }
-
-
-// ----------------------------------------------------------------------
-void candAna::triggerEff(std::string ref, std::string os, int mode) {
-
-  string tname = Form("os_%d", mode);
-  if (0 == ((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))) {
-    TDirectory *pDir = gDirectory;
-    gFile->cd();
-    cout << "triggerEff booking hists for mode = " << mode << endl;
-    new TH1D(Form("%s_ptp", tname.c_str()), "pt (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta", tname.c_str()), "pt (all)", 50, 0., 50.);
-    new TH1D(Form("%s_ptp1", tname.c_str()), "pt muon1 (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta1", tname.c_str()), "pt muon1 (all)",  50, 0., 50.);
-    new TH1D(Form("%s_ptp2", tname.c_str()), "pt muon2 (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta2", tname.c_str()), "pt muon2 (all)",  50, 0., 50.);
-
-    new TH1D(Form("%s_etap", tname.c_str()), "eta (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa", tname.c_str()), "eta (all)",  50, -2.5, 2.5);
-    new TH1D(Form("%s_etap1", tname.c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa1", tname.c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
-    new TH1D(Form("%s_etap2", tname.c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa2", tname.c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
-
-    new TH1D(Form("%s_phip", tname.c_str()), "phi (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia", tname.c_str()), "phi (all)",  50, -3.15, 3.15);
-    new TH1D(Form("%s_phip1", tname.c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia1", tname.c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
-    new TH1D(Form("%s_phip2", tname.c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia2", tname.c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
-
-    pDir->cd();
-  }
-
-  bool refTrigger(false), osTrigger(false);
-  for (int i = 0; i < NHLT; ++i) {
-    if ((fpEvt->fHLTNames[i] == ref) && (fpEvt->fHLTResult[i])) {
-      refTrigger = true;
-    }
-    if ((fpEvt->fHLTNames[i] == os) && (fpEvt->fHLTResult[i])) {
-      osTrigger = true;
-    }
-  }
-
-  if (!refTrigger) return;
-
-  TAnaCand *pC(0);
-  int m1(-1), m2(-1);
-  double m1Pt(0.), m2Pt(0.), m1Eta(-99.), m2Eta(-66.), dEta(99.), m1Phi(-66.), m2Phi(-66.);
-  for (int i = 0; i < fpEvt->nCands(); ++i) {
-    pC = fpEvt->getCand(i);
-    if ((pC->fType == 300511) || (pC->fType == 300531) ||(pC->fType == 300521)) {
-      vector<int> sigIdx;
-      getSigTracks(sigIdx, pC);
-      m1 = m2 = -1;
-      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
-	if (fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()) {
-	  if (m1 == -1) {
-	    m1 = sigIdx[i];
-	    m1Pt  = fpEvt->getSimpleTrack(sigIdx[i])->getP().Perp();
-	    m1Eta = fpEvt->getSimpleTrack(sigIdx[i])->getP().Eta();
-	    m1Phi = fpEvt->getSimpleTrack(sigIdx[i])->getP().Phi();
-	  } else {
-	    m2 = sigIdx[i];
-	    m2Pt  = fpEvt->getSimpleTrack(sigIdx[i])->getP().Perp();
-	    m2Eta = fpEvt->getSimpleTrack(sigIdx[i])->getP().Eta();
-	    m2Phi = fpEvt->getSimpleTrack(sigIdx[i])->getP().Phi();
-	  }
-	}
-      }
-
-      if (m1Pt < m2Pt) {
-	double bla = m1Pt;
-	m1Pt = m2Pt;
-	m2Pt = bla;
-
-	bla = m1Eta;
-	m1Eta = m2Eta;
-	m2Eta = bla;
-
-	bla = m1Phi;
-	m1Phi = m2Phi;
-	m2Phi = bla;
-      }
-
-      dEta = TMath::Abs(m1Eta - m2Eta);
-
-      double flsxy = pC->fVtx.fDxy/pC->fVtx.fDxyE;
-      if (1 == mode) {
-	if (!(flsxy > 3.0 && (m1Pt > 4.0) && (m2Pt > 3.0) && (dEta < 1.8) && (TMath::Abs(m1Eta) < 1.6) && (TMath::Abs(m2Eta) < 1.6))) continue;
-      }
-
-      if (2 == mode) {
-	if (!(flsxy > 3.0 && (m1Pt > 4.0) && (m2Pt > 3.0) && (dEta < 1.8) && (TMath::Abs(m1Eta) < 1.6) && (TMath::Abs(m2Eta) < 1.6))) continue;
-      }
-
-      tname = Form("os_%d", mode);
-      ((TH1D*)gFile->Get(Form("%s_pta", tname.c_str())))->Fill(pC->fPlab.Perp());
-      ((TH1D*)gFile->Get(Form("%s_pta1", tname.c_str())))->Fill(m1Pt);
-      ((TH1D*)gFile->Get(Form("%s_pta2", tname.c_str())))->Fill(m2Pt);
-      ((TH1D*)gFile->Get(Form("%s_etaa", tname.c_str())))->Fill(pC->fPlab.Eta());
-      ((TH1D*)gFile->Get(Form("%s_etaa1", tname.c_str())))->Fill(m1Eta);
-      ((TH1D*)gFile->Get(Form("%s_etaa2", tname.c_str())))->Fill(m2Eta);
-      ((TH1D*)gFile->Get(Form("%s_phia", tname.c_str())))->Fill(pC->fPlab.Phi());
-      ((TH1D*)gFile->Get(Form("%s_phia1", tname.c_str())))->Fill(m1Phi);
-      ((TH1D*)gFile->Get(Form("%s_phia2", tname.c_str())))->Fill(m2Phi);
-
-      if (osTrigger) {
-	((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))->Fill(pC->fPlab.Perp());
-	((TH1D*)gFile->Get(Form("%s_ptp1", tname.c_str())))->Fill(m1Pt);
-	((TH1D*)gFile->Get(Form("%s_ptp2", tname.c_str())))->Fill(m2Pt);
-	((TH1D*)gFile->Get(Form("%s_etap", tname.c_str())))->Fill(pC->fPlab.Eta());
-	((TH1D*)gFile->Get(Form("%s_etap1", tname.c_str())))->Fill(m1Eta);
-	((TH1D*)gFile->Get(Form("%s_etap2", tname.c_str())))->Fill(m2Eta);
-	((TH1D*)gFile->Get(Form("%s_phip", tname.c_str())))->Fill(pC->fPlab.Phi());
-	((TH1D*)gFile->Get(Form("%s_phip1", tname.c_str())))->Fill(m1Phi);
-	((TH1D*)gFile->Get(Form("%s_phip2", tname.c_str())))->Fill(m2Phi);
-      }
-
-      break; // fill only for one candidate with fulfilling J/psi muons and displacement
-    }
-  }
-
-}
-
 
 // ----------------------------------------------------------------------
 void candAna::play() {

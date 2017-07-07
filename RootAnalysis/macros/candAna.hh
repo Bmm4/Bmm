@@ -19,6 +19,8 @@
 #include "cuts.hh"
 
 
+#define NTRGMAX 20
+
 struct isoNumbers {
   double iso;
   int    pvTracks;
@@ -87,6 +89,7 @@ public:
   //  virtual double      dist2PdTrigger(const TVector3 &t);
   virtual void        dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &dm2);
   virtual bool        triggerFired(std::string triggerPath);
+  virtual void        nTriggers();
   virtual void        triggerL1T();
   virtual void        triggerHLT();
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
@@ -146,7 +149,6 @@ public:
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual double      distToMuon(TSimpleTrack *pt); // calculate DR separation of a track to closest (other) muon
-  virtual void        triggerEff(std::string ref, std::string os, int mode);
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
@@ -319,6 +321,8 @@ public:
   int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
   map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
+
+  int fNtrg, fNtrgPs[NTRGMAX], fNtrgTos[NTRGMAX];
 
   struct redTreeData fRTD;
 };
