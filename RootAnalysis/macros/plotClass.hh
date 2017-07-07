@@ -137,9 +137,9 @@ public :
   virtual void calcBDT();
 
   struct redTreeData fb;
-  TMVA::Reader* fReaderEvents0[2];
-  TMVA::Reader* fReaderEvents1[2];
-  TMVA::Reader* fReaderEvents2[2];
+  std::vector<TMVA::Reader*> fReaderEvents0;
+  std::vector<TMVA::Reader*> fReaderEvents1;
+  std::vector<TMVA::Reader*> fReaderEvents2;
   TString fMvaMethod;
   bool fIsMC, fIsSignal;
   double fBDT;
