@@ -289,10 +289,25 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
   unsigned int tEntries = t->GetEntriesFast();
   cout << "Found " << tEntries << " entries to loop over." << endl;
 
+  int json_tmp_run(0);
   for (unsigned int i=0;i<tEntries;i++)
     {
       t->GetEntry(i);
-      if ( fb.hlt1 && fb.tos && (fb.chan==0 || fb.chan==1) && fb.json && fb.pt>6 && fb.m1pt>4 && fb.m2pt>4 && fb.alpha < 0.05 && fb.fls3d>10 && fb.m1gmid && fb.m2gmid ) {h->Fill(fb.run,fb.m);}
+      //print out all the runs in the json file
+      if ( fb.json ) 
+	{
+	  if ( json_tmp_run != fb.run )
+	    {
+	      json_tmp_run = fb.run;
+	      cout << "passed json: run: " << fb.run << endl;
+	    }
+	}
+      if ( fb.hlt1 && fb.tos && (fb.chan==0 || fb.chan==1) && fb.json && fb.pt>6 && fb.m1pt>4 && fb.m2pt>4 && fb.alpha < 0.05 && fb.fls3d>10 && fb.m1gmid && fb.m2gmid ) 
+	{
+	  // cout << "filled histo with: " << fb.run << "/" << fb.m << endl;
+	  h->Fill(fb.run,fb.m);
+	  // break;
+	}
     }
 
   // c0->cd(1);
@@ -317,10 +332,12 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
   //cout << "lumi = " << pl->lumi(297723) << endl;
 
   //loop over the TH2 histo
-  for (int i=0;i<xbins;i++)
+  for (int i=0;i<=xbins;i++)
     {
-      //cout << "edge: " << run[i] << endl;
-      double lumi = pl->lumi(run[i]);
+      //take care of the binning...
+      int currentRun = run[i]-1;
+      // cout << "edge: " << run[i] << endl;
+      double lumi = pl->lumi(currentRun);
       double integral = h->Integral(i,i,1,ybins);
       // if (run[i]>297500 && run[i]<297600)
       // 	{
@@ -332,13 +349,13 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
 	{
 	  double result = integral/lumi;
 	  //cout << "lumi: " << lumi << endl;
-	  cout << "run: integral/lumi:  " << run[i] << "/" << integral << "/" << lumi << " == " << result << endl; 
+	  cout << "run: integral/lumi:  " << currentRun << "/" << integral << "/" << lumi << " == " << result << endl; 
 	  //Filled together. Must be of same size
-	  vruns.push_back(run[i]);
+	  vruns.push_back(currentRun);
 	  integrals.push_back(result);
 	}
       else if ( integral>0 )
-	{cout << "Rejected run: " << run[i] << " with " << integral << " events because of 0 lumi." << endl;}
+	{cout << "Rejected run: " << currentRun << " with " << integral << " events because of 0 lumi." << endl;}
     }
 
   if ( vruns.size() != integrals.size() ) 
@@ -347,6 +364,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
   double *yData = &integrals[0];
   TGraph *gg = new TGraph(vruns.size(),xData,yData);
   gg->SetTitle(Form("%s;run number;#events/lumi [pb]",dsname.c_str()));
+  gg->GetYaxis()->SetTitleOffset(0.7);
   gg->Draw("a*");
 
 
