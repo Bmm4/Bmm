@@ -25,6 +25,7 @@ public :
   void plotTisEfficiency(std::string dsname);
   void runTisEfficiency(std::string dsname);
   void plotL1Seeds(std::string dsname);
+  void plotTOSHistory(std::string dsname,unsigned int runMin, unsigned int runMax);
 
   void refTrgEfficiency(std::string selection, std::string dsname = "bupsikMc");
   void runStudy(string ds = "bupsikData", string what = "ana");
