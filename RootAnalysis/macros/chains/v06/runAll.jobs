@@ -398,7 +398,7 @@ $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
 # FIXME: THE MODES BELOW USE THE 2016 MC, BUT RUN THE 2012 BDT ON IT!!
 $mode = "bmm-mc-$dataset-proxy-BuToJpsiK_BMuonFilter-$version"; $pattern = "bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-$version";
-$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.mix-BuToJpsiK -m' c$mode-*  && cd - ";
+$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.mix-Bu2JpsiK -m' c$mode-*  && cd - ";
 $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/RunIISpring16DR80 -c -p $pattern | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
