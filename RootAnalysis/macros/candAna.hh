@@ -15,6 +15,7 @@
 
 #include "redTreeData.hh"
 #include "preselection.hh"
+#include "ReaderData.hh"
 #include "cuts.hh"
 
 
@@ -27,14 +28,6 @@ struct isoNumbers {
 
 // -- TMVA related
 #include "TMVA/Reader.h"
-struct readerData {
-  float pt, eta, m1eta, m2eta, m1pt, m2pt;
-  float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
-  float closetrks1, closetrks2, closetrks3;
-  float m1iso, m2iso, pvdchi2, othervtx;
-  float pv2lip, pv2lips;
-  float m;
-};
 
 struct muonData {
   float mbdt;
@@ -113,7 +106,7 @@ public:
   virtual void        fillMuonData(muonData &a, TAnaMuon *pM);
   virtual void        replaceAll(std::string &s, std::string a, std::string b);
 
-  virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
+  // virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
   virtual TMVA::Reader* setupMuonMvaReader(std::string xmlFile, mvaMuonIDData &rd);
   virtual void        calcBDT();
   virtual int         detChan(double m1eta, double m2eta);
@@ -234,7 +227,7 @@ public:
   std::vector<TMVA::Reader*> fReaderEvents1;
   std::vector<TMVA::Reader*> fReaderEvents2;
   double  fBDT;
-  readerData frd;
+  ReaderData frd;
 
   TMVA::Reader *fMvaMuonID, *fMvaMuonID1;
   mvaMuonIDData mrd, mrd1;

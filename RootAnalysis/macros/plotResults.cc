@@ -53,10 +53,10 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
   fSaveSmallTree = false;
 
   // -- initialize cuts
-  string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
-  cout << "===> Reading cuts from " << cutfile << endl;
-  readCuts(cutfile);
-  fNchan = fCuts.size();
+  // string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
+  // cout << "===> Reading cuts from " << cutfile << endl;
+  // readCuts(cutfile);
+  // fNchan = fCuts.size();
 
   printCuts(cout);
 
@@ -743,15 +743,16 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 
   fSaveSmallTree = true;
 
-
-  // resetHistograms();
-  // setup("bmmData");
-  // t = getTree(fSetup, fTreeDir);
-  // setupTree(t, fSetup);
-  // loopOverTree(t, 1, nevents, start);
-  // saveHistograms(fSetup);
-  // fHistFile->Close();
-  // return;
+  if (0) {
+    resetHistograms();
+    setup("bdmmMc");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, -1, start);
+    saveHistograms(fSetup);
+    fHistFile->Close();
+    return;
+  }
 
   // -- rare backgrounds
   if (1) {
