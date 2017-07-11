@@ -4415,7 +4415,7 @@ void candAna::nTriggers() {
   if (0 == ((TH1D*)gFile->Get("ntriggers"))) {
     TDirectory *pDir = gDirectory;
     gFile->cd();
-    TH1D *h1 = new TH1D("ntriggers", "ntriggers", NTRGMAX+1, 0., NTRGMAX);
+    TH1D *h1 = new TH1D("ntriggers", "ntriggers", NTRGMAX, 0., NTRGMAX);
     int ntrg(1);
     cout << "nTriggers: " << endl;
     for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
