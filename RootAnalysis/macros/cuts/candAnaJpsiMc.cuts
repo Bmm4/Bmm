@@ -1,0 +1,14 @@
+TYPE          2000078
+TRUTHCAND         521
+NOPRESELECTION      1
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.YEAR.cuts
+# -- trigger
++input cuts/triggerJpsiMc.cuts
+# -- boxes
++input cuts/boxes.Jpsi.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.cuts
