@@ -2098,7 +2098,7 @@ void plotResults::loopFunction1() {
       && fGoodTracks
       && fGoodTracksPt
       && fGoodTracksEta
-      && fGoodBdtPt
+      && fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
       && fGoodMuonsEta
       && fGoodJpsiCuts
       && fGoodBDT
@@ -2127,6 +2127,12 @@ void plotResults::loopFunction1() {
 	}
 
 	// -- weighted with fake rate
+	if (0) cout << "fW8MisId = " << fW8MisId
+		    << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+		    << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+		    << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+		    << endl;
+
 	fhW8MassWithAllCuts[modifier[1]][fChan]->Fill(mass, fW8MisId);
 	if (fIsCowboy) {
 	  fhW8MassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass, fW8MisId);
