@@ -598,6 +598,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("hlt",     &fb.hlt);
   t->SetBranchAddress("hlt1",    &fb.hlt1);
   t->SetBranchAddress("tos",     &fb.tos);
+  t->SetBranchAddress("l1t",     &fb.l1t);
   t->SetBranchAddress("hltm",    &fb.hltm);
   t->SetBranchAddress("ls",      &fb.ls);
   t->SetBranchAddress("ps",      &fb.ps);
@@ -835,6 +836,13 @@ void plotClass::candAnalysis() {
     fGoodMuonsEta = false;
   }
 
+  // -- insist on channel boundaries
+  double m1 = TMath::Abs(fb.m1eta);
+  double m2 = TMath::Abs(fb.m2eta);
+  if (m2 > m1) m1 = m2;
+  if (m1 > pCuts->metaMax) fGoodMuonsEta = false;
+  if (m1 < pCuts->metaMin) fGoodMuonsEta = false;
+
   if (bp2jpsikp) {
     if (fIsMC) {
       // gen-level cuts for Bu2JpsiKp
@@ -941,6 +949,12 @@ void plotClass::candAnalysis() {
       if (-2212 == fb.g2id) w2 = fptFakeNegProtons->effD(fb.m2pt, am2eta, 1.);
 
       fW8MisId = w1*w2;
+
+      if (0) cout << "fW8MisId = " << fW8MisId << " w1 = " << w1 << " w2 = " << w2
+		  << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+		  << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+		  << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+		  << endl;
     }
 
   }
@@ -1013,7 +1027,7 @@ void plotClass::candAnalysis() {
 	      << endl;
 
   fGoodBDT        = (fBDT > pCuts->bdtCut);
-  fGoodHLT        = fb.hlt1 && fb.tos;
+  fGoodHLT        = fb.hlt1 && fb.tos && fb.l1t;
 
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = true;
