@@ -744,6 +744,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   fSaveSmallTree = true;
 
   if (0) {
+    // -- for debugging
     resetHistograms();
     setup("bdmmMc");
     t = getTree(fSetup, fTreeDir);
