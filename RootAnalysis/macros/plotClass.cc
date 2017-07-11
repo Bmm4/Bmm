@@ -1180,7 +1180,9 @@ void plotClass::calcBDT() {
     cout << "all hell break loose" << endl;
   }
 
-  //  cout << "fBDT = " << fBDT << endl;
+  if (TMath::Abs(fBDT - fb.bdt) > 1.e-6) {
+    cout << "calculated fBDT = " << fBDT << " from reduced tree: fb.bdt = " << fb.bdt << endl;
+  }
 }
 
 
