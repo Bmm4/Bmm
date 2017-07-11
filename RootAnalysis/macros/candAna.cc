@@ -867,6 +867,18 @@ void candAna::candAnalysis() {
 
   fTOS = tos(fpCand);
   fTIS = tis(fpCand);
+  fL1T = false;
+  if (fChan > -1) {
+    // -- NOTE: L1seeds may be prescaled, but still appear here (they are not zeroed if prescaled)
+    for (unsigned int is = 0; is < fCuts[fChan]->l1seeds.size(); ++is) {
+      if (fL1Seeds & (0x1<<fCuts[fChan]->l1seeds[is])) {
+	fL1T = true;
+	break;
+      }
+    }
+  }
+
+
   if (2016 == fYear) {
     fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi");
   } else if (2017 == fYear) {
@@ -1078,7 +1090,7 @@ void candAna::fillCandidateHistograms(int offset) {
 
 // ----------------------------------------------------------------------
 int candAna::detChan(double m1eta, double m2eta) {
-  int mode(1);
+  int mode(0);
   // mode 0: channels 0 .. n are simply increasingly more forward regions for the most-forward muon
   // mode 1: channels 0 .. n are arbitrary eta regions for the most-forward muon combined with L1SEED requirements
 
@@ -1361,32 +1373,32 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<2; //4
+	fL1Seeds |= (0x1<<2); //4
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<3; //8
+	fL1Seeds |= (0x1<<3); //8
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<4; //16
+	fL1Seeds |= (0x1<<4); //16
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<5; //32
+	fL1Seeds |= (0x1<<5); //32
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<6; //64
+	fL1Seeds |= (0x1<<6); //64
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1398,17 +1410,17 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_ DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<2; //4
+	fL1Seeds |= (0x1<<2); //4
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
-	fL1Seeds |= 0x1<<0; //4
+	fL1Seeds |= (0x1<<0); //4
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1420,7 +1432,7 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0_HighQ" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1910,6 +1922,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
   t->Branch("tos",     &fTOS,               "tos/O");
+  t->Branch("l1t",     &fL1T,               "l1t/O");
   t->Branch("hltd1",   &fHltD1,             "hltd1/D");
   t->Branch("hltd2",   &fHltD2,             "hltd2/D");
   t->Branch("tis",     &fTIS,               "tis/O");
