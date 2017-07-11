@@ -148,6 +148,10 @@ void colors(int i) {
 
 // ----------------------------------------------------------------------
 void printNonZero(TH1 *h) {
+  if (0 == h) {
+    cout << "histogram does not exist" << endl;
+    return;
+  }
   double con(0.), min(0.), max(0.);
   for (Int_t i = 0; i <= h->GetNbinsX()+1; ++i) {
     con = h->GetBinContent(i);
@@ -156,6 +160,26 @@ void printNonZero(TH1 *h) {
       max = min + h->GetBinWidth(i);
       cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << Form(" %12.3f", con) << " +/- " << Form("%12.3f ", h->GetBinError(i))
+	   << h->GetXaxis()->GetBinLabel(i)
+           << endl;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+void printAxesLabels(TH1 *h) {
+  if (0 == h) {
+    cout << "histogram does not exist" << endl;
+    return;
+  }
+  double min(0.), max(0.);
+  TString la;
+  for (Int_t i = 0; i <= h->GetNbinsX()+1; ++i) {
+    la = h->GetXaxis()->GetBinLabel(i);
+    min = h->GetBinLowEdge(i);
+    max = min + h->GetBinWidth(i);
+    if (la != "") {
+      cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << h->GetXaxis()->GetBinLabel(i)
            << endl;
     }
