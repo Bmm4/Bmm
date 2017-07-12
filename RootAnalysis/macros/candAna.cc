@@ -192,7 +192,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   triggerHLT();
   triggerL1T();
 
-  triggerSelection();
+  // triggerSelection();
   runRange();
 
   if (fIsMC) {
@@ -878,6 +878,46 @@ void candAna::candAnalysis() {
     }
   }
 
+  // if (fGoodHLT1 && !fL1T) {
+  //   cout << "Event has HLT1 = true, but L1T = false!" << " muon etas: " << fMu1Eta << "/" << fMu2Eta << " chan = " << fChan << endl;
+  //   bool result(false), wasRun(false), error(false);
+  //   TString a("");
+  //   for (int i = 0; i < NHLT; ++i) {
+  //     result = wasRun = error = false;
+  //     a = fpEvt->fHLTNames[i];
+  //     wasRun = fpEvt->fHLTWasRun[i];
+  //     result = fpEvt->fHLTResult[i];
+  //     error  = fpEvt->fHLTError[i];
+
+  //     if (result) { // passed
+  // 	cout << "HLT path: " << a << " result: " << result << " wasrun = " << wasRun << " error: " << error
+  // 	     << endl;
+  //     }
+  //   }
+
+  //   for (int i = 0; i < NL1T; ++i) {
+  //     if (!fpEvt->fL1TResult[i]) continue;
+  //     cout << "L1 trigger fired ->" << fpEvt->fL1TNames[i] << "<-" << endl;
+  //   }
+
+  //   cout  << "fL1SeedString: " << fL1SeedString << "; ";
+  //   for (int i = 6; i >= 0; --i) {
+  //     cout << (fL1Seeds&(0x1<<i)) << " ";
+  //   }
+  //   cout << endl;
+
+  //   if (fChan > -1) {
+  //     for (unsigned int is = 0; is < fCuts[fChan]->l1seeds.size(); ++is) {
+  // 	cout << "check fL1Seeds at " << fCuts[fChan]->l1seeds[is] << endl;
+  // 	if (fL1Seeds & (0x1<<fCuts[fChan]->l1seeds[is])) {
+  // 	  cout << " found true, would break out" << endl;
+  // 	} else {
+  // 	cout << " found false" << endl;
+  // 	}
+  //     }
+
+  //   }
+  // }
 
   if (2016 == fYear) {
     fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi");
@@ -1232,6 +1272,7 @@ void candAna::triggerHLT() {
   fHLT1Path = "nada";
 
   TString a;
+  string sa;
   int ps(0);
   bool result(false), wasRun(false), error(false);
   int verbose(fVerbose);
@@ -1261,50 +1302,80 @@ void candAna::triggerHLT() {
     }
   }
 
-  for (int i = 0; i < NHLT; ++i) {
-    result = wasRun = error = false;
-    a = fpEvt->fHLTNames[i];
-    ps = fpEvt->fHLTPrescale[i];
-    wasRun = fpEvt->fHLTWasRun[i];
-    result = fpEvt->fHLTResult[i];
-    error  = fpEvt->fHLTError[i];
-
-    if (wasRun && result) { // passed
-      if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
-						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
-						<< endl;
-      bool good = false;
-      string spath;
-      int rmin, rmax;
-      for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
-	spath = imap->first;
-	rmin = imap->second.first;
-	rmax = imap->second.second;
-	if (fRun < rmin) continue;
-	if (fRun > rmax) continue;
-	if (!a.CompareTo(imap->first.c_str())) {
-	  good = true;
-	  if (verbose > 1 || -32 == verbose  )
-	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
-		 << " result: " << result << endl;
-	  break;
-	}
-	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
-	  good = true;
-	  if (verbose > 1 || -32 == verbose)
-	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
-		 << " result: " << result << " in run " << fRun << endl;
-	  break;
-	}
-      }
-      if (good) {
-	fHltPrescale = ps;
-	fHLT1Path    = a;
-	fGoodHLT1    = true;
-	return;
-      }
+  hltPathInfo hpi;
+  string spath;
+  int rmin, rmax;
+  bool good(false);
+  for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+    spath = imap->first;
+    rmin = imap->second.first;
+    rmax = imap->second.second;
+    if (fRun < rmin) continue;
+    if (fRun > rmax) continue;
+    if (fpReader->fHltPathInfo[spath].result) {
+      sa = spath;
+      ps = fpReader->fHltPathInfo[spath].prescale;
+      good = true;
+      break;
+    }
+    string sas = spath.substr(0, sa.rfind("_v")+2);
+    if (fpReader->fHltPathInfo[sas].result) {
+      good = true;
+      break;
     }
   }
+  if (good) {
+    fHltPrescale = ps;
+    fHLT1Path    = sa;
+    fGoodHLT1    = true;
+    return;
+  }
+
+
+  // for (int i = 0; i < NHLT; ++i) {
+  //   result = wasRun = error = false;
+  //   a = fpEvt->fHLTNames[i];
+  //   ps = fpEvt->fHLTPrescale[i];
+  //   wasRun = fpEvt->fHLTWasRun[i];
+  //   result = fpEvt->fHLTResult[i];
+  //   error  = fpEvt->fHLTError[i];
+
+  //   if (wasRun && result) { // passed
+  //     if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
+  // 						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
+  // 						<< endl;
+  //     bool good = false;
+  //     string spath;
+  //     int rmin, rmax;
+  //     for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+  // 	spath = imap->first;
+  // 	rmin = imap->second.first;
+  // 	rmax = imap->second.second;
+  // 	if (fRun < rmin) continue;
+  // 	if (fRun > rmax) continue;
+  // 	if (!a.CompareTo(imap->first.c_str())) {
+  // 	  good = true;
+  // 	  if (verbose > 1 || -32 == verbose  )
+  // 	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
+  // 		 << " result: " << result << endl;
+  // 	  break;
+  // 	}
+  // 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
+  // 	  good = true;
+  // 	  if (verbose > 1 || -32 == verbose)
+  // 	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
+  // 		 << " result: " << result << " in run " << fRun << endl;
+  // 	  break;
+  // 	}
+  //     }
+  //     if (good) {
+  // 	fHltPrescale = ps;
+  // 	fHLT1Path    = a;
+  // 	fGoodHLT1    = true;
+  // 	return;
+  //     }
+  //   }
+  // }
 }
 
 // ----------------------------------------------------------------------
@@ -1419,8 +1490,13 @@ void candAna::triggerL1T() {
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
+      } else if ("L1_DoubleMu0" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
+	fL1Seeds |= (0x1<<0); //1
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
       } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
-	fL1Seeds |= (0x1<<0); //4
+	fL1Seeds |= (0x1<<1); //1
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1441,7 +1517,7 @@ void candAna::triggerL1T() {
   }
 
   if (fVerbose == -32) {
-     cout  << "tt " << fName  <<  " summary of L1: " << fL1SeedString << "; ";
+    cout  << "tt " << fName  <<  " summary of L1: " << fL1SeedString << "; ";
     for (int i = 6; i >= 0; --i) {
       cout << (fL1Seeds&(0x1<<i)) << " ";
     }
@@ -2432,6 +2508,21 @@ void candAna::readCuts(string fileName, int dump) {
       HLTRANGE.insert(make_pair(hlt, make_pair(r1, r2)));
       if (dump) {
 	cout << "HLTRANGE:       " << hlt << " from " << r1 << " to " << r2 << endl;
+      }
+      ibin = 3;
+      hcuts->SetBinContent(ibin, 1);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, triggerlist));
+    }
+
+    if (!strcmp(CutName, "NTRIGGERS")) {
+      char triggerlist[1000];
+      sscanf(buffer, "%s %s", CutName, triggerlist);
+      string tl(triggerlist);
+      int r1(0), r2(0);
+      string hlt = splitTrigRange(tl, r1, r2);
+      NTRIGGERS.insert(make_pair(hlt, make_pair(r1, r2)));
+      if (dump) {
+	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << endl;
       }
       ibin = 3;
       hcuts->SetBinContent(ibin, 1);
@@ -4412,15 +4503,17 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 // ----------------------------------------------------------------------
 void candAna::nTriggers() {
 
+  // -- book histogram with ref trigger names and indices
   if (0 == ((TH1D*)gFile->Get("ntriggers"))) {
     TDirectory *pDir = gDirectory;
     gFile->cd();
-    TH1D *h1 = new TH1D("ntriggers", "ntriggers", NTRGMAX, 0., NTRGMAX);
+    TH1D *h1 = new TH1D("ntriggers", "ntriggers indices", NTRGMAX, 0., NTRGMAX);
     int ntrg(1);
     cout << "nTriggers: " << endl;
-    for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+    for (map<string, pair<int, int> >::iterator imap = NTRIGGERS.begin(); imap != NTRIGGERS.end(); ++imap) {
       cout << " adding " << ntrg << " " << imap->first << endl;
       h1->GetXaxis()->SetBinLabel(ntrg, imap->first.c_str());
+      h1->SetBinContent(ntrg, ntrg-1);
       ++ntrg;
       if (ntrg == NTRGMAX) break;
     }
@@ -4437,38 +4530,18 @@ void candAna::nTriggers() {
   int rmin, rmax;
   int ntrg(-1);
   bool  reftrg(false);
-  for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+  for (map<string, pair<int, int> >::iterator imap = NTRIGGERS.begin(); imap != NTRIGGERS.end(); ++imap) {
     ++ntrg;
     if (ntrg == NTRGMAX) break;
     spath = imap->first;
     rmin = imap->second.first;
     rmax = imap->second.second;
+    reftrg = false;
     if (rmin <= fRun && fRun <= rmax) {
       reftrg = refTrigger(fpCand, spath);
       if (reftrg) {
 	fNtrgTos[ntrg] = 1;
-      }
-    }
-
-    if (!reftrg) continue;
-    bool result(false), wasRun(false);
-    int ps(-1);
-    TString a;
-    for (int i = 0; i < NHLT; ++i) {
-      result = wasRun = false;
-      a = fpEvt->fHLTNames[i];
-      if (a.Contains(spath.c_str())){
-	ps = fpEvt->fHLTPrescale[i];
-	wasRun = fpEvt->fHLTWasRun[i];
-	result = fpEvt->fHLTResult[i];
-	//	cout << "event: " << fEvt << " reftrg: " << spath << " fired path = " << a << endl;
-	if (reftrg && !result) {
-	  cout << "inconsistent trigger results!" << endl;
-	}
-	if (!reftrg && result) {
-	  cout << "inconsistent trigger results!" << endl;
-	}
-	fNtrgPs[ntrg] = ps;
+	fNtrgPs[ntrg]  = fpReader->fHltPathInfo[spath].prescale;
       }
     }
   }
@@ -4485,6 +4558,11 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
   getSigTracks(sigIdx, pC);
+
+  if (!fpReader->fHltPathInfo[refTriggerPath].result) {
+    //    cout << "refTrigger(" << refTriggerPath << ") did not fire ... skipping" << endl;
+    return false;
+  }
 
   if (verbose) {
     cout << "==> candAna::refTrigger> in DS = " << DSNAME
@@ -4505,52 +4583,68 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   // -- determine trigger objects for reference path
   TTrgObjv2 *pTO(0);
   set<int> trgTrkIdx;
+  unsigned int nTrgIdx(0);
+  vector<int> muonIndex;
+  vector<int> muonID;
+  vector<TLorentzVector> muonP;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
     pTO = fpEvt->getTrgObjv2(i);
+    // -- skip L1 and L2 objects (bad resolution for matching)
+    if (pTO->fType.Contains("L1T")) continue;
+    if (pTO->fType.Contains("L1Filter")) continue;
+    if (pTO->fType.Contains("L2")) continue;
     if (pTO->fHltPath.Contains(refTriggerPath)) {
-      vector<int> muonIndex = pTO->fIndex;
-      vector<int> muonID = pTO->fID;
-      vector<TLorentzVector> muonP = pTO->fP;
-      int num = muonIndex.size();
-      // -- skip L1 and L2 objects (bad resolution for matching)
-      if (pTO->fType.Contains("L1T")) continue;
-      if (pTO->fType.Contains("L1Filter")) continue;
-      if (pTO->fType.Contains("L2")) continue;
-      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-      for (int j = 0; j < num; ++j) {
+      muonIndex.clear(); muonIndex = pTO->fIndex;
+      muonID.clear();    muonID = pTO->fID;
+      muonP.clear();     muonP = pTO->fP;
+      nTrgIdx = muonIndex.size();
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  "
+			<< " with n(particles) = " << nTrgIdx << endl;
+      for (int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
 	if (trkIdx < 0) {
 	  if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
 	  continue;
 	}
-	if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
-			  << " matched to track idx " << trkIdx << " pt/eta/phi = "
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
-			  << " with dr = " << dr
-			  << endl;
-	trgTrkIdx.insert(trkIdx);
+	double dpt = TMath::Abs(1. - muonP[j].Vect().Perp()/fpEvt->getSimpleTrack(trkIdx)->getP().Perp());
+	if ((dpt < 0.15) && (dr < 0.02)) {
+	  if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+			    << " matched to track idx " << trkIdx << " pt/eta/phi = "
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			    << " with dr = " << dr
+			    << endl;
+	  trgTrkIdx.insert(trkIdx);
+	}
       }
-
     }
   }
 
   // -- now check that all objects of ref trigger are matched to the cand's muons
   set<int>::iterator it;
-  int nmatch(0);
+  int overlaps(0);
   for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       if (*it == sigIdx[i]) {
-	++nmatch;
-	break;
+	++overlaps;
+      } else {
+	// nothing
       }
     }
   }
 
-  if (verbose) cout << "REF TRIGGER nmatch = " << nmatch << endl;
-  result = (nmatch == 2);
+  if ((trgTrkIdx.size() > 0) && (trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
+    result = true;
+    if (verbose) {
+      cout << " refTrigger: COMPLETELY  overlapping!!!!!!!!!!!!! overlaps = " << overlaps
+	   << " trgTrkIdx.size() = "  << trgTrkIdx.size()
+	   << " nTrgIdx = " << nTrgIdx
+	   << endl;
+    }
+  }
+
   return result;
 }
 
@@ -4743,15 +4837,15 @@ bool candAna::tos(TAnaCand *pC) {
   vector<TLorentzVector> muonP;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
     pTO = fpEvt->getTrgObjv2(i);
+    // -- skip L1 and L2 objects (bad resolution for matching)
+    if (pTO->fType.Contains("L1Filter")) continue;
+    if (pTO->fType.Contains("L1T")) continue;
+    if (pTO->fType.Contains("L2")) continue;
     if (fHLT1Path == pTO->fHltPath) {
       muonIndex.clear(); muonIndex = pTO->fIndex;
       muonID.clear();    muonID = pTO->fID;
       muonP.clear();     muonP = pTO->fP;
       nTrgIdx = muonIndex.size();
-      // -- skip L1 and L2 objects (bad resolution for matching)
-      if (pTO->fType.Contains("L1Filter")) continue;
-      if (pTO->fType.Contains("L1T")) continue;
-      if (pTO->fType.Contains("L2")) continue;
       for (int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
@@ -4788,7 +4882,7 @@ bool candAna::tos(TAnaCand *pC) {
       }
     }
   }
-  if ((trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
+  if ((trgTrkIdx.size() > 0) && (trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
     result = true;
     if (verbose) {
       cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
@@ -4843,14 +4937,22 @@ int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
 
 // ----------------------------------------------------------------------
 bool candAna::triggerFired(std::string triggerPath) {
-  for (int i = 0; i < NHLT; ++i) {
-    if (fpEvt->fHLTResult[i]) {
-      if (fpEvt->fHLTNames[i] == triggerPath) {
-	return true;
-      }
-    }
-  }
+  // -- try vanilla trigger path name
+  if (fpReader->fHltPathInfo[triggerPath].result) return true;
+
+  // -- try version without version number
+  string sas = triggerPath.substr(0, triggerPath.rfind("_v")+2);
+  if (fpReader->fHltPathInfo[sas].result) return true;
   return false;
+
+  // for (int i = 0; i < NHLT; ++i) {
+  //   if (fpEvt->fHLTResult[i]) {
+  //     if (fpEvt->fHLTNames[i] == triggerPath) {
+  // 	return true;
+  //     }
+  //   }
+  // }
+  // return false;
 }
 
 

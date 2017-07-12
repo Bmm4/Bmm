@@ -19,7 +19,7 @@
 #include "cuts.hh"
 
 
-#define NTRGMAX 20
+#define NTRGMAX 40
 
 struct isoNumbers {
   double iso;
@@ -208,7 +208,7 @@ public:
 
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, DATACAND, IGNORETRIGGER, NOPRESELECTION;
 
-  std::map<std::string, pair<int, int> > HLTRANGE;
+  std::map<std::string, pair<int, int> > HLTRANGE, NTRIGGERS;
   string DSNAME; // data set name
 
   bool fBarrel, fWideMass;
