@@ -109,6 +109,23 @@ void bmmReader::eventProcessing() {
     }
   }
 
+  fHltPathInfo.clear();
+  hltPathInfo hpi;
+  string sa, sas;
+  for (int i = 0; i < NHLT; ++i) {
+    sa = fpEvt->fHLTNames[i];
+    if (sa == "") break;
+    sas = sa.substr(0, sa.rfind("_v")+2);
+    hpi.prescale = fpEvt->fHLTPrescale[i];
+    hpi.wasRun = fpEvt->fHLTWasRun[i];
+    hpi.result = fpEvt->fHLTResult[i];
+    hpi.error  = fpEvt->fHLTError[i];
+    hpi.v      = true;
+    fHltPathInfo.insert(make_pair(sa, hpi));
+    hpi.v      = false;
+    fHltPathInfo.insert(make_pair(sas, hpi));
+  }
+
   if (0) {
     cout << "========== NEW EVENT: " << fEvt << endl;
     for (int i = 0; i < NL1T; ++i) {
