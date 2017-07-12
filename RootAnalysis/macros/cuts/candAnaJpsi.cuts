@@ -5,7 +5,7 @@ PVAVEW8          0.6
 # -- baseCuts
 +input cuts/baseCuts.YEAR.cuts
 # -- trigger
-+input cuts/triggerJpsi.cuts
++input cuts/triggerDisplacedJpsi.cuts
 # -- boxes
 +input cuts/boxes.Jpsi.cuts
 # -- tracks
