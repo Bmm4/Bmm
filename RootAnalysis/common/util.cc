@@ -417,11 +417,12 @@ double chi2TestErr(TH1 *h1, TH1 *h2, double& chi2, double& ndof, int constrain) 
 }
 
 // ----------------------------------------------------------------------
+// -- FIXME: I get a SEGV in **, I don't understand this!?
 void average(double &av, double &error, int n, double *val, double *verr) {
 
   double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (int i = 0; i < n; ++i) {
-    //    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
+    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
 
     // -- calculate mean and error
     e = verr[i];
@@ -434,9 +435,11 @@ void average(double &av, double &error, int n, double *val, double *verr) {
       continue;
     }
   }
+  cout << "sumW8 = " << sumW8 << endl;
   if (sumW8 > 0.) {
     av = sumAve/sumW8;
-    error = 1./TMath::Sqrt(sumW8);
+    sumW8 = TMath::Sqrt(sumW8); //**
+    error = 1./sumW8;
   } else {
     av = -99.;
     error = -99.;
