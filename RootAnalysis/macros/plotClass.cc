@@ -900,6 +900,7 @@ void plotClass::candAnalysis() {
     if (fb.mpsi > 3.15) fGoodJpsiCuts = false;
     if (fb.mpsi < 3.04) fGoodJpsiCuts = false;
     if (fb.psipt < 7.0) fGoodJpsiCuts = false;
+    if (fb.psiprob < 0.1) fGoodJpsiCuts = false;
   }
 
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
@@ -1181,7 +1182,23 @@ void plotClass::calcBDT() {
   }
 
   if (TMath::Abs(fBDT - fb.bdt) > 1.e-6) {
-    cout << "calculated fBDT = " << fBDT << " from reduced tree: fb.bdt = " << fb.bdt << endl;
+    cout << "calculated fBDT = " << fBDT
+	 << " from reduced tree: fb.bdt = " << fb.bdt
+	 << " mode = " << fMode << " fChan = " << fChan
+	 << endl;
+    if (fMode == BU2JPSIKP || fMode == BS2JPSIPHI) {
+
+      cout << "jpsi: pt = " << fb.psipt << " prob = " << fb.psiprob << endl;
+
+      cout << "kaons: pt eta gt = ";
+      if (fMode == BU2JPSIKP) {
+	cout << fb.kpt << " " << fb.keta << " " << fb.kgt;
+      }
+      if (fMode == BS2JPSIPHI) {
+	cout << fb.k1pt << "/" << fb.k2pt << " " << fb.k1eta << "/" << fb.k2eta << " " << fb.k1gt << "/" << fb.k2gt;
+      }
+    }
+    cout << endl;
   }
 }
 
