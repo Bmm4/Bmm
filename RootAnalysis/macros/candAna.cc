@@ -944,7 +944,7 @@ void candAna::candAnalysis() {
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
   fGoodTracksPt   = ((TRACKPTLO < fMu1Pt) && (fMu1Pt < TRACKPTHI) && (TRACKPTLO < fMu2Pt) && (fMu2Pt < TRACKPTHI));
   fGoodTracksEta  = ((TRACKETALO < fMu1Eta) && (fMu1Eta < TRACKETAHI) && (TRACKETALO < fMu2Eta) && (fMu2Eta < TRACKETAHI));
-  fGoodAcceptance = /*fGoodTracks &&*/ fGoodTracksPt && fGoodTracksEta;
+  fGoodAcceptance = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
