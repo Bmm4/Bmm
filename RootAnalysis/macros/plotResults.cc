@@ -1420,7 +1420,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   fSetup = a.fNameDa;
   string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSetup.c_str(), chan);
   bool ok = fHistFile->cd(fSetup.c_str());
-  cout << "cd to " << fSetup << ": " << ok << endl;
+  cout << "cd to " << fSetup << ": " << ok << ", normalization fitting: " << name << endl;
   fitPsYield fpy(name, 0);
   if (string::npos != a.fName.find("bupsik")) {
     fpy.fitBu2JpsiKp(5, fDirectory + "/");
@@ -1970,6 +1970,10 @@ void plotResults::loopFunction1() {
 
   if (fChan < 0) return;
   double mass = fb.m;
+  double ps   = static_cast<double>(fb.ps);
+  if (fYear < 2016) {
+    ps = 1.;
+  }
 
   vector<string> modifier;
   modifier.push_back("cnc" + fSuffix);
@@ -2050,20 +2054,17 @@ void plotResults::loopFunction1() {
 	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
 	}
 
-	if (fYear < 2016) {
-	  if (fb.ps == 0) fb.ps = 1;
-	}
 
 	// - include prescale values on y axis
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
 	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[0]][fChan]->Fill(mass, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[0]][fChan]->Fill(mass, -0.1, ps);
 	  fhNorm[modifier[0]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[0]][fChan]->Fill(mass, fb.ps+0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[0]][fChan]->Fill(mass, ps+0.1);
+	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, fb.ps+0.1);
+	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1);
 	}
 
 
@@ -2145,12 +2146,12 @@ void plotResults::loopFunction1() {
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
 	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[1]][fChan]->Fill(mass, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[1]][fChan]->Fill(mass, -0.1, ps);
 	  fhNorm[modifier[1]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[1]][fChan]->Fill(mass, fb.ps+0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[1]][fChan]->Fill(mass, ps+0.1);
+	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, fb.ps+0.1);
+	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1);
 	}
 
 	if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
