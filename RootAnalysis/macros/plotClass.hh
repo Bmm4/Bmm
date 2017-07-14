@@ -93,6 +93,7 @@ public :
   void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
   std::string    era(int run);
+  int            iera(int run);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);

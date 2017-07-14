@@ -293,6 +293,37 @@ string plotClass::era(int run) {
 
 }
 
+// ----------------------------------------------------------------------
+int plotClass::iera(int run) {
+  // -- 2011
+  if (160325 <= run && run <= 173692) return 1; // A
+  if (175832 <= run && run <= 180252) return 2; // B
+  // -- 2012
+  if (190456 <= run && run <= 193621) return 1; // A
+  if (193833 <= run && run <= 196531) return 2; // B
+  if (198022 <= run && run <= 203742) return 3; // C
+  if (203777 <= run && run <= 208686) return 4;	// D
+  // -- 2015
+  if (250985 <= run && run <= 253620) return 1; // A
+  if (254227 <= run && run <= 255031) return 2; // B
+  if (256630 <= run && run <= 260627) return 3; // C
+  // -- 2016
+  if (271036 <= run && run <= 271658) return 1; // A
+  if (272007 <= run && run <= 275376) return 2; // B
+  if (275657 <= run && run <= 276283) return 3; // C
+  if (276315 <= run && run <= 276811) return 4; // D
+  if (276831 <= run && run <= 277420) return 5; // E
+  if (277772 <= run && run <= 278808) return 6; // F
+  if (278820 <= run && run <= 280385) return 7; // G
+  if (280919 <= run && run <= 284044) return 8; // H
+  // -- 2017
+  if (294927 <= run && run <= 297019) return 1; // A
+  if (297046 <= run && run <= 299999) return 2; // B
+
+  return 0;
+
+}
+
 
 
 // ----------------------------------------------------------------------
