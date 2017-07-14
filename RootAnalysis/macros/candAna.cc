@@ -90,6 +90,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
 
   if (1234 == fVerbose) {
+    //    cout << "run " << fRun << " ls = " << fLS << " lumi: " << fLumi << " inst lumi = " << fpEvt->fLumi << " int lumi = " << fpEvt->fLumiInt << endl;
     fpEvt->dump();
     return;
   }
