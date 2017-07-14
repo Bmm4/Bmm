@@ -1977,6 +1977,11 @@ void plotResults::loopFunction1() {
     ps = 1.;
   }
 
+  // -- allow to skip 2016B-F:
+  if (1) {
+    if (!fIsMC && (2016 == fYear) && (iera(fb.run) < 7)) return;
+  }
+
   vector<string> modifier;
   modifier.push_back("cnc" + fSuffix);
   modifier.push_back("bdt" + fSuffix);
