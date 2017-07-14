@@ -1281,6 +1281,7 @@ void candAna::triggerHLT() {
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (verbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT1 = true;
+    fL1T      = true;
     fHLT1Path = "NOTRIGGER";
     fHltPrescale = 1;
     return;
