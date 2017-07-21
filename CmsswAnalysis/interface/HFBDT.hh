@@ -32,8 +32,9 @@ public:
   float getVar(std::string);
   float* getPtr(std::string);
   float* getSpecDummy() {return &spectatorDummy;}
-  bool varsSet() {return varsAreSet;}
-  void unsetVars() {varsAreSet = false;}
+  bool varsSet() {return varsAreSet_;}
+  void unsetVars() {varsAreSet_ = false;varsValid_ = false;}
+  bool areVarsValid() {return varsValid_;}
 
 private:
   float pt, eta;
@@ -53,7 +54,8 @@ private:
   
   std::map<std::string,float*> variableMap; //default constructor fine?
   bool mapIsSet;
-  bool varsAreSet;
+  bool varsAreSet_;
+  bool varsValid_;
 };
 
 //By default this class does not create any output in addition 
