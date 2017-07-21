@@ -139,10 +139,10 @@ double HFBDT::evaluate() {
     {cout << "WARNING: The BDT was not set up correctly beforehand." << endl;}
   if (!muon->varsSet())
     {cout << "WARNING: The values are not up to date, e.g. old or not set." << endl;}
-  muon->unsetVars();
-
   if ( !muon->areVarsValid() )
     {return -1;}
+
+  muon->unsetVars();
   return BDTreader->EvaluateMVA("BDT");
 }
 
