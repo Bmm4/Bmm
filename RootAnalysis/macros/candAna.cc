@@ -3399,12 +3399,12 @@ double candAna::isoMuon(TAnaCand *pCand, TAnaMuon *pMuon) {
   TVector3 plabMu = pMuon->fPlab;
   for (it = pMuon->fNstTracks.begin(); it != pMuon->fNstTracks.end(); ++it) {
 
-    // no tracks from candidate...
-    if (cand_tracks.count(it->first) > 0)
-      continue;
+    // -- no tracks from candidate...
+    if (cand_tracks.count(it->first) > 0)  continue;
+    // -- sanity check
+    if (it->first > fpEvt->nSimpleTracks()) continue;
 
     sTrack = fpEvt->getSimpleTrack(it->first);
-
     // no tracks from foreign primary vertex
     if (sTrack->getPvIndex() >= 0 && sTrack->getPvIndex() != pCand->fPvIdx)
       continue;
