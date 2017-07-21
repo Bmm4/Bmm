@@ -139,10 +139,10 @@ double HFBDT::evaluate() {
     {cout << "WARNING: The BDT was not set up correctly beforehand." << endl;}
   if (!muon->varsSet())
     {cout << "WARNING: The values are not up to date, e.g. old or not set." << endl;}
-  muon->unsetVars();
-
   if ( !muon->areVarsValid() )
     {return -1;}
+
+  muon->unsetVars();
   return BDTreader->EvaluateMVA("BDT");
 }
 
@@ -289,7 +289,10 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   const reco::MuonQuality muonQuality = recoMuon.combinedQuality();
   if ( iTrack.isNonnull() && oTrack.isNonnull() && gTrack.isNonnull() )
     {varsValid_ = true;}
+<<<<<<< HEAD
   else {return;}
+=======
+>>>>>>> d6457102b38790e53bde679d0fb5dd016d21ad5f
 
   int pvIndex = getPv(iTrack.index(),vc); //HFDumpUtitilies
   math::XYZPoint refPoint;
