@@ -1,13 +1,18 @@
 #!/usr/bin/env perl
 
-# Usage:       filterEff dir*
+# Usage:       filterEff [-c] dir*
 # ------
+#              -c count events (for 2011 MC production, where the filter efficiency is not printed)
+#
 #              determine filter efficiency from all directories and *.sge.log files in there
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
 # Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
+
+use Getopt::Std;
+getopts('c');
 
 my $fileglob = "sge.log";
 my $pattern = "Filter efficiency (event-level)= ";
@@ -16,15 +21,33 @@ my $sel = 0;
 my $all = 0;
 my $tim = 0;
 my $siz = 0;
+my $line;
 foreach $dir (@ARGV) {
-    $line = `/bin/grep '$pattern' $dir/*$fileglob`;
-    chop($line);
-    if ($line eq "") {next;}
+    $line = "";
+    if (!$opt_c) {
+	$line = `/bin/grep '$pattern' $dir/*$fileglob`;
+	chop($line);
+	if ($line eq "") {next;}
+	($rest, $numbers, $rest2) = split(/=/, $line, 3);
+	$numbers =~ /\(([0-9]*)\)\s*\/\s*\(([0-9,e,\.,\+]*)\)/;
+	$sel += $1;
+	$all += $2;
+    } else {
+	@lines = `/bin/grep 'Begin processing the' $dir/*$fileglob`;
+	$allLine = `/bin/grep 'All included subprocesses' $dir/*$fileglob`;
+	chop($lines[$#lines]);
+	($rel, $bla) = split(/ record. Run/, $lines[$#lines], 2);
+	$rel =~ s/Begin processing the //;
+	$rel =~ s/st//g;
+	$rel =~ s/nd//g;
+	$rel =~ s/rd//g;
+	$rel =~ s/th//g;
+	$sel += $rel;
 
-    ($rest, $numbers, $rest2) = split(/=/, $line, 3);
-    $numbers =~ /\(([0-9]*)\)\s*\/\s*\(([0-9,e,\.,\+]*)\)/;
-    $sel += $1;
-    $all += $2;
+	chop($allLine);
+	$allLine =~ /I\s*0 All included subprocesses \s*I\s*([0-9]*)/;
+	$all += $1;
+    }
 
     @times = `/bin/grep 'Begin processing the' $dir/*$fileglob`;
     ($rest, $start) = split(/LumiSection 1 at/, $times[0], 2);
@@ -32,6 +55,7 @@ foreach $dir (@ARGV) {
     chop($start);
     chop($stop);
 
+    #    print "start: $start, stop: $stop\n";
     $runtime = &duration($start, $stop);
     $tim += $runtime;
 
@@ -40,13 +64,17 @@ foreach $dir (@ARGV) {
     $fsize = $1;
     $siz += $fsize;
 
-    printf("%s eff: %f (%s) time=%d size=%d\n", $dir, $sel/$all, $line, $runtime, $fsize);
+    $err = sqrt((($sel+1)*($all-$sel+1))/(($all+3)*($all+2)*($all+2)));
+    printf("%s eff: %f +/- %f (%s) time=%d size=%d\n", $dir, $sel/$all, $err, $line, $runtime, $fsize);
 
 
 
 }
 
-printf("filter efficiency: %f = %d/%d (=%e)\n", $sel/$all, $sel, $all, $sel/$all);
+#printf("filter efficiency: %f = %d/%d (=%e)\n", $sel/$all, $sel, $all, $sel/$all);
+$err = sqrt((($sel+1)*($all-$sel+1))/(($all+3)*($all+2)*($all+2)));
+printf("%s eff: %f +/- %f (%s) time=%d size=%d\n", $dir, $sel/$all, $err, $line, $runtime, $fsize);
+printf("%s eff: %e +/- %e (%s) time=%d size=%d\n", $dir, $sel/$all, $err, $line, $runtime, $fsize);
 printf("time/event %f = %d/%d \n", $tim/$sel, $tim, $sel);
 printf("event size %f MB = %d/%d \n", $siz/$sel/1000000, $siz, $sel);
 
