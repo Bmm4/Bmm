@@ -24,6 +24,12 @@ my $siz = 0;
 my $line;
 foreach $dir (@ARGV) {
     $line = "";
+    $line = `/bin/grep 'run: This is the end, my friend' $dir/*$fileglob`;
+    chop($line);
+    if ($line eq "") {
+	print "job not finished\n";
+	next;
+    }
     if (!$opt_c) {
 	$line = `/bin/grep '$pattern' $dir/*$fileglob`;
 	chop($line);
