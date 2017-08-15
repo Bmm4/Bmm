@@ -39,6 +39,7 @@ void treeReader01::openHistFile(TString filename) {
 // ----------------------------------------------------------------------
 void treeReader01::closeHistFile() {
   cout << "==> treeReader01: Writing " << fpHistFile->GetName() << endl;
+  // fpHistFile->ls();
   fpHistFile->cd();
   fpHistFile->Write();
   fpHistFile->Close();

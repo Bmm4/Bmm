@@ -29,6 +29,13 @@
 
 #define DR      57.29577951
 
+
+struct hltPathInfo {
+  bool result, wasRun, error, v;
+  int  prescale;
+};
+
+
 class PidTable;
 class candAna;
 
@@ -49,9 +56,9 @@ public:
 
   std::vector<candAna*> lCandAnalysis;
 
-
   int fProcessType;
   std::set<int> fCandTypes;
+  std::map<std::string, hltPathInfo> fHltPathInfo;
 };
 
 #endif

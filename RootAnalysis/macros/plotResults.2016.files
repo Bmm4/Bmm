@@ -24,7 +24,7 @@ type=bdmm,mc            bf=(1.06,0.09)e-10 eff=(1.48,0.01)e-3 file=scratch/bmm-m
 type=bdmm,mcOff         bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-v06.root
 type=bdmm,mcComb        bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=scratch/bmm-mc-combined-BdToMuMu-v06.root
 type=bdmm,acc,mcComb    bf=(1.06,0.09)e-10 eff=(9.47,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToMuMu-v06.root
-type=bsmm,mc            bf=(3.65,0.23)e-9  eff=(4.26,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu-v06.root
+type=bsmm,mc            bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-Summer16_private-BsToMuMu-v06.root
 type=bsmm,mcOff         bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root
 type=bsmm,mcComb        bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=scratch/bmm-mc-combined-BsToMuMu-v06.root
 type=bsmm,acc,mcComb    bf=(3.65,0.23)e-9  eff=(2.64,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToMuMu-v06.root

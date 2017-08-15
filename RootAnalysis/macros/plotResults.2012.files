@@ -19,31 +19,33 @@ type=bmm,data               lumi=20.0          file=scratch/bmm-data-bmmMuOnia20
 type=bdmm,mcComb            bf=(1.06,0.09)e-10 eff=(1.03,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BdToMuMu-v06.root
 type=bdmm,acc,mcComb        bf=(1.06,0.09)e-10 eff=(6.90,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BdToMuMuAcc-v06.root
 type=bsmm,mcComb            bf=(3.65,0.23)e-9  eff=(4.00,0.01)e-4 file=scratch/bmm-mc-Winter17_private-BsToMuMu-v06.root
-type=bsmm,acc,mcComb        bf=(3.65,0.23)e-9  eff=(2.46,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BsToMuMuAcc-v06.root
+type=bsmm,acc,mcComb        bf=(3.65,0.23)e-9  eff=(2.46,0.18)e-3 file=scratch/bmm-mc-Winter17_private-BsToMuMuAcc-v06.root
 # -- Bs backgrounds
-type=bskk,mcComb,bg         bf=(2.52,0.17)e-5  eff=(1.97,0.01)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToKK_BMuonFilter-v06.root
-type=bskk,acc,mcComb,bg     bf=(2.52,0.17)e-5  eff=(2.68,0.04)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BsToKK-v06.root
-type=bskpi,mcComb,bg        bf=(5.6,0.6)e-6    eff=(3.99,0.14)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToKPi_BMuonFilter-v06.root
-type=bspipi,mcComb,bg       bf=(7.7,2.0)e-7    eff=(4.33,0.15)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BsToPiPi_BMuonFilter-v06.root
-type=bskmunu,acc,mcComb,bg  bf=(1.06,0.05)e-4  eff=(2.62,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BsToKMuNuAcc-v06.root
-type=bskmunu,mcComb,bg      bf=(1.06,0.05)e-4  eff=(8.10,0.64)e-5 file=scratch/bmm-mc-combined-BsToKMuNu-v06.root
+type=bskk,mcComb,bg         bf=(2.52,0.17)e-5  eff=(1.97,0.01)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BsToKK_BMuonFilter-v06.root
+type=bskk,acc,mcComb,bg     bf=(2.52,0.17)e-5  eff=(2.68,0.04)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BsToKK-v06.root
+type=bskpi,mcComb,bg        bf=(5.6,0.6)e-6    eff=(3.99,0.14)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BsToKPi_BMuonFilter-v06.root
+type=bspipi,mcComb,bg       bf=(7.7,2.0)e-7    eff=(4.33,0.15)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BsToPiPi_BMuonFilter-v06.root
+type=bskmunu,acc,mcComb,bg  bf=(1.06,0.05)e-4  eff=(2.62,0.01)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BsToKMuNu_BMuonFilter-v06.root
+type=bskmunu,mcComb,bg      bf=(1.06,0.05)e-4  eff=(8.10,0.64)e-5 file=scratch/bmm-mc-Winter17_private-proxy-BsToKMuNu-v06.root
 # -- Bd backgrounds
-type=bdkpi,mcComb,bg        bf=(1.96,0.05)e-5  eff=(1.50,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToKPi_BMuonFilter-v06.root
-type=bdkpi,acc,mcComb,bg    bf=(1.96,0.05)e-5  eff=(9.64,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToKPi-v06.root
-type=bdkk,mcComb,bg         bf=(1.3,0.5)e-7    eff=(1.51,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToKK_BMuonFilter-v06.root
-type=bdpipi,mcComb,bg       bf=(5.12,0.19)e-6  eff=(1.50,0.03)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BdToPiPi_BMuonFilter-v06.root
-type=bdpimunu,acc,mcComb,bg bf=(1.45,0.05)e-4  eff=(9.52,0.01)e-3 file=scratch/bmm-mc-Summer16_private-BdToPiMuNuAcc-v06.root
-type=bdpimunu,mcComb,bg     bf=(1.45,0.05)e-4  eff=(6.85,0.60)e-4 file=scratch/bmm-mc-RunIISpring16DR80-BdToPiMuNu_BMuonFilter-v06.root
-type=bdpimunu,mc,bg         bf=(1.45,0.05)e-4  eff=(2.87,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BdToPiMuNu-v06.root
+type=bdkpi,mcComb,bg        bf=(1.96,0.05)e-5  eff=(1.50,0.03)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToKPi_BMuonFilter-v06.root
+type=bdkpi,acc,mcComb,bg    bf=(1.96,0.05)e-5  eff=(9.64,0.07)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToKPi-v06.root
+type=bdkk,mcComb,bg         bf=(1.3,0.5)e-7    eff=(1.51,0.03)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToKK_BMuonFilter-v06.root
+type=bdpipi,mcComb,bg       bf=(5.12,0.19)e-6  eff=(1.50,0.03)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToPiPi_BMuonFilter-v06.root
+type=bdpimunu,acc,mcComb,bg bf=(1.45,0.05)e-4  eff=(9.52,0.01)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToPiMuMuAcc-v06.root
+type=bdpimunu,mcComb,bg     bf=(1.45,0.05)e-4  eff=(6.85,0.60)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BdToPiMuNu_BMuonFilter-v06.root
+# BF not known, taking PDG 2016 UL for B0 -> pi0 l+ l-
+type=bdpimumu,mcComb,bg,acc  bf=(5.30,0.53)e-8  eff=(9.88,0.44)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BdToPiMuMuAcc-v06.root
+type=bdpimumu,mcComb,bg      bf=(5.30,0.53)e-8  eff=(3.51,0.10)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BdToPiMuMu-v06.root
+# -- Bu backgrounds
+type=bupimumu,mcComb,bg,acc  bf=(1.79,0.23)e-8  eff=(9.70,0.44)e-3 file=scratch/bmm-mc-Winter17_private-proxy-BuToPiMuMuAcc-v06.root
+type=bupimumu,mcComb,bg      bf=(1.79,0.23)e-8  eff=(3.70,0.10)e-4 file=scratch/bmm-mc-Winter17_private-proxy-BuToPiMuMu-v06.root
 # -- Lb backgrounds
-type=lbppi,mcComb,bg        bf=(4.2,0.8)e-6    eff=(1.89,0.10)e-4 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPPi_BMuonFilter-v06.root
-type=lbpk,acc,mcComb,bg     bf=(5.1,1.0)e-6    eff=(1.06,0.02)e-3 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPK-v06.root
-type=lbpk,mcComb,bg         bf=(5.1,1.0)e-6    eff=(1.79,0.10)e-4 file=scratch/bmm-mc-Summer16_private-LambdaBToPK-v06.root
-type=lbpmunu,acc,mcComb,bg  bf=(4.10,1.0)e-4   eff=(1.09,0.02)e-3 file=scratch/bmm-mc-RunIISpring16DR80-LambdaBToPMuNu-v06.root
-type=lbpmunu,mc,bg          bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-Summer16_private-LambdaBToPMuNu-v06.root
-type=lbpmunu,mcComb,bg      bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-combined-LambdaBToPMuNu-v06.root
-# -- other backgrounds
-type=bcpsimunu,mc,bg        bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-Summer16_private-BcToJpsiMuNu-v06.root
+type=lbppi,mcComb,bg        bf=(4.2,0.8)e-6    eff=(1.89,0.10)e-4 file=scratch/bmm-mc-Winter17_private-proxy-LambdaBToPPi_BMuonFilter-v06.root
+type=lbpk,acc,mcComb,bg     bf=(5.1,1.0)e-6    eff=(1.06,0.02)e-3 file=scratch/bmm-mc-Winter17_private-proxy-LambdaBToPK-v06.root
+type=lbpk,mcComb,bg         bf=(5.1,1.0)e-6    eff=(1.79,0.10)e-4 file=scratch/bmm-mc-Winter17_private-proxy-LambdaBToPK_BMuonFilter-v06.root
+type=lbpmunu,acc,mcComb,bg  bf=(4.10,1.0)e-4   eff=(1.09,0.02)e-3 file=scratch/bmm-mc-Winter17_private-proxy-LambdaBToPMuNu-v06.root
+type=lbpmunu,mcComb,bg      bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/bmm-mc-Winter17_private-proxy-LambdaBToPMuNu_BMuonFilter-v06.root
 # -- fake
 type=fake,data            lumi=36.7  file=/scratch/ursl/bmm4/v04/dstar-data-dstarCharmonium2016-v04.root
 type=fake,mc              lumi=36.7  file=/scratch/ursl/bmm4/v04/fakeMC-v04.root

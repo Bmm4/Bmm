@@ -5,6 +5,7 @@
 #include "common/HFMasses.hh"
 #include "common/AnalysisDistribution.hh"
 #include "common/util.hh"
+#include "setupReader.hh"
 
 using namespace std;
 
@@ -89,6 +90,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
 
   if (1234 == fVerbose) {
+    //    cout << "run " << fRun << " ls = " << fLS << " lumi: " << fLumi << " inst lumi = " << fpEvt->fLumi << " int lumi = " << fpEvt->fLumiInt << endl;
     fpEvt->dump();
     return;
   }
@@ -98,11 +100,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
-  if (1236 == fVerbose) {
-    triggerEff("HLT_Dimuon16_Jpsi_v2", "HLT_DoubleMu4_3_Jpsi_Displaced_v2", 1);
-    triggerEff("HLT_Dimuon0er16_Jpsi_NoOS_NoVertexing_v2", "HLT_Dimuon0er16_Jpsi_NoVertexing_v2", 2);
-    return;
-  }
 
   if (1237 == fVerbose) {
     cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
@@ -196,7 +193,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   triggerHLT();
   triggerL1T();
 
-  triggerSelection();
+  // triggerSelection();
   runRange();
 
   if (fIsMC) {
@@ -279,6 +276,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	   << endl;
     }
 
+    nTriggers();
 
     // Trigger matching
     fHLTmatch=false;
@@ -870,6 +868,58 @@ void candAna::candAnalysis() {
 
   fTOS = tos(fpCand);
   fTIS = tis(fpCand);
+  fL1T = false;
+  if (fChan > -1) {
+    // -- NOTE: L1seeds may be prescaled, but still appear here (they are not zeroed if prescaled)
+    for (unsigned int is = 0; is < fCuts[fChan]->l1seeds.size(); ++is) {
+      if (fL1Seeds & (0x1<<fCuts[fChan]->l1seeds[is])) {
+	fL1T = true;
+	break;
+      }
+    }
+  }
+
+  // if (fGoodHLT1 && !fL1T) {
+  //   cout << "Event has HLT1 = true, but L1T = false!" << " muon etas: " << fMu1Eta << "/" << fMu2Eta << " chan = " << fChan << endl;
+  //   bool result(false), wasRun(false), error(false);
+  //   TString a("");
+  //   for (int i = 0; i < NHLT; ++i) {
+  //     result = wasRun = error = false;
+  //     a = fpEvt->fHLTNames[i];
+  //     wasRun = fpEvt->fHLTWasRun[i];
+  //     result = fpEvt->fHLTResult[i];
+  //     error  = fpEvt->fHLTError[i];
+
+  //     if (result) { // passed
+  // 	cout << "HLT path: " << a << " result: " << result << " wasrun = " << wasRun << " error: " << error
+  // 	     << endl;
+  //     }
+  //   }
+
+  //   for (int i = 0; i < NL1T; ++i) {
+  //     if (!fpEvt->fL1TResult[i]) continue;
+  //     cout << "L1 trigger fired ->" << fpEvt->fL1TNames[i] << "<-" << endl;
+  //   }
+
+  //   cout  << "fL1SeedString: " << fL1SeedString << "; ";
+  //   for (int i = 6; i >= 0; --i) {
+  //     cout << (fL1Seeds&(0x1<<i)) << " ";
+  //   }
+  //   cout << endl;
+
+  //   if (fChan > -1) {
+  //     for (unsigned int is = 0; is < fCuts[fChan]->l1seeds.size(); ++is) {
+  // 	cout << "check fL1Seeds at " << fCuts[fChan]->l1seeds[is] << endl;
+  // 	if (fL1Seeds & (0x1<<fCuts[fChan]->l1seeds[is])) {
+  // 	  cout << " found true, would break out" << endl;
+  // 	} else {
+  // 	cout << " found false" << endl;
+  // 	}
+  //     }
+
+  //   }
+  // }
+
   if (2016 == fYear) {
     fRefTrigger = refTrigger(fpCand, "HLT_Mu7p5_Track3p5_Jpsi");
   } else if (2017 == fYear) {
@@ -895,7 +945,7 @@ void candAna::candAnalysis() {
   fGoodTracks     = (highPurity(p1) && highPurity(p2));
   fGoodTracksPt   = ((TRACKPTLO < fMu1Pt) && (fMu1Pt < TRACKPTHI) && (TRACKPTLO < fMu2Pt) && (fMu2Pt < TRACKPTHI));
   fGoodTracksEta  = ((TRACKETALO < fMu1Eta) && (fMu1Eta < TRACKETAHI) && (TRACKETALO < fMu2Eta) && (fMu2Eta < TRACKETAHI));
-  fGoodAcceptance = /*fGoodTracks &&*/ fGoodTracksPt && fGoodTracksEta;
+  fGoodAcceptance = fGoodTracks && fGoodTracksPt && fGoodTracksEta;
 
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
@@ -1081,7 +1131,7 @@ void candAna::fillCandidateHistograms(int offset) {
 
 // ----------------------------------------------------------------------
 int candAna::detChan(double m1eta, double m2eta) {
-  int mode(1);
+  int mode(0);
   // mode 0: channels 0 .. n are simply increasingly more forward regions for the most-forward muon
   // mode 1: channels 0 .. n are arbitrary eta regions for the most-forward muon combined with L1SEED requirements
 
@@ -1223,6 +1273,7 @@ void candAna::triggerHLT() {
   fHLT1Path = "nada";
 
   TString a;
+  string sa;
   int ps(0);
   bool result(false), wasRun(false), error(false);
   int verbose(fVerbose);
@@ -1231,6 +1282,7 @@ void candAna::triggerHLT() {
   if (HLTRANGE.begin()->first == "NOTRIGGER") {
     if (verbose>2) cout << "NOTRIGGER requested... " << endl;
     fGoodHLT1 = true;
+    fL1T      = true;
     fHLT1Path = "NOTRIGGER";
     fHltPrescale = 1;
     return;
@@ -1245,55 +1297,87 @@ void candAna::triggerHLT() {
       error  = fpEvt->fHLTError[i];
 
       if (result) { // passed
-	cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON << endl;
+	cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = "
+	     << fRun << " ls = " << fLS << " json = " << fJSON
+	     << endl;
       }
     }
   }
 
-  for (int i = 0; i < NHLT; ++i) {
-    result = wasRun = error = false;
-    a = fpEvt->fHLTNames[i];
-    ps = fpEvt->fHLTPrescale[i];
-    wasRun = fpEvt->fHLTWasRun[i];
-    result = fpEvt->fHLTResult[i];
-    error  = fpEvt->fHLTError[i];
-
-    if (wasRun && result) { // passed
-      if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
-						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
-						<< endl;
-      bool good = false;
-      string spath;
-      int rmin, rmax;
-      for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
-	spath = imap->first;
-	rmin = imap->second.first;
-	rmax = imap->second.second;
-	if (fRun < rmin) continue;
-	if (fRun > rmax) continue;
-	if (!a.CompareTo(imap->first.c_str())) {
-	  good = true;
-	  if (verbose > 1 || -32 == verbose  )
-	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
-		 << " result: " << result << endl;
-	  break;
-	}
-	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
-	  good = true;
-	  if (verbose > 1 || -32 == verbose)
-	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
-		 << " result: " << result << " in run " << fRun << endl;
-	  break;
-	}
-      }
-      if (good) {
-	fHltPrescale = ps;
-	fHLT1Path    = a;
-	fGoodHLT1    = true;
-	return;
-      }
+  hltPathInfo hpi;
+  string spath;
+  int rmin, rmax;
+  bool good(false);
+  for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+    spath = imap->first;
+    rmin = imap->second.first;
+    rmax = imap->second.second;
+    if (fRun < rmin) continue;
+    if (fRun > rmax) continue;
+    if (fpReader->fHltPathInfo[spath].result) {
+      sa = spath;
+      ps = fpReader->fHltPathInfo[spath].prescale;
+      good = true;
+      break;
+    }
+    string sas = spath.substr(0, sa.rfind("_v")+2);
+    if (fpReader->fHltPathInfo[sas].result) {
+      good = true;
+      break;
     }
   }
+  if (good) {
+    fHltPrescale = ps;
+    fHLT1Path    = sa;
+    fGoodHLT1    = true;
+    return;
+  }
+
+
+  // for (int i = 0; i < NHLT; ++i) {
+  //   result = wasRun = error = false;
+  //   a = fpEvt->fHLTNames[i];
+  //   ps = fpEvt->fHLTPrescale[i];
+  //   wasRun = fpEvt->fHLTWasRun[i];
+  //   result = fpEvt->fHLTResult[i];
+  //   error  = fpEvt->fHLTError[i];
+
+  //   if (wasRun && result) { // passed
+  //     if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
+  // 						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
+  // 						<< endl;
+  //     bool good = false;
+  //     string spath;
+  //     int rmin, rmax;
+  //     for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
+  // 	spath = imap->first;
+  // 	rmin = imap->second.first;
+  // 	rmax = imap->second.second;
+  // 	if (fRun < rmin) continue;
+  // 	if (fRun > rmax) continue;
+  // 	if (!a.CompareTo(imap->first.c_str())) {
+  // 	  good = true;
+  // 	  if (verbose > 1 || -32 == verbose  )
+  // 	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
+  // 		 << " result: " << result << endl;
+  // 	  break;
+  // 	}
+  // 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
+  // 	  good = true;
+  // 	  if (verbose > 1 || -32 == verbose)
+  // 	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
+  // 		 << " result: " << result << " in run " << fRun << endl;
+  // 	  break;
+  // 	}
+  //     }
+  //     if (good) {
+  // 	fHltPrescale = ps;
+  // 	fHLT1Path    = a;
+  // 	fGoodHLT1    = true;
+  // 	return;
+  //     }
+  //   }
+  // }
 }
 
 // ----------------------------------------------------------------------
@@ -1362,32 +1446,32 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0er1p6_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0er1p4_dEta_Max1p8_OS" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<2; //4
+	fL1Seeds |= (0x1<<2); //4
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else  if ("L1_DoubleMu_10_0_dEta_Max1p8" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<3; //8
+	fL1Seeds |= (0x1<<3); //8
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_11_4" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<4; //16
+	fL1Seeds |= (0x1<<4); //16
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_12_5" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<5; //32
+	fL1Seeds |= (0x1<<5); //32
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu_13_6" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<6; //64
+	fL1Seeds |= (0x1<<6); //64
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1399,17 +1483,22 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_ DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<2; //4
+	fL1Seeds |= (0x1<<2); //4
+	fL1SeedString += fpEvt->fL1TNames[i];
+	fL1SeedString += " ";
+	continue;
+      } else if ("L1_DoubleMu0" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
+	fL1Seeds |= (0x1<<0); //1
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
-	fL1Seeds |= 0x1<<0; //4
+	fL1Seeds |= (0x1<<1); //1
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1421,7 +1510,7 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0_HighQ" == fpEvt->fL1TNames[i]) {
-	fL1Seeds |= 0x1<<1; //2
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -1430,7 +1519,7 @@ void candAna::triggerL1T() {
   }
 
   if (fVerbose == -32) {
-     cout  << "tt " << fName  <<  " summary of L1: " << fL1SeedString << "; ";
+    cout  << "tt " << fName  <<  " summary of L1: " << fL1SeedString << "; ";
     for (int i = 6; i >= 0; --i) {
       cout << (fL1Seeds&(0x1<<i)) << " ";
     }
@@ -1911,6 +2000,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
   t->Branch("tos",     &fTOS,               "tos/O");
+  t->Branch("l1t",     &fL1T,               "l1t/O");
   t->Branch("hltd1",   &fHltD1,             "hltd1/D");
   t->Branch("hltd2",   &fHltD2,             "hltd2/D");
   t->Branch("tis",     &fTIS,               "tis/O");
@@ -1932,6 +2022,11 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("pvntrk",  &fPvNtrk,            "pvntrk/I");
   t->Branch("pv2ntrk", &fPv2Ntrk,           "pv2ntrk/I");
   t->Branch("presel",  &fPreselection,      "presel/O");
+
+  // -- ntriggers
+  t->Branch("ntrg",    &fNtrg,       "ntrg/I");
+  t->Branch("ntrgps",  &fNtrgPs,      "ntrgps[ntrg]/I");
+  t->Branch("ntrgtos", &fNtrgTos,     "ntrgtos[ntrg]/I");
 
   // -- global cuts and weights
   t->Branch("gmuid",   &fGoodMuonsID,       "gmuid/O");
@@ -2363,13 +2458,11 @@ void candAna::readCuts(string fileName, int dump) {
 	if (cutname == "bdtcut") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->bdtCut = cutvalue; ok = 1;
-	  if (dump) cout << j-1 << " " << "bdtcut:              " << cutvalue << endl;
 	}
 
 	if (cutname == "bdtmupt") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->bdtMuPt = cutvalue; ok = 1;
-	  if (dump) cout << j-1 << " " << "bdtmupt:              " << cutvalue << endl;
 	}
 
 
@@ -2417,6 +2510,21 @@ void candAna::readCuts(string fileName, int dump) {
       HLTRANGE.insert(make_pair(hlt, make_pair(r1, r2)));
       if (dump) {
 	cout << "HLTRANGE:       " << hlt << " from " << r1 << " to " << r2 << endl;
+      }
+      ibin = 3;
+      hcuts->SetBinContent(ibin, 1);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, triggerlist));
+    }
+
+    if (!strcmp(CutName, "NTRIGGERS")) {
+      char triggerlist[1000];
+      sscanf(buffer, "%s %s", CutName, triggerlist);
+      string tl(triggerlist);
+      int r1(0), r2(0);
+      string hlt = splitTrigRange(tl, r1, r2);
+      NTRIGGERS.insert(make_pair(hlt, make_pair(r1, r2)));
+      if (dump) {
+	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << endl;
       }
       ibin = 3;
       hcuts->SetBinContent(ibin, 1);
@@ -3618,12 +3726,12 @@ void candAna::calcBDT() {
   fBDT = -97.;
   if (fGoodAcceptance
     && fGoodQ
-    && fGoodMuonsGmID
+      //NO!!    && fGoodMuonsGmID
     && fGoodMuonsPt
     && fGoodMuonsEta
     && fGoodJpsiCuts
     && fGoodPvAveW8
-      ) {
+     ) {
     // do nothing
   } else {
     return;
@@ -3637,6 +3745,8 @@ void candAna::calcBDT() {
   frd.m2eta = fMu2Eta;
   frd.m1pt = fMu1Pt;
   frd.m2pt = fMu2Pt;
+  frd.m1phi = fMu1Phi;
+  frd.m2phi = fMu2Phi;
   frd.fls3d = fCandFLS3d;
   frd.alpha = fCandA;
   frd.maxdoca = fCandDoca;
@@ -3647,12 +3757,18 @@ void candAna::calcBDT() {
   frd.chi2dof = fCandChi2Dof;
   frd.closetrk = fCandCloseTrk;
 
-  frd.m1iso = fMu1Iso;
-  frd.m2iso = fMu2Iso;
-
   frd.closetrks1 = fCandCloseTrkS1;
   frd.closetrks2 = fCandCloseTrkS2;
   frd.closetrks3 = fCandCloseTrkS3;
+
+  frd.m1iso = fMu1Iso;
+  frd.m2iso = fMu2Iso;
+
+  frd.pvdchi2  = fCandPvDeltaChi2;
+  frd.othervtx = fCandOtherVtx;
+
+  frd.pvlip  = fCandPvLip;
+  frd.pvlips = fCandPvLipS;
 
   frd.pv2lip  = fCandPv2Lip;
   frd.pv2lips = fCandPv2LipS;
@@ -3870,167 +3986,167 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 }
 
 
-// ----------------------------------------------------------------------
-TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
-  TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
+// // ----------------------------------------------------------------------
+// TMVA::Reader* candAna::setupReader(string xmlFile, readerData &rd) {
+//   TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
 
-  TString dir    = "weights/";
-  TString methodNameprefix = "BDT";
-  //  TString methodName = TString(fBdt) + TString(" method");
-  //  TString weightfile = dir + fBdt + "_" + methodNameprefix + TString(".weights.xml");
-  TString weightfile = xmlFile;
+//   TString dir    = "weights/";
+//   TString methodNameprefix = "BDT";
+//   //  TString methodName = TString(fBdt) + TString(" method");
+//   //  TString weightfile = dir + fBdt + "_" + methodNameprefix + TString(".weights.xml");
+//   TString weightfile = xmlFile;
 
-  // -- read in variables from weight file
-  vector<string> allLines;
-  char  buffer[2000];
-  cout << "setupReader, open file " << weightfile << endl;
-  ifstream is(weightfile);
-  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
-  int nvars(-1);
-  string::size_type m1, m2;
-  string stype;
-  cout << "  read " << allLines.size() << " lines " << endl;
-  for (unsigned int i = 0; i < allLines.size(); ++i) {
-    // -- parse and add variables
-    if (string::npos != allLines[i].find("Variables NVar")) {
-      m1 = allLines[i].find("=\"");
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      //      cout << "  " << stype << " variables" << endl;
-      nvars = atoi(stype.c_str());
-      if (-1 == nvars) continue;
-      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-	m1 = allLines[j].find("Expression=\"")+10;
-	m2 = allLines[j].find("\" Label=\"");
-	stype = allLines[j].substr(m1+2, m2-m1-2);
-	//	cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
-	if (stype == "m1pt") {
-	  //	  cout << "  adding m1pt" << endl;
-	  reader->AddVariable( "m1pt", &rd.m1pt);
-	}
-	if (stype == "m2pt") {
-	  //	  cout << "  adding m2pt" << endl;
-	  reader->AddVariable( "m2pt", &rd.m2pt);
-	}
-	if (stype == "m1eta") {
-	  //	  cout << "  adding m1eta" << endl;
-	  reader->AddVariable( "m1eta", &rd.m1eta);
-	}
-	if (stype == "m2eta") {
-	  reader->AddVariable( "m2eta", &rd.m2eta);
-	  //	  cout << "  adding m2eta" << endl;
-	}
-	if (stype == "pt") {
-	  //	  cout << "  adding pt" << endl;
-	  reader->AddVariable( "pt", &rd.pt);
-	}
-	if (stype == "eta") {
-	  //	  cout << "  adding eta" << endl;
-	  reader->AddVariable( "eta", &rd.eta);
-	}
-	if (stype == "fls3d") {
-	  //	  cout << "  adding fls3d" << endl;
-	  reader->AddVariable( "fls3d", &rd.fls3d);
-	}
-	if (stype == "alpha") {
-	  //	  cout << "  adding alpha" << endl;
-	  reader->AddVariable( "alpha", &rd.alpha);
-	}
-	if (stype == "maxdoca") {
-	  //	  cout << "  adding maxdoca" << endl;
-	  reader->AddVariable( "maxdoca", &rd.maxdoca);
-	}
-	if (stype == "pvip") {
-	  //	  cout << "  adding pvip" << endl;
-	  reader->AddVariable( "pvip", &rd.pvip);
-	}
-	if (stype == "pvips") {
-	  //	  cout << "  adding pvips" << endl;
-	  reader->AddVariable( "pvips", &rd.pvips);
-	}
-	if (stype == "iso") {
-	  //	  cout << "  adding iso" << endl;
-	  reader->AddVariable( "iso", &rd.iso);
-	}
-	if (stype == "docatrk") {
-	  //	  cout << "  adding docatrk" << endl;
-	  reader->AddVariable( "docatrk", &rd.docatrk);
-	}
-	if (stype == "closetrk") {
-	  //	  cout << "  adding closetrk" << endl;
-	  reader->AddVariable( "closetrk", &rd.closetrk);
-	}
-	if (stype == "closetrks1") {
-	  //	  cout << "  adding closetrks1" << endl;
-	  reader->AddVariable( "closetrks1", &rd.closetrks1);
-	}
-	if (stype == "closetrks2") {
-	  //	  cout << "  adding closetrks2" << endl;
-	  reader->AddVariable( "closetrks2", &rd.closetrks2);
-	}
-	if (stype == "closetrks3") {
-	  //	  cout << "  adding closetrks3" << endl;
-	  reader->AddVariable( "closetrks3", &rd.closetrks3);
-	}
-	if (stype == "chi2dof") {
-	  //	  cout << "  adding chi2dof" << endl;
-	  reader->AddVariable( "chi2dof", &rd.chi2dof);
-	}
-	if (stype == "m1iso") {
-	  //	  cout << "  adding m1iso" << endl;
-	  reader->AddVariable( "m1iso", &rd.m1iso);
-	}
-	if (stype == "m2iso") {
-	  //	  cout << "  adding m2iso" << endl;
-	  reader->AddVariable( "m2iso", &rd.m2iso);
-	}
-	if (stype == "pvdchi2") {
-	  //	  cout << "  adding pvdchi2" << endl;
-	  reader->AddVariable( "pvdchi2", &rd.pvdchi2);
-	}
-	if (stype == "othervtx") {
-	  //	  cout << "  adding othervtx" << endl;
-	  reader->AddVariable( "othervtx", &rd.othervtx);
-	}
-	if (stype == "pv2lip") {
-	  //	  cout << "  adding pv2lip" << endl;
-	  reader->AddVariable( "pv2lip", &rd.pv2lip);
-	}
-	if (stype == "pv2lips") {
-	  //	  cout << "  adding pv2lips" << endl;
-	  reader->AddVariable( "pv2lips", &rd.pv2lips);
-	}
-      }
-      break;
-    }
-  }
+//   // -- read in variables from weight file
+//   vector<string> allLines;
+//   char  buffer[2000];
+//   cout << "setupReader, open file " << weightfile;
+//   ifstream is(weightfile);
+//   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+//   int nvars(-1);
+//   string::size_type m1, m2;
+//   string stype;
+//   cout << "  read " << allLines.size() << " lines " << endl;
+//   for (unsigned int i = 0; i < allLines.size(); ++i) {
+//     // -- parse and add variables
+//     if (string::npos != allLines[i].find("Variables NVar")) {
+//       m1 = allLines[i].find("=\"");
+//       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+//       //      cout << "  " << stype << " variables" << endl;
+//       nvars = atoi(stype.c_str());
+//       if (-1 == nvars) continue;
+//       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+// 	m1 = allLines[j].find("Expression=\"")+10;
+// 	m2 = allLines[j].find("\" Label=\"");
+// 	stype = allLines[j].substr(m1+2, m2-m1-2);
+// 	//	cout << "ivar " << j-i << " variable string: ->" << stype << "<-" << endl;
+// 	if (stype == "m1pt") {
+// 	  //	  cout << "  adding m1pt" << endl;
+// 	  reader->AddVariable( "m1pt", &rd.m1pt);
+// 	}
+// 	if (stype == "m2pt") {
+// 	  //	  cout << "  adding m2pt" << endl;
+// 	  reader->AddVariable( "m2pt", &rd.m2pt);
+// 	}
+// 	if (stype == "m1eta") {
+// 	  //	  cout << "  adding m1eta" << endl;
+// 	  reader->AddVariable( "m1eta", &rd.m1eta);
+// 	}
+// 	if (stype == "m2eta") {
+// 	  reader->AddVariable( "m2eta", &rd.m2eta);
+// 	  //	  cout << "  adding m2eta" << endl;
+// 	}
+// 	if (stype == "pt") {
+// 	  //	  cout << "  adding pt" << endl;
+// 	  reader->AddVariable( "pt", &rd.pt);
+// 	}
+// 	if (stype == "eta") {
+// 	  //	  cout << "  adding eta" << endl;
+// 	  reader->AddVariable( "eta", &rd.eta);
+// 	}
+// 	if (stype == "fls3d") {
+// 	  //	  cout << "  adding fls3d" << endl;
+// 	  reader->AddVariable( "fls3d", &rd.fls3d);
+// 	}
+// 	if (stype == "alpha") {
+// 	  //	  cout << "  adding alpha" << endl;
+// 	  reader->AddVariable( "alpha", &rd.alpha);
+// 	}
+// 	if (stype == "maxdoca") {
+// 	  //	  cout << "  adding maxdoca" << endl;
+// 	  reader->AddVariable( "maxdoca", &rd.maxdoca);
+// 	}
+// 	if (stype == "pvip") {
+// 	  //	  cout << "  adding pvip" << endl;
+// 	  reader->AddVariable( "pvip", &rd.pvip);
+// 	}
+// 	if (stype == "pvips") {
+// 	  //	  cout << "  adding pvips" << endl;
+// 	  reader->AddVariable( "pvips", &rd.pvips);
+// 	}
+// 	if (stype == "iso") {
+// 	  //	  cout << "  adding iso" << endl;
+// 	  reader->AddVariable( "iso", &rd.iso);
+// 	}
+// 	if (stype == "docatrk") {
+// 	  //	  cout << "  adding docatrk" << endl;
+// 	  reader->AddVariable( "docatrk", &rd.docatrk);
+// 	}
+// 	if (stype == "closetrk") {
+// 	  //	  cout << "  adding closetrk" << endl;
+// 	  reader->AddVariable( "closetrk", &rd.closetrk);
+// 	}
+// 	if (stype == "closetrks1") {
+// 	  //	  cout << "  adding closetrks1" << endl;
+// 	  reader->AddVariable( "closetrks1", &rd.closetrks1);
+// 	}
+// 	if (stype == "closetrks2") {
+// 	  //	  cout << "  adding closetrks2" << endl;
+// 	  reader->AddVariable( "closetrks2", &rd.closetrks2);
+// 	}
+// 	if (stype == "closetrks3") {
+// 	  //	  cout << "  adding closetrks3" << endl;
+// 	  reader->AddVariable( "closetrks3", &rd.closetrks3);
+// 	}
+// 	if (stype == "chi2dof") {
+// 	  //	  cout << "  adding chi2dof" << endl;
+// 	  reader->AddVariable( "chi2dof", &rd.chi2dof);
+// 	}
+// 	if (stype == "m1iso") {
+// 	  //	  cout << "  adding m1iso" << endl;
+// 	  reader->AddVariable( "m1iso", &rd.m1iso);
+// 	}
+// 	if (stype == "m2iso") {
+// 	  //	  cout << "  adding m2iso" << endl;
+// 	  reader->AddVariable( "m2iso", &rd.m2iso);
+// 	}
+// 	if (stype == "pvdchi2") {
+// 	  //	  cout << "  adding pvdchi2" << endl;
+// 	  reader->AddVariable( "pvdchi2", &rd.pvdchi2);
+// 	}
+// 	if (stype == "othervtx") {
+// 	  //	  cout << "  adding othervtx" << endl;
+// 	  reader->AddVariable( "othervtx", &rd.othervtx);
+// 	}
+// 	if (stype == "pv2lip") {
+// 	  //	  cout << "  adding pv2lip" << endl;
+// 	  reader->AddVariable( "pv2lip", &rd.pv2lip);
+// 	}
+// 	if (stype == "pv2lips") {
+// 	  //	  cout << "  adding pv2lips" << endl;
+// 	  reader->AddVariable( "pv2lips", &rd.pv2lips);
+// 	}
+//       }
+//       break;
+//     }
+//   }
 
-  nvars = -1;
-  for (unsigned int i = 0; i < allLines.size(); ++i) {
-    // -- parse and add spectators
-    if (string::npos != allLines[i].find("Spectators NSpec")) {
-      m1 = allLines[i].find("=\"");
-      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
-      //      cout << "==> " << stype << endl;
-      nvars = atoi(stype.c_str());
-      if (-1 == nvars) continue;
-      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
-	m1 = allLines[j].find("Expression=\"")+10;
-	m2 = allLines[j].find("\" Label=\"");
-	stype = allLines[j].substr(m1+2, m2-m1-2);
-	//	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
-	if (stype == "m") {
-	  //	  cout << "  adding m as spectator" << endl;
-	  reader->AddSpectator( "m", &rd.m);
-	}
-      }
-      break;
-    }
-  }
+//   nvars = -1;
+//   for (unsigned int i = 0; i < allLines.size(); ++i) {
+//     // -- parse and add spectators
+//     if (string::npos != allLines[i].find("Spectators NSpec")) {
+//       m1 = allLines[i].find("=\"");
+//       stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+//       //      cout << "==> " << stype << endl;
+//       nvars = atoi(stype.c_str());
+//       if (-1 == nvars) continue;
+//       for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+// 	m1 = allLines[j].find("Expression=\"")+10;
+// 	m2 = allLines[j].find("\" Label=\"");
+// 	stype = allLines[j].substr(m1+2, m2-m1-2);
+// 	//	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+// 	if (stype == "m") {
+// 	  //	  cout << "  adding m as spectator" << endl;
+// 	  reader->AddSpectator( "m", &rd.m);
+// 	}
+//       }
+//       break;
+//     }
+//   }
 
-  // --- Book the MVA methods
-  reader->BookMVA("BDT", weightfile);
-  return reader;
-}
+//   // --- Book the MVA methods
+//   reader->BookMVA("BDT", weightfile);
+//   return reader;
+// }
 
 
 // ----------------------------------------------------------------------
@@ -4387,6 +4503,55 @@ bool candAna::doTriggerVeto(TAnaTrack *fp, bool muonsOnly, bool matchPt,
 
 
 // ----------------------------------------------------------------------
+void candAna::nTriggers() {
+
+  // -- book histogram with ref trigger names and indices
+  if (0 == ((TH1D*)gFile->Get("ntriggers"))) {
+    TDirectory *pDir = gDirectory;
+    gFile->cd();
+    TH1D *h1 = new TH1D("ntriggers", "ntriggers indices", NTRGMAX, 0., NTRGMAX);
+    int ntrg(1);
+    cout << "nTriggers: " << endl;
+    for (map<string, pair<int, int> >::iterator imap = NTRIGGERS.begin(); imap != NTRIGGERS.end(); ++imap) {
+      cout << " adding " << ntrg << " " << imap->first << endl;
+      h1->GetXaxis()->SetBinLabel(ntrg, imap->first.c_str());
+      h1->SetBinContent(ntrg, ntrg-1);
+      ++ntrg;
+      if (ntrg == NTRGMAX) break;
+    }
+    pDir->cd();
+  }
+
+  for (int i = 0; i < NTRGMAX; ++i) {
+    fNtrgPs[i] = fNtrgTos[i] = 0;
+  }
+
+  fNtrg = 0;
+
+  string spath("");
+  int rmin, rmax;
+  int ntrg(-1);
+  bool  reftrg(false);
+  for (map<string, pair<int, int> >::iterator imap = NTRIGGERS.begin(); imap != NTRIGGERS.end(); ++imap) {
+    ++ntrg;
+    if (ntrg == NTRGMAX) break;
+    spath = imap->first;
+    rmin = imap->second.first;
+    rmax = imap->second.second;
+    reftrg = false;
+    if (rmin <= fRun && fRun <= rmax) {
+      reftrg = refTrigger(fpCand, spath);
+      if (reftrg) {
+	fNtrgTos[ntrg] = 1;
+	fNtrgPs[ntrg]  = fpReader->fHltPathInfo[spath].prescale;
+      }
+    }
+  }
+  fNtrg = ntrg;
+}
+
+
+// ----------------------------------------------------------------------
 // -- check whether the reftrigger's objects are matched to the candidate's tracks
 bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   bool result(false);
@@ -4395,6 +4560,11 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   // -- get list of indices of tracks making up candidate
   vector<int> sigIdx;
   getSigTracks(sigIdx, pC);
+
+  if (!fpReader->fHltPathInfo[refTriggerPath].result) {
+    //    cout << "refTrigger(" << refTriggerPath << ") did not fire ... skipping" << endl;
+    return false;
+  }
 
   if (verbose) {
     cout << "==> candAna::refTrigger> in DS = " << DSNAME
@@ -4415,52 +4585,68 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
   // -- determine trigger objects for reference path
   TTrgObjv2 *pTO(0);
   set<int> trgTrkIdx;
+  unsigned int nTrgIdx(0);
+  vector<int> muonIndex;
+  vector<int> muonID;
+  vector<TLorentzVector> muonP;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
     pTO = fpEvt->getTrgObjv2(i);
+    // -- skip L1 and L2 objects (bad resolution for matching)
+    if (pTO->fType.Contains("L1T")) continue;
+    if (pTO->fType.Contains("L1Filter")) continue;
+    if (pTO->fType.Contains("L2")) continue;
     if (pTO->fHltPath.Contains(refTriggerPath)) {
-      vector<int> muonIndex = pTO->fIndex;
-      vector<int> muonID = pTO->fID;
-      vector<TLorentzVector> muonP = pTO->fP;
-      int num = muonIndex.size();
-      // -- skip L1 and L2 objects (bad resolution for matching)
-      if (pTO->fType.Contains("L1T")) continue;
-      if (pTO->fType.Contains("L1Filter")) continue;
-      if (pTO->fType.Contains("L2")) continue;
-      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-      for (int j = 0; j < num; ++j) {
+      muonIndex.clear(); muonIndex = pTO->fIndex;
+      muonID.clear();    muonID = pTO->fID;
+      muonP.clear();     muonP = pTO->fP;
+      nTrgIdx = muonIndex.size();
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  "
+			<< " with n(particles) = " << nTrgIdx << endl;
+      for (int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
 	if (trkIdx < 0) {
 	  if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
 	  continue;
 	}
-	if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
-			  << " matched to track idx " << trkIdx << " pt/eta/phi = "
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
-			  << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
-			  << " with dr = " << dr
-			  << endl;
-	trgTrkIdx.insert(trkIdx);
+	double dpt = TMath::Abs(1. - muonP[j].Vect().Perp()/fpEvt->getSimpleTrack(trkIdx)->getP().Perp());
+	if ((dpt < 0.15) && (dr < 0.02)) {
+	  if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+			    << " matched to track idx " << trkIdx << " pt/eta/phi = "
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			    << " with dr = " << dr
+			    << endl;
+	  trgTrkIdx.insert(trkIdx);
+	}
       }
-
     }
   }
 
   // -- now check that all objects of ref trigger are matched to the cand's muons
   set<int>::iterator it;
-  int nmatch(0);
+  int overlaps(0);
   for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       if (*it == sigIdx[i]) {
-	++nmatch;
-	break;
+	++overlaps;
+      } else {
+	// nothing
       }
     }
   }
 
-  if (verbose) cout << "REF TRIGGER nmatch = " << nmatch << endl;
-  result = (nmatch == 2);
+  if ((trgTrkIdx.size() > 0) && (trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
+    result = true;
+    if (verbose) {
+      cout << " refTrigger: COMPLETELY  overlapping!!!!!!!!!!!!! overlaps = " << overlaps
+	   << " trgTrkIdx.size() = "  << trgTrkIdx.size()
+	   << " nTrgIdx = " << nTrgIdx
+	   << endl;
+    }
+  }
+
   return result;
 }
 
@@ -4653,15 +4839,15 @@ bool candAna::tos(TAnaCand *pC) {
   vector<TLorentzVector> muonP;
   for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
     pTO = fpEvt->getTrgObjv2(i);
+    // -- skip L1 and L2 objects (bad resolution for matching)
+    if (pTO->fType.Contains("L1Filter")) continue;
+    if (pTO->fType.Contains("L1T")) continue;
+    if (pTO->fType.Contains("L2")) continue;
     if (fHLT1Path == pTO->fHltPath) {
       muonIndex.clear(); muonIndex = pTO->fIndex;
       muonID.clear();    muonID = pTO->fID;
       muonP.clear();     muonP = pTO->fP;
       nTrgIdx = muonIndex.size();
-      // -- skip L1 and L2 objects (bad resolution for matching)
-      if (pTO->fType.Contains("L1Filter")) continue;
-      if (pTO->fType.Contains("L1T")) continue;
-      if (pTO->fType.Contains("L2")) continue;
       for (int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
@@ -4698,7 +4884,7 @@ bool candAna::tos(TAnaCand *pC) {
       }
     }
   }
-  if ((trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
+  if ((trgTrkIdx.size() > 0) && (trgTrkIdx.size() == nTrgIdx) && (static_cast<unsigned int>(overlaps) == trgTrkIdx.size())) {
     result = true;
     if (verbose) {
       cout << " TOS trigger: COMPLETELY  overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
@@ -4753,14 +4939,22 @@ int candAna::matchTrgObj2Trk(TVector3 t, double &dr) {
 
 // ----------------------------------------------------------------------
 bool candAna::triggerFired(std::string triggerPath) {
-  for (int i = 0; i < NHLT; ++i) {
-    if (fpEvt->fHLTResult[i]) {
-      if (fpEvt->fHLTNames[i] == triggerPath) {
-	return true;
-      }
-    }
-  }
+  // -- try vanilla trigger path name
+  if (fpReader->fHltPathInfo[triggerPath].result) return true;
+
+  // -- try version without version number
+  string sas = triggerPath.substr(0, triggerPath.rfind("_v")+2);
+  if (fpReader->fHltPathInfo[sas].result) return true;
   return false;
+
+  // for (int i = 0; i < NHLT; ++i) {
+  //   if (fpEvt->fHLTResult[i]) {
+  //     if (fpEvt->fHLTNames[i] == triggerPath) {
+  // 	return true;
+  //     }
+  //   }
+  // }
+  // return false;
 }
 
 
@@ -5277,131 +5471,6 @@ void candAna::play3() {
     }
   }
 }
-
-
-// ----------------------------------------------------------------------
-void candAna::triggerEff(std::string ref, std::string os, int mode) {
-
-  string tname = Form("os_%d", mode);
-  if (0 == ((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))) {
-    TDirectory *pDir = gDirectory;
-    gFile->cd();
-    cout << "triggerEff booking hists for mode = " << mode << endl;
-    new TH1D(Form("%s_ptp", tname.c_str()), "pt (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta", tname.c_str()), "pt (all)", 50, 0., 50.);
-    new TH1D(Form("%s_ptp1", tname.c_str()), "pt muon1 (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta1", tname.c_str()), "pt muon1 (all)",  50, 0., 50.);
-    new TH1D(Form("%s_ptp2", tname.c_str()), "pt muon2 (pass)", 50, 0., 50.);
-    new TH1D(Form("%s_pta2", tname.c_str()), "pt muon2 (all)",  50, 0., 50.);
-
-    new TH1D(Form("%s_etap", tname.c_str()), "eta (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa", tname.c_str()), "eta (all)",  50, -2.5, 2.5);
-    new TH1D(Form("%s_etap1", tname.c_str()), "eta muon1 (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa1", tname.c_str()), "eta muon1 (all)",  50, -2.5, 2.5);
-    new TH1D(Form("%s_etap2", tname.c_str()), "eta muon2 (pass)", 50, -2.5, 2.5);
-    new TH1D(Form("%s_etaa2", tname.c_str()), "eta muon2 (all)",  50, -2.5, 2.5);
-
-    new TH1D(Form("%s_phip", tname.c_str()), "phi (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia", tname.c_str()), "phi (all)",  50, -3.15, 3.15);
-    new TH1D(Form("%s_phip1", tname.c_str()), "phi muon1 (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia1", tname.c_str()), "phi muon1 (all)",  50, -3.15, 3.15);
-    new TH1D(Form("%s_phip2", tname.c_str()), "phi muon2 (pass)", 50, -3.15, 3.15);
-    new TH1D(Form("%s_phia2", tname.c_str()), "phi muon2 (all)",  50, -3.15, 3.15);
-
-    pDir->cd();
-  }
-
-  bool refTrigger(false), osTrigger(false);
-  for (int i = 0; i < NHLT; ++i) {
-    if ((fpEvt->fHLTNames[i] == ref) && (fpEvt->fHLTResult[i])) {
-      refTrigger = true;
-    }
-    if ((fpEvt->fHLTNames[i] == os) && (fpEvt->fHLTResult[i])) {
-      osTrigger = true;
-    }
-  }
-
-  if (!refTrigger) return;
-
-  TAnaCand *pC(0);
-  int m1(-1), m2(-1);
-  double m1Pt(0.), m2Pt(0.), m1Eta(-99.), m2Eta(-66.), dEta(99.), m1Phi(-66.), m2Phi(-66.);
-  for (int i = 0; i < fpEvt->nCands(); ++i) {
-    pC = fpEvt->getCand(i);
-    if ((pC->fType == 300511) || (pC->fType == 300531) ||(pC->fType == 300521)) {
-      vector<int> sigIdx;
-      getSigTracks(sigIdx, pC);
-      m1 = m2 = -1;
-      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
-	if (fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()) {
-	  if (m1 == -1) {
-	    m1 = sigIdx[i];
-	    m1Pt  = fpEvt->getSimpleTrack(sigIdx[i])->getP().Perp();
-	    m1Eta = fpEvt->getSimpleTrack(sigIdx[i])->getP().Eta();
-	    m1Phi = fpEvt->getSimpleTrack(sigIdx[i])->getP().Phi();
-	  } else {
-	    m2 = sigIdx[i];
-	    m2Pt  = fpEvt->getSimpleTrack(sigIdx[i])->getP().Perp();
-	    m2Eta = fpEvt->getSimpleTrack(sigIdx[i])->getP().Eta();
-	    m2Phi = fpEvt->getSimpleTrack(sigIdx[i])->getP().Phi();
-	  }
-	}
-      }
-
-      if (m1Pt < m2Pt) {
-	double bla = m1Pt;
-	m1Pt = m2Pt;
-	m2Pt = bla;
-
-	bla = m1Eta;
-	m1Eta = m2Eta;
-	m2Eta = bla;
-
-	bla = m1Phi;
-	m1Phi = m2Phi;
-	m2Phi = bla;
-      }
-
-      dEta = TMath::Abs(m1Eta - m2Eta);
-
-      double flsxy = pC->fVtx.fDxy/pC->fVtx.fDxyE;
-      if (1 == mode) {
-	if (!(flsxy > 3.0 && (m1Pt > 4.0) && (m2Pt > 3.0) && (dEta < 1.8) && (TMath::Abs(m1Eta) < 1.6) && (TMath::Abs(m2Eta) < 1.6))) continue;
-      }
-
-      if (2 == mode) {
-	if (!(flsxy > 3.0 && (m1Pt > 4.0) && (m2Pt > 3.0) && (dEta < 1.8) && (TMath::Abs(m1Eta) < 1.6) && (TMath::Abs(m2Eta) < 1.6))) continue;
-      }
-
-      tname = Form("os_%d", mode);
-      ((TH1D*)gFile->Get(Form("%s_pta", tname.c_str())))->Fill(pC->fPlab.Perp());
-      ((TH1D*)gFile->Get(Form("%s_pta1", tname.c_str())))->Fill(m1Pt);
-      ((TH1D*)gFile->Get(Form("%s_pta2", tname.c_str())))->Fill(m2Pt);
-      ((TH1D*)gFile->Get(Form("%s_etaa", tname.c_str())))->Fill(pC->fPlab.Eta());
-      ((TH1D*)gFile->Get(Form("%s_etaa1", tname.c_str())))->Fill(m1Eta);
-      ((TH1D*)gFile->Get(Form("%s_etaa2", tname.c_str())))->Fill(m2Eta);
-      ((TH1D*)gFile->Get(Form("%s_phia", tname.c_str())))->Fill(pC->fPlab.Phi());
-      ((TH1D*)gFile->Get(Form("%s_phia1", tname.c_str())))->Fill(m1Phi);
-      ((TH1D*)gFile->Get(Form("%s_phia2", tname.c_str())))->Fill(m2Phi);
-
-      if (osTrigger) {
-	((TH1D*)gFile->Get(Form("%s_ptp", tname.c_str())))->Fill(pC->fPlab.Perp());
-	((TH1D*)gFile->Get(Form("%s_ptp1", tname.c_str())))->Fill(m1Pt);
-	((TH1D*)gFile->Get(Form("%s_ptp2", tname.c_str())))->Fill(m2Pt);
-	((TH1D*)gFile->Get(Form("%s_etap", tname.c_str())))->Fill(pC->fPlab.Eta());
-	((TH1D*)gFile->Get(Form("%s_etap1", tname.c_str())))->Fill(m1Eta);
-	((TH1D*)gFile->Get(Form("%s_etap2", tname.c_str())))->Fill(m2Eta);
-	((TH1D*)gFile->Get(Form("%s_phip", tname.c_str())))->Fill(pC->fPlab.Phi());
-	((TH1D*)gFile->Get(Form("%s_phip1", tname.c_str())))->Fill(m1Phi);
-	((TH1D*)gFile->Get(Form("%s_phip2", tname.c_str())))->Fill(m2Phi);
-      }
-
-      break; // fill only for one candidate with fulfilling J/psi muons and displacement
-    }
-  }
-
-}
-
 
 // ----------------------------------------------------------------------
 void candAna::play() {
@@ -6408,6 +6477,26 @@ void candAna::printCuts(ostream &OUT) {
     OUT << Form("%10.3f", fCuts[i]->pv2lips);
   }
   OUT << endl;
+
+  OUT << "bdtXml     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10s", fCuts[i]->bdtXml.c_str());
+  }
+  OUT << endl;
+
+  OUT << "bdtCut     ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtCut);
+  }
+  OUT << endl;
+
+  OUT << "bdtMuPt    ";
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->bdtMuPt);
+  }
+  OUT << endl;
+
+
   OUT << "----------------------------------------------------------------------" << endl;
 
   OUT.flush();
