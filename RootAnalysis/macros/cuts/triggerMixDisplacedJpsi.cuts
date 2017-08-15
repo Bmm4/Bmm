@@ -10,6 +10,7 @@ TRIGRANGE    HLT_DoubleMu3p5_Jpsi_Displaced_v2(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v1(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v4(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v5(1:99999999)
+TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v6(1:99999999)
 # 2012:
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v9(1:99999999)
 TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v10(1:99999999)

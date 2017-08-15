@@ -805,21 +805,21 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     saveHistograms(fSetup);
 
     if (1) {
-    resetHistograms();
-    setup("bspsiphiData");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
-    loopOverTree(t, 1, nevents, start);
-    fSetup = "bspsiphiData";
-    saveHistograms(fSetup);
+      resetHistograms();
+      setup("bspsiphiData");
+      t = getTree(fSetup, fTreeDir);
+      setupTree(t, fSetup);
+      loopOverTree(t, 1, nevents, start);
+      fSetup = "bspsiphiData";
+      saveHistograms(fSetup);
 
-    resetHistograms();
-    fSetup = "bspsiphiMcComb";
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
-    loopOverTree(t, 1, nevents, start);
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+      resetHistograms();
+      fSetup = "bspsiphiMcComb";
+      t = getTree(fSetup, fTreeDir);
+      setupTree(t, fSetup);
+      loopOverTree(t, 1, nevents, start);
+      otherNumbers(fSetup);
+      saveHistograms(fSetup);
     }
   }
 
@@ -1978,7 +1978,7 @@ void plotResults::loopFunction1() {
   }
 
   // -- allow to skip 2016B-F:
-  if (1) {
+  if (0) {
     if (!fIsMC && (2016 == fYear) && (iera(fb.run) < 7)) return;
   }
 
