@@ -1330,6 +1330,18 @@ void candAna::triggerHLT() {
     fHltPrescale = ps;
     fHLT1Path    = sa;
     fGoodHLT1    = true;
+    // PDTRIGGER mode - accept all triggers which fire and are on the DS list
+    if (0 && pdTrigger) {
+      bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
+      bool isL1L2 = a.Contains("L1") || a.Contains("L2");
+      if (isL1L2) {
+      } else {
+	if (!rightDS) {
+	  fGoodHLT = false;
+	} else {
+	  fGoodHLT = true;
+	}
+      }
     return;
   }
 
