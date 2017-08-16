@@ -53,10 +53,10 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
   fSaveSmallTree = false;
 
   // -- initialize cuts
-  string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
-  cout << "===> Reading cuts from " << cutfile << endl;
-  readCuts(cutfile);
-  fNchan = fCuts.size();
+  // string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
+  // cout << "===> Reading cuts from " << cutfile << endl;
+  // readCuts(cutfile);
+  // fNchan = fCuts.size();
 
   printCuts(cout);
 
@@ -743,15 +743,17 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 
   fSaveSmallTree = true;
 
-
-  // resetHistograms();
-  // setup("bmmData");
-  // t = getTree(fSetup, fTreeDir);
-  // setupTree(t, fSetup);
-  // loopOverTree(t, 1, nevents, start);
-  // saveHistograms(fSetup);
-  // fHistFile->Close();
-  // return;
+  if (0) {
+    // -- ONLY for debugging
+    resetHistograms();
+    setup("bupsikMc");
+    t = getTree(fSetup, fTreeDir);
+    setupTree(t, fSetup);
+    loopOverTree(t, 1, -1, start);
+    saveHistograms(fSetup);
+    fHistFile->Close();
+    return;
+  }
 
   // -- rare backgrounds
   if (1) {
@@ -803,21 +805,21 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
     saveHistograms(fSetup);
 
     if (1) {
-    resetHistograms();
-    setup("bspsiphiData");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
-    loopOverTree(t, 1, nevents, start);
-    fSetup = "bspsiphiData";
-    saveHistograms(fSetup);
+      resetHistograms();
+      setup("bspsiphiData");
+      t = getTree(fSetup, fTreeDir);
+      setupTree(t, fSetup);
+      loopOverTree(t, 1, nevents, start);
+      fSetup = "bspsiphiData";
+      saveHistograms(fSetup);
 
-    resetHistograms();
-    fSetup = "bspsiphiMcComb";
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
-    loopOverTree(t, 1, nevents, start);
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+      resetHistograms();
+      fSetup = "bspsiphiMcComb";
+      t = getTree(fSetup, fTreeDir);
+      setupTree(t, fSetup);
+      loopOverTree(t, 1, nevents, start);
+      otherNumbers(fSetup);
+      saveHistograms(fSetup);
     }
   }
 
@@ -1418,7 +1420,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   fSetup = a.fNameDa;
   string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSetup.c_str(), chan);
   bool ok = fHistFile->cd(fSetup.c_str());
-  cout << "cd to " << fSetup << ": " << ok << endl;
+  cout << "cd to " << fSetup << ": " << ok << ", normalization fitting: " << name << endl;
   fitPsYield fpy(name, 0);
   if (string::npos != a.fName.find("bupsik")) {
     fpy.fitBu2JpsiKp(5, fDirectory + "/");
@@ -1435,22 +1437,24 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   cout << "chan " << a.fChan << " total yield: " << fpy.getSignalYield() << " +/- "  << fpy.getSignalError() << endl;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- NORMALIZATION: " << mode << " chan: " << chan << endl;
-  dumpTex(a.fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffMuidMC, Form("%s:EFF-MU-MC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffTrigMC, Form("%s:EFF-TRIG-MC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffAna, Form("%s:EFF-ANA-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffProdMC, Form("%s:EFF-PRODMC-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
-  dumpTex(a.fEffTot, Form("%s:EFF-TOT-%s-chan%d", fSuffixSel.c_str(), mode, chan), 6);
+  int NDIG(5);
+  dumpTex(a.fEffGenSel, Form("%s:GENSEL-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fAcc, Form("%s:ACC-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffCand, Form("%s:EFF-CAND-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffMuidMC, Form("%s:EFF-MU-MC-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffTrigMC, Form("%s:EFF-TRIG-MC-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffAna, Form("%s:EFF-ANA-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffProdMC, Form("%s:EFF-PRODMC-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fEffTot, Form("%s:EFF-TOT-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
 
-  dumpTex(a.fGenFileYield, Form("%s:N-GENFILEYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
-  dumpTex(a.fGenYield, Form("%s:N-GENYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
-  dumpTex(a.fTotGenYield, Form("%s:N-TOTYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
-  dumpTex(a.fProdGenYield, Form("%s:N-PRODYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
+  NDIG = 3;
+  dumpTex(a.fGenFileYield, Form("%s:N-GENFILEYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fGenYield, Form("%s:N-GENYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fTotGenYield, Form("%s:N-TOTYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
+  dumpTex(a.fProdGenYield, Form("%s:N-PRODYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
 
   if (string::npos != a.fName.find("bspsiphi")) {
-    dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), 3);
+    dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
   }
   dumpTex(a.fSignalFit, Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
 
@@ -1968,6 +1972,15 @@ void plotResults::loopFunction1() {
 
   if (fChan < 0) return;
   double mass = fb.m;
+  double ps   = static_cast<double>(fb.ps);
+  if (fYear < 2016) {
+    ps = 1.;
+  }
+
+  // -- allow to skip 2016B-F:
+  if (0) {
+    if (!fIsMC && (2016 == fYear) && (iera(fb.run) < 7)) return;
+  }
 
   vector<string> modifier;
   modifier.push_back("cnc" + fSuffix);
@@ -2048,20 +2061,17 @@ void plotResults::loopFunction1() {
 	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
 	}
 
-	if (fYear < 2016) {
-	  if (fb.ps == 0) fb.ps = 1;
-	}
 
 	// - include prescale values on y axis
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
 	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[0]][fChan]->Fill(mass, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[0]][fChan]->Fill(mass, -0.1, ps);
 	  fhNorm[modifier[0]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[0]][fChan]->Fill(mass, fb.ps+0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[0]][fChan]->Fill(mass, ps+0.1);
+	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, fb.ps+0.1);
+	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1);
 	}
 
 
@@ -2097,7 +2107,7 @@ void plotResults::loopFunction1() {
       && fGoodTracks
       && fGoodTracksPt
       && fGoodTracksEta
-      && fGoodBdtPt
+      && fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
       && fGoodMuonsEta
       && fGoodJpsiCuts
       && fGoodBDT
@@ -2126,6 +2136,12 @@ void plotResults::loopFunction1() {
 	}
 
 	// -- weighted with fake rate
+	if (0) cout << "fW8MisId = " << fW8MisId
+		    << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+		    << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+		    << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+		    << endl;
+
 	fhW8MassWithAllCuts[modifier[1]][fChan]->Fill(mass, fW8MisId);
 	if (fIsCowboy) {
 	  fhW8MassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass, fW8MisId);
@@ -2137,12 +2153,12 @@ void plotResults::loopFunction1() {
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
 	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[1]][fChan]->Fill(mass, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[1]][fChan]->Fill(mass, -0.1, ps);
 	  fhNorm[modifier[1]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[1]][fChan]->Fill(mass, fb.ps+0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, static_cast<double>(fb.ps));
+	  fhNorm[modifier[1]][fChan]->Fill(mass, ps+0.1);
+	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, fb.ps+0.1);
+	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1);
 	}
 
 	if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {

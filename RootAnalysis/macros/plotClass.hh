@@ -93,6 +93,7 @@ public :
   void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
 
   std::string    era(int run);
+  int            iera(int run);
 
   // -- Main analysis methods
   virtual void   makeAll(int bitmask = 0);
@@ -137,9 +138,9 @@ public :
   virtual void calcBDT();
 
   struct redTreeData fb;
-  TMVA::Reader* fReaderEvents0[2];
-  TMVA::Reader* fReaderEvents1[2];
-  TMVA::Reader* fReaderEvents2[2];
+  std::vector<TMVA::Reader*> fReaderEvents0;
+  std::vector<TMVA::Reader*> fReaderEvents1;
+  std::vector<TMVA::Reader*> fReaderEvents2;
   TString fMvaMethod;
   bool fIsMC, fIsSignal;
   double fBDT;

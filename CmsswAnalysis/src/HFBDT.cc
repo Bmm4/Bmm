@@ -19,7 +19,6 @@ using namespace std;
 
 HFBDT::HFBDT() {
   verbose_ = false;
-  //weightFile_ = edm::FileInPath("Bmm/RootAnalysis/macros/weights/SW-B-v17_BDT.weights.xml");
   weightFile_ = edm::FileInPath();
   BDTreader = 0;
   isSetup = false;
@@ -140,8 +139,10 @@ double HFBDT::evaluate() {
     {cout << "WARNING: The BDT was not set up correctly beforehand." << endl;}
   if (!muon->varsSet())
     {cout << "WARNING: The values are not up to date, e.g. old or not set." << endl;}
-  else
-    {muon->unsetVars();}
+  if ( !muon->areVarsValid() )
+    {return -1;}
+
+  muon->unsetVars();
   return BDTreader->EvaluateMVA("BDT");
 }
 
@@ -150,7 +151,8 @@ double HFBDT::evaluate() {
 
 BDTmuon::BDTmuon() {
   mapIsSet = false;
-  varsAreSet = false;
+  varsAreSet_ = false;
+  varsValid_ = false;
   pt=-42;
   eta=-42;
   deltaR=-42;
@@ -285,8 +287,11 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   const reco::HitPattern gHits = gTrack->hitPattern();
   const reco::HitPattern iHits = iTrack->hitPattern();
   const reco::MuonQuality muonQuality = recoMuon.combinedQuality();
+  if ( iTrack.isNonnull() && oTrack.isNonnull() && gTrack.isNonnull() )
+    {varsValid_ = true;}
+  else {return;}
 
-  int pvIndex = getPv(iTrack.index(),vc);
+  int pvIndex = getPv(iTrack.index(),vc); //HFDumpUtitilies
   math::XYZPoint refPoint;
   if (pvIndex > -1)
     {refPoint = vc->at(pvIndex).position();}
@@ -332,7 +337,7 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
   TMTrkMult_100 = tmTrkMult_100;
   Qprod = (iTrack->charge() * oTrack->charge());
 
-  varsAreSet = true;
+  varsAreSet_ = true;
 }
 
 void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {

@@ -70,10 +70,10 @@ void bmmReader::endAnalysis() {
 // ----------------------------------------------------------------------
 void bmmReader::eventProcessing() {
   ((TH1D*)fpHistFile->Get("monEvents"))->Fill(0);
-
   static bool json = false;
   static int oldRun(-1);
   static int oldLS(-1);
+  static double rlumi(-1.);
   if (fIsMC) {
     json = true;
     processTypePythia8();
@@ -88,7 +88,6 @@ void bmmReader::eventProcessing() {
     fProcessType = -98;
   }
 
-  double rlumi(-1.);
   if (fRun != oldRun) {
     oldRun = fRun;
     if (!fIsMC && json) {
@@ -107,6 +106,23 @@ void bmmReader::eventProcessing() {
     for (int i = 0; i < fpEvt->nCands(); ++i) {
       fCandTypes.insert(fpEvt->getCand(i)->fType);
     }
+  }
+
+  fHltPathInfo.clear();
+  hltPathInfo hpi;
+  string sa, sas;
+  for (int i = 0; i < NHLT; ++i) {
+    sa = fpEvt->fHLTNames[i];
+    if (sa == "") break;
+    sas = sa.substr(0, sa.rfind("_v")+2);
+    hpi.prescale = fpEvt->fHLTPrescale[i];
+    hpi.wasRun = fpEvt->fHLTWasRun[i];
+    hpi.result = fpEvt->fHLTResult[i];
+    hpi.error  = fpEvt->fHLTError[i];
+    hpi.v      = true;
+    fHltPathInfo.insert(make_pair(sa, hpi));
+    hpi.v      = false;
+    fHltPathInfo.insert(make_pair(sas, hpi));
   }
 
   if (0) {

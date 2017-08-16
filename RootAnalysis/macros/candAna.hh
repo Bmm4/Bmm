@@ -15,8 +15,11 @@
 
 #include "redTreeData.hh"
 #include "preselection.hh"
+#include "ReaderData.hh"
 #include "cuts.hh"
 
+
+#define NTRGMAX 40
 
 struct isoNumbers {
   double iso;
@@ -27,14 +30,6 @@ struct isoNumbers {
 
 // -- TMVA related
 #include "TMVA/Reader.h"
-struct readerData {
-  float pt, eta, m1eta, m2eta, m1pt, m2pt;
-  float fls3d, alpha, maxdoca, pvip, pvips, iso, docatrk, chi2dof, closetrk;
-  float closetrks1, closetrks2, closetrks3;
-  float m1iso, m2iso, pvdchi2, othervtx;
-  float pv2lip, pv2lips;
-  float m;
-};
 
 struct muonData {
   float mbdt;
@@ -94,6 +89,7 @@ public:
   //  virtual double      dist2PdTrigger(const TVector3 &t);
   virtual void        dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &dm2);
   virtual bool        triggerFired(std::string triggerPath);
+  virtual void        nTriggers();
   virtual void        triggerL1T();
   virtual void        triggerHLT();
   virtual int         nearestPV(int pvIdx, double maxDist = 99.);
@@ -113,7 +109,7 @@ public:
   virtual void        fillMuonData(muonData &a, TAnaMuon *pM);
   virtual void        replaceAll(std::string &s, std::string a, std::string b);
 
-  virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
+  // virtual TMVA::Reader* setupReader(std::string xmlFile, readerData &rd);
   virtual TMVA::Reader* setupMuonMvaReader(std::string xmlFile, mvaMuonIDData &rd);
   virtual void        calcBDT();
   virtual int         detChan(double m1eta, double m2eta);
@@ -153,7 +149,6 @@ public:
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual double      distToMuon(TSimpleTrack *pt); // calculate DR separation of a track to closest (other) muon
-  virtual void        triggerEff(std::string ref, std::string os, int mode);
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
@@ -213,7 +208,7 @@ public:
 
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, DATACAND, IGNORETRIGGER, NOPRESELECTION;
 
-  std::map<std::string, pair<int, int> > HLTRANGE;
+  std::map<std::string, pair<int, int> > HLTRANGE, NTRIGGERS;
   string DSNAME; // data set name
 
   bool fBarrel, fWideMass;
@@ -234,7 +229,7 @@ public:
   std::vector<TMVA::Reader*> fReaderEvents1;
   std::vector<TMVA::Reader*> fReaderEvents2;
   double  fBDT;
-  readerData frd;
+  ReaderData frd;
 
   TMVA::Reader *fMvaMuonID, *fMvaMuonID1;
   mvaMuonIDData mrd, mrd1;
@@ -313,7 +308,7 @@ public:
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS, fGoodLip, fGoodLipS;
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
-  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
+  bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fL1T, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
   bool    fPreselAlpha, fPreselFLS, fPreselOther;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
@@ -326,6 +321,8 @@ public:
   int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
   map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
+
+  int fNtrg, fNtrgPs[NTRGMAX], fNtrgTos[NTRGMAX];
 
   struct redTreeData fRTD;
 };

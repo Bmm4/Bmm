@@ -28,6 +28,7 @@ class dataset;
 // General utilities
 // ======================================================================
 void printNonZero(TH1*);
+void printAxesLabels(TH1*);
 void stampAndSave(TCanvas *fC, const char *s = "bla.eps");
 void shrinkPad(double b = 0.1, double l = 0.1, double r = 0.1, double t = 0.1);
 void babar(double x, double y, double scale = 1.0, int prel = 0);

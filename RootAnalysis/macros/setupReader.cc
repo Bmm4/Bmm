@@ -5,7 +5,7 @@
 
 #include "TMVA/Reader.h"
 
-#include "ReaderData.hh"
+#include "setupReader.hh"
 
 using namespace std;
 
@@ -16,7 +16,7 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd) {
   // -- read in variables from weight file
   vector<string> allLines;
   char  buffer[2000];
-  cout << "setupReader, open file " << xmlFile << endl;
+  cout << "setupReader, open file " << xmlFile ;
   ifstream is(xmlFile);
   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
   int nvars(-1);
@@ -170,5 +170,6 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd) {
 
   // --- Book the MVA methods
   reader->BookMVA("BDT", xmlFile);
+  cout << ",  booked reader " << reader << endl;
   return reader;
 }

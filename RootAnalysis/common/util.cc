@@ -148,6 +148,10 @@ void colors(int i) {
 
 // ----------------------------------------------------------------------
 void printNonZero(TH1 *h) {
+  if (0 == h) {
+    cout << "histogram does not exist" << endl;
+    return;
+  }
   double con(0.), min(0.), max(0.);
   for (Int_t i = 0; i <= h->GetNbinsX()+1; ++i) {
     con = h->GetBinContent(i);
@@ -156,6 +160,26 @@ void printNonZero(TH1 *h) {
       max = min + h->GetBinWidth(i);
       cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << Form(" %12.3f", con) << " +/- " << Form("%12.3f ", h->GetBinError(i))
+	   << h->GetXaxis()->GetBinLabel(i)
+           << endl;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+void printAxesLabels(TH1 *h) {
+  if (0 == h) {
+    cout << "histogram does not exist" << endl;
+    return;
+  }
+  double min(0.), max(0.);
+  TString la;
+  for (Int_t i = 0; i <= h->GetNbinsX()+1; ++i) {
+    la = h->GetXaxis()->GetBinLabel(i);
+    min = h->GetBinLowEdge(i);
+    max = min + h->GetBinWidth(i);
+    if (la != "") {
+      cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << h->GetXaxis()->GetBinLabel(i)
            << endl;
     }
@@ -393,11 +417,12 @@ double chi2TestErr(TH1 *h1, TH1 *h2, double& chi2, double& ndof, int constrain) 
 }
 
 // ----------------------------------------------------------------------
+// -- FIXME: I get a SEGV in **, I don't understand this!?
 void average(double &av, double &error, int n, double *val, double *verr) {
 
   double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (int i = 0; i < n; ++i) {
-    //    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
+    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
 
     // -- calculate mean and error
     e = verr[i];
@@ -410,9 +435,11 @@ void average(double &av, double &error, int n, double *val, double *verr) {
       continue;
     }
   }
+  cout << "sumW8 = " << sumW8 << endl;
   if (sumW8 > 0.) {
     av = sumAve/sumW8;
-    error = 1./TMath::Sqrt(sumW8);
+    sumW8 = TMath::Sqrt(sumW8); //**
+    error = 1./sumW8;
   } else {
     av = -99.;
     error = -99.;

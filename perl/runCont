@@ -1,0 +1,85 @@
+#!/usr/bin/perl
+
+# ----------------------------------------------------------------------
+#
+# runCont  run in the background and allow for continuous job submission for short jobs
+# =======
+#
+# Usage examples
+# ==============
+#
+# $BMMBASE/perl/runCont -n 200 -c '/bin/tcsh  ' list-a*
+#
+#
+#
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
+use Tie::IxHash;
+
+use Getopt::Std;
+getopts('c:dn:w:');
+
+
+my $USER = $ENV{USER};
+my $siesta = 600;
+@jobs = @ARGV;
+
+foreach $job (@jobs) {
+    if (-e "STOP.$$") {
+	unlink("STOP.$$");
+	exit(0);
+    }
+    while (-e "WAIT.$$") {
+	$datum = `date`;
+	print "runCont: watching WAIT.$$ at $datum";
+	sleep(3600);
+    }
+    if ($opt_n) {
+	$njobs = &countPending;
+	$datum = `date`;
+	print "runCont: $njobs jobs waiting at $datum";
+	while ($njobs > $opt_n) {
+	    sleep($siesta);
+	    # -- bail out in case of STOP file
+	    if (-e "STOP.$$") {
+		unlink("STOP.$$");
+		exit(0);
+	    }
+	    # -- wait 1h in case of WAIT file
+	    while (-e "WAIT.$$") {
+		$datum = `date`;
+		print "runCont: watching WAIT.$$ at $datum";
+		sleep(3600);
+	    }
+
+	    $njobs = &countPending;
+	    $datum = `date`;
+	    print "runCont: $njobs jobs waiting at $datum";
+	}
+    }
+
+    if ($opt_d) {
+	print "$opt_c $job\n";
+    } else {
+	print "runCont: submitting $opt_c $job\n";
+	system("$opt_c $job");
+    }
+
+    if ($opt_w) {
+	sleep($opt_w);
+    }
+
+}
+
+# ----------------------------------------------------------------------
+sub countPending() {
+    $n = `qstat -s p -u $USER | wc -l `;
+    chop($n);
+    # print "n = ->$n<- \n";
+    return $n;
+}

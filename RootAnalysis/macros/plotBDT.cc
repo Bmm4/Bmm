@@ -291,6 +291,13 @@ void plotBDT::bdtOptAnaTree(string rootfile) {
 				    2, 0., 2., 40, 2.4, 3.0)));
   }
 
+  hists.insert(make_pair("ssb0_maxdepth", new TH2D("ssb0_maxdepth", "ssb0_maxdepth", 13, 0., 13., 40, 2.4, 3.0)));
+  hists.insert(make_pair("ssb0_ntrees", new TH2D("ssb0_ntrees", "ssb0_ntrees", 15, 0., 1500., 40, 2.4, 3.0)));
+  hists.insert(make_pair("ssb0_ncuts", new TH2D("ssb0_ncuts", "ssb0_ncuts", 27, -1., 26., 40, 2.4, 3.0)));
+  hists.insert(make_pair("ssb0_beta", new TH2D("ssb0_beta", "ssb0_beta", 22, 0., 1.1, 40, 2.4, 3.0)));
+  hists.insert(make_pair("ssb0_mns", new TH2D("ssb0_mns", "ssb0_mns", 10, 0., 10., 40, 2.4, 3.0)));
+
+
   // hists.insert(make_pair("ssb0_m1iso", new TH2D("ssb0_m1iso", "ssb0_m1iso", 2, 0., 2., 40, 2.0, 3.0)));
   // hists.insert(make_pair("ssb0_m2iso", new TH2D("ssb0_m2iso", "ssb0_m2iso", 2, 0., 2., 40, 2.0, 3.0)));
   // hists.insert(make_pair("ssb0_pt", new TH2D("ssb0_pt", "ssb0_pt", 2, 0., 2., 40, 2.0, 3.0)));
@@ -312,7 +319,13 @@ void plotBDT::bdtOptAnaTree(string rootfile) {
     hists["ssb0_maxdoca"]->Fill(maxdoca, ssb0);
     hists["ssb0_closetrk"]->Fill(closetrk, ssb0);
     hists["ssb0_docatrk"]->Fill(docatrk, ssb0);
- }
+
+    hists["ssb0_beta"]->Fill(beta, ssb0);
+    hists["ssb0_ntrees"]->Fill(ntrees, ssb0);
+    hists["ssb0_ncuts"]->Fill(ncuts, ssb0);
+    hists["ssb0_maxdepth"]->Fill(maxdepth, ssb0);
+    hists["ssb0_mns"]->Fill(mns, ssb0);
+  }
 
   c0->cd();
   shrinkPad(0.12, 0.15, 0.2, 0.1);
@@ -324,6 +337,30 @@ void plotBDT::bdtOptAnaTree(string rootfile) {
     savePad(Form("bdtOpt-ssb0-%s.pdf", otherVars[i].c_str()));
   }
 
+  setTitles(hists["ssb0_ncuts"], "ncuts", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_ncuts"]->Draw("colz");
+  tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+  savePad("bdtOpt-ssb0-ncuts.pdf");
+
+  setTitles(hists["ssb0_ntrees"], "ntrees", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_ntrees"]->Draw("colz");
+  tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+  savePad("bdtOpt-ssb0-ntrees.pdf");
+
+  setTitles(hists["ssb0_maxdepth"], "maxdepth", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_maxdepth"]->Draw("colz");
+  tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+  savePad("bdtOpt-ssb0-maxdepth.pdf");
+
+  setTitles(hists["ssb0_beta"], "beta", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_beta"]->Draw("colz");
+  tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+  savePad("bdtOpt-ssb0-beta.pdf");
+
+  setTitles(hists["ssb0_mns"], "mns", "f.o.m.", 0.05, 1.1, 1.5);
+  hists["ssb0_mns"]->Draw("colz");
+  tl->DrawLatexNDC(0.2, 0.92, Form("minKS > %3.2f", minksCut));
+  savePad("bdtOpt-ssb0-mns.pdf");
 
   setTitles(hists["ssb0_minks"], "min KS probability", "f.o.m.", 0.05, 1.1, 1.5);
   hists["ssb0_minks"]->Draw("colz");

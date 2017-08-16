@@ -25,6 +25,7 @@
 #include "common/initFunc.hh"
 
 #include "TMVA/Config.h"
+#include "TMVA/DataLoader.h"
 #include "TMVA/Factory.h"
 #include "TMVA/Reader.h"
 #include "TMVA/Tools.h"
@@ -251,6 +252,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    optstring        = "V:!Silent:!Color:!DrawProgressBar:Transformations=I:AnalysisType=Classification";
    cout << "==> Factory: " << optstring << endl;
    TMVA::Factory *factory = new TMVA::Factory(Form("%s", oname.c_str()), outputFile,  optstring.c_str());
+   TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset");
 
    // -- parse string with all variables into a vector
    vector<string> vVar;
@@ -273,11 +275,11 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
      //      if (string::npos != vVar[i].find("closetrk")) {
      //        factory->AddVariable(vVar[i].c_str(), 'I');
      //      } else {
-     factory->AddVariable(vVar[i].c_str(), 'F');
+     dataloader->AddVariable(vVar[i].c_str(), 'F');
      //      }
    }
 
-   factory->AddSpectator("m",  "mass", "GeV", 'F' );
+   dataloader->AddSpectator("m",  "mass", "GeV", 'F' );
 
    TFile* inFile;
    TTree *applySg(0), *trainSg(0), *testSg(0), *applyBg(0), *trainBg(0), *testBg(0);
@@ -354,10 +356,10 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    cout << "--> cbackground weight: " << cbackgroundWeight << endl;
    cout << "--> rbackground weight: " << rbackgroundWeight << endl;
 
-   factory->AddTree(trainSg,     "Signal",     signalWeight,  "", "train");
-   factory->AddTree(testSg,      "Signal",     signalWeight,  "", "test");
-   factory->AddTree(trainBg, "Background", cbackgroundWeight, "", "train");
-   factory->AddTree(testBg,  "Background", tbackgroundWeight, "", "test");
+   dataloader->AddSignalTree(trainSg,     signalWeight,      "Training");
+   dataloader->AddSignalTree(testSg,      signalWeight,      "Test");
+   dataloader->AddBackgroundTree(trainBg, cbackgroundWeight, "Training");
+   dataloader->AddBackgroundTree(testBg,  tbackgroundWeight, "Test");
 
    int nSgTrain = trainSg->GetEntries();
    int nSgTest  = testSg->GetEntries();
@@ -384,7 +386,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    optstring = Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=Block:NormMode=None:V",
 		    nSgTrain, nSgTest, nBgTrain, nBgTest);
    cout << "==> PrepareTrainingAndTestTree: " << optstring << endl;
-   factory->PrepareTrainingAndTestTree("", "", optstring.c_str());
+   dataloader->PrepareTrainingAndTestTree("", "", optstring.c_str());
 
    if (0) {
      optstring = Form("!H:V:NTrees=%d", fBdtSetup.NTrees);
@@ -399,7 +401,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    }
 
    cout << "==> BookMethod: " << optstring << endl;
-   factory->BookMethod( TMVA::Types::kBDT, "BDT", optstring);
+   factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT", optstring);
 
    cout << "==> TrainAllMethods " << endl;
    factory->TrainAllMethods();
@@ -421,7 +423,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 
 
    outputFile = TFile::Open(outfileName);
-   TString hname = "Method_BDT/BDT/MVA_BDT";
+   TString hname = "dataset/Method_BDT/BDT/MVA_BDT";
    TH1 *sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_S" ));
    TH1 *bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_B" ));
    cout << "==> Looking for Kolmogorov-Smirnov input: gDirectory = " << gDirectory->GetName()
@@ -447,7 +449,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
    cout << "KS-probability /" << gDirectory->GetName() << "/ ks-sg = " << kolS << " ks-bg = " << kolB << endl;
 
    outfileName.ReplaceAll(".root", ".pdf");
-   TTree *t = dynamic_cast<TTree*>(gDirectory->Get("TestTree"));
+   TTree *t = dynamic_cast<TTree*>(gDirectory->Get("dataset/TestTree"));
    int id;
    float bdt;
    t->SetBranchAddress("classID", &id);

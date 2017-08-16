@@ -34,7 +34,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   fGoodTracksEta  = false;
 
   fGoodAcceptance = false;
-  fGoodJpsiMass = false;
+  fGoodJpsiMass   = false;
   fGoodJpsiCuts   = false;
 
 
