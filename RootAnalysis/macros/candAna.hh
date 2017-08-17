@@ -152,17 +152,7 @@ public:
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
-  // match the 2 muons from the dimuon to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
-  // match a single track to HLT
-  virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
-					bool muonsOnly=true, bool anyModule=false);
-  // To return the full deltaR not just a bool
-  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
-                                        bool muonsOnly=true, bool anyModule=false);
-  // Veto track too close to a trigger object
-  virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
-				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
+
   virtual void        print1();
   virtual void        printCuts(ostream &OUT);
 
@@ -242,7 +232,7 @@ public:
   bool    fJSON, fCowboy, fCandDcand;
   int     fCandTM, fCandType;
   int     fMu1TkQuality, fMu2TkQuality, fMu1Q, fMu2Q, fCandQ, fMu1PV, fMu2PV;
-  bool    fMu1Id, fMu2Id, fHLTmatch, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu2GmId;
+  bool    fMu1Id, fMu2Id, fMu1MvaId, fMu2MvaId, fMu1GmId, fMu2GmId;
   bool    fMu1rMvaId, fMu2rMvaId;
   double  fMu1TrigM, fMu2TrigM;
 
@@ -318,9 +308,9 @@ public:
 
   bool    fPreselection;
   bool    fBadEvent;
-  int     fhltType; // to hold the HLT information d.k.
+  //int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
-  map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
+  //map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
 
   int fNtrg, fNtrgPs[NTRGMAX], fNtrgTos[NTRGMAX];
 
