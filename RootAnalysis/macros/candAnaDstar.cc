@@ -2144,6 +2144,7 @@ void candAnaDstar::bookHist() {
   fTree->Branch("ftmp9",&ftmp9,   "ftmp9/O");
 
   fTree->Branch("hltt",    &fhltType,           "hltt/I");
+  fTree->Branch("hlt",     &fGoodHLT,           "hlt/O");
 
   // MC
 #ifdef MC_HISTOS
