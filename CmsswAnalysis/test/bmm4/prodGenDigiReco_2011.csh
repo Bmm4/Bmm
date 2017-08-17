@@ -159,6 +159,17 @@ lcg-del -b -D srmv2 -l "$PFNS/$STORAGE3/$FILE3"
 echo "--> AM running xrdcp $FILE3 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE3/$FILE3 "
 xrdcp $FILE3 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE3/$FILE3
 
+
+# -- fix bad lcg-ls
+echo "--> fixing broken lcg-ls in 2011 releases, switch to 2012 release"
+setenv  SCRAM_ARCH  slc6_amd64_gcc493
+pwd
+date
+cmsrel CMSSW_5_3_32_patch3
+cd CMSSW_5_3_32_patch3
+eval `scramv1 runtime -csh`
+pwd
+
 echo "--> lcg-ls : $PFNS/$STORAGE3/$FILE3"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE3/$FILE3"
 lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE3/$FILE3"

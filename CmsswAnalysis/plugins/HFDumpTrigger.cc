@@ -132,8 +132,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     const std::vector<std::pair<std::string, bool> > intermDecisions = fGtUtil->decisionsInterm();
     const std::vector<std::pair<std::string, bool> > finalDecisions = fGtUtil->decisionsFinal();
     const std::vector<std::pair<std::string, int> >  prescales = fGtUtil->prescales();
-    const std::vector<std::pair<std::string, bool> > masks = fGtUtil->masks();
-    const std::vector<std::pair<std::string, bool> > vetoMasks = fGtUtil->vetoMasks();
+    const std::vector<std::pair<std::string, bool> > masks; // = fGtUtil->masks();
+    const std::vector<std::pair<std::string, bool> > vetoMasks; // = fGtUtil->vetoMasks();
 
     if (0) {
       cout << "    Bit                  Algorithm Name                  Init    aBXM  Final   PS Factor     Masked    Veto " << endl;

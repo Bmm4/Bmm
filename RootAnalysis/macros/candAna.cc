@@ -1323,7 +1323,7 @@ void candAna::triggerHLT() {
     fHLT1Path    = sa;
     fGoodHLT1    = true;
  
-  // PDTRIGGER mode - accept all triggers which fire and are on the DS list
+    // PDTRIGGER mode - accept all triggers which fire and are on the DS list
     if (0 && (HLTRANGE.begin()->first == "PDTRIGGER")) {
       bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
       bool isL1L2 = a.Contains("L1") || a.Contains("L2");
@@ -1337,8 +1337,7 @@ void candAna::triggerHLT() {
       }
     }
   }
-  
-  
+
   // for (int i = 0; i < NHLT; ++i) {
   //   result = wasRun = error = false;
   //   a = fpEvt->fHLTNames[i];
@@ -3097,12 +3096,12 @@ double candAna::isoMuon(TAnaCand *pCand, TAnaMuon *pMuon) {
   TVector3 plabMu = pMuon->fPlab;
   for (it = pMuon->fNstTracks.begin(); it != pMuon->fNstTracks.end(); ++it) {
 
-    // no tracks from candidate...
-    if (cand_tracks.count(it->first) > 0)
-      continue;
+    // -- no tracks from candidate...
+    if (cand_tracks.count(it->first) > 0)  continue;
+    // -- sanity check
+    if (it->first > fpEvt->nSimpleTracks()) continue;
 
     sTrack = fpEvt->getSimpleTrack(it->first);
-
     // no tracks from foreign primary vertex
     if (sTrack->getPvIndex() >= 0 && sTrack->getPvIndex() != pCand->fPvIdx)
       continue;
