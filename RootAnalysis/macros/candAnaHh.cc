@@ -231,32 +231,32 @@ void candAnaHh::candAnalysis() {
 
   // checkmatching
   //                         track allTrig useMuonOnly
-  float dr1 = doTriggerMatchingR(p1, false, true);
-  float dr2 = doTriggerMatchingR(p2, false, true);
+  float dr1 = 0; //doTriggerMatchingR(p1, false, true);
+  float dr2 = 0; //doTriggerMatchingR(p2, false, true);
   ((TH1D*)fHistDir->Get("testhh11"))->Fill(dr1);
   ((TH1D*)fHistDir->Get("testhh11"))->Fill(dr2);
   if(MYDEBUG) cout<< " DR !All/Muons "<< dr1 <<" "<< dr2 <<endl;
 
-  dr1 = doTriggerMatchingR(p1, false, false);
-  dr2 = doTriggerMatchingR(p2, false, false);
+  dr1 = 0; // doTriggerMatchingR(p1, false, false);
+  dr2 = 0; //doTriggerMatchingR(p2, false, false);
   ((TH1D*)fHistDir->Get("testhh12"))->Fill(dr1);
   ((TH1D*)fHistDir->Get("testhh12"))->Fill(dr2);
   if(MYDEBUG) cout<< " DR !All/!Muons "<< dr1 <<" "<< dr2 <<endl;
 
-  dr1 = doTriggerMatchingR(p1, true, true);
-  dr2 = doTriggerMatchingR(p2, true, true);
+  dr1 = 0; //doTriggerMatchingR(p1, true, true);
+  dr2 = 0; //doTriggerMatchingR(p2, true, true);
   ((TH1D*)fHistDir->Get("testhh13"))->Fill(dr1);
   ((TH1D*)fHistDir->Get("testhh13"))->Fill(dr2);
   if(MYDEBUG) cout<< " DR All/Muons "<< dr1 <<" "<< dr2 <<endl;
 
-  dr1 = doTriggerMatchingR(p1, true, false);
-  dr2 = doTriggerMatchingR(p2, true, false);
+  dr1 = 0; //doTriggerMatchingR(p1, true, false);
+  dr2 = 0; //doTriggerMatchingR(p2, true, false);
   ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr1);
   ((TH1D*)fHistDir->Get("testhh14"))->Fill(dr2);
   if(MYDEBUG) cout<< " DR All/!Muons "<< dr1 <<" "<< dr2 <<endl;
   //                            singleMatch muonsOnly matchPt
-  bool veto1 = doTriggerVeto(p1,p2,false,true,true); //
-  bool veto2 = doTriggerVeto(p1,p2,true,true,true); // use this, 1 track in trigger vetos the event
+  bool veto1 = 0; //doTriggerVeto(p1,p2,false,true,true); //
+  bool veto2 = 0; //doTriggerVeto(p1,p2,true,true,true); // use this, 1 track in trigger vetos the event
   if(!veto1) ((TH1D*)fHistDir->Get("testhh0"))->Fill(5.); // count accepeted candidates
   if(!veto2) ((TH1D*)fHistDir->Get("testhh0"))->Fill(6.);
 
