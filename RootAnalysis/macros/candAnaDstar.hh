@@ -92,7 +92,8 @@ private:
   bool ftmp1,ftmp2,ftmp3,ftmp4,ftmp5,ftmp6,ftmp7,ftmp8,ftmp9; 
   int fitmp1, fitmp2, fitmp3, fitmp4, fitmp5;
 
- int     fhltType; // to hold the HLT information d.k
+  int     fhltType; // to hold the HLT information d.k
+  bool fGoodHLT;
   // mc
   float fmcmds, fmcmdz;
   float fmcpt,fmcptdz,fmcptpis,fmcptpi,fmcptk;

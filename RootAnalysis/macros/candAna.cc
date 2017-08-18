@@ -310,7 +310,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
       if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
-      if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
+      //if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
       //if (fJSON&&fGoodHLT&&fHLTmatch) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
     } else {  // DATA
       if (NOPRESELECTION) {
@@ -333,7 +333,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
 	  //((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
 	  if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
-	  if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
+	  //if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
 	  //if (fJSON&&fGoodHLT&&fHLTmatch) {
 	  //((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
 	  //((TH1D*)fHistDir->Get("run1"))->Fill(fRun);
@@ -1330,9 +1330,9 @@ void candAna::triggerHLT() {
       if (isL1L2) {
       } else {
 	if (!rightDS) {
-	  fGoodHLT = false;
+	  fGoodHLT1 = false;
 	} else {
-	  fGoodHLT = true;
+	  fGoodHLT1 = true;
 	}
       }
     }
@@ -1632,7 +1632,7 @@ void candAna::bookHist() {
   fEffTree = new TTree("effTree", "effTree");
   fEffTree->Branch("run",    &fRun,               "run/L");
   fEffTree->Branch("evt",    &fEvt,               "evt/L");
-  fEffTree->Branch("hlt",    &fGoodHLT,           "hlt/O");
+  //fEffTree->Branch("hlt",    &fGoodHLT,           "hlt/O");
   fEffTree->Branch("hlt1",   &fGoodHLT1,          "hlt1/O");
   fEffTree->Branch("chan",   &fETchan,            "chan/I");
   fEffTree->Branch("procid", &fProcessType,       "procid/I");
@@ -1692,7 +1692,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("tm",      &fCandTM,            "tm/I");
   t->Branch("pr",      &fGenBpartial,       "pr/I");
   t->Branch("procid",  &fProcessType,       "procid/I");
-  t->Branch("hlt",     &fGoodHLT,           "hlt/O");
+  //t->Branch("hlt",     &fGoodHLT,           "hlt/O");
   t->Branch("hlt1",    &fGoodHLT1,          "hlt1/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
@@ -3860,7 +3860,7 @@ void candAna::replaceAll(std::string &s, std::string a, std::string b) {
 // ----------------------------------------------------------------------
 void candAna::fillRedTreeData() {
   // -- this only fills the variables that are needed for the preselection() function
-  fRTD.hlt       = fGoodHLT;
+  fRTD.hlt       = fGoodHLT1;
   fRTD.gmuid     = fGoodMuonsID;
 
   fRTD.pt        = fCandPt;
@@ -3966,7 +3966,7 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
 
   if (verbose) {
     cout << "==> candAna::refTrigger> in DS = " << DSNAME
-	 << " HLT = " << fGoodHLT << ", JSON = " << fJSON
+	 << " HLT = " << fGoodHLT1 << ", JSON = " << fJSON
 	 << ", candidate " <<  pC->fType << " with tracks " << endl;
     for (unsigned int i = 0; i < sigIdx.size(); ++i) {
       cout << "muon = " << fpEvt->getSimpleTrack(sigIdx[i])->getMuonID()
@@ -4444,7 +4444,7 @@ void candAna::boostGames() {
 
   ((TH1D*)fHistDir->Get("rt1cms"))->Fill(rcosTheta);
   ((TH1D*)fHistDir->Get("rt2cms"))->Fill(rcosTheta2);
-  if (fGoodHLT) {
+  if (fGoodHLT1) {
     ((TH1D*)fHistDir->Get("rt3cms"))->Fill(rcosTheta2);
   }
   ((TH1D*)fHistDir->Get("gt1"))->Fill(rcosTheta-gcosTheta);
