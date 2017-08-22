@@ -50,7 +50,23 @@ public:
   bool        doTriggerMatchingForDs(double &dr1, double &dr2); // match hlt muons to offline 
   bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
 			    bool matchPt, bool anyModule, float drCut, int histoOffset=0); 
+  // match the 2 muons from the dimuon to HLT
+  //virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
+  // match a single track to HLT
+  //virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
+  //					bool muonsOnly=true, bool anyModule=false);
+  // To return the full deltaR not just a bool
+  virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
+					 bool muonsOnly=true, bool anyModule=false);
+  // Veto track too close to a trigger object
+  //virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
+  //				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
+
+
+
   bool        analyzeHltInfo(bool allTrigClean=false);
+  void        candEvaluation();
+  void        triggerHLT();
 
 private:
   TTree * tree;
@@ -76,10 +92,13 @@ private:
   bool ftmp1,ftmp2,ftmp3,ftmp4,ftmp5,ftmp6,ftmp7,ftmp8,ftmp9; 
   int fitmp1, fitmp2, fitmp3, fitmp4, fitmp5;
 
+  int     fhltType; // to hold the HLT information d.k
+  bool fGoodHLT;
   // mc
   float fmcmds, fmcmdz;
   float fmcpt,fmcptdz,fmcptpis,fmcptpi,fmcptk;
- 
+
+  map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
   vector<int> hltMatchedMuons;
   vector<int> hltInfo;
 
