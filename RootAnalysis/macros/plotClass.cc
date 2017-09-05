@@ -60,7 +60,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fAccEtaRec = 2.4;
 
   c0 = (TCanvas*)gROOT->FindObject("c0");
-  if (!c0) c0 = new TCanvas("c0","--c0--",0,0,656,700);
+  // if (!c0) c0 = new TCanvas("c0","--c0--",0,0,656,700);
+  if (!c0) c0 = new TCanvas("c0","--c0--",0,0,1200,700);
+
 
   fHistFile = 0; // this must be opened in a derived class!
 
@@ -287,7 +289,9 @@ string plotClass::era(int run) {
   if (280919 <= run && run <= 284044) return "H";
   // -- 2017
   if (294927 <= run && run <= 297019) return "A";
-  if (297046 <= run && run <= 299999) return "B";
+  if (297046 <= run && run <= 299329) return "B";
+  if (299368 <= run && run <= 302029) return "C";
+  if (302031 <= run && run <= 305000) return "D";
 
   return "X";
 
