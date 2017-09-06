@@ -31,9 +31,12 @@ public:
   void fill(double value, double m);
 
   double fitMass(TH1 *h, double &error, int mode = 0);
+  // -- return simple sideband distribution
+  TH1D* sbDistribution(const char *variable, const char *cut, int massbin = 1);
   // -- default version: pol1 + Gauss
   TH1D*  sbsDistribution(const char *variable, const char *cut);
   // -- expo + Gauss
+  TH1D* sbsDistributionExpoGaussOld(const char *variable, const char *cut);
   TH1D* sbsDistributionExpoGauss(const char *variable, const char *cut);
   // -- expo + error function + Gauss
   TH1D* sbsDistributionExpoErrGauss(const char *variable, const char *cut, double preco=5.1);
@@ -58,7 +61,7 @@ public:
 
   bool *fpPreselCutTrue;
 
-  TH1D *hSi[3], *hAo[3], *hCu[3], *hNm[3], *hHLT[3], *hPresel[3];
+  TH1D *hSi[5], *hAo[5], *hCu[5], *hNm[5], *hHLT[5], *hPresel[5];
 
   TH1D *hMassSi, *hMassAo, *hMassCu, *hMassNm, *hMassHLT, *hMassPresel;
 
@@ -69,6 +72,8 @@ public:
   std::string fControlPlotsFileName;
 
   initFunc *fpIF;
+
+  const int NREG = 5;
 
   ClassDef(AnalysisDistribution,1) //Testing AnalysisDistribution
 };
