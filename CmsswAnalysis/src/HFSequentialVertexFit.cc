@@ -232,7 +232,6 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
   tree->fTV.setChi2Dof(kinPart->chiSquared()/kinVertex->degreesOfFreedom());
 
   return true;
-
 }
 
 
