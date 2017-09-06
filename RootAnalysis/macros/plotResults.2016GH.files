@@ -1,4 +1,3 @@
-# -- 2016G-H only:
 type=bmm,data              lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
 type=bupsik,data           lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
 type=bspsiphi,data         lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
@@ -80,5 +79,5 @@ type=bcpsimunu,mcComb,bg     bf=(4.10,1.0)e-4   eff=(3.00,0.39)e-5 file=scratch/
 type=bupsipi,mc,Run1         bf=(1.00,0.0)e-9   eff=(4.26,0.15)e-4 file=/scratch/ursl/bmm3/v16-2012-cms-BuToJpsiPi.root
 # -- fake
 type=fake,data               lumi=36.7  file=scratch/dstar-data-dstarCharmonium2016-v06.root
-type=fake,mc                 lumi=36.7  file=scratch/fakeMC-v06.root
+type=fake,mc                 lumi=36.7  file=scratch/fakeMC2016-v06.root
 type=wrongreco,mc            lumi=1.0   file=scratch/bmm-mc-Summer16_private-wrongReco-v06.root
