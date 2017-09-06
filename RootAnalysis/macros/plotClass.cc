@@ -38,7 +38,6 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   fDirectory = dir;
   fSetup = setup;
-  fSuffix = setup;
   fMode = UNSET;
 
   delete gRandom;
@@ -105,13 +104,19 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
     fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
+    if (fSetup == "BF") {
+      fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 13 TeV)";
+    }
+    if (fSetup == "GH") {
+      fStampLumi = "L = 16 fb^{-1} (#sqrt{s} = 13 TeV)";
+    }
   }
   if (string::npos != sfiles.find("2017")) {
     fYear = 2017;
     fStampLumi = "L = XX.X fb^{-1} (#sqrt{s} = 13 TeV)";
   }
   //  if (setup == "") fSuffix = Form("%d", fYear);
-  fSuffix += Form("%d", fYear);
+  fSuffix = Form("%d%s", fYear, fSetup.c_str());
 
   fIF = new initFunc();
 
@@ -328,7 +333,9 @@ int plotClass::iera(int run) {
 
 // ----------------------------------------------------------------------
 void plotClass::setup(string ds) {
-  fSetup   = ds;
+  //NO!!! fSetup contains the possible argument to plotClass c'tor
+  //fSetup   = ds;
+  fSample = ds;
   string dir = "candAnaMuMu";
   fMode = BMM;
   if (string::npos != ds.find("bupsik")) {
@@ -441,7 +448,8 @@ void plotClass::normHist(TH1 *h, string ds, int method) {
 
 
 // ----------------------------------------------------------------------
-void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3, int method, bool loga, bool legend, double xleg, double yleg) {
+void plotClass::overlay(TH1* h1, string f1, TH1* h2, string f2, TH1* h3, string f3,
+ 			int method, bool loga, bool legend, double xleg, double yleg) {
   const bool verbose(true);
 
   showOverflow(h1);
@@ -571,7 +579,7 @@ void plotClass::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 // ----------------------------------------------------------------------
 void plotClass::setupTree(TTree *t, string mode) {
 
-  fCds = fDS[fSetup];
+  fCds = fDS[fSample];
 
   if (string::npos != mode.find("Mc")) {
     fIsMC = true;
@@ -626,13 +634,16 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("run",     &fb.run);
   t->SetBranchAddress("l1s",     &fb.l1s);
   t->SetBranchAddress("evt",     &fb.evt);
-  t->SetBranchAddress("hlt",     &fb.hlt);
   t->SetBranchAddress("hlt1",    &fb.hlt1);
   t->SetBranchAddress("tos",     &fb.tos);
   t->SetBranchAddress("l1t",     &fb.l1t);
-  t->SetBranchAddress("hltm",    &fb.hltm);
   t->SetBranchAddress("ls",      &fb.ls);
   t->SetBranchAddress("ps",      &fb.ps);
+  if (string::npos == mode.find("Mc")) {
+    t->SetBranchAddress("cw8",   &fb.corrW8);
+  } else {
+    fb.corrW8 = 1.;
+  }
   t->SetBranchAddress("chan",    &fb.chan);
   t->SetBranchAddress("cb",      &fb.cb);
   t->SetBranchAddress("json",    &fb.json);
