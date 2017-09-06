@@ -870,3 +870,14 @@ TLegend* newLegend(string title, double x1, double y1, double x2, double y2,
   }
   return legg;
 }
+
+// ----------------------------------------------------------------------
+TLegend* newLegend(double x1, double y1, double x2, double y2) {
+  TLegend *legg = new TLegend(x1, y1, x2, y2);
+  legg->SetFillStyle(0);
+  legg->SetBorderSize(0);
+  legg->SetTextSize(0.04);
+  legg->SetFillColor(0);
+  legg->SetTextFont(52);
+  return legg;
+}

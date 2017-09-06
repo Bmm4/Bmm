@@ -83,6 +83,7 @@
 #pragma link C++ function cleanupString(std::string &);
 #pragma link C++ function bothAreSpaces(char , char );
 #pragma link C++ function newLegend(std::string, double, double, double, double, std::vector<TH1*>, std::vector<std::string>, std::vector<std::string>);
+#pragma link C++ function newLegend(double, double, double, double);
 
 #pragma link C++ function quadraticSum(int, ...);
 
