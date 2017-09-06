@@ -293,6 +293,7 @@ public:
 
   string  fHLTPath;
   int     fL1Seeds, fHltPrescale;
+  double  fCorrW8;
   bool    fGoodCNC;
   bool    fGoodMuonsID, fGoodMuonsGmID, fGoodMuonsMvaID, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
   bool    fGoodPvAveW8, fGoodPvLip, fGoodPvLipS, fGoodPv2Lip, fGoodPv2LipS, fGoodMaxDoca, fGoodIp, fGoodIpS, fGoodLip, fGoodLipS;

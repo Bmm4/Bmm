@@ -354,7 +354,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 
 // ----------------------------------------------------------------------
 void candAna::candAnalysis() {
-  
+  fCorrW8 = 0.;
+
   if (0 == fpCand) return;
 
   fpMuon1 = fpMuon2 = 0;
@@ -796,6 +797,23 @@ void candAna::candAnalysis() {
 
   fCandTauxy   = fpCand->fTauxy;
   fCandTauxyE  = fpCand->fTauxyE;
+
+  // -- correction weight for 2016BF
+  double w = 1.;
+  int run_t = fRun;
+  int pvn_t = fPvN;
+  double flsxy_t = fCandFLxy;
+  if (run_t>=273150 && run_t<=275376) w *= (9.72033e-01) + (4.06719e-03)*pvn_t;
+  else if (run_t>=275657 && run_t<=276283) w *= (9.81857e-01) + (5.69256e-03)*pvn_t;
+  else if (run_t>=276315 && run_t<=276811) w *= (1.00790e+00) + (5.09418e-03)*pvn_t;
+  else if (run_t>=276831 && run_t<=277420) w *= (1.03973e+00) + (5.46439e-03)*pvn_t;
+  else if (run_t>=277981 && run_t<=278808) w *= (1.05553e+00) + (3.62883e-03)*pvn_t;
+  else if (run_t>=278820 && run_t<=280385) w *= (1.05042e+00) + (4.93754e-04)*pvn_t;
+  else if (run_t>=281613 && run_t<=284044) w *= 1.;
+  if (run_t>=273150 && run_t<=278808) w *= (1.08858e+00) + (-3.12161e-02)*log(flsxy_t);
+  else if (run_t>=278820 && run_t<=284044) w *= 1.;
+  fCorrW8 = w;
+
 
   // -- variables for production mechanism studies
   //  fpOsCand      = osCand(fpCand);
@@ -1322,7 +1340,7 @@ void candAna::triggerHLT() {
     fHltPrescale = ps;
     fHLT1Path    = sa;
     fGoodHLT1    = true;
- 
+
     // PDTRIGGER mode - accept all triggers which fire and are on the DS list
     if (0 && (HLTRANGE.begin()->first == "PDTRIGGER")) {
       bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
@@ -1696,6 +1714,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("hlt1",    &fGoodHLT1,          "hlt1/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
+  t->Branch("cw8",     &fCorrW8,            "cw8/D");
   t->Branch("tos",     &fTOS,               "tos/O");
   t->Branch("l1t",     &fL1T,               "l1t/O");
   t->Branch("hltd1",   &fHltD1,             "hltd1/D");
@@ -3860,7 +3879,7 @@ void candAna::replaceAll(std::string &s, std::string a, std::string b) {
 // ----------------------------------------------------------------------
 void candAna::fillRedTreeData() {
   // -- this only fills the variables that are needed for the preselection() function
-  fRTD.hlt       = fGoodHLT1;
+  fRTD.hlt1      = fGoodHLT1;
   fRTD.gmuid     = fGoodMuonsID;
 
   fRTD.pt        = fCandPt;
