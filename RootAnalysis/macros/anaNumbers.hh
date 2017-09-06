@@ -37,6 +37,7 @@ public:
   std::vector<number> fFrac;
   // -- overall results of fits and scaled yields
   number fSignalFit, fScaledYield;
+  number fW8SignalFit; // with (correction) weights applied
   double fScaleFactor;
   // -- yield numbers for dataset
   number fGenFileYield, // number of (B) events in file/dataset
