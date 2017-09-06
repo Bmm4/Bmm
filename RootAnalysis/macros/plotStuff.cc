@@ -1144,7 +1144,7 @@ void plotStuff::runStudy(string ds, string what) {
 
   setup(ds);
   fSample = ds;
-  fCds = fDS[fSetup];
+  fCds = fDS[fSample];
   if (what == "fill") {
     cout << "plotStuff::runStudy(" << ds << "), fSample = " << fSample << ", fTreeDir = " << fTreeDir << endl;
     fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
@@ -1415,7 +1415,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
   fMode = BMM;
   fSample = dsname;
   setup(dsname);
-  if (string::npos != fSetup.find("bspsiphi")) {
+  if (string::npos != fSample.find("bspsiphi")) {
     mBp    = 5.369;
     sBp    = 0.015;
     stepBp = 5.15;
@@ -1427,13 +1427,13 @@ void plotStuff::yieldStability(string dsname, string trg) {
     fHistFile->cd(fTreeDir.c_str());
     hDir = gDirectory;
 
-    TTree *t = getTree(fSetup, fTreeDir);
+    TTree *t = getTree(fSample, fTreeDir);
     if (0 == t) {
-      cout << "tree for sample = " << fSetup << " not found" << endl;
+      cout << "tree for sample = " << fSample << " not found" << endl;
       return;
     }
-    setupTree(t, fSetup);
-    fCds = fDS[fSetup];
+    setupTree(t, fSample);
+    fCds = fDS[fSample];
     loopOverTree(t, 1);
 
     cout << "writing output histograms: " << fYieldHists.size() << endl;

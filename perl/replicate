@@ -16,8 +16,8 @@
 # of the template file with the new runnumber for all lines containing a word of the
 # 'pattern' argument.
 #
-# History   09/010/27  Modified documentation for CMS
-# -------
+# History    2017/09/01  Add -z to suppress leading zeros
+# -------    2009/10/27  Modified documentation for CMS
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
@@ -26,7 +26,7 @@
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
-getopts('t:f:l:s:p:');
+getopts('t:f:l:s:p:z');
 
 
 if ($opt_t) {
@@ -68,7 +68,9 @@ foreach $patt (@replaces) {
 
 for ($i =  $firstNum+1; $i <= $lastNum; $i++) {
     $augm = $i;
-    while (length(opt_f) > length($augm)+1) {$augm = '0'.$augm;}
+    if (!$opt_z) {
+	while (length(opt_f) > length($augm)+1) {$augm = '0'.$augm;}
+    }
     ($filename = $template) =~ s/$firstNum/$augm/;
     open(OUT, ">$filename") || die "cannot open $filename\n";
     print "$filename\n";

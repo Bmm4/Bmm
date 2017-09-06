@@ -318,7 +318,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
     {
       t->GetEntry(i);
       //print out all the runs in the json file
-      if ( fb.json ) 
+      if ( fb.json )
 	{
 	  if ( json_tmp_run != fb.run )
 	    {
@@ -326,7 +326,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
 	      cout << "passed json: run: " << fb.run << endl;
 	    }
 	}
-      if ( fb.hlt1 && fb.tos && (fb.chan==0 || fb.chan==1) && fb.json && fb.pt>6 && fb.m1pt>4 && fb.m2pt>4 && fb.alpha < 0.05 && fb.fls3d>10 && fb.m1gmid && fb.m2gmid ) 
+      if ( fb.hlt1 && fb.tos && (fb.chan==0 || fb.chan==1) && fb.json && fb.pt>6 && fb.m1pt>4 && fb.m2pt>4 && fb.alpha < 0.05 && fb.fls3d>10 && fb.m1gmid && fb.m2gmid )
 	{
 	  // cout << "filled histo with: " << fb.run << "/" << fb.m << endl;
 	  h->Fill(fb.run,fb.m);
@@ -341,7 +341,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
 
   c0->cd();
   //used later for TGraph
-  std::vector<double> vruns; 
+  std::vector<double> vruns;
   std::vector<double> integrals;
 
   TAxis *x = h->GetXaxis();
@@ -373,7 +373,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
 	{
 	  double result = integral/lumi;
 	  //cout << "lumi: " << lumi << endl;
-	  cout << "run: integral/lumi:  " << currentRun << "/" << integral << "/" << lumi << " == " << result << endl; 
+	  cout << "run: integral/lumi:  " << currentRun << "/" << integral << "/" << lumi << " == " << result << endl;
 	  //Filled together. Must be of same size
 	  vruns.push_back(currentRun);
 	  integrals.push_back(result);
@@ -382,7 +382,7 @@ void plotTrigger::plotTOSHistory(std::string dsname,unsigned int runMin, unsigne
 	{cout << "Rejected run: " << currentRun << " with " << integral << " events because of 0 lumi." << endl;}
     }
 
-  if ( vruns.size() != integrals.size() ) 
+  if ( vruns.size() != integrals.size() )
     {cout << "ERROR: Mismatch of the result vector sizes." << endl;return;}
   double *xData = &vruns[0];
   double *yData = &integrals[0];
@@ -632,7 +632,7 @@ void plotTrigger::runStudy(string ds, string what) {
 
   setup(ds);
   fSample = ds;
-  fCds = fDS[fSetup];
+  fCds = fDS[fSample];
   if (what == "fill") {
     cout << "plotTrigger::runStudy(" << ds << "), fSample = " << fSample << ", fTreeDir = " << fTreeDir << endl;
     fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");

@@ -21,17 +21,32 @@ my $sel = 0;
 my $all = 0;
 my $tim = 0;
 my $siz = 0;
+my $isel = 0;
+my $iall = 0;
 my $line;
 foreach $dir (@ARGV) {
+    $isel = 0;
+    $iall = 0;
     $line = "";
+    $line = `/bin/grep 'run: This is the end, my friend' $dir/*$fileglob`;
+    chop($line);
+    if ($line eq "") {
+	print "job not finished: $dir\n";
+	next;
+    }
     if (!$opt_c) {
 	$line = `/bin/grep '$pattern' $dir/*$fileglob`;
 	chop($line);
 	if ($line eq "") {next;}
 	($rest, $numbers, $rest2) = split(/=/, $line, 3);
 	$numbers =~ /\(([0-9]*)\)\s*\/\s*\(([0-9,e,\.,\+]*)\)/;
-	$sel += $1;
-	$all += $2;
+	$isel = $1;
+	$iall = $2;
+	if ($1 > 0 && $2 > 0) {
+	} else {
+	    print "ignore $dir: sel = $1, all = $2\n";
+	    next;
+	}
     } else {
 	@lines = `/bin/grep 'Begin processing the' $dir/*$fileglob`;
 	$allLine = `/bin/grep 'All included subprocesses' $dir/*$fileglob`;
@@ -42,12 +57,20 @@ foreach $dir (@ARGV) {
 	$rel =~ s/nd//g;
 	$rel =~ s/rd//g;
 	$rel =~ s/th//g;
-	$sel += $rel;
 
 	chop($allLine);
 	$allLine =~ /I\s*0 All included subprocesses \s*I\s*([0-9]*)/;
-	$all += $1;
+	$isel = $rel;
+	$iall = $1;
+	if ($rel > 0 && $1 > 0)  {
+	} else {
+	    print "ignore $dir: sel = $rel, all = $1\n";
+	    next;
+	}
     }
+
+    $sel += $isel;
+    $all += $iall;
 
     @times = `/bin/grep 'Begin processing the' $dir/*$fileglob`;
     ($rest, $start) = split(/LumiSection 1 at/, $times[0], 2);
@@ -64,8 +87,9 @@ foreach $dir (@ARGV) {
     $fsize = $1;
     $siz += $fsize;
 
-    $err = sqrt((($sel+1)*($all-$sel+1))/(($all+3)*($all+2)*($all+2)));
-    printf("%s eff: %f +/- %f (%s) time=%d size=%d\n", $dir, $sel/$all, $err, $line, $runtime, $fsize);
+    $err  = sqrt((($sel+1)*($all-$sel+1))/(($all+3)*($all+2)*($all+2)));
+    $ierr = sqrt((($isel+1)*($iall-$isel+1))/(($iall+3)*($iall+2)*($iall+2)));
+    printf("%s eff: %f +/- %f (cumulative: %f +/- %f)\n", $dir, $isel/$iall, $ierr, $sel/$all, $err);
 
 
 

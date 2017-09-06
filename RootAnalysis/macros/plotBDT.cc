@@ -1183,14 +1183,14 @@ void plotBDT::apply(string what) {
 
     string pd = "bsmmMcOff";
     setup(pd);
-    TTree *t = getTree(fSetup, fTreeDir);
+    TTree *t = getTree(fSample, fTreeDir);
     if (0 == t) {
-      cout << "tree for sample = " << fSetup << " not found" << endl;
+      cout << "tree for sample = " << fSample << " not found" << endl;
       return;
     }
-    setupTree(t, fSetup);
-    fCds = fDS[fSetup];
-    cout << "fSetup = " << fSetup << " with fMode = " << fMode << endl;
+    setupTree(t, fSample);
+    fCds = fDS[fSample];
+    cout << "fSample = " << fSample << " with fMode = " << fMode << endl;
     int nchan(5);
     for (int ichan = 0; ichan < nchan; ++ichan) {
       for (int ibdt = 0; ibdt < 3; ++ibdt) {
@@ -1212,10 +1212,10 @@ void plotBDT::apply(string what) {
 
     pd = "bmmData";
     setup(pd);
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
-    fCds = fDS[fSetup];
-    cout << "fSetup = " << fSetup << " with fMode = " << fMode << endl;
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
+    fCds = fDS[fSample];
+    cout << "fSample = " << fSample << " with fMode = " << fMode << endl;
     for (int ichan = 0; ichan < nchan; ++ichan) {
       for (int ibdt = 0; ibdt < 3; ++ibdt) {
 	for (int jevt = 0; jevt < 3; ++jevt) {

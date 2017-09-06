@@ -156,6 +156,11 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
       fhNorm[mode].push_back(h2);
       h2 = new TH2D(Form("h%sNormC%d", mode.c_str(), i), Form("h%sNormC%d", mode.c_str(), i), 200, 4.9, 5.9, MAXPS+1, -1., MAXPS);
       fhNormC[mode].push_back(h2);
+
+      h2 = new TH2D(Form("h%sW8Norm%d", mode.c_str(), i), Form("h%sW8Norm%d", mode.c_str(), i), 100, 4.9, 5.9, MAXPS+1, -1., MAXPS);
+      fhW8Norm[mode].push_back(h2);
+      h2 = new TH2D(Form("h%sW8NormC%d", mode.c_str(), i), Form("h%sW8NormC%d", mode.c_str(), i), 200, 4.9, 5.9, MAXPS+1, -1., MAXPS);
+      fhW8NormC[mode].push_back(h2);
     }
   }
 
@@ -462,10 +467,6 @@ void plotResults::makeAll(string what) {
     fillAndSaveHistograms();
   }
 
-  if (what == "dbx") {
-    fillAndSaveHistograms(0, 1e5);
-  }
-
   if (what == "all" || string::npos != what.find("ana")) {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
@@ -742,15 +743,18 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   TTree *t(0);
 
   fSaveSmallTree = true;
+  string mode("");
 
   if (0) {
     // -- ONLY for debugging
     resetHistograms();
-    setup("bupsikMc");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    mode = "bupsikData";
+    setup(mode);
+    t = getTree(mode, fTreeDir);
+    setupTree(t, mode);
+    //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, -1, start);
-    saveHistograms(fSetup);
+    saveHistograms(mode);
     fHistFile->Close();
     return;
   }
@@ -764,62 +768,62 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   // -- normalization modes
   if (1) {
     resetHistograms();
-    setup("bupsikData");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    mode = "bupsikData";
+    setup(mode);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     loopOverTree(t, 1, nevents, start);
-    fSetup = "bupsikData";
-    saveHistograms(fSetup);
+    saveHistograms(fSample);
 
     resetHistograms();
     setup("bupsikMcComb");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     loopOverTree(t, 1, nevents, start);
     cout << "done with loopovertree" << endl;
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+    otherNumbers(fSample);
+    saveHistograms(fSample);
 
     resetHistograms();
     setup("bmmData");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     loopOverTree(t, 1, nevents, start);
-    fSetup = "bmmData";
-    saveHistograms(fSetup);
+    fSample = "bmmData";
+    saveHistograms(fSample);
 
     resetHistograms();
     setup("bdmmMcComb");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     loopOverTree(t, 1, nevents, start);
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+    otherNumbers(fSample);
+    saveHistograms(fSample);
 
     resetHistograms();
     setup("bsmmMcComb");
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     loopOverTree(t, 1, nevents, start);
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+    otherNumbers(fSample);
+    saveHistograms(fSample);
 
     if (1) {
       resetHistograms();
       setup("bspsiphiData");
-      t = getTree(fSetup, fTreeDir);
-      setupTree(t, fSetup);
+      t = getTree(fSample, fTreeDir);
+      setupTree(t, fSample);
       loopOverTree(t, 1, nevents, start);
-      fSetup = "bspsiphiData";
-      saveHistograms(fSetup);
+      fSample = "bspsiphiData";
+      saveHistograms(fSample);
 
       resetHistograms();
-      fSetup = "bspsiphiMcComb";
-      t = getTree(fSetup, fTreeDir);
-      setupTree(t, fSetup);
+      fSample = "bspsiphiMcComb";
+      t = getTree(fSample, fTreeDir);
+      setupTree(t, fSample);
       loopOverTree(t, 1, nevents, start);
-      otherNumbers(fSetup);
-      saveHistograms(fSetup);
+      otherNumbers(fSample);
+      saveHistograms(fSample);
     }
   }
 
@@ -846,15 +850,15 @@ void plotResults::rareBgHists(string smode, int nevents) {
 
     resetHistograms();
     setup(it->first);
-    t = getTree(fSetup, fTreeDir);
-    setupTree(t, fSetup);
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
     cout << "==============================================================" << endl;
-    cout << "==> rareBgHists for " << it->first << " and setup = " << fSetup << endl;
+    cout << "==> rareBgHists for " << it->first << " and fSample = " << fSample << endl;
     cout << "==============================================================" << endl;
     //    loopOverTree(t, 1, 100000, start);
     loopOverTree(t, 1, nevents, start);
-    otherNumbers(fSetup);
-    saveHistograms(fSetup);
+    otherNumbers(fSample);
+    saveHistograms(fSample);
     ++nloop;
     //    if (nloop > 3) break;
   }
@@ -874,34 +878,34 @@ void plotResults::otherNumbers(string smode) {
   }
 
   anaNumbers* aa[fNchan];
-  if (string::npos != fSetup.find("bupsik"))  {
+  if (string::npos != fSample.find("bupsik"))  {
     for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = &fNoNumbers[ichan];
   }
-  if (string::npos != fSetup.find("bspsiphi"))  {
+  if (string::npos != fSample.find("bspsiphi"))  {
     for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = &fCsNumbers[ichan];
   }
 
-  if (string::npos != fSetup.find("bdmm"))  {
+  if (string::npos != fSample.find("bdmm"))  {
     cout << "setting aa to fBdmmNumbers" << endl;
     for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = &fBdmmNumbers[ichan];
   }
 
-  if (string::npos != fSetup.find("bsmm"))  {
+  if (string::npos != fSample.find("bsmm"))  {
     for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = &fBsmmNumbers[ichan];
   }
 
-  if (string::npos != fSetup.find("Bg"))  {
-    for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = fRareNumbers[fSetup][ichan];
+  if (string::npos != fSample.find("Bg"))  {
+    for (int ichan = 0; ichan < fNchan; ++ichan) aa[ichan] = fRareNumbers[fSample][ichan];
   }
 
   double effGenSel(0.), effGenSelE(0.);
 
-  if (string::npos != fSetup.find("Mc"))  {
+  if (string::npos != fSample.find("Mc"))  {
     effGenSel = fDS[smode]->fFilterEff/fDS[accname]->fFilterEff;
     effGenSelE = dRatio(fDS[smode]->fFilterEff, fDS[smode]->fFilterEffE, fDS[accname]->fFilterEff, fDS[accname]->fFilterEffE);
   }
 
-  cout << "smode = " << smode << " fSetup = " << fSetup
+  cout << "smode = " << smode << " fSample = " << fSample
        << " accname: " << accname << " directory: " << fTreeDir
        << " numbers: " << aa[0]->fName << " chan = " << aa[0]->fChan
        << " effGenSel = " << effGenSel << " +/- " << effGenSelE
@@ -920,9 +924,9 @@ void plotResults::otherNumbers(string smode) {
       aa[i]->fEffGenSel.val = 1.;
       aa[i]->fEffGenSel.estat = 0.;
     }
-    fDS[fSetup]->cd(fTreeDir.c_str());
-    double effFilter  = fDS[fSetup]->fFilterEff;
-    double effFilterE = fDS[fSetup]->fFilterEffE;
+    fDS[fSample]->cd(fTreeDir.c_str());
+    double effFilter  = fDS[fSample]->fFilterEff;
+    double effFilterE = fDS[fSample]->fFilterEffE;
     if (effFilter < 1e-6) effFilter = 1.0;
     double genFileYield = ((TTree*)gDirectory->Get("effTree"))->GetEntries();
 
@@ -1165,7 +1169,7 @@ void plotResults::getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int
 //   n_s = ----------------- ----------  N(B+) pRatio(=--)
 //          BF(B+ -> mu muK) epstot(B+)		     ( fu)
 // ----------------------------------------------------------------------
-void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio) {
+void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio, bool useW8) {
   cout << "+++ scaleYield: " << aSig.fNameMc << " wrt " << aNorm.fNameMc << endl;
   double sgBf  = fDS[aSig.fNameMc]->fBf;
   double sgBfE = fDS[aSig.fNameMc]->fBfE;
@@ -1173,7 +1177,12 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio)
   double noBf  = fDS[aNorm.fNameMc]->fBf;
   double noBfE = fDS[aNorm.fNameMc]->fBfE;
 
-  double yield  = (sgBf/noBf) * pRatio * (aSig.fEffTot.val/aNorm.fEffTot.val) * aNorm.fSignalFit.val;
+  double yield(0.);
+  if (useW8) {
+    yield = (sgBf/noBf) * pRatio * (aSig.fEffTot.val/aNorm.fEffTot.val) * aNorm.fW8SignalFit.val;
+  } else {
+    yield = (sgBf/noBf) * pRatio * (aSig.fEffTot.val/aNorm.fEffTot.val) * aNorm.fSignalFit.val;
+  }
   //  -- FIXME: error propagation!
   aSig.fScaledYield.val = yield;
   aSig.fScaledYield.setErrors(0.05*yield, 0.05*yield);
@@ -1404,7 +1413,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   // -- MC: efficiency and acceptance
   char mode[200];
   sprintf(mode, "%s", a.fName.c_str());
-  fSetup = a.fNameMc;
+  fSample = a.fNameMc;
   int chan = a.fChan;
   if (string::npos != a.fName.find("bupsik")) {
     numbersFromHist(a, "bupsik");
@@ -1417,10 +1426,10 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
     scaleYield(a, fNoNumbers[chan], pRatio);
   }
   // -- data: fit yields
-  fSetup = a.fNameDa;
-  string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSetup.c_str(), chan);
-  bool ok = fHistFile->cd(fSetup.c_str());
-  cout << "cd to " << fSetup << ": " << ok << ", normalization fitting: " << name << endl;
+  fSample = a.fNameDa;
+  string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  bool ok = fHistFile->cd(fSample.c_str());
+  cout << "cd to " << fSample << ": " << ok << ", normalization fitting: " << name << endl;
   fitPsYield fpy(name, 0);
   if (string::npos != a.fName.find("bupsik")) {
     fpy.fitBu2JpsiKp(5, fDirectory + "/");
@@ -1431,6 +1440,21 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   a.fSignalFit.estat = fpy.getSignalError();
   a.fSignalFit.esyst = fSystematics["norm" + a.fName][chan] * fpy.getSignalYield();
   a.fSignalFit.etot  = TMath::Sqrt(a.fSignalFit.estat*a.fSignalFit.estat + a.fSignalFit.esyst*a.fSignalFit.esyst);
+
+  // -- fit also weighted yields (with correction weights)
+  string name2 = Form("hW8Norm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  ok = fHistFile->cd(fSample.c_str());
+  cout << "cd to " << fSample << ": " << ok << ", W8 normalization fitting: " << name << endl;
+  fitPsYield fpy2(name2, 0);
+  if (string::npos != a.fName.find("bupsik")) {
+    fpy2.fitBu2JpsiKp(5, fDirectory + "/");
+  } else if (string::npos != a.fName.find("bspsiphi")) {
+    fpy2.fitBs2JpsiPhi(5, fDirectory + "/");
+  }
+  a.fW8SignalFit.val   = fpy2.getSignalYield();
+  a.fW8SignalFit.estat = fpy2.getSignalError();
+  a.fW8SignalFit.esyst = fSystematics["norm" + a.fName][chan] * fpy2.getSignalYield();
+  a.fW8SignalFit.etot  = TMath::Sqrt(a.fW8SignalFit.estat*a.fW8SignalFit.estat + a.fW8SignalFit.esyst*a.fW8SignalFit.esyst);
 
   printNumbers(a, cout);
 
@@ -1456,7 +1480,8 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   if (string::npos != a.fName.find("bspsiphi")) {
     dumpTex(a.fScaledYield, Form("%s:N-SCALEDYIELD-%s-chan%d", fSuffixSel.c_str(), mode, chan), NDIG);
   }
-  dumpTex(a.fSignalFit, Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
+  dumpTex(a.fSignalFit,   Form("%s:N-OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
+  dumpTex(a.fW8SignalFit, Form("%s:N-W8OBS-%s-chan%d", fSuffixSel.c_str(), mode, chan), 1);
 
   c0->Modified();
   c0->Update();
@@ -1474,10 +1499,10 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   cout << "==> calculateCombBgNumbers for name: " << a.fName << ", chan: " << a.fChan << " fSuffixSel = " << fSuffixSel << endl;
 
   // -- get the histogram
-  fSetup = a.fNameDa;
-  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSetup.c_str(), a.fChan);
-  TH1D *h1 = (TH1D*)gDirectory->Get(Form("%s/%s", fSetup.c_str(), name.c_str()));
-  cout << "getting  histogram ->" << Form("%s/%s", fSetup.c_str(), name.c_str()) << "<-" << endl;
+  fSample = a.fNameDa;
+  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), a.fChan);
+  TH1D *h1 = (TH1D*)gDirectory->Get(Form("%s/%s", fSample.c_str(), name.c_str()));
+  cout << "getting  histogram ->" << Form("%s/%s", fSample.c_str(), name.c_str()) << "<-" << endl;
   TF1 *lF1(0), *lF2(0);
 
   if (0 == mode) {
@@ -1549,7 +1574,7 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   // -- MC: efficiency and acceptance
   char mode[200];
   sprintf(mode, "%s", a.fName.c_str());
-  fSetup = a.fNameMc;
+  fSample = a.fNameMc;
   int chan = a.fChan;
   numbersFromHist(a, "bsmm");
   double pRatio(fFsfu.val);
@@ -1557,7 +1582,7 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   scaleYield(a, fNoNumbers[chan], pRatio);
 
   // -- data: fitted/interpolated yields
-  fSetup = a.fNameDa;
+  fSample = a.fNameDa;
 
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- SIGNAL " << mode << " chan " << chan << endl;
@@ -1639,7 +1664,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     double eAccAna  = utot/genYield; // this does NOT yet include misid and trigger efficiency, will be applied later on
     double eTot     = eAccAna * (massIntegral(hw, ALL, chan) / utot) * fBsmmNumbers[chan].fEffTrigMC.val;
 
-    fSetup = a->fNameMc;
+    fSample = a->fNameMc;
     a->fEffAccAna.val = eAccAna;
     a->fEffTot.val = eTot;
 
@@ -1839,12 +1864,12 @@ void plotResults::calculateRareBgNumbers(int chan) {
   }
 
   // -- create overlay of data and the stacked (and scaled) backgrounds
-  fSetup = fCombNumbers[chan].fNameDa;
-  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSetup.c_str(), chan);
-  cout << "getting  histogram ->" << Form("%s/%s", fSetup.c_str(), name.c_str()) << "<-" << endl;
-  TH1D *h1e = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSetup.c_str(), name.c_str())))->Clone("h1erebin");
+  fSample = fCombNumbers[chan].fNameDa;
+  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), chan);
+  cout << "getting  histogram ->" << Form("%s/%s", fSample.c_str(), name.c_str()) << "<-" << endl;
+  TH1D *h1e = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSample.c_str(), name.c_str())))->Clone("h1erebin");
   h1e->Rebin(5);
-  TH1D *h1c = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSetup.c_str(), name.c_str())))->Clone("h1crebin");
+  TH1D *h1c = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSample.c_str(), name.c_str())))->Clone("h1crebin");
   h1c->Clear();
   h1c->Rebin(5);
   double bgtot(0.);
@@ -2072,6 +2097,14 @@ void plotResults::loopFunction1() {
 	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, 0.1);
 	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1);
+
+	  fhW8Norm[modifier[0]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
+	  fhW8Norm[modifier[0]][fChan]->Fill(mass, 0.1, fb.corrW8);
+	  fhW8Norm[modifier[0]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
+	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
+	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
+	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
+
 	}
 
 
@@ -2159,6 +2192,13 @@ void plotResults::loopFunction1() {
 	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, ps);
 	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, 0.1);
 	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1);
+
+	  fhW8Norm[modifier[1]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
+	  fhW8Norm[modifier[1]][fChan]->Fill(mass, 0.1, fb.corrW8);
+	  fhW8Norm[modifier[1]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
+	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
+	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
+	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
 	}
 
 	if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
@@ -2245,18 +2285,19 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   TTree *small(0);
   TFile *fLocal(0);
   if (fSaveSmallTree) {
-    string tname(fSetup);
+    string tname(fSample);
     replaceAll(tname, "Off", "");
     replaceAll(tname, "Comb", "");
 
     dir = gDirectory;
-    fLocal = TFile::Open(Form("%s/small%d-%s.root", fDirectory.c_str(), fYear, tname.c_str()), "RECREATE");
+    fLocal = TFile::Open(Form("%s/small%d%s-%s.root", fDirectory.c_str(), fYear, fSetup.c_str(), tname.c_str()), "RECREATE");
     small = new TTree(Form("%s", tname.c_str()), Form("%s", tname.c_str()));
     small->SetDirectory(fLocal);
     small->Branch("run",    &fb.run,       "run/I");
     small->Branch("evt",    &fb.evt,       "evt/I");
     small->Branch("ls",     &fb.ls,        "ls/I");
     small->Branch("ps",     &fb.ps,        "ps/I");
+    small->Branch("cw8",    &fb.corrW8,    "cw8/D");
 
     small->Branch("chan",   &fb.chan,      "chan/I");
     small->Branch("muid",   &fb.gmuid,     "muid/O");
@@ -2437,8 +2478,8 @@ void plotResults::loadFiles(string afiles) {
 void plotResults::saveHistograms(string smode) {
 
   fHistFile->cd();
-  fHistFile->mkdir(fSetup.c_str());
-  fHistFile->cd(fSetup.c_str());
+  fHistFile->mkdir(fSample.c_str());
+  fHistFile->cd(fSample.c_str());
   TDirectory *dir = gDirectory;
 
   TH1D *h1(0);
@@ -2554,9 +2595,9 @@ void plotResults::saveHistograms(string smode) {
 
 
 
-      if ((string::npos != fSetup.find("bupsik"))
-	  || (string::npos != fSetup.find("bspsiphi"))
-	  || (string::npos != fSetup.find("bdpsikstar"))
+      if ((string::npos != fSample.find("bupsik"))
+	  || (string::npos != fSample.find("bspsiphi"))
+	  || (string::npos != fSample.find("bdpsikstar"))
 	  ) {
 	h2 = (TH2D*)(fhNorm[modifier[im]][i]->Clone(Form("hNorm_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
 	h2->SetTitle(Form("hNorm_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
@@ -2565,6 +2606,16 @@ void plotResults::saveHistograms(string smode) {
 
 	h2 = (TH2D*)(fhNormC[modifier[im]][i]->Clone(Form("hNormC_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
 	h2->SetTitle(Form("hNormC_%s_%s_%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2->SetDirectory(dir);
+	h2->Write();
+
+	h2 = (TH2D*)(fhW8Norm[modifier[im]][i]->Clone(Form("hW8Norm_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hW8Norm_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2->SetDirectory(dir);
+	h2->Write();
+
+	h2 = (TH2D*)(fhW8NormC[modifier[im]][i]->Clone(Form("hW8NormC_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hW8NormC_%s_%s_%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
       }
@@ -2651,6 +2702,10 @@ void plotResults::resetHistograms(bool deleteThem) {
       if (deleteThem) delete fhNorm[modifier[im]][i];
       fhNormC[modifier[im]][i] ->Reset();
       if (deleteThem) delete fhNormC[modifier[im]][i];
+      fhW8Norm[modifier[im]][i]->Reset();
+      if (deleteThem) delete fhW8Norm[modifier[im]][i];
+      fhW8NormC[modifier[im]][i] ->Reset();
+      if (deleteThem) delete fhW8NormC[modifier[im]][i];
     }
   }
 }
@@ -2690,6 +2745,7 @@ void plotResults::printNumbers(anaNumbers &a, ostream &OUT) {
   n = a.fEffTot;          OUT << "    fEffTot =          " << Form("%8.6f +/- %8.6f +/- %8.6f", n.val,  n.estat, n.esyst) << endl;
   n = a.fEffProdMC;       OUT << "    fEffProdMC =       " << Form("%8.6f +/- %8.6f +/- %8.6f", n.val,  n.estat, n.esyst) << endl;
   n = a.fSignalFit;       OUT << "    fSignalFit =       " << Form("%7.0f +/- %7.0f +/- %7.0f", n.val,  n.estat, n.esyst) << endl;
+  n = a.fW8SignalFit;     OUT << "    fW8SignalFit =     " << Form("%7.0f +/- %7.0f +/- %7.0f", n.val,  n.estat, n.esyst) << endl;
 }
 
 // ----------------------------------------------------------------------

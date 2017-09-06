@@ -1240,7 +1240,7 @@ void plotWork::loopFunction1() {
 
   fpHnorm->Fill(fb.m);
 
-  if (!fb.hlt) return;
+  if (!fb.hlt1) return;
   fpHpass->Fill(fb.m);
 
 }
@@ -1834,7 +1834,7 @@ void plotWork::loopFunction3() {
 // ----------------------------------------------------------------------
 void plotWork::loopFunction4() {
 
-  if (!fb.hlt) return;
+  if (!fb.hlt1) return;
   static int runPrinted(-1);
   if (fb.run != runPrinted) {
     cout << "fb.run = " << fb.run << endl;

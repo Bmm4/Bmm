@@ -79,6 +79,7 @@ TH1D* unmix(TH1D *rightSign, TH1D *wrongSign, double chid = 0.181);
 
 TLegend* newLegend(std::string title, double x1, double y1, double x2, double y2,
 		   std::vector<TH1*> hists, std::vector<std::string> names, std::vector<std::string> options);
+TLegend* newLegend(double x1, double y1, double x2, double y2);
 
 // ======================================================================
 // Utitilities for calculations

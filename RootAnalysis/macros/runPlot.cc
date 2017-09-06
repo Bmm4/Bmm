@@ -38,7 +38,7 @@ int main(int argc, char *argv[]) {
 
   string progName  = argv[0];
 
-  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada");
+  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("2016");
   int year(2016);
   bool remove(false);
 
@@ -52,37 +52,58 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];} // for tmva1: vars
     if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
     if (!strcmp(argv[i], "-x"))  {remove= true;}
-    if (!strcmp(argv[i], "-y"))  {year  = atoi(argv[++i]);}
+    if (!strcmp(argv[i], "-y"))  {syear = argv[++i];}
   }
 
-  if (2017 == year) {
+  if ("2017" == syear) {
+    year = 2017;
     if ("nada" == files) files = "plotResults.2017.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2017.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
-  if (2016 == year) {
+  if ("2016" == syear) {
+    year = 2016;
     if ("nada" == files) files = "plotResults.2016.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
-  if (2012 == year) {
+  if ("2016BF" == syear) {
+    year = 2016;
+    if ("nada" == files) files = "plotResults.2016BF.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "BF";
+  }
+
+  if ("2016GH" == syear) {
+    year = 2016;
+    if ("nada" == files) files = "plotResults.2016GH.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "GH";
+  }
+
+  if ("2012" == syear) {
+    year = 2012;
     if ("nada" == files) files = "plotResults.2012.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2012.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
-  if (2011 == year) {
+  if ("2011" == syear) {
+    year = 2011;
     if ("nada" == files) files = "plotResults.2011.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2011.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
   }
 
+  cout << "syear: " << syear << " year: " << year << endl;
 
   // -- run everything
   if ("nada" == plot) {

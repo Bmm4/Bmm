@@ -37,7 +37,7 @@ public :
   void initNumbers(anaNumbers &a);
   void otherNumbers(string ds);
   void rareBgHists(string ds, int nevents = -1);
-  void scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio = 1.0);
+  void scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio = 1.0, bool useW8 = true);
   void getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int proc);
   void numbersFromHist(anaNumbers &a, std::string syst);
   std::string rareAccName(std::string sname);
@@ -95,6 +95,7 @@ private:
 
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
+  std::map<std::string, std::vector<TH2D*> > fhW8Norm, fhW8NormC;
 
   bool fSaveSmallTree;
 
