@@ -152,7 +152,7 @@ TH1D* getPreselectionNumbers() {
 
 // ----------------------------------------------------------------------
 void printRedTreeEvt(redTreeData &b) {
-  std::cout << b.run << "/" << b.evt << " mu&hlt: " << b.gmuid << "/" << b.hlt << "/" << b.hltm2
+  std::cout << b.run << "/" << b.evt << " mu&hlt: " << b.gmuid << "/" << b.hlt1
 	    << std::endl << "  "
 	    << " B: " << " " << b.pt << "/" << b.eta << " "
 	    << " mu: " << " " << b.m1q << "/" << b.m2q << " "
