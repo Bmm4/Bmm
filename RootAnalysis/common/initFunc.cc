@@ -1955,7 +1955,7 @@ TF1* initFunc::expoErrGaussLandau(TH1 *h, double peak, double sigma, double prec
 
   // -- FIXME: remove hard-coded limits!
   // for the landau
-  // Fix the mpv and sigma to the fit values from the Bu2JpisPi for the ENDCAP channel
+  // Fix the mpv and sigma to the fit values from the Bu2JpsiPi for the ENDCAP channel
   f->FixParameter(9, 5.349);   // landau mpv
   f->FixParameter(10, 0.06454);  // landau sigma
   //f->SetParameter(11, 1.);    // landau const (NOT A PARAMETER, FIXED BY THE BRANCHING RATIO)
