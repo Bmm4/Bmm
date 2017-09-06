@@ -1,0 +1,7 @@
+candAnaFake310       cuts/candAnaFake.310.cuts
+candAnaFake333       cuts/candAnaFake.333.cuts
+candAnaFake3122      cuts/candAnaFake.3122.cuts
+candAnaFake443       cuts/candAnaFake.443.cuts
+#
+JSON             ../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+DSNAME       Charmonium

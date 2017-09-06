@@ -1,0 +1,7 @@
+candAnaFake310       cuts/candAnaFake.310.cuts
+candAnaFake333       cuts/candAnaFake.333.cuts
+candAnaFake3122      cuts/candAnaFake.3122.cuts
+candAnaFake443       cuts/candAnaFake.443.cuts
+#
+JSON              ../common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt
+DSNAME            MuOnia
