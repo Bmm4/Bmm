@@ -101,6 +101,17 @@ foreach $let (@list2016) {
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 }
 
+foreach $let (@list2016) {
+    $dataset  = "bmmNopreselectionCharmonium2016$let";
+    $odataset = "bmmCharmonium2016$let";
+    $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium__Run2016$let";
+    if ($let eq  "H") {$pattern = "bmm-prompt-Run2016$let-Charmonium";}
+    $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016.nopreselection' c$mode-*  && cd - ";
+    $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$odataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
+
 # -- J/psi
 foreach $let (@list2016) {
     $dataset = "jpsiCharmonium2016$let";
