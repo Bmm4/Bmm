@@ -67,16 +67,20 @@ public:
   TH1D* getUnweightedCombination() {return fCombined;}
   TH1D* getWeightedCombination()   {return fCombinedW8;}
 
+
   void fitBu2JpsiKp(int limitpars, std::string pdfprefix, int whichfit = 0);
+  void fit0_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
+  void fit0_Bu2JpsiKp(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
+  void fit1_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
+
   void fitBs2JpsiPhi(int limitpars, std::string pdfprefix, int whichfit = 0);
+  void fit0_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
+  void fit0_Bs2JpsiPhi(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
 
-  void  fit0_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
-  void  fit0_Bu2JpsiKp(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
+  void fitBd2JpsiKstar(int limitpars, std::string pdfprefix, int whichfit = 0);
+  void fit0_Bd2JpsiKstar(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
+  void fit0_Bd2JpsiKstar(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
 
-  void  fit1_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
-
-  void  fit0_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
-  void  fit0_Bs2JpsiPhi(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
 
   TF1* getFunction(std::string name);
   TF1* listFunctions();
