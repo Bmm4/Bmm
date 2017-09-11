@@ -132,8 +132,8 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
     const std::vector<std::pair<std::string, bool> > intermDecisions = fGtUtil->decisionsInterm();
     const std::vector<std::pair<std::string, bool> > finalDecisions = fGtUtil->decisionsFinal();
     const std::vector<std::pair<std::string, int> >  prescales = fGtUtil->prescales();
-    const std::vector<std::pair<std::string, bool> > masks; // = fGtUtil->masks();
-    const std::vector<std::pair<std::string, bool> > vetoMasks; // = fGtUtil->vetoMasks();
+    // const std::vector<std::pair<std::string, bool> > masks; // = fGtUtil->masks();
+    // const std::vector<std::pair<std::string, bool> > vetoMasks; // = fGtUtil->vetoMasks();
 
     if (0) {
       cout << "    Bit                  Algorithm Name                  Init    aBXM  Final   PS Factor     Masked    Veto " << endl;
@@ -153,20 +153,20 @@ void HFDumpTrigger::analyze(const edm::Event& iEvent, const edm::EventSetup& iSe
 
       // get the prescale and mask (needs some error checking here)
       int prescale = (prescales.at(i)).second;
-      bool mask    = (masks.at(i)).second;
-      bool veto    = (vetoMasks.at(i)).second;
+      // bool mask    = (masks.at(i)).second;
+      // bool veto    = (vetoMasks.at(i)).second;
 
       if (0) cout << std::dec << setfill(' ') << "   " << setw(5) << i << "   "
 		  << setw(40) << name.c_str() << "   " << setw(7) << resultInit
 		  << setw(7) << resultInterm << setw(7) << resultFin << setw(10) << prescale
-		  << setw(11) << mask << setw(9) << veto
+		  // << setw(11) << mask << setw(9) << veto
 		  << endl;
 
       gHFEvent->fL1TNames[i]    = name.c_str();
       gHFEvent->fL1TPrescale[i] = prescale;
       gHFEvent->fL1TResult[i]   = resultFin;
-      gHFEvent->fL1TMask[i]     = mask;
-      gHFEvent->fL1TError[i]    = veto;
+      // gHFEvent->fL1TMask[i]     = mask;
+      // gHFEvent->fL1TError[i]    = veto;
 
     }
     bool finOR = fGtUtil->getFinalOR();
