@@ -733,8 +733,6 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g3pt", &fb.g3pt);
       t->SetBranchAddress("g3eta",&fb.g3eta);
     }
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("kpt",  &fb.kpt);
     t->SetBranchAddress("kgt",  &fb.kgt);
     t->SetBranchAddress("keta", &fb.keta);
@@ -747,8 +745,6 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g4pt", &fb.g4pt);
       t->SetBranchAddress("g4eta",&fb.g4eta);
     }
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt",&fb.psipt);
     t->SetBranchAddress("mkk",  &fb.mkk);
     t->SetBranchAddress("mkpi1",  &fb.mkpi1);
     t->SetBranchAddress("mkpi2",  &fb.mkpi2);
@@ -769,8 +765,6 @@ void plotClass::setupTree(TTree *t, string mode) {
       t->SetBranchAddress("g4pt", &fb.g4pt);
       t->SetBranchAddress("g4eta",&fb.g4eta);
     }
-    t->SetBranchAddress("mpsi", &fb.mpsi);
-    t->SetBranchAddress("psipt", &fb.psipt);
     t->SetBranchAddress("mkpi",  &fb.mkpi);
     t->SetBranchAddress("kstardr",   &fb.kstardr);
     t->SetBranchAddress("kstarfail", &fb.kstarfail);
@@ -942,7 +936,42 @@ void plotClass::candAnalysis() {
     if (fb.mkk   > 1.03) fGoodJpsiCuts = false;
   }
 
-  if (bs2jpsiphi || bp2jpsikp) {
+  if (bd2jpsikstar) {
+    if (fIsMC) {
+      cout << fb.g3eta << " " << fb.g4eta << " " << fb.g1pt << " " << fb.g2pt << " " << fb.g3pt << " " << fb.g4pt << endl;
+      if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
+      if (TMath::Abs(fb.g4eta) > fAccEtaGen) fGoodAcceptance = false;
+      // gen-level cuts for Bd2JpsiKstar
+      if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
+      if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
+      if (fb.g3pt < 0.6) fGoodAcceptance = false;
+      if (fb.g4pt < 0.6) fGoodAcceptance = false;
+    }
+    if (TMath::Abs(fb.keta) > fAccEtaRec) {
+      fGoodAcceptance = false;
+      fGoodTracksEta = false;
+    }
+    if (TMath::Abs(fb.pieta) > fAccEtaRec) {
+      fGoodAcceptance = false;
+      fGoodTracksEta = false;
+    }
+    if (fb.kpt < 0.6) {
+      fGoodAcceptance = false;
+      fGoodTracksPt = false;
+    }
+    if (fb.pipt < 0.6) {
+      fGoodAcceptance = false;
+      fGoodTracksPt = false;
+    }
+    if (0 == fb.kgt)  fGoodAcceptance = false;
+    if (0 == fb.pigt)  fGoodAcceptance = false;
+
+    if (fb.mkpi < 0.795) fGoodJpsiCuts = false;
+    if (fb.mkpi > 0.995) fGoodJpsiCuts = false;
+  }
+
+
+  if (bs2jpsiphi || bp2jpsikp || bd2jpsikstar) {
     if (fb.mpsi > 3.15) fGoodJpsiCuts = false;
     if (fb.mpsi < 3.04) fGoodJpsiCuts = false;
     if (fb.psipt < 7.0) fGoodJpsiCuts = false;
@@ -1232,7 +1261,7 @@ void plotClass::calcBDT() {
 	 << " from reduced tree: fb.bdt = " << fb.bdt
 	 << " mode = " << fMode << " fChan = " << fChan
 	 << endl;
-    if (fMode == BU2JPSIKP || fMode == BS2JPSIPHI) {
+    if (fMode == BU2JPSIKP || fMode == BS2JPSIPHI || fMode == BD2JPSIKSTAR) {
 
       cout << "jpsi: pt = " << fb.psipt << " prob = " << fb.psiprob << endl;
 
@@ -1242,6 +1271,9 @@ void plotClass::calcBDT() {
       }
       if (fMode == BS2JPSIPHI) {
 	cout << fb.k1pt << "/" << fb.k2pt << " " << fb.k1eta << "/" << fb.k2eta << " " << fb.k1gt << "/" << fb.k2gt;
+      }
+      if (fMode == BD2JPSIKSTAR) {
+	cout << fb.kpt << "/" << fb.pipt << " " << fb.keta << "/" << fb.pieta << " " << fb.kgt << "/" << fb.pigt;
       }
     }
     cout << endl;
