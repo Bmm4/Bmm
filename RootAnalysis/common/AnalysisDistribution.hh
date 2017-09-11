@@ -38,6 +38,8 @@ public:
   // -- expo + Gauss
   TH1D* sbsDistributionExpoGaussOld(const char *variable, const char *cut);
   TH1D* sbsDistributionExpoGauss(const char *variable, const char *cut);
+  TH1D* sbsDistributionBs2JpsiPhi(const char *variable, const char *cut);
+  TH1D* sbsDistributionBd2JpsiKstar(const char *variable, const char *cut);
   // -- expo + error function + Gauss
   TH1D* sbsDistributionExpoErrGauss(const char *variable, const char *cut, double preco=5.1);
   // -- pol1 + error function + Gauss
