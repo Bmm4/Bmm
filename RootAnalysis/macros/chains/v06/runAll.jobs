@@ -64,6 +64,7 @@ $combine{"bmmMuOnia2011"} = "cd $SCRATCH; hadd -f bmm-data-bmmMuOnia2011-$versio
 $combine{"bmmMuOnia2012"} = "cd $SCRATCH; hadd -f bmm-data-bmmMuOnia2012-$version.root bmm-data-bmmMuOnia2012?-*.root; cd - ";
 $combine{"bmmCharmonium2015"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2015-$version.root bmm-data-bmmCharmonium2015?-*.root; cd - ";
 $combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
+$combine{"bmmNopreselectionCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmNopreselectionCharmonium2016-$version.root bmm-data-bmmNopreselectionCharmonium2016?-*.root; cd -  ";
 $combine{"bmmCharmonium2016BF"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016BF-$version.root bmm-data-bmmCharmonium2016B-$version.root bmm-data-bmmCharmonium2016C-$version.root bmm-data-bmmCharmonium2016D-$version.root bmm-data-bmmCharmonium2016E-$version.root bmm-data-bmmCharmonium2016F-$version.root; cd -  ";
 $combine{"bmmCharmonium2016GH"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016GH-$version.root bmm-data-bmmCharmonium2016G-$version.root bmm-data-bmmCharmonium2016H-$version.root; cd -  ";
 $combine{"jpsiCharmonium2016"} = "cd $SCRATCH; hadd -f jpsi-data-jpsiCharmonium2016-$version.root jpsi-data-jpsiCharmonium2016?-*.root; cd -  ";
@@ -97,6 +98,17 @@ foreach $let (@list2016) {
     if ($let eq  "H") {$pattern = "bmm-prompt-Run2016$let-Charmonium";}
     $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016' c$mode-*  && cd - ";
     $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
+
+foreach $let (@list2016) {
+    $dataset  = "bmmNopreselectionCharmonium2016$let";
+    $odataset = "bmmCharmonium2016$let";
+    $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2016-Charmonium__Run2016$let";
+    if ($let eq  "H") {$pattern = "bmm-prompt-Run2016$let-Charmonium";}
+    $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.2016.nopreselection' c$mode-*  && cd - ";
+    $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$odataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 }

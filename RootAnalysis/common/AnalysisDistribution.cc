@@ -308,7 +308,9 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
     }
     c0 = new TCanvas("c1");
     c0->Clear();
-    c0->Divide(2,2);
+    c0->SetCanvasSize(2000, 500);
+    c0->Divide(4, 1);
+    c0->cd(1);
   }
 
   // -- this is not really necessary, could use the class members instead
@@ -493,9 +495,13 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
 
   TH1D *hm  = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
   TH1D *hSi = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
+  TH1D *hsi = (TH1D*)hSi->Clone("hsi");
   TH1D *hBg = (TH1D*)gDirectory->Get(Form("%s%s1", variable, cut));
+  TH1D *hbg = (TH1D*)hBg->Clone("hbg");
   TH1D *hLo = (TH1D*)gDirectory->Get(Form("%s%s3", variable, cut));
+  TH1D *hlo = (TH1D*)hLo->Clone("hlo");
   TH1D *hHi = (TH1D*)gDirectory->Get(Form("%s%s4", variable, cut));
+  TH1D *hhi = (TH1D*)hHi->Clone("hhi");
   TH1D *hAl = (TH1D*)gDirectory->Get(Form("%s%s2", variable, cut));
 
   TCanvas *c0(0);
@@ -546,22 +552,22 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
     aa.DrawArrow(x5, y5, x5, 0., asize-0.005);
 
     c0->cd(2);
-    hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
-    hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
-    hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
-    double ymax(hLo->GetMaximum());
-    if (hHi->GetMaximum() > ymax) ymax = hHi->GetMaximum();
-    if (hSi->GetMaximum() > ymax) ymax = hSi->GetMaximum();
-    hLo->SetMaximum(1.2*ymax);
-    hLo->Draw("hist");
-    hHi->Draw("histsame");
-    hSi->Draw("histsame");
+    hlo->SetLineColor(kRed);   hlo->Scale(1./hLo->GetSumOfWeights());
+    hhi->SetLineColor(kBlue);  hhi->Scale(1./hHi->GetSumOfWeights());
+    hsi->SetLineColor(kBlack); hsi->Scale(1./hSi->GetSumOfWeights());
+    double ymax(hlo->GetMaximum());
+    if (hhi->GetMaximum() > ymax) ymax = hhi->GetMaximum();
+    if (hsi->GetMaximum() > ymax) ymax = hsi->GetMaximum();
+    hlo->SetMaximum(1.2*ymax);
+    hlo->Draw("hist");
+    hhi->Draw("histsame");
+    hsi->Draw("histsame");
 
-    TLegend *l = newLegend(0.6, 0.75, 0.88, 0.88);
+    TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->SetHeader("normalized to unity");
-    l->AddEntry(hHi, "bg box (high)", "l");
-    l->AddEntry(hLo, "bg box (low)", "l");
-    l->AddEntry(hSi, "sig box (!muon ID)", "l");
+    l->AddEntry(hhi, "bg box (high)", "l");
+    l->AddEntry(hlo, "bg box (low)", "l");
+    l->AddEntry(hsi, "sig box (!muon ID)", "l");
     l->Draw();
 
     TString fname = fControlPlotsFileName;
@@ -571,6 +577,11 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
     c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
 
   }
+  delete hlo;
+  delete hhi;
+  delete hsi;
+  delete hbg;
+
 
   if (0 == massbin) {
     return hSi;
@@ -624,8 +635,12 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  fMassPeak = 0.5*(s0+s1);
-  fMassSigma= 0.2*(s1-s0);
+  if (fMassPeak < 0.) {
+    fMassPeak = 0.5*(s0+s1);
+  }
+  if (fMassSigma < 0.) {
+    fMassSigma= 0.2*(s1-s0);
+  }
   fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
   fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
   fpIF->fLo = fMassLo;
@@ -718,8 +733,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 
     TString fname = fControlPlotsFileName;
     c0->Clear();
-    c0->Divide(2,2);
-    c0->cd(1);
+    c0->SetCanvasSize(1500, 500);
+    c0->Divide(3, 1);
+    c0->cd(1); shrinkPad(0.12, 0.18);
 
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
@@ -758,13 +774,13 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     aa.DrawArrow(x4, y4, x4, 0., asize);
     aa.DrawArrow(x5, y5, x5, 0., asize);
 
-    c0->cd(2);
-    hMassAll->Draw();
-    hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
-    hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
-    hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
+    // c0->cd(2);
+    // hMassAll->Draw();
+    // hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
+    // hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
+    // hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
 
-    c0->cd(4);
+    c0->cd(3);  shrinkPad(0.12, 0.12);
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
@@ -772,14 +788,14 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     Color_t cerr2 = a.getFunction(string("err2_") + string(hm->GetName()))->GetLineColor();
     hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
     h1->Scale(err2Sg/err2Bgl);  h1->SetLineColor(kRed);  h1->DrawCopy("samehist");
-    TLegend *l = newLegend(0.6, 0.75, 0.88, 0.88);
+    TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->AddEntry(h2, "Signal", "p");
     l->AddEntry(hSi, "signal box", "l");
     l->AddEntry(hHi, "combinat. shape", "l");
     l->AddEntry(h1, "part. reco shape", "l");
     l->Draw();
 
-    c0->cd(3);
+    c0->cd(2);  shrinkPad(0.12, 0.12);
     hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
     hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
     hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
@@ -791,7 +807,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     hHi->Draw("histsame");
     hSi->Draw("histsame");
 
-    l = newLegend(0.6, 0.75, 0.88, 0.88);
+    l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->SetHeader("normalized to unity");
     l->AddEntry(hSi, "signal box", "l");
     l->AddEntry(hHi, "bg box (high)", "l");
@@ -823,7 +839,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     if (c0) {
       delete c0;
     }
-    c0 = new TCanvas("ad_c1", "ad_c1", 600, 600);
+    c0 = new TCanvas("ad_c1", "ad_c1", 700, 700);
     c0->Clear();
   }
 
@@ -844,8 +860,12 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  fMassPeak = 0.5*(s0+s1);
-  fMassSigma= 0.2*(s1-s0);
+  if (fMassPeak  < 0.) {
+    fMassPeak = 0.5*(s0+s1);
+  }
+  if (fMassSigma < 0.) {
+    fMassSigma= 0.2*(s1-s0);
+  }
   fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
   fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
   fpIF->fLo = fMassLo;
@@ -876,7 +896,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     {
       TString fname = fControlPlotsFileName;
       c0->Clear();
-      c0->cd(1);
+      c0->cd(1);  shrinkPad(0.12, 0.18);
 
       gStyle->SetOptStat(0);
       gStyle->SetOptFit(0);
@@ -921,8 +941,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
 
     TString fname = fControlPlotsFileName;
     c0->Clear();
-    c0->Divide(2,2);
-    c0->cd(1);
+    c0->SetCanvasSize(1500, 500);
+    c0->Divide(3, 1);
+    c0->cd(1);  shrinkPad(0.12, 0.18);
 
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
@@ -959,25 +980,25 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     aa.DrawArrow(x4, y4, x4, 0., asize);
     aa.DrawArrow(x5, y5, x5, 0., asize);
 
-    c0->cd(2);
-    hMassAll->Draw();
-    hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
-    hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
-    hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
+    // c0->cd(2);
+    // hMassAll->Draw();
+    // hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
+    // hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
+    // hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
 
-    c0->cd(4);
+    c0->cd(3);  shrinkPad(0.12, 0.12);
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
     Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
     hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
-    TLegend *l = newLegend(0.6, 0.75, 0.88, 0.88);
+    TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->AddEntry(h2, "Signal", "p");
     l->AddEntry(hSi, "signal box", "l");
     l->AddEntry(hHi, "combinat. shape", "l");
     l->Draw();
 
-    c0->cd(3);
+    c0->cd(2);  shrinkPad(0.12, 0.12);
     hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
     hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
     hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
@@ -989,7 +1010,412 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     hHi->Draw("histsame");
     hSi->Draw("histsame");
 
-    l = newLegend(0.6, 0.75, 0.88, 0.88);
+    l = newLegend(0.5, 0.75, 0.8, 0.88);
+    l->SetHeader("normalized to unity");
+    l->AddEntry(hSi, "signal box", "l");
+    l->AddEntry(hHi, "bg box (high)", "l");
+    l->AddEntry(hLo, "bg box (low)", "l");
+    l->Draw();
+
+    fname = fControlPlotsFileName;
+    cout << "=========> "
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+
+  }
+
+
+  return h2;
+}
+
+
+// ----------------------------------------------------------------------
+TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, const char *cut) {
+
+  cout << "fVerbose: " << fVerbose << endl;
+
+  TCanvas *c0(0);
+  if (fVerbose > 0) {
+    gStyle->SetOptTitle(1);
+    gStyle->SetOptFit(1111111);
+    c0 = (TCanvas*)gROOT->FindObject("ad_c1");
+    if (c0) {
+      delete c0;
+    }
+    c0 = new TCanvas("ad_c1", "ad_c1", 700, 700);
+    c0->Clear();
+  }
+
+  TH1D *hm  = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
+  TH1D *hSi = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
+  TH1D *hLo = (TH1D*)gDirectory->Get(Form("%s%s3", variable, cut));
+  TH1D *hHi = (TH1D*)gDirectory->Get(Form("%s%s4", variable, cut));
+  if (0 == hm) {
+    cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
+    return 0;
+  }
+
+  double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+  double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+  double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+  double s1   = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+  double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+  double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+
+  // -- fit mass distribution
+  if (fMassPeak  < 0.) {
+    fMassPeak = 0.5*(s0+s1);
+  }
+  if (fMassSigma < 0.) {
+    fMassSigma= 0.2*(s1-s0);
+  }
+  fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+  fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+  fpIF->fLo = fMassLo;
+  fpIF->fHi = fMassHi;
+
+  cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
+
+  fitPsYield a(0, fVerbose);
+  a.fit0_Bs2JpsiPhi(hm, -1, "results/adfpy");
+  a.listFunctions();
+  TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
+  double expoBgl = fexpo->Integral(l0, l1);
+  double expoSg  = fexpo->Integral(s0, s1);
+  double expoBgh = fexpo->Integral(u0, u1);
+
+  if (fVerbose > 0) {
+    cout << "expoBgl (" << l0 << " .. " << l1 << ") = " << expoBgl << endl;
+    cout << "expoSg  (" << s0 << " .. " << s1 << ") = " << expoSg << endl;
+    cout << "expoBgh (" << u0 << " .. " << u1 << ") = " << expoBgh << endl;
+  }
+
+  TH1D *h2 = (TH1D*)hSi->Clone(Form("sbs_%s%s", variable, cut));
+  h2->Sumw2();
+  // -- subtract combinatorial background from signal region
+  h2->Add(hSi, hHi, 1., -expoSg/expoBgh);
+
+  if (1) {
+    {
+      TString fname = fControlPlotsFileName;
+      c0->Clear();
+      c0->cd(1);  shrinkPad(0.12, 0.18);
+
+      gStyle->SetOptStat(0);
+      gStyle->SetOptFit(0);
+      gStyle->SetOptTitle(0);
+      hm->SetXTitle("#it{m} [GeV]");
+      hm->SetYTitle("candidates/bin");
+      hm->Draw();
+      a.getFunction(string("expo_") + string(hm->GetName()))->Draw("same");
+      a.getFunction(string("sig_") + string(hm->GetName()))->Draw("same");
+      TArrow aa;
+      double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+      double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+      double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+      double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+      double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+      double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+      double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+      double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.));
+
+      double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+      double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
+      double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+      double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+
+      double asize(0.05);
+      aa.SetLineColor(kRed);
+      aa.DrawArrow(x0, y0, x0, 0., asize);
+      aa.DrawArrow(x1, y1, x1, 0., asize);
+      aa.SetLineColor(kBlue);
+      aa.DrawArrow(x2, y2, x2, 0., asize);
+      aa.DrawArrow(x3, y3, x3, 0., asize);
+
+      aa.SetLineColor(kBlack);
+      aa.DrawArrow(x4, y4, x4, 0., asize);
+      aa.DrawArrow(x5, y5, x5, 0., asize);
+
+      cout << "=========> "
+	   << Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	   << endl;
+      c0->SaveAs(Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    }
+
+    TString fname = fControlPlotsFileName;
+    c0->Clear();
+    c0->SetCanvasSize(1500, 500);
+    c0->Divide(3, 1);
+    c0->cd(1);  shrinkPad(0.12, 0.18);
+
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptTitle(0);
+    hm->SetXTitle("#it{m} [GeV]");
+    hm->SetYTitle("candidates/bin");
+    hm->Draw();
+    a.getFunction(string("expo_") + string(hm->GetName()))->Draw("same");
+    a.getFunction(string("sig_") + string(hm->GetName()))->Draw("same");
+    TArrow aa;
+    double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+    double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+    double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+    double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+    double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+    double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+    double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+    double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.));
+
+    double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+    double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
+    double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+    double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+
+    double asize(0.02);
+    aa.SetLineColor(kRed);
+    aa.DrawArrow(x0, y0, x0, 0., asize);
+    aa.DrawArrow(x1, y1, x1, 0., asize);
+    aa.SetLineColor(kBlue);
+    aa.DrawArrow(x2, y2, x2, 0., asize);
+    aa.DrawArrow(x3, y3, x3, 0., asize);
+
+    aa.SetLineColor(kBlack);
+    aa.DrawArrow(x4, y4, x4, 0., asize);
+    aa.DrawArrow(x5, y5, x5, 0., asize);
+
+    // c0->cd(2);
+    // hMassAll->Draw();
+    // hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
+    // hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
+    // hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
+
+    c0->cd(3);  shrinkPad(0.12, 0.12);
+    h2->SetMinimum(0.);
+    h2->Draw();
+    hSi->DrawCopy("histsame");
+    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
+    hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
+    TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
+    l->AddEntry(h2, "Signal", "p");
+    l->AddEntry(hSi, "signal box", "l");
+    l->AddEntry(hHi, "combinat. shape", "l");
+    l->Draw();
+
+    c0->cd(2);  shrinkPad(0.12, 0.12);
+    hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
+    hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
+    hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
+    double ymax(hLo->GetMaximum());
+    if (hHi->GetMaximum() > ymax) ymax = hHi->GetMaximum();
+    if (hSi->GetMaximum() > ymax) ymax = hSi->GetMaximum();
+    hLo->SetMaximum(1.2*ymax);
+    hLo->Draw("hist");
+    hHi->Draw("histsame");
+    hSi->Draw("histsame");
+
+    l = newLegend(0.5, 0.75, 0.8, 0.88);
+    l->SetHeader("normalized to unity");
+    l->AddEntry(hSi, "signal box", "l");
+    l->AddEntry(hHi, "bg box (high)", "l");
+    l->AddEntry(hLo, "bg box (low)", "l");
+    l->Draw();
+
+    fname = fControlPlotsFileName;
+    cout << "=========> "
+	 << Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	 << endl;
+    c0->SaveAs(Form("%s/%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+
+  }
+
+
+  return h2;
+}
+
+
+// ----------------------------------------------------------------------
+TH1D* AnalysisDistribution::sbsDistributionBd2JpsiKstar(const char *variable, const char *cut) {
+  TCanvas *c0(0);
+  if (fVerbose > 0) {
+    gStyle->SetOptTitle(1);
+    gStyle->SetOptFit(1111111);
+    c0 = (TCanvas*)gROOT->FindObject("ad_c1");
+    if (c0) {
+      delete c0;
+    }
+    c0 = new TCanvas("ad_c1", "ad_c1", 600, 600);
+    c0->Clear();
+  }
+
+  TH1D *hm  = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
+  TH1D *hSi = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
+  TH1D *hLo = (TH1D*)gDirectory->Get(Form("%s%s3", variable, cut));
+  TH1D *hHi = (TH1D*)gDirectory->Get(Form("%s%s4", variable, cut));
+  if (0 == hm) {
+    cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
+    return 0;
+  }
+
+  double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+  double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+  double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+  double s1   = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+  double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+  double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+
+  // -- fit mass distribution
+  if (fMassPeak  < 0.) {
+    fMassPeak = 0.5*(s0+s1);
+  }
+  if (fMassSigma < 0.) {
+    fMassSigma= 0.2*(s1-s0);
+  }
+  fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+  fMassHi   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+  fpIF->fLo = fMassLo;
+  fpIF->fHi = fMassHi;
+
+  cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
+
+  fitPsYield a(0, fVerbose);
+  a.fit0_Bd2JpsiKstar(hm, -1, "results/adfpy");
+  a.listFunctions();
+  TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
+  double expoBgl = fexpo->Integral(l0, l1);
+  double expoSg  = fexpo->Integral(s0, s1);
+  double expoBgh = fexpo->Integral(u0, u1);
+
+  if (fVerbose > 0) {
+    cout << "expoBgl (" << l0 << " .. " << l1 << ") = " << expoBgl << endl;
+    cout << "expoSg  (" << s0 << " .. " << s1 << ") = " << expoSg << endl;
+    cout << "expoBgh (" << u0 << " .. " << u1 << ") = " << expoBgh << endl;
+  }
+
+  TH1D *h2 = (TH1D*)hSi->Clone(Form("sbs_%s%s", variable, cut));
+  h2->Sumw2();
+  // -- subtract combinatorial background from signal region
+  h2->Add(hSi, hHi, 1., -expoSg/expoBgh);
+
+  if (1) {
+    {
+      TString fname = fControlPlotsFileName;
+      c0->Clear();
+      c0->cd(1);  shrinkPad(0.12, 0.18);
+
+      gStyle->SetOptStat(0);
+      gStyle->SetOptFit(0);
+      gStyle->SetOptTitle(0);
+      hm->SetXTitle("#it{m} [GeV]");
+      hm->SetYTitle("candidates/bin");
+      hm->Draw();
+      a.getFunction(string("expo_") + string(hm->GetName()))->Draw("same");
+      a.getFunction(string("sig_") + string(hm->GetName()))->Draw("same");
+      TArrow aa;
+      double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+      double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+      double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+      double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+      double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+      double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+      double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+      double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.));
+
+      double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+      double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
+      double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+      double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+
+      double asize(0.05);
+      aa.SetLineColor(kRed);
+      aa.DrawArrow(x0, y0, x0, 0., asize);
+      aa.DrawArrow(x1, y1, x1, 0., asize);
+      aa.SetLineColor(kBlue);
+      aa.DrawArrow(x2, y2, x2, 0., asize);
+      aa.DrawArrow(x3, y3, x3, 0., asize);
+
+      aa.SetLineColor(kBlack);
+      aa.DrawArrow(x4, y4, x4, 0., asize);
+      aa.DrawArrow(x5, y5, x5, 0., asize);
+
+      cout << "=========> "
+	   << Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut)
+	   << endl;
+      c0->SaveAs(Form("%s/mass%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+    }
+
+    TString fname = fControlPlotsFileName;
+    c0->Clear();
+    c0->SetCanvasSize(1500, 500);
+    c0->Divide(3, 1);
+    c0->cd(1);  shrinkPad(0.12, 0.18);
+
+    gStyle->SetOptStat(0);
+    gStyle->SetOptFit(0);
+    gStyle->SetOptTitle(0);
+    hm->SetXTitle("#it{m} [GeV]");
+    hm->SetYTitle("candidates/bin");
+    hm->Draw();
+    a.getFunction(string("expo_") + string(hm->GetName()))->Draw("same");
+    a.getFunction(string("sig_") + string(hm->GetName()))->Draw("same");
+    TArrow aa;
+    double x0 = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
+    double y0 = 1.1*hm->GetBinContent(hMassBGL->FindFirstBinAbove(1.));
+    double x1 = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
+    double y1 = 1.1*hm->GetBinContent(hMassBGL->FindLastBinAbove(1.)+1);
+    double x2 = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
+    double y2 = 1.1*hm->GetBinContent(hMassBGH->FindFirstBinAbove(1.));
+    double x3 = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
+    double y3 = 1.1*hm->GetBinContent(hMassBGH->FindLastBinAbove(1.));
+
+    double x4 = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
+    double y4 = 1.1*hm->GetBinContent(hMassSG->FindFirstBinAbove(1.));
+    double x5 = hMassSG->GetBinLowEdge(hMassSG->FindLastBinAbove(1.)+1);
+    double y5 = 1.1*hm->GetBinContent(hMassSG->FindLastBinAbove(1.)+1);
+
+    double asize(0.02);
+    aa.SetLineColor(kRed);
+    aa.DrawArrow(x0, y0, x0, 0., asize);
+    aa.DrawArrow(x1, y1, x1, 0., asize);
+    aa.SetLineColor(kBlue);
+    aa.DrawArrow(x2, y2, x2, 0., asize);
+    aa.DrawArrow(x3, y3, x3, 0., asize);
+
+    aa.SetLineColor(kBlack);
+    aa.DrawArrow(x4, y4, x4, 0., asize);
+    aa.DrawArrow(x5, y5, x5, 0., asize);
+
+    // c0->cd(2);
+    // hMassAll->Draw();
+    // hMassBGL->SetLineColor(kRed);  hMassBGL->Draw("samehist");
+    // hMassBGH->SetLineColor(kBlue); hMassBGH->Draw("samehist");
+    // hMassSG->SetLineColor(kBlack); hMassSG->Draw("samehist");
+
+    c0->cd(3);  shrinkPad(0.12, 0.12);
+    h2->SetMinimum(0.);
+    h2->Draw();
+    hSi->DrawCopy("histsame");
+    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
+    hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
+    TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
+    l->AddEntry(h2, "Signal", "p");
+    l->AddEntry(hSi, "signal box", "l");
+    l->AddEntry(hHi, "combinat. shape", "l");
+    l->Draw();
+
+    c0->cd(2);  shrinkPad(0.12, 0.12);
+    hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
+    hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
+    hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
+    double ymax(hLo->GetMaximum());
+    if (hHi->GetMaximum() > ymax) ymax = hHi->GetMaximum();
+    if (hSi->GetMaximum() > ymax) ymax = hSi->GetMaximum();
+    hLo->SetMaximum(1.2*ymax);
+    hLo->Draw("hist");
+    hHi->Draw("histsame");
+    hSi->Draw("histsame");
+
+    l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->SetHeader("normalized to unity");
     l->AddEntry(hSi, "signal box", "l");
     l->AddEntry(hHi, "bg box (high)", "l");
@@ -1024,7 +1450,9 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
     }
     c0 = new TCanvas("c1");
     c0->Clear();
-    c0->Divide(2,2);
+    c0->SetCanvasSize(1500, 500);
+    c0->Divide(3, 1);
+    c0->cd(1);
   }
 
   // -- this is not really necessary, could use the class members instead
@@ -1172,7 +1600,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGaussOld(const char *variable, co
     }
     c0 = new TCanvas("c1");
     c0->Clear();
-    c0->Divide(2,2);
+    c0->SetCanvasSize(2000, 500);
+    c0->Divide(4, 1);
+    c0->cd(1);
   }
 
   // -- this is not really necessary, could use the class members instead
@@ -1336,7 +1766,9 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     }
     c0 = new TCanvas("c1");
     c0->Clear();
-    c0->Divide(2,2);
+    c0->SetCanvasSize(2000, 500);
+    c0->Divide(4, 1);
+    c0->cd(1);
   }
 
   // -- this is not really necessary, could use the class members instead

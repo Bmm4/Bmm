@@ -143,7 +143,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 
     if (pD->fType == KSTARTYPE ) {                                            //is there a KSTARTYPE ???? I defined it in the .hh
       if ((MKPILO < pD->fMass) && (pD->fMass < MKPIHI)) fGoodMKPI = true;
-      fMKPI     = pD->fMass;
+      fMKPI      = pD->fMass;
       fKstarPt   = pD->fPlab.Perp();
       fKstarEta  = pD->fPlab.Eta();
       fKstarPhi  = pD->fPlab.Phi();
@@ -216,17 +216,12 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fMPPI = ks.M();
 
   if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
-    if (fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex() < fpEvt->nGenT()) {
-      TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
-      fKaPtGen     = pg1->fP.Perp();
-      fKaEtaGen    = pg1->fP.Eta();
-    }
-    if (fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex() < fpEvt->nGenT()) {
-      TGenCand *pg2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex());
-      pg2->dump();
-      fPiPtGen     = pg2->fP.Perp();
-      fPiEtaGen    = pg2->fP.Eta();
-    }
+    TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p1->fIndex)->getGenIndex());
+    fKaPtGen     = pg1->fP.Perp();
+    fKaEtaGen    = pg1->fP.Eta();
+    TGenCand *pg2 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(p2->fIndex)->getGenIndex());
+    fPiPtGen     = pg2->fP.Perp();
+    fPiEtaGen    = pg2->fP.Eta();
   } else {
     fKaPtGen     = -99.;
     fKaEtaGen    = -99.;
