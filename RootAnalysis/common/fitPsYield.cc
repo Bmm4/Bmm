@@ -927,7 +927,7 @@ void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bo
   fSummary.clear();
 
   fpIF->fName = "fit";
-  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.04, 1.1);
+  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.04, 1.3);
   fpIF->fName = "comp";
   TF1 *fg  = fpIF->gauss2c(0., 100.);
   fg->SetLineColor(kBlue+1);
