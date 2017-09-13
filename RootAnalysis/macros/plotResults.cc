@@ -1406,6 +1406,7 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
 // ----------------------------------------------------------------------
 void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   c0->Clear();
+  c0->SetCanvasSize(700, 700);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   fSuffixSel = modifier;
   cout << "==> calculateB2JpsiNumbers for name: " << a.fName << ", chan: " << a.fChan << " fSuffixSel: " << fSuffixSel << endl;
@@ -1492,6 +1493,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
 // ----------------------------------------------------------------------
 void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, double hi) {
   string hname = fHistWithAllCuts;
+  c0->SetCanvasSize(700, 700);
 
   c0->Clear();
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
@@ -1568,6 +1570,7 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
 void plotResults::calculateSgNumbers(anaNumbers &a) {
   cout << "==> calculateSgNumbers for name: " << a.fName << ", chan: " << a.fChan << endl;
   c0->Clear();
+  c0->SetCanvasSize(700, 700);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   fSuffixSel = modifier;
 
@@ -1610,7 +1613,6 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   c0->Modified();
   c0->Update();
   fHistFile->cd();
-
 }
 
 // ----------------------------------------------------------------------
@@ -1618,6 +1620,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
   string hname = fHistWithAllCuts; // "hMassWithAllCutsBlind";
   string uname = fHistWithAllCuts; // "hMassWithAllCuts";
   string wname = fHistWithAllCuts; replaceAll(wname, "hMass", "hW8Mass");
+  c0->Clear();
+  c0->SetCanvasSize(700, 700);
 
   cout << "==> calculateRareBgNumbers for chan: " << chan << endl;
   int nloop(0);
