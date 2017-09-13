@@ -313,8 +313,11 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       //if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
       //if (fJSON&&fGoodHLT&&fHLTmatch) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
     } else {  // DATA
-      if (NOPRESELECTION) {
-	fPreselection = true;
+      if (NOPRESELECTION > 0) {
+	if (2 == NOPRESELECTION) {
+	} else {
+	  fPreselection = true;
+	}
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
       }
       if (BLIND
@@ -1109,7 +1112,15 @@ void candAna::candEvaluation() {
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
   // -- add trigger and chan cuts
-  fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
+  if (2 == NOPRESELECTION) {
+    if (fGoodCNC || (fBDT > 0.1)) {
+    } else {
+      fPreselection = false;
+    }
+  } else {
+    fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
+  }
+
   // -- add J/psi and other daughter cuts
   fPreselection = fPreselection && fGoodJpsiCuts;
 
