@@ -1,4 +1,21 @@
+// ----------------------------------------------------------------------
 void fitProblems() {
+  TFile *f = TFile::Open("results/plotReducedOverlays.2012.root");
+
+  fitPsYield a(0, 1);
+
+  string hname("ad1cnc_bdpsikstarData_fls3dMassAo");
+  TH1D *hc     = (TH1D*)f->Get(hname.c_str());
+  if (hc) {
+    a.fit0_Bd2JpsiKstar(hc, -5., "fam");
+  } else {
+    cout << hname << " not found" << endl;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void fitProblems1() {
   TFile *f = TFile::Open("/shome/ursl/bupsikData_badFits_1.root");
 
   fitPsYield a(0, 1);
