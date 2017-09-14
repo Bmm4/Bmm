@@ -1556,7 +1556,11 @@ void plotFake::mkPidTables(string prefix) {
 
   // -- analyze histograms and write PidTables
   PidTable a("fakeTemplate.dat");
+  PidTable a5("fakeTemplatePt5.dat");
+  PidTable a10("fakeTemplatePt10.dat");
   PidTable A("effTemplate.dat");
+  PidTable *pa = &a;
+
   PidTable b;
   PidTable c;
   string aname, pname;
@@ -1564,17 +1568,39 @@ void plotFake::mkPidTables(string prefix) {
   for (unsigned int i = 0; i < vIds.size(); ++i) {
     if (13 == vIds[i]) continue; // use special template for muons
     for (unsigned int iq = 0; iq < q.size(); ++iq) {
+      if (2011 == fYear) {
+	if (2212 == vIds[i]) {
+	  pa = &a5;
+	} else {
+	  pa = &a10;
+	}
+      } else if (2012 == fYear) {
+	if (2212 == vIds[i]) {
+	  pa = &a5;
+	} else {
+	  pa = &a10;
+	}
+      } else if (2016 == fYear) {
+	if (2212 == vIds[i]) {
+	  pa = &a10;
+	} else {
+	  pa = &a10;
+	}
+      } else {
+	pa = &a;
+      }
+
       aname = Form("all%sId%d", q[iq].c_str(), vIds[i]);
       pname = Form("pass%sId%d", q[iq].c_str(), vIds[i]);
-      a.flush();
+      pa->flush();
       b.flush();
       b.readFromHist(fHistFile, pname.c_str(), aname.c_str());
-      a.fillEff(b);
+      pa->fillEff(b);
       h2 = (TH2D*)fHistFile->Get(pname.c_str());
-      a.setComment(h2->GetTitle());
+      pa->setComment(h2->GetTitle());
       name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, vIds[i], q[iq].c_str(), prefix.c_str());
       cout << name << endl;
-      a.dumpToFile(name.c_str());
+      pa->dumpToFile(name.c_str());
     }
   }
 
@@ -1792,7 +1818,7 @@ void plotFake::loopFunction2() {
     if (fFakePt[i] < 4.0) continue;
     if (TMath::Abs(fFakeEta[i]) > 2.1) continue;
     if (0 == fFakeHP[i]) continue;
-    if (13    == fFakeId[i]) {
+    if (13 == fFakeId[i]) {
       if (fFakeQ[i] < 0) {
 	name = "NegId13";
       } else {
