@@ -1622,6 +1622,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
   string wname = fHistWithAllCuts; replaceAll(wname, "hMass", "hW8Mass");
   c0->Clear();
   c0->SetCanvasSize(700, 700);
+  c0->cd();
+  shrinkPad(0.12, 0.15, 0.10);
 
   cout << "==> calculateRareBgNumbers for chan: " << chan << endl;
   int nloop(0);
@@ -1859,7 +1861,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   hBg.Draw("hist");
   hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
   hBg.GetYaxis()->SetTitle("Candidates / Bin");
-  TLegend *lBg = ::newLegend("rare decays", 0.50, 0.3, 0.85, 0.85, vBg, vBgnames, vBgoptions);
+  TLegend *lBg = ::newLegend("rare decays", 0.50, 0.2, 0.85, 0.85, vBg, vBgnames, vBgoptions);
   lBg->Draw();
   c0->Modified();
   c0->Update();
@@ -1915,7 +1917,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   double bgLo   = massIntegral(h1c, LO, chan) + massIntegral(h1Sl, LO, chan) + massIntegral(h1Hh, LO, chan);
   double diffLo = fCombNumbers[chan].fObsYield[0].val - bgLo;
   double scale  = diffLo/massIntegral(h1Sl, LO, chan);
-
+  if (scale < -1.) scale = -1.;
   setHist(h1e, kBlack);
   h1e->Draw("hist");
   THStack hCombScBg("hCombScBg", "comb + scaled rare decays");
@@ -1935,7 +1937,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   legg->Draw();
 
   tl->SetTextSize(0.035);
-  tl->DrawLatexNDC(0.65, 0.92, Form("scale = %3.1f", scale));
+  tl->DrawLatexNDC(0.55, 0.92, Form("sl correction: = %+3.1f %%", 100*scale));
 
   hCombScBg.Draw("histsame");
   h1e->Draw("histsame");
@@ -1963,8 +1965,12 @@ void plotResults::calculateRareBgNumbers(int chan) {
   }
 
   // -- dump combined/summed numbers: rare sl decays and rare hadronic (peaking) decays
-    fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-    fTEX << "% -- SUMMARY BACKGROUND " << mode << " chan " << chan << endl;
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- SUMMARY BACKGROUND " << mode << " chan " << chan << endl;
+  fTEX << formatTex(100*scale, Form("%s:SCALEPERCENT-SL-chan%d", fSuffixSel.c_str(), chan), 1) << endl;
+  fTEX << formatTex(scale + 1.0, Form("%s:SCALEPLUSONE-SL-chan%d", fSuffixSel.c_str(), chan), 3) << endl;
+  fTEX << formatTex(scale, Form("%s:SCALE-SL-chan%d", fSuffixSel.c_str(), chan), 3) << endl;
+
   for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
     dumpTex(fHhNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-HH-chan%d", fSuffixSel.c_str(), i, chan), 3);
   }
