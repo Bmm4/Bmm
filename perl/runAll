@@ -144,6 +144,7 @@ if ($opt_p) {
 # -- monSge
 if ($opt_m) {
     my $nNOK = 0;
+    my $nRUN = 0;
     foreach $j (keys %catalogs) {
 	my $chdired = 0;
 	if ($opt_s && !($j =~ /$opt_s/)) {next;}
@@ -186,12 +187,16 @@ if ($opt_m) {
 		if (-e "$mdir/NOK") {
 		    $nNOK++;
 		}
+		if (!(-e "$mdir/NOK") && !(-e "$mdir/OK")) {
+		    $nRUN++;
+		}
 	    }
 	}
 	if (1 == $chdired) {chdir("..");}
     }
 
     print "A total of $nNOK jobs had problems\n";
+    print "A total of $nRUN jobs still running\n";
     exit(0);
 
 }
