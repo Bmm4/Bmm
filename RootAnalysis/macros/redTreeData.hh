@@ -7,6 +7,7 @@ struct redTreeData {
   double corrW8;
   bool json, cb, tis, reftrg;
   bool hlt1, tos, l1t;
+  bool dcand;
   double bdt, bdt2, pvw8, pvz;
   double rlumi;
 
