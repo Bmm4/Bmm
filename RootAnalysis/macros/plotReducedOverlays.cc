@@ -867,7 +867,6 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
   string hname("");
 
   TArrow aa;
-  tl->SetTextSize(0.02);
   for (int id = 0; id < dolist.size(); ++id) {
     for (int ic = 0; ic < cutlevel.size(); ++ic) {
       for (int i = 0; i < fChannelList.size(); ++i) {
@@ -908,10 +907,13 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
 	     << endl;
 
 	aa.DrawArrow(fCuts[ichan]->bdtCut, 0.3*h1->GetMaximum(), fCuts[ichan]->bdtCut, 0.);
+	tl->SetTextSize(0.025);
 	tl->SetTextAngle(0.);
-	tl->DrawLatexNDC(0.22, 0.92,
+	tl->DrawLatexNDC(0.15, 0.92,
 			 Form("#varepsilon(%s) = %4.3f, #varepsilon(%s) = %4.3f, #Delta = %4.3f #pm %4.3f",
 			      sample1.c_str(), eps1, sample2.c_str(), eps2, deps, depsE));
+	tl->SetTextSize(0.03);
+	tl->DrawLatexNDC(0.25, 0.80, Form("BDT > %4.3f", fCuts[ichan]->bdtCut));
 
 	hname = Form("%d%s:ad%s%s_%s_%s_%s%s", fYear, fSetup.c_str(), fChannelList[i].c_str(), selection.c_str(),
 		     sample1.c_str(), sample2.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
@@ -926,6 +928,7 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
 		     sample1.c_str(), sample2.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
 
 	tl->SetTextAngle(90.);
+	tl->SetTextSize(0.025);
 	tl->DrawLatexNDC(0.92, 0.20, hname.c_str());
 
 	savePad(Form("%s.pdf",  hname.c_str()));
