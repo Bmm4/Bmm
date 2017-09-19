@@ -596,6 +596,7 @@ void plotClass::setupTree(TTree *t, string mode) {
 
   t->SetBranchAddress("tis", &fb.tis);
   t->SetBranchAddress("reftrg", &fb.reftrg);
+  t->SetBranchAddress("dcand", &fb.dcand);
 
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("taue", &fb.taue);
@@ -801,6 +802,7 @@ void plotClass::candAnalysis() {
     fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
     fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
     fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
+    fGoodDcand= false;
     return;
   }
   pCuts = fCuts[fChan];
@@ -817,7 +819,7 @@ void plotClass::candAnalysis() {
 
   // -- reset all
   fBDT = -99.;
-  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = false;
+  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodDcand = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
   fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
@@ -836,11 +838,13 @@ void plotClass::candAnalysis() {
   fIsCowboy = fb.cb;
 
   if (fIsMC) {
+    if (fb.dcand) fGoodDcand = true;
     if (fb.g1pt < fAccPt) fGoodAcceptance = false;
     if (fb.g2pt < fAccPt) fGoodAcceptance = false;
     if (TMath::Abs(fb.g1eta) > fAccEtaGen) fGoodAcceptance = false;
     if (TMath::Abs(fb.g2eta) > fAccEtaGen) fGoodAcceptance = false;
   } else {
+    fGoodDcand = true;
     static int runComplained(-1);
     if (!fb.json) {
       if (fb.run != runComplained) {
@@ -938,7 +942,7 @@ void plotClass::candAnalysis() {
 
   if (bd2jpsikstar) {
     if (fIsMC) {
-      cout << fb.g3eta << " " << fb.g4eta << " " << fb.g1pt << " " << fb.g2pt << " " << fb.g3pt << " " << fb.g4pt << endl;
+      // cout << fb.g3eta << " " << fb.g4eta << " " << fb.g1pt << " " << fb.g2pt << " " << fb.g3pt << " " << fb.g4pt << endl;
       if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
       if (TMath::Abs(fb.g4eta) > fAccEtaGen) fGoodAcceptance = false;
       // gen-level cuts for Bd2JpsiKstar
@@ -983,6 +987,7 @@ void plotClass::candAnalysis() {
   if (RARE == fMode) {
     fGoodMuonsID = true;
     fGoodGlobalMuons = true;
+    fGoodDcand = true;
   }
 
   fW8 = 1.;
