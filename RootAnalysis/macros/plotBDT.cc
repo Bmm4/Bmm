@@ -1348,10 +1348,10 @@ void plotBDT::getTLFRanking(string prefix, string type) {
 	replaceAll(vars, " " , "");
 	string texlabel = fVarToTexSymbol[vars];
 	cout << "       -> " << texlabel << endl;
-	fTEX << Form("\\vdef{%s:%s-%s_%s:%d:name} {%s}",
+	fTEX << Form("\\vdef{%s:%s:%s:%s:%d:name} {\\ensuremath{%s}}",
 		     fSuffix.c_str(), fBdtString.c_str(), type.c_str(), prefix.c_str(), ibin, texlabel.c_str())
 	     << endl;
-	fTEX << formatTex(atof(varp.c_str()), Form("%s:%s-%s_%s:%d:val",
+	fTEX << formatTex(atof(varp.c_str()), Form("%s:%s:%s:%s:%d:val",
 						   fSuffix.c_str(), fBdtString.c_str(), type.c_str(), prefix.c_str(), ibin), 4)
 	     << endl;
 	++ibin;
