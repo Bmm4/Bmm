@@ -439,7 +439,7 @@ void plotResults::makeAll(string what) {
 	cout << "===> Create genSummary for " << it->first << endl;
 	genSummary(it->first, "candAnaMuMu");
       }
-    } else if (2012 == fYear) {
+    } else if ((2012 == fYear) || (2011 == fYear)) {
       genSummary("bupsikMcComb", "candAnaBu2JpsiK");
       genSummary("bupsikMcCombAcc", "candAnaBu2JpsiK");
 
@@ -449,15 +449,18 @@ void plotResults::makeAll(string what) {
       genSummary("bdpsikstarMcComb", "candAnaBd2JpsiKstar");
       genSummary("bdpsikstarMcCombAcc", "candAnaBd2JpsiKstar");
 
-      genSummary("bspsifMcComb", "candAnaBs2Jpsif0");
-      genSummary("bspsifMcCombAcc", "candAnaBs2Jpsif0");
-
       genSummary("bdmmMcComb", "candAnaMuMu");
       genSummary("bdmmMcCombAcc", "candAnaMuMu");
 
       genSummary("bsmmMcComb", "candAnaMuMu");
       genSummary("bsmmMcCombAcc", "candAnaMuMu");
 
+      // -- loop over all (effective) two-body backgrounds
+      for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+	if (string::npos == it->first.find("Bg")) continue;
+	cout << "===> Create genSummary for " << it->first << endl;
+	genSummary(it->first, "candAnaMuMu");
+      }
     }
 
   }
@@ -2157,7 +2160,7 @@ void plotResults::loopFunction1() {
       ) {
     fhMassWithAnaCuts[modifier[1]][fChan]->Fill(mass);
 
-    if (fGoodMuonsID) {
+    if (fGoodMuonsID && fGoodDcand) {
       fhMassWithMuonCuts[modifier[1]][fChan]->Fill(mass);
       if (fGoodHLT) {
 	fhMassWithTriggerCuts[modifier[1]][fChan]->Fill(mass);
