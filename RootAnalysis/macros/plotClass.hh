@@ -171,7 +171,7 @@ public :
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
     fGoodPt, fGoodEta, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;
   bool fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3,
-    fGoodDocaTrk, fGoodJpsiCuts, fGoodCNC, fGoodBDT;
+    fGoodDocaTrk, fGoodJpsiCuts, fGoodCNC, fGoodBDT, fGoodDcand;
 
   bool fIsCowboy;
 
