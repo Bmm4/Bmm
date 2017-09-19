@@ -451,7 +451,7 @@ TH1D* AnalysisDistribution::sbsDistributionPhiKK(const char *variable, const cha
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass [GeV]");
+    hm->SetXTitle("#it{m_{KK}} [GeV]");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
@@ -1547,7 +1547,7 @@ TH1D* AnalysisDistribution::sbsDistributionPol1ErrGauss(const char *variable, co
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass [GeV]");
+    // hm->SetXTitle("mass [GeV]");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
@@ -1714,7 +1714,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGaussOld(const char *variable, co
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass [GeV]");
+    // hm->SetXTitle("mass [GeV]");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
@@ -1914,7 +1914,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
     gStyle->SetOptStat(0);
     gStyle->SetOptFit(0);
     gStyle->SetOptTitle(0);
-    hm->SetXTitle("mass [GeV]");
+    // hm->SetXTitle("mass [GeV]");
     hm->SetYTitle("candidates/bin");
     hm->Draw();
     TArrow aa;
