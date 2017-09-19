@@ -231,7 +231,7 @@ void plotFake::makeAll(string what) {
     }
   }
 
-  if (what == "all" || string::npos != what.find("fakerate")) {
+  if (what == "all" || string::npos != what.find("fakerate") || string::npos != what.find("plot")) {
     fillDoList("fakerate");
     if ((what == "all") || (what == "fakerate") || (string::npos != what.find("ks"))) {
       fakeRate("fakeData_ks", "fakeMc_ks", "FakePt", "AllPt", 0.1);
@@ -259,7 +259,7 @@ void plotFake::makeAll(string what) {
 
   }
 
-  if ((what == "all") || string::npos != what.find("pidtables")) {
+  if ((what == "all") || string::npos != what.find("pidtables") || string::npos != what.find("plot")) {
     mkPidTables("");
     plotPidTables("");
   }
@@ -392,6 +392,9 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 
 
   bool restricted = (what != "");
+  c0->cd();
+  c0->Clear();
+  c0->SetCanvasSize(700, 700);
   shrinkPad(0.15, 0.18, 0.1);
   for (unsigned int ic = 0; ic < fChannelList.size(); ++ic) {
     //  for (unsigned int i = 0; i < 1; ++i) {
@@ -633,9 +636,9 @@ void plotFake::bookDistributions() {
 
     a = new adsetFake();
     a->fpFakeEta  = bookDistribution(Form("%sFakeEta", name.c_str()), "#eta", "GoodFake", 48, -2.4, 2.4);
-    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "p_{T} #it{[GeV]}", "GoodFake", 10, 0., 20.);
+    a->fpFakePt   = bookDistribution(Form("%sFakePt", name.c_str()), "#it{p_{T}} [GeV]", "GoodFake", 10, 0., 20.);
     a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 48, -2.4, 2.4);
-    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "p_{T} #it{[GeV]}", "Good", 10, 0., 20.);
+    a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "#it{p_{T}} [GeV]", "Good", 10, 0., 20.);
 
     a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, 0., 1.0);
     a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 20, 0., 2.);
@@ -677,19 +680,19 @@ void plotFake::bookDistributions() {
     a->fpFakeCombHits = bookDistribution(Form("%sFakeCombHits", name.c_str()), "CombHits", "GlobalMuon", 35, 0., 35.);
 
     a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 48, -2.4, 2.4);
-    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TIS", 10, 0., 20.);
+    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TIS", 10, 0., 20.);
     a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISFAKE", 10, 0., 20.);
+    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISFAKE", 10, 0., 20.);
 
     a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 48, -2.4, 2.4);
-    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TISDT", 10, 0., 20.);
+    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDT", 10, 0., 20.);
     a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTFAKE", 10, 0., 20.);
+    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTFAKE", 10, 0., 20.);
 
     a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTDM", 10, 0., 20.);
+    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDM", 10, 0., 20.);
     a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "p_{T} #it{[GeV]}", "TISDTDMFAKE", 10, 0., 20.);
+    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDMFAKE", 10, 0., 20.);
 
 
     fAdMap.insert(make_pair(mapname, a));
@@ -740,21 +743,24 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
 
   a.fpIF->resetLimits();
 
-  int type(0);
+  int type(0), subtype(0);
   if (string::npos != sample.find("ks")) {
     type = 1;
+    subtype = 211;
     a.fMassPeak  = 0.498;
     a.fMassSigma = 0.005;
     a.fMassLo    = 0.450;
     a.fMassHi    = 0.550;
   } else if (string::npos != sample.find("psi")) {
     type = 1;
+    subtype = 13;
     a.fMassPeak  = 3.097;
     a.fMassSigma = 0.030;
     a.fMassLo    = 2.920;
     a.fMassHi    = 3.300;
   } else if (string::npos != sample.find("lambda")) {
     type = 1;
+    subtype = 2212;
     a.fMassPeak  = 1.116;
     a.fMassSigma = 0.002;
     a.fMassLo    = 1.095;
@@ -777,6 +783,7 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
     }
   } else if (string::npos != sample.find("phi")) {
     type = 2;
+    subtype = 321;
     a.fMassPeak  = 1.019;
     a.fMassSigma = 0.008;
     a.fMassLo    = 0.990;
@@ -810,9 +817,15 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
       h = (TH1D*)h->Clone(Form("sbs_%s_%s%s", sample.c_str(), fDoList[i].c_str(), selection.c_str()));
     } else if (1 == type) {
       cout << "=> sbsDistribution histogram " << Form("%s for selection %s", bla.c_str(), selection.c_str()) << endl;
+      TH1D *hm = (TH1D*)gDirectory->Get(Form("%sMass%s", bla.c_str(), selection.c_str()));
+      if (13 == subtype)   hm->SetXTitle("#it{m_{#mu#mu}} [GeV]");
+      if (211 == subtype)  hm->SetXTitle("#it{m_{#pi#pi}} [GeV]");
+      if (2212 == subtype) hm->SetXTitle("#it{m_{p#pi}} [GeV]");
       h = a.sbsDistribution(bla.c_str(), selection.c_str());
     } else if (2 == type) {
       cout << "=> sbsDistributionPhiKK histogram " << Form("%s for selection %s", bla.c_str(), selection.c_str()) << endl;
+      TH1D *hm = (TH1D*)gDirectory->Get(Form("%sMass%s", bla.c_str(), selection.c_str()));
+      if (321 == subtype)   hm->SetXTitle("#it{m_{KK}} [GeV]");
       h = a.sbsDistributionPhiKK(bla.c_str(), selection.c_str());
     }
     cout << "  Title: " << h->GetTitle() << " with integral: " << h->GetSumOfWeights() << endl;
@@ -908,8 +921,10 @@ void plotFake::overlay(string sample1, string sample2, string what) {
     setFilledHist(h2, kRed, kRed, 3365);
   }
 
-  label1 += Form(" (%d%s)", fYear, fSetup.c_str());
-  label2 += Form(" (%d%s)", fYear, fSetup.c_str());
+  // label1 += Form(" (%d%s)", fYear, fSetup.c_str());
+  // label2 += Form(" (%d%s)", fYear, fSetup.c_str());
+  label1 += Form(" (%d)", fYear);
+  label2 += Form(" (%d)", fYear);
 
   if (string::npos != sample1.find("OuterChi2") && (string::npos != label1.find("muons")))    doLegend = false;
   if (string::npos != sample1.find("FakeCombHits") && (string::npos != label1.find("muons"))) leftLegend = true;
@@ -975,6 +990,10 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 
 // ----------------------------------------------------------------------
 void plotFake::fakeRate(string dataset1, string dataset2, string varF, string varA, double ymax) {
+
+  c0->cd();
+  c0->Clear();
+  c0->SetCanvasSize(700, 700);
 
   cout << "fHistFileName: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str());
@@ -1631,6 +1650,9 @@ void plotFake::plotPidTables(string prefix) {
   gStyle->SetOptTitle(0);
   tl->SetTextSize(0.07);
 
+  c0->cd();
+  c0->Clear();
+  c0->SetCanvasSize(700, 700);
 
   // -- hadrons
   if ("" == prefix) {
@@ -1649,7 +1671,7 @@ void plotFake::plotPidTables(string prefix) {
     shrinkPad(0.15, 0.15, 0.1);
     tl->SetTextSize(0.04);
 
-    a = fptFakePosKaons;  h2->Reset(); h2->SetTitle(Form("pos. kaons (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakePosKaons;  h2->Reset(); h2->SetTitle(Form("pos. kaons (%d, %s)", fYear, a->getComment().Data()));
     cout << "Hallo" << endl;
     a->print(cout);
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
@@ -1657,31 +1679,31 @@ void plotFake::plotPidTables(string prefix) {
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-errFakePosKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
 
-    a = fptFakeNegKaons;  h2->Reset(); h2->SetTitle(Form("neg. kaons (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakeNegKaons;  h2->Reset(); h2->SetTitle(Form("neg. kaons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-effFakeNegKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-errFakeNegKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
 
-    a = fptFakePosPions;  h2->Reset(); h2->SetTitle(Form("pos. pions (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakePosPions;  h2->Reset(); h2->SetTitle(Form("pos. pions (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-effFakePosPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-errFakePosPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
 
-    a = fptFakeNegPions;  h2->Reset(); h2->SetTitle(Form("neg. pions (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakeNegPions;  h2->Reset(); h2->SetTitle(Form("neg. pions (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-effFakeNegPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-errFakeNegPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
 
-    a = fptFakePosProtons;  h2->Reset(); h2->SetTitle(Form("pos. protons (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakePosProtons;  h2->Reset(); h2->SetTitle(Form("pos. protons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-effFakePosProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-errFakePosProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
 
-    a = fptFakeNegProtons;  h2->Reset(); h2->SetTitle(Form("neg. protons (%d%s, %s)", fYear, fSetup.c_str(), a->getComment().Data()));
+    a = fptFakeNegProtons;  h2->Reset(); h2->SetTitle(Form("neg. protons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
     c0->SaveAs(Form("%s/%d%s-effFakeNegProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
@@ -1777,7 +1799,7 @@ void plotFake::plotPidTables(string prefix) {
     double xbins[] = {0.0, 0.3, 0.60, 0.90, 1.2, 1.5, 1.8, 2.1};
     double ybins[] = {4.0, 4.5, 5.0, 5.5, 6.0, 7.0, 8.0, 10., 15., 20., 30.};
     TH2D *h2 = new TH2D("h2", "", 7, xbins, 10, ybins);
-    setTitles(h2, "|#eta|", "#iut{p_{T}} [GeV]");
+    setTitles(h2, "|#eta|", "#it{p_{T}} [GeV]");
     h2->SetMinimum(0.0);
     h2->SetMaximum(1.0);
     h2->SetMarkerSize(1.3);
