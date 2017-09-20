@@ -8,9 +8,12 @@
 # Usage examples
 # ==============
 #
-# $BMMBASE/perl/runCont -n 200 -c '/bin/tcsh  ' list-a*
+# $BMMBASE/perl/runCont -n 200 -c '/bin/tcsh  ' c-* >& runCont.log &
 #
 #
+# Create the jobs files based on a template c-20 as follows:
+#
+# do -f 21 -l 25 -c 'cp c-20 c-$n; perl -pi -e "s/BuToJpsiKp20/BuToJpsiKp$n/g" c-$n'
 #
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
@@ -29,44 +32,52 @@ my $USER = $ENV{USER};
 my $siesta = 600;
 @jobs = @ARGV;
 
+print "runCont($$): @ARGV\n";
+
 foreach $job (@jobs) {
     if (-e "STOP.$$") {
 	unlink("STOP.$$");
+	print "runCont($$): saw STOP.$$ at $datum, exit\n";
 	exit(0);
     }
     while (-e "WAIT.$$") {
 	$datum = `date`;
-	print "runCont: watching WAIT.$$ at $datum";
+	chop($datum);
+	print "runCont($$): watching WAIT.$$ at $datum\n";
 	sleep(3600);
     }
     if ($opt_n) {
 	$njobs = &countPending;
 	$datum = `date`;
-	print "runCont: $njobs jobs waiting at $datum";
+	chop($datum);
+	print "runCont($$): $njobs jobs waiting at $datum\n";
 	while ($njobs > $opt_n) {
 	    sleep($siesta);
 	    # -- bail out in case of STOP file
 	    if (-e "STOP.$$") {
 		unlink("STOP.$$");
+		print "runCont($$): saw STOP.$$ at $datum, exit\n";
 		exit(0);
 	    }
 	    # -- wait 1h in case of WAIT file
 	    while (-e "WAIT.$$") {
 		$datum = `date`;
-		print "runCont: watching WAIT.$$ at $datum";
+		chop($datum);
+		print "runCont($$): watching WAIT.$$ at $datum\n";
 		sleep(3600);
 	    }
 
 	    $njobs = &countPending;
 	    $datum = `date`;
-	    print "runCont: $njobs jobs waiting at $datum";
+	    chop($datum);
+	    print "runCont($$): $njobs jobs waiting at $datum\n";
 	}
     }
 
     if ($opt_d) {
 	print "$opt_c $job\n";
     } else {
-	print "runCont: submitting $opt_c $job\n";
+	print "runCont($$): submitting $opt_c $job\n";
 	system("$opt_c $job");
     }
 

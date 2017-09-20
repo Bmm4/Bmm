@@ -102,6 +102,9 @@ clean:
 	rm -f bin/*
 	rm -f lib/*
 
+cleanresults:
+	rm -f results/*.root results/*.pdf results/*.tex results/*.tex.old
+
 # -- ensure that the environment variable DELPHES is set
 vars:
 ifndef CMSSW_BASE

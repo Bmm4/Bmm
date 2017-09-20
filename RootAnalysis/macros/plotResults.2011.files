@@ -1,13 +1,17 @@
 # -- B+
-type=bupsik,data             lumi=5.0             file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
+type=bupsik,data             lumi=5.0           file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
 type=bupsik,acc,mcComb       bf=(6.12,0.19)e-5  eff=(6.09,0.01)e-3 file=scratch/bmm-mc-Summer17_private-BuToJpsiKpAcc-v06.root
 type=bupsik,mcComb           bf=(6.12,0.19)e-5  eff=(3.18,0.01)e-4 file=scratch/bmm-mc-Summer17_private-BuToJpsiKp-v06.root
 # -- Bs
-type=bspsiphi,data           lumi=5.0          file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
+type=bspsiphi,data           lumi=5.0           file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
 type=bspsiphi,acc,mcComb     bf=(3.12,0.24)e-5  eff=(2.16,0.01)e-3 file=scratch/bmm-mc-Summer17_private-BsToJpsiPhiAcc-v06.root
 type=bspsiphi,mcComb         bf=(3.12,0.24)e-5  eff=(8.47,0.02)e-5 file=scratch/bmm-mc-Summer17_private-BsToJpsiPhi-v06.root
+# -- Bd
+type=bdpsikstar,data         lumi=5.0           file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
+type=bdpsikstar,acc,mcComb   bf=(5.08,0.20)e-6  eff=(6.07,0.01)e-3 file=scratch/bmm-mc-Summer17_private-BdToJpsiKstarAcc-v06.root
+type=bdpsikstar,mcComb       bf=(5.08,0.20)e-6  eff=(1.91,0.01)e-4 file=scratch/bmm-mc-Summer17_private-BdToJpsiKstar-v06.root
 # -- dimuons
-type=bmm,data                lumi=5.0          file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
+type=bmm,data                lumi=5.0           file=/scratch/ursl/bmm4/v06/bmm-data-bmmMuOnia2011-v06.root
 type=bdmm,acc,mcComb         bf=(1.06,0.09)e-10 eff=(6.08,0.01)e-3 file=scratch/bmm-mc-Summer17_private-BdToMuMuAcc-v06.root
 type=bdmm,mcComb             bf=(1.06,0.09)e-10 eff=(9.48,0.02)e-4 file=scratch/bmm-mc-Summer17_private-BdToMuMu-v06.root
 type=bsmm,acc,mcComb         bf=(3.65,0.23)e-9  eff=(2.16,0.01)e-3 file=scratch/bmm-mc-Summer17_private-BsToMuMuAcc-v06.root

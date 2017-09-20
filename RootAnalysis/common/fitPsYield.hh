@@ -53,8 +53,14 @@ public:
   ~fitPsYield();
   void initFromHist(TH2D *h);
 
+  double getSignalRMS() {return fSummary.fSgSigma; }
+  double getSignalPeak() {return fSummary.fSgPeak; }
+
   double getSignalYield() {return fSummary.fSg; }
   double getSignalError() {return fSummary.fSgE;}
+
+  double getBackgroundYield() {return fSummary.fBg; }
+  double getBackgroundError() {return fSummary.fBgE;}
 
   double getSignalW8Yield() {return fW8Combined->fResults.fSg; }
   double getSignalW8Error() {return fW8Combined->fResults.fSgE;}

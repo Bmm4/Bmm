@@ -80,9 +80,7 @@ public:
 			    std::string selection);
 
   void allSystematics();
-  void systematics(std::string sample1,
-		   std::string selection,
-		   int chan = 0);
+  void sysBdtCut(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada");
   void compareBsAndBp(std::string file = "2012/anaBmm.plotReducedOverlaysSystematics.2012.root");
 
   // --
@@ -91,7 +89,6 @@ public:
   void sbsDistributions(std::string sample, std::string selection = "Presel", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2);
-  void sbsSingleFile(string file1, string sample1 = "NoData", string channel = "B", string selection = "Presel");
   void overlay2Files(std::string file1, std::string sample1,
 		     std::string file2, std::string sample2,
 		     std::string chan1 = "BLoPU", std::string chan2 = "BHiPU",

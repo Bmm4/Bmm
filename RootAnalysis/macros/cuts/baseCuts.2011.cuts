@@ -3,7 +3,7 @@
 nchan      2
 index       0         1
 metaMin     0.00      1.40
-metaMax     1.40      2.20
+metaMax     1.40      2.10
 muonbdt     0.54      0.54
 l1seeds     0,1,2     0,1,2
 mBdLo       5.20      5.20

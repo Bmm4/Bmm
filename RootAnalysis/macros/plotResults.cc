@@ -439,7 +439,7 @@ void plotResults::makeAll(string what) {
 	cout << "===> Create genSummary for " << it->first << endl;
 	genSummary(it->first, "candAnaMuMu");
       }
-    } else if (2012 == fYear) {
+    } else if ((2012 == fYear) || (2011 == fYear)) {
       genSummary("bupsikMcComb", "candAnaBu2JpsiK");
       genSummary("bupsikMcCombAcc", "candAnaBu2JpsiK");
 
@@ -449,15 +449,18 @@ void plotResults::makeAll(string what) {
       genSummary("bdpsikstarMcComb", "candAnaBd2JpsiKstar");
       genSummary("bdpsikstarMcCombAcc", "candAnaBd2JpsiKstar");
 
-      genSummary("bspsifMcComb", "candAnaBs2Jpsif0");
-      genSummary("bspsifMcCombAcc", "candAnaBs2Jpsif0");
-
       genSummary("bdmmMcComb", "candAnaMuMu");
       genSummary("bdmmMcCombAcc", "candAnaMuMu");
 
       genSummary("bsmmMcComb", "candAnaMuMu");
       genSummary("bsmmMcCombAcc", "candAnaMuMu");
 
+      // -- loop over all (effective) two-body backgrounds
+      for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
+	if (string::npos == it->first.find("Bg")) continue;
+	cout << "===> Create genSummary for " << it->first << endl;
+	genSummary(it->first, "candAnaMuMu");
+      }
     }
 
   }
@@ -1406,6 +1409,7 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
 // ----------------------------------------------------------------------
 void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   c0->Clear();
+  c0->SetCanvasSize(700, 700);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   fSuffixSel = modifier;
   cout << "==> calculateB2JpsiNumbers for name: " << a.fName << ", chan: " << a.fChan << " fSuffixSel: " << fSuffixSel << endl;
@@ -1492,6 +1496,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
 // ----------------------------------------------------------------------
 void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, double hi) {
   string hname = fHistWithAllCuts;
+  c0->SetCanvasSize(700, 700);
 
   c0->Clear();
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
@@ -1568,6 +1573,7 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
 void plotResults::calculateSgNumbers(anaNumbers &a) {
   cout << "==> calculateSgNumbers for name: " << a.fName << ", chan: " << a.fChan << endl;
   c0->Clear();
+  c0->SetCanvasSize(700, 700);
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   fSuffixSel = modifier;
 
@@ -1610,7 +1616,6 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   c0->Modified();
   c0->Update();
   fHistFile->cd();
-
 }
 
 // ----------------------------------------------------------------------
@@ -1618,6 +1623,10 @@ void plotResults::calculateRareBgNumbers(int chan) {
   string hname = fHistWithAllCuts; // "hMassWithAllCutsBlind";
   string uname = fHistWithAllCuts; // "hMassWithAllCuts";
   string wname = fHistWithAllCuts; replaceAll(wname, "hMass", "hW8Mass");
+  c0->Clear();
+  c0->SetCanvasSize(700, 700);
+  c0->cd();
+  shrinkPad(0.12, 0.15, 0.10);
 
   cout << "==> calculateRareBgNumbers for chan: " << chan << endl;
   int nloop(0);
@@ -1855,7 +1864,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   hBg.Draw("hist");
   hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
   hBg.GetYaxis()->SetTitle("Candidates / Bin");
-  TLegend *lBg = ::newLegend("rare decays", 0.50, 0.3, 0.85, 0.85, vBg, vBgnames, vBgoptions);
+  TLegend *lBg = ::newLegend("rare decays", 0.50, 0.2, 0.85, 0.85, vBg, vBgnames, vBgoptions);
   lBg->Draw();
   c0->Modified();
   c0->Update();
@@ -1911,7 +1920,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   double bgLo   = massIntegral(h1c, LO, chan) + massIntegral(h1Sl, LO, chan) + massIntegral(h1Hh, LO, chan);
   double diffLo = fCombNumbers[chan].fObsYield[0].val - bgLo;
   double scale  = diffLo/massIntegral(h1Sl, LO, chan);
-
+  if (scale < -1.) scale = -1.;
   setHist(h1e, kBlack);
   h1e->Draw("hist");
   THStack hCombScBg("hCombScBg", "comb + scaled rare decays");
@@ -1931,7 +1940,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   legg->Draw();
 
   tl->SetTextSize(0.035);
-  tl->DrawLatexNDC(0.65, 0.92, Form("scale = %3.1f", scale));
+  tl->DrawLatexNDC(0.55, 0.92, Form("sl correction: = %+3.1f %%", 100*scale));
 
   hCombScBg.Draw("histsame");
   h1e->Draw("histsame");
@@ -1959,8 +1968,12 @@ void plotResults::calculateRareBgNumbers(int chan) {
   }
 
   // -- dump combined/summed numbers: rare sl decays and rare hadronic (peaking) decays
-    fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-    fTEX << "% -- SUMMARY BACKGROUND " << mode << " chan " << chan << endl;
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- SUMMARY BACKGROUND " << mode << " chan " << chan << endl;
+  fTEX << formatTex(100*scale, Form("%s:SCALEPERCENT-SL-chan%d", fSuffixSel.c_str(), chan), 1) << endl;
+  fTEX << formatTex(scale + 1.0, Form("%s:SCALEPLUSONE-SL-chan%d", fSuffixSel.c_str(), chan), 3) << endl;
+  fTEX << formatTex(scale, Form("%s:SCALE-SL-chan%d", fSuffixSel.c_str(), chan), 3) << endl;
+
   for (unsigned i = 0; i < fHhNumbers[chan].fMcYield.size(); ++i) {
     dumpTex(fHhNumbers[chan].fMcYield[i], Form("%s:N-SCALEDYIELD-MBIN%d-HH-chan%d", fSuffixSel.c_str(), i, chan), 3);
   }
@@ -2147,7 +2160,7 @@ void plotResults::loopFunction1() {
       ) {
     fhMassWithAnaCuts[modifier[1]][fChan]->Fill(mass);
 
-    if (fGoodMuonsID) {
+    if (fGoodMuonsID && fGoodDcand) {
       fhMassWithMuonCuts[modifier[1]][fChan]->Fill(mass);
       if (fGoodHLT) {
 	fhMassWithTriggerCuts[modifier[1]][fChan]->Fill(mass);

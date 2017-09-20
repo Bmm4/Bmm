@@ -121,6 +121,8 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LbToPPi -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LbToPMuNu -s $version -n 100 -l;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/LbToPMuNuAcc -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstarAcc -s $version -n 100 -l;  \ \n";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BdToJpsiKstar -s $version -n 100 -l;  \ \n";
 
 
 # -- Winter17 private MC (for 2012 conditions)
