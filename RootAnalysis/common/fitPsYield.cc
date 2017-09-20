@@ -203,6 +203,10 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix, int whichfit) {
   }
   fSummary.fSgE = TMath::Sqrt(fSummary.fSgE);
   // cout << " => total: " << fSummary.fSg << " +/- " << fSummary.fSgE << endl;
+  fSummary.fBg      = fUnW8Combined->fResults.fBg;
+  fSummary.fBgE     = fUnW8Combined->fResults.fBgE;
+  fSummary.fSgSigma = fUnW8Combined->fResults.fSgSigma;
+  fSummary.fSgPeak  = fUnW8Combined->fResults.fSgPeak;
   printSummary();
 }
 
@@ -216,6 +220,14 @@ void fitPsYield::fit0_Bu2JpsiKp(TH1D *h1, int limitpars, string pdfprefix) {
   fData.push_back(fUnW8Combined);
 
   fit0_Bu2JpsiKp(fUnW8Combined, limitpars, pdfprefix, true);
+
+  fSummary.fSg      = fUnW8Combined->fResults.fSg;
+  fSummary.fSgE     = fUnW8Combined->fResults.fSgE;
+  fSummary.fBg      = fUnW8Combined->fResults.fBg;
+  fSummary.fBgE     = fUnW8Combined->fResults.fBgE;
+  fSummary.fSgSigma = fUnW8Combined->fResults.fSgSigma;
+  fSummary.fSgPeak  = fUnW8Combined->fResults.fSgPeak;
+
 }
 
 
@@ -395,6 +407,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
 				  res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
   double sigE  = (fcnSig->GetParError(0)/fcnSig->GetParameter(0)) * sig;
 
+  double bg   = f1->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+			     res->fResults.fSgPeak + 3.*res->fResults.fSgSigma)
+    - sig ;
+  double bgE  = fcnExpo->GetParError(0)/fcnExpo->GetParameter(0)*bg;
 
   cout << "XXXXX sig = " << sig << " +/- " << sigE
        << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " to "
@@ -404,6 +420,8 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   // -- create 'sensible' errors
   sig  /= h->GetBinWidth(1);
   sigE /= h->GetBinWidth(1);
+  bg   /= h->GetBinWidth(1);
+  bgE  /= h->GetBinWidth(1);
   if (sigE > sig) {
     cout << "rescaled error: " << sigE << " (sig = " << sig << ") to ";
     sigE = TMath::Sqrt(sig);
@@ -415,8 +433,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
 	 << ": " << sigE << " (sig = " << sig << ")"
 	 << endl;
   }
-  res->fResults.fSg = sig;
+  res->fResults.fSg  = sig;
   res->fResults.fSgE = sigE;
+  res->fResults.fBg  = bg;
+  res->fResults.fBgE = bgE;
 
   TLatex tl;
   tl.SetTextSize(0.03);
@@ -724,6 +744,10 @@ void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix, int whichfit) {
     fSummary.fSgE += fData[i]->fPs*fData[i]->fPs*fData[i]->fResults.fSgE*fData[i]->fResults.fSgE;
   }
   fSummary.fSgE = TMath::Sqrt(fSummary.fSgE);
+  fSummary.fBg      = fUnW8Combined->fResults.fBg;
+  fSummary.fBgE     = fUnW8Combined->fResults.fBgE;
+  fSummary.fSgSigma = fUnW8Combined->fResults.fSgSigma;
+  fSummary.fSgPeak  = fUnW8Combined->fResults.fSgPeak;
 }
 
 // ----------------------------------------------------------------------
@@ -892,9 +916,16 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
 			      res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
   double sigE  = sig*(f1->GetParError(0)/f1->GetParameter(0));
 
+  double bg   = f1->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+			     res->fResults.fSgPeak + 3.*res->fResults.fSgSigma)
+    - sig ;
+  double bgE  = fe->GetParError(0)/fe->GetParameter(0)*bg;
+
   // -- create 'sensible' errors
   sig  /= h->GetBinWidth(1);
   sigE /= h->GetBinWidth(1);
+  bg   /= h->GetBinWidth(1);
+  bgE  /= h->GetBinWidth(1);
   if (sigE > sig) {
     sigE = TMath::Sqrt(sig);
     cout << "rescaled error: " << sigE << " (sig = " << sig << ")"
@@ -905,8 +936,10 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
 	 << ": " << sigE << " (sig = " << sig << ")"
 	 << endl;
   }
-  res->fResults.fSg = sig;
+  res->fResults.fSg  = sig;
   res->fResults.fSgE = sigE;
+  res->fResults.fBg  = bg;
+  res->fResults.fBgE = bgE;
 
   cout << "==> fitted " << h->GetTitle() << " signal = " << sig << " +/- " << sigE << endl;
 
@@ -1114,9 +1147,17 @@ void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bo
 			      res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
   double sigE  = sig*(f1->GetParError(0)/f1->GetParameter(0));
 
+
+  double bg   = f1->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+			     res->fResults.fSgPeak + 3.*res->fResults.fSgSigma)
+    - sig ;
+  double bgE  = fe->GetParError(0)/fe->GetParameter(0)*bg;
+
   // -- create 'sensible' errors
   sig  /= h->GetBinWidth(1);
   sigE /= h->GetBinWidth(1);
+  bg   /= h->GetBinWidth(1);
+  bgE  /= h->GetBinWidth(1);
   if (sigE > sig) {
     sigE = TMath::Sqrt(sig);
     cout << "rescaled error: " << sigE << " (sig = " << sig << ")"
@@ -1127,7 +1168,9 @@ void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bo
 	 << ": " << sigE << " (sig = " << sig << ")"
 	 << endl;
   }
-  res->fResults.fSg = sig;
+  res->fResults.fBg  = bg;
+  res->fResults.fBgE = bgE;
+  res->fResults.fSg  = sig;
   res->fResults.fSgE = sigE;
 
   cout << "==> fitted " << h->GetTitle() << " signal = " << sig << " +/- " << sigE << endl;
