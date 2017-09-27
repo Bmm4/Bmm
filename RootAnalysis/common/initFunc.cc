@@ -2557,6 +2557,11 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
     p0 = 50.;
   }
 
+  // if (p0 > 1.e10) {
+  //   p0 = 1.;
+  //   p1 = -10.;
+  // }
+
   if (fVerbose) {
     cout << "initFunc::initExpo fLo: " << fLo << " fHi: " << fHi << endl;
     cout << "initFunc::initExpo ylo: " << ylo << " yhi: " << yhi << endl;
@@ -2666,14 +2671,14 @@ TF1* initFunc::bupsik(TH1 *h) {
   f->SetParameter(4, 0.05); limitPar(4, 0.04, 0.10);
 
   double a(-1.), b(-1.);
-  fLo = 5.45; fHi = 5.9;
+  fLo = 5.5; fHi = 5.9;
   initExpo(a, b, h);
   f->SetParameter(5, a);
   f->SetParameter(6, b);
 
   fixPar(7, 5.142);
   f->SetParameter(8, 0.04);  limitPar(8, 0.030, 0.060);
-  f->SetParameter(9, 0.5*h->Integral(1, 5)/5);
+  f->SetParameter(9, 0.4*h->Integral(1, 5)/5);
   applyLimits(f, "bupsik");
   return f;
 }
