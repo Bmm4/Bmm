@@ -41,5 +41,8 @@ foreach $year (@years) {
     if (-e "$optp-$optm-$year.log") {
 	unlink("$optp-$optm-$year.log");
     }
-    system("bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log &");
+    if ($opt_d) {
+    } else {
+	system("bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log &");
+    }
 }
