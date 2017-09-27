@@ -12,6 +12,7 @@
 #include "TString.h"
 #include "TRandom.h"
 #include "TUnixSystem.h"
+#include "TTimeStamp.h"
 
 #include "plotReducedOverlays.hh"
 #include "plotWork.hh"
@@ -36,6 +37,9 @@ int TMVAClassification( TString myMethodList);
 // ----------------------------------------------------------------------
 int main(int argc, char *argv[]) {
 
+  TTimeStamp ts0;
+  cout << "start time: " << ts0.AsString("lc") << endl;
+
   string progName  = argv[0];
 
   string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("2016");
@@ -45,12 +49,12 @@ int main(int argc, char *argv[]) {
   // -- command line arguments
   for (int i = 0; i < argc; i++){
     if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
-    if (!strcmp(argv[i], "-f"))  {files = argv[++i];} // for tmva1: offset
-    if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];} // for tmva1: BDT parameters
+    if (!strcmp(argv[i], "-f"))  {files = argv[++i];}         // for tmva1: offset
+    if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}         // for tmva1: BDT parameters
     if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}
-    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];}
-    if (!strcmp(argv[i], "-s"))  {setup = argv[++i];} // for tmva1: vars
-    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}
+    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} // for tmva1: input rootfilename
+    if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}         // for tmva1: vars
+    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}         // for tmva1: BDT parameters
     if (!strcmp(argv[i], "-x"))  {remove= true;}
     if (!strcmp(argv[i], "-y"))  {syear = argv[++i];}
   }
@@ -196,16 +200,17 @@ int main(int argc, char *argv[]) {
   if (string::npos != plot.find("tmva1")) {
     gROOT->Clear();  gROOT->DeleteAll();
     tmva1 a(year, setup, mode);
-    int ifiles(100);
+    int ioffset(100);
     if ("nada" == files) {
-      ifiles = 100;
+      ioffset = 100;
     } else {
-      ifiles = atoi(files.c_str());
+      ioffset = atoi(files.c_str());
     }
-    int chan = ifiles%10;
+    int chan = ioffset%10;
     if (9 == chan) chan = -1;
-    cout << "calling tmva1::makeAll(" << ifiles << ", \"\", " << chan << ")" << endl;
-    a.makeAll(ifiles, "", chan);
+    cout << "calling tmva1::makeAll(" << ioffset << ", \"\", " << chan << ")" << endl;
+    if (rootfilename == "nada") rootfilename = "";
+    a.makeAll(ioffset, rootfilename, chan);
   }
 
 
@@ -254,6 +259,9 @@ int main(int argc, char *argv[]) {
       a.makeAll();
     }
   }
+
+  TTimeStamp ts1;
+  cout << "end time: " << ts1.AsString("lc") << ", this is the end, my friend." << endl;
 
   return 0;
 }
