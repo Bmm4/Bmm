@@ -674,6 +674,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("prob",    &fb.pchi2dof);
   t->SetBranchAddress("chi2dof", &fb.chi2dof);
   t->SetBranchAddress("flsxy",   &fb.flsxy);
+  t->SetBranchAddress("flxy",    &fb.flxy);
   t->SetBranchAddress("fls3d",   &fb.fls3d);
   t->SetBranchAddress("fl3d",    &fb.fl3d);
   t->SetBranchAddress("fl3dE",   &fb.fl3dE);
