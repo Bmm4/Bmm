@@ -41,16 +41,16 @@ tie %jobs, "Tie::IxHash";
 %catalogs = ();
 tie %catalogs, "Tie::IxHash";
 
-my @setTrees    = ("NTrees",         200, 400,  600,  800, 1000);       $njTrees = $#setTrees;
-my @setDepth    = ("MaxDepth",        2,    3,    4,    6,  8);         $njDepth = $#setDepth;
-my @setBeta     = ("AdaBoostBeta", 0.25, 0.30, 0.40, 0.50);             $njBeta = $#setBeta;
+my @setTrees    = ("NTrees",         200, 500, 1000);                   $njTrees = $#setTrees;
+my @setDepth    = ("MaxDepth",        2,    3,    4);                   $njDepth = $#setDepth;
+my @setBeta     = ("AdaBoostBeta",  0.2,  0.4,  0.6);                   $njBeta = $#setBeta;
 my @setCuts     = ("nCuts",          -1,   10,   25,   40);             $njCuts = $#setCuts;
-my @setMinNode  = ("MinNodeSize",    0.5,   1,    2,    5, 10);         $njMinNode = $#setMinNode;
+my @setMinNode  = ("MinNodeSize",    0.5,   1,    2,    5);             $njMinNode = $#setMinNode;
 #my @setFiles    = ("tmva-trees-6-2016.root", "tmva-trees-5-2016.root", "tmva-trees-4-2016.root");  $njFiles = $#setFiles;
-my @setFiles    = ("tmva-trees-6-2016.root", "tmva-trees-5-2016.root");  $njFiles = $#setFiles;
+my @setFiles    = ("tmva-trees-6-2016.root", "tmva-trees-7-2016.root"); $njFiles = $#setFiles;
 
-my $setVar1  = "fls3d:alpha:pvips:iso:chi2dof:docatrk:closetrk:m1iso:m2iso";
-my @setVar2   = (":pt", ":eta"); $nVar2 = $#setVar2 + 1;
+my $setVar1  = "fls3d:alpha:pvips:chi2dof:iso:m1iso:m2iso:docatrk:closetrk";
+my @setVar2   = (":fl3d", "othervtx", "pvdchi2", ":pt", ":eta"); $nVar2 = $#setVar2 + 1;
 #my @setVar2   = (":pt", ":eta", ":maxdoca", ":pvip"); $nVar2 = $#setVar2+1;
 
 my @vars = ();
