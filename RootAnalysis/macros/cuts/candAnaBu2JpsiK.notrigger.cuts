@@ -11,6 +11,6 @@ TRIGRANGE    NOTRIGGER
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
-+input cuts/jpsimuons.cuts
++input cuts/jpsimuons.YEAR.cuts
 # -- J/psi cuts
 +input cuts/jpsi.cuts

@@ -14,4 +14,4 @@ flxyHi     3.0	     3.0        3.0         3.0
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
-+input cuts/muons.cuts
++input cuts/muons.YEAR.cuts

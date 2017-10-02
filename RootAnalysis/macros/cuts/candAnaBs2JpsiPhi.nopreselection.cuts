@@ -11,7 +11,7 @@ PVAVEW8          0.6
 # -- tracks
 +input cuts/tracks.cuts
 # -- muons
-+input cuts/jpsimuons.cuts
++input cuts/jpsimuons.YEAR.cuts
 # -- bdt input
 #no input cuts/bdt.2012.cuts
 # -- J/psi cuts
