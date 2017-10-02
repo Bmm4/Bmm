@@ -78,15 +78,18 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
 
   fChan = 0;
 
+  fHistStrings.clear();
+  fHistStrings.push_back("cnc" + fSuffix);
+  fHistStrings.push_back("bdt" + fSuffix);
+  for (int i = 0; i < 42; ++i) {
+    fHistStrings.push_back(Form("bdt_%d_", i) + fSuffix);
+  }
+
   TH2D *h2(0);
   TH1D *h(0);
   string mode("cnc");
-  for (int imode = 0; imode < 2; ++imode) {
-    if (0 == imode) {
-      mode =  "cnc" + fSuffix;
-    } else {
-      mode = "bdt" + fSuffix;
-    }
+  for (int i = 0; i < fHistStrings.size(); ++i) {
+    mode = fHistStrings[i];
     for (int i = 0; i < fNchan; ++i) {
       h2 = new TH2D(Form("h%sAccAll%d", mode.c_str(), i), Form("h%sAccAll%d", mode.c_str(), i), 25, 0., 2.5, 25, 0., 50.);
       fhAccAll[mode].push_back(h2);
@@ -1259,6 +1262,7 @@ void plotResults::calculateNumbers(string mode) {
 
     // -- calculate Bs-> J/psi phi BF
     calculateBs2Bu(chan);
+    calculatePerformance(chan);
 
     // -- do two channels only
     if (chan == 1) break;
@@ -1285,11 +1289,6 @@ void plotResults::calculateBs2Bu(int ichan) {
     * buBf;
 
   bf.val   = (fCsNumbers[ichan].fW8SignalFit.val / fNoNumbers[ichan].fW8SignalFit.val) * alpha;
-  bf.estat = dRatio(fCsNumbers[ichan].fW8SignalFit.val, fCsNumbers[ichan].fW8SignalFit.estat,
-		    fNoNumbers[ichan].fW8SignalFit.val, fNoNumbers[ichan].fW8SignalFit.estat
-		    ) * alpha;
-  bf.esyst = (fFsfu.esyst/fFsfu.val)*bf.val;
-  bf.calcEtot();
 
 
   cout << "*******************************" << endl;
@@ -1302,8 +1301,90 @@ void plotResults::calculateBs2Bu(int ichan) {
   string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
   fSuffixSel = modifier;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  fTEX << "% -- BF(Bs -> J/psi phi):  chan: " << ichan << endl;
+  fTEX << "% -- BF(Bs -> J/psi phi):  chan: " << ichan << " BFCS/CSBF" << endl;
   dumpTex(bf, Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan), 6);
+}
+
+
+// ----------------------------------------------------------------------
+void plotResults::calculatePerformance(int ichan) {
+
+  double bsBf  = fDS[fCsNumbers[ichan].fNameMc]->fBf;
+  double bsBfE = fDS[fCsNumbers[ichan].fNameMc]->fBfE;
+
+  double buBf  = fDS[fNoNumbers[ichan].fNameMc]->fBf;
+  double buBfE = fDS[fNoNumbers[ichan].fNameMc]->fBfE;
+
+  number bfU, bfS;
+  double alphaU = (1./fFsfu.val)
+    * (fNoNumbers[ichan].fEffTot.val / fBsmmNumbers[ichan].fEffTot.val)
+    * buBf
+    / fNoNumbers[ichan].fW8SignalFit.val;
+  double alphaUE = TMath::Sqrt(
+			       (fFsfu.etot/fFsfu.val)*(fFsfu.etot/fFsfu.val)
+			       + (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.etot)
+			       * (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.etot)
+			       + (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
+			       * (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
+			       + (buBfE/buBf)*(buBfE/buBf)
+			       + (fNoNumbers[ichan].fW8SignalFit.etot/fNoNumbers[ichan].fW8SignalFit.val)
+			       *(fNoNumbers[ichan].fW8SignalFit.etot/fNoNumbers[ichan].fW8SignalFit.val)
+			       );
+  alphaUE = alphaUE * alphaU;
+
+  double alphaS =
+    (fCsNumbers[ichan].fEffTot.val / fBsmmNumbers[ichan].fEffTot.val)
+    * bsBf
+    / fCsNumbers[ichan].fW8SignalFit.val;
+  double alphaSE = TMath::Sqrt(
+			       + (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.etot)
+			       * (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.etot)
+			       + (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
+			       * (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
+			       + (bsBfE/bsBf)*(bsBfE/bsBf)
+			       + (fCsNumbers[ichan].fW8SignalFit.etot/fCsNumbers[ichan].fW8SignalFit.val)
+			       *(fCsNumbers[ichan].fW8SignalFit.etot/fCsNumbers[ichan].fW8SignalFit.val)
+			       );
+  alphaSE   = alphaSE * alphaS;
+
+  bfU.val   = fBsmmNumbers[ichan].fScaledYield.val  * alphaU;
+  bfU.estat = 0.;
+  bfU.esyst = 0.;
+  bfU.etot  = TMath::Sqrt(alphaUE*alphaUE*fBsmmNumbers[ichan].fScaledYield.val*fBsmmNumbers[ichan].fScaledYield.val
+			  + alphaU*alphaU*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
+
+
+  bfU.val   = fBsmmNumbers[ichan].fScaledYield.val  * alphaS;
+  bfU.estat = 0.;
+  bfU.esyst = 0.;
+  bfU.etot  = TMath::Sqrt(alphaSE*alphaSE*fBsmmNumbers[ichan].fScaledYield.val*fBsmmNumbers[ichan].fScaledYield.val
+			  + alphaS*alphaS*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
+
+  cout << "*******************************" << endl;
+  cout << "expected Bsmm yield (B+ norm): " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
+  cout << "psik w8 yield:                 " << fNoNumbers[ichan].fW8SignalFit.val << " +/- " << fNoNumbers[ichan].fW8SignalFit.etot << endl;
+  cout << "alphaU:                        " << alphaU << " +- " << alphaUE  << endl;
+  cout << "BF:                            " << bfU.val << " +/- " << bfU.etot << " for selection " << fNoNumbers[ichan].fSel << endl;
+  cout << "*******************************" << endl;
+
+  cout << "*******************************" << endl;
+  cout << "expected Bsmm yield (Bs norm): " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
+  cout << "psiphi w8 yield:               " << fCsNumbers[ichan].fW8SignalFit.val << " +/- " << fCsNumbers[ichan].fW8SignalFit.etot << endl;
+  cout << "alphaS:                        " << alphaS << " +- " << alphaSE << endl;
+  cout << "BF:                            " << bfS.val << " +/- " << bfS.etot << " for selection " << fCsNumbers[ichan].fSel << endl;
+  cout << "*******************************" << endl;
+
+  int NDIG(6);
+  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  fSuffixSel = modifier;
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- BF(Bs -> mumu; Bu -> psi K):  chan: " << ichan << endl;
+  fTEX << formatTexErrSci(alphaU, alphaUE, Form("%s:alphaU:chan%d", fSuffixSel.c_str(), ichan), 4) << endl;
+  dumpTex(bfU, Form("%s:BSMMBFU:chan%d", fSuffixSel.c_str(), ichan), 6);
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- BF(Bs -> mumu; Bs -> psi phi):  chan: " << ichan << endl;
+  fTEX << formatTexErrSci(alphaS, alphaSE, Form("%s:alphaS:chan%d", fSuffixSel.c_str(), ichan), 4) << endl;
+  dumpTex(bfS, Form("%s:BSMMBFS:chan%d", fSuffixSel.c_str(), ichan), 6);
 
 
 }
@@ -2064,25 +2145,21 @@ void plotResults::loopFunction1() {
     if (!fIsMC && (2016 == fYear) && (iera(fb.run) < 7)) return;
   }
 
-  vector<string> modifier;
-  modifier.push_back("cnc" + fSuffix);
-  modifier.push_back("bdt" + fSuffix);
-
-  for (unsigned int im = 0; im < modifier.size(); ++im) {
-    fhMassAbsNoCuts[modifier[im]][fChan]->Fill(mass);
-    fhAccAll[modifier[im]][fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
-    fhAccPtAll[modifier[im]][fChan]->Fill(fb.pt);
-    fhAccEtaAll[modifier[im]][fChan]->Fill(TMath::Abs(fb.eta));
+  for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
+    fhMassAbsNoCuts[fHistStrings[im]][fChan]->Fill(mass);
+    fhAccAll[fHistStrings[im]][fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
+    fhAccPtAll[fHistStrings[im]][fChan]->Fill(fb.pt);
+    fhAccEtaAll[fHistStrings[im]][fChan]->Fill(TMath::Abs(fb.eta));
   }
 
   if (!fGoodAcceptance) return;
 
-  for (unsigned int im = 0; im < modifier.size(); ++im) {
-    fhAccPass[modifier[im]][fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
-    fhAccPtPass[modifier[im]][fChan]->Fill(fb.pt);
-    fhAccEtaPass[modifier[im]][fChan]->Fill(TMath::Abs(fb.eta));
+  for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
+    fhAccPass[fHistStrings[im]][fChan]->Fill(TMath::Abs(fb.eta), fb.pt);
+    fhAccPtPass[fHistStrings[im]][fChan]->Fill(fb.pt);
+    fhAccEtaPass[fHistStrings[im]][fChan]->Fill(TMath::Abs(fb.eta));
     // -- this is the base, after the raw acceptance cuts
-    fhMassNoCuts[modifier[im]][fChan]->Fill(mass);
+    fhMassNoCuts[fHistStrings[im]][fChan]->Fill(mass);
   }
 
 
@@ -2111,36 +2188,36 @@ void plotResults::loopFunction1() {
       && fGoodIso
       && fGoodDocaTrk
       ) {
-    fhMassWithAnaCuts[modifier[0]][fChan]->Fill(mass);
+    fhMassWithAnaCuts[fHistStrings[0]][fChan]->Fill(mass);
 
     if (fGoodMuonsID) {
-      fhMassWithMuonCuts[modifier[0]][fChan]->Fill(mass);
+      fhMassWithMuonCuts[fHistStrings[0]][fChan]->Fill(mass);
       if (fGoodHLT) {
-	fhMassWithTriggerCuts[modifier[0]][fChan]->Fill(mass);
-	fhMassWithAllCuts[modifier[0]][fChan]->Fill(mass);
+	fhMassWithTriggerCuts[fHistStrings[0]][fChan]->Fill(mass);
+	fhMassWithAllCuts[fHistStrings[0]][fChan]->Fill(mass);
 	if (fIsCowboy) {
-	  fhMassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithAllCutsCowboy[fHistStrings[0]][fChan]->Fill(mass);
 	} else {
-	  fhMassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithAllCutsSeagull[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
 	// -- blind version (to have the possibility to make a blind plot also after unblinding)
 	if ((5.2 < mass) && (mass < 5.45)) {
 	} else {
-	  fhMassWithAllCutsBlind[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithAllCutsBlind[fHistStrings[0]][fChan]->Fill(mass);
 	  if (fIsCowboy) {
-	    fhMassWithAllCutsCowboyBlind[modifier[0]][fChan]->Fill(mass);
+	    fhMassWithAllCutsCowboyBlind[fHistStrings[0]][fChan]->Fill(mass);
 	  } else {
-	    fhMassWithAllCutsSeagullBlind[modifier[0]][fChan]->Fill(mass);
+	    fhMassWithAllCutsSeagullBlind[fHistStrings[0]][fChan]->Fill(mass);
 	  }
 	}
 
 	// -- weighted with fake rate
-	fhW8MassWithAllCuts[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	fhW8MassWithAllCuts[fHistStrings[0]][fChan]->Fill(mass, fW8MisId);
 	if (fIsCowboy) {
-	  fhW8MassWithAllCutsCowboy[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	  fhW8MassWithAllCutsCowboy[fHistStrings[0]][fChan]->Fill(mass, fW8MisId);
 	} else {
-	  fhW8MassWithAllCutsSeagull[modifier[0]][fChan]->Fill(mass, fW8MisId);
+	  fhW8MassWithAllCutsSeagull[fHistStrings[0]][fChan]->Fill(mass, fW8MisId);
 	}
 
 
@@ -2148,41 +2225,41 @@ void plotResults::loopFunction1() {
 	if ((fMode == BS2JPSIPHI)
 	    || (fMode == BD2JPSIKSTAR)
 	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[0]][fChan]->Fill(mass, -0.1, ps);
-	  fhNorm[modifier[0]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[0]][fChan]->Fill(mass, ps+0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, ps);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1);
+	  fhNorm[fHistStrings[0]][fChan]->Fill(mass, -0.1, ps);
+	  fhNorm[fHistStrings[0]][fChan]->Fill(mass, 0.1);
+	  fhNorm[fHistStrings[0]][fChan]->Fill(mass, ps+0.1);
+	  fhNormC[fHistStrings[0]][fChan]->Fill(fb.cm, -0.1, ps);
+	  fhNormC[fHistStrings[0]][fChan]->Fill(fb.cm, 0.1);
+	  fhNormC[fHistStrings[0]][fChan]->Fill(fb.cm, ps+0.1);
 
-	  fhW8Norm[modifier[0]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
-	  fhW8Norm[modifier[0]][fChan]->Fill(mass, 0.1, fb.corrW8);
-	  fhW8Norm[modifier[0]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
-	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
-	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
-	  fhW8NormC[modifier[0]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
+	  fhW8Norm[fHistStrings[0]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
+	  fhW8Norm[fHistStrings[0]][fChan]->Fill(mass, 0.1, fb.corrW8);
+	  fhW8Norm[fHistStrings[0]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
+	  fhW8NormC[fHistStrings[0]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
+	  fhW8NormC[fHistStrings[0]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
+	  fhW8NormC[fHistStrings[0]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
 
 	}
 
 
 	if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
-	  fhMassWithMassCuts[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithMassCuts[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
 	if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
-	  fhMassWithMassCuts[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithMassCuts[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
 	if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
-	  fhMassWithMassCuts[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithMassCuts[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
 	if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
-	  fhMassWithMassCuts[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithMassCuts[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
 	if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
-	  fhMassWithMassCuts[modifier[0]][fChan]->Fill(mass);
+	  fhMassWithMassCuts[fHistStrings[0]][fChan]->Fill(mass);
 	}
 
       }
@@ -2192,95 +2269,105 @@ void plotResults::loopFunction1() {
   // -----------------
   // -- BDT histograms
   // -----------------
-  if (fGoodQ
-      && fGoodPvAveW8
-      && fGoodTracks
-      && fGoodTracksPt
-      && fGoodTracksEta
-      && fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
-      && fGoodMuonsEta
-      && fGoodJpsiCuts
-      && fGoodBDT
-      ) {
-    fhMassWithAnaCuts[modifier[1]][fChan]->Fill(mass);
+  bool goodBDT(false);
+  goodBDT = fGoodBDT;
 
-    if (fGoodMuonsID && fGoodDcand) {
-      fhMassWithMuonCuts[modifier[1]][fChan]->Fill(mass);
-      if (fGoodHLT) {
-	fhMassWithTriggerCuts[modifier[1]][fChan]->Fill(mass);
-	fhMassWithAllCuts[modifier[1]][fChan]->Fill(mass);
-	if (fIsCowboy) {
-	  fhMassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass);
-	} else {
-	  fhMassWithAllCutsSeagull[modifier[1]][fChan]->Fill(mass);
-	}
-	// -- blind version
-	if ((5.2 < mass) && (mass < 5.45)) {
-	} else {
-	  fhMassWithAllCutsBlind[modifier[1]][fChan]->Fill(mass);
+  for (unsigned int i = 1; i < fHistStrings.size(); ++i) {
+    if (1 == i) {
+      goodBDT = fGoodBDT;
+    } else {
+      goodBDT = (fBDT > (i-2)*0.01);
+    }
+
+    if (fGoodQ
+	&& fGoodPvAveW8
+	&& fGoodTracks
+	&& fGoodTracksPt
+	&& fGoodTracksEta
+	&& fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
+	&& fGoodMuonsEta
+	&& fGoodJpsiCuts
+	&& goodBDT
+	) {
+      fhMassWithAnaCuts[fHistStrings[i]][fChan]->Fill(mass);
+
+      if (fGoodMuonsID && fGoodDcand) {
+	fhMassWithMuonCuts[fHistStrings[i]][fChan]->Fill(mass);
+	if (fGoodHLT) {
+	  fhMassWithTriggerCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  fhMassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass);
 	  if (fIsCowboy) {
-	    fhMassWithAllCutsCowboyBlind[modifier[0]][fChan]->Fill(mass);
+	    fhMassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass);
 	  } else {
-	    fhMassWithAllCutsSeagullBlind[modifier[0]][fChan]->Fill(mass);
+	    fhMassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass);
 	  }
-	}
+	  // -- blind version
+	  if ((5.2 < mass) && (mass < 5.45)) {
+	  } else {
+	    fhMassWithAllCutsBlind[fHistStrings[i]][fChan]->Fill(mass);
+	    if (fIsCowboy) {
+	      fhMassWithAllCutsCowboyBlind[fHistStrings[i]][fChan]->Fill(mass);
+	    } else {
+	      fhMassWithAllCutsSeagullBlind[fHistStrings[i]][fChan]->Fill(mass);
+	    }
+	  }
 
-	// -- weighted with fake rate
-	if (0) cout << "fW8MisId = " << fW8MisId
-		    << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
-		    << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
-		    << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
-		    << endl;
+	  // -- weighted with fake rate
+	  if (0) cout << "fW8MisId = " << fW8MisId
+		      << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+		      << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+		      << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+		      << endl;
 
-	fhW8MassWithAllCuts[modifier[1]][fChan]->Fill(mass, fW8MisId);
-	if (fIsCowboy) {
-	  fhW8MassWithAllCutsCowboy[modifier[1]][fChan]->Fill(mass, fW8MisId);
-	} else {
-	  fhW8MassWithAllCutsSeagull[modifier[1]][fChan]->Fill(mass, fW8MisId);
-	}
+	  fhW8MassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	  if (fIsCowboy) {
+	    fhW8MassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	  } else {
+	    fhW8MassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	  }
 
-	// - include prescale values on y axis
-	if ((fMode == BS2JPSIPHI)
-	    || (fMode == BD2JPSIKSTAR)
-	    || (fMode == BU2JPSIKP)) {
-	  fhNorm[modifier[1]][fChan]->Fill(mass, -0.1, ps);
-	  fhNorm[modifier[1]][fChan]->Fill(mass, 0.1);
-	  fhNorm[modifier[1]][fChan]->Fill(mass, ps+0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, ps);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, 0.1);
-	  fhNormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1);
+	  // - include prescale values on y axis
+	  if ((fMode == BS2JPSIPHI)
+	      || (fMode == BD2JPSIKSTAR)
+	      || (fMode == BU2JPSIKP)) {
+	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, -0.1, ps);
+	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, 0.1);
+	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1);
+	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, ps);
+	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1);
+	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1);
 
-	  fhW8Norm[modifier[1]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
-	  fhW8Norm[modifier[1]][fChan]->Fill(mass, 0.1, fb.corrW8);
-	  fhW8Norm[modifier[1]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
-	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
-	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
-	  fhW8NormC[modifier[1]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
-	}
+	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
+	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, 0.1, fb.corrW8);
+	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
+	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
+	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
+	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
+	  }
 
-	if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
-	  fhMassWithMassCuts[modifier[1]][fChan]->Fill(mass);
-	}
+	  if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
+	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  }
 
-	if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
-	  fhMassWithMassCuts[modifier[1]][fChan]->Fill(mass);
-	}
+	  if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
+	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  }
 
-	if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
-	  fhMassWithMassCuts[modifier[1]][fChan]->Fill(mass);
-	}
+	  if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
+	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  }
 
-	if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
-	  fhMassWithMassCuts[modifier[1]][fChan]->Fill(mass);
-	}
+	  if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
+	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  }
 
-	if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
-	  fhMassWithMassCuts[modifier[1]][fChan]->Fill(mass);
+	  if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
+	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  }
 	}
       }
     }
   }
-
 }
 
 // ----------------------------------------------------------------------

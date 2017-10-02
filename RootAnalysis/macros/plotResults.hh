@@ -48,6 +48,7 @@ public :
   void calculateCombBgNumbers(anaNumbers &a, int mode = 0, double lo = 5.45, double hi = 5.9);
   void calculateRareBgNumbers(int chan);
   void calculateBs2Bu(int chan);
+  void calculatePerformance(int chan);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};
   double massIntegral(TH1* h, INTMODE i, int chan);
@@ -74,6 +75,7 @@ private:
 
   std::string fHistWithAllCuts;
 
+  std::vector<std::string> fHistStrings;
   std::map<std::string, std::vector<TH2D*> > fhAccAll, fhAccPass;
   std::map<std::string, std::vector<TH1D*> > fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
 
