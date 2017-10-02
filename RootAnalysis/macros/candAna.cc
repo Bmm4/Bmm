@@ -87,6 +87,10 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
+  // if (fRun == 191277 && fEvt == 80317425) {
+  //   printRedTreeEvt(fRTD);
+  //   return;
+  // }
 
   if (1234 == fVerbose) {
     //    cout << "run " << fRun << " ls = " << fLS << " lumi: " << fLumi << " inst lumi = " << fpEvt->fLumi << " int lumi = " << fpEvt->fLumiInt << endl;
@@ -3445,6 +3449,7 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
 // ----------------------------------------------------------------------
 void candAna::calcBDT() {
   fBDT = -99.;
+
   if (!preselection(fRTD)) return;
 
   fBDT = -98.;
@@ -3896,6 +3901,7 @@ void candAna::fillRedTreeData() {
   fRTD.pt        = fCandPt;
   fRTD.eta       = fCandEta;
   fRTD.m         = fCandM;
+  fRTD.me        = fCandME;
 
   fRTD.m1pt      = fMu1Pt;
   fRTD.m2pt      = fMu2Pt;
@@ -3905,6 +3911,9 @@ void candAna::fillRedTreeData() {
 
   fRTD.m1q       = fMu1Q;
   fRTD.m2q       = fMu2Q;
+
+  fRTD.m1iso     = fMu1Iso;
+  fRTD.m2iso     = fMu2Iso;
 
   fRTD.pvip      = fCandPvIp;
   fRTD.pvips     = fCandPvIpS;
