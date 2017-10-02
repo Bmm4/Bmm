@@ -29,7 +29,7 @@ public:
   anaNumbers(std::string name = "", int ichan = 0);
   ~anaNumbers() {};
   void clear();
-  std::string fName, fNameMc, fNameDa;
+  std::string fName, fNameMc, fNameDa, fSel;
   int fChan;
   // -- NWIN-element vectors for mass window yields: lo, Bd, Bs, hi, all
   std::vector<number> fMcYield, fObsYield, fFitYield;

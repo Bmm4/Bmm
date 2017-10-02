@@ -215,7 +215,8 @@ void plotStuff::makeAll(string what) {
   if (what == "all" || what == "massresolution") {
     massResolution("bsmmMcComb", "bsmmMcRun1");
   }
-  if (what == "all" || what == "tauefficiency") {
+
+  if (what == "all" || string::npos != what.find("tauefficiency")) {
     tauEfficiency("all", "", "", "");
   }
 
@@ -302,14 +303,14 @@ void plotStuff::puStudy(string dsname, std::string dsname2) {
     if (!(fpHdzmin[i] = (TH1D*)fHistFile->Get(Form("dzmin_%s_chan%d", mode, i))))
       fpHdzmin[i] = new TH1D(Form("dzmin_%s_chan%d", mode, i), "dzmin", 200, -2., 2.0);
     setFilledHist(fpHdzmin[i], kBlue, kYellow, 1000);
-    setTitles(fpHdzmin[i], "minimum #Delta z #it{[cm]}", "a.u.", 0.05, 1.1, 1.8);
+    setTitles(fpHdzmin[i], "minimum #Delta z [cm]", "a.u.", 0.05, 1.1, 1.8);
 
     if (!(fpHlz1[i] = (TH1D*)fHistFile->Get(Form("lz1_%s_chan%d", mode, i))))
       fpHlz1[i] = new TH1D(Form("lz1_%s_chan%d", mode, i), "lz1", 400, -2.0, 2.0);
-    setTitles(fpHlz1[i], "#it{|} l_{z}^{(1)} #it{| [cm]}", "a.u.", 0.05, 1.1, 1.8);
+    setTitles(fpHlz1[i], "| #it{l_{z}^{(1)}}| [cm]", "a.u.", 0.05, 1.1, 1.8);
     if (!(fpHlzs1[i] = (TH1D*)fHistFile->Get(Form("lzs1_%s_chan%d", mode, i))))
       fpHlzs1[i] = new TH1D(Form("lzs1_%s_chan%d", mode, i), "lzs1", 200, -100., 100);
-    setTitles(fpHlzs1[i], "l_{z}^{(1)} #sigma(l_{z}^{(1)}) ", "a.u.", 0.05, 1.1, 1.8);
+    setTitles(fpHlzs1[i], "|#it{l_{z}^{(1)}}|/ #sigma(#it{l_{z}^{(1)}}) ", "a.u.", 0.05, 1.1, 1.8);
 
     if (!(fpHlz2[i] = (TH1D*)fHistFile->Get(Form("lz2_%s_chan%d", mode, i))))
       fpHlz2[i] = new TH1D(Form("lz2_%s_chan%d", mode, i), "lz2", 400, -2.0, 2.0);
@@ -2921,51 +2922,56 @@ void plotStuff::setupPvTree(TTree *t) {
 void plotStuff::tauEfficiency(string varname, string cut, string otherSelection, string dsname) {
 
   if (varname == "all") {
-    for (int i = 0; i < 2; ++i) {
-      tauEfficiency(Form("flsxy_chan%d", i), "flsxy>10", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("fls3d_chan%d", i), "fls3d>15", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("alpha_chan%d", i), "alpha<0.05", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
+    vector<string> samples;
+    samples.push_back("bsmmMcComb");
+    samples.push_back("bupsikMcComb");
+    for (int is = 0; is < samples.size(); ++is) {
+      for (int i = 0; i < 2; ++i) {
+	tauEfficiency(Form("flsxy_chan%d", i), "flsxy>10", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("fls3d_chan%d", i), "fls3d>15", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("alpha_chan%d", i), "alpha<0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-      tauEfficiency(Form("chi2dof_chan%d", i), "chi2dof<2", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("maxdoca_chan%d", i), "maxdoca<0.02", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency(Form("chi2dof_chan%d", i), "chi2dof<2", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("maxdoca_chan%d", i), "maxdoca<0.02", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-      tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.015", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("closetrk_chan%d", i), "closetrk<3", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.015", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("closetrk_chan%d", i), "closetrk<3", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-      tauEfficiency(Form("iso_chan%d", i), "iso>0.8", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.8", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.8", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency(Form("iso_chan%d", i), "iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-      tauEfficiency(Form("pvip_chan%d", i), "pvip<0.01", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("pvips_chan%d", i), "pvips<5", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-
-
-      tauEfficiency("hlt1_chan0", "hlt1", "m2pt>4.&&(chan==0)", "bsmmMcComb");
-      tauEfficiency("hlt1_chan1", "hlt1", "m2pt>4.&&(chan==1)", "bsmmMcComb");
-      tauEfficiency("hlt1_chan2", "hlt1", "m2pt>4.&&(chan==2)", "bsmmMcComb");
-      tauEfficiency("hlt1_chan3", "hlt1", "m2pt>4.&&(chan==3)", "bsmmMcComb");
+	tauEfficiency(Form("pvip_chan%d", i), "pvip<0.01", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("pvips_chan%d", i), "pvips<5", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 
-      tauEfficiency(Form("m1pt_chan%d", i), "m1pt>8", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m2pt_chan%d", i), "m2pt>6", Form("m1pt>6.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency("hlt1_chan0", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==0)", samples[is]);
+	tauEfficiency("hlt1_chan1", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==1)", samples[is]);
+	tauEfficiency("hlt1_chan2", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==2)", samples[is]);
+	tauEfficiency("hlt1_chan3", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==3)", samples[is]);
 
-      tauEfficiency(Form("cnc_chan%d", i), "cnc", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("bdt_chan%d", i), "bdt>0.34", Form("m2pt>4.&&(chan==%d)", i), "bsmmMcComb");
 
-      tauEfficiency(Form("gmuid_chan%d", i), "gmuid", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("gtqual_chan%d", i), "gtqual", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency(Form("m1pt_chan%d", i), "m1pt>8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2pt_chan%d", i), "m2pt>6", Form("m1pt>6.&&(chan==%d)", i), samples[is]);
 
-      tauEfficiency(Form("m1bpix_chan%d", i), "m1bpix>0", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m2bpix_chan%d", i), "m2bpix>0", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m1bpixl1_chan%d", i), "m1bpixl1>0", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
-      tauEfficiency(Form("m2bpixl1_chan%d", i), "m2bpixl1>0", Form("m1pt>4.&&(chan==%d)", i), "bsmmMcComb");
+	tauEfficiency(Form("cnc_chan%d", i), "cnc", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("bdt_chan%d", i), "bdt>0.34", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+
+	tauEfficiency(Form("gmuid_chan%d", i), "gmuid", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("gtqual_chan%d", i), "gtqual", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+
+	tauEfficiency(Form("m1bpix_chan%d", i), "m1bpix>0", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2bpix_chan%d", i), "m2bpix>0", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m1bpixl1_chan%d", i), "m1bpixl1>0", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2bpixl1_chan%d", i), "m2bpixl1>0", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
+      }
     }
     return;
   }
 
 
   fSample = dsname;
-  cout << "==> plotWork::efficiencyVariable> sample = " << fSample << endl;;
+  cout << "==> plotStuff::efficiencyVariable> sample = " << fSample << endl;;
 
   string dir("candAnaMuMu");
   if (string::npos != dsname.find("bupsik")) {
@@ -3004,11 +3010,13 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   TH1D *h3 = (TH1D*)(h1->Clone(effName.c_str())); h3->Reset();
   setHist(h3);
   h3->Divide(h2, h1, 1., 1., "b");
-  setTitles(h3, "#tau #it{[ps]}", "Efficiency");
+  setTitles(h3, "#tau [ps]", "Efficiency");
 
+  c0->SetCanvasSize(700, 700);
+  c0->cd();
+  shrinkPad(0.15, 0.18);
   gPad->SetTicks(1,0);
-  gPad->SetTopMargin(0.11);
-  gPad->SetRightMargin(0.15);
+
   h1->Draw("hist");
   h2->Draw("histsame");
   h1->Draw("axissame");
@@ -3026,13 +3034,15 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   h3->SetMarkerColor(kBlue);
   h3->SetLineColor(kBlue);
   h3->Fit("pol1", "r", "same", xmin, 12.e-12);
-  h3->GetFunction("pol1")->SetLineWidth(2);
-  h3->GetFunction("pol1")->SetLineColor(kBlue);
+  if (h3->GetFunction("pol1")) {
+    h3->GetFunction("pol1")->SetLineWidth(2);
+    h3->GetFunction("pol1")->SetLineColor(kBlue);
 
-  tl->SetTextSize(0.027);
-  tl->SetTextColor(kBlue);
-  tl->DrawLatexNDC(0.5, 0.76,
-		   Form("slope = (%3.1f #pm %3.1f)e9", 1.e-9/sf*h3->GetFunction("pol1")->GetParameter(1), 1.e-9/sf*h3->GetFunction("pol1")->GetParError(1)));
+    tl->SetTextSize(0.027);
+    tl->SetTextColor(kBlue);
+    tl->DrawLatexNDC(0.5, 0.76,
+		     Form("slope = (%3.1f #pm %3.1f)e9", 1.e-9/sf*h3->GetFunction("pol1")->GetParameter(1), 1.e-9/sf*h3->GetFunction("pol1")->GetParError(1)));
+  }
 
   // draw axis on the right side of the pad
   TGaxis *axis = new TGaxis(1.0*h3->GetXaxis()->GetXmax(), 0., 1.0*h3->GetXaxis()->GetXmax(), h1->GetMaximum(), 0.01, 1./0.7, 510, "+L");
@@ -3042,9 +3052,10 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
 
   c0->cd();
-  savePad(Form("tauEff%d_%s_%s.pdf", fYear, varname.c_str(), fSample.c_str()));
+  savePad(Form("tauEff%d%s_%s_%s.pdf", fYear, fSetup.c_str(), varname.c_str(), fSample.c_str()));
 
-
+  delete h1;
+  delete h2;
 }
 
 

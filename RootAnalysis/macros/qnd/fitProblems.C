@@ -1,5 +1,24 @@
 // ----------------------------------------------------------------------
 void fitProblems() {
+  TFile *f = TFile::Open("/shome/ursl/bmm4/CMSSW_9_2_7/src/Bmm/RootAnalysis/macros/results/plotReducedOverlays.2016BF.root");
+
+  fitPsYield a(0, 1);
+
+  string hname("ad0bdt_bupsikData_docatrkMassPresel");
+  TH1D *hc     = (TH1D*)f->Get(hname.c_str());
+  if (hc) {
+    a.fit0_Bu2JpsiKp(hc, -5., "fam");
+    cout << "bg     yield: " << a.getBackgroundYield() << " +/- " << a.getBackgroundError() << endl;
+    cout << "signal yield: " << a.getSignalYield() << " +/- " << a.getSignalError() << endl;
+    cout << "signal RMS: " << a.getSignalRMS() << " signal mass = " << a.getSignalPeak() << endl;
+  } else {
+    cout << hname << " not found" << endl;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void fitProblems3() {
   TFile *f = TFile::Open("/shome/ursl/bmm4/CMSSW_9_2_7/src/Bmm/RootAnalysis/macros/results/plotReducedOverlays.2012.root");
 
   fitPsYield a(0, 1);

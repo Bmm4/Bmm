@@ -603,9 +603,6 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
 
 // ----------------------------------------------------------------------
 TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, const char *cut, double preco) {
-
-  cout << "fVerbose: " << fVerbose << endl;
-
   TCanvas *c0(0);
   if (fVerbose > 0) {
     gStyle->SetOptTitle(1);
@@ -649,7 +646,8 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
 
   fitPsYield a(0, fVerbose);
-  a.fit0_Bu2JpsiKp(hm, -1, "results/adfpy");
+  string sname = string("results/adfpy/adfpy") + fControlPlotsFileName;
+  a.fit0_Bu2JpsiKp(hm, -1, sname);
   a.listFunctions();
   TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
   double expoBgl = fexpo->Integral(l0, l1);
@@ -822,6 +820,9 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 
   }
 
+  delete h0;
+  delete h1;
+
   return h2;
 }
 
@@ -874,7 +875,8 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
   cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
 
   fitPsYield a(0, fVerbose);
-  a.fit0_Bs2JpsiPhi(hm, -1, "results/adfpy");
+  string sname = string("results/adfpy/adfpy") + fControlPlotsFileName;
+  a.fit0_Bs2JpsiPhi(hm, -1, sname);
   a.listFunctions();
   TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
   double expoBgl = fexpo->Integral(l0, l1);
@@ -1078,7 +1080,8 @@ TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, cons
   cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
 
   fitPsYield a(0, fVerbose);
-  a.fit0_Bs2JpsiPhi(hm, -1, "results/adfpy");
+  string sname = string("results/adfpy/adfpy") + fControlPlotsFileName;
+  a.fit0_Bs2JpsiPhi(hm, -1, sname);
   a.listFunctions();
   TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
   double expoBgl = fexpo->Integral(l0, l1);
@@ -1279,7 +1282,8 @@ TH1D* AnalysisDistribution::sbsDistributionBd2JpsiKstar(const char *variable, co
   cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
 
   fitPsYield a(0, fVerbose);
-  a.fit0_Bd2JpsiKstar(hm, -1, "results/adfpy");
+  string sname = string("results/adfpy/adfpy") + fControlPlotsFileName;
+  a.fit0_Bd2JpsiKstar(hm, -1, sname);
   a.listFunctions();
   TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
   double expoBgl = fexpo->Integral(l0, l1);

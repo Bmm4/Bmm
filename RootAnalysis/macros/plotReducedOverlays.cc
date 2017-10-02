@@ -28,6 +28,8 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   readCuts(cutfile);
   fNchan = fCuts.size();
   fNchan = 2;
+  fDoCNC = true;
+  //  fDoCNC = false;
 
   printCuts(cout);
 
@@ -45,8 +47,9 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
   fSel2 = false;
 
   fDoList.clear();
-  fDoList.push_back("fls3d");
+  fDoList.push_back("bdtsel2");
   if (1) {
+    fDoList.push_back("fls3d");
     fDoList.push_back("muon1pt");
     fDoList.push_back("muon2pt");
 
@@ -65,6 +68,9 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("pchi2dof");
     fDoList.push_back("fl3d");
     fDoList.push_back("fl3de");
+    fDoList.push_back("flsxy");
+    fDoList.push_back("flxy");
+    fDoList.push_back("flxye");
 
     fDoList.push_back("maxdoca");
     fDoList.push_back("ip");
@@ -90,25 +96,37 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("bdt");
     fDoList.push_back("bdtsel0");
     fDoList.push_back("bdtsel1");
-    fDoList.push_back("bdtsel2");
   }
 
   fChannelList.clear();
+  // -- no restrictions, just normal analysis channels
   for (unsigned int i = 0; i < fNchan; ++i) {
     fChannelList.push_back(Form("%d", i));
   }
 
+  // -- small N(PV)
   fChannelList.push_back("0lopu");
   fChannelList.push_back("1lopu");
 
+  // -- high N(PV)
   fChannelList.push_back("0hipu");
   fChannelList.push_back("1hipu");
 
+  // -- close to other PV
   fChannelList.push_back("0cpv");
   fChannelList.push_back("1cpv");
 
+  // -- far to other PV
   fChannelList.push_back("0fpv");
   fChannelList.push_back("1fpv");
+
+  // -- small fls3d
+  fChannelList.push_back("0sfl");
+  fChannelList.push_back("1sfl");
+
+  // -- big fls3d
+  fChannelList.push_back("0bfl");
+  fChannelList.push_back("1bfl");
 
 }
 
@@ -123,10 +141,14 @@ plotReducedOverlays::~plotReducedOverlays() {
 void plotReducedOverlays::init() {
 
   system(Form("/bin/rm -f %s", fHistFileName.c_str()));
+  system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
   system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
-  system(Form("/bin/rm -f %s/sbsctrl_ad*_*.pdf", fDirectory.c_str()));
-  system(Form("/bin/rm -f %s/overlay*_ad*_*.pdf", fDirectory.c_str()));
+  system(Form("/bin/rm -f %s/sbsctrl*.pdf", fDirectory.c_str()));
+  system(Form("/bin/rm -f %s/sbsctrl/sbsctrl%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+  system(Form("/bin/rm -f %s/adfpy/adfpy*.pdf", fDirectory.c_str()));
+  system(Form("/bin/rm -f %s/adfpy*.pdf", fDirectory.c_str()));
+  system(Form("/bin/rm -f %s/overlay%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
   system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
 
 }
@@ -138,13 +160,15 @@ void plotReducedOverlays::makeAll(string what) {
   if (what == "dbx") {
     //    init();
     //    makeSampleOverlay("bdpsikstarDa", "bdpsikstarMcComb");
-    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
+    //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
+    //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
+    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    return;
   }
 
   if (what == "official") {
     comparePrivateAndOfficial();
   }
-
   if (string::npos != what.find("sys")) {
     allSystematics();
     return;
@@ -167,7 +191,7 @@ void plotReducedOverlays::makeAll(string what) {
     if (2016 == fYear) makeSampleOverlay("bupsikMc", "bupsikMcOff");
   }
 
-  if (what == "plot") {
+  if (string::npos != what.find("plot")) {
     string hfname = Form("%s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str());
     system(Form("/bin/rm -f %s", hfname.c_str()));
 
@@ -180,25 +204,27 @@ void plotReducedOverlays::makeAll(string what) {
     system(Form("/bin/rm -f %s/mass%d_ad*_*.pdf", fDirectory.c_str(), fYear));
 
     printCuts(cout);
-    makeOverlay("bspsiphiData", "bspsiphiMcComb", "cnc");
-    makeOverlay("bmmData", "bdmmMcComb", "cnc");
-    makeOverlay("bupsikData", "bupsikMcComb", "cnc");
-    if (fYear >= 2012) {
+    if (fDoCNC) {
+      makeOverlay("bspsiphiData", "bspsiphiMcComb", "cnc");
+      makeOverlay("bmmData", "bdmmMcComb", "cnc");
+      makeOverlay("bupsikData", "bupsikMcComb", "cnc");
       makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "cnc");
     }
+
     makeOverlay("bspsiphiData", "bspsiphiMcComb", "bdt");
     makeOverlay("bmmData", "bdmmMcComb", "bdt");
     makeOverlay("bupsikData", "bupsikMcComb", "bdt");
-    if (fYear >= 2012) {
-      makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "bdt");
-    }
+    makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "bdt");
   }
 
-  plotMass("bspsiphiData", "Cu");
-  plotMass("bupsikData", "Cu");
-  plotMass("bdpsikstarData", "Cu");
-  plotMass("bmmData", "Presel");
 
+
+  if (0) {
+    plotMass("bspsiphiData", "Cu");
+    plotMass("bupsikData", "Cu");
+    plotMass("bdpsikstarData", "Cu");
+    plotMass("bmmData", "Presel");
+  }
 
 
 }
@@ -221,7 +247,7 @@ void plotReducedOverlays::makeSampleOverlay(string sample1, string sample2, stri
   // makeSample(sample2, 1.e6);
 
   fStampString = "nada";
-  makeOverlay(sample1, sample2, "cnc");
+  if (fDoCNC) makeOverlay(sample1, sample2, "cnc");
   makeOverlay(sample1, sample2, "bdt");
 }
 
@@ -251,7 +277,7 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
 
   vector<string> cuts;
   cuts.push_back("bdt");
-  //dbx  cuts.push_back("cnc");
+  if (fDoCNC) cuts.push_back("cnc");
 
   double preco(5.16), sigma(0.03);
 
@@ -349,8 +375,17 @@ void plotReducedOverlays::plotMass(string sample, string selection) {
 
 // ----------------------------------------------------------------------
 void plotReducedOverlays::makeOverlay(string sample1, string sample2, string selection) {
-  if (string::npos != selection.find("bdt")) fStampString = "BDT";
-  if (string::npos != selection.find("cnc")) fStampString = "CNC";
+  vector<string> cuts;
+  if (string::npos != selection.find("bdt")) {
+    fStampString = "BDT";
+    cuts.push_back("HLT");
+    cuts.push_back("Presel");
+  }
+  if (string::npos != selection.find("cnc")) {
+    fStampString = "CNC";
+    cuts.push_back("Ao");
+    cuts.push_back("Presel");
+  }
 
   cout << "++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++" << endl;
   cout << "plotReducedOverlays::makeOverlay(" << sample1 << ", " << sample2 << ", " << selection << ") fStampString = " << fStampString << endl;
@@ -358,11 +393,6 @@ void plotReducedOverlays::makeOverlay(string sample1, string sample2, string sel
   cout << "fHistFileName: " << fHistFileName;
   fHistFile = TFile::Open(fHistFileName.c_str());
   cout << " opened " << endl;
-  vector<string> cuts;
-  cuts.push_back("Ao");
-  cuts.push_back("Cu");
-  cuts.push_back("HLT");
-  cuts.push_back("Presel");
 
   for (unsigned int iv = 0; iv < cuts.size(); ++iv) {
     for (unsigned int i = 0; i < fChannelList.size(); ++i) {
@@ -502,7 +532,7 @@ void plotReducedOverlays::makeSample(string sample, int nevents, int nstart) {
   }
 
   // -- must be after the mass box definitions!
-  bookDistributions("cnc");
+  if (fDoCNC) bookDistributions("cnc");
   bookDistributions("bdt");
 
   TTree *t = getTree(fSample, dir);
@@ -591,40 +621,68 @@ void plotReducedOverlays::loopFunction1() {
     cmsswPresel = cmsswPresel && (fb.kpt > 0.6) && (fb.pipt > 0.6);
   }
 
-  fGoodHLT        = fb.hlt1 && fb.tos && fb.l1t && cmsswPresel;
+  fGoodHLT = fb.hlt1 && fb.tos && fb.l1t
+    && fGoodAcceptance
+    && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
+    && cmsswPresel
+    && fGoodJpsiCuts
+    && fGoodDcand;
 
   // -- update ana cuts!
-  double bdtCut(0.15);
-  if (2011 == fYear) bdtCut = 0.20;
-  if (2012 == fYear) bdtCut = 0.30;
-  fPreselectionBDT = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodDcand
-		      && fGoodTracksPt && fGoodTracksEta
-		      && fGoodJpsiCuts
-		      && fGoodAcceptance
-		      && (fBDT > bdtCut));
-  fPreselection    = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodDcand
-		      && fGoodTracksPt && fGoodTracksEta
-		      && fGoodJpsiCuts
-		      && fGoodAcceptance
-		      && (fb.alpha < 0.2) && (fb.fls3d > 5));
+  double bdtCut(0.1);
+  if (2011 == fYear) bdtCut = 0.15;
+  if (2012 == fYear) bdtCut = 0.20;
+  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
+  fPreselection    = (fGoodHLT && (fb.alpha < 0.2) && (fb.fls3d > 5));
 
   fCncCuts.update();
   fBdtCuts.update();
 
   bool loPU = (fb.pvn <  8);
-  bool hiPU = (fb.pvn > 23);
+  bool hiPU = (fb.pvn > 24);
 
-  bool closePV(false);
-  if (1 == fChan) {
-    closePV = (fb.pv2lip < 0.2);
-  } else {
-    closePV = (fb.pv2lip < 0.2);
+  bool closePV = (TMath::Abs(fb.pv2lip) < 0.2);
+  bool farPV   = (TMath::Abs(fb.pv2lip) > 1.0);
+
+  bool sfl = (fb.fls3d < 12);
+  bool bfl = (fb.fls3d > 50);
+
+  if (0) {
+    cout
+      << " presel = " << fPreselection
+      << " preselBDT = " << fPreselectionBDT
+      << " cmsswPresel = " << cmsswPresel
+      << " goodHLT = " << fGoodHLT
+      << " hlt1 = " << fb.hlt1
+      << " tos " << fb.tos
+      << " l1t = " << fb.l1t
+      << " acc = " << fGoodAcceptance
+      << " gt = " << fGoodTracks
+      << " trkPt = " << fGoodTracksPt
+      << " trkEta = " << fGoodTracksEta
+      << " gmID = " << fGoodMuonsID
+      << " gmPt = " << fGoodMuonsPt
+      << " gmEta = " << fGoodMuonsEta
+      << " gbdtPt = " << fGoodBdtPt
+      << " Q = " << fGoodQ
+      << " j/psi = " << fGoodJpsiCuts
+      << " dcand = " << fGoodDcand
+      << " pv = " << fGoodPvAveW8
+      << " BDT = " << fBDT
+      << endl;
+    if (!cmsswPresel) {
+      cout << " m1pt = " << fb.m1pt
+	   << " m2pt = " << fb.m2pt
+	   << " pvips = " << fb.pvips
+	   << " flsxy = " << fb.flsxy
+	   << " maxdoca = " << fb.maxdoca
+	   << " chi2 = " << fb.chi2
+	   << endl;
+    }
   }
-  bool farPV   = (fb.pv2lip > 1.0);
 
 
-  if (fb.hlt1 && fb.tos && fGoodAcceptance
-      && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta  && fGoodJpsiCuts
+  if (fGoodHLT
       && (fBDT > bdtCut)
       ) {
     fSel0 = true;
@@ -632,8 +690,7 @@ void plotReducedOverlays::loopFunction1() {
     fSel0 = false;
   }
 
-  if (fb.hlt1 && fb.tos && fGoodAcceptance
-      && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta  && fGoodJpsiCuts
+  if (fGoodHLT
       && (fBDT > -1.) && (fb.alpha < 0.1) && (fb.fls3d > 10) && (fb.iso > 0.7)
       ) {
     fSel1 = true;
@@ -641,43 +698,55 @@ void plotReducedOverlays::loopFunction1() {
     fSel1 = false;
   }
 
-  if (fb.hlt1 && fb.tos && fb.l1t && fGoodAcceptance
-      && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta  && fGoodJpsiCuts
-      && (fBDT > -1.) && (fb.alpha < 0.1) && (fb.fls3d > 10) && (fb.iso > 0.7)
+  if (fGoodHLT
+      && (fBDT > -1.) && (fb.alpha < 0.05) && (fb.pvip < 0.008) && (fb.pvips < 2.)
+      && (fb.fls3d > 12)
+      //      && (fb.iso > 0.7) && (fb.maxdoca < 0.015) && (fb.docatrk > 0.01)
       ) {
     fSel2 = true;
   } else {
     fSel2 = false;
   }
 
-  bool doCNC(false);
   if (-1 < fChan && fChan < fNchan) {
     fChannel = Form("%d", fChan);
-    if (doCNC) fillDistributions("cnc");
+    if (fDoCNC) fillDistributions("cnc");
     fillDistributions("bdt");
 
     if (1) {
       if (loPU) {
       	fChannel = Form("%dlopu", fChan);
-	if (doCNC) fillDistributions("cnc");
+	if (fDoCNC) fillDistributions("cnc");
 	fillDistributions("bdt");
       }
       if (hiPU) {
       	fChannel = Form("%dhipu", fChan);
-	if (doCNC) fillDistributions("cnc");
+	if (fDoCNC) fillDistributions("cnc");
 	fillDistributions("bdt");
       }
 
       if (closePV) {
       	fChannel = Form("%dcpv", fChan);
-	if (doCNC) fillDistributions("cnc");
+	if (fDoCNC) fillDistributions("cnc");
 	fillDistributions("bdt");
       }
       if (farPV) {
       	fChannel = Form("%dfpv", fChan);
-	if (doCNC) fillDistributions("cnc");
+	if (fDoCNC) fillDistributions("cnc");
 	fillDistributions("bdt");
       }
+
+      if (sfl) {
+      	fChannel = Form("%dsfl", fChan);
+	if (fDoCNC) fillDistributions("cnc");
+	fillDistributions("bdt");
+      }
+      if (bfl) {
+      	fChannel = Form("%dbfl", fChan);
+	if (fDoCNC) fillDistributions("cnc");
+	fillDistributions("bdt");
+      }
+
     }
   }
 }
@@ -720,20 +789,20 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
       a->fpBDTSel2  = bookDistribution(Form("%sbdtsel2", name.c_str()), "BDTsel2", "fGoodIpS", pCuts, 100, -1.0, 1.0, p);
     }
 
-    a->fpMuon1Pt  = bookDistribution(Form("%smuon1pt", name.c_str()), "#it{p}_{T, #mu1} [GeV]", "fGoodMuonsPt", pCuts, 40, 0., 40., p);
-    a->fpMuon2Pt   = bookDistribution(Form("%smuon2pt", name.c_str()), "#it{p}_{T, #mu2} [GeV]", "fGoodMuonsPt", pCuts, 25, 0., 25., p);
+    a->fpMuon1Pt  = bookDistribution(Form("%smuon1pt", name.c_str()), "#it{p}_{T, #mu1} [GeV]", "fGoodMuonsPt", pCuts, 60, 0., 30., p);
+    a->fpMuon2Pt   = bookDistribution(Form("%smuon2pt", name.c_str()), "#it{p}_{T, #mu2} [GeV]", "fGoodMuonsPt", pCuts, 40, 0., 20., p);
     a->fpMuonsEta  = bookDistribution(Form("%smuonseta", name.c_str()), "#eta_{#mu}", "fGoodMuonsEta", pCuts, 40, -2.5, 2.5, p);
 
-    a->fpPt        = bookDistribution(Form("%spt", name.c_str()), "#it{p}_{T}#it{(B)} [GeV]", "fGoodPt", pCuts, 40, 0., 80., p);
+    a->fpPt        = bookDistribution(Form("%spt", name.c_str()), "#it{p}_{T}#it{(B)} [GeV]", "fGoodPt", pCuts, 60, 0., 60., p);
     a->fpP         = bookDistribution(Form("%sp", name.c_str()), "#it{p(B)} [GeV]", "fGoodPt", pCuts, 50, 0., 100., p);
     a->fpPz        = bookDistribution(Form("%spz", name.c_str()), "#it{p_{z}(B)} [GeV]", "fGoodPt", pCuts, 50, 0., 100., p);
     a->fpEta       = bookDistribution(Form("%seta", name.c_str()), "#eta#it{(B)}", "fGoodEta", pCuts, 40, -2.5, 2.5, p);
 
-    a->fpChi2Dof   = bookDistribution(Form("%schi2dof", name.c_str()),  "#chi^{2}/dof", (bdt? "fGoodBDT": "fGoodChi2"), pCuts, 40, 0., 4., p);
+    a->fpChi2Dof   = bookDistribution(Form("%schi2dof", name.c_str()),  "#chi^{2}/dof", (bdt? "fGoodBDT": "fGoodChi2"), pCuts, 30, 0., 3., p);
     a->fpPChi2Dof  = bookDistribution(Form("%spchi2dof", name.c_str()),  "#it{P(#chi^{2},dof)}", (bdt? "fGoodBDT": "fGoodChi2"), pCuts, 50, 0., 1.0, p);
     a->fpPvDchi2   = bookDistribution(Form("%spvdchi2", name.c_str()),  "#Delta(#chi^{2})", (bdt? "fGoodBDT": "fGoodChi2"), pCuts, 100, 0., 2000., p);
     a->fpOtherVtx  = bookDistribution(Form("%sothervtx", name.c_str()),  "othervtx", (bdt? "fGoodBDT": "fGoodChi2"), pCuts, 40, 0., 1., p);
-    a->fpMaxDoca   = bookDistribution(Form("%smaxdoca", name.c_str()), "#it{d}^{max} [cm]", (bdt? "fGoodBDT": "fGoodMaxDoca"), pCuts, 60, 0., 0.03, p);
+    a->fpMaxDoca   = bookDistribution(Form("%smaxdoca", name.c_str()), "#it{d}^{max}_{ca} [cm]", (bdt? "fGoodBDT": "fGoodMaxDoca"), pCuts, 60, 0., 0.03, p);
 
     a->fpAlpha     = bookDistribution(Form("%salpha", name.c_str()), "#alpha_{3D}", (bdt? "fGoodBDT": "fGoodAlpha"), pCuts, 50, 0., 0.1, p);
 
@@ -741,7 +810,7 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
     a->fpFL3d      = bookDistribution(Form("%sfl3d", name.c_str()),  "#it{l_{3D}} [cm]", (bdt? "fGoodBDT": "fGoodFLS"), pCuts, 60, 0., 1.5, p);
     a->fpFL3dE     = bookDistribution(Form("%sfl3de", name.c_str()), "#sigma(#it{l_{3D}}) [cm]", (bdt? "fGoodBDT": "fGoodFLS"), pCuts, 50, 0., 0.05, p);
 
-    a->fpFLSxy     = bookDistribution(Form("%sflsy", name.c_str()), "#it{l_{xy}}/#sigma(#it{l_{3D}})", (bdt? "fGoodBDT": "fGoodFLS"),
+    a->fpFLSxy     = bookDistribution(Form("%sflsxy", name.c_str()), "#it{l_{xy}}/#sigma(#it{l_{xy}})", (bdt? "fGoodBDT": "fGoodFLS"),
 				      pCuts, 60, 0., 120., p);
     a->fpFLxy      = bookDistribution(Form("%sflxy", name.c_str()),  "#it{l_{xy}} [cm]", (bdt? "fGoodBDT": "fGoodFLS"),
 				      pCuts, 60, 0., 1.5, p);
@@ -749,25 +818,25 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
 				      pCuts, 50, 0., 0.05, p);
 
     a->fpIp        = bookDistribution(Form("%sip", name.c_str()), "#delta_{#it{3D}} [cm]", (bdt? "fGoodBDT": "fGoodIp"),
-				      pCuts, 50, 0., 0.015, p);
+				      pCuts, 60, 0., 0.012, p);
     a->fpIpS       = bookDistribution(Form("%sips", name.c_str()), "#delta_{#it{3D}}/#sigma(#delta_{3D})", (bdt? "fGoodBDT": "fGoodIpS"),
-				      pCuts, 50, 0., 4, p);
+				      pCuts, 40, 0., 4, p);
 
-    a->fpLip       = bookDistribution(Form("%slip", name.c_str()), "#it{l_{z}} [cm]", (bdt? "fGoodBDT": "fGoodLip"),
+    a->fpLip       = bookDistribution(Form("%slip", name.c_str()), "|#it{l_{z}}| [cm]", (bdt? "fGoodBDT": "fGoodLip"),
 				      pCuts, 50, 0., 0.015, p);
-    a->fpLip2      = bookDistribution(Form("%slip2", name.c_str()), "#it{l_{z}^{(2)}} [cm]", (bdt? "fGoodBDT": "fGoodLip"),
+    a->fpLip2      = bookDistribution(Form("%slip2", name.c_str()), "|#it{l_{z}^{(2)}}| [cm]", (bdt? "fGoodBDT": "fGoodLip"),
 				      pCuts, 100, 0., 4.0, p);
 
-    a->fpLipS      = bookDistribution(Form("%slips", name.c_str()), "#it{l_{z}}/#sigma(#it{l_{z}})", (bdt? "fGoodBDT": "fGoodLipS"),
+    a->fpLipS      = bookDistribution(Form("%slips", name.c_str()), "|#it{l_{z}}|/#sigma(#it{l_{z}})", (bdt? "fGoodBDT": "fGoodLipS"),
 				      pCuts, 50, 0., 4, p);
-    a->fpLipS2     = bookDistribution(Form("%slips2", name.c_str()), "#it{l_{z}}^{(2)}/#sigma(#it{l_{z}}^{(2)})", (bdt? "fGoodBDT": "fGoodLipS"),
+    a->fpLipS2     = bookDistribution(Form("%slips2", name.c_str()), "|#it{l_{z}}^{(2)}|/#sigma(#it{l_{z}}^{(2)})", (bdt? "fGoodBDT": "fGoodLipS"),
 				      pCuts, 50, 0., 20., p);
 
 
     a->fpDocaTrk   = bookDistribution(Form("%sdocatrk", name.c_str()), "#it{d}_{ca}^{0} [cm]", (bdt? "fGoodBDT": "fGoodDocaTrk"), pCuts, 50, 0., 0.20, p);
-    a->fpIso       = bookDistribution(Form("%siso", name.c_str()),  "isolation", (bdt? "fGoodBDT": "fGoodIso"), pCuts, 52, 0., 1.04, p);
-    a->fpM1Iso     = bookDistribution(Form("%sm1iso", name.c_str()),  "m1 isolation", (bdt? "fGoodBDT": "fGoodM1Iso"), pCuts, 52, 0., 1.04, p);
-    a->fpM2Iso     = bookDistribution(Form("%sm2iso", name.c_str()),  "m2 isolation", (bdt? "fGoodBDT": "fGoodM2Iso"), pCuts, 52, 0., 1.04, p);
+    a->fpIso       = bookDistribution(Form("%siso", name.c_str()),  "isolation", (bdt? "fGoodBDT": "fGoodIso"), pCuts, 26, 0., 1.04, p);
+    a->fpM1Iso     = bookDistribution(Form("%sm1iso", name.c_str()),  "m1 isolation", (bdt? "fGoodBDT": "fGoodM1Iso"), pCuts, 26, 0., 1.04, p);
+    a->fpM2Iso     = bookDistribution(Form("%sm2iso", name.c_str()),  "m2 isolation", (bdt? "fGoodBDT": "fGoodM2Iso"), pCuts, 26, 0., 1.04, p);
 
     a->fpCloseTrk  = bookDistribution(Form("%sclosetrk", name.c_str()),  "#it{N}_{trk}^{close}", (bdt? "fGoodBDT": "fGoodCloseTrack"),
 				      pCuts, 10, 0., 10., p);
@@ -799,7 +868,7 @@ void plotReducedOverlays::sbsDistributions(string sample, string selection, stri
   AnalysisDistribution a(Form("%s_muon1pt", sample.c_str()));
   a.fVerbose = 1;
   a.fControlPlotsFileName = sbsControlPlotsFileName;
-  a.fDirectory = fDirectory;
+  a.fDirectory = fDirectory + string("/sbsctrl");
 
   int type(0);
   if (string::npos != sample.find("bmmData"))        type = 0; // sidebands
@@ -817,16 +886,11 @@ void plotReducedOverlays::sbsDistributions(string sample, string selection, stri
     if (restricted) {
       if (string::npos == fDoList[i].find(what)) continue;
     }
-    // if ((string::npos != fDoList[i].find("bdt")) && (string::npos != sample.find("cnc"))) {
-    //   lselection = "Cu";
-    // } else {
-    //   lselection = selection;
-    // }
     bla =  Form("%s_%s", sample.c_str(), fDoList[i].c_str());
     if (0 == type) {
       cout << "=> Looking for sideband histogram " << Form("%s%s1", bla.c_str(), lselection.c_str()) << endl;
       //      h = (TH1D*)gDirectory->Get(Form("%s%s1", bla.c_str(), lselection.c_str()));
-      h = a.sbDistribution(bla.c_str(), lselection.c_str(), 1);
+      h = a.sbDistribution(bla.c_str(), lselection.c_str(), 2);
       cout << "=> cloning into  "
 	   << Form("sbs_%s_%s%s", sample.c_str(), fDoList[i].c_str(), lselection.c_str()) << endl;
       h = (TH1D*)h->Clone(Form("sbs_%s_%s%s", sample.c_str(), fDoList[i].c_str(), lselection.c_str()));
@@ -837,8 +901,6 @@ void plotReducedOverlays::sbsDistributions(string sample, string selection, stri
 	   << Form("sbs_%s_%s%s", sample.c_str(), fDoList[i].c_str(), lselection.c_str()) << endl;
       h = (TH1D*)h->Clone(Form("sbs_%s_%s%s", sample.c_str(), fDoList[i].c_str(), lselection.c_str()));
     } else if (2 == type) {
-      //      cout << "=> sbsDistributionPol1ErrGauss histogram " << Form("%s for lselection %s", bla.c_str(), lselection.c_str()) << endl;
-      //      h = a.sbsDistributionPol1ErrGauss(bla.c_str(), lselection.c_str(), preco);
       cout << "=> sbsDistributionExpoErrGauss histogram " << Form("%s for lselection %s", bla.c_str(), lselection.c_str())
 	   << endl;
       h = a.sbsDistributionExpoErrGauss(bla.c_str(), lselection.c_str());
@@ -959,7 +1021,7 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
 	tl->SetTextSize(0.025);
 	tl->DrawLatexNDC(0.92, 0.20, hname.c_str());
 
-	savePad(Form("%s.pdf",  hname.c_str()));
+	savePad(Form("sbso/%s.pdf", hname.c_str()));
       }
     }
   }
@@ -1111,8 +1173,8 @@ void plotReducedOverlays::overlay(string sample1, string sample2, string selecti
 
     c0->Modified();
     c0->Update();
-    c0->SaveAs(Form("%s/overlay%d%s_%s_%s_%s_%s.pdf",
-		    fDirectory.c_str(), fYear, fSetup.c_str(), sample1.c_str(), sample2.c_str(), fDoList[i].c_str(), lselection.c_str()));
+    c0->SaveAs(Form("%s/overlays/%d/overlay%d%s_%s_%s_%s_%s.pdf",
+		    fDirectory.c_str(), fYear, fYear, fSetup.c_str(), sample1.c_str(), sample2.c_str(), fDoList[i].c_str(), lselection.c_str()));
 
 
 
@@ -1323,6 +1385,10 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpFL3d->fill(fb.fl3d, mass);
   fAdMap[mapname]->fpFL3dE->fill(fb.fl3dE, mass);
 
+  fAdMap[mapname]->fpFLSxy->fill(fb.flsxy, mass);
+  fAdMap[mapname]->fpFLxy->fill(fb.flxy, mass);
+  fAdMap[mapname]->fpFLxyE->fill(fb.flxy/fb.flsxy, mass);
+
   fAdMap[mapname]->fpTau->fill(1.e12*fb.tau, mass);
 
   fAdMap[mapname]->fpMaxDoca->fill(fb.maxdoca, mass);
@@ -1335,11 +1401,11 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpM1Iso->fill(fb.m1iso, mass);
   fAdMap[mapname]->fpM2Iso->fill(fb.m2iso, mass);
 
-  fAdMap[mapname]->fpLip->fill(fb.pvlip, mass);
-  fAdMap[mapname]->fpLipS->fill(fb.pvlips, mass);
+  fAdMap[mapname]->fpLip->fill(TMath::Abs(fb.pvlip), mass);
+  fAdMap[mapname]->fpLipS->fill(TMath::Abs(fb.pvlips), mass);
 
-  fAdMap[mapname]->fpLip2->fill(fb.pv2lip, mass);
-  fAdMap[mapname]->fpLipS2->fill(fb.pv2lips, mass);
+  fAdMap[mapname]->fpLip2->fill(TMath::Abs(fb.pv2lip), mass);
+  fAdMap[mapname]->fpLipS2->fill(TMath::Abs(fb.pv2lips), mass);
   // fAdMap[mapname]->fpLastCut->fill(mass, mass);
 
   fAdMap[mapname]->fpOtherVtx->fill(fb.othervtx, mass);

@@ -242,7 +242,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   fSummary.clear();
 
   fpIF->fName = "fit";
-  fpIF->fVerbose = false;
+  fpIF->fVerbose = true;
   TF1 *f1 = fpIF->bupsik(h);
   fpIF->fName = "comp";
   TF1 *fcnSig  = fpIF->gauss2c(h);
@@ -278,7 +278,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
     fCombMax = h->GetMaximum();
     f1->SetParLimits(0, 0., 10.*h->GetMaximum());
     f1->SetParLimits(1, 5.25,  5.30); // it's a B+ fit!
-    f1->SetParLimits(5, 0.,  1.e7);
+    //    f1->SetParLimits(5, 0.,  1.e15);
     f1->SetParLimits(9, 0.,  10.*h->GetMaximum());
   } else {
     for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
@@ -316,8 +316,8 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
     } else {
       // do nothing, boot strap!
     }
-    if (fVerbose > -1) fpIF->dumpParameters(f1);
   }
+  if (fVerbose > -1) fpIF->dumpParameters(f1);
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
@@ -775,7 +775,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
   fSummary.clear();
 
   fpIF->fName = "fit";
-  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.04, 1.1);
+  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.05, 1.1);
   fpIF->fName = "comp";
   TF1 *fg  = fpIF->gauss2c(0., 100.);
   fg->SetLineColor(kBlue+1);
@@ -803,7 +803,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
   h->SetMinimum(0.);
   h->SetAxisRange(fpIF->fLo, fpIF->fHi);
 
-  if (limitpars <= 0) {
+  if (limitpars < 0) {
     f1->SetParLimits(0, 0.,  1.e10);
     f1->SetParLimits(1, 5.3, 5.4); // this is a Bs fit, after all
     fCombMax = h->GetMaximum();

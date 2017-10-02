@@ -839,6 +839,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 // ----------------------------------------------------------------------
 void plotResults::initNumbers(anaNumbers &a) {
   a.clear();
+  a.fSel = (fDoUseBDT?"bdt":"cnc");
 }
 
 
@@ -1256,6 +1257,9 @@ void plotResults::calculateNumbers(string mode) {
     // -- and finally the rare backgrounds
     calculateRareBgNumbers(chan);
 
+    // -- calculate Bs-> J/psi phi BF
+    calculateBs2Bu(chan);
+
     // -- do two channels only
     if (chan == 1) break;
   }
@@ -1264,6 +1268,46 @@ void plotResults::calculateNumbers(string mode) {
 
 
 }
+
+// ----------------------------------------------------------------------
+void plotResults::calculateBs2Bu(int ichan) {
+
+  double bsBf  = fDS[fCsNumbers[ichan].fNameMc]->fBf;
+  double bsBfE = fDS[fCsNumbers[ichan].fNameMc]->fBfE;
+
+  double buBf  = fDS[fNoNumbers[ichan].fNameMc]->fBf;
+  double buBfE = fDS[fNoNumbers[ichan].fNameMc]->fBfE;
+
+
+  number bf;
+  double alpha = (1./fFsfu.val)
+    * (fNoNumbers[ichan].fEffTot.val / fCsNumbers[ichan].fEffTot.val)
+    * buBf;
+
+  bf.val   = (fCsNumbers[ichan].fW8SignalFit.val / fNoNumbers[ichan].fW8SignalFit.val) * alpha;
+  bf.estat = dRatio(fCsNumbers[ichan].fW8SignalFit.val, fCsNumbers[ichan].fW8SignalFit.estat,
+		    fNoNumbers[ichan].fW8SignalFit.val, fNoNumbers[ichan].fW8SignalFit.estat
+		    ) * alpha;
+  bf.esyst = (fFsfu.esyst/fFsfu.val)*bf.val;
+  bf.calcEtot();
+
+
+  cout << "*******************************" << endl;
+  cout << "psiphi w8 yield: " << fCsNumbers[ichan].fW8SignalFit.val << " +/- " << fCsNumbers[ichan].fW8SignalFit.estat << endl;
+  cout << "psik w8 yield:   " << fNoNumbers[ichan].fW8SignalFit.val << " +/- " << fNoNumbers[ichan].fW8SignalFit.estat << endl;
+  cout << "BF:              " << bf.val << " +/- " << bf.estat << " for selection " << fNoNumbers[ichan].fSel << endl;
+  cout << "*******************************" << endl;
+
+  int NDIG(6);
+  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  fSuffixSel = modifier;
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << "% -- BF(Bs -> J/psi phi):  chan: " << ichan << endl;
+  dumpTex(bf, Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan), 6);
+
+
+}
+
 
 
 // ----------------------------------------------------------------------

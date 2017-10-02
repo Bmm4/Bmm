@@ -47,6 +47,7 @@ public :
   void calculateSgNumbers(anaNumbers &a);
   void calculateCombBgNumbers(anaNumbers &a, int mode = 0, double lo = 5.45, double hi = 5.9);
   void calculateRareBgNumbers(int chan);
+  void calculateBs2Bu(int chan);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};
   double massIntegral(TH1* h, INTMODE i, int chan);

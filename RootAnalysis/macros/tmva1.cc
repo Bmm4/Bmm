@@ -123,8 +123,6 @@ tmva1::~tmva1() {
 
 // ----------------------------------------------------------------------
 void tmva1::makeAll(int offset, string filename, int chan) {
-  // createInputFile(filename);
-
   fChannel = chan;
 
   if (filename == "") {
@@ -138,6 +136,10 @@ void tmva1::makeAll(int offset, string filename, int chan) {
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-0-2016.root"; // first shot
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-1-2016.root"; // preselection on m?iso, "All" = Chan0 + Chan1 also contained
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-3-2016.root"; // corrected m1iso and m2iso calculation that also covers rare backgrounds
+                                                                  //                                                 Nevt(chan0Events0): 10225
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-4-2016.root"; // harder preselection: fls3d>12, added tos&&l1t.  Nevt(chan0Events0):  1422
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-5-2016.root"; // harder preselection: fls3d>7                    Nevt(chan0Events0):  5644
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-6-2016.root"; // harder preselection: fls3d>5                    Nevt(chan0Events0): 10139
     }
   }
 
@@ -168,7 +170,7 @@ void tmva1::makeAll(int offset, string filename, int chan) {
   ofstream OUT;
   OUT.open("/shome/ursl/abdt.log", ios::app);
   OUT << "offset = " << offset << "/" << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0]
-      << "/" << fBDTParameters << "/" << fVariables
+      << "/" << fBDTParameters << "/" << fVariables << "/" << filename
       << endl;
   OUT.close();
 }
@@ -513,7 +515,7 @@ void tmva1::createInputFile(string filename, int randomSeed) {
 
   TCut masscut = "m>4.9&&m<5.9";
   TCut massbg  = "!(5.2<m&&m<5.45)";
-  TCut muonid  = "gmugmid";
+  TCut muonid  = "gmugmid && hlt1 && l1t && tos";
 
   cout << "==> signal input file:     " << sinput->GetName() << std::endl;
   cout << "==> background input file: " << dinput->GetName() << std::endl;
