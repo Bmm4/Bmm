@@ -98,6 +98,7 @@ void plotBDT::makeAll(string what) {
   }
 
   if (("all" == what) || ("opspt" == what)) {
+    setBdtStrings(0);
     opspt("hi");
   }
 
@@ -393,8 +394,10 @@ void plotBDT::tmvaPlots(string type) {
   gStyle->SetOptTitle(0);
 
   zone();
+  c0->cd();
+  c0->SetCanvasSize(700, 700);
   shrinkPad(0.15, 0.15, 0.15);
-  TH2 *h2 = (TH2*)fRootFile->Get("CorrelationMatrixS");
+  TH2 *h2 = (TH2*)fRootFile->Get("dataset/CorrelationMatrixS");
   h2->SetLabelSize(0.05, "x");
   h2->SetLabelSize(0.05, "y");
   h2->GetXaxis()->LabelsOption("v");
@@ -402,7 +405,7 @@ void plotBDT::tmvaPlots(string type) {
   h2->Draw("colztext");
   c0->SaveAs(Form("%s/%s-%s-CorrelationMatrixS.pdf", fDirectory.c_str(), fBdtString.c_str(), type.c_str()));
 
-  h2 = (TH2*)fRootFile->Get("CorrelationMatrixB");
+  h2 = (TH2*)fRootFile->Get("dataset/CorrelationMatrixB");
   h2->SetLabelSize(0.05, "x");
   h2->SetLabelSize(0.05, "y");
   h2->GetXaxis()->LabelsOption("v");
@@ -417,7 +420,9 @@ void plotBDT::tmvaPlots(string type) {
   TCanvas *c = new TCanvas( Form("canvas%d", 1), "canvas1",  200, 20, width, static_cast<int>(width*0.78) );
 
   // search for the right histograms in full list of keys
-  TIter next(fRootFile->GetListOfKeys());
+
+  TDirectory *pDir = (TDirectory *)fRootFile->Get("dataset");
+  TIter next(pDir->GetListOfKeys());
   TKey *key(0);
   while ((key = (TKey*)next())) {
 
@@ -609,7 +614,7 @@ void plotBDT::tmvaPlots(string type) {
   htitle.ReplaceAll("and target(s)","");
   htitle.ReplaceAll("(training sample)","");
 
-  TString dirName = "Method_BDT/BDT";
+  TString dirName = "dataset/Method_BDT/BDT";
   TDirectory* dir = (TDirectory*)fRootFile->Get(dirName);
   if (dir==0) {
     cout << "No information about " << title << " available in directory " << dirName << " of file " << fRootFile << endl;
@@ -726,7 +731,7 @@ void plotBDT::tmvaPlots(string type) {
 
 
   // "BoostMonitor","BoostWeight","BoostWeightVsTree","ErrFractHist","NodesBeforePruning"
-  dirName = "Method_BDT/BDT";
+  dirName = "dataset/Method_BDT/BDT";
   dir = (TDirectory*)fRootFile->Get(dirName);
   if (dir==0) {
     cout << "No information about " << title << " available in directory " << dirName << " of file " << fRootFile << endl;
@@ -754,10 +759,18 @@ void plotBDT::tmvaPlots(string type) {
   cc->Clear();
   shrinkPad(0.20, 0.15, 0.1, 0.);
   delete hf;
-  hf = (TH1F*)((TH1F*)dir->Get("NodesBeforePruning"))->Clone("hf");
+  hf = (TH1F*)((TH1F*)dir->Get("dataset_NodesBeforePruning"))->Clone("hf");
   setTitles(hf, hf->GetXaxis()->GetTitle(), hf->GetYaxis()->GetTitle(), 0.09, 1.02, 0.8, 0.09);
   hf->Draw();
   cc->SaveAs(Form("%s/%s-%s-NodesBeforePruning.pdf", fDirectory.c_str(), fBdtString.c_str(), type.c_str()));
+
+  cc->Clear();
+  shrinkPad(0.20, 0.15, 0.1, 0.);
+  delete hf;
+  hf = (TH1F*)((TH1F*)dir->Get("dataset_NodesAfterPruning"))->Clone("hf");
+  setTitles(hf, hf->GetXaxis()->GetTitle(), hf->GetYaxis()->GetTitle(), 0.09, 1.02, 0.8, 0.09);
+  hf->Draw();
+  cc->SaveAs(Form("%s/%s-%s-NodesAfterPruning.pdf", fDirectory.c_str(), fBdtString.c_str(), type.c_str()));
 
 }
 
@@ -1062,14 +1075,15 @@ void plotBDT::opspt(string what) {
       hCombSg->Scale(bLumi/sLumi);
 
       // -- scan BDT cut
-      hSSBs.insert(make_pair(Form("bdt%d_evt%d", ibdt, ievt), ssb(hCombSg, hCombBg, what)));
+      hSSBs.insert(make_pair(Form("bdt%d_evt%dBs", ibdt, ievt), ssb(hCombSg, hCombBg, what)));
       TH2D *hCombB0 = (TH2D*)hCombSg->Clone(Form("B0_%s", hCombSg->GetName()));
       hCombB0->Scale(0.1);
-      hSSBd.insert(make_pair(Form("bdt%d_evt%d", ibdt, ievt), ssb(hCombB0, hCombBg, what)));
+      hSSBd.insert(make_pair(Form("bdt%d_evt%dBd", ibdt, ievt), ssb(hCombB0, hCombBg, what)));
     }
   }
 
 
+  zone(1);
   zone(3,3);
   map<string, TH1D*>::iterator is = hSSBs.begin();
   map<string, TH1D*>::iterator id = hSSBd.begin();
@@ -1082,28 +1096,53 @@ void plotBDT::opspt(string what) {
     c0->cd(cnt);
     shrinkPad(0.12, 0.12, 0.1, 0.12);
     h = is->second;
+    for (int i = 1; i <= h->GetNbinsX(); ++i) h->SetBinError(i, 0.05*h->GetBinContent(i));
     setTitles(h, "BDT>", "S/#sqrt{S+B}");
-    h->SetLineWidth(2);
-    f1 = fIF->pol2local(h);
+    h->SetLineWidth(1);    setHist(h, kRed, 24, 0.1);
     xmax = h->GetBinCenter(h->GetMaximumBin());
-    rms  = 0.4*h->GetRMS();
+    rms  = 0.5*h->GetRMS();
+    fIF->fLo = xmax - 0.1*rms;
+    fIF->fHi = xmax + 0.05*rms;
+    f1 = fIF->pol2local(h, 0.1*rms);
+    f1->SetName(Form("%s_%s", is->first.c_str(), f1->GetName()));
+    f1->SetLineColor(kBlack);
+    cout << is->first << " f1 name: " << f1->GetName()
+	 << " fLo: " << fIF->fLo << " fHi: " << fIF->fHi
+	 << " xmax: " << xmax << " rms: " << rms
+	 << " ymax = " << h->GetBinContent(h->GetMaximumBin()) << " +/- " << h->GetBinError(h->GetMaximumBin())
+	 << endl;
+    cout << "  f1 parameters: " << f1->GetParameter(0) << ", " << f1->GetParameter(1)  << ", " << f1->GetParameter(2) << endl;
     h->Fit(f1, "", "", xmax-rms, xmax+rms);
-    tl->SetTextColor(kBlack);
+    // h->DrawCopy("");
+    // f1->DrawCopy("same");
+    tl->SetTextColor(kRed);
     tl->DrawLatexNDC(0.2, 0.7, Form("B_{max}(B_{s}) = %3.2f", f1->GetParameter(2)));
 
     h = id->second;
+    for (int i = 1; i <= h->GetNbinsX(); ++i) h->SetBinError(i, 0.05*h->GetBinContent(i));
     h->SetLineColor(kBlue);
-    h->SetLineWidth(2);
-    f2 = fIF->pol2local(h);
-    f2->SetLineColor(kCyan);
+    h->SetLineWidth(1);    setHist(h, kBlue, 24, 0.1);
     xmax = h->GetBinCenter(h->GetMaximumBin());
-    rms  = 0.4*h->GetRMS();
-    h->Fit(f2, "same", "same", xmax-rms, xmax+rms);
+    rms  = 0.5*h->GetRMS();
+    fIF->fLo = xmax - 0.1*rms;
+    fIF->fHi = xmax + 0.05*rms;
+    f2 = fIF->pol2local(h, 0.1*rms);
+    f2->SetName(Form("%s_%s", is->first.c_str(), f2->GetName()));
+    f2->SetLineColor(kCyan);
+    cout << is->first << " f1 name: " << f2->GetName()
+	 << " fLo: " << fIF->fLo << " fHi: " << fIF->fHi
+	 << " xmax: " << xmax << " rms: " << rms
+	 << endl;
+    h->Fit(f2, "", "same", xmax-rms, xmax+rms);
+    cout << "  f2 parameters: " << f2->GetParameter(0) << ", " << f2->GetParameter(1)  << ", " << f2->GetParameter(2) << endl;
+    // h->DrawCopy("same");
+    // f2->DrawCopy("same");
     tl->SetTextColor(kBlue);
     tl->DrawLatexNDC(0.2, 0.6, Form("B_{max}(B^{0}) = %3.2f", f2->GetParameter(2)));
 
     tl->SetTextColor(kBlack);
     tl->DrawLatexNDC(0.2, 0.8, is->first.c_str());
+    //    savePad(Form("%s-bdtops-%s-%d.pdf", fBdtString.c_str(), what.c_str(), cnt), c0);
     ++cnt;
   }
 
@@ -1323,11 +1362,11 @@ void plotBDT::getTLFRanking(string prefix, string type) {
   int ibin(1);
   for (unsigned int i = istart; i < fLogFileLines.size(); ++i) {
     // -- method unspecific classification
-    if ((string::npos != fLogFileLines[i].find(Form("--- %s", prefix.c_str())))
-	&& (string::npos != fLogFileLines[i].find(": Rank : Variable "))
+    if ((string::npos != fLogFileLines[i].find(Form("<HEADER> %s", prefix.c_str())))
+	&& (string::npos != fLogFileLines[i].find(": Ranking result "))
 	) {
       bail = 0;
-      for (unsigned int j = i+2; j < i+100; ++j) {
+      for (unsigned int j = i+4; j < i+100; ++j) {
 	if (string::npos != fLogFileLines[j].find(": ---------------------------------")) {
 	  bail = 1;
 	  cout << "  -> breaking out " << endl;
@@ -1389,8 +1428,15 @@ void plotBDT::getTLFParameters(string prefix, string type) {
   }
   cout << "start after: " << after << " at line " << istart << endl;
 
-  string searchFor0 = "BDT";
+  string searchFor0 = "<VERBOSE>";
   string searchFor1 = "The following options are set";
+  for (unsigned int i = istart; i < fLogFileLines.size(); ++i) {
+    if ((string::npos != fLogFileLines[i].find(searchFor0)) && (string::npos != fLogFileLines[i].find(searchFor1))){
+      istart = i+1;
+      break;
+    }
+  }
+  // -- I have no idea why the first part is there, but it's only the second part that is interesting
   for (unsigned int i = istart; i < fLogFileLines.size(); ++i) {
     if ((string::npos != fLogFileLines[i].find(searchFor0)) && (string::npos != fLogFileLines[i].find(searchFor1))){
       istart = i+1;
@@ -1402,7 +1448,7 @@ void plotBDT::getTLFParameters(string prefix, string type) {
   for (unsigned int i = istart; i < fLogFileLines.size(); ++i) {
     if (string::npos != fLogFileLines[i].find("deprecated")) continue;
     if (string::npos != fLogFileLines[i].find(": - ")) continue;
-    if (string::npos != fLogFileLines[i].find(" DataSetFactory           : Parsing option string:")) break;
+    if (string::npos != fLogFileLines[i].find("Parsing option string:")) break;
     m1 = fLogFileLines[i].find(":");
     m2 = fLogFileLines[i].find(":", m1+1);
     varn = fLogFileLines[i].substr(m1+1, m2-m1-1);
