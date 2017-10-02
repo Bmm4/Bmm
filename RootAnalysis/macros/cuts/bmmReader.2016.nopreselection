@@ -6,3 +6,20 @@ candAnaBu2JpsiK     cuts/candAnaBu2JpsiK.nopreselection.cuts
 #
 JSON                ../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
 DSNAME              Charmonium
+# -- ntriggers
+NTRIGGERS    HLT_Dimuon16_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Dimuon20_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Dimuon13_PsiPrime_v(1:9999999)
+NTRIGGERS    HLT_Dimuon13_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_Phi_Barrel_v(1:9999999)
+NTRIGGERS    HLT_Dimuon10_Jpsi_Barrel_v(1:9999999)
+NTRIGGERS    HLT_Dimuon8_PsiPrime_Barrel_v(1:9999999)
+NTRIGGERS    HLT_Dimuon8_Upsilon_Barrel_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_3_Bs_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_3_Jpsi_Displaced_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_LowMassNonResonantTrk_Displaced_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_JpsiTrk_Displaced_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_PsiPrimeTrk_Displaced_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0er16_Jpsi_NoOS_NoVertexing_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0er16_Jpsi_NoVertexing_v(1:9999999)
+NTRIGGERS    HLT_Dimuon6_Jpsi_NoVertexing_v(1:9999999)

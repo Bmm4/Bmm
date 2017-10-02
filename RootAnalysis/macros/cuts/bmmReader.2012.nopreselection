@@ -6,3 +6,25 @@ candAnaBu2JpsiK     cuts/candAnaBu2JpsiK.nopreselection.cuts
 #
 JSON                ../common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt
 DSNAME              MuOnia
+# -- ntriggers
+NTRIGGERS    HLT_Dimuon0_Jpsi_Muon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_Jpsi_NoVertexing_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_PsiPrime_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_Upsilon_Muon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon0_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon11_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon3p5_SameSign_v(1:9999999)
+NTRIGGERS    HLT_Dimuon5_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon7_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_Dimuon8_Upsilon_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu3_4_Dimuon5_Bs_Central_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu3p5_4_Dimuon5_Bs_Central_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_Dimuon7_Bs_Forward_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_JpsiTk_Displaced_v(1:9999999)
+NTRIGGERS    HLT_DoubleMu4_Jpsi_Displaced_v(1:9999999)
+NTRIGGERS    HLT_Mu5_L2Mu3_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Mu5_Track2_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Mu5_Track3p5_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Mu7_Track7_Jpsi_v(1:9999999)
+NTRIGGERS    HLT_Tau2Mu_ItTrack_v(1:9999999)
