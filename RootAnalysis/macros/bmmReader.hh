@@ -54,6 +54,8 @@ public:
   virtual void   processTypePythia6();
   virtual void   processTypePythia8();
 
+  virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
+
   std::vector<candAna*> lCandAnalysis;
 
   int fProcessType;

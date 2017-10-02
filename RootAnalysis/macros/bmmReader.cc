@@ -219,6 +219,7 @@ void bmmReader::readCuts(TString filename, int dump) {
   ifstream is(filename.Data());
   char buffer[1000];
   char className[200], cutFile[200];
+  std::map<std::string, pair<int, int> > NTRIGGERS;
   while (is.getline(buffer, 1000, '\n')) {
     sscanf(buffer, "%s %s", className, cutFile);
 
@@ -348,7 +349,24 @@ void bmmReader::readCuts(TString filename, int dump) {
       DSNAME = string(basedir);
       if (dump) cout << "DSNAME:           " << DSNAME << endl;
     }
+
+    if (!strcmp(className, "NTRIGGERS")) {
+      char triggerlist[1000];
+      sscanf(buffer, "%s %s", className, triggerlist);
+      string tl(triggerlist);
+      int r1(0), r2(0);
+      string hlt = splitTrigRange(tl, r1, r2);
+      NTRIGGERS.insert(make_pair(hlt, make_pair(r1, r2)));
+      if (dump) {
+	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << endl;
+      }
+    }
   }
+
+  for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+    lCandAnalysis[i]->NTRIGGERS = NTRIGGERS;
+  }
+
 
 }
 
@@ -553,5 +571,27 @@ void bmmReader::processTypePythia6() {
   //  printf("====> Could not determine process type !!!\n");
 
   fpEvt->dumpGenBlock();
+
+}
+
+
+// ----------------------------------------------------------------------
+string bmmReader::splitTrigRange(string tl, int &r1, int &r2) {
+
+  string::size_type id1 = tl.find_first_of("(");
+  string::size_type id2 = tl.find_first_of(":");
+  string::size_type id3 = tl.find_first_of(")");
+
+  //cout << "tl: " << tl << endl;
+  string hlt = tl.substr(0, id1);
+  //cout << "hlt: " << hlt << endl;
+  string a   = tl.substr(id1+1, id2-id1-1);
+  r1 = atoi(a.c_str());
+  //cout << "1st a: " << a << " -> r1 = " << r1 << endl;
+  a  = tl.substr(id2+1, id3-id2-1);
+  r2 = atoi(a.c_str());
+  //cout << "2nd a: " << a << " -> r2 = " << r2 << endl;
+
+  return hlt;
 
 }
