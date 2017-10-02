@@ -86,6 +86,8 @@ foreach $job (@jobs) {
     }
 
 }
+print "This is the end, my friend\n";
+
 
 # ----------------------------------------------------------------------
 sub countPending() {
