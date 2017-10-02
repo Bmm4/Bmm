@@ -49,7 +49,6 @@ using namespace std;
 
 tmva1::tmva1(int year, string vars, string pars) {
 
-  fYear          = 2016;
   fVariables     = vars;
   fBDTParameters = pars;
 
@@ -83,8 +82,11 @@ tmva1::tmva1(int year, string vars, string pars) {
     fInputFiles.sname = "/scratch/ursl/bmm4/v06/";
     fInputFiles.dname = "/scratch/ursl/bmm4/v06/";
   } else if (year == 2016) {
-    fLumiScale = 1.86e-3; // 37/19845
-    fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root";
+    fLumiScale = 1.86e-3; // 37/19845 I think this was wrong, 19845 refers to the bsmmMcComb lumi, not the official one!
+    // fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root";
+    // fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
+    fLumiScale = 8.8e-4; // 37/42185 (combined bsmm und bdmm signal MC)
+    fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-signal-2016-v06.root";
     fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
   }
 
@@ -140,6 +142,9 @@ void tmva1::makeAll(int offset, string filename, int chan) {
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-4-2016.root"; // harder preselection: fls3d>12, added tos&&l1t.  Nevt(chan0Events0):  1422
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-5-2016.root"; // harder preselection: fls3d>7                    Nevt(chan0Events0):  5644
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-6-2016.root"; // harder preselection: fls3d>5                    Nevt(chan0Events0): 10139
+    }
+    if (0 == fYear) {
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-0-0.root";    // harder preselection: fls3d>5 && tos && hlt1
     }
   }
 
@@ -505,6 +510,8 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 
 // ----------------------------------------------------------------------
 void tmva1::createInputFile(string filename, int randomSeed) {
+  cout << "signal: " << fInputFiles.sname << endl;
+  cout << "data:   " << fInputFiles.dname << endl;
   TFile *sinput = TFile::Open(fInputFiles.sname.c_str());
   TFile *dinput = TFile::Open(fInputFiles.dname.c_str());
 
