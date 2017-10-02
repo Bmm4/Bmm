@@ -93,6 +93,10 @@ public:
 		     std::string file2, std::string sample2,
 		     std::string chan1 = "BLoPU", std::string chan2 = "BHiPU",
 		     std::string selection = "Presel", std::string what = "");
+  void overlay3Samples(std::string sample1, std::string file1,
+		       std::string sample2, std::string file2,
+		       std::string sample3, std::string file3,
+		       std::string selection);
 
   AnalysisDistribution* bookDistribution(string hn, string ht, string hc, AnalysisCuts *pCuts,
 					 int nbins, double lo, double hi, bool *presel = 0);
