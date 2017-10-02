@@ -24,5 +24,5 @@ TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v8(294927:297057)
 TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v9(297099:297505)
 TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v10(297557:299329)
 TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v11(299368:299958)
-TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v12(300079:9999999)
-#at least until 300781
+TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v12(300079:302019)
+TRIGRANGE    HLT_DoubleMu4_3_Jpsi_Displaced_v13(302026:9999999)
