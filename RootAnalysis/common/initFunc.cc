@@ -1723,8 +1723,15 @@ TF1* initFunc::pol1Landau(TH1 *h, double peak, double sigma) {
 // ----------------------------------------------------------------------
 TF1* initFunc::pol2local(TH1 *h, double width) {
   TF1 *f(0);
-  while ((f = (TF1*)gROOT->FindObject(Form("%s_pol2local", fName.c_str())))) if (f) delete f;
-  f = new TF1(Form("%s_pol2local", fName.c_str()), iF_pol2local, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX())+1, 3);
+
+  int lbin(1), hbin(h->GetNbinsX());
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  }
+
+  //  while ((f = (TF1*)gROOT->FindObject(Form("%s_pol2local", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_pol2local", fName.c_str()), iF_pol2local, h->GetBinLowEdge(lbin), h->GetBinLowEdge(hbin+1), 3);
   f->SetParNames("p0", "p1", "max");
 
   double maxVal   = h->GetMaximum();
