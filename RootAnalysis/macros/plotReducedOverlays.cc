@@ -159,10 +159,10 @@ void plotReducedOverlays::makeAll(string what) {
 
   if (what == "dbx") {
     //    init();
-    //    makeSampleOverlay("bdpsikstarDa", "bdpsikstarMcComb");
+    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
     //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
     //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
-    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    //    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
     return;
   }
 
@@ -174,6 +174,15 @@ void plotReducedOverlays::makeAll(string what) {
     return;
   }
 
+  if (string::npos != what.find("years")) {
+    overlay3Samples("bdmmMcComb", "plotSbsHistograms-2016BF.root",
+		    "bdmmMcComb", "plotSbsHistograms-2012.root",
+		    "bdmmMcComb", "plotSbsHistograms-2011.root",
+		    "bdt"
+		    );
+    return;
+  }
+
 
   if (what == "all") {
     init();
@@ -181,8 +190,8 @@ void plotReducedOverlays::makeAll(string what) {
     printCuts(cout);
     // -- data vs combined MC
     makeSampleOverlay("bmmData", "bdmmMcComb");
-    makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
+    makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
 
     allSystematics();
@@ -632,8 +641,9 @@ void plotReducedOverlays::loopFunction1() {
   double bdtCut(0.1);
   if (2011 == fYear) bdtCut = 0.15;
   if (2012 == fYear) bdtCut = 0.20;
-  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
-  fPreselection    = (fGoodHLT && (fb.alpha < 0.2) && (fb.fls3d > 5));
+  fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
+  //  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
+  fPreselectionBDT = fPreselection;
 
   fCncCuts.update();
   fBdtCuts.update();
@@ -683,7 +693,7 @@ void plotReducedOverlays::loopFunction1() {
 
 
   if (fGoodHLT
-      && (fBDT > bdtCut)
+      && (fBDT > -1.) && (fb.alpha < 0.1) && (fb.fls3d > 7)
       ) {
     fSel0 = true;
   } else {
@@ -691,7 +701,7 @@ void plotReducedOverlays::loopFunction1() {
   }
 
   if (fGoodHLT
-      && (fBDT > -1.) && (fb.alpha < 0.1) && (fb.fls3d > 10) && (fb.iso > 0.7)
+      && (fBDT > -1.) && (fb.alpha < 0.07) && (fb.fls3d > 10) && (fb.pvips < 2.)
       ) {
     fSel1 = true;
   } else {
@@ -699,8 +709,8 @@ void plotReducedOverlays::loopFunction1() {
   }
 
   if (fGoodHLT
-      && (fBDT > -1.) && (fb.alpha < 0.05) && (fb.pvip < 0.008) && (fb.pvips < 2.)
-      && (fb.fls3d > 12)
+      && (fBDT > -1.) && (fb.alpha < 0.05) && (fb.fls3d > 12) && (fb.pvips < 2.)
+
       //      && (fb.iso > 0.7) && (fb.maxdoca < 0.015) && (fb.docatrk > 0.01)
       ) {
     fSel2 = true;
@@ -1020,6 +1030,83 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
 	tl->SetTextAngle(90.);
 	tl->SetTextSize(0.025);
 	tl->DrawLatexNDC(0.92, 0.20, hname.c_str());
+
+	savePad(Form("sbso/%s.pdf", hname.c_str()));
+      }
+    }
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void plotReducedOverlays::overlay3Samples(string sample1, string file1,
+					  string sample2, string file2,
+					  string sample3, string file3,
+					  string selection) {
+
+  c0->SetCanvasSize(700, 700);
+  c0->cd();
+  shrinkPad(0.15, 0.18);
+
+  string label1 = file1;
+  replaceAll(label1, ".root", "");
+  replaceAll(label1, "plotSbsHistograms-", "");
+  string label2 = file2;
+  replaceAll(label2, ".root", "");
+  replaceAll(label2, "plotSbsHistograms-", "");
+  string label3 = file3;
+  replaceAll(label3, ".root", "");
+  replaceAll(label3, "plotSbsHistograms-", "");
+
+  TFile *f1 = TFile::Open((fDirectory + "/" + file1).c_str());
+  TFile *f2 = TFile::Open((fDirectory + "/" + file2).c_str());
+  TFile *f3 = TFile::Open((fDirectory + "/" + file3).c_str());
+
+  vector<string> cutlevel;
+  cutlevel.push_back("Presel");
+
+  TH1D *h1(0), *h2(0), *h3(0);
+  int lo(-1), hi(-1);
+  string hname("");
+
+  for (int id = 0; id < fDoList.size(); ++id) {
+    for (int ic = 0; ic < cutlevel.size(); ++ic) {
+      for (int i = 0; i < fChannelList.size(); ++i) {
+	hname = Form("sbs_ad%s%s_%s_%s%s", fChannelList[i].c_str(), selection.c_str(), sample1.c_str(), fDoList[id].c_str(), cutlevel[ic].c_str());
+	h1 = (TH1D*)f1->Get(hname.c_str());
+	hname = Form("sbs_ad%s%s_%s_%s%s", fChannelList[i].c_str(), selection.c_str(), sample2.c_str(), fDoList[id].c_str(), cutlevel[ic].c_str());
+	h2 = (TH1D*)f2->Get(hname.c_str());
+	hname = Form("sbs_ad%s%s_%s_%s%s", fChannelList[i].c_str(), selection.c_str(), sample3.c_str(), fDoList[id].c_str(), cutlevel[ic].c_str());
+	h3 = (TH1D*)f3->Get(hname.c_str());
+	if (!h1 || !h2 || !h3) {
+	  cout << "histogram(s) " << hname << " not found, h1/h2 = " << h1 << "/" << h2 << endl;
+	  continue;
+	}
+
+	h1->Scale(1./h1->GetSumOfWeights());
+	h2->Scale(1./h2->GetSumOfWeights());
+	h3->Scale(1./h3->GetSumOfWeights());
+	h1->SetMinimum(0.);
+	double ymax(h1->GetMaximum());
+	if (h2->GetMaximum() > ymax) ymax = h2->GetMaximum();
+	if (h3->GetMaximum() > ymax) ymax = h3->GetMaximum();
+	h1->SetMaximum(1.2*ymax);
+	setHist(h1, kBlack);
+	h1->Draw("hist");
+	setHist(h2, kBlue);
+	h2->Draw("samehist");
+	setHist(h3, kRed);
+	h3->Draw("samehist");
+
+	newLegend(0.50, 0.7, 0.75, 0.87);
+	legg->SetHeader((selection + " (" + cutlevel[ic] + ")").c_str());
+	legg->SetTextSize(0.05);
+	legg->AddEntry(h1, label1.c_str(), "l");
+	legg->AddEntry(h2, label2.c_str(), "l");
+	legg->AddEntry(h3, label3.c_str(), "l");
+	legg->Draw();
+	hname = Form("mco%d%s_ad%s%s_%s_%s_%s%s", fYear, fSetup.c_str(), fChannelList[i].c_str(), selection.c_str(),
+		     sample1.c_str(), sample2.c_str(), fDoList[id].c_str(), cutlevel[ic].c_str());
 
 	savePad(Form("sbso/%s.pdf", hname.c_str()));
       }
