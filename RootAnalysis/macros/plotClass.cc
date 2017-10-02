@@ -1262,11 +1262,12 @@ void plotClass::calcBDT() {
     cout << "all hell break loose" << endl;
   }
 
-  if (TMath::Abs(fBDT - fb.bdt) > 1.e-6) {
+  if (0 && TMath::Abs(fBDT - fb.bdt) > 1.e-6) {
     cout << "calculated fBDT = " << fBDT
 	 << " from reduced tree: fb.bdt = " << fb.bdt
-	 << " mode = " << fMode << " fChan = " << fChan
+	 << " mode = " << fMode << "bd2psikstar(" << BD2JPSIKSTAR << ") fChan = " << fChan
 	 << endl;
+    printRedTreeEvt(fb);
     if (fMode == BU2JPSIKP || fMode == BS2JPSIPHI || fMode == BD2JPSIKSTAR) {
 
       cout << "jpsi: pt = " << fb.psipt << " prob = " << fb.psiprob << endl;
