@@ -2,13 +2,14 @@
 
 # ----------------------------------------------------------------------
 #
-# runPlots  run sonmething for all years
+# runPlots  run sonmething for all years  or for specific setup testing
 # =======
 #
 # Usage examples
 # ==============
 #
 # $BMMBASE/perl/runPlots -p results -m ana
+# $BMMBASE/perl/runPlots -s 1
 #
 #
 #
@@ -22,7 +23,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('dp:m:');
+getopts('dp:m:s:');
 
 my @years = ("2011", "2012", "2016BF", "2016GH");
 
@@ -35,6 +36,20 @@ my $optm = "";
 if ($opt_m) {
     $optm = "-m $opt_m";
 }
+
+if ($opt_s) {
+    my $dir = $opt_s;
+    print "dir = $dir\n";
+    system("/bin/rm -f runPlots-$dir-results-2016*.log");
+    system("bin/runPlot -y 2016BF -d results-$dir -p results -m all  >& runPlots-$dir-results-all-2016BF.log &");
+    system("bin/runPlot -y 2016GH -d results-$dir -p results -m all  >& runPlots-$dir-results-all-2016GH.log &");
+
+    system("/bin/rm -f runPlots-$dir-overlays-2016*.log");
+    system("bin/runPlot -y 2016BF -d results-$dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016BF.log &");
+    system("bin/runPlot -y 2016GH -d results-$dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016GH.log &");
+    exit(0);
+}
+
 
 foreach $year (@years) {
     print "running: bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log & \n";
