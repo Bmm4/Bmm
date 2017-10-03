@@ -37,6 +37,23 @@ if ($opt_m) {
     $optm = "-m $opt_m";
 }
 
+if (1 == $opt_s) {
+#    my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389");
+    my @list = ("219", "309", "319", "329", "339", "349", "359");
+    foreach $idir (@list) {
+	$dir = "results-" . $idir;
+	print "dir = $dir\n";
+	system("/bin/rm -f runPlots-$dir-results-2016*.log");
+	system("bin/runPlot -y 2016BF -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016BF.log &");
+	system("bin/runPlot -y 2016BF -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016BF.log &");
+
+	system("bin/runPlot -y 2016GH -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016GH.log &");
+	system("bin/runPlot -y 2016GH -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016GH.log &");
+    }
+    exit(0);
+}
+
+
 if ($opt_s) {
     my $dir = $opt_s;
     print "dir = $dir\n";
