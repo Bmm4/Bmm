@@ -233,7 +233,7 @@ void plotFake::makeAll(string what) {
 
   if (what == "all" || string::npos != what.find("fakerate") || string::npos != what.find("plot")) {
     fillDoList("fakerate");
-    if ((what == "all") || (what == "fakerate") || (string::npos != what.find("ks"))) {
+    if ((what == "all") || (what == "fakerate") || (what == "plot") || (string::npos != what.find("ks"))) {
       fakeRate("fakeData_ks", "fakeMc_ks", "FakePt", "AllPt", 0.1);
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeEta", "AllEta", 0.1);
 
@@ -247,12 +247,12 @@ void plotFake::makeAll(string what) {
       fakeRate("fakeData_ks", "fakeMc_ks", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
 
-    if ((what == "all") || (what == "fakerate") || (string::npos != what.find("phi"))) {
+    if ((what == "all") || (what == "fakerate") || (what == "plot") || (string::npos != what.find("phi"))) {
       fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
       fakeRate("fakeData_phi", "fakeMc_phi", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
 
-    if ((what == "all") || (what == "fakerate") || (string::npos != what.find("lambda"))) {
+    if ((what == "all") || (what == "fakerate") || (what == "plot") || (string::npos != what.find("lambda"))) {
       fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
       fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
@@ -640,7 +640,7 @@ void plotFake::bookDistributions() {
     a->fpAllEta  = bookDistribution(Form("%sAllEta", name.c_str()), "#eta", "Good", 48, -2.4, 2.4);
     a->fpAllPt   = bookDistribution(Form("%sAllPt", name.c_str()), "#it{p_{T}} [GeV]", "Good", 10, 0., 20.);
 
-    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 20, 0., 1.0);
+    a->fpFakeBdt       = bookDistribution(Form("%sFakeBdt", name.c_str()), "BDT", "GlobalMuon", 40, -1., 1.0);
     a->fpFakeTip       = bookDistribution(Form("%sFakeTip", name.c_str()), "TIP [cm]", "GlobalMuon", 20, 0., 2.);
     a->fpFakeLip       = bookDistribution(Form("%sFakeLip", name.c_str()), "LIP [cm]", "GlobalMuon", 20, 0., 2.);
     a->fpFakeQprod     = bookDistribution(Form("%sFakeQprod", name.c_str()), "qprod", "GlobalMuon", 3, -1., 2.);
@@ -1048,7 +1048,7 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     sprintf(loption2, "l");
   }
 
-
+  double int1V, int1E, int2V, int2E;
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
     cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), dataset1.c_str()) << "Si" << varF << endl;
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), dataset1.c_str()), "Si", varF);
@@ -1068,7 +1068,6 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     TH1D *h2p = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%sSi", fChannelList[i].c_str(), dataset2.c_str(), varF.c_str()));
     TH1D *h2a = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%sSi", fChannelList[i].c_str(), dataset2.c_str(), varA.c_str()));
 
-
     h1p->Divide(h1a);
     h2p->Divide(h2a);
 
@@ -1076,18 +1075,35 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     h1p->SetMaximum(ymax);
     h1p->SetTitle("");
     h1p->Draw();
-    cout << "SYSTEMATIC " << dataset1 << " integral 1: " << h1p->Integral(h1p->FindBin(4.), h1p->FindBin(20.)) << endl;
+    int1V = int2V = int1E = int2E = 0.;
+    for (int i = 1; i <= h1p->GetNbinsX(); ++i) {
+      if (h1p->GetBinCenter(i) > 20.) break;
+      int1V += h1p->GetBinContent(i);
+      int1E += h1p->GetBinError(i)*h1p->GetBinError(i);
+
+      int2V += h2p->GetBinContent(i);
+      int2E += h2p->GetBinError(i)*h2p->GetBinError(i);
+    }
+    int1E = TMath::Sqrt(int1E);
+    int2E = TMath::Sqrt(int2E);
+    cout << "SYSTEMATIC " << dataset1 << " integral 1: " << int1V << " +/- " << int1E << endl;
     setHist(h2p, kBlue);
     h2p->Draw("histsame");
-    cout << "SYSTEMATIC " << dataset2 << " integral 2: " << h2p->Integral(h2p->FindBin(4.), h2p->FindBin(20.)) << endl;
+    cout << "SYSTEMATIC " << dataset2 << " integral 2: " << int2V << " +/- " << int2E << endl;
 
     newLegend(0.21, 0.7, 0.41, 0.87);
 
     legg->SetHeader(header.c_str());
     legg->SetTextSize(0.05);
-    legg->AddEntry(h1p, label1.c_str(), loption1);
-    legg->AddEntry(h2p, label2.c_str(), loption2);
+    // legg->AddEntry(h1p, Form("%s (%5.4f#pm%5.4f)", label1.c_str(), int1V, int1E), loption1);
+    // legg->AddEntry(h2p, Form("%s (%5.4f#pm%5.4f)", label2.c_str(), int2V, int2E), loption2);
+    legg->AddEntry(h1p, Form("%s", label1.c_str()), loption1);
+    legg->AddEntry(h2p, Form("%s", label2.c_str()), loption2);
     legg->Draw();
+
+    tl->DrawLatexNDC(0.65, 0.78, Form("%5.4f#pm%5.4f", int1V, int1E));
+    tl->DrawLatexNDC(0.65, 0.72, Form("%5.4f#pm%5.4f", int2V, int2E));
+
 
     savePad(Form("%d%s-fakerate_%s_ad%s_%s_ad%s_%s.pdf",
 		 fYear, fSetup.c_str(),
@@ -1427,7 +1443,7 @@ void plotFake::loopFunction1() {
 
     fGood     = fGoodCand && fGoodPt;
     fGoodFake = fGood && fGlobalMuon;
-    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > 0.54);
+    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > fCuts[0]->muonbdt);
 
     fGoodTIS         = fTIS       && fGood;
     fGoodTISFake     = fGoodTIS   && fGoodFake;
