@@ -144,10 +144,10 @@ void plotReducedOverlays::init() {
   system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
   system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
-  system(Form("/bin/rm -f %s/sbsctrl*.pdf", fDirectory.c_str()));
-  system(Form("/bin/rm -f %s/sbsctrl/sbsctrl%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
-  system(Form("/bin/rm -f %s/adfpy/adfpy*.pdf", fDirectory.c_str()));
-  system(Form("/bin/rm -f %s/adfpy*.pdf", fDirectory.c_str()));
+  // system(Form("/bin/rm -f %s/sbsctrl*.pdf", fDirectory.c_str()));
+  // system(Form("/bin/rm -f %s/sbsctrl/sbsctrl%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+  // system(Form("/bin/rm -f %s/adfpy/adfpy*.pdf", fDirectory.c_str()));
+  // system(Form("/bin/rm -f %s/adfpy*.pdf", fDirectory.c_str()));
   system(Form("/bin/rm -f %s/overlay%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
   system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
 
@@ -642,6 +642,7 @@ void plotReducedOverlays::loopFunction1() {
   if (2011 == fYear) bdtCut = 0.15;
   if (2012 == fYear) bdtCut = 0.20;
   fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
+  fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
   //  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
   fPreselectionBDT = fPreselection;
 
