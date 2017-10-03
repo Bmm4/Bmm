@@ -1354,10 +1354,10 @@ void plotResults::calculatePerformance(int ichan) {
 			  + alphaU*alphaU*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
 
 
-  bfU.val   = fBsmmNumbers[ichan].fScaledYield.val  * alphaS;
-  bfU.estat = 0.;
-  bfU.esyst = 0.;
-  bfU.etot  = TMath::Sqrt(alphaSE*alphaSE*fBsmmNumbers[ichan].fScaledYield.val*fBsmmNumbers[ichan].fScaledYield.val
+  bfS.val   = fBsmmNumbers[ichan].fScaledYield.val  * alphaS;
+  bfS.estat = 0.;
+  bfS.esyst = 0.;
+  bfS.etot  = TMath::Sqrt(alphaSE*alphaSE*fBsmmNumbers[ichan].fScaledYield.val*fBsmmNumbers[ichan].fScaledYield.val
 			  + alphaS*alphaS*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
 
   cout << "*******************************" << endl;
