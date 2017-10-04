@@ -1353,7 +1353,6 @@ void plotResults::calculatePerformance(int ichan) {
   bfU.etot  = TMath::Sqrt(alphaUE*alphaUE*fBsmmNumbers[ichan].fScaledYield.val*fBsmmNumbers[ichan].fScaledYield.val
 			  + alphaU*alphaU*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
 
-
   bfS.val   = fBsmmNumbers[ichan].fScaledYield.val  * alphaS;
   bfS.estat = 0.;
   bfS.esyst = 0.;
@@ -2629,111 +2628,111 @@ void plotResults::saveHistograms(string smode) {
   TH1D *h1(0);
   TH2D *h2(0);
 
-  vector<string> modifier;
-  modifier.push_back("cnc" + fSuffix);
-  modifier.push_back("bdt" + fSuffix);
+  // vector<string> modifier;
+  // modifier.push_back("cnc" + fSuffix);
+  // modifier.push_back("bdt" + fSuffix);
 
-  for (unsigned int im = 0; im < modifier.size(); ++im) {
+  for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
     for (unsigned int i = 0; i < fNchan; ++i) {
-      h1 = (TH1D*)(fhGenAndAccNumbers[modifier[im]][i]->Clone(Form("hGenAndAccNumbers_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1 = (TH1D*)(fhGenAndAccNumbers[fHistStrings[im]][i]->Clone(Form("hGenAndAccNumbers_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h2 = (TH2D*)(fhAccAll[modifier[im]][i]->Clone(Form("hAccAll_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h2 = (TH2D*)(fhAccAll[fHistStrings[im]][i]->Clone(Form("hAccAll_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h2->SetDirectory(dir);
       h2->Write();
-      h2 = (TH2D*)(fhAccPass[modifier[im]][i]->Clone(Form("hAccPass_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h2 = (TH2D*)(fhAccPass[fHistStrings[im]][i]->Clone(Form("hAccPass_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h2->SetDirectory(dir);
       h2->Write();
 
-      h1 = (TH1D*)(fhAccEtaAll[modifier[im]][i]->Clone(Form("hAccEtaAll_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1 = (TH1D*)(fhAccEtaAll[fHistStrings[im]][i]->Clone(Form("hAccEtaAll_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h1->SetDirectory(dir);
       h1->Write();
-      h1 = (TH1D*)(fhAccEtaPass[modifier[im]][i]->Clone(Form("hAccEtaPass_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetDirectory(dir);
-      h1->Write();
-
-      h1 = (TH1D*)(fhAccPtAll[modifier[im]][i]->Clone(Form("hAccPtAll_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetDirectory(dir);
-      h1->Write();
-      h1 = (TH1D*)(fhAccPtPass[modifier[im]][i]->Clone(Form("hAccPtPass_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
+      h1 = (TH1D*)(fhAccEtaPass[fHistStrings[im]][i]->Clone(Form("hAccEtaPass_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassAbsNoCuts[modifier[im]][i]->Clone(Form("hMassAbsNoCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassAbsNoCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhAccPtAll[fHistStrings[im]][i]->Clone(Form("hAccPtAll_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetDirectory(dir);
+      h1->Write();
+      h1 = (TH1D*)(fhAccPtPass[fHistStrings[im]][i]->Clone(Form("hAccPtPass_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassNoCuts[modifier[im]][i]->Clone(Form("hMassNoCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassNoCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassAbsNoCuts[fHistStrings[im]][i]->Clone(Form("hMassAbsNoCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassAbsNoCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAnaCuts[modifier[im]][i]->Clone(Form("hMassWithAnaCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAnaCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassNoCuts[fHistStrings[im]][i]->Clone(Form("hMassNoCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassNoCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithMuonCuts[modifier[im]][i]->Clone(Form("hMassWithMuonCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithMuonCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAnaCuts[fHistStrings[im]][i]->Clone(Form("hMassWithAnaCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAnaCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithTriggerCuts[modifier[im]][i]->Clone(Form("hMassWithTriggerCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithTriggerCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithMuonCuts[fHistStrings[im]][i]->Clone(Form("hMassWithMuonCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithMuonCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCuts[modifier[im]][i]->Clone(Form("hMassWithAllCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithTriggerCuts[fHistStrings[im]][i]->Clone(Form("hMassWithTriggerCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithTriggerCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCuts[fHistStrings[im]][i]->Clone(Form("hMassWithAllCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsSeagull[modifier[im]][i]->Clone(Form("hMassWithAllCutsSeagull_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsSeagull_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCutsBlind[fHistStrings[im]][i]->Clone(Form("hMassWithAllCutsBlind_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsBlind_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsSeagullBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCutsSeagull[fHistStrings[im]][i]->Clone(Form("hMassWithAllCutsSeagull_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsSeagull_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsCowboy[modifier[im]][i]->Clone(Form("hMassWithAllCutsCowboy_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsCowboy_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCutsSeagullBlind[fHistStrings[im]][i]->Clone(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsSeagullBlind_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhMassWithAllCutsCowboyBlind[modifier[im]][i]->Clone(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCutsCowboy[fHistStrings[im]][i]->Clone(Form("hMassWithAllCutsCowboy_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsCowboy_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-      h1 = (TH1D*)(fhW8MassWithAllCuts[modifier[im]][i]->Clone(Form("hW8MassWithAllCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hW8MassWithAllCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhMassWithAllCutsCowboyBlind[fHistStrings[im]][i]->Clone(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithAllCutsCowboyBlind_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
-
-      h1 = (TH1D*)(fhW8MassWithAllCutsSeagull[modifier[im]][i]->Clone(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
-      h1->SetDirectory(dir);
-      h1->Write();
-
-      h1 = (TH1D*)(fhW8MassWithAllCutsCowboy[modifier[im]][i]->Clone(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhW8MassWithAllCuts[fHistStrings[im]][i]->Clone(Form("hW8MassWithAllCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hW8MassWithAllCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
 
-      h1 = (TH1D*)(fhMassWithMassCuts[modifier[im]][i]->Clone(Form("hMassWithMassCuts_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-      h1->SetTitle(Form("hMassWithMassCuts_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1 = (TH1D*)(fhW8MassWithAllCutsSeagull[fHistStrings[im]][i]->Clone(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hW8MassWithAllCutsSeagull_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+      h1 = (TH1D*)(fhW8MassWithAllCutsCowboy[fHistStrings[im]][i]->Clone(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hW8MassWithAllCutsCowboy_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
+      h1->SetDirectory(dir);
+      h1->Write();
+
+
+      h1 = (TH1D*)(fhMassWithMassCuts[fHistStrings[im]][i]->Clone(Form("hMassWithMassCuts_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetTitle(Form("hMassWithMassCuts_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
       h1->SetDirectory(dir);
       h1->Write();
 
@@ -2743,23 +2742,23 @@ void plotResults::saveHistograms(string smode) {
 	  || (string::npos != fSample.find("bspsiphi"))
 	  || (string::npos != fSample.find("bdpsikstar"))
 	  ) {
-	h2 = (TH2D*)(fhNorm[modifier[im]][i]->Clone(Form("hNorm_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-	h2->SetTitle(Form("hNorm_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2 = (TH2D*)(fhNorm[fHistStrings[im]][i]->Clone(Form("hNorm_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hNorm_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
 
-	h2 = (TH2D*)(fhNormC[modifier[im]][i]->Clone(Form("hNormC_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-	h2->SetTitle(Form("hNormC_%s_%s_%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2 = (TH2D*)(fhNormC[fHistStrings[im]][i]->Clone(Form("hNormC_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hNormC_%s_%s_%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
 
-	h2 = (TH2D*)(fhW8Norm[modifier[im]][i]->Clone(Form("hW8Norm_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-	h2->SetTitle(Form("hW8Norm_%s_%s_chan%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2 = (TH2D*)(fhW8Norm[fHistStrings[im]][i]->Clone(Form("hW8Norm_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hW8Norm_%s_%s_chan%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
 
-	h2 = (TH2D*)(fhW8NormC[modifier[im]][i]->Clone(Form("hW8NormC_%s_%s_chan%d", modifier[im].c_str(), smode.c_str(), i)));
-	h2->SetTitle(Form("hW8NormC_%s_%s_%d %s", modifier[im].c_str(), smode.c_str(), i, smode.c_str()));
+	h2 = (TH2D*)(fhW8NormC[fHistStrings[im]][i]->Clone(Form("hW8NormC_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+	h2->SetTitle(Form("hW8NormC_%s_%s_%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
       }
@@ -2777,79 +2776,80 @@ void plotResults::saveHistograms(string smode) {
 // ----------------------------------------------------------------------
 void plotResults::resetHistograms(bool deleteThem) {
 
-  vector<string> modifier;
-  modifier.push_back("cnc" + fSuffix);
-  modifier.push_back("bdt" + fSuffix);
+  // vector<string> modifier;
+  // modifier.push_back("cnc" + fSuffix);
+  // modifier.push_back("bdt" + fSuffix);
+  // for (unsigned int im = 0; im < modifier.size(); ++im) {
 
-  for (unsigned int im = 0; im < modifier.size(); ++im) {
+  for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
     for (int i = 0; i < fNchan; ++i) {
-      fhAccAll[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccAll[modifier[im]][i];
-      fhAccPass[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccPass[modifier[im]][i];
+      fhAccAll[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccAll[fHistStrings[im]][i];
+      fhAccPass[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccPass[fHistStrings[im]][i];
 
-      fhAccPtAll[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccPtAll[modifier[im]][i];
-      fhAccPtPass[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccPtPass[modifier[im]][i];
+      fhAccPtAll[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccPtAll[fHistStrings[im]][i];
+      fhAccPtPass[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccPtPass[fHistStrings[im]][i];
 
-      fhAccEtaAll[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccEtaAll[modifier[im]][i];
-      fhAccEtaPass[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhAccEtaPass[modifier[im]][i];
+      fhAccEtaAll[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccEtaAll[fHistStrings[im]][i];
+      fhAccEtaPass[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhAccEtaPass[fHistStrings[im]][i];
 
-      fhGenAndAccNumbers[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhGenAndAccNumbers[modifier[im]][i];
+      fhGenAndAccNumbers[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhGenAndAccNumbers[fHistStrings[im]][i];
 
-      fhMassAbsNoCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassAbsNoCuts[modifier[im]][i];
-      fhMassNoCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassNoCuts[modifier[im]][i];
+      fhMassAbsNoCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassAbsNoCuts[fHistStrings[im]][i];
+      fhMassNoCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassNoCuts[fHistStrings[im]][i];
 
-      fhMassWithAnaCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAnaCuts[modifier[im]][i];
+      fhMassWithAnaCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAnaCuts[fHistStrings[im]][i];
 
-      fhMassWithMuonCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithMuonCuts[modifier[im]][i];
+      fhMassWithMuonCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithMuonCuts[fHistStrings[im]][i];
 
-      fhMassWithTriggerCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithTriggerCuts[modifier[im]][i];
+      fhMassWithTriggerCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithTriggerCuts[fHistStrings[im]][i];
 
-      fhMassWithAllCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCuts[modifier[im]][i];
-      fhMassWithAllCutsBlind[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCutsBlind[modifier[im]][i];
+      fhMassWithAllCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCuts[fHistStrings[im]][i];
+      fhMassWithAllCutsBlind[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsBlind[fHistStrings[im]][i];
 
-      fhMassWithAllCutsSeagull[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCutsSeagull[modifier[im]][i];
-      fhMassWithAllCutsSeagullBlind[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCutsSeagullBlind[modifier[im]][i];
+      fhMassWithAllCutsSeagull[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsSeagull[fHistStrings[im]][i];
+      fhMassWithAllCutsSeagullBlind[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsSeagullBlind[fHistStrings[im]][i];
 
-      fhMassWithAllCutsCowboy[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCutsCowboy[modifier[im]][i];
-      fhMassWithAllCutsCowboyBlind[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithAllCutsCowboyBlind[modifier[im]][i];
+      fhMassWithAllCutsCowboy[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsCowboy[fHistStrings[im]][i];
+      fhMassWithAllCutsCowboyBlind[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithAllCutsCowboyBlind[fHistStrings[im]][i];
 
-      fhW8MassWithAllCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhW8MassWithAllCuts[modifier[im]][i];
+      fhW8MassWithAllCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhW8MassWithAllCuts[fHistStrings[im]][i];
 
-      fhW8MassWithAllCutsSeagull[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhW8MassWithAllCutsSeagull[modifier[im]][i];
+      fhW8MassWithAllCutsSeagull[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhW8MassWithAllCutsSeagull[fHistStrings[im]][i];
 
-      fhW8MassWithAllCutsCowboy[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhW8MassWithAllCutsCowboy[modifier[im]][i];
+      fhW8MassWithAllCutsCowboy[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhW8MassWithAllCutsCowboy[fHistStrings[im]][i];
 
-      fhMassWithMassCuts[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhMassWithMassCuts[modifier[im]][i];
+      fhMassWithMassCuts[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhMassWithMassCuts[fHistStrings[im]][i];
 
-      fhNorm[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhNorm[modifier[im]][i];
-      fhNormC[modifier[im]][i] ->Reset();
-      if (deleteThem) delete fhNormC[modifier[im]][i];
-      fhW8Norm[modifier[im]][i]->Reset();
-      if (deleteThem) delete fhW8Norm[modifier[im]][i];
-      fhW8NormC[modifier[im]][i] ->Reset();
-      if (deleteThem) delete fhW8NormC[modifier[im]][i];
+      fhNorm[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhNorm[fHistStrings[im]][i];
+      fhNormC[fHistStrings[im]][i] ->Reset();
+      if (deleteThem) delete fhNormC[fHistStrings[im]][i];
+      fhW8Norm[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhW8Norm[fHistStrings[im]][i];
+      fhW8NormC[fHistStrings[im]][i] ->Reset();
+      if (deleteThem) delete fhW8NormC[fHistStrings[im]][i];
     }
   }
 }
