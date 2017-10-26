@@ -164,39 +164,56 @@ void plotBDT::bdtOptMakeTree(string logfile) {
   double mns, beta;
   string variables;
   bool pt, eta, maxdoca, pvip, docatrk, closetrk, m1iso, m2iso;
+  bool fls3d, fl3d, alpha, pvips, chi2dof, iso, othervtx, pvdchi2;
 
   TFile *f = TFile::Open(rname.c_str(), "RECREATE");
   TTree *t = new TTree("t", "t");
-  t->Branch("offset",  &offset,  "offset/I");
-  t->Branch("minks",   &minKs,   "minks/D");
-  t->Branch("ssb0",    &ssb0,    "ssb0/D");
-  t->Branch("ntrees",  &ntrees,  "ntrees/I");
-  t->Branch("ncuts",   &ncuts,   "ncuts/I");
-  t->Branch("maxdepth",&maxdepth,"maxdepth/I");
-  t->Branch("mns",     &mns,     "mns/D");
-  t->Branch("beta",    &beta,    "beta/D");
-  t->Branch("pt",      &pt,      "pt/O");
-  t->Branch("eta",     &eta,     "eta/O");
-  t->Branch("maxdoca", &maxdoca, "maxdoca/O");
-  t->Branch("pvip",    &pvip,    "pvip/O");
-  t->Branch("docatrk", &docatrk, "docatrk/O");
-  t->Branch("closetrk",&closetrk,"closetrk/O");
-  t->Branch("m1iso",   &m1iso,   "m1iso/O");
-  t->Branch("m2iso",   &m2iso,   "m2iso/O");
+  t->Branch("offset",   &offset,   "offset/I");
+  t->Branch("minks",    &minKs,    "minks/D");
+  t->Branch("ssb0",     &ssb0,     "ssb0/D");
+  t->Branch("ntrees",   &ntrees,   "ntrees/I");
+  t->Branch("ncuts",    &ncuts,    "ncuts/I");
+  t->Branch("maxdepth", &maxdepth, "maxdepth/I");
+  t->Branch("mns",      &mns,      "mns/D");
+  t->Branch("beta",     &beta,     "beta/D");
+
+  t->Branch("pt",       &pt,       "pt/O");
+  t->Branch("eta",      &eta,      "eta/O");
+  t->Branch("maxdoca",  &maxdoca,  "maxdoca/O");
+  t->Branch("docatrk",  &docatrk,  "docatrk/O");
+  t->Branch("closetrk", &closetrk, "closetrk/O");
+  t->Branch("m1iso",    &m1iso,    "m1iso/O");
+  t->Branch("m2iso",    &m2iso,    "m2iso/O");
+  t->Branch("iso",      &iso,      "iso/O");
+  t->Branch("fls3d",    &fls3d,    "fls3d/O");
+  t->Branch("fl3d",     &fl3d,     "fl3d/O");
+  t->Branch("alpha",    &alpha,    "alpha/O");
+  t->Branch("pvips",    &pvips,    "pvips/O");
+  t->Branch("othervtx", &othervtx, "othervtx/O");
+  t->Branch("pvdchi2",  &pvdchi2,  "pvdchi2/O");
+  t->Branch("pvip",     &pvip,     "pvip/O");
 
   string::size_type m1, m2;
   for (unsigned int i = 0; i < allLines.size(); ++i) {
-    pt = eta = maxdoca = pvip = docatrk = closetrk = m1iso = m2iso = false;
+    pt = eta = maxdoca = pvip = docatrk = closetrk = m1iso = m2iso =
+      fls3d = fl3d = alpha = pvips = chi2dof = iso = othervtx = pvdchi2 = false;
     cout << allLines[i] << endl;
-    m1 = allLines[i].find("chi2dof:");
+    m1 = allLines[i].find(":AdaBoostBeta");
     if (string::npos != allLines[i].find(":pt", m1)) pt = true;
     if (string::npos != allLines[i].find(":eta", m1)) eta = true;
     if (string::npos != allLines[i].find(":maxdoca", m1)) maxdoca = true;
-    if (string::npos != allLines[i].find(":pvip", m1)) pvip = true;
     if (string::npos != allLines[i].find(":docatrk", m1)) docatrk = true;
     if (string::npos != allLines[i].find(":closetrk", m1)) closetrk = true;
     if (string::npos != allLines[i].find(":m1iso", m1)) m1iso = true;
     if (string::npos != allLines[i].find(":m2iso", m1)) m2iso = true;
+    if (string::npos != allLines[i].find(":iso", m1)) iso = true;
+    if (string::npos != allLines[i].find(":fls3d", m1)) fls3d = true;
+    if (string::npos != allLines[i].find(":fl3d", m1)) fl3d = true;
+    if (string::npos != allLines[i].find(":pvip", m1)) pvip = true;
+    if (string::npos != allLines[i].find(":pvips", m1)) pvips = true;
+    if (string::npos != allLines[i].find(":alpha", m1)) alpha = true;
+    if (string::npos != allLines[i].find(":othervtx", m1)) othervtx = true;
+    if (string::npos != allLines[i].find(":pvdchi2", m1)) pvdchi2 = true;
 
     istringstream istring(allLines[i]);
     istring >> bla >> bla >> offset
