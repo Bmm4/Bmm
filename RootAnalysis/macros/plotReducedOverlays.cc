@@ -76,6 +76,8 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("ip");
     fDoList.push_back("ips");
     fDoList.push_back("pvn");
+    fDoList.push_back("pvntrk");
+    fDoList.push_back("pvz");
     fDoList.push_back("pvavew8");
 
     fDoList.push_back("lip");
@@ -106,27 +108,36 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
 
   // -- small N(PV)
   fChannelList.push_back("0lopu");
-  fChannelList.push_back("1lopu");
+  //  fChannelList.push_back("1lopu");
 
   // -- high N(PV)
   fChannelList.push_back("0hipu");
-  fChannelList.push_back("1hipu");
+  //  fChannelList.push_back("1hipu");
 
   // -- close to other PV
   fChannelList.push_back("0cpv");
-  fChannelList.push_back("1cpv");
+  //  fChannelList.push_back("1cpv");
 
   // -- far to other PV
   fChannelList.push_back("0fpv");
-  fChannelList.push_back("1fpv");
+  //  fChannelList.push_back("1fpv");
 
   // -- small fls3d
   fChannelList.push_back("0sfl");
-  fChannelList.push_back("1sfl");
+  //  fChannelList.push_back("1sfl");
 
   // -- big fls3d
   fChannelList.push_back("0bfl");
-  fChannelList.push_back("1bfl");
+  //  fChannelList.push_back("1bfl");
+
+  // -- large dzmin
+  fChannelList.push_back("0ldz");
+  //  fChannelList.push_back("1bfl");
+
+  // -- small dzmin
+  fChannelList.push_back("0sdz");
+  //  fChannelList.push_back("1bfl");
+
 
 }
 
@@ -159,10 +170,10 @@ void plotReducedOverlays::makeAll(string what) {
 
   if (what == "dbx") {
     //    init();
-    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
+    //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
     //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
     //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
-    //    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
     return;
   }
 
@@ -192,7 +203,7 @@ void plotReducedOverlays::makeAll(string what) {
     makeSampleOverlay("bmmData", "bdmmMcComb");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
-    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
+    //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
 
     allSystematics();
 
@@ -641,22 +652,25 @@ void plotReducedOverlays::loopFunction1() {
   double bdtCut(0.1);
   if (2011 == fYear) bdtCut = 0.15;
   if (2012 == fYear) bdtCut = 0.20;
-  fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
-  fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
+  //  fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
   //  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
+  fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
   fPreselectionBDT = fPreselection;
 
   fCncCuts.update();
   fBdtCuts.update();
 
-  bool loPU = (fb.pvn <  8);
+  bool loPU = (fb.pvn <  9);
   bool hiPU = (fb.pvn > 24);
 
-  bool closePV = (TMath::Abs(fb.pv2lip) < 0.2);
-  bool farPV   = (TMath::Abs(fb.pv2lip) > 1.0);
+  bool closePV = (TMath::Abs(fb.pv2lip) < 0.1);
+  bool farPV   = (TMath::Abs(fb.pv2lip) > 1.2);
 
-  bool sfl = (fb.fls3d < 12);
-  bool bfl = (fb.fls3d > 50);
+  bool sfl = (fb.fls3d < 8.);
+  bool bfl = (fb.fls3d > 50.);
+
+  bool ldz = (fb.dzmin > 1.5);
+  bool sdz = (fb.dzmin < 0.08);
 
   if (0) {
     cout
@@ -711,8 +725,6 @@ void plotReducedOverlays::loopFunction1() {
 
   if (fGoodHLT
       && (fBDT > -1.) && (fb.alpha < 0.05) && (fb.fls3d > 12) && (fb.pvips < 2.)
-
-      //      && (fb.iso > 0.7) && (fb.maxdoca < 0.015) && (fb.docatrk > 0.01)
       ) {
     fSel2 = true;
   } else {
@@ -724,7 +736,7 @@ void plotReducedOverlays::loopFunction1() {
     if (fDoCNC) fillDistributions("cnc");
     fillDistributions("bdt");
 
-    if (1) {
+    if (0 == fChan) {
       if (loPU) {
       	fChannel = Form("%dlopu", fChan);
 	if (fDoCNC) fillDistributions("cnc");
@@ -758,6 +770,17 @@ void plotReducedOverlays::loopFunction1() {
 	fillDistributions("bdt");
       }
 
+      if (sdz) {
+      	fChannel = Form("%dsdz", fChan);
+	if (fDoCNC) fillDistributions("cnc");
+	fillDistributions("bdt");
+      }
+      if (ldz) {
+      	fChannel = Form("%dldz", fChan);
+	if (fDoCNC) fillDistributions("cnc");
+	fillDistributions("bdt");
+      }
+
     }
   }
 }
@@ -785,6 +808,8 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
 
     a = new adset();
     a->fpPvN      = bookDistribution(Form("%spvn", name.c_str()), "N(PV) ", "fGoodHLT", pCuts, 40, 0., 40., p);
+    a->fpPvNtrk   = bookDistribution(Form("%spvntrk", name.c_str()), "N_{trk}(PV) ", "fGoodHLT", pCuts, 40, 0., 80., p);
+
     a->fpPvZ      = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", pCuts, 40, -20., 20., p);
     a->fpPvAveW8  = bookDistribution(Form("%spvavew8", name.c_str()), "<w^{PV}>", "fGoodPvAveW8", pCuts, 50, 0.5, 1., p);
 
@@ -1484,6 +1509,7 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpIpS->fill(fb.pvips, mass);
   fAdMap[mapname]->fpPvZ->fill(fb.pvz, mass);
   fAdMap[mapname]->fpPvN->fill(fb.pvn, mass);
+  fAdMap[mapname]->fpPvNtrk->fill(fb.pvntrk, mass);
   fAdMap[mapname]->fpPvAveW8->fill(fb.pvw8, mass);
 
   fAdMap[mapname]->fpM1Iso->fill(fb.m1iso, mass);
