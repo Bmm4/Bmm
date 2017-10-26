@@ -1048,6 +1048,7 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     sprintf(loption2, "l");
   }
 
+  int nBins;
   double int1V, int1E, int2V, int2E;
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
     cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), dataset1.c_str()) << "Si" << varF << endl;
@@ -1076,17 +1077,27 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     h1p->SetTitle("");
     h1p->Draw();
     int1V = int2V = int1E = int2E = 0.;
+    nBins = 1;
+    double xlo(3.9), xhi(19.9);
+    if (string::npos != varF.find("Eta")) {
+      xlo = -2.5;
+      xhi = 2.5;
+    }
     for (int i = 1; i <= h1p->GetNbinsX(); ++i) {
-      if (h1p->GetBinCenter(i) > 20.) break;
+      if (h1p->GetBinLowEdge(i+1) < xlo) continue;
+      if (h1p->GetBinLowEdge(i+1) > xhi) break;
+      //      ++nBins;
       int1V += h1p->GetBinContent(i);
       int1E += h1p->GetBinError(i)*h1p->GetBinError(i);
 
       int2V += h2p->GetBinContent(i);
       int2E += h2p->GetBinError(i)*h2p->GetBinError(i);
     }
-    int1E = TMath::Sqrt(int1E);
-    int2E = TMath::Sqrt(int2E);
-    cout << "SYSTEMATIC " << dataset1 << " integral 1: " << int1V << " +/- " << int1E << endl;
+    int1V = int1V/nBins;
+    int1E = TMath::Sqrt(int1E)/nBins;
+    int2V = int2V/nBins;
+    int2E = TMath::Sqrt(int2E)/nBins;
+    cout << "SYSTEMATIC " << dataset1 << " integral 1: " << int1V << " +/- " << int1E << " Nbins = " << nBins << endl;
     setHist(h2p, kBlue);
     h2p->Draw("histsame");
     cout << "SYSTEMATIC " << dataset2 << " integral 2: " << int2V << " +/- " << int2E << endl;
@@ -1101,8 +1112,12 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     legg->AddEntry(h2p, Form("%s", label2.c_str()), loption2);
     legg->Draw();
 
-    tl->DrawLatexNDC(0.65, 0.78, Form("%5.4f#pm%5.4f", int1V, int1E));
-    tl->DrawLatexNDC(0.65, 0.72, Form("%5.4f#pm%5.4f", int2V, int2E));
+    tl->DrawLatexNDC(0.60, 0.78, Form("%6.5f#pm%6.5f", int1V, int1E));
+    tl->DrawLatexNDC(0.60, 0.72, Form("%6.5f#pm%6.5f", int2V, int2E));
+
+    double dV = int1V - int2V;
+    double dE = TMath::Sqrt(int1E*int1E + int2E*int2E);
+    tl->DrawLatexNDC(0.49, 0.66, Form("#Delta = %+6.5f#pm%6.5f", dV, dE));
 
 
     savePad(Form("%d%s-fakerate_%s_ad%s_%s_ad%s_%s.pdf",
