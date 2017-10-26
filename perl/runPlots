@@ -1,7 +1,5 @@
 #!/usr/bin/perl
-
 # ----------------------------------------------------------------------
-#
 # runPlots  run sonmething for all years  or for specific setup testing
 # =======
 #
@@ -11,19 +9,16 @@
 # $BMMBASE/perl/runPlots -p results -m ana
 # $BMMBASE/perl/runPlots -s 1
 #
-#
-#
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
 # Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
-
 use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('dp:m:s:');
+getopts('d:p:m:s:');
 
 my @years = ("2011", "2012", "2016BF", "2016GH");
 
@@ -37,44 +32,66 @@ if ($opt_m) {
     $optm = "-m $opt_m";
 }
 
-if (1 == $opt_s) {
 #    my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389");
-    my @list = ("219", "309", "319", "329", "339", "349", "359");
+my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389", "409", "419", "429");
+
+if (1 == $opt_s) {
+    foreach $idir (@list) {
+	$dir = "results-" . $idir;
+	if ($opt_d && ($dir ne $opt_d)) {
+	    next;
+	}
+	print "dir = $dir\n";
+	system("/bin/rm -f runPlots-$dir-results-2016*.log");
+	system("bin/runPlot -y 2016BF -d $dir -p results -m fill  >& runPlots-$dir-results-fill-2016BF.log &");
+	system("bin/runPlot -y 2016GH -d $dir -p results -m fill  >& runPlots-$dir-results-fill-2016GH.log &");
+    }
+    exit(0);
+}
+
+if (2 == $opt_s) {
+    foreach $idir (@list) {
+	$dir = "results-" . $idir;
+	if ($opt_d && ($dir ne $opt_d)) {
+	    next;
+	}
+	print "dir = $dir\n";
+	system("/bin/rm -f runPlots-$dir-results-2016*.log");
+	system("bin/runPlot -y 2016BF -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016BF.log &");
+	system("bin/runPlot -y 2016GH -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016GH.log &");
+    }
+    exit(0);
+}
+
+
+if (10 == $opt_s) {
     foreach $idir (@list) {
 	$dir = "results-" . $idir;
 	print "dir = $dir\n";
 	system("/bin/rm -f runPlots-$dir-results-2016*.log");
-	system("bin/runPlot -y 2016BF -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016BF.log &");
-	system("bin/runPlot -y 2016BF -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016BF.log &");
+	system("bin/runPlot -y 2016BF -d $dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016BF.log &");
+	system("bin/runPlot -y 2016GH -d $dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016GH.log &");
+    }
+    exit(0);
+}
 
-	system("bin/runPlot -y 2016GH -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016GH.log &");
+
+if (11 == $opt_s) {
+    foreach $idir (@list) {
+	$dir = "results-" . $idir;
+	print "dir = $dir\n";
+	system("/bin/rm -f runPlots-$dir-results-2016*.log");
+	system("bin/runPlot -y 2016BF -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016BF.log &");
 	system("bin/runPlot -y 2016GH -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016GH.log &");
     }
     exit(0);
 }
 
-
-if ($opt_s) {
-    my $dir = $opt_s;
-    print "dir = $dir\n";
-    system("/bin/rm -f runPlots-$dir-results-2016*.log");
-    system("bin/runPlot -y 2016BF -d results-$dir -p results -m all  >& runPlots-$dir-results-all-2016BF.log &");
-    system("bin/runPlot -y 2016GH -d results-$dir -p results -m all  >& runPlots-$dir-results-all-2016GH.log &");
-
-    system("/bin/rm -f runPlots-$dir-overlays-2016*.log");
-    system("bin/runPlot -y 2016BF -d results-$dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016BF.log &");
-    system("bin/runPlot -y 2016GH -d results-$dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016GH.log &");
-    exit(0);
-}
-
-
+# -- default: run something on all 4 years
 foreach $year (@years) {
     print "running: bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log & \n";
     if (-e "$optp-$optm-$year.log") {
 	unlink("$optp-$optm-$year.log");
     }
-    if ($opt_d) {
-    } else {
-	system("bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log &");
-    }
+    system("bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log &");
 }

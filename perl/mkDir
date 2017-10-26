@@ -9,25 +9,35 @@
 use Getopt::Std;
 getopts('s:');
 
-my $dir = shift(@ARGV);
+#my $dir = shift(@ARGV);
 
-print "mkdir $dir \n";
-mkdir $dir;
+$pwd = $ENV{'PWD'};
 
-system("/bin/cp cuts/baseCuts.2016.cuts $dir");
-system("/bin/cp cuts/baseCuts.2012.cuts $dir");
-system("/bin/cp cuts/baseCuts.2011.cuts $dir");
-chdir $dir;
+foreach $dir (@ARGV) {
+    #print "mkdir $dir \n";
+    #mkdir $dir;
+    print "chdir $dir \n";
+    chdir $dir;
 
-symlink("../plotResults.2016.files", "plotResults.2016.files");
-symlink("../plotResults.2012.files", "plotResults.2012.files");
-symlink("../plotResults.2011.files", "plotResults.2011.files");
+    $BMMBASE = $ENV{'BMMBASE'};
+    print "BMMBASE = $BMMBASE \n";
+    symlink("$BMMBASE/RootAnalysis/macros/plotResults.2016BF.files", "plotResults.2016BF.files");
+    symlink("$BMMBASE/RootAnalysis/macros/plotResults.2016GH.files", "plotResults.2016GH.files");
+    symlink("$BMMBASE/RootAnalysis/macros/plotResults.2012.files", "plotResults.2012.files");
+    symlink("$BMMBASE/RootAnalysis/macros/plotResults.2011.files", "plotResults.2011.files");
 
-#print "/usr/bin/perl -pi -e '$opt_s'\n";
-if ($opt_s) {
-    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2016.cuts");
-    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2012.cuts");
-    system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2011.cuts");
-    print "new <  old > \n";
-    system("diff baseCuts.2016.cuts ../cuts/baseCuts.2016.cuts");
+    #print "/usr/bin/perl -pi -e '$opt_s'\n";
+    if ($opt_s) {
+	system("/bin/cp $BMMBASE/RootAnalysis/macros/cuts/baseCuts.2016.cuts .");
+	system("/bin/cp $BMMBASE/RootAnalysis/macros/cuts/baseCuts.2012.cuts .");
+	system("/bin/cp $BMMBASE/RootAnalysis/macros/cuts/baseCuts.2011.cuts .");
+
+	system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2016.cuts");
+	system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2012.cuts");
+	system("/usr/bin/perl -pi -e '$opt_s' baseCuts.2011.cuts");
+	print "new <  old > \n";
+	system("diff baseCuts.2016.cuts $BMMBASE/RootAnalysis/macros/cuts/baseCuts.2016.cuts");
+    }
+
+    chdir($pwd);
 }
