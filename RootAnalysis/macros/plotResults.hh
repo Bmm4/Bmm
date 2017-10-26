@@ -49,6 +49,8 @@ public :
   void calculateRareBgNumbers(int chan);
   void calculateBs2Bu(int chan);
   void calculatePerformance(int chan);
+  void scanBDT(std::string fname);
+  double findVarValue(std::string varName, std::vector<std::string> &lines);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};
   double massIntegral(TH1* h, INTMODE i, int chan);
@@ -76,6 +78,7 @@ private:
   std::string fHistWithAllCuts;
 
   std::vector<std::string> fHistStrings;
+  std::map<std::string, std::vector<TH1D*> > fhBdtCrossCheck;
   std::map<std::string, std::vector<TH2D*> > fhAccAll, fhAccPass;
   std::map<std::string, std::vector<TH1D*> > fhAccPtAll, fhAccPtPass, fhAccEtaAll, fhAccEtaPass;
 

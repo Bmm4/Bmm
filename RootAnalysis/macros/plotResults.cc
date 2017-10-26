@@ -81,7 +81,7 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
   fHistStrings.clear();
   fHistStrings.push_back("cnc" + fSuffix);
   fHistStrings.push_back("bdt" + fSuffix);
-  for (int i = 0; i < 42; ++i) {
+  for (int i = 0; i <= 60; ++i) {
     fHistStrings.push_back(Form("bdt_%d_", i) + fSuffix);
   }
 
@@ -95,6 +95,9 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
       fhAccAll[mode].push_back(h2);
       h2 = new TH2D(Form("h%sAccPass%d", mode.c_str(), i), Form("h%sAccPass%d", mode.c_str(), i), 25, 0., 2.5, 25, 0., 50.);
       fhAccPass[mode].push_back(h2);
+
+      h = new TH1D(Form("h%sBdtCrossCheck%d", mode.c_str(), i), Form("h%sBdtCrossCheck%d", mode.c_str(), i), 200, -1., 1.);
+      fhBdtCrossCheck[mode].push_back(h);
 
       h = new TH1D(Form("h%sAccPtAll%d", mode.c_str(), i), Form("h%sAccPtAll%d", mode.c_str(), i), 25, 0., 50.);
       fhAccPtAll[mode].push_back(h);
@@ -382,8 +385,6 @@ plotResults::~plotResults() {
 
 // ----------------------------------------------------------------------
 void plotResults::init() {
-  // cout << Form("/bin/rm -f %s", fHistFileName.c_str()) << endl;
-  // system(Form("/bin/rm -f %s", fHistFileName.c_str()));
   fTEX.close();
   cout << Form("/bin/rm -f %s", fTexFileName.c_str()) << endl;
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
@@ -395,6 +396,16 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
+
+  if (what == "dbx") {
+    fHistWithAllCuts = "hMassWithAllCuts";
+    fSuffixSel = "bdt" + fSuffix;
+    calculateNumbers("bdt" + fSuffix);
+
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
+  }
+
+
   if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
     dumpDatasets();
   }
@@ -476,17 +487,22 @@ void plotResults::makeAll(string what) {
   if (what == "all" || string::npos != what.find("ana")) {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
+    fSuffixSel = "cnc" + fSuffix;
     calculateNumbers("cnc" + fSuffix);
+    fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
   }
 
   if (what == "all" || string::npos != what.find("cnc")) {
     fHistWithAllCuts = "hMassWithAllCuts";
+    fSuffixSel = "cnc" + fSuffix;
     calculateNumbers("cnc" + fSuffix);
   }
 
   if (what == "all" || string::npos != what.find("bdt")) {
     fHistWithAllCuts = "hMassWithAllCuts";
+    fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
   }
 
@@ -498,15 +514,82 @@ void plotResults::makeAll(string what) {
 
 // ----------------------------------------------------------------------
 void plotResults::bookHist(string dsname) {
+  fHistWithAllCuts = "hMassWithAllCuts";
+  fSuffixSel = "bdt" + fSuffix;
+  calculateNumbers("bdt" + fSuffix);
+
+}
 
 
+// ----------------------------------------------------------------------
+void plotResults::scanBDT(string fname) {
+  fTEX.close();
+  int BDTMIN(0), BDTMAX(40);
+  if (1) {
+    string dsname = Form("%s", fname.c_str());
+    fTEX.open(dsname.c_str());
+    fHistWithAllCuts = "hMassWithAllCuts";
+    for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
+      string idx = Form("bdt_%d_", ib);
+      fSuffixSel = idx + fSuffix;
+      calculateNumbers(idx + fSuffix);
+    }
+    fTEX.close();
+  }
+
+  vector<string> plots;
+  plots.push_back("CSBF");
+  plots.push_back("BSMMBFS");
+  plots.push_back("BSMMBFU");
+  plots.push_back("SSB");
+  plots.push_back("SOB");
+  plots.push_back("SOBS");
+  plots.push_back("SOBB");
+  plots.push_back("alphaS");
+  plots.push_back("alphaU");
+
+  string histfilename = Form("%s", fname.c_str());
+  replaceAll(histfilename, ".tex", ".root");
+  cout << "fHistFile: " << histfilename;
+  fHistFile = TFile::Open(histfilename.c_str(), "RECREATE");
+  cout << " opened " << endl;
+
+  // -- now read in
+  vector<string> allLines;
+  ifstream is(fname);
+  char buffer[2000];
+  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+  is.close();
+  string name;
+  TH1D *h1(0);
+  for (unsigned int i = 0; i < plots.size(); ++i) {
+    for (unsigned int ic = 0; ic < fNchan; ++ic) {
+      h1 = new TH1D(Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
+		    Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
+		    BDTMAX-BDTMIN+1, BDTMIN, BDTMAX+1);
+      for (unsigned int ib = BDTMIN; ib <= BDTMAX; ++ib) {
+	string idx = Form("bdt_%d_", ib);
+	fSuffixSel = idx + fSuffix;
+	name = Form("%s:%s:chan%d:val", fSuffixSel.c_str(), plots[i].c_str(), ic);
+	double val = findVarValue(name, allLines);
+	if (1) cout << "  " << name << ": " << val << " or: " << Form("%8.6f", val) << " idx ->" << idx << "<-"
+		    << " filling into bin " << h1->FindBin(ib)
+		    << endl;
+	h1->SetBinContent(h1->FindBin(ib), val);
+      }
+      h1->SetDirectory(fHistFile);
+      h1->Write();
+      delete h1;
+    }
+  }
+  fHistFile->Close();
 }
 
 
 // ----------------------------------------------------------------------
 void plotResults::dumpDatasets() {
 
-  std::ofstream TEX;
+  ofstream TEX;
   string dsname = Form("%s/%d-datasets.tex", fDirectory.c_str(), fYear);
   system(Form("/bin/rm -f %s", dsname.c_str()));
   TEX.open(dsname.c_str(), ios::app);
@@ -608,13 +691,13 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   T->Draw("g1eta>>m1eta");
   T->Draw("g2eta>>m2eta");
 
-  T->Draw("gpt>>tpt", "hlt");
-  T->Draw("g1pt>>tm1pt", "hlt");
-  T->Draw("g2pt>>tm2pt", "hlt");
+  T->Draw("gpt>>tpt", "hlt1&&tos");
+  T->Draw("g1pt>>tm1pt", "hlt1&&tos");
+  T->Draw("g2pt>>tm2pt", "hlt1&&tos");
 
-  T->Draw("geta>>teta", "hlt");
-  T->Draw("g1eta>>tm1eta", "hlt");
-  T->Draw("g2eta>>tm2eta", "hlt");
+  T->Draw("geta>>teta", "hlt1&&tos");
+  T->Draw("g1eta>>tm1eta", "hlt1&&tos");
+  T->Draw("g2eta>>tm2eta", "hlt1&&tos");
 
 
   bool addKaon(false);
@@ -754,11 +837,11 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   if (0) {
     // -- ONLY for debugging
     resetHistograms();
-    mode = "bupsikData";
+    mode = "bdpsikstarData";
     setup(mode);
     t = getTree(mode, fTreeDir);
     setupTree(t, mode);
-    //    loopOverTree(t, 1, 100000, start);
+    //    loopOverTree(t, 1, 1000000, start);
     loopOverTree(t, 1, -1, start);
     saveHistograms(mode);
     fHistFile->Close();
@@ -918,9 +1001,9 @@ void plotResults::otherNumbers(string smode) {
        << " effGenSel = " << effGenSel << " +/- " << effGenSelE
        << endl;
 
-  vector<string> modifier;
-  modifier.push_back("cnc" + fSuffix);
-  modifier.push_back("bdt" + fSuffix);
+  // vector<string> modifier;
+  // modifier.push_back("cnc" + fSuffix);
+  // modifier.push_back("bdt" + fSuffix);
 
   for (unsigned int i = 0; i < fNchan; ++i) {
     fChan = i;
@@ -937,59 +1020,59 @@ void plotResults::otherNumbers(string smode) {
     if (effFilter < 1e-6) effFilter = 1.0;
     double genFileYield = ((TTree*)gDirectory->Get("effTree"))->GetEntries();
 
-    for (unsigned int im = 0; im < modifier.size(); ++im) {
+    for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
       // -- fill numbers from anaNumbers into histogram
       ibin = 1;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, effFilter);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effFilter");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, effFilter);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effFilter");
       ibin = 2;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, effFilterE);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effFilterE");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, effFilterE);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effFilterE");
       ibin = 3;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, effGenSel);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effGenSel");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, effGenSel);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effGenSel");
       ibin = 4;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, effGenSelE);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effGenSelE");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, effGenSelE);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effGenSelE");
 
       ibin = 11;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, genFileYield);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "genFileYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, genFileYield);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "genFileYield");
       ibin = 12;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, genFileYield/effGenSel);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "genYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, genFileYield/effGenSel);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "genYield");
       ibin = 13;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, dRatio(genFileYield, TMath::Sqrt(genFileYield), effGenSel, effGenSelE));
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "genYieldE");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, dRatio(genFileYield, TMath::Sqrt(genFileYield), effGenSel, effGenSelE));
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "genYieldE");
 
       ibin = 20;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAcc.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "acc");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAcc.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "acc");
       ibin = 21;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAcc.estat);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "accE");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAcc.estat);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "accE");
 
       ibin = 22;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAccGenFileYield.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "accGenFileYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAccGenFileYield.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "accGenFileYield");
       ibin = 23;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAccGenYield.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "accGenYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAccGenYield.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "accGenYield");
 
       ibin = 24;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAccRecoYield.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "accRecoYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAccRecoYield.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "accRecoYield");
       ibin = 25;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fAccCandYield.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "accCandYield");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fAccCandYield.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "accCandYield");
 
 
       ibin = 30;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fEffCand.val);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effCand");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fEffCand.val);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effCand");
       ibin = 31;
-      fhGenAndAccNumbers[modifier[im]][i]->SetBinContent(ibin, aa[i]->fEffCand.estat);
-      fhGenAndAccNumbers[modifier[im]][i]->GetXaxis()->SetBinLabel(ibin, "effCandE");
+      fhGenAndAccNumbers[fHistStrings[im]][i]->SetBinContent(ibin, aa[i]->fEffCand.estat);
+      fhGenAndAccNumbers[fHistStrings[im]][i]->GetXaxis()->SetBinLabel(ibin, "effCandE");
     }
   }
 }
@@ -1201,7 +1284,7 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio,
     for (int i = 0; i < NWIN; ++i) {
       cout << "[" << i << "] " << aSig.fMcYield[i].val << " -> ";
       aSig.fMcYield[i].val = aSig.fMcYield[i].val*scaleFactor;
-      cout << aSig.fMcYield[i].val;
+      cout << aSig.fMcYield[i].val << " ";
     }
     cout << endl;
   } else {
@@ -1298,11 +1381,11 @@ void plotResults::calculateBs2Bu(int ichan) {
   cout << "*******************************" << endl;
 
   int NDIG(6);
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- BF(Bs -> J/psi phi):  chan: " << ichan << " BFCS/CSBF" << endl;
-  dumpTex(bf, Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan), 6);
+  dumpTex(bf, Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan), 7);
 }
 
 
@@ -1322,13 +1405,13 @@ void plotResults::calculatePerformance(int ichan) {
     / fNoNumbers[ichan].fW8SignalFit.val;
   double alphaUE = TMath::Sqrt(
 			       (fFsfu.etot/fFsfu.val)*(fFsfu.etot/fFsfu.val)
-			       + (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.etot)
-			       * (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.etot)
+			       + (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.val)
+			       * (fNoNumbers[ichan].fEffTot.etot/fNoNumbers[ichan].fEffTot.val)
 			       + (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
 			       * (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
 			       + (buBfE/buBf)*(buBfE/buBf)
 			       + (fNoNumbers[ichan].fW8SignalFit.etot/fNoNumbers[ichan].fW8SignalFit.val)
-			       *(fNoNumbers[ichan].fW8SignalFit.etot/fNoNumbers[ichan].fW8SignalFit.val)
+			       * (fNoNumbers[ichan].fW8SignalFit.etot/fNoNumbers[ichan].fW8SignalFit.val)
 			       );
   alphaUE = alphaUE * alphaU;
 
@@ -1337,13 +1420,13 @@ void plotResults::calculatePerformance(int ichan) {
     * bsBf
     / fCsNumbers[ichan].fW8SignalFit.val;
   double alphaSE = TMath::Sqrt(
-			       + (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.etot)
-			       * (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.etot)
+			       + (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.val)
+			       * (fCsNumbers[ichan].fEffTot.etot/fCsNumbers[ichan].fEffTot.val)
 			       + (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
 			       * (fBsmmNumbers[ichan].fEffTot.etot/fBsmmNumbers[ichan].fEffTot.val)
 			       + (bsBfE/bsBf)*(bsBfE/bsBf)
 			       + (fCsNumbers[ichan].fW8SignalFit.etot/fCsNumbers[ichan].fW8SignalFit.val)
-			       *(fCsNumbers[ichan].fW8SignalFit.etot/fCsNumbers[ichan].fW8SignalFit.val)
+			       * (fCsNumbers[ichan].fW8SignalFit.etot/fCsNumbers[ichan].fW8SignalFit.val)
 			       );
   alphaSE   = alphaSE * alphaS;
 
@@ -1360,31 +1443,49 @@ void plotResults::calculatePerformance(int ichan) {
 			  + alphaS*alphaS*fBsmmNumbers[ichan].fScaledYield.etot*fBsmmNumbers[ichan].fScaledYield.etot);
 
   cout << "*******************************" << endl;
-  cout << "expected Bsmm yield (B+ norm): " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
+  cout << "expected Bsmm yield:           " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
   cout << "psik w8 yield:                 " << fNoNumbers[ichan].fW8SignalFit.val << " +/- " << fNoNumbers[ichan].fW8SignalFit.etot << endl;
-  cout << "alphaU:                        " << alphaU << " +- " << alphaUE  << endl;
-  cout << "BF:                            " << bfU.val << " +/- " << bfU.etot << " for selection " << fNoNumbers[ichan].fSel << endl;
+  cout << "alphaU:                        " << alphaU << " +/- " << alphaUE  << endl;
+  cout << "BF (B+ norm):                  " << bfU.val << " +/- " << bfU.etot << " for selection " << fNoNumbers[ichan].fSel << endl;
   cout << "*******************************" << endl;
 
   cout << "*******************************" << endl;
-  cout << "expected Bsmm yield (Bs norm): " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
+  cout << "expected Bsmm yield:           " << fBsmmNumbers[ichan].fScaledYield.val << " +/- " << fBsmmNumbers[ichan].fScaledYield.etot << endl;
   cout << "psiphi w8 yield:               " << fCsNumbers[ichan].fW8SignalFit.val << " +/- " << fCsNumbers[ichan].fW8SignalFit.etot << endl;
-  cout << "alphaS:                        " << alphaS << " +- " << alphaSE << endl;
-  cout << "BF:                            " << bfS.val << " +/- " << bfS.etot << " for selection " << fCsNumbers[ichan].fSel << endl;
+  cout << "alphaS:                        " << alphaS << " +/- " << alphaSE << endl;
+  cout << "BF (Bs norm):                  " << bfS.val << " +/- " << bfS.etot << " for selection " << fCsNumbers[ichan].fSel << endl;
   cout << "*******************************" << endl;
 
   int NDIG(6);
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- BF(Bs -> mumu; Bu -> psi K):  chan: " << ichan << endl;
   fTEX << formatTexErrSci(alphaU, alphaUE, Form("%s:alphaU:chan%d", fSuffixSel.c_str(), ichan), 4) << endl;
-  dumpTex(bfU, Form("%s:BSMMBFU:chan%d", fSuffixSel.c_str(), ichan), 6);
+  fTEX << formatTex(alphaU, Form("%s:alphaU:chan%d:val", fSuffixSel.c_str(), ichan), 11) << endl;
+  dumpTex(bfU, Form("%s:BSMMBFU:chan%d", fSuffixSel.c_str(), ichan), 10);
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- BF(Bs -> mumu; Bs -> psi phi):  chan: " << ichan << endl;
   fTEX << formatTexErrSci(alphaS, alphaSE, Form("%s:alphaS:chan%d", fSuffixSel.c_str(), ichan), 4) << endl;
-  dumpTex(bfS, Form("%s:BSMMBFS:chan%d", fSuffixSel.c_str(), ichan), 6);
+  dumpTex(bfS, Form("%s:BSMMBFS:chan%d", fSuffixSel.c_str(), ichan), 10);
+  fTEX << formatTex(alphaS, Form("%s:alphaS:chan%d:val", fSuffixSel.c_str(), ichan), 11) << endl;
 
+  // -- calculate S/B here
+  double sob = fBsmmNumbers[ichan].fScaledYield.val/fBgNumbers[ichan].fFitYield[3].val;
+  double ssb = fBsmmNumbers[ichan].fScaledYield.val/
+    TMath::Sqrt(fBsmmNumbers[ichan].fScaledYield.val + fBgNumbers[ichan].fFitYield[3].val);
+  fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
+  fTEX << " -- SOB chan: " << ichan << endl;
+  fTEX << formatTex(sob, Form("%s:SOB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
+  fTEX << formatTex(ssb, Form("%s:SSB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
+  fTEX << formatTex(fBsmmNumbers[ichan].fScaledYield.val,
+		    Form("%s:SOBS:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
+  fTEX << formatTex(fBgNumbers[ichan].fFitYield[3].val,
+		    Form("%s:SOBB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
 
 }
 
@@ -1396,8 +1497,8 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
   int chan = aa.fChan;
 
   // -- efficiency and acceptance
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  modifier += "_" + aa.fNameMc;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  string modifier = fSuffixSel + string("_") + aa.fNameMc;
 
   cout << " numbersFromHist for name: " << aa.fName << ", chan: " << aa.fChan
        << " all cuts hist: " << Form("%s_%s_chan%d", fHistWithAllCuts.c_str(), modifier.c_str(), chan)
@@ -1534,8 +1635,8 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
 void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   c0->Clear();
   c0->SetCanvasSize(700, 700);
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
   cout << "==> calculateB2JpsiNumbers for name: " << a.fName << ", chan: " << a.fChan << " fSuffixSel: " << fSuffixSel << endl;
 
   // -- MC: efficiency and acceptance
@@ -1555,7 +1656,8 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   }
   // -- data: fit yields
   fSample = a.fNameDa;
-  string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  //  string  name = Form("hNorm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  string  name = Form("hNorm_%s_%s_chan%d", fSuffixSel.c_str(), fSample.c_str(), chan);
   bool ok = fHistFile->cd(fSample.c_str());
   cout << "cd to " << fSample << ": " << ok << ", normalization fitting: " << name << endl;
   fitPsYield fpy(name, 0);
@@ -1570,7 +1672,8 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   a.fSignalFit.etot  = TMath::Sqrt(a.fSignalFit.estat*a.fSignalFit.estat + a.fSignalFit.esyst*a.fSignalFit.esyst);
 
   // -- fit also weighted yields (with correction weights)
-  string name2 = Form("hW8Norm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  //  string name2 = Form("hW8Norm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
+  string name2 = Form("hW8Norm_%s_%s_chan%d", fSuffixSel.c_str(), fSample.c_str(), chan);
   ok = fHistFile->cd(fSample.c_str());
   cout << "cd to " << fSample << ": " << ok << ", W8 normalization fitting: " << name << endl;
   fitPsYield fpy2(name2, 0);
@@ -1623,13 +1726,14 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   c0->SetCanvasSize(700, 700);
 
   c0->Clear();
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
   cout << "==> calculateCombBgNumbers for name: " << a.fName << ", chan: " << a.fChan << " fSuffixSel = " << fSuffixSel << endl;
 
   // -- get the histogram
   fSample = a.fNameDa;
-  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), a.fChan);
+  //  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), a.fChan);
+  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), fSuffixSel.c_str(), fSample.c_str(), a.fChan);
   TH1D *h1 = (TH1D*)gDirectory->Get(Form("%s/%s", fSample.c_str(), name.c_str()));
   cout << "getting  histogram ->" << Form("%s/%s", fSample.c_str(), name.c_str()) << "<-" << endl;
   TF1 *lF1(0), *lF2(0);
@@ -1698,8 +1802,8 @@ void plotResults::calculateSgNumbers(anaNumbers &a) {
   cout << "==> calculateSgNumbers for name: " << a.fName << ", chan: " << a.fChan << endl;
   c0->Clear();
   c0->SetCanvasSize(700, 700);
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
 
   // -- MC: efficiency and acceptance
   char mode[200];
@@ -1754,8 +1858,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   cout << "==> calculateRareBgNumbers for chan: " << chan << endl;
   int nloop(0);
-  string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
-  fSuffixSel = modifier;
+  // string modifier = (fDoUseBDT?"bdt":"cnc") + fSuffix;
+  // fSuffixSel = modifier;
   char mode[200];
   // -- book summed histograms
   THStack hSl("hSl", "rare semileptonic decays");
@@ -1778,14 +1882,17 @@ void plotResults::calculateRareBgNumbers(int chan) {
     cout << "calculateRareBgNumbers for " << it->first << " in chan = " << chan << endl;
     anaNumbers *a = fRareNumbers[it->first][chan];
     string accname = rareAccName(it->first);
-    cout << "rec: " << Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan) << endl;
-    TH1D *h1 = (TH1D*)fHistFile->Get(Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan));
+    cout << "rec: " << Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan) << endl;
+    // TH1D *h1 = (TH1D*)fHistFile->Get(Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan));
+    TH1D *h1 = (TH1D*)fHistFile->Get(Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan));
     double effGenSel = getValueByLabel(h1,  "effGenSel");
     double genYield  = getValueByLabel(h1,  "genYield");
     double acc       = getValueByLabel(h1,  "acc");
 
-    u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), modifier.c_str(), it->first.c_str(), chan);
-    w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), modifier.c_str(), it->first.c_str(), chan);
+    // u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), modifier.c_str(), it->first.c_str(), chan);
+    // w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), modifier.c_str(), it->first.c_str(), chan);
+    u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan);
+    w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan);
     TH1D *hu = (TH1D*)fHistFile->Get(u8name.c_str());
     TH1D *hw = (TH1D*)fHistFile->Get(w8name.c_str());
 
@@ -1998,7 +2105,8 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   // -- create overlay of data and the stacked (and scaled) backgrounds
   fSample = fCombNumbers[chan].fNameDa;
-  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), chan);
+  //  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), modifier.c_str(), fSample.c_str(), chan);
+  string  name = Form("%s_%s_%s_chan%d", hname.c_str(), fSuffixSel.c_str(), fSample.c_str(), chan);
   cout << "getting  histogram ->" << Form("%s/%s", fSample.c_str(), name.c_str()) << "<-" << endl;
   TH1D *h1e = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", fSample.c_str(), name.c_str())))->Clone("h1erebin");
   h1e->Rebin(5);
@@ -2288,6 +2396,9 @@ void plotResults::loopFunction1() {
 	&& fGoodJpsiCuts
 	&& goodBDT
 	) {
+
+      fhBdtCrossCheck[fHistStrings[i]][fChan]->Fill(fBDT);
+
       fhMassWithAnaCuts[fHistStrings[i]][fChan]->Fill(mass);
 
       if (fGoodMuonsID && fGoodDcand) {
@@ -2346,21 +2457,13 @@ void plotResults::loopFunction1() {
 
 	  if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
 	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  }
-
-	  if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
+	  } else if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
 	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  }
-
-	  if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
+	  } else if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
 	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  }
-
-	  if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
+	  } else if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
 	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  }
-
-	  if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
+	  } else if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
 	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
 	  }
 	}
@@ -2652,6 +2755,11 @@ void plotResults::saveHistograms(string smode) {
       h1->SetDirectory(dir);
       h1->Write();
 
+
+      h1 = (TH1D*)(fhBdtCrossCheck[fHistStrings[im]][i]->Clone(Form("hBdtCrossCheck_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
+      h1->SetDirectory(dir);
+      h1->Write();
+
       h1 = (TH1D*)(fhAccPtAll[fHistStrings[im]][i]->Clone(Form("hAccPtAll_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
       h1->SetDirectory(dir);
       h1->Write();
@@ -2787,6 +2895,9 @@ void plotResults::resetHistograms(bool deleteThem) {
       if (deleteThem) delete fhAccAll[fHistStrings[im]][i];
       fhAccPass[fHistStrings[im]][i]->Reset();
       if (deleteThem) delete fhAccPass[fHistStrings[im]][i];
+
+      fhBdtCrossCheck[fHistStrings[im]][i]->Reset();
+      if (deleteThem) delete fhBdtCrossCheck[fHistStrings[im]][i];
 
       fhAccPtAll[fHistStrings[im]][i]->Reset();
       if (deleteThem) delete fhAccPtAll[fHistStrings[im]][i];
@@ -2980,4 +3091,18 @@ double plotResults::massIntegral(TH1* h, INTMODE imode, int ichan) {
   }
 
   return h->Integral(lo, hi);
+}
+
+
+// ----------------------------------------------------------------------
+double plotResults::findVarValue(string varName, vector<string> &lines) {
+  for (unsigned int i = 0; i < lines.size(); ++i) {
+    if (string::npos != lines[i].find(varName) && string::npos != lines[i].find("val")) {
+      string::size_type m1 = lines[i].find("ensuremath{");
+      string::size_type m2 = lines[i].find("}", m1);
+      string snum = lines[i].substr(m1+12, m2-m1-12-1);
+      return atof(snum.c_str());
+    }
+  }
+  return 0.;
 }
