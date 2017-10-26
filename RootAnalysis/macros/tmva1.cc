@@ -142,6 +142,8 @@ void tmva1::makeAll(int offset, string filename, int chan) {
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-4-2016.root"; // harder preselection: fls3d>12, added tos&&l1t.  Nevt(chan0Events0):  1422
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-5-2016.root"; // harder preselection: fls3d>7                    Nevt(chan0Events0):  5644
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-6-2016.root"; // harder preselection: fls3d>5                    Nevt(chan0Events0): 10139
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-7-2016.root"; // more signal MC
+      filename = "/scratch/ursl/bmm4/bdt/tmva-trees-8-2016.root"; // fls3d>10
     }
     if (0 == fYear) {
       filename = "/scratch/ursl/bmm4/bdt/tmva-trees-0-0.root";    // harder preselection: fls3d>5 && tos && hlt1
