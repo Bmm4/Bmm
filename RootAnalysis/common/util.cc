@@ -555,7 +555,6 @@ vector<int> defVector(int n, ...) {
 
 // ----------------------------------------------------------------------
 string formatTex(double n, string name, int digits, int sgn) {
-
   char line[200];
   if ( TMath::IsNaN(n) ) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
@@ -579,6 +578,21 @@ string formatTex(double n, string name, int digits, int sgn) {
   } else if (6 == digits ) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{%7.6f } } }", name.c_str(), n);
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+7.6f } } }", name.c_str(), n);
+  } else if (7 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%8.7f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+8.7f } } }", name.c_str(), n);
+  } else if (8 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%9.8f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+9.8f } } }", name.c_str(), n);
+  } else if (9 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%10.9f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+10.9f } } }", name.c_str(), n);
+  } else if (10 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%11.10f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+11.10f } } }", name.c_str(), n);
+  } else if (11 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{%12.11f } } }", name.c_str(), n);
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+12.11f } } }", name.c_str(), n);
   } else {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{%f } } }", name.c_str(), n);
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+f } } }", name.c_str(), n);
@@ -613,19 +627,21 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
   double mantN  = n / TMath::Power(10, static_cast<int>(expoN));
   if (negative) mantN *= -1.;
   double mantNE = nE / TMath::Power(10, static_cast<int>(expoNE-ratio));
-  if (nE < 1.e-8) mantNE = 0.;
 
   //  cout << setw(2) << "expoN = " << expoN << " expoNE == " << expoNE << " mantN = " << mantN << " mantNE = " << mantNE << " ratio = " << ratio << endl;
 
   if (TMath::IsNaN(n) || TMath::IsNaN(nE)) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
   } else if (1 == digits ) {
+    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (2 == digits ) {
+    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (3 == digits ) {
+    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (4 == digits ) {
