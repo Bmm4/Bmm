@@ -151,11 +151,6 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   fCncCuts.addCut("fGoodM1Iso", "I_{trk}^{#mu,1}", fGoodM1Iso);
   fCncCuts.addCut("fGoodM2Iso", "I_{trk}^{#mu,2}", fGoodM2Iso);
   fCncCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
-  // fCncCuts.addCut("fGoodCloseTrackS1", "close track s1 veto", fGoodCloseTrackS1);
-  // fCncCuts.addCut("fGoodCloseTrackS2", "close track s2 veto", fGoodCloseTrackS2);
-  // fCncCuts.addCut("fGoodCloseTrackS3", "close track s3 veto", fGoodCloseTrackS3);
-
-  //  fCncCuts.addCut("fGoodCNC", "cnc", fGoodCNC);
 
   fBdtCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
   fBdtCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
