@@ -78,6 +78,7 @@ echo "--> Run Treereader"
 date
 cd src/Bmm/RootAnalysis/macros/
 pwd
+ls -rtl
 
 echo "$EXECUTABLE $JOB  |& tee $JOB.log"
 $EXECUTABLE  $JOB  |& tee $JOB.log
