@@ -77,7 +77,10 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("ips");
     fDoList.push_back("pvn");
     fDoList.push_back("pvntrk");
+    fDoList.push_back("pv2ntrk");
     fDoList.push_back("pvz");
+    fDoList.push_back("dzmin");
+    fDoList.push_back("dz12");
     fDoList.push_back("pvavew8");
 
     fDoList.push_back("lip");
@@ -666,10 +669,10 @@ void plotReducedOverlays::loopFunction1() {
   bool closePV = (TMath::Abs(fb.pv2lip) < 0.1);
   bool farPV   = (TMath::Abs(fb.pv2lip) > 1.2);
 
-  bool sfl = (fb.fls3d < 8.);
+  bool sfl = (fb.fls3d < 12.);
   bool bfl = (fb.fls3d > 50.);
 
-  bool ldz = (fb.dzmin > 1.5);
+  bool ldz = (fb.dzmin > 1.2);
   bool sdz = (fb.dzmin < 0.08);
 
   if (0) {
@@ -808,7 +811,10 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
 
     a = new adset();
     a->fpPvN      = bookDistribution(Form("%spvn", name.c_str()), "N(PV) ", "fGoodHLT", pCuts, 40, 0., 40., p);
-    a->fpPvNtrk   = bookDistribution(Form("%spvntrk", name.c_str()), "N_{trk}(PV) ", "fGoodHLT", pCuts, 40, 0., 80., p);
+    a->fpPvNtrk   = bookDistribution(Form("%spvntrk", name.c_str()), "N_{trk}(PV) ", "fGoodHLT", pCuts, 40, 0., 120., p);
+    a->fpPv2Ntrk  = bookDistribution(Form("%spv2ntrk", name.c_str()), "N_{trk}(PV2) ", "fGoodHLT", pCuts, 40, 0., 120., p);
+    a->fpDzmin    = bookDistribution(Form("%sdzmin", name.c_str()), "min(#Delta z) [cm] ", "fGoodHLT", pCuts, 50, -2., 2., p);
+    a->fpDz12     = bookDistribution(Form("%sdz12", name.c_str()), "#Delta z [cm] ", "fGoodHLT", pCuts, 50, -2., 2., p);
 
     a->fpPvZ      = bookDistribution(Form("%spvz", name.c_str()), "z_{PV} [cm]", "fGoodHLT", pCuts, 40, -20., 20., p);
     a->fpPvAveW8  = bookDistribution(Form("%spvavew8", name.c_str()), "<w^{PV}>", "fGoodPvAveW8", pCuts, 50, 0.5, 1., p);
@@ -1508,8 +1514,11 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpIp->fill(fb.pvip, mass);
   fAdMap[mapname]->fpIpS->fill(fb.pvips, mass);
   fAdMap[mapname]->fpPvZ->fill(fb.pvz, mass);
+  fAdMap[mapname]->fpDzmin->fill(fb.dzmin, mass);
+  fAdMap[mapname]->fpDz12->fill(fb.dz12, mass);
   fAdMap[mapname]->fpPvN->fill(fb.pvn, mass);
   fAdMap[mapname]->fpPvNtrk->fill(fb.pvntrk, mass);
+  fAdMap[mapname]->fpPv2Ntrk->fill(fb.pv2ntrk, mass);
   fAdMap[mapname]->fpPvAveW8->fill(fb.pvw8, mass);
 
   fAdMap[mapname]->fpM1Iso->fill(fb.m1iso, mass);

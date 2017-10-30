@@ -26,8 +26,8 @@ struct adset {
     , *fpMaxDoca, *fpIp, *fpIpS
     , *fpBDT
     , *fpBDTSel0, *fpBDTSel1, *fpBDTSel2
-    , *fpPvZ, *fpPvN, *fpPvNtrk, *fpPvAveW8
-    , *fpLip, *fpLipS, *fpLip2, *fpLipS2
+    , *fpPvZ, *fpPvN, *fpPvNtrk, *fpPv2Ntrk, *fpPvAveW8
+    , *fpLip, *fpLipS, *fpLip2, *fpLipS2, *fpDzmin,  *fpDz12
     , *fpCloseTrkS1, *fpCloseTrkS2, *fpCloseTrkS3
     , *fpM1Iso, *fpM2Iso
     , *fpPvDchi2, *fpOtherVtx
