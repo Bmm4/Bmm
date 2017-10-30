@@ -48,6 +48,7 @@ int main(int argc, char *argv[]) {
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){
+    if (!strcmp(argv[i], "-c"))  {cuts  = argv[++i];}
     if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
     if (!strcmp(argv[i], "-f"))  {files = argv[++i];}         // for tmva1: offset
     if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}         // for tmva1: BDT parameters
@@ -81,6 +82,11 @@ int main(int argc, char *argv[]) {
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "BF";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".2016", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
   }
 
   if ("2016GH" == syear) {
@@ -89,6 +95,11 @@ int main(int argc, char *argv[]) {
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "GH";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".2016", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
   }
 
   if ("2012" == syear) {
@@ -97,6 +108,11 @@ int main(int argc, char *argv[]) {
     if ("nada" == cuts)  cuts  = "baseCuts.2012.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".2012", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
   }
 
   if ("2011" == syear) {
@@ -105,9 +121,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == cuts)  cuts  = "baseCuts.2011.cuts";
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".2011", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
   }
 
-  cout << "syear: " << syear << " year: " << year << endl;
+  cout << "syear: " << syear << " year: " << year << " setup: " << setup << " dir: " << dir << " cuts: " << cuts << endl;
 
   // -- run everything
   if ("nada" == plot) {
