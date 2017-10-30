@@ -106,10 +106,10 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
   if (string::npos != sfiles.find("2016")) {
     fYear = 2016;
     fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
-    if (fSetup == "BF") {
+    if (string::npos != fSetup.find("BF")) {
       fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 13 TeV)";
     }
-    if (fSetup == "GH") {
+    if (string::npos != fSetup.find("GH")) {
       fStampLumi = "L = 16 fb^{-1} (#sqrt{s} = 13 TeV)";
     }
   }
