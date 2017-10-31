@@ -172,7 +172,7 @@ void plotReducedOverlays::init() {
 void plotReducedOverlays::makeAll(string what) {
 
   if (what == "dbx") {
-    //    init();
+    init();
     //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
     //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
     //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
@@ -1748,7 +1748,8 @@ void plotReducedOverlays::loadFiles(string afiles) {
   cout << Form("%30s: %20s: ", "Dataset name", "decay mode name") << "Filename" << endl;
   cout << "------------------------------------------------------------------------------------------" << endl;
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
-    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << it->second->fF->GetName() << endl;
+    cout << Form("%30s: %20s: ", it->first.c_str(), it->second->fName.c_str()) << endl;
+    cout << "                                                 " << it->second->fF->GetName() << endl;
   }
   cout << "------------------------------------------------------------------------------------------" << endl;
 }
