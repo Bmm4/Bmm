@@ -69,11 +69,8 @@ int main(int argc, char *argv[]) {
   }
 
   if ("2016" == syear) {
-    year = 2016;
-    if ("nada" == files) files = "plotResults.2016.files";
-    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
-    if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "";
+    cout << "you should not run with -y 2016, choose -y 2016BF or -y 2016GH instead!" << endl;
+    exit(0);
   }
 
   if ("2016BF" == syear) {
@@ -84,7 +81,6 @@ int main(int argc, char *argv[]) {
     if ("nada" == setup) setup = "BF";
     string scuts = cuts;
     replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".2016", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
   }
@@ -97,7 +93,6 @@ int main(int argc, char *argv[]) {
     if ("nada" == setup) setup = "GH";
     string scuts = cuts;
     replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".2016", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
   }
@@ -110,7 +105,6 @@ int main(int argc, char *argv[]) {
     if ("nada" == setup) setup = "";
     string scuts = cuts;
     replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".2012", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
   }
@@ -123,7 +117,6 @@ int main(int argc, char *argv[]) {
     if ("nada" == setup) setup = "";
     string scuts = cuts;
     replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".2011", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
   }
