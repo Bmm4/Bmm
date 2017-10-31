@@ -32,6 +32,11 @@ if ($opt_m) {
     $optm = "-m $opt_m";
 }
 
+my $optd = "";
+if ($opt_d) {
+    $optd = "-d $opt_d";
+}
+
 #    my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389");
 my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389", "409", "419", "429");
 
@@ -88,10 +93,14 @@ if (11 == $opt_s) {
 }
 
 # -- default: run something on all 4 years
+my $log = "";
+if ($optd ne "") {
+    $log = "-$opt_d";
+}
 foreach $year (@years) {
     print "running: bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log & \n";
     if (-e "$optp-$optm-$year.log") {
 	unlink("$optp-$optm-$year.log");
     }
-    system("bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log &");
+    system("bin/runPlot -y $year $optd $optp $optm >& runPlots$log-$opt_p-$opt_m-$year.log &");
 }
