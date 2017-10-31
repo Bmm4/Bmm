@@ -259,7 +259,8 @@ void plotClass::changeSetup(string dir, string name, string setup) {
   cout << "plotClass::changeSetup: " << endl
        << "  fHistFileName = " << fHistFileName << endl
        << "  fNumbersFileName = " << fNumbersFileName << endl
-       << "  fTexFileName = " << fTexFileName
+       << "  fTexFileName = " << fTexFileName << endl
+       << "  setup = " << setup << " fSetup = " << fSetup
        << endl;
 }
 
