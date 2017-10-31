@@ -80,16 +80,18 @@ cd src/Bmm/RootAnalysis/macros/
 pwd
 ls -rtl
 
-echo "$EXECUTABLE $JOB  |& tee $JOB.log"
+echo "OUTPUTFILE: $FILE1"
+echo "EXECUTABLE: $EXECUTABLE $JOB  |& tee $JOB.log"
 $EXECUTABLE  $JOB  |& tee $JOB.log
 date
 ls -rtl
+ls -rtl results
 
 # ----------------------------------------------------------------------
 # -- Save Output to SE
 # ----------------------------------------------------------------------
 echo "--> Save output to SE: $PFNS/$STORAGE1/$FILE1"
-echo " job   rootfile: $FILE1"
+echo " job   rootfile: results/$FILE1"
 
 echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
@@ -104,6 +106,13 @@ lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
 #echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 #lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 
+# -- switch to xrdcp
+echo "--> AM running xrdcp $FILE1 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$FILE1 "
+xrdcp results/$FILE1 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$FILE1
+
+echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1"
+echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
+lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 
 date
 
