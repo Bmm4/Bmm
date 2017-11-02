@@ -22,6 +22,9 @@
 #
 # -- collect crashed jobs and run in background locally
 #  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz -C -q 'local -b'
+#
+# -- submit runPlot jobs
+#  cd .../Bmm/RootAnalysis/macros/chains/runPlot; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz -x '-p overlays -m dbx' -s 423
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
@@ -204,7 +207,10 @@ if ($opt_m) {
 # ----------------------------------------------------------------------
 # -- submit the jobs
 foreach $j (keys %jobs) {
-    if ($opt_s && !($j =~ /$opt_s/)) {next;}
+    if ($opt_s && !($j =~ /$opt_s/)) {
+	#print "skip: $j\n";
+	next;
+    }
     if ($opt_c) {
 	$jobs{$j} =~/-o\s*(.*)\s-/; $rootfile = $1;
 	if (-e $rootfile) {
@@ -220,6 +226,7 @@ foreach $j (keys %jobs) {
     }
     if ($opt_l) {
 	$jobs{$j} =~ s/\|\& tee/>/g;
+	# may be broken with redefinition of opt_x!
 	$command = "$runCommand $jobs{$j} $opt_x >>$dir/runAll.log";
 	$command = "$runCommand $jobs{$j} $opt_x";
 	print "$command\n";
