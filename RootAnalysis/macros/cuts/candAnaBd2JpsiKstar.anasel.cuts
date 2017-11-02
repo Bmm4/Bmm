@@ -1,0 +1,18 @@
+TYPE           300511
+TRUTHCAND         511
+NOPRESELECTION      2
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.YEAR.cuts
+# -- trigger
++input cuts/triggerDisplacedJpsi.cuts
+# -- boxes
++input cuts/boxes.Bd2JpsiKstar.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.YEAR.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
+# -- kstar cuts
++input cuts/kstar.cuts

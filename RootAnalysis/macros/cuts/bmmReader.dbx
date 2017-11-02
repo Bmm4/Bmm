@@ -1,0 +1,8 @@
+#candAnaMuMu         cuts/candAnaMuMu.cuts
+#candAnaBu2JpsiK     cuts/candAnaBu2JpsiK.cuts
+#candAnaBs2JpsiPhi   cuts/candAnaBs2JpsiPhi.cuts
+#candAnaBs2Jpsif0    cuts/candAnaBs2Jpsif0.cuts
+candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.cuts
+#
+JSON                ../common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt
+DSNAME              MuOnia
