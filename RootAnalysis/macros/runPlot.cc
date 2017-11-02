@@ -80,6 +80,7 @@ int main(int argc, char *argv[]) {
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "BF";
     string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2016", "");
     replaceAll(scuts, "baseCuts", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
@@ -92,6 +93,7 @@ int main(int argc, char *argv[]) {
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "GH";
     string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2016", "");
     replaceAll(scuts, "baseCuts", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
@@ -104,6 +106,7 @@ int main(int argc, char *argv[]) {
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
     string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2012", "");
     replaceAll(scuts, "baseCuts", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
@@ -116,6 +119,7 @@ int main(int argc, char *argv[]) {
     if ("nada" == dir)   dir   = "results";
     if ("nada" == setup) setup = "";
     string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2011", "");
     replaceAll(scuts, "baseCuts", "");
     replaceAll(scuts, ".cuts", "");
     setup += scuts;
