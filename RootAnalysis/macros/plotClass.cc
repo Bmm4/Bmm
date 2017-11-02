@@ -596,6 +596,8 @@ void plotClass::setupTree(TTree *t, string mode) {
 
   t->SetBranchAddress("tau", &fb.tau);
   t->SetBranchAddress("taue", &fb.taue);
+  t->SetBranchAddress("tauxy", &fb.tauxy);
+  t->SetBranchAddress("tauxye", &fb.tauxye);
   t->SetBranchAddress("gtau", &fb.gtau);
   t->SetBranchAddress("gfl3d", &fb.gfl3d);
 

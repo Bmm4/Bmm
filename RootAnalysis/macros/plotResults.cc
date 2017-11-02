@@ -2557,18 +2557,20 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
 
     small->Branch("tau",    &fb.tau,       "tau/D");
     small->Branch("taue",   &fb.taue,      "taue/D");
+    small->Branch("tauxy",  &fb.tauxy,     "tauxy/D");
+    small->Branch("tauxye", &fb.tauxye,    "tauxye/D");
     small->Branch("gtau",   &fb.gtau,      "gtau/D");
 
     small->Branch("m1pt",   &fb.m1pt,      "m1pt/D");
-    small->Branch("m1phi",  &fb.m1phi,     "m1phi/D");
     small->Branch("m1eta",  &fb.m1eta,     "m1eta/D");
+    small->Branch("m1phi",  &fb.m1phi,     "m1phi/D");
     small->Branch("m1bdt",  &fb.m1mvabdt,  "m1bdt/D");
     small->Branch("m1rbdt", &fb.m1rmvabdt, "m1rbdt/D");
     small->Branch("m1q",    &fb.m1q,       "m1q/I");
 
     small->Branch("m2pt",   &fb.m2pt,      "m2pt/D");
-    small->Branch("m2phi",  &fb.m2phi,     "m2phi/D");
     small->Branch("m2eta",  &fb.m2eta,     "m2eta/D");
+    small->Branch("m2phi",  &fb.m2phi,     "m2phi/D");
     small->Branch("m2bdt",  &fb.m2mvabdt,  "m2bdt/D");
     small->Branch("m2rbdt", &fb.m2rmvabdt, "m2rbdt/D");
     small->Branch("m2q",    &fb.m2q,       "m2q/I");
