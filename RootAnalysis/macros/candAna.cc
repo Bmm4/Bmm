@@ -263,7 +263,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     fpCand = pCand;
     fCandIdx = iC;
 
-    //    cout << "hallo: " <<  fpCand->fType << endl;
     // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
     candAnalysis();
     candEvaluation();
@@ -279,15 +278,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     }
 
     nTriggers();
-
-    // Trigger matching
-    //fHLTmatch=false;
-    //if (fGoodHLT && fpMuon1 != NULL && fpMuon2 != NULL){ // do only when 2 muons exist
-      // check matching for both muons in parallel
-      // the following can lead to crashes on some data files? The `same' information is obtained using "tos"
-      //      fHLTmatch = doTriggerMatching(fpMuon1, fpMuon2);
-    //}
-
 
     if (fIsMC) {
 
@@ -314,21 +304,26 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
       ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
       if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
-      //if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
-      //if (fJSON&&fGoodHLT&&fHLTmatch) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
     } else {  // DATA
-      if (NOPRESELECTION > 0) {
-	if (2 == NOPRESELECTION) {
-	} else {
-	  fPreselection = true;
-	}
-	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
-      }
       if (BLIND
 	  && (fMu1MvaId && fMu2MvaId)
 	  && (fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)
 	  ) {
       } else {
+	if (0 == NOPRESELECTION) {
+	  // -- original !NOPRESELECTION: analysis preselection and trigger requirement (added that at least one ntrigger is possible)
+	  fPreselection = fPreselection && ((fGoodHLT1 && fTOS && fL1T) || fNtrgSet);
+	} else if (1 == NOPRESELECTION) {
+	  // -- original NOPRESELECTION,  this likely leads to very big reduced trees (too big for Chandi)
+	  fPreselection = true;
+	} else if (2 == NOPRESELECTION) {
+	  // -- ntrigger || hlt1, but no analysis preselection (adding fBDT cut || fGoodCNC to reduce combinatorics)
+	  fPreselection = (fGoodCNC || fBDT > 0.) && ((fGoodHLT1 && fTOS && fL1T) || fNtrgSet);
+	} else {
+	  // what here?
+	}
+	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
+
 	if (fPreselection) {
 	  if (fJSON) {
 	    fTree->Fill();
@@ -338,13 +333,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  }
 
 	  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
-	  //((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(31);
 	  if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
-	  //if (fJSON&&fGoodHLT) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(34);
-	  //if (fJSON&&fGoodHLT&&fHLTmatch) {
-	  //((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(35);
-	  //((TH1D*)fHistDir->Get("run1"))->Fill(fRun);
-	  //}
 	} else {
 	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
 	  if ( fVerbose > 9 ) cout << " failed preselection" << endl;
@@ -1105,28 +1094,13 @@ void candAna::candEvaluation() {
   fillRedTreeData(); // this is for the BDT calculation!
   calcBDT();
 
-
-  // -- to be consistent with the BDT traning
-  ((TH1D*)fHistDir->Get("test3"))->Fill(1.);
-
   fPreselection = fGoodAcceptance && fGoodQ && fGoodPvAveW8 && fWideMass
     && fGoodMuonsGmID && fGoodMuonsPt && fGoodMuonsEta
     && fPreselAlpha && fPreselFLS && fPreselOther;
 
-  if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
-
-  // -- add trigger and chan cuts
-  if (2 == NOPRESELECTION) {
-    if (fGoodCNC || (fBDT > 0.1)) {
-    } else {
-      fPreselection = false;
-    }
-  } else {
-    fPreselection = fPreselection && fGoodHLT1 && fTOS && (fChan > -1);
-  }
-
-  // -- add J/psi and other daughter cuts
   fPreselection = fPreselection && fGoodJpsiCuts;
+
+  if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
   if (0) cout << "Chan = " << fChan
 	      << " fPresel = " << fPreselection
@@ -3964,6 +3938,7 @@ void candAna::nTriggers() {
   }
 
   fNtrg = 0;
+  fNtrgSet = 0;
 
   string spath("");
   int rmin, rmax;
@@ -3979,6 +3954,7 @@ void candAna::nTriggers() {
     if (rmin <= fRun && fRun <= rmax) {
       reftrg = refTrigger(fpCand, spath);
       if (reftrg) {
+	fNtrgSet = 1;
 	fNtrgTos[ntrg] = 1;
 	fNtrgPs[ntrg]  = fpReader->fHltPathInfo[spath].prescale;
       }

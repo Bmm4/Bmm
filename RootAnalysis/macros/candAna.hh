@@ -313,7 +313,7 @@ public:
   double  fTrigMatchDeltaPt;
   //map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
 
-  int fNtrg, fNtrgPs[NTRGMAX], fNtrgTos[NTRGMAX];
+  int     fNtrgSet, fNtrg, fNtrgPs[NTRGMAX], fNtrgTos[NTRGMAX];
 
   struct redTreeData fRTD;
 };
