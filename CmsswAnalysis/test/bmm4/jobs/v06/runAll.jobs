@@ -244,3 +244,8 @@ $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-X
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKPi_BMuonFilter -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToPiPi_BMuonFilter -s $version -e 30000;  \ \n";
 $catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-RunIISpring16DR80-XXXX.py -f ../../../catalogs/RunIISpring16DR80/BdToKK_BMuonFilter -s $version -e 30000;  \ \n";
+
+# -- 2016bis private MC (for 2016 conditions)
+$dataset = "2016bis_private";
+$jobs{$dataset}   = "cd $dataset && ".&runCommand."  *.py && cd - ";
+$catalogs{$dataset} .= "$BMMBASE/perl/mkPyFiles -t ../bmm-mc-$dataset-XXXX.py -f ../../../catalogs/$dataset/BuToJpsiKp -s $version -n 50 -l;  \ \n";
