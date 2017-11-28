@@ -4,7 +4,7 @@ candAnaBs2JpsiPhi   cuts/candAnaBs2JpsiPhi.nopreselection.cuts
 candAnaBs2Jpsif0    cuts/candAnaBs2Jpsif0.nopreselection.cuts
 candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.nopreselection.cuts
 #
-JSON                ../common/json/Cert_AllRuns_7TeV-8TeV_ReReco_PromptReco_Collisions11-12_JSON_MuonPhys.txt
+JSON                ../common/json/json-2012-muonphys.txt
 DSNAME              MuOnia
 # -- ntriggers
 NTRIGGERS    HLT_Dimuon0_Jpsi_Muon_v(1:9999999)

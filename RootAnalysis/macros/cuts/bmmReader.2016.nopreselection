@@ -4,7 +4,7 @@ candAnaBs2JpsiPhi   cuts/candAnaBs2JpsiPhi.nopreselection.cuts
 candAnaBs2Jpsif0    cuts/candAnaBs2Jpsif0.nopreselection.cuts
 candAnaBd2JpsiKstar cuts/candAnaBd2JpsiKstar.nopreselection.cuts
 #
-JSON                ../common/json/Cert_271036-284044_13TeV_PromptReco_Collisions16_JSON_MuonPhys.txt
+JSON              ../common/json/json-2016-muonphys.txt
 DSNAME              Charmonium
 # -- ntriggers
 NTRIGGERS    HLT_Dimuon16_Jpsi_v(1:9999999)
