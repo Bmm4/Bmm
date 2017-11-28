@@ -109,6 +109,12 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     if (string::npos != fSetup.find("BF")) {
       fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 13 TeV)";
     }
+    if (string::npos != fSetup.find("G")) {
+      fStampLumi = "L = 7.6 fb^{-1} (#sqrt{s} = 13 TeV)";
+    }
+    if (string::npos != fSetup.find("H")) {
+      fStampLumi = "L = 8.7 fb^{-1} (#sqrt{s} = 13 TeV)";
+    }
     if (string::npos != fSetup.find("GH")) {
       fStampLumi = "L = 16 fb^{-1} (#sqrt{s} = 13 TeV)";
     }
@@ -638,6 +644,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("l1s",     &fb.l1s);
   t->SetBranchAddress("evt",     &fb.evt);
   t->SetBranchAddress("hlt1",    &fb.hlt1);
+  t->SetBranchAddress("ntrgtos", &fb.ntrgtos);
   t->SetBranchAddress("tos",     &fb.tos);
   t->SetBranchAddress("l1t",     &fb.l1t);
   t->SetBranchAddress("ls",      &fb.ls);
@@ -820,7 +827,7 @@ void plotClass::candAnalysis() {
   fBDT = -99.;
   fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodDcand = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
-  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
+  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = fPreselectionBDT = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
 
   fGoodJpsiCuts = true;
@@ -892,7 +899,7 @@ void plotClass::candAnalysis() {
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
-      if (fb.g3pt < 0.6) fGoodAcceptance = false;
+      if (fb.g3pt < 0.8) fGoodAcceptance = false;   // FIXME!!
     }
     if (TMath::Abs(fb.keta) > fAccEtaRec) {
       fGoodAcceptance = false;
@@ -1112,10 +1119,14 @@ void plotClass::candAnalysis() {
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = true;
 
-  fPreselectionBDT = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
-		      && (fBDT > 0.));
   fPreselection    = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
 		      && (fb.alpha < 0.2) && (fb.fls3d > 5));
+
+  // FIXME!
+  // fPreselection    = (fb.ntrgtos[6] && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
+  // 		      && (fb.alpha < 0.2) && (fb.fls3d > 5));
+  // FIXME-TEST
+  // fPreselection = fPreselection && (fb.m1bpixl1 >=1) && (fb.m2bpixl1 >= 1);
 
   if (bs2jpsiphi || bp2jpsikp || bd2jpsikstar) {
     fPreselection = fPreselection && fGoodJpsiCuts;
