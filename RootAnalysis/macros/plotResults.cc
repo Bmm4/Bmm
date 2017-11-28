@@ -11,6 +11,7 @@
 #include "TStyle.h"
 #include "TKey.h"
 #include "TMath.h"
+#include "TMarker.h"
 #include "TPad.h"
 #include "TRandom3.h"
 #include "TString.h"
@@ -168,6 +169,11 @@ plotResults::plotResults(string dir, string files, string cuts, string setup): p
       h2 = new TH2D(Form("h%sW8NormC%d", mode.c_str(), i), Form("h%sW8NormC%d", mode.c_str(), i), 200, 4.9, 5.9, MAXPS+1, -1., MAXPS);
       fhW8NormC[mode].push_back(h2);
     }
+  }
+
+  for (int i = 0; i < fNchan; ++i) {
+    h = new TH1D(Form("h%sBdt%d", mode.c_str(), i), Form("h%sBdt%d", mode.c_str(), i), 200, -1., 1.);
+    fhBdt.push_back(h);
   }
 
   // -- define names and channels of all anaNumbers
@@ -398,9 +404,9 @@ void plotResults::init() {
 void plotResults::makeAll(string what) {
 
   if (what == "dbx") {
-    fHistWithAllCuts = "hMassWithAllCuts";
-    fSuffixSel = "bdt" + fSuffix;
-    calculateNumbers("bdt" + fSuffix);
+    // fHistWithAllCuts = "hMassWithAllCuts";
+    // fSuffixSel = "bdt" + fSuffix;
+    // calculateNumbers("bdt" + fSuffix);
 
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
   }
@@ -480,6 +486,21 @@ void plotResults::makeAll(string what) {
   }
 
   // -- this will recreate fHistFile!
+  if (what == "small") {
+    string mode = "bupsikMcComb";
+    fHistFile = TFile::Open("bla.root", "RECREATE");
+    fSaveSmallTree = true;
+    resetHistograms();
+    setup(mode);
+    TTree *t = getTree(mode, fTreeDir);
+    setupTree(t, mode);
+    loopOverTree(t, 1);
+    saveHistograms(mode);
+    fHistFile->Close();
+    return;
+  }
+
+  // -- this will recreate fHistFile!
   if (what == "all" || string::npos != what.find("fill")) {
     fillAndSaveHistograms();
   }
@@ -504,6 +525,7 @@ void plotResults::makeAll(string what) {
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
   }
 
 
@@ -524,7 +546,7 @@ void plotResults::bookHist(string dsname) {
 // ----------------------------------------------------------------------
 void plotResults::scanBDT(string fname) {
   fTEX.close();
-  int BDTMIN(0), BDTMAX(40);
+  int BDTMIN(0), BDTMAX(60);
   if (1) {
     string dsname = Form("%s", fname.c_str());
     fTEX.open(dsname.c_str());
@@ -548,11 +570,63 @@ void plotResults::scanBDT(string fname) {
   plots.push_back("alphaS");
   plots.push_back("alphaU");
 
+  fHistFile = TFile::Open(fHistFileName.c_str());
+  vector<TH1D*> hbdt;
+  TIter next(fHistFile->GetListOfKeys());
+  TKey *key(0);
+  while ((key = (TKey*)next())) {
+    if (!gROOT->GetClass(key->GetClassName())->InheritsFrom("TDirectory")) continue;
+    fHistFile->cd(key->GetName());
+    cout << gDirectory->GetName() << endl;
+    for (int ic = 0; ic < fNchan; ++ic) {
+      hbdt.push_back((TH1D*)((TH1D*)gDirectory->Get(Form("hBdt_%s_chan%d", gDirectory->GetName(), ic)))->Clone());
+    }
+  }
+
   string histfilename = Form("%s", fname.c_str());
   replaceAll(histfilename, ".tex", ".root");
   cout << "fHistFile: " << histfilename;
   fHistFile = TFile::Open(histfilename.c_str(), "RECREATE");
   cout << " opened " << endl;
+
+  int iMax(-1), bMax(-1);
+  for (unsigned int i = 0; i < hbdt.size(); ++i) {
+    double tot = hbdt[i]->Integral();
+    double rs = 0.;
+    cout << "hist " << hbdt[i]->GetName() << " tot = " << tot << " rs = " << rs << endl;
+    for (int ibin = 1; ibin <= hbdt[i]->GetNbinsX(); ++ibin) {
+      rs += hbdt[i]->GetBinContent(ibin);
+      // cout << "ibin = " << ibin
+      // 	   << " rs = " << rs << " tot = " << tot << " rs/tot = " << rs/tot
+      // 	   << " iMax = " << iMax
+      // 	   << endl;
+      if (rs/tot > 0.90) {
+	if (ibin > iMax) {
+	  iMax = ibin;
+	  bMax = 100 * hbdt[i]->GetBinLowEdge(ibin);
+	  // cout << "STOP tot =  " << tot << " rs = " << rs << " iMax = " << iMax  << " bMax = " << bMax
+	  //      << " absolute BDT < " << hbdt[i]->GetBinLowEdge(ibin)
+	  //      << endl;
+	}
+	break;
+      }
+    }
+    // cout << "write out " << hbdt[i]->GetName() << endl;
+    hbdt[i]->SetDirectory(fHistFile);
+    hbdt[i]->Write();
+    delete hbdt[i];
+  }
+
+
+  cout << " go up to bMax = " << bMax << endl;
+
+  TH1D *h1 = new TH1D("bdtCuts", "bdtCuts", 100, 0., 100.);
+  for (int i = 0; i < fNchan; ++i) {
+    h1->SetBinContent(i+1, fCuts[i]->bdtCut);
+    h1->GetXaxis()->SetBinLabel(i+1, Form("chan%d", i));
+  }
+  h1->SetDirectory(fHistFile);
+  h1->Write();
 
   // -- now read in
   vector<string> allLines;
@@ -561,13 +635,12 @@ void plotResults::scanBDT(string fname) {
   while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
   is.close();
   string name;
-  TH1D *h1(0);
   for (unsigned int i = 0; i < plots.size(); ++i) {
     for (unsigned int ic = 0; ic < fNchan; ++ic) {
       h1 = new TH1D(Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    BDTMAX-BDTMIN+1, BDTMIN, BDTMAX+1);
-      for (unsigned int ib = BDTMIN; ib <= BDTMAX; ++ib) {
+      for (unsigned int ib = BDTMIN; ib <= bMax; ++ib) {
 	string idx = Form("bdt_%d_", ib);
 	fSuffixSel = idx + fSuffix;
 	name = Form("%s:%s:chan%d:val", fSuffixSel.c_str(), plots[i].c_str(), ic);
@@ -584,6 +657,102 @@ void plotResults::scanBDT(string fname) {
   }
   fHistFile->Close();
 }
+
+
+// ----------------------------------------------------------------------
+void plotResults::displayScanBDT(string what, int mode, int chan) {
+
+  c0->Clear();
+
+  vector<string> inputFiles;
+  vector<Color_t> colors;
+
+  if (0 == mode) {
+    inputFiles.push_back("results/scanBDT-2011.root");   colors.push_back(kRed);
+    inputFiles.push_back("results/scanBDT-2012.root");   colors.push_back(kBlack);
+    inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
+    inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
+  } else if (1 == mode) {
+    inputFiles.push_back("results-219/scanBDT-2016BF.root");   colors.push_back(kRed);
+    inputFiles.push_back("results-309/scanBDT-2016BF.root");   colors.push_back(kBlack);
+  }
+
+  string bname("hBdt_bsmmMcComb");
+  if (string::npos != what.find("CSBF")) {
+    bname = "hBdt_bspsiphiMcComb";
+  }
+
+  TFile *f(0);
+
+  for (unsigned int ifile = 0; ifile < inputFiles.size(); ++ifile) {
+    f = TFile::Open(inputFiles[ifile].c_str());
+    string hname(Form("bdtScan_%s", what.c_str()));
+    string pdfname(inputFiles[ifile].c_str());
+    replaceAll(pdfname, "results/", "");
+    replaceAll(pdfname, "scanBDT-", "");
+    replaceAll(pdfname, ".root", "");
+
+    TH1D *h0(0), *h1(0);
+    TH1D *b0(0), *b1(0);
+    string s("");
+
+    TH1D *hbdt = (TH1D*)f->Get("bdtCuts");
+    double bdtCut0 = 100.*hbdt->GetBinContent(1);
+    double bdtCut1 = 100.*hbdt->GetBinContent(2);
+
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+
+    s = hname + Form("_chan%d", chan);
+    h0 = (TH1D*)f->Get(s.c_str());
+    if (!h0) {
+      cout << "Did not find histogram ->" << s << "<-" << endl;
+      return;
+    }
+    double bdt0y   = h0->GetBinContent(h0->FindBin(bdtCut0));
+    double bdt0x(0.);
+    for (int ic = 0; ic < h0->GetNbinsX(); ++ic) {
+      if (h0->GetBinContent(ic) > 0.) bdt0x = h0->GetBinCenter(ic);
+    }
+    bdt0x /= 100.;
+
+    h0->SetMinimum(0.0);
+    if (what == "CSBF") {
+      h0->SetMaximum(5.e-5);
+    } else if (what == "BSMMBFS") {
+      h0->SetMaximum(7.e-9);
+    } else if (what == "SSB") {
+      h0->SetMaximum(4.);
+    } else {
+      h0->SetMaximum(1.4*h0->GetMaximum());
+    }
+    h0->SetLineColor(colors[ifile]);
+    h0->SetMarkerColor(colors[ifile]);
+    h0->SetMarkerStyle(24);
+    h0->SetMarkerSize(0.8);
+    setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
+    if (0 == ifile) {
+      h0->Draw("p");
+    } else {
+      h0->Draw("psame");
+    }
+    TMarker *pm = new TMarker(bdtCut0, bdt0y, 20);
+    pm->SetMarkerColor(colors[ifile]);
+    pm->SetMarkerSize(2.);
+    pm->Draw();
+    h0->GetListOfFunctions()->Add(pm);
+
+    tl->SetTextSize(0.03);
+    tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.22, 0.15 + ifile*0.032, inputFiles[ifile].c_str());
+  }
+
+  tl->SetTextSize(0.03);
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.7, 0.92, Form("Chan %d", chan));
+  c0->SaveAs(Form("%s/%s-%d-chan%d.pdf", fDirectory.c_str(), what.c_str(), mode, chan));
+
+}
+
 
 
 // ----------------------------------------------------------------------
@@ -831,7 +1000,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 
   TTree *t(0);
 
-  fSaveSmallTree = true;
+  //  fSaveSmallTree = true;
   string mode("");
 
   if (0) {
@@ -2394,6 +2563,21 @@ void plotResults::loopFunction1() {
 	&& fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
 	&& fGoodMuonsEta
 	&& fGoodJpsiCuts
+	&& fGoodMuonsID
+	&& fGoodDcand
+	&& fGoodHLT
+	) {
+      fhBdt[fChan]->Fill(fBDT);
+    }
+
+    if (fGoodQ
+	&& fGoodPvAveW8
+	&& fGoodTracks
+	&& fGoodTracksPt
+	&& fGoodTracksEta
+	&& fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
+	&& fGoodMuonsEta
+	&& fGoodJpsiCuts
 	&& goodBDT
 	) {
 
@@ -2737,6 +2921,13 @@ void plotResults::saveHistograms(string smode) {
   // modifier.push_back("cnc" + fSuffix);
   // modifier.push_back("bdt" + fSuffix);
 
+  for (unsigned int i = 0; i < fNchan; ++i) {
+    h1 = (TH1D*)(fhBdt[i]->Clone(Form("hBdt_%s_chan%d", smode.c_str(), i)));
+    h1->SetTitle(Form("hBdt_%s_chan%d %s", smode.c_str(), i, smode.c_str()));
+    h1->SetDirectory(dir);
+    h1->Write();
+  }
+
   for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
     for (unsigned int i = 0; i < fNchan; ++i) {
       h1 = (TH1D*)(fhGenAndAccNumbers[fHistStrings[im]][i]->Clone(Form("hGenAndAccNumbers_%s_%s_chan%d", fHistStrings[im].c_str(), smode.c_str(), i)));
@@ -2846,8 +3037,6 @@ void plotResults::saveHistograms(string smode) {
       h1->SetDirectory(dir);
       h1->Write();
 
-
-
       if ((string::npos != fSample.find("bupsik"))
 	  || (string::npos != fSample.find("bspsiphi"))
 	  || (string::npos != fSample.find("bdpsikstar"))
@@ -2871,6 +3060,7 @@ void plotResults::saveHistograms(string smode) {
 	h2->SetTitle(Form("hW8NormC_%s_%s_%d %s", fHistStrings[im].c_str(), smode.c_str(), i, smode.c_str()));
 	h2->SetDirectory(dir);
 	h2->Write();
+
       }
     }
   }
@@ -2890,6 +3080,12 @@ void plotResults::resetHistograms(bool deleteThem) {
   // modifier.push_back("cnc" + fSuffix);
   // modifier.push_back("bdt" + fSuffix);
   // for (unsigned int im = 0; im < modifier.size(); ++im) {
+
+  for (unsigned int i = 0; i < fhBdt.size(); ++i) {
+    fhBdt[i]->Reset();
+    if (deleteThem) delete fhBdt[i];
+  }
+
 
   for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
     for (int i = 0; i < fNchan; ++i) {

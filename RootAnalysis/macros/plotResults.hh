@@ -16,8 +16,8 @@ class plotResults: public plotClass {
 
 public :
   plotResults(std::string dir = "results",
-	      std::string files = "plotResults.2016.files",
-	      std::string cuts = "baseCuts.cuts",
+	      std::string files = "plotResults.2016BF.files",
+	      std::string cuts = "baseCuts.2016.cuts",
 	      std::string setup = "");
   virtual ~plotResults();
 
@@ -50,6 +50,7 @@ public :
   void calculateBs2Bu(int chan);
   void calculatePerformance(int chan);
   void scanBDT(std::string fname);
+  void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
   double findVarValue(std::string varName, std::vector<std::string> &lines);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};
@@ -102,6 +103,8 @@ private:
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
   std::map<std::string, std::vector<TH2D*> > fhW8Norm, fhW8NormC;
+
+  std::vector<TH1D*> fhBdt;
 
   bool fSaveSmallTree;
 
