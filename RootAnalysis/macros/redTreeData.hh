@@ -1,12 +1,15 @@
 #ifndef REDTREEDATA
 #define REDTREEDATA
 
+#define NTRGMAX 40
+
 struct redTreeData {
   Long64_t run, evt;
   int ls, tm, pr, procid, pvn, rr, l1s, ps, chan;
   double corrW8;
   bool json, cb, tis, reftrg;
   bool hlt1, tos, l1t;
+  int ntrgtos[NTRGMAX];
   bool dcand;
   double bdt, bdt2, pvw8, pvz;
   double rlumi;
