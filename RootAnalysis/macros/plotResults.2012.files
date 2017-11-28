@@ -6,6 +6,7 @@ type=bdpsikstar,data        lumi=20.0          file=scratch/bmm-data-bmmMuOnia20
 # -- B+
 type=bupsik,acc,mcComb      bf=(6.12,0.19)e-5  eff=(6.93,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BuToJpsiKpAcc-v06.root
 type=bupsik,mcComb          bf=(6.12,0.19)e-5  eff=(3.66,0.01)e-4 file=scratch/bmm-mc-Winter17_private-BuToJpsiKp-v06.root
+type=bupsik,mcOff           bf=(6.12,0.19)e-5  eff=(3.66,0.01)e-4 file=scratch/bmm-mc-Winter17_private-BuToJpsiKp-v06.root
 # -- Bs
 type=bspsiphi,acc,mcComb    bf=(3.12,0.24)e-5  eff=(2.45,0.01)e-3 file=scratch/bmm-mc-Winter17_private-BsToJpsiPhiAcc-v06.root
 type=bspsiphi,mcComb        bf=(3.12,0.24)e-5  eff=(9.70,0.04)e-5 file=scratch/bmm-mc-Winter17_private-BsToJpsiPhi-v06.root
