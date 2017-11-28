@@ -99,6 +99,32 @@ int main(int argc, char *argv[]) {
     setup += scuts;
   }
 
+  if ("2016G" == syear) {
+    year = 2016;
+    if ("nada" == files) files = "plotResults.2016G.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "G";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2016", "");
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
+  }
+
+  if ("2016H" == syear) {
+    year = 2016;
+    if ("nada" == files) files = "plotResults.2016H.files";
+    if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
+    if ("nada" == dir)   dir   = "results";
+    if ("nada" == setup) setup = "H";
+    string scuts = cuts;
+    replaceAll(scuts, "baseCuts.2016", "");
+    replaceAll(scuts, "baseCuts", "");
+    replaceAll(scuts, ".cuts", "");
+    setup += scuts;
+  }
+
   if ("2012" == syear) {
     year = 2012;
     if ("nada" == files) files = "plotResults.2012.files";
