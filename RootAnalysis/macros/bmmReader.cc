@@ -165,6 +165,18 @@ void bmmReader::eventProcessing() {
     }
   }
 
+  TH1D *hbs = (TH1D*)fpHistFile->Get("bsz");
+  hbs->Fill(fpEvt->fBeamSpot.fPoint.Z());
+  TH1D *h1 = (TH1D*)fpHistFile->Get("npv");
+  h1->Fill(fpEvt->nPV());
+  TH1D *h2 = (TH1D*)fpHistFile->Get("pvz");
+  TH1D *h0 = (TH1D*)fpHistFile->Get("pv0z");
+  for (int i = 0; i < fpEvt->nPV(); ++i) {
+    double z = fpEvt->getPV(i)->fPoint.Z();
+    if (0 == i) h0->Fill(fpEvt->getPV(i)->fPoint.Z());
+    h2->Fill(fpEvt->getPV(i)->fPoint.Z());
+
+  }
 
   // -- call candidate analyses
   for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
@@ -202,6 +214,10 @@ void bmmReader::bookHist() {
   h = new TH1D("pt1", "pt(tracks)", 100, 0., 50.);
   h = new TH1D("eta", "eta(tracks)", 60, -3.0, 3.0);
   h = new TH1D("phi", "phi(tracks)", 50, -3.15, 3.15);
+  h = new TH1D("npv", "npv", 100, 0, 100.);
+  h = new TH1D("pvz", "pvz", 100, -25., 25.);
+  h = new TH1D("pv0z","pv0z", 100, -25., 25.);
+  h = new TH1D("bsz", "bsz", 100, -25., 25.);
 
   (void)h; // make compiler warning go away
 
