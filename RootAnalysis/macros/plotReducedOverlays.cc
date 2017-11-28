@@ -109,38 +109,40 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fChannelList.push_back(Form("%d", i));
   }
 
-  // -- small N(PV)
-  fChannelList.push_back("0lopu");
-  //  fChannelList.push_back("1lopu");
 
-  // -- high N(PV)
-  fChannelList.push_back("0hipu");
-  //  fChannelList.push_back("1hipu");
+  if (1) {
+    // -- small N(PV)
+    fChannelList.push_back("0lopu");
+    //  fChannelList.push_back("1lopu");
 
-  // -- close to other PV
-  fChannelList.push_back("0cpv");
-  //  fChannelList.push_back("1cpv");
+    // -- high N(PV)
+    fChannelList.push_back("0hipu");
+    //  fChannelList.push_back("1hipu");
 
-  // -- far to other PV
-  fChannelList.push_back("0fpv");
-  //  fChannelList.push_back("1fpv");
+    // -- close to other PV
+    fChannelList.push_back("0cpv");
+    //  fChannelList.push_back("1cpv");
 
-  // -- small fls3d
-  fChannelList.push_back("0sfl");
-  //  fChannelList.push_back("1sfl");
+    // -- far to other PV
+    fChannelList.push_back("0fpv");
+    //  fChannelList.push_back("1fpv");
 
-  // -- big fls3d
-  fChannelList.push_back("0bfl");
-  //  fChannelList.push_back("1bfl");
+    // -- small fls3d
+    fChannelList.push_back("0sfl");
+    //  fChannelList.push_back("1sfl");
 
-  // -- large dzmin
-  fChannelList.push_back("0ldz");
-  //  fChannelList.push_back("1bfl");
+    // -- big fls3d
+    fChannelList.push_back("0bfl");
+    //  fChannelList.push_back("1bfl");
 
-  // -- small dzmin
-  fChannelList.push_back("0sdz");
-  //  fChannelList.push_back("1bfl");
+    // -- large dzmin
+    fChannelList.push_back("0ldz");
+    //  fChannelList.push_back("1bfl");
 
+    // -- small dzmin
+    fChannelList.push_back("0sdz");
+    //  fChannelList.push_back("1bfl");
+  }
 
 }
 
@@ -176,7 +178,33 @@ void plotReducedOverlays::makeAll(string what) {
     //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
     //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
     //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
-    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
+
+
+    makeSample("bupsikData");
+    makeSample("bupsikMcOff");
+    makeSample("bupsikMcComb");
+    fStampString = "nada";
+    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    if (2016 == fYear) {
+      makeOverlay("bupsikData", "bupsikMcOff", "bdt");
+      if (fDoCNC) makeOverlay("bupsikData", "bupsikMcOff", "cnc");
+    }
+    if (fDoCNC) makeOverlay("bupsikData", "bupsikMcComb", "cnc");
+
+    return;
+  }
+
+
+  if (what == "dbxplot") {
+    fChannelList.clear();
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fChannelList.push_back(Form("%d", i));
+    }
+
+    system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
+    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    if (fDoCNC) makeOverlay("bupsikData", "bupsikMcComb", "cnc");
+
     return;
   }
 
@@ -197,6 +225,15 @@ void plotReducedOverlays::makeAll(string what) {
     return;
   }
 
+  if (what == "2017") {
+    init();
+
+    printCuts(cout);
+    // -- data vs combined MC
+    //    makeSampleOverlay("bmmData", "bdmmMcComb");
+    makeSampleOverlay("bupsikData", "bupsikMcComb");
+  }
+
 
   if (what == "all") {
     init();
@@ -204,14 +241,15 @@ void plotReducedOverlays::makeAll(string what) {
     printCuts(cout);
     // -- data vs combined MC
     makeSampleOverlay("bmmData", "bdmmMcComb");
-    makeSampleOverlay("bupsikData", "bupsikMcComb");
+    makeSampleOverlay("bupsikData", "bupsikMcOff");
+    //    makeSampleOverlay("bupsikData", "bupsikMcComb");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
 
     allSystematics();
 
     // -- validation of private MC vs official MC
-    if (2016 == fYear) makeSampleOverlay("bupsikMc", "bupsikMcOff");
+    //    if (2016 == fYear) makeSampleOverlay("bupsikMcComb", "bupsikMcOff");
   }
 
   if (string::npos != what.find("plot")) {
@@ -407,6 +445,7 @@ void plotReducedOverlays::makeOverlay(string sample1, string sample2, string sel
   if (string::npos != selection.find("cnc")) {
     fStampString = "CNC";
     cuts.push_back("Ao");
+    cuts.push_back("Cu");
     cuts.push_back("Presel");
   }
 
@@ -657,8 +696,8 @@ void plotReducedOverlays::loopFunction1() {
   if (2012 == fYear) bdtCut = 0.20;
   //  fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
   //  fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
-  fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
-  fPreselectionBDT = fPreselection;
+  //  fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
+  fPreselectionBDT = fPreselection && (fBDT > fCuts[fChan]->bdtCut);
 
   fCncCuts.update();
   fBdtCuts.update();
@@ -672,8 +711,8 @@ void plotReducedOverlays::loopFunction1() {
   bool sfl = (fb.fls3d < 12.);
   bool bfl = (fb.fls3d > 50.);
 
-  bool ldz = (fb.dzmin > 1.2);
-  bool sdz = (fb.dzmin < 0.08);
+  bool ldz = (TMath::Abs(fb.dzmin) > 1.2);
+  bool sdz = (TMath::Abs(fb.dzmin) < 0.08);
 
   if (0) {
     cout
