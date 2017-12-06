@@ -226,7 +226,7 @@ foreach $j (keys %jobs) {
     }
     if ($opt_l) {
 	$jobs{$j} =~ s/\|\& tee/>/g;
-	# may be broken with redefinition of opt_x!
+	# FIXME: may be broken with redefinition of opt_x!
 	$command = "$runCommand $jobs{$j} $opt_x >>$dir/runAll.log";
 	$command = "$runCommand $jobs{$j} $opt_x";
 	print "$command\n";
@@ -249,6 +249,7 @@ foreach $j (keys %jobs) {
 	if (1) {
 	    print "$jobs{$j}\n";
 	    if (!$opt_d) {
+		print "DBX HELLO +>$jobs{$j}<+ \n";
 		system("$jobs{$j}");
 	    }
 	}
