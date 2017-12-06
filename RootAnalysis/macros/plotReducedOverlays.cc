@@ -173,27 +173,43 @@ void plotReducedOverlays::init() {
 // ----------------------------------------------------------------------
 void plotReducedOverlays::makeAll(string what) {
 
-  if (what == "dbx") {
+  if (what == "bdtopt") {
+    fChannelList.clear();
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fChannelList.push_back(Form("%d", i));
+    }
     init();
-    //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
-    //    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
-    //    makeSampleOverlay("bmmData", "bdmmMcComb", "bdt");
-
-
+    // makeSample("bupsikData", 100000);
+    // makeSample("bupsikMcComb", 10000);
     makeSample("bupsikData");
-    makeSample("bupsikMcOff");
     makeSample("bupsikMcComb");
     fStampString = "nada";
     makeOverlay("bupsikData", "bupsikMcComb", "bdt");
-    if (2016 == fYear) {
-      makeOverlay("bupsikData", "bupsikMcOff", "bdt");
-      if (fDoCNC) makeOverlay("bupsikData", "bupsikMcOff", "cnc");
-    }
-    if (fDoCNC) makeOverlay("bupsikData", "bupsikMcComb", "cnc");
-
     return;
   }
 
+
+  if (what == "legacy") {
+    fChannelList.clear();
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fChannelList.push_back(Form("%d", i));
+    }
+
+    system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
+    makeSampleOverlay("bupsikDataLegacy", "bupsikMcComb", "bdt");
+    return;
+  }
+
+  if (what == "rereco") {
+    fChannelList.clear();
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fChannelList.push_back(Form("%d", i));
+    }
+
+    system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
+    makeSampleOverlay("bupsikData", "bupsikMcComb", "bdt");
+    return;
+  }
 
   if (what == "dbxplot") {
     fChannelList.clear();
@@ -515,8 +531,6 @@ void plotReducedOverlays::makeOverlay2Channels(string sample, string channel1, s
 
 // ----------------------------------------------------------------------
 void plotReducedOverlays::compareBsAndBp(string file) {
-  overlay2Files(file.c_str(), "NoMc", file.c_str(), "CsMc", "B", "B");
-  overlay2Files(file.c_str(), "NoData", file.c_str(), "CsData", "B", "B");
 }
 
 
@@ -777,6 +791,9 @@ void plotReducedOverlays::loopFunction1() {
     fChannel = Form("%d", fChan);
     if (fDoCNC) fillDistributions("cnc");
     fillDistributions("bdt");
+
+    // -- skip the rest if we are on a 'normal'/'fast' running schedule
+    if (fChannelList.size() == fNchan) return;
 
     if (0 == fChan) {
       if (loPU) {
@@ -1355,9 +1372,10 @@ void plotReducedOverlays::overlay2Files(std::string file1, std::string sample1,
 					std::string chan1, std::string chan2,
 					std::string selection, std::string what) {
 
-  string hfname1 = Form("%s/%s.root", fDirectory.c_str(), file1.c_str());
+  bool restricted = (what != "");
+  string hfname1 = Form("%s", file1.c_str());
   TFile *f1 = TFile::Open(hfname1.c_str());
-  string hfname2 = Form("%s/%s.root", fDirectory.c_str(), file2.c_str());
+  string hfname2 = Form("%s", file2.c_str());
   TFile *f2 = TFile::Open(hfname2.c_str());
 
   string ds1 = sample1.substr(sample1.find("_")+1);
@@ -1367,138 +1385,154 @@ void plotReducedOverlays::overlay2Files(std::string file1, std::string sample1,
   TH1D *h1(0), *h2(0);
   bool doLegend(false), leftLegend(false);
   for (int id = 0; id < fDoList.size(); ++id) {
-    for (int i = 0; i < fChannelList.size(); ++i) {
-      n1 =  Form("sbs_%s_%s%s", sample1.c_str(), fDoList[i].c_str(), selection.c_str());
-      n2 =  Form("sbs_%s_%s%s", sample2.c_str(), fDoList[i].c_str(), selection.c_str());
-      doLegend = true;
-      if (string::npos != fDoList[i].find("eta")) doLegend = false;
-      if (string::npos != fDoList[i].find("bdt")) doLegend = false;
-      h1 = (TH1D*)f1->Get(n1.c_str());
-      if (fIncludeOverflowInLastBin) addOverflow(h1);
-      cout << "n1: " << n1 << " -> " << h1 << endl;
-
-      h2 = (TH1D*)f2->Get(n2.c_str());
-      if (fIncludeOverflowInLastBin) addOverflow(h2);
-      cout << "n2: " << n2 << " -> " << h2 << endl;
-      if (0 == h1 || 0 == h2) {
-	cout << "  histograms not found" << endl;
-	continue;
-      }
-      if (h2->GetSumOfWeights() > 0) {
-	h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
-      }
-
-      cout << "setHist for " << ds1 << " and " << ds2 << endl;
-      cout << "fStampString = " << fStampString << endl;
-
-      h1->SetNdivisions(505, "X");
-
-      overlayAndRatio(c0, h1, h2);
-      setHist(h1, fDS[ds1]);
-      setHist(h2, fDS[ds2]);
-
-      if (doLegend) {
-	if (leftLegend) {
-	  newLegend(0.21, 0.7, 0.41, 0.87);
-	} else {
-	  newLegend(0.50, 0.7, 0.75, 0.87);
-	}
-
-	char loption1[100], loption2[100];
-	string header, h1string, h2string;
-	if (string::npos != sample1.find("bspsiphi") && string::npos != sample2.find("bspsiphi")) header = "B_{s} #rightarrow J/#psi #phi";
-	else if (string::npos != sample1.find("bupsik") && string::npos != sample2.find("bupsik")) header = "B^{+} #rightarrow J/#psi K^{+}";
-	else if (string::npos != sample1.find("bdpsikstar") && string::npos != sample2.find("bdpsikstar")) header = "B^{0} #rightarrow J/#psi K^{*}";
-	else if (string::npos != sample1.find("mm") && string::npos != sample2.find("mm")) header = "Dimuon";
-	else header = "Zoge am Boge";
-
-	if (string::npos != sample1.find("Mc")) {
-	  sprintf(loption1, "f");
-	  if (string::npos != sample1.find("Sg")) {
-	    h1string = "B_{s} #rightarrow #mu^{+} #mu^{-} (MC)";
-	  } else {
-	    h1string = "MC simulation";
-	    // -- change things for the private/official validation
-	    if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
-	      h1string += " (private)";
-	      sprintf(loption1, "p");
-	      h1->SetMarkerStyle(24);
-	      h1->SetMarkerSize(1.5);
-	      h1->Draw("esame");
-	    }
-	  }
-	} else if (string::npos != sample1.find("Data")) {
-	  sprintf(loption1, "p");
-	  if (string::npos != sample1.find("mm")) {
-	    h1string = "data sidebands";
-	  } else {
-	    h1string = "data";
-	  }
-	} else {
-	  h1string = "??";
-	}
-
-	if (string::npos != sample2.find("Mc")) {
-	  sprintf(loption2, "f");
-	  if (string::npos != sample2.find("bdmm")) {
-	    h2string = "B^{0} #rightarrow #mu^{+} #mu^{-}";
-	  } else if (string::npos != sample2.find("bsmm")) {
-	    h2string = "B^{0}_{s} #rightarrow #mu^{+} #mu^{-}";
-	  } else {
-	    h2string = "MC simulation";
-	    // -- change things for the private/official validation
-	    if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
-	      h2string += " (official)";
-	    }
-	  }
-	} else if (string::npos != sample2.find("Data")) {
-	  sprintf(loption2, "p");
-	  if (string::npos != sample2.find("bmm")) {
-	    h2string = "data sidebands";
-	  } else {
-	    h2string = "data";
-	  }
-	} else {
-	  h2string = "??";
-	}
-
-	legg->SetHeader(header.c_str());
-	legg->SetTextSize(0.05);
-	legg->AddEntry(h1, h1string.c_str(), loption1);
-	legg->AddEntry(h2, h2string.c_str(), loption2);
-
-	legg->Draw();
-      } else {
-	legg = 0;
-      }
-
-      stamp(0.18, fStampCms, fStampString, 0.4, fStampLumi);
-
-      if (1) {
-	TLatex ll;
-	ll.SetTextAngle(90.);
-	ll.SetTextSize(0.03);
-	ll.DrawLatexNDC(0.97, 0., Form("%s/%s/%s/%s", sample1.c_str(), sample2.c_str(), selection.c_str(), fDoList[i].c_str()));
-      }
-
-      c0->Modified();
-      c0->Update();
-      c0->SaveAs(Form("%s/overlay%d%s_%s_%s_%s_%s.pdf",
-		      fDirectory.c_str(), fYear, fSetup.c_str(), sample1.c_str(), sample2.c_str(), fDoList[i].c_str(), selection.c_str()));
-
-
-
-      // -- clean up
-      TPad *p = (TPad*)c0->GetPrimitive("pad1");
-      delete p;
-      p = (TPad*)c0->GetPrimitive("pad2");
-      TH1D *h = (TH1D*)(p->GetPrimitive("hr"));
-      delete h;
-      delete p;
-      if (legg) delete legg;
+    if (restricted) {
+      if (string::npos == fDoList[id].find(what)) continue;
     }
-  }
+    n1 =  Form("sbs_%s_%s_%s%s", chan1.c_str(), sample1.c_str(), fDoList[id].c_str(), selection.c_str());
+    n2 =  Form("sbs_%s_%s_%s%s", chan2.c_str(), sample2.c_str(), fDoList[id].c_str(), selection.c_str());
+    doLegend = true;
+    if (string::npos != fDoList[id].find("eta")) doLegend = false;
+    if (string::npos != fDoList[id].find("bdt")) doLegend = false;
+    h1 = (TH1D*)f1->Get(n1.c_str());
+    if (fIncludeOverflowInLastBin) addOverflow(h1);
+    cout << "n1: " << n1 << " -> " << h1 << endl;
 
+    h2 = (TH1D*)f2->Get(n2.c_str());
+    if (fIncludeOverflowInLastBin) addOverflow(h2);
+    cout << "n2: " << n2 << " -> " << h2 << endl;
+    if (0 == h1 || 0 == h2) {
+      cout << "  histograms not found" << endl;
+      continue;
+    }
+    if (h2->GetSumOfWeights() > 0) {
+      h2->Scale(h1->GetSumOfWeights()/h2->GetSumOfWeights());
+    }
+
+    cout << "setHist for " << ds1 << " and " << ds2 << endl;
+    cout << "fStampString = " << fStampString << endl;
+
+    h1->SetNdivisions(505, "X");
+
+    setHist(h1, fDS[ds1]);
+    setHist(h2, fDS[ds2]);
+
+    char loption1[100], loption2[100];
+    string header, h1string, h2string;
+    if (string::npos != sample1.find("bspsiphi") && string::npos != sample2.find("bspsiphi")) header = "B_{s} #rightarrow J/#psi #phi";
+    else if (string::npos != sample1.find("bupsik") && string::npos != sample2.find("bupsik")) header = "B^{+} #rightarrow J/#psi K^{+}";
+    else if (string::npos != sample1.find("bdpsikstar") && string::npos != sample2.find("bdpsikstar")) header = "B^{0} #rightarrow J/#psi K^{*}";
+    else if (string::npos != sample1.find("mm") && string::npos != sample2.find("mm")) header = "Dimuon";
+    else header = "Zoge am Boge";
+
+    if (string::npos != sample1.find("Mc")) {
+      sprintf(loption1, "f");
+      if (string::npos != sample1.find("Sg")) {
+	h1string = "B_{s} #rightarrow #mu^{+} #mu^{-} (MC)";
+      } else {
+	h1string = "MC simulation";
+	// -- change things for the private/official validation
+	if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
+	  h1string += " (private)";
+	  sprintf(loption1, "p");
+	  h1->SetMarkerStyle(24);
+	  h1->SetMarkerSize(1.5);
+	  h1->Draw("esame");
+	}
+      }
+    } else if (string::npos != sample1.find("Data")) {
+      sprintf(loption1, "p");
+      if (string::npos != sample1.find("mm")) {
+	h1string = "data sidebands";
+      } else {
+	h1string = "data";
+      }
+    } else {
+      h1string = "??";
+    }
+
+    if (string::npos != sample2.find("Mc")) {
+      sprintf(loption2, "f");
+      if (string::npos != sample2.find("bdmm")) {
+	h2string = "B^{0} #rightarrow #mu^{+} #mu^{-}";
+      } else if (string::npos != sample2.find("bsmm")) {
+	h2string = "B^{0}_{s} #rightarrow #mu^{+} #mu^{-}";
+      } else {
+	h2string = "MC simulation";
+	// -- change things for the private/official validation
+	if (string::npos == sample1.find("Off") && string::npos != sample2.find("Off")) {
+	  h2string += " (official)";
+	}
+      }
+    } else if (string::npos != sample2.find("Data")) {
+      sprintf(loption2, "p");
+      if (string::npos != sample2.find("bmm")) {
+	h2string = "data sidebands";
+      } else {
+	h2string = "data";
+      }
+    } else {
+      h2string = "??";
+    }
+
+    // -- change things for the legacy/rereco validation
+    if (string::npos != sample1.find("bupsikData") && string::npos != sample2.find("bupsikDataLegacy")) {
+      h1string += " (rereco)";
+      sprintf(loption1, "p");
+      h1->SetMarkerStyle(24);
+      h1->SetMarkerSize(1.5);
+      h1->Draw("samehist");
+      string bla = h2->GetName();
+      replaceAll(bla, "Data", "");
+      h2->SetMarkerStyle(25);
+      h2->SetMarkerSize(1.5);
+      h2->SetName(bla.c_str());
+      h2string += " (legacy)";
+      sprintf(loption2, "p");
+    }
+
+    overlayAndRatio(c0, h1, h2);
+
+    if (doLegend) {
+      if (leftLegend) {
+	newLegend(0.21, 0.7, 0.41, 0.87);
+      } else {
+	newLegend(0.50, 0.7, 0.75, 0.87);
+      }
+
+      legg->SetHeader(header.c_str());
+      legg->SetTextSize(0.05);
+      legg->AddEntry(h1, h1string.c_str(), loption1);
+      legg->AddEntry(h2, h2string.c_str(), loption2);
+
+      legg->Draw();
+    } else {
+      legg = 0;
+    }
+
+
+    if (1) {
+      TLatex ll;
+      ll.SetTextAngle(90.);
+      ll.SetTextSize(0.03);
+      ll.DrawLatexNDC(0.97, 0., Form("%s/%s/%s/%s", sample1.c_str(), sample2.c_str(), selection.c_str(), fDoList[id].c_str()));
+    }
+
+    c0->Modified();
+    c0->Update();
+    c0->SaveAs(Form("%s/overlay%d%s_%s_%s_%s_%s.pdf",
+		    fDirectory.c_str(), fYear, fSetup.c_str(), sample1.c_str(), sample2.c_str(), fDoList[id].c_str(), selection.c_str()));
+
+
+
+    // -- clean up
+    TPad *p = (TPad*)c0->GetPrimitive("pad1");
+    delete p;
+    p = (TPad*)c0->GetPrimitive("pad2");
+    TH1D *h = (TH1D*)(p->GetPrimitive("hr"));
+    delete h;
+    delete p;
+    if (legg) delete legg;
+  }
 }
 
 
@@ -1625,7 +1659,11 @@ void plotReducedOverlays::overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2) {
   } else {
     h1->Draw();
   }
-  h2->Draw("samehist");
+  if (string::npos != hname.find("Data")) {
+    h2->Draw("samee");
+  } else {
+    h2->Draw("samehist");
+  }
   h1->SetMaximum(1.2*ymax);
 
   // -- Lower plot
