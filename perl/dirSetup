@@ -5,10 +5,18 @@ getopts('n:');
 
 system("ln -s ../plotResults.2016BF.files");
 system("ln -s ../plotResults.2016GH.files");
+system("ln -s ../plotResults.2016H.files");
+system("ln -s ../plotResults.2016G.files");
+system("ln -s ../plotResults.2012.files");
+system("ln -s ../plotResults.2011.files");
 
 system("/bin/cp ../cuts/baseCuts.2016.cuts .");
+system("/bin/cp ../cuts/baseCuts.2011.cuts .");
+system("/bin/cp ../cuts/baseCuts.2012.cuts .");
 
 system("mkdir -p overlays/2016");
+system("mkdir -p overlays/2012");
+system("mkdir -p overlays/2011");
 system("mkdir -p sbso");
 system("mkdir -p adfpy");
 system("mkdir -p sbsctrl");
