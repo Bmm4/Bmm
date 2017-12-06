@@ -1,6 +1,8 @@
 type=bmm,data              lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
 type=bupsik,data           lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
+type=bupsik,data,legacy    lumi=16.3          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016GH-v08.root
 type=bspsiphi,data         lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
+type=bspsiphi,data,legacy  lumi=16.3          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016GH-v08.root
 type=bspsif,data           lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
 type=bdpsikstar,data       lumi=16.3          file=scratch/bmm-data-bmmCharmonium2016GH-v06.root
 # -- B+
