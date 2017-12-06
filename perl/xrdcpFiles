@@ -2,25 +2,59 @@
 
 # ----------------------------------------------------------------------
 #
-# usage: xrdcpFiles -x /store/user/ursl/bmm4/reduced/170508 [-p root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat] files*.root
+# usage: xrdcpFiles files*.root dir
 # -----
-#
+#        NOTE: go to where the files are!
 #
 
 use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('dp:x:');
+getopts('dp:vx:');
 
 my $prefix = "root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
+my $short = "root://t3se01.psi.ch:1094";
+my $pnfs   = "/pnfs/psi.ch/cms/trivcat";
 if ($opt_p) {
     $prefix = $opt_p;
 }
 
+my $dir = pop(@ARGV);
+if ($dir =~ /\/store/) {
+    ($bla, $dir) = split(/\/store\//, $dir);
+    $sdir = "/store/" . $dir;
+    $xdir = $prefix . "/store/" . $dir;
+    $pdir = $pnfs . "/store/" . $dir;
+} else {
+    $xdir = $dir;
+}
+$xdir =~ s/\/$//;
+$sdir =~ s/\/$//;
+$pdir =~ s/\/$//;
+
+print "xdir ->$xdir<-\n";
+print "pdir ->$pdir<-\n";
+print "sdir ->$sdir<-\n";
+
 foreach $file (@ARGV) {
-    print "xrdcp $file $prefix/$opt_x/$file\n";
-    if (!$opt_d) {
-	system("xrdcp $file $prefix/$opt_x/$file");
+    $xfile = $file;
+    print "xfile: $xfile\n";
+    print "pdir/xfile: $pdir/$xfile\n";
+    if (-e "$xdir/$xfile") {
+	if ($opt_v) {print "unlink $xdir/$xfile\n";}
+	unlink("$xdir/$xfile");
+    } else {
+	if ($opt_v) {print "do not unlink $xdir/$xfile\n";}
     }
+
+    if (-e "$pdir/$xfile") {
+	if ($opt_v) {print "xrdfs $short rm $sdir/$file\n";}
+	system("xrdfs $short rm $sdir/$file");
+    } else {
+	if ($opt_v) {print "do not xrdfs $short rm $sdir/$file\n";}
+    }
+
+    print "xrdcp $xfile $xdir/$xfile\n";
+    system("xrdcp $xfile $xdir/$xfile");
 }
