@@ -51,6 +51,7 @@ $exclude .= " --exclude \\*.eps";
 $exclude .= " --exclude \\*.png";
 $exclude .= " --exclude \\*.log";
 $exclude .= " --exclude \\*.tex";
+$exclude .= " --exclude \\*.old";
 $exclude .= " --exclude .nfs\\*";
 $exclude .= " --exclude \\*~";
 if ($opt_x) {
