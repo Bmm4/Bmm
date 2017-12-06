@@ -68,6 +68,10 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd) {
 	  //	  cout << "  adding fl3d" << endl;
 	  reader->AddVariable( "fl3d", &rd.fl3d);
 	}
+	if (stype == "flsxy") {
+	  //	  cout << "  adding flsxy" << endl;
+	  reader->AddVariable( "flsxy", &rd.flsxy);
+	}
 	if (stype == "alpha") {
 	  //	  cout << "  adding alpha" << endl;
 	  reader->AddVariable( "alpha", &rd.alpha);
