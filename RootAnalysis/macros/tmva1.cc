@@ -168,6 +168,7 @@ void tmva1::makeAll(int offset, string filename, int chan) {
     if (fKS[i] < minKS)   minKS = fKS[i];
     if (fKS[i+1] < minKS) minKS = fKS[i+1];
   }
+  double  avbdt =  0.3*(fMaxBdt[0]+fMaxBdt[1]+fMaxBdt[2]);
   cout << "ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
   cout << "bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << endl;
   cout << "offset = " << offset << " is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
@@ -180,6 +181,12 @@ void tmva1::makeAll(int offset, string filename, int chan) {
       << "/" << fBDTParameters << "/" << fVariables << "/" << filename
       << endl;
   OUT.close();
+
+  OUT.open("append-basecuts.txt");
+  OUT << Form("bdtxml   TMVA-%d   TMVA-%d    TMVA-%d   TMVA-%d", offset, offset, offset, offset) << endl;
+  OUT << Form("bdtcut         %3.2f          %3.2f          %3.2f          %3.2f", avbdt, avbdt, avbdt, avbdt) << endl;
+  OUT.close();
+
 }
 
 // ----------------------------------------------------------------------
