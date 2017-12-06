@@ -2673,9 +2673,9 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   f->SetParameter(0, h->GetMaximum());
   f->SetParameter(1, 5.28);
-  f->SetParameter(2, 0.03); limitPar(2, 0.02, 0.04);
-  f->SetParameter(3, 0.20); limitPar(3, 0.01, 0.40);
-  f->SetParameter(4, 0.05); limitPar(4, 0.04, 0.10);
+  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.035);
+  f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.400);
+  f->SetParameter(4, 0.05); limitPar(4, 0.035, 0.120);
 
   double a(-1.), b(-1.);
   fLo = 5.5; fHi = 5.9;
