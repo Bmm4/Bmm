@@ -29,7 +29,7 @@ using namespace std;
 
 #define FLSXYMIN   4.0
 
-#define FLS3DMIN  5.0
+#define FLS3DMIN  4.0
 #define FLS3DMAX 200.0
 
 #define DOCATRKMAX 2.5
