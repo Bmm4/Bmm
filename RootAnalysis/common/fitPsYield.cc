@@ -180,6 +180,16 @@ void fitPsYield::fitBu2JpsiKp(int limitpars, string pdfprefix, int whichfit) {
   if (0 == whichfit) pF = &fitPsYield::fit0_Bu2JpsiKp;
   if (1 == whichfit) pF = &fitPsYield::fit1_Bu2JpsiKp;
 
+  if (0 == fCombinedW8) {
+    cout << "ERROR> no psd fCombinedW8 created (likely no entries in histogram), returning" << endl;
+    fSummary.fSg      = 0.;
+    fSummary.fSgE     = 0.;
+    fSummary.fBg      = 0.;
+    fSummary.fBgE     = 0.;
+    fSummary.fSgSigma = 0.;
+    fSummary.fSgPeak  = 0.;
+    return;
+  }
   // -- prefit weighted combination:
   (this->*pF)(fW8Combined, -1, pdfprefix, false);
   // -- prefit unweighted combination:
@@ -236,6 +246,10 @@ void fitPsYield::fit0_Bu2JpsiKp(TH1D *h1, int limitpars, string pdfprefix) {
 //           = 0: only allow normalizations to float
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool keepFunctions) {
+  if (0 == res) {
+    cout << "ERROR: calling for empty psd (prescale data), returning." << endl;
+    return;
+  }
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
