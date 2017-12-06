@@ -403,11 +403,12 @@ void plotResults::init() {
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
 
-  if (what == "dbx") {
-    // fHistWithAllCuts = "hMassWithAllCuts";
-    // fSuffixSel = "bdt" + fSuffix;
-    // calculateNumbers("bdt" + fSuffix);
-
+  if (what == "bdtopt") {
+    fHistWithAllCuts = "hMassWithAllCuts";
+    //    fillAndSaveHistograms(0, 10000);
+    fillAndSaveHistograms();
+    fSuffixSel = "bdt" + fSuffix;
+    calculateNumbers("bdt" + fSuffix);
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
   }
 
@@ -547,13 +548,35 @@ void plotResults::bookHist(string dsname) {
 void plotResults::scanBDT(string fname) {
   fTEX.close();
   int BDTMIN(0), BDTMAX(60);
+  cout << "starting scanBDT" << endl;
   if (1) {
     string dsname = Form("%s", fname.c_str());
     fTEX.open(dsname.c_str());
     fHistWithAllCuts = "hMassWithAllCuts";
+    // -- check over which range you have to run
+    fHistFile = TFile::Open(fHistFileName.c_str());
+    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()));
+    if (!h0) {
+      cout << "histogram " << Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()) << " not found" << endl;
+      return;
+    }
+    double total = h0->GetSumOfWeights();
+    cout << "total events " << total << " for " << h0->GetName() << endl;
+    for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
+      h0 = (TH1D*)fHistFile->Get(Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", ib, fSuffix.c_str()));
+      if (h0->GetSumOfWeights() < 0.1*total) {
+	BDTMAX = ib;
+	cout << " going up to bdt < " << BDTMAX << ", because there events = " << h0->GetSumOfWeights() << endl;
+	break;
+      }
+    }
+    fHistFile->Close();
+
+    // -- and now loop over all requested
     for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
       string idx = Form("bdt_%d_", ib);
       fSuffixSel = idx + fSuffix;
+      cout << "  bdt > " << ib*0.01 << " fSuffixSel = " << fSuffixSel << endl;
       calculateNumbers(idx + fSuffix);
     }
     fTEX.close();
@@ -673,8 +696,11 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
     inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
   } else if (1 == mode) {
-    inputFiles.push_back("results-219/scanBDT-2016BF.root");   colors.push_back(kRed);
-    inputFiles.push_back("results-309/scanBDT-2016BF.root");   colors.push_back(kBlack);
+    inputFiles.push_back("results/scanBDT-2016BF.root");              colors.push_back(kBlack);
+    inputFiles.push_back("results/scanBDT-2016BF-389-23.root");   colors.push_back(kRed);
+    inputFiles.push_back("results/scanBDT-2016BF-409-23.root");   colors.push_back(kGreen+1);
+    inputFiles.push_back("results/scanBDT-2016BF-429-23.root");   colors.push_back(kGreen+2);
+    inputFiles.push_back("results/scanBDT-2016BF-419-23.root");   colors.push_back(kBlue);
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -697,6 +723,7 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     string s("");
 
     TH1D *hbdt = (TH1D*)f->Get("bdtCuts");
+    cout << "hbdt = " << hbdt << endl;
     double bdtCut0 = 100.*hbdt->GetBinContent(1);
     double bdtCut1 = 100.*hbdt->GetBinContent(2);
 
@@ -732,11 +759,11 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     h0->SetMarkerSize(0.8);
     setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
     if (0 == ifile) {
-      h0->Draw("p");
+      h0->DrawCopy("p");
     } else {
-      h0->Draw("psame");
+      h0->DrawCopy("psame");
     }
-    TMarker *pm = new TMarker(bdtCut0, bdt0y, 20);
+    TMarker *pm = new TMarker(bdtCut0, bdt0y, 28);
     pm->SetMarkerColor(colors[ifile]);
     pm->SetMarkerSize(2.);
     pm->Draw();
@@ -744,6 +771,7 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
 
     tl->SetTextSize(0.03);
     tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.22, 0.15 + ifile*0.032, inputFiles[ifile].c_str());
+    //    f->Close();
   }
 
   tl->SetTextSize(0.03);
