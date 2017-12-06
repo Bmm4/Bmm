@@ -98,7 +98,7 @@ if ($optd ne "") {
     $log = "-$opt_d";
 }
 foreach $year (@years) {
-    print "running: bin/runPlot -y $year $optp $optm >& runPlots-$opt_p-$opt_m-$year.log & \n";
+    print "running: bin/runPlot -y $year $optd $optp $optm >& runPlots$log-$opt_p-$opt_m-$year.log & \n";
     if (-e "$optp-$optm-$year.log") {
 	unlink("$optp-$optm-$year.log");
     }
