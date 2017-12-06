@@ -4,9 +4,13 @@
 # Usage examples
 # ==============
 #
-# /scratch/ursl/store/user/ursl/bmm4/cmsRun/v06/bmmMuOnia2011A
-# $BMMBASE/perl/collectCrabRootfiles -x MuOnia/crab_BMM4_Run2011A/170606_062613/ -n bmm-rereco-Run2011A
-# $BMMBASE/perl/collectCrabRootfiles -x MuOnia/crab_BMM4_Run2011A/170606_062613 -n bmm-rereco-Run2011A
+# cd /scratch/ursl/store/user/ursl/bmm4/cmsRun/v06/bmmMuOnia2011A
+# $BMMBASE/perl/collectCrabRootfiles -n bmm-rereco-Run2011A ../MuOnia/crab_BMM4_Run2011A/170606_062613/*
+# $BMMBASE/perl/collectCrabRootfiles -n bmm-rereco-Run2011A ../MuOnia/crab_BMM4_Run2011A/170606_062613*
+# $BMMBASE/perl/collectCrabRootfiles -d  ../legacy/Run2016H-07Aug17-v1/Charmonium/crab_BMM4_legacy-Run2016H-v1/171201_104724/000*
+
+#  -c: enable counter that changes the name of rootfiles (else the files are simply moved)
+#
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
@@ -20,13 +24,14 @@ use Tie::IxHash;
 use Cwd;
 
 use Getopt::Std;
-getopts('dn:o:x:');
+getopts('cdn:o:x:');
 
 my $dir = cwd();
 
-my $xdir = ".";
-if ($opt_x) {
-    $xdir = $opt_x;
+my @Xdir;
+foreach $elem (@ARGV) {
+    print "adding $elem\n";
+    push(@Xdir, $elem);
 }
 
 my $name = "crab";
@@ -42,34 +47,46 @@ if ($opt_o) {
     $cnt = $opt_o;
 }
 
-print "dir  = $dir\n";
-print "xdir = $xdir\n";
-print "name = $name\n";
-print "offset = $cnt\n";
+my $xdir = ".";
+foreach $xdir (@Xdir) {
+    print "dir  = $dir\n";
+    print "xdir = $xdir\n";
+    print "name = $name\n";
+    print "offset = $cnt\n";
 
-chdir("$xdir");
-print "cd to ", cwd(), "\n";
-@rootfiles = `find . -name "*.root" -print`;
-chdir("$dir");
-print "cd to ", cwd(), "\n";
+    chdir("$xdir");
+    print "cd to ", cwd(), "\n";
+    @rootfiles = `find . -name "*.root" -print`;
+    chdir("$dir");
+    print "cd to ", cwd(), "\n";
 
-#@rootfiles;
+    unlink("$xdir/collectcrab.$name");
+    open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$name\n";
 
-unlink("$xdir/collectcrab.$name");
-open(OUT, ">$xdir/collectcrab.$name") || die "cannot open $xdir/collectcrab.$name\n";
-
-foreach $file (@rootfiles) {
-    chop($file);
-    if ($file =~ /failed/) {next;}
-    $file =~ s%\.\/%%g;
-    $numeral = sprintf("%04i", $cnt);
-    $newrootfilename = "$name-$numeral.root";
-    print "mv $xdir/$file $newrootfilename\n";
-    print OUT "$xdir/$file -> $newrootfilename\n";
-    if (!$opt_d) {
-	system("mv $xdir/$file $dir/$newrootfilename");
+    foreach $file (@rootfiles) {
+	chop($file);
+	if ($file =~ /failed/) {next;}
+	$file =~ s%\.\/%%g;
+	$numeral = sprintf("%04i", $cnt);
+	if ($opt_c) {
+	    $newrootfilename = "$name-$numeral.root";
+	} else {
+	    $newrootfilename = "$file";
+	}
+	print "mv $xdir/$file $newrootfilename\n";
+	print OUT "$xdir/$file -> $newrootfilename\n";
+	if (-e "$dir/$newrootfilename") {
+	    print "$dir/$newrootfilename already exists, skip this one\n";
+	}
+	if (!$opt_d) {
+	    if (-e "$dir/$newrootfilename") {
+		print "$dir/$newrootfilename already exists, skip this one\n";
+	    } else {
+		system("mv $xdir/$file $dir/$newrootfilename");
+	    }
+	}
+	$cnt++;
     }
-    $cnt++;
 }
 
 close OUT;
