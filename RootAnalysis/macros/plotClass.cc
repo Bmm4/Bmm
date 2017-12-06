@@ -2017,6 +2017,7 @@ void plotClass::loadFiles(string afiles) {
       ds->fWidth = 2;
       if (string::npos != stype.find("bmm,")) {
         sname = "bmmData";
+	if (string::npos != stype.find("legacy")) sname += "Legacy";
         sdecay = "dimuon";
 	ldecay = "dimuon";
 	ds->fColor = kBlack;
@@ -2033,6 +2034,7 @@ void plotClass::loadFiles(string afiles) {
 
        if (string::npos != stype.find("bupsik,")) {
         sname = "bupsikData";
+	if (string::npos != stype.find("legacy")) sname += "Legacy";
         sdecay = "B^{+} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{+}";
         ldecay = "\\bupsik";
 	ds->fColor = kBlack;
@@ -2049,6 +2051,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bspsiphi,")) {
         sname = "bspsiphiData";
+	if (string::npos != stype.find("legacy")) sname += "Legacy";
         sdecay = "B^{0}_{s} #rightarrow J/#kern[-0.2]{#it{#psi}}#it{#phi}";
 	ldecay = "\\bspsiphi";
 	ds->fColor = kBlack;
@@ -2065,6 +2068,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("bdpsikstar,")) {
         sname = "bdpsikstarData";
+	if (string::npos != stype.find("legacy")) sname += "Legacy";
         sdecay = "B^{0} #rightarrow J/#kern[-0.2]{#it{#psi}}K^{*0}";
 	ldecay = "\\bdpsikstar";
 	ds->fColor = kBlack;
@@ -2081,6 +2085,7 @@ void plotClass::loadFiles(string afiles) {
 
       if (string::npos != stype.find("fake,")) {
         sname = "fakeData";
+	if (string::npos != stype.find("legacy")) sname += "Legacy";
         sdecay = "fake";
 	ldecay = "fake";
 	ds->fColor = kBlack;
