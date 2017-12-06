@@ -62,7 +62,11 @@ my $home  = $ENV{'HOME'};
 (my $uhome = $home) =~ s|[^/]+$||;
 $uhome .= "ursl";
 my $glite = "$home/grid/glite.conf";
-my $qsub = "/gridware/sge/bin/lx24-amd64/qsub";
+my $qsub = "/gridware/sge/bin/lx24-amd64/qsub  ";
+# -- if you want to exclude some nodes:
+if (1) {
+    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn42&!t3wn24&!t3wn44' ";
+}
 
 # -- define mode if not provided
 if (!$opt_m) {
@@ -413,6 +417,7 @@ sub makeCshFile {
 	print OUT;
     }
     close OUT;
+
 }
 
 
