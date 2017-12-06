@@ -69,7 +69,7 @@ void genAnalysis::genKstarMass() {
     aid = TMath::Abs(pCand->fID);
     if (313 == aid) {
       cout << pCand << endl;
-      cout << pCand->fMass << endl;
+      cout << pCand->fMass << " LorentzVector: " << pCand->fP.X() << "/" << pCand->fP.Y() << "/" << pCand->fP.Z() << " pt = " << pCand->fP.Perp() << " m = " << pCand->fP.M() << endl;
       fKstarMass->Fill(pCand->fMass);
     }
   }
