@@ -92,6 +92,90 @@ if (11 == $opt_s) {
     exit(0);
 }
 
+
+if (12 == $opt_s) {
+    my @list12 = (
+	"GH-1079",
+	"GH-2329",
+	"GH-3159",
+	"GH-4839",
+	"GH-1199",
+	"GH-2349",
+	"GH-3269",
+	"GH-4869",
+	"GH-1439",
+	"GH-2359",
+	"GH-3349",
+	"GH-4879",
+	"GH-1469",
+	"GH-2379",
+	"GH-3389",
+	"GH-4889",
+	"GH-1489",
+	"GH-2429",
+	"GH-3739",
+	"GH-4899",
+	"GH-1509",
+	"GH-2459",
+	"GH-3989",
+	"GH-4909",
+	"GH-1569",
+	"GH-2469",
+	"GH-4029",
+	"GH-5019",
+	"GH-1629",
+	"GH-2489",
+	"GH-4069",
+	"GH-5219",
+	"GH-1649",
+	"GH-2749",
+	"GH-4189",
+	"GH-5349",
+	"GH-1769",
+	"GH-2869",
+	"GH-4309",
+	"GH-5399",
+	"GH-1779",
+	"GH-2879",
+	"GH-4359",
+	"GH-5459",
+	"GH-1869",
+	"GH-2909",
+	"GH-4469",
+	"GH-5539",
+	"GH-2069",
+	"GH-2929",
+	"GH-4679",
+	"GH-5549",
+	"GH-2079",
+	"GH-2959",
+	"GH-4689",
+	"GH-5559",
+	"GH-2199",
+	"GH-2989",
+	"GH-4759",
+	"GH-2239",
+	"GH-3029",
+	"GH-4789",
+	"GH-2309",
+	"GH-3069",
+	"GH-4829"
+	);
+    foreach $idir (@list12) {
+	$dir = "results-" . $idir;
+	$command = "bin/runPlot -y 2016GH -d $dir -d se -p overlays -m dbxplot  -s $idir >& /dev/null &";
+	print "$command\n";
+	system($command);
+	$njobs = countRunningJobs("dbxplot");
+	print "njobs running: $njobs\n";
+	while ($njobs > 8) {
+	    print "sleep for 60 before testing again\n";
+	    sleep(60);
+	}
+    }
+    exit(0);
+}
+
 # -- default: run something on all 4 years
 my $log = "";
 if ($optd ne "") {
@@ -103,4 +187,21 @@ foreach $year (@years) {
 	unlink("$optp-$optm-$year.log");
     }
     system("bin/runPlot -y $year $optd $optp $optm >& runPlots$log-$opt_p-$opt_m-$year.log &");
+}
+
+
+
+# ----------------------------------------------------------------------
+sub countRunningJobs() {
+    ($jobname) = @_;
+    print "ps -fu ursl | /bin/grep $jobname | wc\n";
+    $line = `ps -fu ursl | /bin/grep runPlot | /bin/grep $jobname | wc`;
+    chop($line);
+    print "line ->$line<-\n";
+    $line =~ s/\s{2,99}/:/g;
+    $line =~ s/^://;
+    ($n, $nw, $nl) = split(/:/, $line, 3);
+    $n -= 1;
+    print "n = ->$n<- \n";
+    return $n;
 }
