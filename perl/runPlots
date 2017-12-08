@@ -18,7 +18,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('d:p:m:s:');
+getopts('d:p:m:n:s:t:');
 
 my @years = ("2011", "2012", "2016BF", "2016GH");
 
@@ -30,6 +30,18 @@ if ($opt_p) {
 my $optm = "";
 if ($opt_m) {
     $optm = "-m $opt_m";
+}
+
+# -- time to wait before checking again
+my $optt = 20;
+if ($opt_t) {
+    $optt = $opt_t;
+}
+
+# -- how many jobs in parallel
+my $optn = 8;
+if ($opt_n) {
+    $optn = $opt_n;
 }
 
 my $optd = "";
@@ -168,9 +180,11 @@ if (12 == $opt_s) {
 	system($command);
 	$njobs = countRunningJobs("dbxplot");
 	print "njobs running: $njobs\n";
-	while ($njobs > 8) {
+	while ($njobs > $optn) {
 	    print "sleep for 60 before testing again\n";
-	    sleep(60);
+	    sleep($optt);
+	    $njobs = countRunningJobs("dbxplot");
+	    print "njobs running: $njobs\n";
 	}
     }
     exit(0);
