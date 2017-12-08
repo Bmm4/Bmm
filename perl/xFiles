@@ -33,6 +33,6 @@ foreach $file (@files) {
     chop($file);
     $command = "xrdcp $xroot/$opt_x/$file $file";
     print "$command \n";
-#    system("$command");
-#    sleep(2);
+    system("$command");
+    sleep(2);
 }
