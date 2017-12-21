@@ -48,21 +48,13 @@ public:
   int         getHLTId(TString); // get the id (integer) from the HLT name 
   void        dumpAll(); // print everything
   bool        doTriggerMatchingForDs(double &dr1, double &dr2); // match hlt muons to offline 
+  bool        doTriggerMatchingForDs(TAnaTrack *pt1, TAnaTrack *pt2, TAnaTrack *pt3,
+				     double &dr1, double &dr2); //+check
   bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
 			    bool matchPt, bool anyModule, float drCut, int histoOffset=0); 
-  // match the 2 muons from the dimuon to HLT
-  //virtual bool        doTriggerMatching(TAnaTrack *pt1, TAnaTrack *pt2);
-  // match a single track to HLT
-  //virtual bool        doTriggerMatching(TAnaTrack *pt, bool anyTrig = false,
-  //					bool muonsOnly=true, bool anyModule=false);
   // To return the full deltaR not just a bool
   virtual double      doTriggerMatchingR(TAnaTrack *pt, bool anyTrig = false,
 					 bool muonsOnly=true, bool anyModule=false);
-  // Veto track too close to a trigger object
-  //virtual bool        doTriggerVeto(TAnaTrack *pt, bool singleMatch,
-  //				    bool matchPt, bool anyModule, float drCut, int histoOffset=0);
-
-
 
   bool        analyzeHltInfo(bool allTrigClean=false);
   void        candEvaluation();
