@@ -1,18 +1,23 @@
 #!/usr/bin/env perl
 
 use Getopt::Std;
-getopts('n:');
+getopts('d:');
 
-system("ln -s ../plotResults.2016BF.files");
-system("ln -s ../plotResults.2016GH.files");
-system("ln -s ../plotResults.2016H.files");
-system("ln -s ../plotResults.2016G.files");
-system("ln -s ../plotResults.2012.files");
-system("ln -s ../plotResults.2011.files");
+my $dir = "..";
+if ($opt_d) {
+    $dir = $opt_d;
+}
 
-system("/bin/cp ../cuts/baseCuts.2016.cuts .");
-system("/bin/cp ../cuts/baseCuts.2011.cuts .");
-system("/bin/cp ../cuts/baseCuts.2012.cuts .");
+system("ln -s $dir/plotResults.2016BF.files");
+system("ln -s $dir/plotResults.2016GH.files");
+system("ln -s $dir/plotResults.2016H.files");
+system("ln -s $dir/plotResults.2016G.files");
+system("ln -s $dir/plotResults.2012.files");
+system("ln -s $dir/plotResults.2011.files");
+
+system("/bin/cp $dir/cuts/baseCuts.2016.cuts .");
+system("/bin/cp $dir/cuts/baseCuts.2011.cuts .");
+system("/bin/cp $dir/cuts/baseCuts.2012.cuts .");
 
 system("mkdir -p overlays/2016");
 system("mkdir -p overlays/2012");
