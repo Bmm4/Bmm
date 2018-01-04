@@ -33,6 +33,29 @@ $cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 use Getopt::Std;
 getopts('b:cCn:p:x:s:');
 
+# -- shortcut for nfs-mounted multiple directories:
+if ($#ARGV > -1) {
+    @filelist = ();
+    for ($i = 0; $i <= $#ARGV; ++$i) {
+	#print "look at $ARGV[$i]\n";
+	$dir = $ARGV[$i];
+	($bla, $dir) = split(/\/store\//, $ARGV[$i]);
+	$dir = "/store/" . $dir;
+	#print " -> $dir\n";
+	@flist = ();
+	@flist = `xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat$dir`;
+	push(@filelist, @flist);
+    }
+    foreach $line (@filelist) {
+	($bla, $file) = split(/\/store\//, $line);
+	$file = "/store/" . $file;;
+	print "$file";
+    }
+    exit(0);
+}
+
+
+
 # -- cross check for chain production
 if ($opt_n && !$opt_b) {die "provide a maximum size if requesting split chain files\n";}
 if ($opt_b && !$opt_n) {die "provide a base filename if requesting split chain files\n";}
