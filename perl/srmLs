@@ -9,7 +9,7 @@
 #          -p  pattern to search for
 #
 # Examples:  $BMMBASE/perl/srmLs -x /store/user/ursl/bmm4/cmsRun/v01 -p 2016
-#
+#            $BMMBASE/perl/srmLs /scratch/ursl/store/user/ursl/bmm4/small/*
 #
 # History: 2010/04/29 First shot
 #          2010/05/03 Bug fix
