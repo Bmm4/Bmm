@@ -232,6 +232,7 @@ bool HFSequentialVertexFit::fitTree(HFDecayTree *tree) {
   tree->fTV.setChi2Dof(kinPart->chiSquared()/kinVertex->degreesOfFreedom());
 
   return true;
+
 }
 
 
@@ -802,7 +803,8 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
       }
 
       if (vrtxRefit.size() < 2) continue; // next one
-      TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+      //DBX      TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+      TransientVertex newVtx = avf.vertex(vrtxRefit);
       if (!newVtx.isValid()) continue; // no valid refit, take next one
       Vertex currentPV = reco::Vertex(newVtx);
 
@@ -929,7 +931,8 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     if (vrtxRefit.size() < 5) throw PVRefitException(); // do not try to fit with less than five tracks, else problems in CrossingPtBasedLinPtFinder
     if (fVerbose > 5) cout << "==> HFSequentialVertexFit::addCandidate(): refitting with vrtxRefit.size() = " << vrtxRefit.size() << endl;
 
-    TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+    //DBX    TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+    TransientVertex newVtx = avf.vertex(vrtxRefit);
     if (newVtx.isValid()) {
       currentPV = reco::Vertex(newVtx);
     } else {
