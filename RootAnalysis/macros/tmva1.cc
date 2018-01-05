@@ -88,6 +88,9 @@ tmva1::tmva1(int year, string vars, string pars) {
     fLumiScale = 8.8e-4; // 37/42185 (combined bsmm und bdmm signal MC)
     fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-signal-2016-v06.root";
     fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016GH-v08.root";
+    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016-v08.root";
   }
 
 //   // -- BDT setup 108/109
