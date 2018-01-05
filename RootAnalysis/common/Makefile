@@ -40,8 +40,9 @@ GLIBS         = $(filter-out -lz, $(ROOTGLIBS))
 EXTHEADERS    = -I..
 
 # -- Files
-UTIL     := PidTable.o PidData.o \
-            AnalysisCuts.o AnalysisDistribution.o HistCutEfficiency.o selpoint.o dataset.o \
+UTIL     := AnalysisCuts.o AnalysisDistribution.o  \
+            PidTable.o PidData.o \
+            HistCutEfficiency.o selpoint.o dataset.o \
             util.o initFunc.o hpl.o JSON.o PdTrigger.o Lumi.o ana.o fitPsYield.o
 UTILDICT := ${UTIL:.o=Dict.o}
 
