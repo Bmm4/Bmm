@@ -403,15 +403,21 @@ void plotResults::init() {
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
 
+
+
+
   if (what == "bdtopt") {
     fHistWithAllCuts = "hMassWithAllCuts";
     //    fillAndSaveHistograms(0, 10000);
     fillAndSaveHistograms();
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
-    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
   }
 
+  if (what == "bdtoptplot") {
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), false);
+  }
 
   if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
     dumpDatasets();
@@ -513,7 +519,7 @@ void plotResults::makeAll(string what) {
     calculateNumbers("cnc" + fSuffix);
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
-    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
   }
 
   if (what == "all" || string::npos != what.find("cnc")) {
@@ -526,7 +532,39 @@ void plotResults::makeAll(string what) {
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
-    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()));
+    scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
+  }
+
+  if (what == "dbx2") {
+
+    frd.pt = 10.;
+    frd.eta = 0.1;
+    frd.m1eta = 0.2;
+    frd.m2eta = 0.3;
+    frd.m1pt = 6.;
+    frd.m2pt = 5.;
+    frd.fls3d = -1.;
+    frd.alpha = 0.01;
+    frd.maxdoca = 0.001;
+    frd.pvip = 0.001;
+    frd.pvips = 1.;
+    frd.iso = 0.9;
+    frd.docatrk = 0.02;
+    frd.chi2dof = 1.1;
+    frd.closetrk = 0;
+
+    frd.m1iso = 0.9;
+    frd.m2iso = 0.9;
+
+    frd.closetrks1 = 0.;
+    frd.closetrks2 = 0.;
+    frd.closetrks3 = 0.;
+
+    frd.pv2lip  = 0.;
+    frd.pv2lips = 0.;
+
+    frd.m  = fb.m;
+    cout << fReaderEvents0[0]->EvaluateMVA("BDT") << endl;
   }
 
 
@@ -545,19 +583,19 @@ void plotResults::bookHist(string dsname) {
 
 
 // ----------------------------------------------------------------------
-void plotResults::scanBDT(string fname) {
+void plotResults::scanBDT(string fname, bool createTexFile) {
   fTEX.close();
   int BDTMIN(0), BDTMAX(60);
   cout << "starting scanBDT" << endl;
-  if (1) {
+  if (createTexFile) {
     string dsname = Form("%s", fname.c_str());
     fTEX.open(dsname.c_str());
     fHistWithAllCuts = "hMassWithAllCuts";
     // -- check over which range you have to run
     fHistFile = TFile::Open(fHistFileName.c_str());
-    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()));
+    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bdmmMc/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()));
     if (!h0) {
-      cout << "histogram " << Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()) << " not found" << endl;
+      cout << "histogram " << Form("bdmmMc/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()) << " not found" << endl;
       return;
     }
     double total = h0->GetSumOfWeights();
@@ -586,6 +624,8 @@ void plotResults::scanBDT(string fname) {
   plots.push_back("CSBF");
   plots.push_back("BSMMBFS");
   plots.push_back("BSMMBFU");
+  plots.push_back("ZAD");
+  plots.push_back("ZAS");
   plots.push_back("SSB");
   plots.push_back("SOB");
   plots.push_back("SOBS");
@@ -609,7 +649,7 @@ void plotResults::scanBDT(string fname) {
   string histfilename = Form("%s", fname.c_str());
   replaceAll(histfilename, ".tex", ".root");
   cout << "fHistFile: " << histfilename;
-  fHistFile = TFile::Open(histfilename.c_str(), "RECREATE");
+  TFile *HistFile = TFile::Open(histfilename.c_str(), "RECREATE");
   cout << " opened " << endl;
 
   int iMax(-1), bMax(-1);
@@ -635,11 +675,10 @@ void plotResults::scanBDT(string fname) {
       }
     }
     // cout << "write out " << hbdt[i]->GetName() << endl;
-    hbdt[i]->SetDirectory(fHistFile);
+    hbdt[i]->SetDirectory(HistFile);
     hbdt[i]->Write();
     delete hbdt[i];
   }
-
 
   cout << " go up to bMax = " << bMax << endl;
 
@@ -648,10 +687,10 @@ void plotResults::scanBDT(string fname) {
     h1->SetBinContent(i+1, fCuts[i]->bdtCut);
     h1->GetXaxis()->SetBinLabel(i+1, Form("chan%d", i));
   }
-  h1->SetDirectory(fHistFile);
+  h1->SetDirectory(HistFile);
   h1->Write();
 
-  // -- now read in
+  // -- now read in tex file
   vector<string> allLines;
   ifstream is(fname);
   char buffer[2000];
@@ -673,11 +712,12 @@ void plotResults::scanBDT(string fname) {
 		    << endl;
 	h1->SetBinContent(h1->FindBin(ib), val);
       }
-      h1->SetDirectory(fHistFile);
+      h1->SetDirectory(HistFile);
       h1->Write();
       delete h1;
     }
   }
+  HistFile->Close();
   fHistFile->Close();
 }
 
@@ -690,6 +730,15 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
   vector<string> inputFiles;
   vector<Color_t> colors;
 
+  if ("all" == what) {
+    displayScanBDT("SSB", mode, chan);
+    displayScanBDT("ZAD", mode, chan);
+    displayScanBDT("ZAS", mode, chan);
+    displayScanBDT("CSBF", mode, chan);
+    displayScanBDT("BSMMBFS", mode, chan);
+    return;
+  }
+
   if (0 == mode) {
     inputFiles.push_back("results/scanBDT-2011.root");   colors.push_back(kRed);
     inputFiles.push_back("results/scanBDT-2012.root");   colors.push_back(kBlack);
@@ -701,6 +750,16 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("results/scanBDT-2016BF-409-23.root");   colors.push_back(kGreen+1);
     inputFiles.push_back("results/scanBDT-2016BF-429-23.root");   colors.push_back(kGreen+2);
     inputFiles.push_back("results/scanBDT-2016BF-419-23.root");   colors.push_back(kBlue);
+  } else if (2 == mode) {
+    inputFiles.push_back("results/scanBDT-2016GH.root");    colors.push_back(kBlack);
+    inputFiles.push_back("se/scanBDT-2016GH-5559.root");    colors.push_back(kRed);
+    inputFiles.push_back("se/scanBDT-2016GH-2329.root");    colors.push_back(kGreen+1);
+    inputFiles.push_back("se/scanBDT-2016GH-2489.root");    colors.push_back(kBlue);
+  } else if (3 == mode) {
+    //    inputFiles.push_back("results/scanBDT-2016GH.root");    colors.push_back(kBlack);
+    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9929.root");    colors.push_back(kRed);
+    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9979.root");    colors.push_back(kGreen+1);
+    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9799.root");    colors.push_back(kBlue);
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -711,6 +770,7 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
   TFile *f(0);
 
   for (unsigned int ifile = 0; ifile < inputFiles.size(); ++ifile) {
+    cout << "open " << inputFiles[ifile] << endl;
     f = TFile::Open(inputFiles[ifile].c_str());
     string hname(Form("bdtScan_%s", what.c_str()));
     string pdfname(inputFiles[ifile].c_str());
@@ -750,6 +810,10 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
       h0->SetMaximum(7.e-9);
     } else if (what == "SSB") {
       h0->SetMaximum(4.);
+    } else if (what == "ZAD") {
+      h0->SetMaximum(2.);
+    } else if (what == "ZAS") {
+      h0->SetMaximum(3.);
     } else {
       h0->SetMaximum(1.4*h0->GetMaximum());
     }
@@ -1482,6 +1546,7 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio,
       cout << "[" << i << "] " << aSig.fMcYield[i].val << " -> ";
       aSig.fMcYield[i].val = aSig.fMcYield[i].val*scaleFactor;
       cout << aSig.fMcYield[i].val << " ";
+      // FIXME error scaling
     }
     cout << endl;
   } else {
@@ -1667,20 +1732,45 @@ void plotResults::calculatePerformance(int ichan) {
   dumpTex(bfS, Form("%s:BSMMBFS:chan%d", fSuffixSel.c_str(), ichan), 10);
   fTEX << formatTex(alphaS, Form("%s:alphaS:chan%d:val", fSuffixSel.c_str(), ichan), 11) << endl;
 
-  // -- calculate S/B here
-  double sob = fBsmmNumbers[ichan].fScaledYield.val/fBgNumbers[ichan].fFitYield[3].val;
-  double ssb = fBsmmNumbers[ichan].fScaledYield.val/
-    TMath::Sqrt(fBsmmNumbers[ichan].fScaledYield.val + fBgNumbers[ichan].fFitYield[3].val);
+  // -- calculate S/B here (for Bs -> mu mu)
+  double s   = fBsmmNumbers[ichan].fScaledYield.val;
+  double b   = fBgNumbers[ichan].fFitYield[2].val;
+  double sob = s/b;
+  double ssb = s/TMath::Sqrt(s+b);
+  if (b < 0.01) b = 0.01;
+  double be  = fBgNumbers[ichan].fFitYield[2].etot;
+  if (be/b < 0.01) be = 0.1*b;
+  // -- this is from Glen Cowan "Discovery sensitivity for a counting experiment with background uncertainty", eq (20)
+  //    https://www.pp.rhul.ac.uk/~cowan/stat/medsig/medsigNote.pdf
+  double zas = TMath::Sqrt(2.*(
+			       (s+b)*TMath::Log(((s+b)*(b+be*be))/(b*b + (s+b)*be*be))
+			       - ((b*b)/(be*be))*TMath::Log(1. + ((be*be*s)/(b*(b+be*be))))
+			       )
+			   );
+  s   = fBdmmNumbers[ichan].fScaledYield.val;
+  b   = fBgNumbers[ichan].fFitYield[1].val;
+  if (b < 0.01) b = 0.01;
+  be  = fBgNumbers[ichan].fFitYield[1].etot;
+  if (be/b < 0.01) be = 0.1*b;
+  double zad = TMath::Sqrt(2.*(
+			       (s+b)*TMath::Log(((s+b)*(b+be*be))/(b*b + (s+b)*be*be))
+			       - ((b*b)/(be*be))*TMath::Log(1. + ((be*be*s)/(b*(b+be*be))))
+			       )
+			   );
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << " -- SOB chan: " << ichan << endl;
   fTEX << formatTex(sob, Form("%s:SOB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
        << endl;
   fTEX << formatTex(ssb, Form("%s:SSB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
        << endl;
-  fTEX << formatTex(fBsmmNumbers[ichan].fScaledYield.val,
+  fTEX << formatTex(zad, Form("%s:ZAD:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
+  fTEX << formatTex(zas, Form("%s:ZAS:chan%d:val", fSuffixSel.c_str(), ichan), 4)
+       << endl;
+  fTEX << formatTex(s,
 		    Form("%s:SOBS:chan%d:val", fSuffixSel.c_str(), ichan), 4)
        << endl;
-  fTEX << formatTex(fBgNumbers[ichan].fFitYield[3].val,
+  fTEX << formatTex(b,
 		    Form("%s:SOBB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
        << endl;
 
@@ -1821,10 +1911,15 @@ void plotResults::numbersFromHist(anaNumbers &aa, string syst) {
   aa.fFrac[3].estat = dEff(static_cast<int>(hi), static_cast<int>(tot));
 
   aa.fMcYield[0].val   = lo;
+  aa.fMcYield[0].estat = TMath::Sqrt(lo);
   aa.fMcYield[1].val   = bd;
+  aa.fMcYield[1].estat = TMath::Sqrt(bd);
   aa.fMcYield[2].val   = bs;
+  aa.fMcYield[2].estat = TMath::Sqrt(bs);
   aa.fMcYield[3].val   = hi;
+  aa.fMcYield[3].estat = TMath::Sqrt(hi);
   aa.fMcYield[4].val   = tot;
+  aa.fMcYield[4].estat = TMath::Sqrt(tot);
 }
 
 
@@ -2251,15 +2346,21 @@ void plotResults::calculateRareBgNumbers(int chan) {
     //    if (nloop > 3) break;
   }
 
-  // -- add combinatorial background for more combined sums
+  // -- add combinatorial background for more combined sums FIXME add errors
   for (unsigned im = 0; im < NWIN; ++im) {
     fNpNumbers[chan].fMcYield[im].val +=  fSlNumbers[chan].fMcYield[im].val;
+    fNpNumbers[chan].fMcYield[im].add2Errors(fSlNumbers[chan].fMcYield[im]);
     fNpNumbers[chan].fMcYield[im].val +=  fCombNumbers[chan].fFitYield[im].val;
+    fNpNumbers[chan].fMcYield[im].add2Errors(fCombNumbers[chan].fFitYield[im]);
 
     fBgNumbers[chan].fMcYield[im].val +=  fHhNumbers[chan].fMcYield[im].val;
+    fBgNumbers[chan].fMcYield[im].add2Errors(fHhNumbers[chan].fMcYield[im]);
     fBgNumbers[chan].fMcYield[im].val +=  fNpNumbers[chan].fMcYield[im].val;
+    fBgNumbers[chan].fMcYield[im].add2Errors(fNpNumbers[chan].fMcYield[im]);
 
+    // -- the sl numbers are added later on after "fitting" TRUE?? FIXME
     fSgAndBgNumbers[chan].fMcYield[im].val +=  fNpNumbers[chan].fMcYield[im].val;
+    fSgAndBgNumbers[chan].fMcYield[im].add2Errors(fNpNumbers[chan].fMcYield[im]);
   }
 
   c0->Clear();
@@ -2384,16 +2485,14 @@ void plotResults::calculateRareBgNumbers(int chan) {
   // -- calculate scaled numbers
   fSlNumbers[chan].fScaleFactor = 1. + scale;
   for (int iw = 0; iw < NWIN; ++iw) {
-    fSlNumbers[chan].fFitYield[iw].val = fSlNumbers[chan].fMcYield[iw].val * fSlNumbers[chan].fScaleFactor;
-    fNpNumbers[chan].fFitYield[iw].val = fNpNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
-    fBgNumbers[chan].fFitYield[iw].val = fBgNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
+    fSlNumbers[chan].fFitYield[iw].val      = fSlNumbers[chan].fMcYield[iw].val * fSlNumbers[chan].fScaleFactor;
+    fNpNumbers[chan].fFitYield[iw].val      = fNpNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
+    fBgNumbers[chan].fFitYield[iw].val      = fBgNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
     fSgAndBgNumbers[chan].fFitYield[iw].val = fSgAndBgNumbers[chan].fMcYield[iw].val + (fSlNumbers[chan].fMcYield[iw].val * (fSlNumbers[chan].fScaleFactor - 1.));
   }
   // -- add signal
   for (int iw = 0; iw < NWIN; ++iw) {
-    fSgAndBgNumbers[chan].fFitYield[iw].val = fSgAndBgNumbers[chan].fMcYield[iw].val
-      + fBsmmNumbers[chan].fMcYield[iw].val
-      + fBdmmNumbers[chan].fMcYield[iw].val;
+    fSgAndBgNumbers[chan].fFitYield[iw].val = fSgAndBgNumbers[chan].fMcYield[iw].val + fBsmmNumbers[chan].fMcYield[iw].val + fBdmmNumbers[chan].fMcYield[iw].val;
   }
 
   // -- dump combined/summed numbers: rare sl decays and rare hadronic (peaking) decays

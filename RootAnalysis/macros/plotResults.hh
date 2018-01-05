@@ -49,7 +49,7 @@ public :
   void calculateRareBgNumbers(int chan);
   void calculateBs2Bu(int chan);
   void calculatePerformance(int chan);
-  void scanBDT(std::string fname);
+  void scanBDT(std::string fname, bool createTexFile = true);
   void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
   double findVarValue(std::string varName, std::vector<std::string> &lines);
 
