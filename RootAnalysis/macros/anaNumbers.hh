@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-// the number of mass region windows: low sideband, high sideband, B0 window, Bs window
+// the number of mass region windows: low sideband, B0 window, Bs window, high sideband, all
 #define NWIN 5
 
 
