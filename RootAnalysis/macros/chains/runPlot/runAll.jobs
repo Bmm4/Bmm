@@ -1,0 +1,90 @@
+my $version = "v06";
+
+# -- output directory
+$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+# -- grid SE prefix
+my $PSI = $ENV{'PSI'};
+$PSI =~ s/\?/\\\?/g;
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+my $LFN = "/store/user/$USER/bmm4/runPlot/$version/";
+my $SEDIR = "$LFN";
+
+# -- did not manage to do this with refs, so do it with functions:
+sub runCommand() {
+    $runCmd  = "$BMMBASE/perl/run $opt_C $opt_q -t $opt_t -c $BMMBASE/RootAnalysis/macros/runPlotNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+# ######################
+# -- define all the jobs
+# ######################
+%jobs = ();
+my %bdts = ();
+tie %jobs, "Tie::IxHash";
+tie %bdts, "Tie::IxHash";
+
+%catalogs = ();
+tie %catalogs, "Tie::IxHash";
+
+sub runPlotCommand() {
+    $runCmd  = "$BMMBASE/perl/run $opt_C $opt_q -t $opt_t -c $BMMBASE/RootAnalysis/macros/runPlotNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+
+%bdts =  (
+    "309" => "28"
+    , "319" => "28"
+    , "329" => "23"
+    , "339" => "38"
+    , "349" => "23"
+    , "359" => "23"
+    , "369" => "23"
+    , "379" => "23"
+    , "389" => "23"
+    , "409" => "23"
+    , "419" => "23"
+    , "429" => "23"
+    , "219" => "15, 21, 25"
+    );
+
+%name =  (
+    "results"  => "plotResults."
+    , "overlays" => "plotReducedOverlays."
+    , "bdt"      => "plotBDT."
+    );
+
+@years = ("2016BF", "2016GH");
+
+my $jobBase = "";
+foreach $jbase (keys %name) {
+    if ($opt_x =~ $jbase) {
+	$jobBase = $name{$jbase};
+	last;
+    }
+}
+
+my $cnt = 0;
+my $NPAR = 8;
+foreach $bdt (keys %bdts) {
+    foreach $year (@years) {
+	@cuts = split(/,/, $bdts{$bdt});
+	foreach $j (@cuts) {
+	    $j =~ s/\s*//g;
+	    $job = $jobBase . $year . "-$bdt" . "-$j";
+	    $cut = "baseCuts-$bdt-$j.cuts";
+	    $file = "plotResults.${year}se.files";
+	    if (($cnt % $NPAR) == $NPAR-1) {
+		$printout  = &runPlotCommand . " -x 'bin/runPlot $opt_x -c $cut -f $file -d results -y $year ' $job ;";
+	    } else {
+		$printout  = &runPlotCommand . " -x 'bin/runPlot $opt_x -c $cut -f $file -d results -y $year ' $job & ";
+	    }
+	    $cnt++;
+	    $jobs{$job} .= " $printout \n ";
+	}
+    }
+}
