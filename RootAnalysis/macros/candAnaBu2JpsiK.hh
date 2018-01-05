@@ -56,6 +56,12 @@ public:
   //bool         fKa1Missid2, fKa1MuMatch2;
   float        fKa1MuMatchR, fKa1MuMatchR2;
 
+  // -- START for tracking studies
+  int     fKaontkqual, fKaonalg, fKaonvalhits, fKaonlayerswithhits;
+  double  fKaonvalhitfraction, fKaonchi2, fKaondz, fKaondzE, fKaond0, fKaond0E, fKaondsz, fKaondszE, fKaondxy, fKaondxyE, fKaonPtE, fKaonEtaE, fKaonPhiE;
+  // -- END for tracking studies
+
+
   // APV debugging
   int          fHitsBpix, fHitsPix, fHitsStrip;
 

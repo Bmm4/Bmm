@@ -243,6 +243,13 @@ public:
   int     fMu1GenID, fMu2GenID;
   double  fMu1PtNrf, fMu2PtNrf, fMu1EtaNrf, fMu2EtaNrf, fMu1PhiNrf, fMu2PhiNrf; // "not refitted"
   int     fMu1TrkLayer, fMu1Pix, fMu1BPix, fMu1BPixL1, fMu2TrkLayer, fMu2Pix, fMu2BPix, fMu2BPixL1;
+  // -- START for tracking studies
+  int     fMu1tkqual, fMu1alg, fMu1valhits, fMu1layerswithhits;
+  double  fMu1valhitfraction, fMu1chi2, fMu1dz, fMu1dzE, fMu1d0, fMu1d0E, fMu1dsz, fMu1dszE, fMu1dxy, fMu1dxyE, fMu1PtE, fMu1EtaE, fMu1PhiE;
+  int     fMu2tkqual, fMu2alg, fMu2valhits, fMu2layerswithhits;
+  double  fMu2valhitfraction, fMu2chi2, fMu2dz, fMu2dzE, fMu2d0, fMu2d0E, fMu2dsz, fMu2dszE, fMu2dxy, fMu2dxyE, fMu2PtE, fMu2EtaE, fMu2PhiE;
+  // -- END for tracking studies
+
   double  fMu1W8Mu, fMu1W8Tr, fMu2W8Mu, fMu2W8Tr;
   double  fMu1Iso, fMu2Iso, fMu1Isold, fMu2Isold;
   double  fMu1VtxProb, fMu2VtxProb;

@@ -104,9 +104,17 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   }
 
 
-  if (1237 == fVerbose) {
+  if (1236 == fVerbose) {
     cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
-    fpEvt->dumpGenBlock();
+    cout << "instantaneous: " << fpEvt->fLumi << " integrated: " << fpEvt->fLumiInt << endl;
+    return;
+  }
+
+  if (1237 == fVerbose) {
+    if (265676442 == fEvt) {
+      cout << "--- event " << fEvent << " -------------------------------------------------------------------" << endl;
+      fpEvt->dumpGenBlock();
+    }
     return;
   }
 
@@ -570,6 +578,27 @@ void candAna::candAnalysis() {
   fMu1IPE       = p1->fBsTipE;
   fMu1IPS       = p1->fTip/p1->fTipE;
 
+  // -- START for tracking studies
+  fMu1tkqual         = p1->fTrackQuality;
+  fMu1alg            = p1->fAlgorithm;
+  fMu1valhits        = p1->fValidHits;
+  fMu1valhitfraction = p1->fValidHitFraction;
+  fMu1layerswithhits = p1->fLayersWithHits;
+  fMu1chi2           = p1->fChi2;
+  fMu1dz             = p1->fdz;
+  fMu1dzE            = p1->fdzE;
+  fMu1d0             = p1->fd0;
+  fMu1d0E            = p1->fd0E;
+  fMu1dsz            = p1->fdsz;
+  fMu1dszE           = p1->fdszE;
+  fMu1dxy            = p1->fdxy;
+  fMu1dxyE           = p1->fdxyE;
+  fMu1PtE            = p1->fPtE;
+  fMu1EtaE           = p1->fEtaE;
+  fMu1PhiE           = p1->fPhiE;
+  // -- END for tracking studies
+
+
   if (p1->fMuIndex > -1) {
     TAnaMuon *pm = fpEvt->getMuon(p1->fMuIndex);
     fillMuonData(fMu1Data, pm);
@@ -633,6 +662,27 @@ void candAna::candAnalysis() {
   fMu2IP        = p2->fBsTip;
   fMu2IPE       = p2->fBsTipE;
   fMu2IPS       = p2->fTip/p2->fTipE;
+
+  // -- START for tracking studies
+  fMu2tkqual         = p2->fTrackQuality;
+  fMu2alg            = p2->fAlgorithm;
+  fMu2valhits        = p2->fValidHits;
+  fMu2valhitfraction = p2->fValidHitFraction;
+  fMu2layerswithhits = p2->fLayersWithHits;
+  fMu2chi2           = p2->fChi2;
+  fMu2dz             = p2->fdz;
+  fMu2dzE            = p2->fdzE;
+  fMu2d0             = p2->fd0;
+  fMu2d0E            = p2->fd0E;
+  fMu2dsz            = p2->fdsz;
+  fMu2dszE           = p2->fdszE;
+  fMu2dxy            = p2->fdxy;
+  fMu2dxyE           = p2->fdxyE;
+  fMu2PtE            = p2->fPtE;
+  fMu2EtaE           = p2->fEtaE;
+  fMu2PhiE           = p2->fPhiE;
+  // -- END for tracking studies
+
 
   // -- fill tree for muon id MVA studies
   if (0) {
@@ -1826,6 +1876,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m1pix",   &fMu1Pix,            "m1pix/I");
   t->Branch("m1bpix",  &fMu1BPix,           "m1bpix/I");
   t->Branch("m1bpixl1",&fMu1BPixL1,         "m1bpixl1/I");
+  t->Branch("m1trk",   &fMu1TrkLayer,       "m1trk/I");
   t->Branch("m1chi2",  &fMu1Chi2,           "m1chi2/D");
   t->Branch("m1pv",    &fMu1PV,             "m1pv/I");
   t->Branch("m1vtxprob",&fMu1VtxProb,       "m1vtxprob/D");
@@ -1852,12 +1903,51 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("m2pix",   &fMu2Pix,            "m2pix/I");
   t->Branch("m2bpix",  &fMu2BPix,           "m2bpix/I");
   t->Branch("m2bpixl1",&fMu2BPixL1,         "m2bpixl1/I");
+  t->Branch("m2trk",   &fMu2TrkLayer,       "m2trk/I");
   t->Branch("m2chi2",  &fMu2Chi2,           "m2chi2/D");
   t->Branch("m2pv",    &fMu2PV,             "m2pv/I");
   t->Branch("m2vtxprob",&fMu2VtxProb,       "m2vtxprob/D");
   t->Branch("m2xpdist",&fMu2XpDist,         "m2xpdist/D");
   t->Branch("m2iso",   &fMu2Iso,            "m2iso/D");
   t->Branch("m2isold", &fMu2Isold,          "m2isold/D");
+
+  // -- START for tracking studies
+  t->Branch("m1tkqual",         &fMu1tkqual,         "m1tkqual/I");
+  t->Branch("m1alg",            &fMu1alg,            "m1alg/I");
+  t->Branch("m1valhits",        &fMu1valhits,        "m1valhits/I");
+  t->Branch("m1layerswithhits", &fMu1layerswithhits, "m1layerswithhits/I");
+  t->Branch("m1valhitfraction", &fMu1valhitfraction, "m1valhitfraction/D");
+  t->Branch("m1dz",             &fMu1dz,         "m1dz/D");
+  t->Branch("m1dzE",            &fMu1dzE,        "m1dzE/D");
+  t->Branch("m1d0",             &fMu1d0,         "m1d0/D");
+  t->Branch("m1d0E",            &fMu1d0E,        "m1d0E/D");
+  t->Branch("m1dsz",            &fMu1dsz,        "m1dsz/D");
+  t->Branch("m1dszE",           &fMu1dszE,       "m1dszE/D");
+  t->Branch("m1dxy",            &fMu1dxy,        "m1dxy/D");
+  t->Branch("m1dxyE",           &fMu1dxyE,       "m1dxyE/D");
+  t->Branch("m1ptE",            &fMu1PtE,        "m1ptE/D");
+  t->Branch("m1etaE",           &fMu1EtaE,       "m1etaE/D");
+  t->Branch("m1phiE",           &fMu1PhiE,       "m1phiE/D");
+
+  t->Branch("m2tkqual",         &fMu2tkqual,         "m2tkqual/I");
+  t->Branch("m2alg",            &fMu2alg,            "m2alg/I");
+  t->Branch("m2valhits",        &fMu2valhits,        "m2valhits/I");
+  t->Branch("m2layerswithhits", &fMu2layerswithhits, "m2layerswithhits/I");
+  t->Branch("m2valhitfraction", &fMu2valhitfraction, "m2valhitfraction/D");
+  t->Branch("m2dz",             &fMu2dz,         "m2dz/D");
+  t->Branch("m2dzE",            &fMu2dzE,        "m2dzE/D");
+  t->Branch("m2d0",             &fMu2d0,         "m2d0/D");
+  t->Branch("m2d0E",            &fMu2d0E,        "m2d0E/D");
+  t->Branch("m2dsz",            &fMu2dsz,        "m2dsz/D");
+  t->Branch("m2dszE",           &fMu2dszE,       "m2dszE/D");
+  t->Branch("m2dxy",            &fMu2dxy,        "m2dxy/D");
+  t->Branch("m2dxyE",           &fMu2dxyE,       "m2dxyE/D");
+  t->Branch("m2ptE",            &fMu2PtE,        "m2ptE/D");
+  t->Branch("m2etaE",           &fMu2EtaE,       "m2etaE/D");
+  t->Branch("m2phiE",           &fMu2PhiE,       "m2phiE/D");
+  // -- END for tracking studies
+
+
 
   t->Branch("mudist",  &fMuDist,            "mudist/D");
   t->Branch("mudeltar",&fMuDeltaR,          "mudeltar/D");

@@ -94,6 +94,27 @@ void candAnaBu2JpsiK::candAnalysis() {
   fHitsPix       = numberOfPixLayers(pk);
   fHitsStrip     = numberOfTrackerLayers(pk);
 
+  // -- START for tracking studies
+  fKaontkqual         = pk->fTrackQuality;
+  fKaonalg            = pk->fAlgorithm;
+  fKaonvalhits        = pk->fValidHits;
+  fKaonvalhitfraction = pk->fValidHitFraction;
+  fKaonlayerswithhits = pk->fLayersWithHits;
+  fKaonchi2           = pk->fChi2;
+  fKaondz             = pk->fdz;
+  fKaondzE            = pk->fdzE;
+  fKaond0             = pk->fd0;
+  fKaond0E            = pk->fd0E;
+  fKaondsz            = pk->fdsz;
+  fKaondszE           = pk->fdszE;
+  fKaondxy            = pk->fdxy;
+  fKaondxyE           = pk->fdxyE;
+  fKaonPtE            = pk->fPtE;
+  fKaonEtaE           = pk->fEtaE;
+  fKaonPhiE           = pk->fPhiE;
+  // -- END for tracking studies
+
+
   if (fCandTmi > -1 && fCandTmi == fpCand->fIndex) {
     TGenCand *pg1 = fpEvt->getGenTWithIndex(fpEvt->getSimpleTrack(pk->fIndex)->getGenIndex());
     fKPtGen     = pg1->fP.Perp();
@@ -486,6 +507,27 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("kbpix",&fHitsBpix,      "kbpix/I");
   t->Branch("kpix", &fHitsPix,       "kpix/I");
   t->Branch("ktrk", &fHitsStrip,     "ktrk/I");
+
+
+  // -- START for tracking studies
+  t->Branch("ktkqual",         &fKaontkqual,         "ktkqual/I");
+  t->Branch("kalg",            &fKaonalg,            "kalg/I");
+  t->Branch("kvalhits",        &fKaonvalhits,        "kvalhits/I");
+  t->Branch("klayerswithhits", &fKaonlayerswithhits, "klayerswithhits/I");
+  t->Branch("kvalhitfraction", &fKaonvalhitfraction, "kvalhitfraction/D");
+  t->Branch("kchi2",           &fKaonchi2,           "kchi2/D");
+  t->Branch("kdz",             &fKaondz,             "kdz/D");
+  t->Branch("kdzE",            &fKaondzE,            "kdzE/D");
+  t->Branch("kd0",             &fKaond0,             "kd0/D");
+  t->Branch("kd0E",            &fKaond0E,            "kd0E/D");
+  t->Branch("kdsz",            &fKaondsz,            "kdsz/D");
+  t->Branch("kdszE",           &fKaondszE,           "kdszE/D");
+  t->Branch("kdxy",            &fKaondxy,            "kdxy/D");
+  t->Branch("kdxyE",           &fKaondxyE,           "kdxyE/D");
+  t->Branch("kptE",            &fKaonPtE,            "kptE/D");
+  t->Branch("ketaE",           &fKaonEtaE,           "ketaE/D");
+  t->Branch("kphiE",           &fKaonPhiE,           "kphiE/D");
+  // -- END for tracking studies
 
 
   t->Branch("t3pt", &fKaonPtNrf, "t3pt/D");
