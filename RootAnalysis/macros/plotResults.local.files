@@ -1,0 +1,6 @@
+type=bmm,data              lumi=19.9          file=/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016GH-v06.root
+type=bupsik,data           lumi=19.9          file=/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016GH-v06.root
+type=bspsiphi,data         lumi=19.9          file=/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016GH-v06.root
+# -- dimuons
+type=bdmm,mcComb        bf=(1.06,0.09)e-10 eff=(1.51,0.03)e-3 file=/scratch/ursl/bmm4/v06/bmm-mc-combined-BdToMuMu-v06.root
+type=bsmm,mcComb        bf=(3.65,0.23)e-9  eff=(4.26,0.15)e-4 file=/scratch/ursl/bmm4/v06/bmm-mc-combined-BsToMuMu-v06.root
