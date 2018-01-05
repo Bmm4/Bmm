@@ -50,7 +50,8 @@ public:
   plotReducedOverlays(std::string dir = "results",
 		      std::string files = "plotResults.2016.files",
 		      std::string cuts = "baseCuts.2016.cuts",
-		      std::string setup = "");
+		      std::string setup = "",
+		      int year = 0);
   ~plotReducedOverlays();
 
   virtual void   init();

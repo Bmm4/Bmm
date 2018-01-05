@@ -29,7 +29,7 @@ ClassImp(plotWork)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotWork::plotWork(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotWork::plotWork(string dir, string files, string cuts, string setup, int year): plotClass(dir, files, cuts, setup, year) {
   plotClass::loadFiles(files);
   plotWork::loadFiles(files);
 

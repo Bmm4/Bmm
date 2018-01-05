@@ -33,7 +33,7 @@ ClassImp(plotBDT)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotBDT::plotBDT(string dir, string files, string cuts, string setup) : plotClass(dir, files, cuts, setup) {
+plotBDT::plotBDT(string dir, string files, string cuts, string setup, int year) : plotClass(dir, files, cuts, setup, year) {
   cout << "plotBDT: plotClass::loadFiles(" << files << ")" << endl;
   plotClass::loadFiles(files);
   changeSetup(dir, "plotBDT", setup);

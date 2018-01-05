@@ -64,7 +64,8 @@ public :
   plotClass(std::string dir = "results",
 	    std::string files = "plotClass.files",
 	    std::string cuts = "nada",
-	    std::string setup = "");
+	    std::string setup = "",
+	    int year = 0);
   virtual        ~plotClass();
 
   enum MODE {UNSET, BMM, BDMM, BSMM, RARE, BU2JPSIKP, BD2JPSIKSTAR, BS2JPSIPHI, BS2JPSIF, FAKEKS, FAKEPHI, FAKELAMBDA, FAKEPSI};

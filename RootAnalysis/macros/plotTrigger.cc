@@ -29,7 +29,7 @@ ClassImp(plotTrigger)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotTrigger::plotTrigger(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotTrigger::plotTrigger(string dir, string files, string cuts, string setup, int year): plotClass(dir, files, cuts, setup, year) {
   plotClass::loadFiles(files);
   plotTrigger::loadFiles(files);
 

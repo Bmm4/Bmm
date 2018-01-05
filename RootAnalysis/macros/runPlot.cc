@@ -158,20 +158,20 @@ int main(int argc, char *argv[]) {
     cout << "The FULL show" << endl;
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      plotResults a(dir, files, cuts, setup);
+      plotResults a(dir, files, cuts, setup, year);
       a.makeAll();
       return 0;
     }
 
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      plotReducedOverlays a(dir, files, cuts, setup);
+      plotReducedOverlays a(dir, files, cuts, setup, year);
       a.makeAll();
     }
 
     {
       gROOT->Clear();  gROOT->DeleteAll();
-      plotStuff a(dir, files, cuts, setup);
+      plotStuff a(dir, files, cuts, setup, year);
       a.makeAll();
     }
 
@@ -182,7 +182,7 @@ int main(int argc, char *argv[]) {
   // -- results
   if (string::npos != plot.find("results")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    plotResults a(dir, files, cuts, setup);
+    plotResults a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -194,7 +194,7 @@ int main(int argc, char *argv[]) {
   // -- overlays
   if (string::npos != plot.find("overlays")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    plotReducedOverlays a(dir, files, cuts, setup);
+    plotReducedOverlays a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -207,7 +207,7 @@ int main(int argc, char *argv[]) {
   // -- stuff
   if (string::npos != plot.find("stuff")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    plotStuff a(dir, files, cuts, setup);
+    plotStuff a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -219,7 +219,7 @@ int main(int argc, char *argv[]) {
   // -- fake
   if (string::npos != plot.find("fake")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    plotFake a(dir, files, cuts, setup);
+    plotFake a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -231,7 +231,7 @@ int main(int argc, char *argv[]) {
   // -- work
   if (string::npos != plot.find("work")) {
     gROOT->Clear();  gROOT->DeleteAll();
-    plotWork a(dir, files, cuts, setup);
+    plotWork a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -262,7 +262,7 @@ int main(int argc, char *argv[]) {
   if (string::npos != plot.find("bdt")) {
     cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
     gROOT->Clear();  gROOT->DeleteAll();
-    plotBDT a(dir, files, cuts, setup);
+    plotBDT a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);
@@ -275,7 +275,7 @@ int main(int argc, char *argv[]) {
   if (string::npos != plot.find("trigger")) {
     cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
     gROOT->Clear();  gROOT->DeleteAll();
-    plotBDT a(dir, files, cuts, setup);
+    plotBDT a(dir, files, cuts, setup, year);
     if (rootfilename != "nada") a.changeSetup(dir, rootfilename, setup);
     if (mode != "nada") {
       a.makeAll(mode);

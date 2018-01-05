@@ -23,7 +23,7 @@ ClassImp(plotRecoil)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotRecoil::plotRecoil(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotRecoil::plotRecoil(string dir, string files, string cuts, string setup, int year): plotClass(dir, files, cuts, setup, year) {
   loadFiles(files);
 
   if (setup == "") {

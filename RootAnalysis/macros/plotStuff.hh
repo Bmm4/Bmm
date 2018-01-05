@@ -12,9 +12,10 @@ class plotStuff: public plotClass {
 
 public :
   plotStuff(std::string dir = "results",
-	   std::string files = "plotResults.2016.files",
-	   std::string cuts = "baseCuts.cuts",
-	   std::string setup = "");
+	    std::string files = "plotResults.2016.files",
+	    std::string cuts = "baseCuts.cuts",
+	    std::string setup = "",
+	    int year = 0);
   virtual        ~plotStuff();
 
   // -- Main analysis methods
@@ -70,9 +71,6 @@ private:
   double fSsigma, fSRMS;
   double fEntries;
 
-  double* fpX;
-  int*    fpI;
-  bool*   fpB;
   std::map<std::string, TH2D*> fYieldHists;
   std::map<std::string, TH1D*> fPlots;
   int fSplitRun;

@@ -14,7 +14,7 @@ using namespace std;
 ClassImp(plotReducedOverlays)
 
 // ----------------------------------------------------------------------
-plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, string setup) : plotClass(dir, files, cuts, setup) {
+plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, string setup, int year) : plotClass(dir, files, cuts, setup, year) {
 
   changeSetup(dir, "plotReducedOverlays", setup);
 

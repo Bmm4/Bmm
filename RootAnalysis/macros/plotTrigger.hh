@@ -11,9 +11,10 @@ class plotTrigger: public plotClass {
 
 public :
   plotTrigger(std::string dir = "results",
-	   std::string files = "plotResults.2017.files",
-	   std::string cuts = "baseCuts.cuts",
-	   std::string setup = "");
+	      std::string files = "plotResults.2017.files",
+	      std::string cuts = "baseCuts.cuts",
+	      std::string setup = "",
+	      int year = 0);
   virtual        ~plotTrigger();
 
   // -- Main analysis methods

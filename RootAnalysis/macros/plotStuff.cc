@@ -31,7 +31,7 @@ ClassImp(plotStuff)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotStuff::plotStuff(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup) {
+plotStuff::plotStuff(string dir, string files, string cuts, string setup, int year): plotClass(dir, files, cuts, setup, year) {
   plotClass::loadFiles(files);
   plotStuff::loadFiles(files);
 
@@ -1497,7 +1497,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
     lastLumiRun  = lumi->lastRun();
     cout << "lumiRuns = " << firstLumiRun << " .. " << lastLumiRun << endl;
     // -- the result histograms
-    int nx(7);
+    const int nx(7);
     const char *ceras[nx] = {"B", "C", "D", "E", "F", "G", "H"};
     for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
       string hname = Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);

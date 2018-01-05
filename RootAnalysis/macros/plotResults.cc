@@ -32,18 +32,18 @@ ClassImp(plotResults)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotResults::plotResults(string dir, string files, string cuts, string setup): plotClass(dir, files, cuts, setup),
-									       fNoNumbers(5),
-									       fCsNumbers(5),
-									       fB0Numbers(5),
-									       fBsmmNumbers(5),
-									       fBdmmNumbers(5),
-									       fHhNumbers(5),
-									       fSlNumbers(5),
-									       fCombNumbers(5),
-									       fNpNumbers(5),
-									       fBgNumbers(5),
-									       fSgAndBgNumbers(5)
+plotResults::plotResults(string dir, string files, string cuts, string setup, int year): plotClass(dir, files, cuts, setup, year),
+											 fNoNumbers(5),
+											 fCsNumbers(5),
+											 fB0Numbers(5),
+											 fBsmmNumbers(5),
+											 fBdmmNumbers(5),
+											 fHhNumbers(5),
+											 fSlNumbers(5),
+											 fCombNumbers(5),
+											 fNpNumbers(5),
+											 fBgNumbers(5),
+											 fSgAndBgNumbers(5)
 {
   plotClass::loadFiles(files);
   plotResults::loadFiles(files);
@@ -402,9 +402,6 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
-
-
-
 
   if (what == "bdtopt") {
     fHistWithAllCuts = "hMassWithAllCuts";

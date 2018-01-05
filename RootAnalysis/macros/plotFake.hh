@@ -79,7 +79,8 @@ public :
   plotFake(std::string dir = "results",
 	   std::string files = "plotResults.2016.files",
 	   std::string cuts = "baseCuts.cuts",
-	   std::string setup = "");
+	   std::string setup = "",
+	   int year = 0);
   virtual        ~plotFake();
 
   // -- Main analysis methods

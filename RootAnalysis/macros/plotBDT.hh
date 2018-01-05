@@ -11,7 +11,8 @@ public :
   plotBDT(std::string dir = "results",
 	  std::string files = "plotResults.2016.files",
 	  std::string cuts = "nada",
-	  std::string setup = "");
+	  std::string setup = "",
+	  int year = 0);
   virtual ~plotBDT();
 
   // -- Main analysis methods

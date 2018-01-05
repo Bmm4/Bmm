@@ -12,7 +12,8 @@ public :
   plotRecoil(std::string dir = "results",
 	     std::string files = "plotRecoil.files",
 	     std::string cuts = "plotClass.2016.cuts",
-	     std::string setup = "default");
+	     std::string setup = "default",
+	     int year = 0);
   virtual        ~plotRecoil();
 
   void   setCuts(std::string cuts);

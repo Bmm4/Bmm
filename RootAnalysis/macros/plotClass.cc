@@ -23,7 +23,7 @@ ClassImp(plotClass)
 using namespace std;
 
 // ----------------------------------------------------------------------
-plotClass::plotClass(string dir, string files, string cuts, string setup) {
+plotClass::plotClass(string dir, string files, string cuts, string setup, int year) {
 
   setTdrStyle();
 
@@ -38,6 +38,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   fDirectory = dir;
   fSetup = setup;
+  fYear = year;
   fMode = UNSET;
 
   delete gRandom;
@@ -92,19 +93,15 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
 
   string sfiles(files);
   if (string::npos != sfiles.find("2011")) {
-    fYear = 2011;
     fStampLumi = "L = 5 fb^{-1} (#sqrt{s} = 7 TeV)";
   }
   if (string::npos != sfiles.find("2012")) {
-    fYear = 2012;
     fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 8 TeV)";
   }
   if (string::npos != sfiles.find("2015")) {
-    fYear = 2015;
     fStampLumi = "L = 2.5 fb^{-1} (#sqrt{s} = 13 TeV)";
   }
   if (string::npos != sfiles.find("2016")) {
-    fYear = 2016;
     fStampLumi = "L = 36.7 fb^{-1} (#sqrt{s} = 13 TeV)";
     if (string::npos != fSetup.find("BF")) {
       fStampLumi = "L = 20 fb^{-1} (#sqrt{s} = 13 TeV)";
@@ -120,9 +117,10 @@ plotClass::plotClass(string dir, string files, string cuts, string setup) {
     }
   }
   if (string::npos != sfiles.find("2017")) {
-    fYear = 2017;
     fStampLumi = "L = XX.X fb^{-1} (#sqrt{s} = 13 TeV)";
   }
+
+
   //  if (setup == "") fSuffix = Form("%d", fYear);
   fSuffix = Form("%d%s", fYear, fSetup.c_str());
 
@@ -263,10 +261,13 @@ void plotClass::changeSetup(string dir, string name, string setup) {
 
   fTEX.open(fTexFileName.c_str(), ios::app);
   cout << "plotClass::changeSetup: " << endl
-       << "  fHistFileName = " << fHistFileName << endl
+       << "  name             = " << name << endl
+       << "  setup            = " << setup << endl
+       << "  fSetup           = " << fSetup << endl
+       << "  fYear            = " << fYear << endl
+       << "  fHistFileName    = " << fHistFileName << endl
        << "  fNumbersFileName = " << fNumbersFileName << endl
-       << "  fTexFileName = " << fTexFileName << endl
-       << "  setup = " << setup << " fSetup = " << fSetup
+       << "  fTexFileName     = " << fTexFileName << endl
        << endl;
 }
 

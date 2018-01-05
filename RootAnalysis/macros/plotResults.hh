@@ -18,7 +18,8 @@ public :
   plotResults(std::string dir = "results",
 	      std::string files = "plotResults.2016BF.files",
 	      std::string cuts = "baseCuts.2016.cuts",
-	      std::string setup = "");
+	      std::string setup = "",
+	      int year = 0);
   virtual ~plotResults();
 
   // -- Main analysis methods
