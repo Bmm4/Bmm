@@ -50,19 +50,9 @@ echo "--> Setup TreeReader"
 pwd
 date
 cmsrel $CMSSW
-# -- use special root version
-#setenv ROOTSYS /shome/naegelic/root
-#setenv LD_LIBRARY_PATH ${ROOTSYS}/lib:${LD_LIBRARY_PATH}
-#setenv PATH ${ROOTSYS}/bin:${PATH}
-#echo "--> Unsetting SCRAM_ARC"
-#unsetenv SCRAM_ARCH
-#echo "--> Sourcing Christophs script"
-#source /shome/naegelic/root/bin/thisroot.csh
-#echo "--> Sourced Christophs script"
 
 cd $CMSSW/
 eval `scramv1 runtime -csh`
-#?? setenv LD_LIBRARY_PATH /swshare/glite/d-cache/dcap/lib/:${LD_LIBRARY_PATH}
 pwd
 
 echo "--> Extract tar file"
@@ -91,19 +81,40 @@ cp dataset/weights/TMVA-$JOB-Events2_BDT.weights.xml weights/TMVA-$JOB-Events2_B
 date
 rm -f results/baseCuts-$JOB.cuts
 cat cuts/baseCuts.nobdt.cuts append-basecuts.txt >> results/baseCuts-$JOB.cuts
+# -- check for bad BDT:
+echo "check for bad BDT at in $JOB.log"
+set myVar=`/bin/grep 'bad BDT' $JOB.log`
+echo "myVar ->$myVar<-"
+if ("$myVar" == "") then
+  echo "the string is blank, continue"
+else
+  echo "the string is NOT blank, do not continue and do not store results, exit"
+  echo "run: This is the end, my friend"`
+  exit
+endif
+
+
 ls -rtl results
-bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016GHse.files |& tee -a $JOB.log
-date
-ls -rtl
+echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
 bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
 date
 ls -rtl
+echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
+bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
+date
+ls -rtl
+echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
 bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
 date
 ls -rtl
-bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016GHse.files |& tee -a $JOB.log
+echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
+bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
 date
 ls -rtl
+
+touch /scratch/ursl/bmm4/bdt/*.root
+touch /scratch/ursl/bmm4/v06/*.root
+
 
 # ----------------------------------------------------------------------
 # -- Save Output to SE
