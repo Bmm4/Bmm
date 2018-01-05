@@ -1,0 +1,112 @@
+my $version = "v06";
+
+my $dataset = "abdt-4";
+my $mode    = "abdt-4";
+my $pattern = "abdt-4";
+
+# -- output directory
+$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+# -- grid SE prefix
+my $PSI = $ENV{'PSI'};
+$PSI =~ s/\?/\\\?/g;
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+my $LFN = "/store/user/$USER/bmm4/runPlot/";
+my $SEDIR = "$LFN";
+
+# -- edit the following if you produced your own T1 trees with cmsRun:
+my $T1LOC = "/store/user/ursl/bmm4/cmsRun/$version";
+
+# -- did not manage to do this with refs, so do it with functions:
+sub runCommand() {
+    $runCmd  = "$BMMBASE/perl/run $opt_C $opt_q -t $opt_t -c $BMMBASE/RootAnalysis/macros/runBmmNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+sub runPlotCommand() {
+    $runCmd  = "$BMMBASE/perl/run $opt_C $opt_q -t $opt_t -c $BMMBASE/RootAnalysis/macros/runAnaBDTv2NoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+
+# ######################
+# -- define all the jobs
+# ######################
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+%catalogs = ();
+tie %catalogs, "Tie::IxHash";
+
+my @setTrees    = ("NTrees",          800); $njTrees = $#setTrees;
+my @setDepth    = ("MaxDepth",          3); $njDepth = $#setDepth;
+my @setBeta     = ("AdaBoostBeta",    0.5); $njBeta = $#setBeta;
+my @setCuts     = ("nCuts",            20); $njCuts = $#setCuts;
+my @setMinNode  = ("MinNodeSize",    1, 5); $njMinNode = $#setMinNode;
+my @setFiles    = (
+    "tmva-trees-10-2016.root",
+    "tmva-trees-11-2016.root",
+    "tmva-trees-12-2016.root"
+    );  $njFiles = $#setFiles;
+
+my $setVar1  = "alpha:pvips:docatrk:chi2dof:closetrk:iso";
+my @setVar2   = (":fls3d", ":fl3d", ":flsxy", ":m1iso", ":m2iso", ":pt:eta", ":othervtx", ":pvdchi2"); $nVar2 = $#setVar2 + 1;
+
+my @vars = ();
+my $pos;
+my (@flags) = (0) x $nVar2;
+while (1) {
+    my @subset = ();
+    for ($pos = 0; $pos <= $nVar2; $pos++){
+	if ($flags[$pos] == 1) {
+	    push @subset, $setVar2[$pos];
+	}
+    }
+    $varset = $setVar1 . join('', @subset);
+    push @vars, $varset;
+    for ($pos=0; $pos <= $nVar2; $pos++){
+	if ($flags[$pos] == 0){
+            $flags[$pos] = 1;
+            last;
+	}
+
+	$flags[$pos] = 0;
+    }
+
+    last if $pos == $nVar2;
+}
+
+if (0) {
+    print "elements in vars: $#vars\n";
+    for ($i = 0; $i <= $#vars; $i++) {
+	print "$vars[$i]\n";
+    }
+
+    exit(0);
+}
+
+my $offset = 999;
+# -- note: if you add another loop, modify the $soffset variable accordingly to also include its running var in the map!
+for ($jFiles = 0; $jFiles <= $njFiles; $jFiles++) {
+    for ($jTrees = 1; $jTrees <= $njTrees; $jTrees++) {
+	for ($jDepth = 1; $jDepth <= $njDepth; $jDepth++) {
+	    for ($jBeta = 1; $jBeta <= $njBeta; $jBeta++) {
+		for ($jCuts = 1; $jCuts <= $njCuts; $jCuts++) {
+		    for ($jMinNode = 1; $jMinNode <= $njMinNode; $jMinNode++) {
+			for ($jVars = 0; $jVars <= $#vars; $jVars++) {
+			    $offset += 10;
+			    $pars = sprintf(":NTrees=%d:nCuts=%d:MaxDepth=%d:MinNodeSize=%f:BoostType=AdaBoost:AdaBoostBeta=%3.2f",
+					    $setTrees[$jTrees], $setCuts[$jCuts], $setDepth[$jDepth], $setMinNode[$jMinNode], $setBeta[$jBeta]);
+			    $command = "-r /scratch/ursl/bmm4/bdt/$setFiles[$jFiles] -f $offset -m $pars -s $vars[$jVars]";
+			    $soffset = "t$jTrees"."d$jDepth"."b$jBeta"."c$jCuts"."n$jMinNode"."v$jVars"."f$jFiles";
+			    $jobs{$soffset}   = &runPlotCommand." -x 'bin/runPlot -p tmva1 -y 2016BF $command ' $offset";
+			}
+		    }
+		}
+	    }
+	}
+    }
+}
