@@ -16,8 +16,9 @@
 
 struct adset {
   AnalysisDistribution
-  *fpMuonsEta, *fpMuon1Pt, *fpMuon2Pt
-    , *fpPt, *fpP, *fpPz, *fpEta
+  *fpMuonsEta, *fpMuonsPhi, *fpMuon1Pt, *fpMuon2Pt
+    , *fpKaonsEta, *fpKaonsPhi, *fpKaonsPt
+    , *fpPt, *fpP, *fpPz, *fpEta, *fpPhi
     , *fpAlpha
     , *fpIso, *fpCloseTrk, *fpDocaTrk
     , *fpChi2Dof, *fpPChi2Dof
@@ -33,8 +34,13 @@ struct adset {
     , *fpPvDchi2, *fpOtherVtx
     , *fpTau
     , *fpLastCut
+    // -- BEGIN for tracking studies
+    , *fpMupixhits, *fpMutrkhits, *fpMutkqual, *fpMualg, *fpMuvalhits, *fpMuvalhitfraction, *fpMulayerswithhits
+    , *fpMuchi2, *fpMudz, *fpMudzE, *fpMud0, *fpMud0E, *fpMudsz, *fpMudszE, *fpMudxy, *fpMudxyE, *fpMuptE, *fpMuptEpt, *fpMuetaE, *fpMuphiE
+    , *fpKapixhits, *fpKatrkhits, *fpKatkqual, *fpKaalg, *fpKavalhits, *fpKavalhitfraction, *fpKalayerswithhits
+    , *fpKachi2, *fpKadz, *fpKadzE, *fpKad0, *fpKad0E, *fpKadsz, *fpKadszE, *fpKadxy, *fpKadxyE, *fpKaptE, *fpKaptEpt, *fpKaetaE, *fpKaphiE
+    // -- END for tracking studies
     ;
-
 };
 
 
@@ -64,7 +70,7 @@ public:
   void makeOverlay(std::string sample1, std::string sample2, std::string selection = "");
 
   /// combine the previous two methods
-  void makeSampleOverlay(std::string sample1, std::string sample2, std::string selection = "");
+  void makeSampleOverlay(std::string sample1, std::string sample2, int nevents = -1);
 
   /// generate mass plots for illustration of the sbs-subtracted plots
   void plotMass(std::string sample = "bupsikData", std::string selection = "Presel");
