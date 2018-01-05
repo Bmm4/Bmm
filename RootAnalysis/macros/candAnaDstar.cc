@@ -5,7 +5,7 @@
 #include "common/HFMasses.hh"
 #include "danekUtils.h"
 
-//#define DO_TESTS  // for special tests 
+//#define DO_TESTS  // for special tests
 //#define MC_HISTOS
 
 using namespace std;
@@ -37,7 +37,7 @@ candAnaDstar::~candAnaDstar()  {
 void candAnaDstar::candAnalysis() {
   static int count0=0, count1=0, count2=0, count3=0, count4=0, count5=0, count6=0;
 
-  // TO select special events 
+  // TO select special events
   //if(fEvt!=344286521) {fVerbose=0; return;}
   //fVerbose=100;
 
@@ -209,12 +209,12 @@ void candAnaDstar::candAnalysis() {
 	if (fVerbose>1) cout<<" Dstar cand not matched "<<endl;
 	//anaMC(true); //dumpHFTruthCand(fpCand);
       }
-            
+
     } else { // no clean Dstar in MC
       if(fVerbose>10) cout<<" Clean Dstar does not exist in MC "<<mcOk<<endl;
       //anaMC(true); //dumpHFTruthCand(fpCand);
     }
-    
+
   } // end if MC
 
 
@@ -236,9 +236,9 @@ void candAnaDstar::candAnalysis() {
   if( (qpi+qpis)==0 ) {if(fVerbose0>3) cout<<" failed qpi+qpis cut "<<qpi<<" "<<qpis<<endl; return;}
   ((TH1D*)fHistDir->Get("Status"))->Fill(11.);  //11
   // check sign
-  if( (qk+qpi)!=0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // normal cuts 
+  if( (qk+qpi)!=0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // normal cuts
   // inverted cut
-  //if( (qk+qpi)==0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // reversed cuts 
+  //if( (qk+qpi)==0 ) {if(fVerbose0>3) cout<<" failed q cut "<<qpi<<" "<<qk<<endl; return;} // reversed cuts
   ((TH1D*)fHistDir->Get("Status"))->Fill(12.);
   // limit dm to +-160MeV
   if( dm<0.130 || dm>0.160 ) {if(fVerbose0>3) cout<<" failed dm cut "<<dm<<endl; return;}
@@ -370,10 +370,10 @@ void candAnaDstar::candAnalysis() {
   // check the trigger info
   // Run the TIS code from CandAna
   //cout<<" do tis  "<<endl;
-  fveto = tis(fpCand);  // 1-passed no veto, 0-failed veto 
+  fveto = tis(fpCand);  // 1-passed no veto, 0-failed veto
   //cout<<" after tis "<<fveto<<endl;
 
-  // Run my old trigger veto code 
+  // Run my old trigger veto code
   hltInfo.clear(); // to save trigger info
 
   // check matching of trigger track to offline tracks (not Ds specific)
@@ -406,12 +406,12 @@ void candAnaDstar::candAnalysis() {
   }
 
 
-  // THIS SECTION IS FOR TESTING ONLY, NORMALY NOT USED 
+  // THIS SECTION IS FOR TESTING ONLY, NORMALY NOT USED
 #ifdef DO_TESTS
   doTest(fpCand,40); // print trigger info
   doTest(fpCand,30); // print muon info
   // harder cuts, like final, for testing only
-  if(1) { 
+  if(1) {
     // very tight, peak only
     if( dm<0.143 || dm>0.148 ) {if(fVerbose>3) cout<<" failed dm cut "<<dm<<endl; return;}  //
     // wide, also background
@@ -431,16 +431,16 @@ void candAnaDstar::candAnalysis() {
     // triggered
     if(!fGoodHLT) return;
 
-  } // harder cuts 
+  } // harder cuts
 
   // 1 tigger
   //if(fhltType>=1000) return;  // veto multiple triggers
   // veto
   //if(fveto) return;  // veto trigger matched pi
-  
+
   // muid
   if(!(muid11||muid12) ) return; // select misidentified pi->mu & K->mu
-  
+
   bool switchPrintout=false;
   if(fb4==0  && fveto==1 ) switchPrintout = true;
   if(switchPrintout) {
@@ -450,21 +450,21 @@ void candAnaDstar::candAnalysis() {
     cout<<" veto "<<fb4<<" "<<fb5<<" "<<fveto<<" "<<fveto1<<" "<<fveto2<<" "<<fveto3<<endl;
     cout<<" HLT "<<fHLTPath<<" "<<fhltType<<" "<<fGoodHLT<<endl;
 
-    dumpAll(); // print candiates 
-    
+    dumpAll(); // print candiates
+
     // get the trigger type
     //int itest = doTest(fpCand,41); // get the trigger type
     //if(itest<=0) cout<<" ERROR: not trigger "<<itest<<endl;
     //int dum=0;
     //fitmp1 = itest;
-    
+
     //if( (itest==1) && ((fmatch1dr4>0.1) || (fmatch2dr4>0.1)) ) switchPrintout=true;
     //if( fGoodHLT && fmatchTrigs && (fhltType<1000) && ((fmatch1dr4>0.1) || (fmatch2dr4>0.1))) switchPrintout=true;
-    
+
     //static int ic=0;
     //ic++;
-    
-    
+
+
     //cout<<" json "<<fJSON<<" hlttype "<<fhltType<<" dm "<<dm<<" fb3 "<<fb3<<" muid1 "<<muid1
     //  <<" muid2 "<<muid2<<" count "<<ic<<endl;
     //cout<<" Dstar candidate "<<fpCand->fType<<" in event "<<fEvt<<" run "<<fRun;
@@ -478,13 +478,13 @@ void candAnaDstar::candAnalysis() {
     // 	<<mumatch1<<" "<<mumatch2<<endl;
     //cout<<" trig match to all tracks "<<fmatch1dr4<<"/"<<fmatch2dr4<<"/"<<fmatch3dr4<<" "
     //	<<idxt1<<"/"<<idxt2<<"/"<<idxt3<<endl;
-    
-    
+
+
     //cout << "DUMP HFDstarCandidate  " <<endl;
     //doTest(fpCand,0);    // print all
     //dumpHFDstarCand(fpCand);
-    
-    // switch on higher verbosity 
+
+    // switch on higher verbosity
     int fVerbose0 = fVerbose;
     // fVerbose=100;
     // cout<<" PI veto "<<endl;
@@ -496,25 +496,25 @@ void candAnaDstar::candAnalysis() {
     // cout<<" PI-slow veto "<<endl;
     // tmp = doTriggerVeto(pPis,true,false,true,0.025,0); // piSlow
     // cout<< " veto = "<<tmp<<endl;
-    
-    
+
+
     ////float r1 = doTriggerMatchingR(pPi,false,true,false);  // see if it matches HLT muon
     ////float r2 = doTriggerMatchingR(pK, false,true,false);  // see if it matches HLT muon
     //float r1 = doTriggerMatchingR(pPi,true,true,false);  // see if it matches HLT muon
     //float r2 = doTriggerMatchingR(pK, true,true,false);  // see if it matches HLT muon
     //cout<<tmp<<" "<<r1<<" "<<r2<<endl;
-    
+
     fVerbose=fVerbose0;
     doTest(fpCand,40); // print trigger info
     doTest(fpCand,59); // print trigger obj info
     doTest(fpCand,60); // print trigger mu candidates
-    
+
     //cout<<" veto info "<<" "<<fveto<<" "<<fveto1<<" "<<fveto2<<" "<<fveto3<<endl;
     // loop over muons
     for(vector<int>::iterator iter=hltInfo.begin(); iter!=hltInfo.end(); iter++)
       cout<<hex<<*iter<<dec<<" "<<endl;
-    
-    // trigger related printouts 
+
+    // trigger related printouts
     if(1) {
       int is1 = doTest(fpCand,42);  // number of triggers (right DS)
       int is21 = doTest(fpCand,51); // print trigger L1 obj info
@@ -524,30 +524,30 @@ void candAnaDstar::candAnalysis() {
       int is31 = doTest(fpCand,61); // print trigger mu candidates L1
       int is32 = doTest(fpCand,62); // print trigger mu candidates L2
       int is33 = doTest(fpCand,63); // print trigger mu candidates L2
-      
+
       int is4 = doTest(fpCand,71); // print hlt info vectors
       // is4 - number of triggers with no overlap with pi/K
       // hltInfo.size() number of all triggers
       // is4>0,  (hltInfo.size()
       int allTriggers = hltInfo.size();
       int badTriggers = allTriggers - is4;
-      
+
       fitmp4 = allTriggers;
       fitmp2=is4; // number of good triggers
       fitmp3=-1;
-      
+
       cout<<" hlt info "<<hltInfo.size()<<" "<<is1
 	  <<" L1/2/3/noMu "<<is21<<"/"<<is22<<"/"<<is23<<"/"<<is24
 	  <<" L3/2/1 "<<is33<<"/"<<is32<<"/"<<is31<<" "<<is4<<endl;;
       cout<< fitmp4 << " "<< fitmp3 <<" "<< fitmp2 << endl;
-      
+
       if(allTriggers>0) {
 	fitmp3=badTriggers; // number of bad triggers, exclude 0 triggers case
-	
+
 	((TH1D*)fHistDir->Get("htest20"))->Fill(float(is4));
 	((TH1D*)fHistDir->Get("htest21"))->Fill(float(badTriggers)/float(allTriggers));
 	((TH1D*)fHistDir->Get("htest16"))->Fill(float(allTriggers),float(is4));
-	
+
 	((TH1D*)fHistDir->Get("htest0"))->Fill(float(badTriggers));
 	((TH1D*)fHistDir->Get("htest2"))->Fill(float(is1));
 	((TH1D*)fHistDir->Get("htest3"))->Fill(float(is21));
@@ -557,20 +557,20 @@ void candAnaDstar::candAnalysis() {
 	((TH1D*)fHistDir->Get("htest7"))->Fill(float(is33));
 	((TH1D*)fHistDir->Get("htest8"))->Fill(float(is32));
 	((TH1D*)fHistDir->Get("htest9"))->Fill(float(is31));
-	
+
 	((TH1D*)fHistDir->Get("htest10"))->Fill(float(is1),float(is33));
 	((TH1D*)fHistDir->Get("htest11"))->Fill(float(is1),float(is32));
 	((TH1D*)fHistDir->Get("htest12"))->Fill(float(is1),float(is31));
 	((TH1D*)fHistDir->Get("htest13"))->Fill(float(is1),float(is23));
 	((TH1D*)fHistDir->Get("htest14"))->Fill(float(is1),float(is22));
 	((TH1D*)fHistDir->Get("htest15"))->Fill(float(is1),float(is21));
-	
+
 	if( fb4 != (fitmp2>0) ) cout<<" ERROR4 "<<fb4<<" "<<fitmp2<<endl;
 	if( fb5 != (fitmp3==0) ) cout<<" ERROR5 "<<fb5<<" "<<fitmp3<<endl;
-	
-      } // trigger related printouts 
-    }  
-  } // printout 
+
+      } // trigger related printouts
+    }
+  } // printout
 
   //  match to offline muons (FOR TESTING)
   // double dr1 = matchToMuon(pPi,true); // skip same track muons
@@ -586,7 +586,7 @@ void candAnaDstar::candAnalysis() {
   //bool matchToTrigMu2 = matchToTriggeredMuon(pK, idx2);
 
 #endif // DO_TESTS
-  // END TESTING 
+  // END TESTING
   //---------------------------------------------------------------------
 
   // Isolation
@@ -796,7 +796,7 @@ int candAnaDstar::getJpsi(int &idx1, int &idx2) {
 // Exits with True whenever at least one clean Dstar is found.
 bool candAnaDstar::anaMC(bool print) {
   if(MYDEBUG) print = true;
-  
+
 #ifdef MC_HISTOS
   fmcmds=-1;
   fmcmdz=-1;
@@ -821,7 +821,7 @@ bool candAnaDstar::anaMC(bool print) {
   for (int it = 0; it < numGenCands; ++it) {
     //pCand = fpEvt->getGenT(it);
     pCand = fpEvt->getGenCand(it);
-    //if(print) pCand->dump();   
+    //if(print) pCand->dump();
     //if(print) cout <<it<< " "<<pCand->fID<<endl;
 
     //<<pCand->fQ<<" "<<pCand->fStatus<<" "
@@ -830,7 +830,7 @@ bool candAnaDstar::anaMC(bool print) {
     //if (TRUTHCAND == TMath::Abs(pC->fID)) {
     //for (int id = pB->fDau1; id <= pB->fDau2; ++id) {
     //pC = fpEvt->getGenTWithIndex(id);
-    
+
     foundDs = false, foundDz = false, foundPiSlow = false, foundPi=false, foundK=false;
 
     if( !foundPV && ( abs(pCand->fID) == 5 || abs(pCand->fID) == 4  ) )
@@ -839,7 +839,7 @@ bool candAnaDstar::anaMC(bool print) {
     if( ( abs(pCand->fID) != 413) ) continue;        // look for Dstar,  skip others
 
     //if(print) cout <<it<< " "<<pCand->fID<<endl;
-    if(print) cout <<" DS "<<it<< " " 
+    if(print) cout <<" DS "<<it<< " "
 		   << pCand->fNumber << " "<<pCand->fID<<" "<<pCand->fQ<<" "<<pCand->fStatus<<" "
 		   <<pCand->fMom1<<" "<<pCand->fMom2<<" "<<pCand->fDau1<<" "
 		   <<pCand->fDau2<<" "<<pCand->fP.Perp()<<" "<<pCand->fV.Z()<<" "
@@ -875,14 +875,14 @@ bool candAnaDstar::anaMC(bool print) {
 	// D0 should have 2 daughters pi&K
 	// Sometimes there is also a gamma in addition, reject it
 	int i2 = (dau->fDau2)-(dau->fDau1)+1;
-	if(i2!=2) 
+	if(i2!=2)
 	  {if(print)cout<<" number of D0 daughters not 2: "<<i2<<" skip"<<endl;continue;}
 
 	for(int igd=(dau->fDau1);igd<=(dau->fDau2);++igd) { // check grand-daughters
 	  //TGenCand *gdau = fpEvt->getGenTWithIndex(igd);
 	  //TGenCand * gdau = fpEvt->getGenT(igd);
 	  TGenCand *gdau = fpEvt->getGenCand(igd);
-	  
+
 	  if(print) cout<<" index "<<igd<<" "<<id<<endl;
 
 	  //TVector3 v2 = gdau->fP.Vect();
@@ -947,7 +947,7 @@ bool candAnaDstar::anaMC(bool print) {
 
   bool ok = foundPV && foundDs && foundDz && foundPiSlow && foundPi && foundK;
 
-  if(!ok) { 
+  if(!ok) {
     if(print) cout<<" not ok "<<foundPV<<" "<<foundDs<<" "<<foundDz<<" "<<foundPiSlow<<" "<<foundPi<<" "<<foundK<<endl;
 
   } else {
@@ -1018,7 +1018,7 @@ bool candAnaDstar::anaMC(bool print) {
 //     double angle2 = danekUtils::twoBodyDecayAngle(DZMom, PiSlowMom);
 //     double pt2    = danekUtils::twoBodyDecayMomPerp(DZMom, PiSlowMom);
      ((TH1D*)fHistDir->Get("h345"))->Fill(m21); // narrrow
-     ((TH1D*)fHistDir->Get("h346"))->Fill(m22); // wide 
+     ((TH1D*)fHistDir->Get("h346"))->Fill(m22); // wide
 //     ((TH1D*)fHistDir->Get("h347"))->Fill(angle2);
 //     ((TH1D*)fHistDir->Get("h348"))->Fill(pt2);
 //     ((TH1D*)fHistDir->Get("h349"))->Fill(m21-m1);
@@ -1032,7 +1032,7 @@ bool candAnaDstar::anaMC(bool print) {
 // ----------------------------------------------------------------------
 // Missused for various testing and debugging
 void candAnaDstar::dumpHFTruthCand(TAnaCand *pC) {
-  // misused 
+  // misused
   fpEvt->dumpGenBlock();
 
 }
@@ -1604,47 +1604,47 @@ void candAnaDstar::dumpHFDstarCand(TAnaCand *pC) {
 int candAnaDstar::truthMatch(TAnaCand *pCand, int verbose) {
   const int verboseOffset=9;
   if(verbose>(1+verboseOffset)) cout<<" truthMatch "<<verbose<<endl;
-  
-  // -- check slow pion, the signal track for Dstar should be the slow pion 
+
+  // -- check slow pion, the signal track for Dstar should be the slow pion
   int index = pCand->fSig1;
   TAnaTrack *pT = fpEvt->getSigTrack(index);
   //pT->dump();
   int genIndex = pT->fGenIndex;
-  
+
   // if not gen index exit
   if (genIndex < 0) {if(verbose > verboseOffset) cout << "pT->fGenIndex < 0" << endl;return 0;}
-  
+
   if(verbose>(1+verboseOffset)) cout<<" pi slow "<<index<<" "<<genIndex<<endl;
-  
+
   // Pi slow gen info
   //TGenCand *candGenSlowPi = fpEvt->getGenTWithIndex(genIndex); // gen cand slow
-  TGenCand *candGenSlowPi = fpEvt->getGenCand(genIndex); // gen cand 
-  
-  // exit if empty 
-  if (0 == candGenSlowPi) 
+  TGenCand *candGenSlowPi = fpEvt->getGenCand(genIndex); // gen cand
+
+  // exit if empty
+  if (0 == candGenSlowPi)
     {if(verbose > verboseOffset)cout << "0 == candGenSlowPi" << endl;return 0;}
   // check PID, that it is a pion in MC
-  if(211 != TMath::Abs(candGenSlowPi->fID)) 
+  if(211 != TMath::Abs(candGenSlowPi->fID))
     {if(verbose>verboseOffset) cout << "211 != TMath::Abs(pG->fID)" << endl;return 0;}
 
   int moSlowPion = candGenSlowPi->fMom1; // save index of the mother of slow
-  if(verbose > 1+verboseOffset) 
+  if(verbose > 1+verboseOffset)
     cout << "slow pion " << pT->fIndex << " OK, fGenIndex = " << pT->fGenIndex << " "
 	 <<moSlowPion<<" "<<candGenSlowPi->fID<<" "<<endl;
-  
+
   // Look for mother (Dstar)
   //TGenCand *pDS = fpEvt->getGenTWithIndex(moSlowPion);  // Dstar
-  TGenCand *pDS = fpEvt->getGenCand(moSlowPion);  // Dstar 
+  TGenCand *pDS = fpEvt->getGenCand(moSlowPion);  // Dstar
   if ((0 == pDS) || 413 != TMath::Abs(pDS->fID)) { // not a Dstar
-    if (verbose > verboseOffset) 
+    if (verbose > verboseOffset)
       cout << "(0 == pDS) || 413 != pG->fID, pG->fID"<<" moSlowPion = " << moSlowPion << endl;
     return 0;
   }
-  
+
   // -- Now look at the data Dstar candidate, it should have a daughter D0
-  if (pCand->fDau1 < 0) 
+  if (pCand->fDau1 < 0)
     {if (verbose >verboseOffset) cout << "no pCand->fDau1" << endl;return 0;}
-  
+
   // Look at DATA D0 tracks
   TAnaCand *pC = fpEvt->getCand(pCand->fDau1); // D0
   // Check D0 tracks
@@ -1655,27 +1655,27 @@ int candAnaDstar::truthMatch(TAnaCand *pCand, int verbose) {
 
   // Loop over the 2 signal tracks from D0
   for (int id = pC->fSig1; id <= pC->fSig2; ++id) { // should be pi+K
-    
+
     pT = fpEvt->getSigTrack(id); // this gives TAnaTrack
     //pT->dump(); // so all normal TAnaTracks work
     //cout <<id<<" "<<pT->fIndex <<" "<<pT->fMCID<<" "<<pT->fGenIndex<<" "<<pT->fPlab.Perp()<<" "<<pT->fQ<<" "
     // <<pT->fChi2 <<" "<<pT->fDof<<" "<<pT->fTrackQuality<<" "<<pT->fAlgorithm<<" "<<pT->fMuID<<" "
     // <<pT->fMuIndex << " "<<pT->fPvIdx<<endl;
-    
+
     int index = pT->fIndex; // index of the SimpleTrack
     int genidx = pT->fGenIndex;
     int type = pT->fMCID;
-    if (genidx < 0) 
+    if (genidx < 0)
       {if(verbose>verboseOffset) cout << "no pT->fGenIndex" << endl;return 0;}
-    
+
     //TGenCand *pG = fpEvt->getGenTWithIndex(genidx);  // get GenCand of pi, K
     TGenCand *pG = fpEvt->getGenCand(genidx);  // get GenCand of pi, K
-    if(pG<=0) {if (verbose > verboseOffset) cout<<" pG invalid "<<endl;  continue;} //
-    
+    if(pG==0) {if (verbose > verboseOffset) cout<<" pG invalid "<<endl;  continue;} //
+
     if (moIdx < 0) { // find mother
       moIdx = pG->fMom1;
     } else { // should be the same
-      if (moIdx != pG->fMom1) 
+      if (moIdx != pG->fMom1)
 	{if(verbose > verboseOffset)
 	    cout<<"pi & K mothers not the same: moIdx != pG->fMom1"<<endl;return 0;}
     }
@@ -1686,45 +1686,45 @@ int candAnaDstar::truthMatch(TAnaCand *pCand, int verbose) {
  	   << " and gen ID = " << pG->fID
  	   << " at gen idx = " << genidx
  	   << endl;
-    
+
     // the MC ID and the assigned ID from reco do not agree
     if((verbose>(1+verboseOffset)) && (TMath::Abs(type)!=TMath::Abs(pG->fID)) )
-      cout<<"should be the same:TMath::Abs(type) != TMath::Abs(pG->fID), type=" 
+      cout<<"should be the same:TMath::Abs(type) != TMath::Abs(pG->fID), type="
 	  << type << " pG->fID = " << pG->fID<< " track " << pT->fIndex << endl;
-    
+
     count++;
     // Look at the GEN PID
     if( TMath::Abs(pG->fID) == 321 ) { // Kaon
       countK++;
-      if(verbose > 1+verboseOffset) 
+      if(verbose > 1+verboseOffset)
 	{cout<<" kaon index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()<<" gen " << genidx<<endl;}
       if( TMath::Abs(type) != 321 ) {  // no a kaon
 	missK++;
-	if(verbose>verboseOffset) 
-	  {cout << " Kaon identified as pion, type = " << type << " pG->fID = " 
+	if(verbose>verboseOffset)
+	  {cout << " Kaon identified as pion, type = " << type << " pG->fID = "
 		<< pG->fID<< " track " << pT->fIndex<<endl;}
       }
-      
+
     } else if( TMath::Abs(pG->fID) == 211 ) { // Pion
       countPi++;
-      if(verbose > 1+verboseOffset) 
+      if(verbose > 1+verboseOffset)
 	{cout<<" pion index "<<index<<" id "<< type <<" pt "<<pT->fPlab.Perp()
 	     <<" gen " << genidx<<endl;}
       if( TMath::Abs(type) != 211 ) {
 	missPi++;
 	//verbose=100;
-	if(verbose>verboseOffset) 
-	  cout << " Pion identified as kaon, type = " << type << " pG->fID = " 
+	if(verbose>verboseOffset)
+	  cout << " Pion identified as kaon, type = " << type << " pG->fID = "
 	       << pG->fID<< " track " << pT->fIndex<<" "<<missPi<<endl;
-	
-      } // not a pion 
+
+      } // not a pion
     } // in if id
-  } // for D0 loop 
+  } // for D0 loop
 
   // We have the D0  Gen
   //TGenCand *candGenD0 = fpEvt->getGenTWithIndex(moIdx);  // get GenCand of D0
   TGenCand *candGenD0 = fpEvt->getGenCand(moIdx);  // get GenCand of D0
-  if(verbose > 1+verboseOffset) 
+  if(verbose > 1+verboseOffset)
     cout<<" D0 "<<moIdx <<" "<<candGenD0->fMom1<<endl;
   // -- Get gen-level D0
   if (moIdx < 0) {
@@ -1743,25 +1743,25 @@ int candAnaDstar::truthMatch(TAnaCand *pCand, int verbose) {
   //TGenCand *candGenDS = fpEvt->getGenTWithIndex(indexDS);  // get GenCand of DS
   TGenCand *candGenDS = fpEvt->getGenCand(indexDS);  // get GenCand of DS
   // Compare the mother of D0 and the slow pion
-  if (verbose > 1+verboseOffset) 
+  if (verbose > 1+verboseOffset)
     cout<<"DS "<<indexDS<<" "<<candGenDS->fNumber<<" "<<moSlowPion<<endl;
   if (indexDS != moSlowPion) {
     if (verbose >verboseOffset) cout << "pG->fMom1 != moSlowPion" << endl;
     return 0;
   }
 
-  //if (missPi>0 || missK>0)   
-  if (verbose > 1+verboseOffset)   
+  //if (missPi>0 || missK>0)
+  if (verbose > 1+verboseOffset)
     cout << "===> truth matching OK"<<" Found kaons:"<< countK<<" Found pions "
 	 <<countPi<<" Found "<<count<<", Miss K/Pi "<<missK<<"/"<<missPi<<endl;
 
   if     (missK==0 && missPi==0) {return  1;} // select righ combination
-  else if(missK==1 && missPi==1) 
+  else if(missK==1 && missPi==1)
     {cout<<" mixed pi/K, return -1"<<endl; return -1;} // select wrong combination
-  
+
   return 0;
   }
-  
+
 
 // ----------------------------------------------------------------------
 void candAnaDstar::moreBasicCuts() {
@@ -2103,16 +2103,16 @@ void candAnaDstar::triggerHLT() {
     fhltType = -1;
     fHLTPath = "";
     hltObjMap.clear(); // reset the trig object map
-    
+
     TString a;
     //int ps(0);
     bool result(false), wasRun(false), error(false);
-    
+
     bool pdTrigger = false;
     if (fVerbose > 2) cout << "PDTRIGGER requested... " << endl;
     fpReader->pdTrigger()->setHLTKey(fRun, fpReader->getFile());  // needed for the new way
     pdTrigger=true;
-    
+
     // Check HLT
     // For every passed HLT look for a matching tigger from our list.
     // If if it confirmed by our list than match it with an object in the TrgObjv2 list
@@ -2122,8 +2122,8 @@ void candAnaDstar::triggerHLT() {
     bool isMuonTrigger=false; // just for diagnostics
     int foundNumHltObjects=0;
     int foundNumHlts=0;
-    
-    
+
+
     for (int i = 0; i < NHLT; ++i) {
       result = wasRun = error = false;
       a = fpEvt->fHLTNames[i];
@@ -2131,9 +2131,9 @@ void candAnaDstar::triggerHLT() {
       wasRun = fpEvt->fHLTWasRun[i];
       result = fpEvt->fHLTResult[i];
       error  = fpEvt->fHLTError[i];
-      
+
       if (wasRun && result) { // passed
-	
+
 	if (fVerbose>1  || (-32 == fVerbose) ) cout << "passed: " << a << endl;
 	if ((a == "digitisation_step")
 	    || (a == "L1simulation_step")
@@ -2151,7 +2151,7 @@ void candAnaDstar::triggerHLT() {
 	// that is they have to be exclusive.
 	bool good = false;
 	if (pdTrigger) { // PDTRIGGER mode - accept all triggers which fire and are on the DS list
-	  
+
 	  // check that this trigger belongs to our DS
 	  bool rightDS = fpReader->pdTrigger()->triggerInPd(DSNAME, a.Data());
 	  if (fVerbose>9) cout<<" check hlt-path "<<a.Data()<<" DS name "<<DSNAME<<" included? "<<rightDS<<endl;
@@ -2162,13 +2162,13 @@ void candAnaDstar::triggerHLT() {
 	      if (fVerbose>1) cout<<" HIT-path os L1/L2 type, skip "<<a.Data()<<endl;
 	      continue;
 	    } else good=true; // accept, assume it is L3
-	    
+
 	  } else  { // hlt_path not in this DS
 	    //if (fVerbose>1)
 	    //cout<<" HIT-path not in this DS, skip it: "<<a.Data()<<" "<<rightDS<<" DS name: "<<DSNAME<<endl;
 	    continue;
 	  } // end if
-	  
+
 	} // if pdTrigger
 
 
@@ -2180,9 +2180,9 @@ void candAnaDstar::triggerHLT() {
 	  fHLTPath = a.Data();
 	  isMuonTrigger = a.Contains("Mu") || a.Contains("mu") || a.Contains("MU");
 	  //if (ps!=1) cout<<"prescale not one "<<a.Data()<<" "<<ps<<endl;
-	  
+
 	  if(!pdTrigger) continue; // skip, so only when pdTrigger is selected
-	  
+
 	  bool foundHltObject = false;
 	  int countModules=0, lastIndex=-1;
 	  TTrgObjv2 *pTO;
@@ -2190,7 +2190,7 @@ void candAnaDstar::triggerHLT() {
 	    cout<<" TTrgObjv2 objects, size= "<<fpEvt->nTrgObjv2()<<endl;
 	  for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
 	  pTO = fpEvt->getTrgObjv2(i);
-	  
+
 	  if (a == pTO->fHltPath) { // found the right one, matched the hlt-name
 	    // this trig object matches a passed and selected trigger
 	    foundHltObject=true;
@@ -2198,22 +2198,22 @@ void candAnaDstar::triggerHLT() {
 	    countModules++;
             lastIndex=i;
 	    int hltIndex = pTO->fHltIndex; // HLT path index
-	    
+
             // mark all module as selected by adding a large number, so >1000.
             // do it either here (ALL MODULES)  or below (LAST MODULE)
 	    hltObjMap[i]= (hltIndex & 0x7FFFFFFF); // make sure the uper bit is free
-	    
+
 	    vector<int> muonIndex = pTO->fIndex;
 	    vector<int> muonID = pTO->fID;
 	    vector<TLorentzVector> muonP = pTO->fP;
 	    int num = muonIndex.size();
-	    
+
 	    if ( (fVerbose>9) || (fVerbose==-32)) {
 	      cout<<" matched: "<<pTO->fHltPath<<" hlt-index: "<<pTO->fHltIndex<<" module label: "
 		  <<pTO->fLabel<<" type: "<<pTO->fType<<" num of particles: "<<num<<endl;
 	      pTO->dump();
 	    }
-	    
+
 	  } // if matched
 	  } // end for loop
 
@@ -2222,7 +2222,7 @@ void candAnaDstar::triggerHLT() {
 	    pTO = fpEvt->getTrgObjv2(lastIndex);
 	    hltObjMap[lastIndex]= (hltObjMap[lastIndex] | 0x80000000); // set top bit for final
 	  }
-	  
+
 	  if (!foundHltObject && isMuonTrigger)
 	    cout<<"Warning: canAna::triggerSelection: matching trigger module not found! "
 		<<a<<endl;
@@ -2234,11 +2234,11 @@ void candAnaDstar::triggerHLT() {
     // the type only valid for the last type if there are more than 1
     //if (fhltType>999) {cout<<fhltType<<endl; fhltType -= 1000;}
     //fhltType = fhltType + (1000 * (foundNumHlts-1));
-    
+
     // Diagnostics printout
     //  if ( (fVerbose>9) || (fVerbose==-32))
     //    cout<<" number of found matching hlt objects: "<<foundNumHltObjects<<endl;
-    
+
     // Diagnostics printout
     // if (pdTrigger && isMuonTrigger && (foundNumHltObjects==0)) {
     //   cout<<" No matching hlt objects found:  "<<endl;
@@ -2253,13 +2253,13 @@ void candAnaDstar::triggerHLT() {
     //     if (wasRun && result) cout << a << " ";
     //   }
     //   cout<<endl;
-    
+
     //}
-  
+
     // TESTS
     if (fVerbose>999) {  // Just testing
       cout << " ----------------------------------------------------------------------" << endl;
-      
+
       TTrgObjv2 *pTO;
       cout<<" Dump TTrgObjv2 "<<fpEvt->nTrgObjv2()<<endl;
       for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {
@@ -2270,41 +2270,41 @@ void candAnaDstar::triggerHLT() {
 	int num = muonIndex.size();
 	cout<<i<<" hlt "<<pTO->fHltPath<<" hlt-index "<<pTO->fHltIndex<<" module label "
 	    <<pTO->fLabel<<" type "<<pTO->fType<<" number "<<pTO->fNumber<<" "<<num<<endl;
-	
+
 	for(int n=0;n<num;++n) {
 	  int index = muonIndex[n];
 	  int id = muonID[n];
 	  TLorentzVector p = muonP[n];
 	  cout<<n<<" index "<<index<<" id "<<id<<" pt/eta/phi "<<p.Pt()<<" "<<p.Eta()<<" "<<p.Phi()<<endl;
 	}
-	
+
       }
-      
+
       // print the hlt object map
       for(map<unsigned int, unsigned int, less<unsigned int> >::iterator iter=hltObjMap.begin();
 	  iter!=hltObjMap.end(); ++iter) {
 	cout<<hex<<iter->first<<" "<<iter->second<<" "<<dec<<endl;
       }
-      
+
     } // end testing
-    
+
     if (false == fGoodHLT && fVerbose > 1) cout << "------->  event NOT triggered!" << endl;
-  
+
     //-------------
-  
+
   } else {
-    
-    
+
+
     fGoodHLT1 = false;
     fhltType = -1;
     fHLT1Path = "nada";
-    
+
     TString a;
     string sa;
     int ps(0);
     bool result(false), wasRun(false), error(false);
     int verbose(fVerbose);
-    
+
     // -- NOTRIGGER, just accept the event
     if (HLTRANGE.begin()->first == "NOTRIGGER") {
       if (verbose>2) cout << "NOTRIGGER requested... " << endl;
@@ -2322,7 +2322,7 @@ void candAnaDstar::triggerHLT() {
 	wasRun = fpEvt->fHLTWasRun[i];
 	result = fpEvt->fHLTResult[i];
 	error  = fpEvt->fHLTError[i];
-	
+
 	if (result) { // passed
 	  cout << "triggerHLT::result: " << a << " wasrun = " << wasRun << " ps = " << ps << " run = "
 	       << fRun << " ls = " << fLS << " json = " << fJSON
@@ -2330,7 +2330,7 @@ void candAnaDstar::triggerHLT() {
 	}
       }
     }
-    
+
     //hltPathInfo hpi;
     string spath;
     int rmin, rmax;
@@ -2359,9 +2359,9 @@ void candAnaDstar::triggerHLT() {
       fGoodHLT1    = true;
       return;
     }
-    
+
   }
-  
+
 } // end tiggerHLT
 
 //----------------------------------------------------------------------------
@@ -2564,7 +2564,7 @@ double candAnaDstar::doTriggerMatchingTest(int &idx, int muonNum, int trigLevel)
 
 //----------------------------------------------------------------------------
 // Loop over HLT objects, match the 2 HLT muons to offline tracks
-// It does not have anything specific to Ds, just compares the hlt tracks 
+// It does not have anything specific to Ds, just compares the hlt tracks
 // with all reconstructed tracks (or muons only) and return true if they match.
 // Return true if at least 1 trigger matches offline tracks
 bool candAnaDstar::doTriggerMatchingForDs(TAnaTrack *pPi,TAnaTrack *pK,TAnaTrack *pPis,
@@ -2759,7 +2759,7 @@ bool candAnaDstar::doTriggerMatchingForDs(TAnaTrack *pPi,TAnaTrack *pK,TAnaTrack
 }
 //----------------------------------------------------------------------------
 // Loop over HLT objects, match the 2 HLT muons to offline tracks
-// It does not have anything specific to Ds, just compares the hlt tracks 
+// It does not have anything specific to Ds, just compares the hlt tracks
 // with all reconstructed tracks (or muons only) and return true if they match.
 // Return true if at least 1 trigger matches offline tracks
 bool candAnaDstar::doTriggerMatchingForDs(double &dr1, double &dr2) {
