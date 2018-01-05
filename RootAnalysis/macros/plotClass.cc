@@ -632,7 +632,9 @@ void plotClass::setupTree(TTree *t, string mode) {
 
 
   t->SetBranchAddress("m1pix",    &fb.m1pix);
+  t->SetBranchAddress("m1trk",    &fb.m1trk);
   t->SetBranchAddress("m2pix",    &fb.m2pix);
+  t->SetBranchAddress("m2trk",    &fb.m2trk);
   t->SetBranchAddress("m1bpix",   &fb.m1bpix);
   t->SetBranchAddress("m2bpix",   &fb.m2bpix);
   t->SetBranchAddress("m1bpixl1", &fb.m1bpixl1);
@@ -743,6 +745,9 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kpt",  &fb.kpt);
     t->SetBranchAddress("kgt",  &fb.kgt);
     t->SetBranchAddress("keta", &fb.keta);
+    t->SetBranchAddress("kphi", &fb.kphi);
+    t->SetBranchAddress("kpix", &fb.kpix);
+    t->SetBranchAddress("ktrk", &fb.ktrk);
   }
 
   if (string::npos != mode.find("bspsiphi")) {
@@ -778,6 +783,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("kpt", &fb.kpt);
     t->SetBranchAddress("kgt", &fb.kgt);
     t->SetBranchAddress("keta",&fb.keta);
+    t->SetBranchAddress("kphi",&fb.kphi);
     t->SetBranchAddress("pipt", &fb.pipt);
     t->SetBranchAddress("pigt", &fb.pigt);
     t->SetBranchAddress("pieta",&fb.pieta);
@@ -788,6 +794,64 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("dm",&fb.dm);
     t->SetBranchAddress("ptd0",&fb.ptd0);
   }
+
+  // -- START for tracking studies
+  t->SetBranchAddress("m1tkqual", &fb.m1tkqual);
+  t->SetBranchAddress("m1alg", &fb.m1alg);
+  t->SetBranchAddress("m1valhits", &fb.m1valhits);
+  t->SetBranchAddress("m1layerswithhits", &fb.m1layerswithhits);
+  t->SetBranchAddress("m1valhitfraction", &fb.m1valhitfraction);
+  t->SetBranchAddress("m1dz", &fb.m1dz);
+  t->SetBranchAddress("m1dzE", &fb.m1dzE);
+  t->SetBranchAddress("m1d0", &fb.m1d0);
+  t->SetBranchAddress("m1d0E", &fb.m1d0E);
+  t->SetBranchAddress("m1dsz", &fb.m1dsz);
+  t->SetBranchAddress("m1dszE", &fb.m1dszE);
+  t->SetBranchAddress("m1dxy", &fb.m1dxy);
+  t->SetBranchAddress("m1dxyE", &fb.m1dxyE);
+  t->SetBranchAddress("m1ptE", &fb.m1ptE);
+  t->SetBranchAddress("m1etaE", &fb.m1etaE);
+  t->SetBranchAddress("m1phiE", &fb.m1phiE);
+  t->SetBranchAddress("m1chi2", &fb.m1chi2);
+
+  t->SetBranchAddress("m2tkqual", &fb.m2tkqual);
+  t->SetBranchAddress("m2alg", &fb.m2alg);
+  t->SetBranchAddress("m2valhits", &fb.m2valhits);
+  t->SetBranchAddress("m2layerswithhits", &fb.m2layerswithhits);
+  t->SetBranchAddress("m2valhitfraction", &fb.m2valhitfraction);
+  t->SetBranchAddress("m2dz", &fb.m2dz);
+  t->SetBranchAddress("m2dzE", &fb.m2dzE);
+  t->SetBranchAddress("m2d0", &fb.m2d0);
+  t->SetBranchAddress("m2d0E", &fb.m2d0E);
+  t->SetBranchAddress("m2dsz", &fb.m2dsz);
+  t->SetBranchAddress("m2dszE", &fb.m2dszE);
+  t->SetBranchAddress("m2dxy", &fb.m2dxy);
+  t->SetBranchAddress("m2dxyE", &fb.m2dxyE);
+  t->SetBranchAddress("m2ptE", &fb.m2ptE);
+  t->SetBranchAddress("m2etaE", &fb.m2etaE);
+  t->SetBranchAddress("m2phiE", &fb.m2phiE);
+  t->SetBranchAddress("m2chi2", &fb.m2chi2);
+
+  t->SetBranchAddress("ktkqual", &fb.ktkqual);
+  t->SetBranchAddress("kalg", &fb.kalg);
+  t->SetBranchAddress("kvalhits", &fb.kvalhits);
+  t->SetBranchAddress("klayerswithhits", &fb.klayerswithhits);
+  t->SetBranchAddress("kvalhitfraction", &fb.kvalhitfraction);
+  t->SetBranchAddress("kchi2", &fb.kchi2);
+  t->SetBranchAddress("kdz", &fb.kdz);
+  t->SetBranchAddress("kdzE", &fb.kdzE);
+  t->SetBranchAddress("kd0", &fb.kd0);
+  t->SetBranchAddress("kd0E", &fb.kd0E);
+  t->SetBranchAddress("kdsz", &fb.kdsz);
+  t->SetBranchAddress("kdszE", &fb.kdszE);
+  t->SetBranchAddress("kdxy", &fb.kdxy);
+  t->SetBranchAddress("kdxyE", &fb.kdxyE);
+  t->SetBranchAddress("kptE", &fb.kptE);
+  t->SetBranchAddress("ketaE", &fb.ketaE);
+  t->SetBranchAddress("kphiE", &fb.kphiE);
+  // -- END for tracking studies
+
+
 }
 
 
@@ -866,10 +930,14 @@ void plotClass::candAnalysis() {
   if (0 == fb.m1gt)  {
     //    cout << "failed good track cut" << endl;
     fGoodAcceptance = false;
+    fGoodTracks = false;
   } else {
     //    cout << "passed good track cut" << endl;
   }
-  if (0 == fb.m2gt)  fGoodAcceptance = false;
+  if (0 == fb.m2gt)  {
+    fGoodAcceptance = false;
+    fGoodTracks = false;
+  }
 
   if (fb.m1pt < pCuts->m1pt) {
     fGoodMuonsPt = false;
@@ -899,7 +967,7 @@ void plotClass::candAnalysis() {
       if (fb.g1pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (fb.g2pt < fAccPt) fGoodAcceptance = false; // FIXME?
       if (TMath::Abs(fb.g3eta) > fAccEtaGen) fGoodAcceptance = false;
-      if (fb.g3pt < 0.8) fGoodAcceptance = false;   // FIXME!!
+      if (fb.g3pt < 0.6) fGoodAcceptance = false;   // FIXME!!
     }
     if (TMath::Abs(fb.keta) > fAccEtaRec) {
       fGoodAcceptance = false;
@@ -909,7 +977,10 @@ void plotClass::candAnalysis() {
       fGoodAcceptance = false;
       fGoodTracksPt = false;
     }
-    if (0 == fb.kgt)  fGoodAcceptance = false;
+    if (0 == fb.kgt)  {
+      fGoodAcceptance = false;
+      fGoodTracks = false;
+    }
   }
 
   if (bs2jpsiphi) {
@@ -1119,7 +1190,7 @@ void plotClass::candAnalysis() {
   // -- no trigger matching for rare decays!
   if (RARE == fMode) fGoodHLT = true;
 
-  fPreselection    = (fGoodHLT && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
+  fPreselection    = (fGoodDcand && fGoodHLT && fGoodAcceptance && fGoodMuonsID && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
 		      && (fb.alpha < 0.2) && (fb.fls3d > 5));
 
   // FIXME!
@@ -2978,12 +3049,14 @@ void plotClass::loadFiles(string afiles) {
       fptM = fptNegMuons;
     } else if (2016 == fYear) {
       directory = string("weights/pidtables/");
-      TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
       string prefixB("bmm4-25"), prefixE("bmm4-25");
       double cutB(0.08), cutE(0.08);
-      if (0 && hcuts) {
-	muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
-	cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
+      if (0) {
+	TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
+	if (0 && hcuts) {
+	  muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
+	  cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
+	}
       }
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
