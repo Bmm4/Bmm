@@ -30,7 +30,7 @@ struct redTreeData {
   int m1q, m2q;
   double m1pt, m1eta, m1phi, m1ip, m1chi2;
   double m2pt, m2eta, m2phi, m2ip, m2chi2;
-  double kpt, keta, kphi;
+  double kpt, keta, kphi, kip, kchi2;
   double k1pt, k1eta, k1phi, k2pt, k2eta, k2phi;
   double pipt, pieta, piphi;
 
@@ -39,8 +39,18 @@ struct redTreeData {
   double m1rmvabdt, m2rmvabdt;
   double m1trigm, m2trigm;
   int m1gt, m2gt, k1gt, k2gt, kgt, pigt;
-  int m1pix, m1bpix, m1bpixl1, m1pv;
-  int m2pix, m2bpix, m2bpixl1, m2pv;
+  int m1pix, m1bpix, m1bpixl1, m1pv, m1trk;
+  int m2pix, m2bpix, m2bpixl1, m2pv, m2trk;
+  int kpix, kbpix, ktrk;
+
+  // -- START for tracking studies
+  int m1tkqual, m1alg, m1valhits, m1layerswithhits;
+  double m1dz, m1dzE, m1d0, m1d0E, m1dsz, m1dszE, m1dxy, m1dxyE, m1valhitfraction, m1ptE, m1etaE, m1phiE;
+  int m2tkqual, m2alg, m2valhits, m2layerswithhits;
+  double m2dz, m2dzE, m2d0, m2d0E, m2dsz, m2dszE, m2dxy, m2dxyE, m2valhitfraction, m2ptE, m2etaE, m2phiE;
+  int ktkqual, kalg, kvalhits, klayerswithhits;
+  double kdz, kdzE, kd0, kd0E, kdsz, kdszE, kdxy, kdxyE, kvalhitfraction, kptE, ketaE, kphiE;
+  // -- END for tracking studies
 
   double mudist, mudeltar;
   double g1pt, g2pt, g3pt, g4pt, g1eta, g2eta, g3eta, g4eta, gtau, gfl3d;
