@@ -701,7 +701,7 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
     for (unsigned int ic = 0; ic < fNchan; ++ic) {
       h1 = new TH1D(Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
-		    BDTMAX-BDTMIN+1, BDTMIN, BDTMAX+1);
+		    60, 0., 60.);
       for (unsigned int ib = BDTMIN; ib <= bMax; ++ib) {
 	string idx = Form("bdt_%d_", ib);
 	fSuffixSel = idx + fSuffix;
