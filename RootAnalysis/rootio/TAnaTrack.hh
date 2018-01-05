@@ -12,7 +12,7 @@ class TAnaTrack: public TObject {
 public:
   TAnaTrack(int index = -1);
   ~TAnaTrack() { };
-  void clear(); 
+  void clear();
   void dump();
 
   // ----------------------------------------------------------------------
@@ -24,37 +24,37 @@ public:
 
   // -- Momentum
   TVector3       fPlab;
-  double         fPtE, fPhiE, fEtaE; 
+  double         fPtE, fPhiE, fEtaE;
 
   // -- Tracking parameters
   int            fQ;                            // charge
 
-  int            fDof, fValidHits, fValidHitFraction, fLayersWithHits;
+  int            fDof, fValidHits, fValidHitFraction/*FIXME!!!*/, fLayersWithHits;
   double         fChi2;
-  int            fTrackQuality; 
+  int            fTrackQuality;
   int            fAlgorithm;                    // see DataFormats/TrackReco/interface/TrackBase.h
   int            fHitPattern[20];               // see DataFormats/TrackReco/interface/HitPattern.h
 
   // -- refitted track parameters (for sig tracks)
-  TVector3       fRefPlab; 
-  double         fRefChi2; 
-  int            fRefDof, fRefValidHits; 
+  TVector3       fRefPlab;
+  double         fRefChi2;
+  int            fRefDof, fRefValidHits;
 
   // verbatim track parameters
-  double         fdz, fdzE, fd0, fd0E, fdsz, fdszE, fdxy, fdxyE;  
+  double         fdz, fdzE, fd0, fd0E, fdsz, fdszE, fdxy, fdxyE;
   // longitudinal/transverse impact parameters wrt PV/SV
   double         fLip, fLipE, fTip, fTipE;
   double         fBsLip, fBsLipE, fBsTip, fBsTipE;
 
-  int            fMuID, fMuIndex; 
+  int            fMuID, fMuIndex;
 
-  double         fDeDx, fDeDx2; 
-  int            fDeDxNmeas, fDeDxNsat; 
+  double         fDeDx, fDeDx2;
+  int            fDeDxNmeas, fDeDxNsat;
 
-  int            fPvIdx; 
+  int            fPvIdx;
 
   // -- reserve
-  int            fInt1,    fInt2,    fInt3; 
+  int            fInt1,    fInt2,    fInt3;
   double         fDouble1, fDouble2, fDouble3;
 
   int            fTag;
