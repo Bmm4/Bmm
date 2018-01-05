@@ -19,8 +19,6 @@
 #include "TLatex.h"
 #include "TLine.h"
 
-ClassImp(AnalysisDistribution)
-
 using std::string;
 using std::cout;
 using std::endl;

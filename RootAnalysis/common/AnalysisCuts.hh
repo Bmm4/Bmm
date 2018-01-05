@@ -2,7 +2,6 @@
 #define ANALYSISCUTS
 
 #include "TString.h"
-#include "TObject.h"
 
 #include <iostream>
 #include <fstream>
@@ -31,7 +30,7 @@ using namespace::std;
 // ----------------------------------------------------------------------
 
 
-class AnalysisCuts: public TObject {
+class AnalysisCuts {
 
 public:
 
@@ -80,7 +79,7 @@ private:
 
   bool    *fCutLocation[MAXCUTS];
 
-  ClassDef(AnalysisCuts,1) //Testing AnalysisCuts
+  //  ClassDef(AnalysisCuts,1) //Testing AnalysisCuts
 
 };
 

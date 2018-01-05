@@ -2,7 +2,6 @@
 #define ANALYSISDISTRIBUTION
 
 #include "TString.h"
-#include "TObject.h"
 #include "TH1.h"
 #include "TF1.h"
 
@@ -13,7 +12,7 @@
 #include "AnalysisCuts.hh"
 #include "initFunc.hh"
 
-class AnalysisDistribution: public TObject {
+class AnalysisDistribution {
 
 public:
 
@@ -77,7 +76,6 @@ public:
 
   const int NREG = 5;
 
-  ClassDef(AnalysisDistribution,1) //Testing AnalysisDistribution
 };
 
 #endif

@@ -4,7 +4,7 @@
 #include <iomanip>
 
 
-ClassImp(AnalysisCuts)
+// ClassImp(AnalysisCuts)
 
 // ----------------------------------------------------------------------
 AnalysisCuts::AnalysisCuts(TString name) {
