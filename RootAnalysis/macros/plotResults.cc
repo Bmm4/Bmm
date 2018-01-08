@@ -406,14 +406,16 @@ void plotResults::makeAll(string what) {
   if (what == "bdtopt") {
     fHistWithAllCuts = "hMassWithAllCuts";
     //    fillAndSaveHistograms(0, 10000);
-    fillAndSaveHistograms();
+    //    fillAndSaveHistograms();
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
+    return;
   }
 
   if (what == "bdtoptplot") {
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), false);
+    return;
   }
 
   if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
@@ -583,8 +585,9 @@ void plotResults::bookHist(string dsname) {
 void plotResults::scanBDT(string fname, bool createTexFile) {
   fTEX.close();
   int BDTMIN(0), BDTMAX(60);
-  cout << "starting scanBDT" << endl;
+  cout << "starting scanBDT, createTexFile = " << createTexFile << endl;
   if (createTexFile) {
+    cout << "creating tex file" << endl;
     string dsname = Form("%s", fname.c_str());
     fTEX.open(dsname.c_str());
     fHistWithAllCuts = "hMassWithAllCuts";
@@ -753,10 +756,47 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("se/scanBDT-2016GH-2329.root");    colors.push_back(kGreen+1);
     inputFiles.push_back("se/scanBDT-2016GH-2489.root");    colors.push_back(kBlue);
   } else if (3 == mode) {
-    //    inputFiles.push_back("results/scanBDT-2016GH.root");    colors.push_back(kBlack);
-    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9929.root");    colors.push_back(kRed);
-    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9979.root");    colors.push_back(kGreen+1);
-    inputFiles.push_back("se/abdt-4/scanBDT-2016GH-9799.root");    colors.push_back(kBlue);
+    int i = kRed;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-9679.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10179.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10279.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10379.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10579.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10779.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1079.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10799.root");    colors.push_back(i); i = i -1;
+    i = kGreen;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11079.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11279.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11379.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11479.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11579.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11679.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11779.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1179.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11799.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11879.root");    colors.push_back(i); i = i -1;
+    i = kBlue;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12079.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12379.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12679.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12779.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1279.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12799.root");    colors.push_back(i); i = i -1;
+    i = kMagenta;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-13179.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-13379.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1379.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14479.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14679.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14779.root");    colors.push_back(i); i = i -1;
+    i = kOrange;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1479.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14799.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14879.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14979.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-15079.root");    colors.push_back(i); i = i -1;
+
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -810,14 +850,14 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     } else if (what == "ZAD") {
       h0->SetMaximum(2.);
     } else if (what == "ZAS") {
-      h0->SetMaximum(3.);
+      h0->SetMaximum(4.);
     } else {
       h0->SetMaximum(1.4*h0->GetMaximum());
     }
     h0->SetLineColor(colors[ifile]);
     h0->SetMarkerColor(colors[ifile]);
     h0->SetMarkerStyle(24);
-    h0->SetMarkerSize(0.8);
+    h0->SetMarkerSize(0.4);
     setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
     if (0 == ifile) {
       h0->DrawCopy("p");
@@ -830,8 +870,10 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     pm->Draw();
     h0->GetListOfFunctions()->Add(pm);
 
-    tl->SetTextSize(0.03);
-    tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.22, 0.15 + ifile*0.032, inputFiles[ifile].c_str());
+    tl->SetTextSize(0.015);
+    string bla = inputFiles[ifile];
+    rmPath(bla);
+    tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.80, 0.15 + ifile*0.016, bla.c_str());
     //    f->Close();
   }
 
