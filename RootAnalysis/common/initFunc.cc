@@ -2673,12 +2673,12 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   f->SetParameter(0, h->GetMaximum());
   f->SetParameter(1, 5.28);
-  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.035);
+  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.030);
   f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.400);
-  f->SetParameter(4, 0.05); limitPar(4, 0.035, 0.120);
+  f->SetParameter(4, 0.05); limitPar(4, 0.030, 0.100);
 
   double a(-1.), b(-1.);
-  fLo = 5.5; fHi = 5.9;
+  fLo = 5.5; fHi = 5.8;
   initExpo(a, b, h);
   f->SetParameter(5, a);
   f->SetParameter(6, b);

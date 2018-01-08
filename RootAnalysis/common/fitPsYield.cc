@@ -55,7 +55,9 @@ fitPsYield::fitPsYield(string hname, TDirectory *pD, int verbose): fVerbose(verb
       }
     }
   }
-
+  if (!fH2) {
+    cout << "histogram not found" << endl;
+  }
 }
 
 
@@ -279,7 +281,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 6.0;
+  fpIF->fHi = 5.85;
   cout << "==> fitPsYield::fit0_Bu2JpsiKp> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
   double xmin(4.9), xmax(6.0), expoLo(5.15), expoHi(6.0);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
