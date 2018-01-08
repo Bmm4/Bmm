@@ -791,10 +791,11 @@ void rmSubString(string &sInput, const string &sub) {
 
 // ----------------------------------------------------------------------=
 void rmPath(string &sInput) {
-  while(string::size_type foundpos = sInput.find("/")) {
-    if (foundpos != string::npos)  sInput.erase(sInput.begin(), sInput.begin() + foundpos);
+  string::size_type foundpos = sInput.find("/");
+  while(string::npos != foundpos) {
+    sInput.erase(sInput.begin(), sInput.begin() + foundpos + 1);
+    foundpos = sInput.find("/");
   }
-  sInput.erase(sInput.begin(), sInput.begin() + 1); // delete also leading /
 }
 
 // ----------------------------------------------------------------------
