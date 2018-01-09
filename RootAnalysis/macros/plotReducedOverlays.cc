@@ -796,15 +796,20 @@ void plotReducedOverlays::loopFunction1() {
 
 
 
-  // -- update ana cuts!
   double bdtCut(0.1);
-  if (2011 == fYear) bdtCut = 0.15;
-  if (2012 == fYear) bdtCut = 0.20;
-   fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
-   fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
-   fPreselection    = (fGoodHLT && fBDT > fCuts[fChan]->bdtCut);
-  fPreselectionBDT = fPreselection && (fBDT > fCuts[fChan]->bdtCut);
+  if (2011 == fYear) {
+    bdtCut = 0.15;
+  } else if (2012 == fYear) {
+    bdtCut = 0.20;
+  } else {
+    bdtCut = fCuts[fChan]->bdtCut;
+  }
+  // fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
+  // fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
+  fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 5) && (fb.pvips < 4));
+  fPreselectionBDT = (fGoodHLT && (fBDT > bdtCut));
 
+  // -- update ana cuts!
   fCncCuts.update();
   fBdtCuts.update();
 
