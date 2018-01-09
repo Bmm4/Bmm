@@ -305,12 +305,12 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
       fCombMax = h->GetMaximum();
     }
     double scale = h->GetMaximum()/fCombMax;
-    if (fVerbose) cout << "==> limitpars = " << limitpars << endl;
+    if (fVerbose) cout << "==> limitpars = " << limitpars << " fPar[3] = " << fPar[3] << endl;
     if (limitpars > 0) {
       f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + fParE[0]));
       f1->SetParameter(1, fPar[1]);        f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
       f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
-      //      f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      //f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
       f1->FixParameter(3, fPar[3]);
       f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[4] - limitpars*fParE[4], fPar[4] + limitpars*fParE[4]);
       f1->SetParameter(5, scale*fPar[5]);  f1->SetParLimits(5, 0.,                           scale*(fPar[5] + fParE[5]));
@@ -357,6 +357,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
     for (int i = 0; i < f1->GetNpar(); ++i) {
       fPar.push_back(f1->GetParameter(i));
       fParE.push_back(f1->GetParError(i));
+      cout << "fPar[" << i << "] = " << f1->GetParameter(i) << " +/- " << f1->GetParError(i) << endl;
     }
   }
 
@@ -850,8 +851,8 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
       f1->SetParameter(2, fPar[2]);
       f1->SetParLimits(2, s1lo,                         s1hi);
 
-      f1->SetParameter(3, fPar[3]);
-      f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      f1->FixParameter(3, fPar[3]);
+      //      f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
 
       f1->SetParameter(4, fPar[4]);
       f1->SetParLimits(4, s2lo,                         fPar[4] + limitpars*fParE[4]);
@@ -901,6 +902,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
     for (int i = 0; i < f1->GetNpar(); ++i) {
       fPar.push_back(f1->GetParameter(i));
       fParE.push_back(f1->GetParError(i));
+      cout << "fPar[" << i << "] = " << f1->GetParameter(i) << " +/- " << f1->GetParError(i) << endl;
     }
   }
 
