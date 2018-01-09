@@ -10,8 +10,6 @@ if ($opt_d) {
 
 system("ln -s $dir/plotResults.2016BF.files");
 system("ln -s $dir/plotResults.2016GH.files");
-system("ln -s $dir/plotResults.2016H.files");
-system("ln -s $dir/plotResults.2016G.files");
 system("ln -s $dir/plotResults.2012.files");
 system("ln -s $dir/plotResults.2011.files");
 
