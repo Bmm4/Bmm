@@ -593,16 +593,16 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
     fHistWithAllCuts = "hMassWithAllCuts";
     // -- check over which range you have to run
     fHistFile = TFile::Open(fHistFileName.c_str());
-    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bdmmMc/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()));
+    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", 0, fSuffix.c_str()));
     if (!h0) {
-      cout << "histogram " << Form("bdmmMc/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", 0, fSuffix.c_str()) << " not found" << endl;
+      cout << "histogram " << Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", 0, fSuffix.c_str()) << " not found" << endl;
       return;
     }
     double total = h0->GetSumOfWeights();
     cout << "total events " << total << " for " << h0->GetName() << endl;
     for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
-      h0 = (TH1D*)fHistFile->Get(Form("bupsikData/hMassWithMassCuts_bdt_%d_%s_bupsikData_chan0", ib, fSuffix.c_str()));
-      if (h0->GetSumOfWeights() < 0.1*total) {
+      h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", ib, fSuffix.c_str()));
+      if (h0->GetSumOfWeights() < 0.07*total) {
 	BDTMAX = ib;
 	cout << " going up to bdt < " << BDTMAX << ", because there events = " << h0->GetSumOfWeights() << endl;
 	break;
@@ -757,45 +757,18 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("se/scanBDT-2016GH-2489.root");    colors.push_back(kBlue);
   } else if (3 == mode) {
     int i = kRed;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-9679.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10179.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10279.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10379.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10579.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10779.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1079.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-10799.root");    colors.push_back(i); i = i -1;
-    i = kGreen;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11079.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11279.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11379.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11479.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11579.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11679.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11779.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1179.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11799.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-11879.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-9619.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-7639.root");    colors.push_back(i); i = i -1;
     i = kBlue;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12079.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12379.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12679.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12779.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1279.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-12799.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-16309.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-2029.root");    colors.push_back(i); i = i -1;
     i = kMagenta;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-13179.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-13379.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1379.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14479.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14679.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14779.root");    colors.push_back(i); i = i -1;
-    i = kOrange;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-1479.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14799.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14879.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-14979.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/scanBDT-2016GH-15079.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-9999.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-4459.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-11549.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-6769.root");    colors.push_back(i); i = i -1;
+    i = kGreen;
+    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-10019.root");    colors.push_back(i); i = i -1;
 
   }
 
