@@ -1,0 +1,19 @@
+#
+# This is the decay file for the decay Bc+ -> J/Psi mu+ nu_mu -> MU+ MU- mu+ nu_mu
+#
+Alias      MyB_c+        B_c+
+Alias      MyB_c-        B_c-
+ChargeConj MyB_c-        MyB_c+
+Alias      MyJpsi      J/psi
+ChargeConj MyJpsi      MyJpsi
+#
+Decay MyB_c+
+  1.000    MyJpsi      mu+	nu_mu             PHSP;
+Enddecay
+CDecay MyB_c-
+#
+Decay MyJpsi
+  1.000         mu+       mu-         PHOTOS VLL;
+Enddecay
+#
+End
