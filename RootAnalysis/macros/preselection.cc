@@ -16,10 +16,10 @@ using namespace std;
 #define M2PTMAX 999.0
 
 #define FL3DMAX 2.0
-#define CHI2DOFMAX 10.0
+#define CHI2DOFMAX 5.0
 
 #define PVIPMAX 0.1
-#define PVIPSMAX 5.0
+#define PVIPSMAX 4.0
 
 #define PVLIPMAX  1.0
 #define PVLIPSMAX 5.0
