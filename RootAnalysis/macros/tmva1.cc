@@ -171,9 +171,9 @@ void tmva1::makeAll(int offset, string filename, int chan) {
     if (fKS[i] < minKS)   minKS = fKS[i];
     if (fKS[i+1] < minKS) minKS = fKS[i+1];
   }
-  double  avbdt =  0.3*(fMaxBdt[0]+fMaxBdt[1]+fMaxBdt[2]);
+  double  avbdt =  (fMaxBdt[0]+fMaxBdt[1]+fMaxBdt[2])/3;
   cout << "ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
-  cout << "bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << endl;
+  cout << "bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << " -> avbdt = " << Form("%3.2f", avbdt) << endl;
   cout << "offset = " << offset << " is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
   cout << "----------------------------------------------------------------------" << endl;
 
@@ -505,7 +505,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 	 rBdt = fH1s->GetBinCenter(ibin);
        }
      }
-     cout << "s(" << ibin << "," << nbins << ") = " << s << " b = " << b << " r = " << r << endl;
+     cout << "s(" << ibin << "," << nbins << ") = " << s << " b = " << b << " r = " << r << " (bin center = " << fH1s->GetBinCenter(ibin) << ")" << endl;
    }
    fMaxSSB.push_back(rMax);
    fMaxBdt.push_back(rBdt);
