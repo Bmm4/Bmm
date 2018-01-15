@@ -606,7 +606,7 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
 
   char line[200];
 
-  if (TMath::Abs(n) < 1.e-12) {
+  if (TMath::Abs(n) < 1.e-15) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{0} }", name.c_str());
     return string(line);
   }
