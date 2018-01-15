@@ -87,7 +87,8 @@ public:
 			    std::string selection);
 
   void allSystematics();
-  void sysBdtCut(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada");
+  void sysBdtCut(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada", bool bdtscan = false);
+  void sysComparison(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada");
   void compareBsAndBp(std::string file = "2012/anaBmm.plotReducedOverlaysSystematics.2012.root");
 
   // --

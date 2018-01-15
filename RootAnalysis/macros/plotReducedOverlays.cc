@@ -241,6 +241,22 @@ void plotReducedOverlays::makeAll(string what) {
     return;
   }
 
+  if (what == "bdtoptplot") {
+    fChannelList.clear();
+    for (unsigned int i = 0; i < fNchan; ++i) {
+      fChannelList.push_back(Form("%d", i));
+    }
+    system(Form("/bin/rm -f %s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str()));
+    system(Form("/bin/rm -f %s/overlay%d%s_ad*_*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    system(Form("/bin/rm -f %s/mass_ad*_*.pdf", fDirectory.c_str()));
+
+    fStampString = "nada";
+    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    sysBdtCut("bupsikData", "bupsikMcComb", "bdt");
+    sysComparison("bupsikData", "bupsikMcComb", "bdt");
+    return;
+  }
+
   if (what == "dbx") {
     fChannelList.clear();
     for (unsigned int i = 0; i < fNchan; ++i) {
@@ -802,7 +818,9 @@ void plotReducedOverlays::loopFunction1() {
   } else if (2012 == fYear) {
     bdtCut = 0.20;
   } else {
-    bdtCut = fCuts[fChan]->bdtCut;
+    if (-1 < fChan && fChan < fNchan) {
+      bdtCut = fCuts[fChan]->bdtCut;
+    }
   }
   // fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 6) && (fb.pvips < 4) && (fb.docatrk < 0.2));
   // fPreselectionBDT = (fGoodHLT && (fBDT > 0.1));
@@ -1176,9 +1194,83 @@ void plotReducedOverlays::allSystematics() {
   sysBdtCut("bdpsikstarData", "bdpsikstarMcComb", "bdt");
 }
 
+// ----------------------------------------------------------------------
+void plotReducedOverlays::sysComparison(string sample1, string sample2, string selection, string file2) {
+  c0->SetCanvasSize(700, 700);
+  c0->cd();
+  shrinkPad(0.15, 0.18);
+
+  string hfname = Form("%s/plotSbsHistograms-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str());
+  TFile *f1 = TFile::Open(hfname.c_str());
+  TFile *f2 = f1;
+  if (file2 != "nada") {
+    Form("%s/plotSbsHistograms-%s.root", fDirectory.c_str(), file2.c_str());
+    f2 = TFile::Open(hfname.c_str());
+  }
+
+  vector<string> dolist;
+  dolist.push_back("tau");
+  dolist.push_back("fls3d");
+  dolist.push_back("bdtsel0");
+  dolist.push_back("iso");
+  vector<string> cutlevel;
+  cutlevel.push_back("Presel");
+  //  cutlevel.push_back("HLT");
+
+  TH1D *h1(0), *h2(0);
+  string hname("");
+
+  for (int id = 0; id < dolist.size(); ++id) {
+    for (int ic = 0; ic < cutlevel.size(); ++ic) {
+      for (int i = 0; i < fChannelList.size(); ++i) {
+	hname = Form("sbs_ad%s%s_%s_%s%s", fChannelList[i].c_str(), selection.c_str(), sample1.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
+	h1 = (TH1D*)f1->Get(hname.c_str());
+	hname = Form("sbs_ad%s%s_%s_%s%s", fChannelList[i].c_str(), selection.c_str(), sample2.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
+	h2 = (TH1D*)f2->Get(hname.c_str());
+	if (!h1 || !h2) {
+	  cout << "histogram(s) " << hname << " not found, h1/h2 = " << h1 << "/" << h2 << endl;
+	  continue;
+	}
+	int ichan(0);
+
+	h1->Scale(1./h1->GetSumOfWeights());
+	h2->Scale(1./h2->GetSumOfWeights());
+	h1->SetMinimum(0.);
+	setHist(h1, fDS[sample1]);
+	h1->Draw();
+	setHist(h2, fDS[sample2]);
+	h2->Draw("samehist");
+	double ks = h1->KolmogorovTest(h2);
+	double ch = h1->Chi2Test(h2, "NORM");
+	double chi2, ndof;
+	double ch2 = chi2TestErr(h1, h2, chi2, ndof);
+
+	cout << "tests:  KS = " << ks << " p(chi2) = " << ch << " and the second version = " << ch2 << endl;
+	tl->SetTextAngle(0.);
+	tl->SetTextSize(0.02);
+	tl->DrawLatexNDC(0.2, 0.92, Form("KS: %3.2f (%3.2e)", ks, ks));
+	tl->DrawLatexNDC(0.5, 0.92, Form("P_{#chi}: %3.2f (%3.2e)", ch, ch));
+	tl->DrawLatexNDC(0.7, 0.92, Form("P_{#chi}: %3.2f (%3.2e)", ch2, ch2));
+
+	hname = Form("%d%s:ad%s%s_%s_%s_%s%s", fYear, fSetup.c_str(), fChannelList[i].c_str(), selection.c_str(),
+		     sample1.c_str(), sample2.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
+	//\vdef{2016GH-1709:ad0bdt_bupsikData_bupsikMcComb_tauPresel:sysKS:val}   {\ensuremath{{0.000 } } }
+	fTEX << formatTex(ks, Form("%s:sysKS:val", hname.c_str()), 3) << endl;
+	fTEX << "\\vdef{" << Form("%s:sysKS:val2", hname.c_str()) << "} {" <<  Form("%3.2e", ks) << "}" << endl;
+	fTEX << formatTex(ch, Form("%s:sysCH:val", hname.c_str()), 3) << endl;
+	fTEX << "\\vdef{" << Form("%s:sysCH:val2", hname.c_str()) << "} {" <<  Form("%3.2e", ch) << "}" << endl;
+
+	hname = Form("sysComp%d%s_ad%s%s_%s_%s_%s%s", fYear, fSetup.c_str(), fChannelList[i].c_str(), selection.c_str(),
+		     sample1.c_str(), sample2.c_str(), dolist[id].c_str(), cutlevel[ic].c_str());
+	savePad(Form("sbso/%s.pdf", hname.c_str()));
+      }
+    }
+  }
+
+}
 
 // ----------------------------------------------------------------------
-void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selection, string file2) {
+void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selection, string file2, bool bdtscan) {
 
   c0->SetCanvasSize(700, 700);
   c0->cd();
@@ -1192,6 +1284,21 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
     f2 = TFile::Open(hfname.c_str());
   }
 
+  // -- bdtscan: update the value of fCuts[ichan]->bdtCut with the one found in the scanBDT.root file
+  if (bdtscan) {
+    string rname = Form("%s/scanBDT-%d%s.root", fDirectory.c_str(), fYear, fSetup.c_str());
+    TFile *fr = TFile::Open(rname.c_str());
+    if (fr && fr->IsOpen()) {
+      TH1D *hcuts = (TH1D*)fr->Get("bdtCuts");
+      if (hcuts) {
+	for (int ic = 0; ic < fNchan; ++ic) {
+	  cout << "Overriding BDT cut for chan " << ic << " from " << fCuts[ic]->bdtCut << " to " << hcuts->GetBinContent(ic+1) << endl;
+	  fCuts[ic]->bdtCut = hcuts->GetBinContent(ic+1);
+	}
+      }
+      fr->Close();
+    }
+  }
   vector<string> dolist;
   dolist.push_back("bdt");
   dolist.push_back("bdtsel0");
@@ -1271,6 +1378,7 @@ void plotReducedOverlays::sysBdtCut(string sample1, string sample2, string selec
 	tl->SetTextAngle(90.);
 	tl->SetTextSize(0.025);
 	tl->DrawLatexNDC(0.92, 0.20, hname.c_str());
+	tl->SetTextAngle(0.);
 
 	savePad(Form("sbso/%s.pdf", hname.c_str()));
       }
