@@ -74,7 +74,7 @@ $combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmoni
 $combine{"dstarMuOnia2012"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2012-$version.root dstar-data-dstarMuOnia2012?-*.root; cd -  ";
 $combine{"dstarMuOnia2011"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2011-$version.root dstar-data-dstarMuOnia2011?-*.root; cd -  ";
 
-$combine{"combined"} = "cd $SCRATCH; hadd -f bmm-mc-combined-BdToPiMuNu-$version.root bmm-mc-Summer16_private-BdToPiMuNu-$version.root bmm-mc-RunIISpring16DR80-BdToPiMuNu_BMuonFilter-$version.root; cd - ; ";
+$combine{"combined"} = "cd $SCRATCH; cp bmm-mc-Summer16_private-BdToPiMuNu-$version.root bmm-mc-combined-BdToPiMuNu-$version.root; cd - ; ";
 
 $combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-LbToPMuNu-$version.root bmm-mc-Summer16_private-LbToPMuNu-$version.root bmm-mc-RunIISpring16DR80-LbToPMuNu_BMuonFilter-$version.root; cd - ; ";
 
