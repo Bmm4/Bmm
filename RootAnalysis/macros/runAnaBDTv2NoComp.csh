@@ -80,6 +80,10 @@ cp dataset/weights/TMVA-$JOB-Events1_BDT.weights.xml weights/TMVA-$JOB-Events1_B
 cp dataset/weights/TMVA-$JOB-Events2_BDT.weights.xml weights/TMVA-$JOB-Events2_BDT.weights.xml
 date
 rm -f results/baseCuts-$JOB.cuts
+/bin/ls -l cuts/baseCuts.nobdt.cuts append-basecuts.txt
+echo "cat append-basecuts.txt: "
+cat append-basecuts.txt
+echo "done with append-basecuts.txt: "
 cat cuts/baseCuts.nobdt.cuts append-basecuts.txt >> results/baseCuts-$JOB.cuts
 # -- check for bad BDT:
 echo "check for bad BDT at in $JOB.log"
