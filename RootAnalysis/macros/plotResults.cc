@@ -406,7 +406,7 @@ void plotResults::makeAll(string what) {
   if (what == "bdtopt") {
     fHistWithAllCuts = "hMassWithAllCuts";
     //    fillAndSaveHistograms(0, 10000);
-    //    fillAndSaveHistograms();
+    fillAndSaveHistograms();
     fSuffixSel = "bdt" + fSuffix;
     calculateNumbers("bdt" + fSuffix);
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
@@ -584,9 +584,10 @@ void plotResults::bookHist(string dsname) {
 // ----------------------------------------------------------------------
 void plotResults::scanBDT(string fname, bool createTexFile) {
   fTEX.close();
-  int BDTMIN(0), BDTMAX(60);
   cout << "starting scanBDT, createTexFile = " << createTexFile << endl;
+  int BDTMIN(0);
   if (createTexFile) {
+    int BDTMAX(60);
     cout << "creating tex file" << endl;
     string dsname = Form("%s", fname.c_str());
     fTEX.open(dsname.c_str());
@@ -602,7 +603,7 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
     cout << "total events " << total << " for " << h0->GetName() << endl;
     for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
       h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", ib, fSuffix.c_str()));
-      if (h0->GetSumOfWeights() < 0.07*total) {
+      if (h0->GetSumOfWeights() < 0.05*total) {
 	BDTMAX = ib;
 	cout << " going up to bdt < " << BDTMAX << ", because there events = " << h0->GetSumOfWeights() << endl;
 	break;
@@ -654,24 +655,27 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
 
   int iMax(-1), bMax(-1);
   for (unsigned int i = 0; i < hbdt.size(); ++i) {
-    double tot = hbdt[i]->Integral();
-    double rs = 0.;
-    cout << "hist " << hbdt[i]->GetName() << " tot = " << tot << " rs = " << rs << endl;
-    for (int ibin = 1; ibin <= hbdt[i]->GetNbinsX(); ++ibin) {
-      rs += hbdt[i]->GetBinContent(ibin);
-      // cout << "ibin = " << ibin
-      // 	   << " rs = " << rs << " tot = " << tot << " rs/tot = " << rs/tot
-      // 	   << " iMax = " << iMax
-      // 	   << endl;
-      if (rs/tot > 0.90) {
-	if (ibin > iMax) {
-	  iMax = ibin;
-	  bMax = 100 * hbdt[i]->GetBinLowEdge(ibin);
-	  // cout << "STOP tot =  " << tot << " rs = " << rs << " iMax = " << iMax  << " bMax = " << bMax
-	  //      << " absolute BDT < " << hbdt[i]->GetBinLowEdge(ibin)
-	  //      << endl;
+    string sname = hbdt[i]->GetName();
+    if (string::npos != sname.find("bdmm") && string::npos != sname.find("chan0")) {
+      double tot = hbdt[i]->Integral();
+      double rs = 0.;
+      cout << "hist " << hbdt[i]->GetName() << " tot = " << tot << endl;
+      for (int ibin = 1; ibin <= hbdt[i]->GetNbinsX(); ++ibin) {
+	rs += hbdt[i]->GetBinContent(ibin);
+	cout << "ibin = " << ibin
+	     << " rs = " << rs << " tot = " << tot << " rs/tot = " << rs/tot
+	     << " iMax = " << iMax
+	     << endl;
+	if (rs/tot > 0.95) {
+	  if (ibin > iMax) {
+	    iMax = ibin;
+	    bMax = 100 * hbdt[i]->GetBinLowEdge(ibin);
+	    cout << "STOP tot =  " << tot << " rs = " << rs << " iMax = " << iMax  << " bMax = " << bMax
+		 << " absolute BDT < " << hbdt[i]->GetBinLowEdge(ibin)
+		 << endl;
+	  }
+	  break;
 	}
-	break;
       }
     }
     // cout << "write out " << hbdt[i]->GetName() << endl;
@@ -699,6 +703,8 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
   string name;
   for (unsigned int i = 0; i < plots.size(); ++i) {
     for (unsigned int ic = 0; ic < fNchan; ++ic) {
+      int imax(-1);
+      double maximum(-1.);
       h1 = new TH1D(Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    60, 0., 60.);
@@ -707,10 +713,20 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
 	fSuffixSel = idx + fSuffix;
 	name = Form("%s:%s:chan%d:val", fSuffixSel.c_str(), plots[i].c_str(), ic);
 	double val = findVarValue(name, allLines);
-	if (1) cout << "  " << name << ": " << val << " or: " << Form("%8.6f", val) << " idx ->" << idx << "<-"
+	if (val > maximum) {
+	  maximum = val;
+	  imax = i;
+	}
+	if (0) cout << "  " << name << ": " << val << " or: " << Form("%8.6f", val) << " idx ->" << idx << "<-"
 		    << " filling into bin " << h1->FindBin(ib)
 		    << endl;
 	h1->SetBinContent(h1->FindBin(ib), val);
+      }
+      if (ic < 2) {
+	if (string::npos != plots[i].find("ZAS")) cout << Form("maximum chan%d%s: ", ic, plots[i].c_str()) << maximum << endl;
+	if (string::npos != plots[i].find("ZAD")) cout << Form("maximum chan%d%s: ", ic, plots[i].c_str()) << maximum << endl;
+	if (string::npos != plots[i].find("SSB")) cout << Form("maximum chan%d%s: ", ic, plots[i].c_str()) << maximum << endl;
+	if (string::npos != plots[i].find("SOB")) cout << Form("maximum chan%d%s: ", ic, plots[i].c_str()) << maximum << endl;
       }
       h1->SetDirectory(HistFile);
       h1->Write();
@@ -769,7 +785,23 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-6769.root");    colors.push_back(i); i = i -1;
     i = kGreen;
     inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-10019.root");    colors.push_back(i); i = i -1;
-
+  } else if (4 == mode) {
+    int i = kRed;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2329.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2489.root");    colors.push_back(i); i = i -1;
+    i = kBlue;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2569.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2809.root");    colors.push_back(i); i = i -1;
+    i = kMagenta;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2969.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3289.root");    colors.push_back(i); i = i -1;
+    i = kYellow-2;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3369.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
+    i = kGreen;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-4909.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5209.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5849.root");    colors.push_back(i); i = i -1;
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -829,8 +861,8 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     }
     h0->SetLineColor(colors[ifile]);
     h0->SetMarkerColor(colors[ifile]);
-    h0->SetMarkerStyle(24);
-    h0->SetMarkerSize(0.4);
+    h0->SetMarkerStyle(20);
+    h0->SetMarkerSize(0.2);
     setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
     if (0 == ifile) {
       h0->DrawCopy("p");
@@ -846,7 +878,9 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     tl->SetTextSize(0.015);
     string bla = inputFiles[ifile];
     rmPath(bla);
-    tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.80, 0.15 + ifile*0.016, bla.c_str());
+    replaceAll(bla, "scanBDT-", "");
+    replaceAll(bla, ".root", "");
+    tl->SetTextColor(colors[ifile]); tl->DrawLatexNDC(0.75, 0.15 + ifile*0.016, bla.c_str());
     //    f->Close();
   }
 
