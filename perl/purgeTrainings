@@ -1,0 +1,50 @@
+#!/usr/bin/env perl
+
+# Usage:       purgeTrainings -x $BMMBASE/RootAnalysis/macros/chains/abdt-5
+# ------
+#
+
+use Getopt::Std;
+getopts('x:');
+
+
+$remove{"tmva-trees-10"} = "2016GH";
+$remove{"tmva-trees-11"} = "2016BF";
+
+opendir(DIR, $opt_x) or die $!;
+
+while (my $dir = readdir(DIR)) {
+    next unless (-d "$opt_x/$dir");
+    ($batch = "$dir") =~ s/tmp-//;
+    ($logfile = "$dir.sge.log") =~ s/tmp-//;
+    $fulldir = "$opt_x/$dir";
+    print "$fulldir/$logfile\n";
+    if (!-e "$fulldir/$logfile") {
+	next;
+    }
+    open(IN, "$fulldir/$logfile") || die $!;
+    while (my $line = <IN>) {
+	keys %remove;
+	$trace = "";
+	foreach my $key (keys %remove) {
+	    if ($line =~ $key) {
+		$trace = $remove{$key};
+		last;
+	    }
+	}
+	if ($trace ne "") {
+	    last;
+	}
+    }
+    close(IN);
+    if ($trace ne "") {
+	print "Found $trace, remove *-$trace-$batch.*\n";
+	system("/bin/rm *-$trace-$batch.*");
+    } else {
+	print "no purge pattern found, leave all alone\n";
+    }
+
+}
+
+closedir(DIR);
+exit 0;
