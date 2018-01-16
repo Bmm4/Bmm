@@ -98,21 +98,28 @@ else
 endif
 
 
+pwd
+ls -rtl
+ls -rtl results
+echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
+bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
+date
+pwd
+ls -rtl
+ls -rtl results
+echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
+bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
+date
+pwd
 ls -rtl results
 echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
 bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
 date
+pwd
 ls -rtl
+ls -rtl results
 echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
 bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
-date
-ls -rtl
-echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
-bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
-date
-ls -rtl
-echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
-bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
 date
 ls -rtl
 
