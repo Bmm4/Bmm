@@ -24,6 +24,7 @@
 # Assumptions: jobs are serialized a la asd_asd-asd-10000.py, the numbering is at the end, separated with -
 # ------------ is run in directory where the py files reside! ??? IS THIS TRUE ???
 #
+# 2018/01/15   re-introduced debug (= local but does not do any cleanup at the end of the run)
 # 2016/10/12   add GlueCEPolicyMaxWallClockTime
 # 2016/10/11   add GlueCEStateEstimatedResponseTime
 # 2016/07/19   modify jdl creation and grid job submission
@@ -64,9 +65,9 @@ $uhome .= "ursl";
 my $glite = "$home/grid/glite.conf";
 my $qsub = "/gridware/sge/bin/lx24-amd64/qsub  ";
 # -- if you want to exclude some nodes:
-if (0) {
+if (1) {
 #    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn42&!t3wn24' ";
-    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn24&!t3wn43&!t3wn44&!t3wn51&!t3wn52&!t3wn53&!t3wn54&!t3wn55&!t3wn58&!t3wn59' ";
+    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn24&!t3wn41&!t3wn49' ";
 }
 
 # -- define mode if not provided
@@ -91,7 +92,7 @@ my $SRMCP = "\"lcg-cp -b -D srmv2\"";
 if ($opt_m eq "batch") {$SRMCP = "\"srmcp -2 -globus_tcp_port_range 20000,25000\"";}
 if ($opt_m eq "batch") {$SRMCP = "\"srmcp -2 --streams_num=1\"";}
 if ($opt_m eq "batch") {$SRMCP = "\"lcg-cp -b -D srmv2\"";}
-if ($opt_m eq "local") {$SRMCP = "\"lcg-cp -b -D srmv2\"";}
+if ($opt_m eq "local" || $opt_m eq "debug") {$SRMCP = "\"lcg-cp -b -D srmv2\"";}
 
 my $jobsList = "jobs.list";
 if ($opt_L) {
@@ -239,7 +240,7 @@ foreach $jobfile (@ARGV) {
     $mon += 1;
     $timeStamp = sprintf("%s, %4i/%02i/%02i %02i:%02i:%02i", $host, $year, $mon, $mday, $hour, $min, $sec);
 
-    if ($opt_m eq "local") {
+    if ($opt_m eq "local" || $opt_m eq "debug") {
 	print "local running: $job.csh\n";
 	if ($opt_d) {
 	    print("./$job.csh >& local.log\n");
@@ -366,7 +367,7 @@ sub makeCshFile {
     open(OUT, ">$ljob.csh")  || die "Cannot open $ljob.csh\n";
     my $datum = `/bin/date`; chop $datum;
     while (<IN>) {
-	if (($opt_m eq "batch" || $opt_m eq "local") && /\# BATCH START/) {
+	if (($opt_m eq "batch" || $opt_m eq "local" || $opt_m eq "debug") && /\# BATCH START/) {
 	    print OUT "# BATCH START\n";
 	    print OUT "mkdir -p /scratch/$user\n";
 	    print OUT "cd /scratch/$user\n";
@@ -377,20 +378,23 @@ sub makeCshFile {
 	    print OUT "/bin/cp $pwd/$tdir/$ljobfile .\n";
 	}
 
-	if (($opt_m eq "batch" || $opt_m eq "local") && /\# BATCH END/) {
-	    print OUT "# BATCH END\n";
-	    print OUT "echo \"coming to an end\" \n";
-	    print OUT "pwd \n";
-	    print OUT "ls -l \n";
-	    print OUT "cd /scratch/$user\n";
-	    print OUT "/bin/rm -rf \$JOB\n";
-	    print OUT "pwd \n";
-	    print OUT "ls -l \n";
-	    print OUT "echo \"cleanup data_replica.py logfiles in /tmp\" \n";
-	    print OUT "/bin/rm -f /tmp/data_replica-admin-* \n";
-	    print OUT "echo \"check it\" \n";
-	    print OUT "/bin/ls /tmp | /bin/grep -i $user \n"
-
+	if (($opt_m eq "batch" || $opt_m eq "local" || $opt_m eq "debug") && /\# BATCH END/) {
+	    if ($opt_m eq "debug") {
+		# do nothing!
+	    } else {
+		print OUT "# BATCH END\n";
+		print OUT "echo \"coming to an end\" \n";
+		print OUT "pwd \n";
+		print OUT "ls -l \n";
+		print OUT "cd /scratch/$user\n";
+		print OUT "/bin/rm -rf \$JOB\n";
+		print OUT "pwd \n";
+		print OUT "ls -l \n";
+		print OUT "echo \"cleanup data_replica.py logfiles in /tmp\" \n";
+		print OUT "/bin/rm -f /tmp/data_replica-admin-* \n";
+		print OUT "echo \"check it\" \n";
+		print OUT "/bin/ls /tmp | /bin/grep -i $user \n"
+	    }
 	}
 
 	foreach $repl (@replaces) {
