@@ -181,6 +181,7 @@ void printAxesLabels(TH1 *h) {
     if (la != "") {
       cout << Form("%3d ", i) << Form(" %7.3f ", min) << " .. " << Form(" %7.3f ", max) << ":"
 	   << h->GetXaxis()->GetBinLabel(i)
+	   << ", bin content: " << h->GetBinContent(i)
            << endl;
     }
   }
