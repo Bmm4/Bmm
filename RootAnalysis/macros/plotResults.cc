@@ -563,6 +563,7 @@ void plotResults::makeAll(string what) {
     frd.pv2lips = 0.;
 
     frd.m  = fb.m;
+    cout << fPresel.preselection() << endl;
     cout << fReaderEvents0[0]->EvaluateMVA("BDT") << endl;
   }
 

@@ -39,6 +39,7 @@
 #include "cuts.hh"
 #include "anaNumbers.hh"
 #include "ReaderData.hh"
+#include "preselection.hh"
 
 // -- TMVA related
 #include "TMVA/Factory.h"
@@ -80,7 +81,6 @@ public :
   virtual void   loopFunction2();
 
   // -- physics utilities
-  virtual double getValueByLabel(TH1D *h, std::string label);
   void           closeHistFile();
   virtual void   readCuts(std::string filename);
   void           readFile(std::string filename, std::vector<std::string> &lines);
@@ -139,6 +139,7 @@ public :
   virtual void calcBDT();
 
   struct redTreeData fb;
+  presel fPresel;
   std::vector<TMVA::Reader*> fReaderEvents0;
   std::vector<TMVA::Reader*> fReaderEvents1;
   std::vector<TMVA::Reader*> fReaderEvents2;

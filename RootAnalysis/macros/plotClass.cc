@@ -1632,18 +1632,18 @@ void plotClass::readCuts(string filename) {
 
 	string sXmlName = "weights/" + a->bdtXml + "-Events0_BDT.weights.xml";
 	cout << "call setupReader(" << sXmlName << ") for chan " << a->index << endl;
-	TMVA::Reader *ar = setupReader(sXmlName, frd);
+	TMVA::Reader *ar = setupReader(sXmlName, frd, fPresel);
 	fReaderEvents0[a->index] = ar;
 
 	sXmlName = "weights/" + a->bdtXml + "-Events1_BDT.weights.xml";
 	cout << "call setupReader(" << sXmlName << ") for chan " << a->index << endl;
-	ar = setupReader(sXmlName, frd);
+	ar = setupReader(sXmlName, frd, fPresel);
 	fReaderEvents1[a->index] = ar;
 	if (dump) cout << "xml:                   " << sXmlName << endl;
 
 	sXmlName = "weights/" + a->bdtXml + "-Events2_BDT.weights.xml";
 	cout << "call setupReader(" << sXmlName << ") for chan " << a->index << endl;
-	ar = setupReader(sXmlName, frd);
+	ar = setupReader(sXmlName, frd, fPresel);
 	fReaderEvents2[a->index] = ar;
 	if (dump) cout << "xml:                   " << sXmlName << endl;
 
@@ -3222,19 +3222,6 @@ TStyle * plotClass::setTdrStyle() {
   tdrStyle->cd();
 
   return tdrStyle;
-}
-
-
-// ----------------------------------------------------------------------
-double plotClass::getValueByLabel(TH1D *h, string label) {
-  string axislabel;
-  if (h) {
-    for (int i = 1; i <= h->GetNbinsX(); ++i) {
-      axislabel = h->GetXaxis()->GetBinLabel(i);
-      if (string::npos != axislabel.find(label)) return h->GetBinContent(i);
-    }
-  }
-  return -999.;
 }
 
 
