@@ -458,16 +458,18 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
     }
     is.close();
     ofstream os;
-    os.open(Form("dataset/weights/%s_BDT.weights.xml.new", oname.c_str()), ios::out);
+    os.open(Form("dataset/weights/%s_BDT.weights.xml", oname.c_str()), ios::out);
 
     for (unsigned int i = 0; i < lines.size(); ++i) {
       if (string::npos != lines[i].find("</GeneralInfo>")) {
 	for (unsigned int ibin = 1; ibin <= hpresel->GetNbinsX(); ++ibin) {
 	  string label = hpresel->GetXaxis()->GetBinLabel(ibin);
-	  if (string::npos != label.find("/")) continue;
 	  if (string::npos != label.find("cut:")) {
 	    replaceAll(label, "cut:", "");
 	    os <<  Form("    <Info name=\"Preselection:%s\" value=\"%f\"/>", label.c_str(), hpresel->GetBinContent(ibin)) << endl;
+	  }
+	  if (string::npos != label.find("file")) {
+	    os <<  Form("    <Info name=\"Files:%s\" value=\"%f\"/>", label.c_str(), hpresel->GetBinContent(ibin)) << endl;
 	  }
 	}
       }
