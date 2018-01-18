@@ -232,302 +232,342 @@ TCanvas* tmva1::getC0() {
 
 // ----------------------------------------------------------------------
 void tmva1::train(string oname, string filename, int nsg, int nbg) {
-   // This loads the library
-   TMVA::Tools::Instance();
+  // This loads the library
+  TMVA::Tools::Instance();
 
-   (TMVA::gConfig().GetVariablePlotting()).fNbins1D = 40;
-   (TMVA::gConfig().GetVariablePlotting()).fNbinsMVAoutput = 40;
+  (TMVA::gConfig().GetVariablePlotting()).fNbins1D = 40;
+  (TMVA::gConfig().GetVariablePlotting()).fNbinsMVAoutput = 40;
 
-   int offset;
-   string sint = oname.substr(oname.find("TMVA-")+5, oname.rfind("-") - oname.find("TMVA-")-5);
-   offset = atoi(sint.c_str());
-   cout << "offset= " << offset << " from ->" << sint << "<-" << endl;
+  int offset;
+  string sint = oname.substr(oname.find("TMVA-")+5, oname.rfind("-") - oname.find("TMVA-")-5);
+  offset = atoi(sint.c_str());
+  cout << "offset= " << offset << " from ->" << sint << "<-" << endl;
 
-   // -- Create a ROOT output file where TMVA will store ntuples, histograms, etc.
-   TString outfileName(Form("%s.root", oname.c_str()));
-   TFile* outputFile = TFile::Open( outfileName, "RECREATE" );
+  // -- Create a ROOT output file where TMVA will store ntuples, histograms, etc.
+  TString outfileName(Form("%s.root", oname.c_str()));
+  TFile* outputFile = TFile::Open(outfileName, "RECREATE" );
 
-   TH1D *hSetup = new TH1D("hSetup", "hSetup", 100, 0., 100.);
-   int i(0);
-   i =  1; hSetup->SetBinContent(i, fTrainAntiMuon?1:0); hSetup->GetXaxis()->SetBinLabel(i, "antimuon");
-   i =  3; hSetup->SetBinContent(i, fRsigma); hSetup->GetXaxis()->SetBinLabel(i, "rsigma");
-   i =  5; hSetup->SetBinContent(i, fApplyOn0?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn0");
-   i =  6; hSetup->SetBinContent(i, fApplyOn1?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn1");
-   i =  7; hSetup->SetBinContent(i, fApplyOn2?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn2");
-   i = 10; hSetup->SetBinContent(i, fBdtSetup.NTrees); hSetup->GetXaxis()->SetBinLabel(i, "NTrees");
-   i = 11; hSetup->SetBinContent(i, fBdtSetup.nEventsMin); hSetup->GetXaxis()->SetBinLabel(i, "nEventsMin");
-   i = 12; hSetup->SetBinContent(i, fBdtSetup.nCuts); hSetup->GetXaxis()->SetBinLabel(i, "nCuts");
-   i = 13; hSetup->SetBinContent(i, fBdtSetup.AdaBoostBeta); hSetup->GetXaxis()->SetBinLabel(i, "AdaBoostBeta");
+  TH1D *hSetup = new TH1D("hSetup", "hSetup", 100, 0., 100.);
+  int i(0);
+  i =  1; hSetup->SetBinContent(i, fTrainAntiMuon?1:0); hSetup->GetXaxis()->SetBinLabel(i, "antimuon");
+  i =  3; hSetup->SetBinContent(i, fRsigma); hSetup->GetXaxis()->SetBinLabel(i, "rsigma");
+  i =  5; hSetup->SetBinContent(i, fApplyOn0?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn0");
+  i =  6; hSetup->SetBinContent(i, fApplyOn1?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn1");
+  i =  7; hSetup->SetBinContent(i, fApplyOn2?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn2");
+  i = 10; hSetup->SetBinContent(i, fBdtSetup.NTrees); hSetup->GetXaxis()->SetBinLabel(i, "NTrees");
+  i = 11; hSetup->SetBinContent(i, fBdtSetup.nEventsMin); hSetup->GetXaxis()->SetBinLabel(i, "nEventsMin");
+  i = 12; hSetup->SetBinContent(i, fBdtSetup.nCuts); hSetup->GetXaxis()->SetBinLabel(i, "nCuts");
+  i = 13; hSetup->SetBinContent(i, fBdtSetup.AdaBoostBeta); hSetup->GetXaxis()->SetBinLabel(i, "AdaBoostBeta");
 
-   i = 14; hSetup->SetBinContent(i, offset); hSetup->GetXaxis()->SetBinLabel(i, "bdtname");
+  i = 14; hSetup->SetBinContent(i, offset); hSetup->GetXaxis()->SetBinLabel(i, "bdtname");
 
-   i = 20; hSetup->SetBinContent(i, fBdtSetup.MaxDepth); hSetup->GetXaxis()->SetBinLabel(i, "MaxDepth");
-   i = 21; hSetup->SetBinContent(i, fBdtSetup.NNodesMax); hSetup->GetXaxis()->SetBinLabel(i, "NNodesMax");
+  i = 20; hSetup->SetBinContent(i, fBdtSetup.MaxDepth); hSetup->GetXaxis()->SetBinLabel(i, "MaxDepth");
+  i = 21; hSetup->SetBinContent(i, fBdtSetup.NNodesMax); hSetup->GetXaxis()->SetBinLabel(i, "NNodesMax");
 
-   cout << "----------------------------------------------------------------------" << endl;
-   cout << "==> oname: " << oname << " antimuon: " << fTrainAntiMuon <<  endl;
+  cout << "----------------------------------------------------------------------" << endl;
+  cout << "==> oname: " << oname << " antimuon: " << fTrainAntiMuon <<  endl;
+  string optstring = "V:!Silent:!Color:!DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification";
+  optstring        = "V:!Silent:!Color:!DrawProgressBar:Transformations=I:AnalysisType=Classification";
+  cout << "==> Factory: " << optstring << endl;
+  TMVA::Factory *factory = new TMVA::Factory(Form("%s", oname.c_str()), outputFile,  optstring.c_str());
+  TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset");
 
-   string optstring = "V:!Silent:!Color:!DrawProgressBar:Transformations=I;D;P;G,D:AnalysisType=Classification";
-   optstring        = "V:!Silent:!Color:!DrawProgressBar:Transformations=I:AnalysisType=Classification";
-   cout << "==> Factory: " << optstring << endl;
-   TMVA::Factory *factory = new TMVA::Factory(Form("%s", oname.c_str()), outputFile,  optstring.c_str());
-   TMVA::DataLoader *dataloader = new TMVA::DataLoader("dataset");
+  // -- parse string with all variables into a vector
+  vector<string> vVar;
+  string allvar = fVariables;
+  string::size_type m0(allvar.size());
+  cout << "--> allvar = " << allvar << endl;
+  string var;
+  while (string::npos != m0) {
+    m0 = allvar.find(":");
+    var = allvar.substr(0, m0);
+    vVar.push_back(var);
+    allvar = allvar.substr(m0+1);
+    m0 = allvar.find(":");
+  }
+  var = allvar;
+  vVar.push_back(var);
 
-   // -- parse string with all variables into a vector
-   vector<string> vVar;
-   string allvar = fVariables;
-   string::size_type m0(allvar.size());
-   cout << "--> allvar = " << allvar << endl;
-   string var;
-   while (string::npos != m0) {
-     m0 = allvar.find(":");
-     var = allvar.substr(0, m0);
-     vVar.push_back(var);
-     allvar = allvar.substr(m0+1);
-     m0 = allvar.find(":");
-   }
-   var = allvar;
-   vVar.push_back(var);
+  for (unsigned int i = 0; i < vVar.size(); ++i) {
+    cout << " addVariable:  " << vVar[i] << endl;
+    //      if (string::npos != vVar[i].find("closetrk")) {
+    //        factory->AddVariable(vVar[i].c_str(), 'I');
+    //      } else {
+    dataloader->AddVariable(vVar[i].c_str(), 'F');
+    //      }
+  }
 
-   for (unsigned int i = 0; i < vVar.size(); ++i) {
-     cout << " addVariable:  " << vVar[i] << endl;
-     //      if (string::npos != vVar[i].find("closetrk")) {
-     //        factory->AddVariable(vVar[i].c_str(), 'I');
-     //      } else {
-     dataloader->AddVariable(vVar[i].c_str(), 'F');
-     //      }
-   }
+  dataloader->AddSpectator("m",  "mass", "GeV", 'F' );
 
-   dataloader->AddSpectator("m",  "mass", "GeV", 'F' );
+  TFile* inFile;
+  TTree *applySg(0), *trainSg(0), *testSg(0), *applyBg(0), *trainBg(0), *testBg(0);
 
-   TFile* inFile;
-   TTree *applySg(0), *trainSg(0), *testSg(0), *applyBg(0), *trainBg(0), *testBg(0);
+  inFile = TFile::Open(filename.c_str());
+  cout << "opening " << filename << " inFile = " << inFile << endl;
+  string sChannel("");
+  if (fChannel > -1) {
+    sChannel = Form("Chan%d", fChannel);
+  } else {
+    sChannel = Form("All");
+  }
 
-   inFile = TFile::Open(filename.c_str());
-   cout << "opening " << filename << " inFile = " << inFile << endl;
-   string sChannel("");
-   if (fChannel > -1) {
-     sChannel = Form("Chan%d", fChannel);
-   } else {
-     sChannel = Form("All");
-   }
-
-   if (fApplyOn0) {
-     cout << "==============> Apply on events0, train on events1, test on events2" << endl;
-     cout << Form("signal%sEvents0/events", sChannel.c_str()) << " "
-	  << Form("sideband%sEvents0/events", sChannel.c_str()) << endl;
-     applySg = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
-     trainSg = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
-     testSg  = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
-     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
-     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
-     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
-     cout << "trainBg = " << trainBg << endl;
-     cout << "==============> trainSg =  " << trainSg->GetDirectory()->GetName() << " entries: " << trainSg->GetEntries() << endl;
-     cout << "==============> testSg  =  " << testSg->GetDirectory()->GetName()  << " entries: " << testSg->GetEntries() << endl;
-     cout << "==============> applySg =  " << applySg->GetDirectory()->GetName()  << " entries: " << applySg->GetEntries() << endl;
-     cout << "==============> trainBg =  " << trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
-     cout << "==============> testBg  =  " << testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
-     cout << "==============> applyBg =  " << applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
-   }
-
-
-   if (fApplyOn1) {
-     cout << "==============> Apply on events1, train on events2, test on events0" << endl;
-     cout << Form("signal%sEvents1/events", sChannel.c_str()) << " "
-	  << Form("sideband%sEvents1/events", sChannel.c_str()) << endl;
-     applySg = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
-     trainSg = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
-     testSg  = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
-     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
-     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
-     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
-     cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
-     cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
-     cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
-   }
-
-   if (fApplyOn2) {
-     cout << "==============> Apply on events2, train on events0, test on events1" << endl;
-     cout << Form("signal%sEvents2/events", sChannel.c_str()) << " "
-	  << Form("sideband%sEvents2/events", sChannel.c_str()) << endl;
-     applySg = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
-     trainSg = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
-     testSg  = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
-     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
-     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
-     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
-     cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
-     cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
-     cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
-   }
-
-   i = 30; hSetup->SetBinContent(i, applySg->GetEntries()); hSetup->GetXaxis()->SetBinLabel(i, "sgcnt");
-   i = 31; hSetup->SetBinContent(i, applyBg->GetEntries()); hSetup->GetXaxis()->SetBinLabel(i, "bgcnt");
-   writeOut(outputFile, hSetup);
-
-   Double_t signalWeight      = 1.; //= LUMISCALE; // 0.000388
-   Double_t rbackgroundWeight = 1.;
-   Double_t cbackgroundWeight = 1.;
-   Double_t tbackgroundWeight = cbackgroundWeight;
-
-   cout << "--> signal weight:     " << signalWeight << endl;
-   cout << "--> cbackground weight: " << cbackgroundWeight << endl;
-   cout << "--> rbackground weight: " << rbackgroundWeight << endl;
-
-   dataloader->AddSignalTree(trainSg,     signalWeight,      "Training");
-   dataloader->AddSignalTree(testSg,      signalWeight,      "Test");
-   dataloader->AddBackgroundTree(trainBg, cbackgroundWeight, "Training");
-   dataloader->AddBackgroundTree(testBg,  tbackgroundWeight, "Test");
-
-   int nSgTrain = trainSg->GetEntries();
-   int nSgTest  = testSg->GetEntries();
-
-   int nBgTrain = trainBg->GetEntries();
-   int nBgTest  = testBg->GetEntries();
-
-   if (nsg > -1) {
-     nSgTrain = nsg;
-     nSgTest = nsg;
-   }
-
-   if (nbg > -1) {
-     nBgTrain = nbg;
-     nBgTest = nbg;
-   }
-
-   int seed = static_cast<int>(100*gRandom->Rndm());
-
-   // optstring=Form("nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:V");
-   // optstring=Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=random:SplitSeed=%d:NormMode=None:V",
-   // nSgTrain, nSgTest, nBgTrain, nBgTest, seed);
-
-   optstring = Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=Block:NormMode=None:V",
-		    nSgTrain, nSgTest, nBgTrain, nBgTest);
-   cout << "==> PrepareTrainingAndTestTree: " << optstring << endl;
-   dataloader->PrepareTrainingAndTestTree("", "", optstring.c_str());
-
-   if (0) {
-     optstring = Form("!H:V:NTrees=%d", fBdtSetup.NTrees);
-     optstring += Form(":nCuts=%d:PruneMethod=NoPruning", fBdtSetup.nCuts);
-     optstring += Form(":PruneMethod=NoPruning");
-     optstring += Form(":BoostType=AdaBoost:AdaBoostBeta=%f:SeparationType=GiniIndex", fBdtSetup.AdaBoostBeta);
-     optstring += Form(":MaxDepth=%d", fBdtSetup.MaxDepth);
-     optstring += Form(":NNodesMax=%d", fBdtSetup.NNodesMax);
-     //     optstring += Form(":nEventsMin=%d", fBdtSetup.nEventsMin);
-   } else {
-     optstring = "!H:V" + fBDTParameters;
-   }
-
-   cout << "==> BookMethod: " << optstring << endl;
-   factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT", optstring);
-
-   cout << "==> TrainAllMethods " << endl;
-   factory->TrainAllMethods();
-
-   // ---- Evaluate all MVAs using the set of test events
-   cout << "==> TestAllMethods " << endl;
-   factory->TestAllMethods();
-
-   // ----- Evaluate and compare performance of all configured MVAs
-   cout << "==> EvaluateAllMethods " << endl;
-   factory->EvaluateAllMethods();
-
-   // Save the output
-   outputFile->Close();
-   delete factory;
-   gROOT->Clear();
-   gROOT->DeleteAll();
-   cout << "==> TMVAClassification is done!" << endl;
+  if (fApplyOn0) {
+    cout << "==============> Apply on events0, train on events1, test on events2" << endl;
+    cout << Form("signal%sEvents0/events", sChannel.c_str()) << " "
+	 << Form("sideband%sEvents0/events", sChannel.c_str()) << endl;
+    applySg = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
+    trainSg = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
+    testSg  = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
+    applyBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
+    trainBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
+    testBg  = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
+    cout << "trainBg = " << trainBg << endl;
+    cout << "==============> trainSg =  " << trainSg->GetDirectory()->GetName() << " entries: " << trainSg->GetEntries() << endl;
+    cout << "==============> testSg  =  " << testSg->GetDirectory()->GetName()  << " entries: " << testSg->GetEntries() << endl;
+    cout << "==============> applySg =  " << applySg->GetDirectory()->GetName()  << " entries: " << applySg->GetEntries() << endl;
+    cout << "==============> trainBg =  " << trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
+    cout << "==============> testBg  =  " << testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
+    cout << "==============> applyBg =  " << applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
+  }
 
 
-   outputFile = TFile::Open(outfileName);
-   TString hname = "dataset/Method_BDT/BDT/MVA_BDT";
-   TH1 *sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_S" ));
-   TH1 *bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_B" ));
-   cout << "==> Looking for Kolmogorov-Smirnov input: gDirectory = " << gDirectory->GetName()
-	<< " sig = " << sig << " bgd = " << bgd << endl;
+  if (fApplyOn1) {
+    cout << "==============> Apply on events1, train on events2, test on events0" << endl;
+    cout << Form("signal%sEvents1/events", sChannel.c_str()) << " "
+	 << Form("sideband%sEvents1/events", sChannel.c_str()) << endl;
+    applySg = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
+    trainSg = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
+    testSg  = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
+    applyBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
+    trainBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
+    testBg  = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
+    cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
+    cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
+    cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
+  }
 
-   TH1D *hs = (TH1D*)sig->Clone("hs");
-   hs->Scale(1./hs->Integral());
-   TH1D *hb = (TH1D*)bgd->Clone("hb");
-   hb->Scale(1./hs->Integral());
+  if (fApplyOn2) {
+    cout << "==============> Apply on events2, train on events0, test on events1" << endl;
+    cout << Form("signal%sEvents2/events", sChannel.c_str()) << " "
+	 << Form("sideband%sEvents2/events", sChannel.c_str()) << endl;
+    applySg = (TTree*)inFile->Get(Form("signal%sEvents2/events", sChannel.c_str()));
+    trainSg = (TTree*)inFile->Get(Form("signal%sEvents0/events", sChannel.c_str()));
+    testSg  = (TTree*)inFile->Get(Form("signal%sEvents1/events", sChannel.c_str()));
+    applyBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
+    trainBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
+    testBg  = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
+    cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
+    cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
+    cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
+  }
 
-   sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_S" ));
-   bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_B" ));
-   TH1D *hS = (TH1D*)sig->Clone("hS");
-   hS->Scale(1./hS->Integral());
-   TH1D *hB = (TH1D*)bgd->Clone("hB");
-   hB->Scale(1./hB->Integral());
+  i = 30; hSetup->SetBinContent(i, applySg->GetEntries()); hSetup->GetXaxis()->SetBinLabel(i, "sgcnt");
+  i = 31; hSetup->SetBinContent(i, applyBg->GetEntries()); hSetup->GetXaxis()->SetBinLabel(i, "bgcnt");
+  writeOut(outputFile, hSetup);
 
-   double kolS = hs->KolmogorovTest(hS);
-   double kolB = hb->KolmogorovTest(hB);
+  Double_t signalWeight      = 1.; //= LUMISCALE; // 0.000388
+  Double_t rbackgroundWeight = 1.;
+  Double_t cbackgroundWeight = 1.;
+  Double_t tbackgroundWeight = cbackgroundWeight;
 
-   fKS.push_back(kolS);
-   fKS.push_back(kolB);
-   cout << "KS-probability /" << gDirectory->GetName() << "/ ks-sg = " << kolS << " ks-bg = " << kolB << endl;
+  cout << "--> signal weight:     " << signalWeight << endl;
+  cout << "--> cbackground weight: " << cbackgroundWeight << endl;
+  cout << "--> rbackground weight: " << rbackgroundWeight << endl;
 
-   outfileName.ReplaceAll(".root", ".pdf");
-   TTree *t = dynamic_cast<TTree*>(gDirectory->Get("dataset/TestTree"));
-   int id;
-   float bdt;
-   t->SetBranchAddress("classID", &id);
-   t->SetBranchAddress("BDT", &bdt);
-   fH1s->Reset();
-   fH1b->Reset();
-   fH1r->Reset();
-   for (int jentry = 0; jentry < t->GetEntries(); jentry++) {
-     t->GetEntry(jentry);
-     if (0 == id) {
-       fH1s->Fill(bdt);
-     } else {
-       fH1b->Fill(bdt);
-     }
-   }
-   fH1s->Scale(fLumiScale);
+  dataloader->AddSignalTree(trainSg,     signalWeight,      "Training");
+  dataloader->AddSignalTree(testSg,      signalWeight,      "Test");
+  dataloader->AddBackgroundTree(trainBg, cbackgroundWeight, "Training");
+  dataloader->AddBackgroundTree(testBg,  tbackgroundWeight, "Test");
 
-   fH1s->Draw();
-   gPad->SaveAs(Form("h1s-%s", outfileName.Data()));
-   fH1b->Draw();
-   gPad->SaveAs(Form("h1b-%s", outfileName.Data()));
+  int nSgTrain = trainSg->GetEntries();
+  int nSgTest  = testSg->GetEntries();
 
-   double rMax(-1.), rBdt(99);
-   int nbins(fH1s->GetNbinsX()+1);
-   for (int ibin = 1; ibin < nbins; ++ibin) {
-     double s = fH1s->Integral(ibin, nbins);
-     double b = fH1b->Integral(ibin, nbins);
-     double r = 0.;
-     if (s+b > 0.) {
-       r = s/TMath::Sqrt(s+b);
-       fH1r->SetBinContent(ibin, r);
-       if (r > rMax) {
-	 rMax = r;
-	 rBdt = fH1s->GetBinCenter(ibin);
-       }
-     }
-     cout << "s(" << ibin << "," << nbins << ") = " << s << " b = " << b << " r = " << r << " (bin center = " << fH1s->GetBinCenter(ibin) << ")" << endl;
-   }
-   fMaxSSB.push_back(rMax);
-   fMaxBdt.push_back(rBdt);
-   cout << "hello" << endl;
-   // h1r->Write();
-   cout << "hello2" << endl;
-   outputFile->Close();
-   cout << "hello3" << endl;
-   fH1r->Draw();
-   gPad->SaveAs(Form("h1r-%s", outfileName.Data()));
+  int nBgTrain = trainBg->GetEntries();
+  int nBgTest  = testBg->GetEntries();
+
+  if (nsg > -1) {
+    nSgTrain = nsg;
+    nSgTest = nsg;
+  }
+
+  if (nbg > -1) {
+    nBgTrain = nbg;
+    nBgTest = nbg;
+  }
+
+  int seed = static_cast<int>(100*gRandom->Rndm());
+
+  // optstring=Form("nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:V");
+  // optstring=Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=random:SplitSeed=%d:NormMode=None:V",
+  // nSgTrain, nSgTest, nBgTrain, nBgTest, seed);
+
+  optstring = Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=Block:NormMode=None:V",
+		   nSgTrain, nSgTest, nBgTrain, nBgTest);
+  cout << "==> PrepareTrainingAndTestTree: " << optstring << endl;
+  dataloader->PrepareTrainingAndTestTree("", "", optstring.c_str());
+
+  if (0) {
+    optstring = Form("!H:V:NTrees=%d", fBdtSetup.NTrees);
+    optstring += Form(":nCuts=%d:PruneMethod=NoPruning", fBdtSetup.nCuts);
+    optstring += Form(":PruneMethod=NoPruning");
+    optstring += Form(":BoostType=AdaBoost:AdaBoostBeta=%f:SeparationType=GiniIndex", fBdtSetup.AdaBoostBeta);
+    optstring += Form(":MaxDepth=%d", fBdtSetup.MaxDepth);
+    optstring += Form(":NNodesMax=%d", fBdtSetup.NNodesMax);
+    //     optstring += Form(":nEventsMin=%d", fBdtSetup.nEventsMin);
+  } else {
+    optstring = "!H:V" + fBDTParameters;
+  }
+
+  cout << "==> BookMethod: " << optstring << endl;
+  factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT", optstring);
+
+  cout << "==> TrainAllMethods " << endl;
+  factory->TrainAllMethods();
+
+  // ---- Evaluate all MVAs using the set of test events
+  cout << "==> TestAllMethods " << endl;
+  factory->TestAllMethods();
+
+  // ----- Evaluate and compare performance of all configured MVAs
+  cout << "==> EvaluateAllMethods " << endl;
+  factory->EvaluateAllMethods();
+
+  // Save the output
+  outputFile->Close();
+  delete factory;
+  gROOT->Clear();
+  gROOT->DeleteAll();
+  cout << "==> TMVAClassification is done!" << endl;
+
+  // -- dump preselection information into XML files
+  //  </GeneralInfo>
+  TH1D *hpresel = (TH1D*)inFile->Get("hpresel");
+  if (hpresel) {
+    string xmlName = Form("dataset/weights/%s_BDT.weights.xml", oname.c_str());
+    cout << "xmlName = " << xmlName  << endl;
+    vector<string> lines;
+    char  buffer[200];
+    ifstream is(xmlName.c_str());
+    if (!is) {
+      cout << "file ->" << xmlName << "<- not found, exit(1)" << endl;
+      exit(1);
+    }
+    char input[1000];
+    while (is.getline(buffer, 200, '\n')) {
+      lines.push_back(string(buffer));
+    }
+    is.close();
+    ofstream os;
+    os.open(Form("dataset/weights/%s_BDT.weights.xml.new", oname.c_str()), ios::out);
+
+    for (unsigned int i = 0; i < lines.size(); ++i) {
+      if (string::npos != lines[i].find("</GeneralInfo>")) {
+	for (unsigned int ibin = 1; ibin <= hpresel->GetNbinsX(); ++ibin) {
+	  string label = hpresel->GetXaxis()->GetBinLabel(ibin);
+	  if (string::npos != label.find("/")) continue;
+	  if (string::npos != label.find("cut:")) {
+	    replaceAll(label, "cut:", "");
+	    os <<  Form("    <Info name=\"Preselection:%s\" value=\"%f\"/>", label.c_str(), hpresel->GetBinContent(ibin)) << endl;
+	  }
+	}
+      }
+      os << lines[i] << endl;
+    }
+    os.close();
+  }
+
+  outputFile = TFile::Open(outfileName);
+  TString hname = "dataset/Method_BDT/BDT/MVA_BDT";
+  TH1 *sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_S" ));
+  TH1 *bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_B" ));
+  cout << "==> Looking for Kolmogorov-Smirnov input: gDirectory = " << gDirectory->GetName()
+       << " sig = " << sig << " bgd = " << bgd << endl;
+
+  TH1D *hs = (TH1D*)sig->Clone("hs");
+  hs->Scale(1./hs->Integral());
+  TH1D *hb = (TH1D*)bgd->Clone("hb");
+  hb->Scale(1./hs->Integral());
+
+  sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_S" ));
+  bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_B" ));
+  TH1D *hS = (TH1D*)sig->Clone("hS");
+  hS->Scale(1./hS->Integral());
+  TH1D *hB = (TH1D*)bgd->Clone("hB");
+  hB->Scale(1./hB->Integral());
+
+  double kolS = hs->KolmogorovTest(hS);
+  double kolB = hb->KolmogorovTest(hB);
+
+  fKS.push_back(kolS);
+  fKS.push_back(kolB);
+  cout << "KS-probability /" << gDirectory->GetName() << "/ ks-sg = " << kolS << " ks-bg = " << kolB << endl;
+
+  outfileName.ReplaceAll(".root", ".pdf");
+  TTree *t = dynamic_cast<TTree*>(gDirectory->Get("dataset/TestTree"));
+  int id;
+  float bdt;
+  t->SetBranchAddress("classID", &id);
+  t->SetBranchAddress("BDT", &bdt);
+  fH1s->Reset();
+  fH1b->Reset();
+  fH1r->Reset();
+  for (int jentry = 0; jentry < t->GetEntries(); jentry++) {
+    t->GetEntry(jentry);
+    if (0 == id) {
+      fH1s->Fill(bdt);
+    } else {
+      fH1b->Fill(bdt);
+    }
+  }
+  fH1s->Scale(fLumiScale);
+
+  fH1s->Draw();
+  gPad->SaveAs(Form("h1s-%s", outfileName.Data()));
+  fH1b->Draw();
+  gPad->SaveAs(Form("h1b-%s", outfileName.Data()));
+
+  double rMax(-1.), rBdt(99);
+  int nbins(fH1s->GetNbinsX()+1);
+  for (int ibin = 1; ibin < nbins; ++ibin) {
+    double s = fH1s->Integral(ibin, nbins);
+    double b = fH1b->Integral(ibin, nbins);
+    double r = 0.;
+    if (s+b > 0.) {
+      r = s/TMath::Sqrt(s+b);
+      fH1r->SetBinContent(ibin, r);
+      if (r > rMax) {
+	rMax = r;
+	rBdt = fH1s->GetBinCenter(ibin);
+      }
+    }
+    cout << "s(" << ibin << "," << nbins << ") = " << s << " b = " << b << " r = " << r << " (bin center = " << fH1s->GetBinCenter(ibin) << ")" << endl;
+  }
+  fMaxSSB.push_back(rMax);
+  fMaxBdt.push_back(rBdt);
+  cout << "hello" << endl;
+  // h1r->Write();
+  cout << "hello2" << endl;
+  outputFile->Close();
+  cout << "hello3" << endl;
+  fH1r->Draw();
+  gPad->SaveAs(Form("h1r-%s", outfileName.Data()));
 
 }
 
 
+
 // ----------------------------------------------------------------------
-void tmva1::createInputFile(string filename, int randomSeed) {
+void tmva1::createInputFile(string filename, string sfile, string dfile, int randomSeed) {
+
+  fInputFiles.sname = sfile;
+  fInputFiles.dname = dfile;
+
   cout << "signal: " << fInputFiles.sname << endl;
   cout << "data:   " << fInputFiles.dname << endl;
   TFile *sinput = TFile::Open(fInputFiles.sname.c_str());
   TFile *dinput = TFile::Open(fInputFiles.dname.c_str());
 
-  TCut sgcut = preselection().c_str();
+  TCut sgcut = fPresel.preselection().c_str();
 
   cout << "new: " << endl;
   cout << sgcut << endl;
@@ -591,9 +631,9 @@ void tmva1::createInputFile(string filename, int randomSeed) {
     }
 
     // -- combined version:
+    chanCut = "(0 == chan) || (1 == chan)";
     // -- signal
     sdir = Form("signalAll%s", type.c_str());
-    chanCut = "(0 == chan) || (1 == chan)";
     outFile->mkdir(sdir.c_str());
     outFile->cd(sdir.c_str());
     copyCuts = sgcut + muonid + chanCut + typeCut;
@@ -612,6 +652,13 @@ void tmva1::createInputFile(string filename, int randomSeed) {
 
 
   }
+
+  TH1D *h1 = fPresel.getPreselectionNumbers();
+  h1->GetXaxis()->SetBinLabel(98, Form("file-sg:%s", fInputFiles.sname.c_str()));
+  h1->GetXaxis()->SetBinLabel(99, Form("file-bg:%s", fInputFiles.dname.c_str()));
+
+  h1->SetDirectory(outFile);
+  h1->Write();
 
   outFile->Write();
   outFile->Close();

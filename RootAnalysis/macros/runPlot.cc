@@ -42,22 +42,22 @@ int main(int argc, char *argv[]) {
 
   string progName  = argv[0];
 
-  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("2016");
-  int year(2016);
+  string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("0");
+  int year(0);
   bool remove(false);
 
   // -- command line arguments
-  for (int i = 0; i < argc; i++){
-    if (!strcmp(argv[i], "-c"))  {cuts  = argv[++i];}
-    if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}
-    if (!strcmp(argv[i], "-f"))  {files = argv[++i];}         // for tmva1: offset
-    if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}         // for tmva1: BDT parameters
-    if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}
-    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} // for tmva1: input rootfilename
-    if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}         // for tmva1: vars
-    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}         // for tmva1: BDT parameters
-    if (!strcmp(argv[i], "-x"))  {remove= true;}
-    if (!strcmp(argv[i], "-y"))  {syear = argv[++i];}
+  for (int i = 0; i < argc; i++){                             // tmva1:               trainingfiles:
+    if (!strcmp(argv[i], "-c"))  {cuts  = argv[++i];}         //
+    if (!strcmp(argv[i], "-d"))  {dir   = argv[++i];}         //                      data input filename
+    if (!strcmp(argv[i], "-f"))  {files = argv[++i];}         // offset
+    if (!strcmp(argv[i], "-m"))  {mode  = argv[++i];}         // BDT parameters
+    if (!strcmp(argv[i], "-p"))  {plot  = argv[++i];}         //
+    if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} // input rootfilename   output rootfilename
+    if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}         // vars                 signal input filename
+    if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}         // BDT parameters
+    if (!strcmp(argv[i], "-x"))  {remove= true;}              //
+    if (!strcmp(argv[i], "-y"))  {syear = argv[++i];}         //
   }
 
   if ("2017" == syear) {
@@ -240,24 +240,6 @@ int main(int argc, char *argv[]) {
     }
   }
 
-  // -- TMVA training
-  if (string::npos != plot.find("tmva1")) {
-    gROOT->Clear();  gROOT->DeleteAll();
-    tmva1 a(year, setup, mode);
-    int ioffset(100);
-    if ("nada" == files) {
-      ioffset = 100;
-    } else {
-      ioffset = atoi(files.c_str());
-    }
-    int chan = ioffset%10;
-    if (9 == chan) chan = -1;
-    cout << "calling tmva1::makeAll(" << ioffset << ", \"\", " << chan << ")" << endl;
-    if (rootfilename == "nada") rootfilename = "";
-    a.makeAll(ioffset, rootfilename, chan);
-  }
-
-
   // -- BDT
   if (string::npos != plot.find("bdt")) {
     cout << "files: " << files << " cuts: " << cuts << " setup: " << setup << endl;
@@ -285,6 +267,37 @@ int main(int argc, char *argv[]) {
   }
 
 
+  // -- TMVA training
+  if (string::npos != plot.find("tmva1")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    tmva1 a(year, setup, mode);
+    int ioffset(100);
+    if ("nada" == files) {
+      ioffset = 100;
+    } else {
+      ioffset = atoi(files.c_str());
+    }
+    int chan = ioffset%10;
+    if (9 == chan) chan = -1;
+    cout << "calling tmva1::makeAll(" << ioffset << ", \"\", " << chan << ")" << endl;
+    if (rootfilename == "nada") rootfilename = "";
+    a.makeAll(ioffset, rootfilename, chan);
+  }
+
+  // -- TMVA create training files
+  if (string::npos != plot.find("trainingfiles")) {
+    gROOT->Clear();  gROOT->DeleteAll();
+    tmva1 a(0, "", "");
+    cout << "calling tmva1::createInputFile(\"" << rootfilename << "\", \""
+	 << setup << "\", \""
+	 << dir << "\")" << endl;
+    a.createInputFile(rootfilename, setup, dir);
+
+  }
+
+
+
+
   // -- umlLifetime
   if (string::npos != plot.find("umllifetime")) {
     gROOT->Clear();  gROOT->DeleteAll();
@@ -302,6 +315,59 @@ int main(int argc, char *argv[]) {
     } else {
       a.makeAll();
     }
+  }
+
+
+  // -- dbx
+  if (string::npos != plot.find("dbx")) {
+    cout << "dbx" << endl;
+    delete gRandom;
+    gRandom = (TRandom*) new TRandom3;
+    gRandom->SetSeed(12345);
+
+    double v;
+    presel a;
+    redTreeData b;
+    int cnt(0);
+
+    for (int i = 0; i < 10000; ++i) {
+      b.m1q = -1;
+      b.m2q = +1.;
+
+      b.pt = 20.;
+
+      b.m1pt  = 6.0 + gRandom->Rndm();
+      b.m2pt  = 4.0 + gRandom->Rndm();
+
+      b.flsxy  = 12. + gRandom->Rndm();
+      b.fl3d   = 1. + gRandom->Rndm();
+      b.fls3d  = 50. + gRandom->Rndm();
+      b.pvip   = 0.0001;
+      b.pvips  = 1.;
+      b.pvlip  = 0.1;
+      b.pvlips = 4.;
+
+      b.closetrk  = 0.;
+      b.fls3d     = 20.;
+      b.docatrk   = 0.1;
+      b.maxdoca   = 0.001;
+      b.me        = 0.01;
+
+      b.chi2dof  = 1.0;
+      b.iso      = 0.99;
+      b.m1iso    = 0.99;
+      b.m2iso    = 0.99;
+
+      b.alpha = TMath::Abs(0.5 + gRandom->Rndm());
+      if (a.preselection(b)) {
+	++cnt;
+	for (int j = 0; j < 10000; ++j) {
+	  v += 1234 + gRandom->Rndm();
+	}
+      }
+    }
+    cout << "a total of " << cnt << " passing events" << endl;
+    cout << a.preselection() << endl;
   }
 
   TTimeStamp ts1;

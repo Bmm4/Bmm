@@ -55,7 +55,7 @@ class tmva1: public TObject {
   void makeAll(int offset, std::string filename = "", int chan = -1);
   void make(int offset, std::string filename, int evt);
 
-  void createInputFile(std::string fname, int randomSeed = -1);
+  void createInputFile(std::string fname, std::string sfile, std::string dfile, int randomSeed = -1);
 
   void setBDTParameters(std::string pars) {fBDTParameters = pars;}
   void setNTrees(int i) {fBdtSetup.NTrees = i;}
@@ -89,6 +89,7 @@ class tmva1: public TObject {
   ReaderData frd;
   double fBDT, fBDT0, fBDT1, fBDT2;
   std::vector<TMVA::Reader*> fReader;
+  presel fPresel;
 
   TLegend *legg;
   TLegendEntry *legge;
