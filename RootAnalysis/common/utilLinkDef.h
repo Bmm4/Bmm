@@ -17,6 +17,7 @@
 
 #pragma link C++ function printNonZero(TH1*);
 #pragma link C++ function printAxesLabels(TH1*);
+#pragma link C++ function getValueByLabel(TH1 *, std::string);
 #pragma link C++ function stampAndSave(TCanvas *, const char*);
 #pragma link C++ function shrinkPad(double, double, double, double);
 #pragma link C++ function babar(double, double, double);

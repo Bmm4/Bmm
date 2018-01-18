@@ -189,6 +189,18 @@ void printAxesLabels(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+double getValueByLabel(TH1 *h, string label) {
+  string axislabel;
+  if (h) {
+    for (int i = 1; i <= h->GetNbinsX(); ++i) {
+      axislabel = h->GetXaxis()->GetBinLabel(i);
+      if (string::npos != axislabel.find(label)) return h->GetBinContent(i);
+    }
+  }
+  return -999.;
+}
+
+// ----------------------------------------------------------------------
 void stampAndSave(TCanvas *fC, const char *s) {
   fC->cd();
   TLatex tl;
