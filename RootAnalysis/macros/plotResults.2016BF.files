@@ -1,10 +1,13 @@
-type=bmm,data              lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
-type=bupsik,data           lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
-type=bupsik,data,legacy    lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
-type=bspsiphi,data         lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
-type=bspsiphi,data,legacy  lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
-type=bspsif,data           lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
-type=bdpsikstar,data       lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+#type=bmm,data              lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+#type=bupsik,data           lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+#type=bspsif,data           lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+#type=bdpsikstar,data       lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+#type=bspsiphi,data         lumi=19.9          file=scratch/bmm-data-bmmCharmonium2016BF-v06.root
+type=bmm,data              lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
+type=bupsik,data           lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
+type=bspsif,data           lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
+type=bdpsikstar,data       lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
+type=bspsiphi,data         lumi=19.9          file=/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root
 # -- B+
 type=bupsik,acc,mcComb   bf=(6.12,0.19)e-5  eff=(9.43,0.07)e-3 file=scratch/bmm-mc-RunIISpring16DR80-BuToJpsiK-v06.root
 type=bupsik,mc           bf=(6.12,0.19)e-5  eff=(5.65,0.01)e-4 file=scratch/bmm-mc-Summer16_private-BuToJpsiKp-v06.root
