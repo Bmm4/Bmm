@@ -18,7 +18,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('d:p:m:n:s:t:');
+getopts('dp:m:n:s:t:x:');
 
 my @years = ("2011", "2012", "2016BF", "2016GH");
 
@@ -44,66 +44,55 @@ if ($opt_n) {
     $optn = $opt_n;
 }
 
-my $optd = "";
-if ($opt_d) {
-    $optd = "-d $opt_d";
-}
-
-#    my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389");
-my @list = ("219", "309", "319", "329", "339", "349", "359", "369", "379", "389", "409", "419", "429");
-
-if (1 == $opt_s) {
-    foreach $idir (@list) {
-	$dir = "results-" . $idir;
-	if ($opt_d && ($dir ne $opt_d)) {
-	    next;
-	}
-	print "dir = $dir\n";
-	system("/bin/rm -f runPlots-$dir-results-2016*.log");
-	system("bin/runPlot -y 2016BF -d $dir -p results -m fill  >& runPlots-$dir-results-fill-2016BF.log &");
-	system("bin/runPlot -y 2016GH -d $dir -p results -m fill  >& runPlots-$dir-results-fill-2016GH.log &");
-    }
-    exit(0);
+my $optx = "";
+if ($opt_x) {
+    $optx = "-d $opt_x";
 }
 
 if (2 == $opt_s) {
-    foreach $idir (@list) {
-	$dir = "results-" . $idir;
-	if ($opt_d && ($dir ne $opt_d)) {
+    my @list12 = (
+	"2011",
+	"2012",
+	"2016BF-00",
+	"2016GH-00"
+	);
+    foreach $idir (@list12) {
+	$dir = $idir;
+	if ($opt_x && ($dir ne $opt_x)) {
 	    next;
 	}
-	print "dir = $dir\n";
-	system("/bin/rm -f runPlots-$dir-results-2016*.log");
-	system("bin/runPlot -y 2016BF -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016BF.log &");
-	system("bin/runPlot -y 2016GH -d $dir -p results -m ana  >& runPlots-$dir-results-ana-2016GH.log &");
+	($year = $idir) =~ s/-[0-9]{2}//g;
+	if (!$opt_d) {system($command);}
+	$command = "bin/runPlot -y $year -d $dir -p results -m fill  >& $dir/results-fill.log &";
+	print "$command\n";
+	if (!$opt_d) {system($command);}
+	$command = "bin/runPlot -y $year -d $dir -p overlays -m all  >& $dir/overlays-all.log &";
+	print "$command\n";
+	if (!$opt_d) {system($command);}
+	$command = "bin/runPlot -y $year -d $dir -p bdt -m all  >& $dir/bdt-all.log &";
+	print "$command\n";
+	if (!$opt_d) {system($command);}
     }
     exit(0);
 }
 
 
-if (10 == $opt_s) {
-    foreach $idir (@list) {
-	$dir = "results-" . $idir;
-	print "dir = $dir\n";
-	system("/bin/rm -f runPlots-$dir-results-2016*.log");
-	system("bin/runPlot -y 2016BF -d $dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016BF.log &");
-	system("bin/runPlot -y 2016GH -d $dir -p overlays -m all  >& runPlots-$dir-overlays-all-2016GH.log &");
+if (3 == $opt_s) {
+    my @list12 = (
+	"2016BF-00",
+	"2016GH-00"
+	);
+    foreach $idir (@list12) {
+	$dir = $idir;
+	if ($opt_x && ($dir ne $opt_x)) {
+	    next;
+	}
+	($year = $idir) =~ s/-[0-9]{2}//g;
+	print "dir = $dir year = $year\n";
+	system("bin/runPlot -y $year -d $dir -p results -m bdt  >& $dir/results-bdt.log &");
     }
     exit(0);
 }
-
-
-if (11 == $opt_s) {
-    foreach $idir (@list) {
-	$dir = "results-" . $idir;
-	print "dir = $dir\n";
-	system("/bin/rm -f runPlots-$dir-results-2016*.log");
-	system("bin/runPlot -y 2016BF -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016BF.log &");
-	system("bin/runPlot -y 2016GH -d $dir -p overlays -m sys  >& runPlots-$dir-overlays-sys-2016GH.log &");
-    }
-    exit(0);
-}
-
 
 if (12 == $opt_s) {
     my @list12 = (
@@ -742,7 +731,7 @@ if (12 == $opt_s) {
 # -- default: run something on all 4 years
 my $log = "";
 if ($optd ne "") {
-    $log = "-$opt_d";
+    $log = "-$opt_x";
 }
 foreach $year (@years) {
     print "running: bin/runPlot -y $year $optd $optp $optm >& runPlots$log-$opt_p-$opt_m-$year.log & \n";
