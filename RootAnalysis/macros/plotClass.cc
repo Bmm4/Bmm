@@ -1646,7 +1646,6 @@ void plotClass::readCuts(string filename) {
 	ar = setupReader(sXmlName, frd, fPresel);
 	fReaderEvents2[a->index] = ar;
 	if (dump) cout << "xml:                   " << sXmlName << endl;
-
       }
 
       if (cutname == "bdtcut") {
@@ -1671,6 +1670,8 @@ void plotClass::readCuts(string filename) {
 
     if (!ok) cout << "==> what about " << cutname << endl;
   }
+  cout << "Preselection: " << endl;
+  cout << fPresel.preselection() << endl;
 
   cout << "==> finished reading cut setting, fCuts.size() =  " << fCuts.size() << endl;
 
