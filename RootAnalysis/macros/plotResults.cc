@@ -759,8 +759,10 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
   if (0 == mode) {
     inputFiles.push_back("results/scanBDT-2011.root");   colors.push_back(kRed);
     inputFiles.push_back("results/scanBDT-2012.root");   colors.push_back(kBlack);
-    inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
-    inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
+    // inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
+    // inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
+    inputFiles.push_back("2016BF-00/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
+    inputFiles.push_back("2016GH-00/scanBDT-2016GH.root"); colors.push_back(kBlue);
   } else if (1 == mode) {
     inputFiles.push_back("results/scanBDT-2016BF.root");              colors.push_back(kBlack);
     inputFiles.push_back("results/scanBDT-2016BF-389-23.root");   colors.push_back(kRed);
@@ -803,6 +805,31 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("se/abdt-5/scanBDT-2016BF-4909.root");    colors.push_back(i); i = i -1;
     inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5209.root");    colors.push_back(i); i = i -1;
     inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5849.root");    colors.push_back(i); i = i -1;
+  } else if (5 == mode) {
+    int i = kRed;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2399.root");    colors.push_back(i);  i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2799.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2959.root");    colors.push_back(i); i = i -1;
+    i = kBlue;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3279.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3439.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-4849.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5809.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5839.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-7409.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-8049.root");    colors.push_back(i); i = i -1;
+    i = kYellow-2;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-36559.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-37029.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38159.root");    colors.push_back(i); i = i -1;
+    i = kGreen;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38319.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38799.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-39119.root");    colors.push_back(i); i = i -1;
+    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-41329.root");    colors.push_back(i); i = i -1;
+    //    i = kMagenta;
+    // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3369.root");    colors.push_back(i);  i = i -1;
+    // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
   }
 
   string bname("hBdt_bsmmMcComb");
