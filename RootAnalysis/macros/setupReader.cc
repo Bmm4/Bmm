@@ -178,7 +178,7 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd) {
 
   // --- Book the MVA methods
   reader->BookMVA("BDT", xmlFile);
-  cout << ",  booked reader " << reader << endl;
+  cout << "  ->  booked reader " << reader << endl;
   return reader;
 }
 
@@ -363,6 +363,6 @@ TMVA::Reader* setupReader(string xmlFile, ReaderData &rd, presel &a) {
 
   // --- Book the MVA methods
   reader->BookMVA("BDT", xmlFile);
-  cout << ",  booked reader " << reader << endl;
+  cout << "  ->  booked reader " << reader << endl;
   return reader;
 }
