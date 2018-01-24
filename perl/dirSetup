@@ -14,6 +14,8 @@ system("ln -s $dir/plotResults.2012.files");
 system("ln -s $dir/plotResults.2011.files");
 
 system("/bin/cp $dir/cuts/baseCuts.2016.cuts .");
+system("/bin/cp $dir/cuts/baseCuts.2016BF.cuts .");
+system("/bin/cp $dir/cuts/baseCuts.2016GH.cuts .");
 system("/bin/cp $dir/cuts/baseCuts.2011.cuts .");
 system("/bin/cp $dir/cuts/baseCuts.2012.cuts .");
 
