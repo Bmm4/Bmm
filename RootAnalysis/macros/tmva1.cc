@@ -231,7 +231,7 @@ TCanvas* tmva1::getC0() {
 
 
 // ----------------------------------------------------------------------
-void tmva1::train(string oname, string filename, int nsg, int nbg) {
+void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   // This loads the library
   TMVA::Tools::Instance();
 
@@ -403,8 +403,9 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
 
   optstring = Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=Block:NormMode=None:V",
 		   nSgTrain, nSgTest, nBgTrain, nBgTest);
-  cout << "==> PrepareTrainingAndTestTree: " << optstring << endl;
-  dataloader->PrepareTrainingAndTestTree("", "", optstring.c_str());
+  cout << "==> PrepareTrainingAndTestTree: " << optstring << " cuts ->" << cut << "<-" << endl;
+  TCut tCut(cut.c_str());
+  dataloader->PrepareTrainingAndTestTree(tCut, tCut, optstring.c_str());
 
   if (0) {
     optstring = Form("!H:V:NTrees=%d", fBdtSetup.NTrees);
@@ -444,21 +445,27 @@ void tmva1::train(string oname, string filename, int nsg, int nbg) {
   TH1D *hpresel = (TH1D*)inFile->Get("hpresel");
   if (hpresel) {
     string xmlName = Form("dataset/weights/%s_BDT.weights.xml", oname.c_str());
-    cout << "xmlName = " << xmlName  << endl;
+    cout << "xmlName = " << xmlName  <<  ", ls -l: " << endl;
     vector<string> lines;
-    char  buffer[200];
-    ifstream is(xmlName.c_str());
+    char  buffer[1000];
+    ifstream is(xmlName);
     if (!is) {
       cout << "file ->" << xmlName << "<- not found, exit(1)" << endl;
       exit(1);
     }
     char input[1000];
-    while (is.getline(buffer, 200, '\n')) {
+    int icnt(0);
+    while (is.getline(buffer, 1000, '\n')) {
       lines.push_back(string(buffer));
+      ++icnt;
     }
     is.close();
+    cout << "read a total of " << lines.size() << " lines, icnt = " << icnt << endl;
+
+    system(Form("/bin/mv %s %s.bac", xmlName.c_str(), xmlName.c_str()));
+
     ofstream os;
-    os.open(Form("dataset/weights/%s_BDT.weights.xml", oname.c_str()), ios::out);
+    os.open(xmlName, ios::out);
 
     for (unsigned int i = 0; i < lines.size(); ++i) {
       if (string::npos != lines[i].find("</GeneralInfo>")) {
@@ -569,6 +576,9 @@ void tmva1::createInputFile(string filename, string sfile, string dfile, int ran
   TFile *sinput = TFile::Open(fInputFiles.sname.c_str());
   TFile *dinput = TFile::Open(fInputFiles.dname.c_str());
 
+  fPresel.setCut("ALPHAMAX", 0.2);
+  fPresel.setCut("PVIPSMAX", 4.);
+  fPresel.setCut("PVIPMAX", 0.02);
   TCut sgcut = fPresel.preselection().c_str();
 
   cout << "new: " << endl;

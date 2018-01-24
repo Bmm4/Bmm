@@ -51,7 +51,8 @@ class tmva1: public TObject {
   ~tmva1();
 
   TCanvas* getC0();
-  void train(std::string oname = "TMVA-0", std::string filename = "/scratch/ursl/bdt/tmva-trees-0-2016.root", int nsg = -1, int nbg = -1);
+  void train(std::string oname = "TMVA-0", std::string filename = "/scratch/ursl/bdt/tmva-trees-0-2016.root", int nsg = -1, int nbg = -1,
+	     std::string cut = "");
   void makeAll(int offset, std::string filename = "", int chan = -1);
   void make(int offset, std::string filename, int evt);
 
