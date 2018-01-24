@@ -151,109 +151,110 @@ string presel::preselection() {
 
 // ----------------------------------------------------------------------
 void presel::setCut(string name, double value) {
+  int verbose(0);
   if (name == "PTMIN") {
     fPTMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
   if (name == "PTMAX") {
     fPTMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "M1PTMIN") {
     fM1PTMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "M1PTMAX") {
     fM1PTMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "M2PTMIN") {
     fM2PTMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "M2PTMAX") {
     fM2PTMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
 
   if (name == "FL3DMAX") {
     fFL3DMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "CHI2DOFMAX") {
     fCHI2DOFMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "PVIPMAX") {
     fPVIPMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "PVIPSMAX") {
     fPVIPSMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "PVLIPMAX") {
     fPVLIPMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "PVLIPSMAX") {
     fPVLIPSMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "MAXDOCAMAX") {
     fMAXDOCAMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "CLOSETRKMAX") {
     fCLOSETRKMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "FLSXYMIN") {
     fFLSXYMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "FLS3DMIN") {
     fFLS3DMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "FLS3DMAX") {
     fFLS3DMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "DOCATRKMAX") {
     fDOCATRKMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "ISOMIN") {
     fISOMIN = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "ALPHAMAX") {
     fALPHAMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
   if (name == "MASSERRORMAX") {
     fMASSERRORMAX = value;
-    cout << "presel::setCut(" << name << ": " << value << endl;
+    if (verbose) cout << "presel::setCut(" << name << ": " << value << endl;
   }
 
 }
