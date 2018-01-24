@@ -35,7 +35,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('Ccdhi:lmo:pq:s:t:w:x:y');
+getopts('b:Ccdhi:lmo:pq:s:t:w:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -78,6 +78,63 @@ while (<IN>) {
     $gProgram .= "  ".$_;
 }
 eval $gProgram;
+
+# -- BEFORE option: remove old job submission data from jobs.list files
+if ($opt_b) {
+    print "cleaning out jobs with $opt_b\n";
+    foreach $j (keys %catalogs) {
+	my $chdired = 0;
+	if ($opt_s && !($j =~ /$opt_s/)) {next;}
+	print "==> Look at $j: ";
+	if (-d "jobs") {
+	    $chdired = 1;
+	    chdir("jobs");
+	} else {
+	    if (-d "$j") {
+		$chdired = 1;
+		chdir("$j");
+	    }
+	}
+
+	if (!$opt_d) {
+	    my $removedLines = 0;
+	    if (-e "$jobslist") {
+		open(IN, $jobslist) || die "Cannot find file $joblist\n";
+	    } else {
+		print "\n no such file: $j/$jobslist\n";
+		next;
+	    }
+	    open(OUT, ">$jobslist.new") || die "Cannot find file $joblist.new\n";
+	    while(<IN>) {
+		next if (/\#\#\#/);
+		# -- parse one job: one URL/sge and one additional line with information
+		my $url  = $_;   chop($url);
+		my $line = <IN>; chop($line);
+		($yyyy, $mm, $dd) = ($line =~ /(\d+)\/(\d+)\/(\d+)/);
+		$date = "$yyyy/$mm/$dd";
+		if ($date le $opt_b) {
+		    # print ":::rm $line ($date le $opt_b)\n";
+		    $removedLines++;
+		} else {
+		    # print ":keep $line ($date ge $opt_b)\n";
+		    print OUT "$url\n";
+		    print OUT "$line\n";
+		}
+	    }
+	    close(IN);
+	    close(OUT);
+	    ($suffix = $opt_b) =~ s/\//-/g;
+	    if ($removedLines > 0) {
+		rename("$jobslist", "$jobslist-$suffix");
+	    }
+	    print " removed $removedLines lines\n";
+	    rename("$jobslist.new", "$jobslist");
+	}
+	if (1 == $chdired) {chdir("..");}
+    }
+    exit(0);
+}
+
 
 # -- merge rootfiles (this results in, e.g.,  specific *2016?-v01.root rootfiles, i.e. split according to eras
 if ($opt_h) {
