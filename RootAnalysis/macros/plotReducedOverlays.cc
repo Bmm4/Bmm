@@ -350,7 +350,6 @@ void plotReducedOverlays::makeAll(string what) {
     printCuts(cout);
     // -- data vs combined MC
     makeSampleOverlay("bmmData", "bdmmMcComb");
-    makeSampleOverlay("bupsikData", "bupsikMcOff");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
     makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
@@ -358,7 +357,7 @@ void plotReducedOverlays::makeAll(string what) {
     allSystematics();
 
     // -- validation of private MC vs official MC
-    if (2016 == fYear) makeSampleOverlay("bupsikMcComb", "bupsikMcOff");
+    //    if (2016 == fYear) makeSampleOverlay("bupsikMcComb", "bupsikMcOff");
   }
 
   if (string::npos != what.find("plot")) {
