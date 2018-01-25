@@ -2673,7 +2673,7 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   f->SetParameter(0, h->GetMaximum());
   f->SetParameter(1, 5.28);
-  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.030);
+  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.040);
   f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.400);
   f->SetParameter(4, 0.05); limitPar(4, 0.030, 0.100);
 

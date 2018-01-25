@@ -808,7 +808,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
   shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 6.0;
+  fpIF->fHi = 5.85;
   cout << "==> fitPsYield::fit0_Bs2JpsiPhi> FITTING " << h->GetName()
        << " with limitpars = " << limitpars << endl;
   double xmin(5.0), xmax(6.0), expoLo(5.15), expoHi(6.0);
