@@ -1,5 +1,47 @@
 // ----------------------------------------------------------------------
-void fitProblems() {
+void fitProblems(int bdtCut = 20) {
+
+  vector<string> years;
+  years.push_back("2011");
+  years.push_back("2012");
+  years.push_back("2016BF");
+  years.push_back("2016GH");
+  fitPsYield *a(0);
+  for (unsigned int i = 0; i < years.size(); ++i) {
+    TFile *f = TFile::Open(Form("%s/plotResults.%s.root", years[i].c_str(), years[i].c_str()));
+    f->cd("bspsiphiData");
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      string hname(Form("hNorm_bdt_%d_%s_bspsiphiData_chan%d", bdtCut, years[i].c_str(), ichan));
+      a = new fitPsYield(hname, 0);
+      a->fitBs2JpsiPhi(5, years[i]);
+    }
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void fitProblems5(int bdtCut = 20) {
+
+  vector<string> years;
+  years.push_back("2011");
+  years.push_back("2012");
+  years.push_back("2016BF");
+  years.push_back("2016GH");
+  fitPsYield *a(0);
+  for (unsigned int i = 0; i < years.size(); ++i) {
+    TFile *f = TFile::Open(Form("%s/plotResults.%s.root", years[i].c_str(), years[i].c_str()));
+    f->cd("bupsikData");
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      string hname(Form("hNorm_bdt_%d_%s_bupsikData_chan%d", bdtCut, years[i].c_str(), ichan));
+      a = new fitPsYield(hname, 0);
+      a->fitBu2JpsiKp(5, years[i]);
+    }
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void fitProblems4() {
   TFile *f = TFile::Open("/shome/ursl/bmm4/CMSSW_9_2_7/src/Bmm/RootAnalysis/macros/results/plotReducedOverlays.2016BF.root");
 
   fitPsYield a(0, 1);
