@@ -47,6 +47,7 @@ if ($user eq "ursl") {
     open(OUT, ">>problems.txt") || die "Cannot open problems.txt\n";
 }
 
+my $tfinished = "";
 while(<IN>) {
     next if (/\#\#\#/);
 
@@ -92,7 +93,8 @@ while(<IN>) {
 	if ($rsize < 1) {
 	    $ok = "rootfile empty  ";
 	}
-	printf("%7i %10s; %s/root: %10i, log: %7i %30s (%s)\n", $sgeNumber, $jname, $ok, $rsize, $lsize, $mdir, $workerNode);
+	#old: printf("%7i %10s; %s/root: %10i, log: %7i %30s (%s)\n", $sgeNumber, $jname, $ok, $rsize, $lsize, $mdir, $workerNode);
+	printf("%7i %10s; %s/root: %10i, %30s (%s/%s)\n", $sgeNumber, $jname, $ok, $rsize, $mdir, $workerNode, $tfinished);
     }
 
     if ($ok =~ /no problems seen/) {
@@ -214,9 +216,15 @@ sub rootFileSize {
 	    $result = pop(@tmpstuff);
 	    #print "result = $result\n";
 	    $gotRoot = 1;
-	    if ($gotLog) {last; }
 	}
 
+	if (/coming to an end/) {
+#	    print "previous: $previous\n";
+	    $tfinished = $previous;
+	    chop($tfinished);
+	    last;
+	}
+	$previous = $_;
     }
     close(LIN);
 
