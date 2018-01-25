@@ -43,7 +43,7 @@ public :
   void numbersFromHist(anaNumbers &a, std::string syst);
   std::string rareAccName(std::string sname);
   bool skipThisBg(std::string name);
-  void calculateNumbers(std::string mode);
+  void calculateNumbers(std::string mode, int chan);
   void calculateB2JpsiNumbers(anaNumbers &a);
   void calculateSgNumbers(anaNumbers &a);
   void calculateCombBgNumbers(anaNumbers &a, int mode = 0, double lo = 5.45, double hi = 5.9);
