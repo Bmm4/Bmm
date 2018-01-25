@@ -833,23 +833,25 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m2phiE", &fb.m2phiE);
   t->SetBranchAddress("m2chi2", &fb.m2chi2);
 
-  t->SetBranchAddress("ktkqual", &fb.ktkqual);
-  t->SetBranchAddress("kalg", &fb.kalg);
-  t->SetBranchAddress("kvalhits", &fb.kvalhits);
-  t->SetBranchAddress("klayerswithhits", &fb.klayerswithhits);
-  t->SetBranchAddress("kvalhitfraction", &fb.kvalhitfraction);
-  t->SetBranchAddress("kchi2", &fb.kchi2);
-  t->SetBranchAddress("kdz", &fb.kdz);
-  t->SetBranchAddress("kdzE", &fb.kdzE);
-  t->SetBranchAddress("kd0", &fb.kd0);
-  t->SetBranchAddress("kd0E", &fb.kd0E);
-  t->SetBranchAddress("kdsz", &fb.kdsz);
-  t->SetBranchAddress("kdszE", &fb.kdszE);
-  t->SetBranchAddress("kdxy", &fb.kdxy);
-  t->SetBranchAddress("kdxyE", &fb.kdxyE);
-  t->SetBranchAddress("kptE", &fb.kptE);
-  t->SetBranchAddress("ketaE", &fb.ketaE);
-  t->SetBranchAddress("kphiE", &fb.kphiE);
+  if (string::npos != mode.find("psi")) {
+    t->SetBranchAddress("ktkqual", &fb.ktkqual);
+    t->SetBranchAddress("kalg", &fb.kalg);
+    t->SetBranchAddress("kvalhits", &fb.kvalhits);
+    t->SetBranchAddress("klayerswithhits", &fb.klayerswithhits);
+    t->SetBranchAddress("kvalhitfraction", &fb.kvalhitfraction);
+    t->SetBranchAddress("kchi2", &fb.kchi2);
+    t->SetBranchAddress("kdz", &fb.kdz);
+    t->SetBranchAddress("kdzE", &fb.kdzE);
+    t->SetBranchAddress("kd0", &fb.kd0);
+    t->SetBranchAddress("kd0E", &fb.kd0E);
+    t->SetBranchAddress("kdsz", &fb.kdsz);
+    t->SetBranchAddress("kdszE", &fb.kdszE);
+    t->SetBranchAddress("kdxy", &fb.kdxy);
+    t->SetBranchAddress("kdxyE", &fb.kdxyE);
+    t->SetBranchAddress("kptE", &fb.kptE);
+    t->SetBranchAddress("ketaE", &fb.ketaE);
+    t->SetBranchAddress("kphiE", &fb.kphiE);
+  }
   // -- END for tracking studies
 
 
