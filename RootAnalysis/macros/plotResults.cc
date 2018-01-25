@@ -408,7 +408,9 @@ void plotResults::makeAll(string what) {
     //    fillAndSaveHistograms(0, 10000);
     fillAndSaveHistograms();
     fSuffixSel = "bdt" + fSuffix;
-    calculateNumbers("bdt" + fSuffix);
+    for (int i = 0; i < fNchan; ++i) {
+      calculateNumbers("bdt" + fSuffix, i);
+    }
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
     return;
   }
@@ -515,22 +517,28 @@ void plotResults::makeAll(string what) {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "cnc" + fSuffix;
-    calculateNumbers("cnc" + fSuffix);
-    fSuffixSel = "bdt" + fSuffix;
-    calculateNumbers("bdt" + fSuffix);
+    for (int i = 0; i < fNchan; ++i) {
+      calculateNumbers("cnc" + fSuffix, i);
+      fSuffixSel = "bdt" + fSuffix;
+      calculateNumbers("bdt" + fSuffix, i);
+    }
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
   }
 
   if (what == "all" || string::npos != what.find("cnc")) {
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "cnc" + fSuffix;
-    calculateNumbers("cnc" + fSuffix);
+    for (int i = 0; i < fNchan; ++i) {
+      calculateNumbers("cnc" + fSuffix, i);
+    }
   }
 
   if (what == "all" || string::npos != what.find("bdt")) {
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "bdt" + fSuffix;
-    calculateNumbers("bdt" + fSuffix);
+    for (int i = 0; i < fNchan; ++i) {
+      calculateNumbers("bdt" + fSuffix, i);
+    }
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
   }
 
@@ -577,8 +585,9 @@ void plotResults::makeAll(string what) {
 void plotResults::bookHist(string dsname) {
   fHistWithAllCuts = "hMassWithAllCuts";
   fSuffixSel = "bdt" + fSuffix;
-  calculateNumbers("bdt" + fSuffix);
-
+  for (int i = 0; i < fNchan; ++i) {
+    calculateNumbers("bdt" + fSuffix, i);
+  }
 }
 
 
@@ -588,36 +597,47 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
   cout << "starting scanBDT, createTexFile = " << createTexFile << endl;
   int BDTMIN(0);
   if (createTexFile) {
-    int BDTMAX(60);
+    vector<int> BDTMAX;
+    for (int ichan = 0; ichan < fNchan; ++ichan) {BDTMAX.push_back(-1);}
     cout << "creating tex file" << endl;
     string dsname = Form("%s", fname.c_str());
-    fTEX.open(dsname.c_str());
     fHistWithAllCuts = "hMassWithAllCuts";
-    // -- check over which range you have to run
+    // -- check over which range you have to run. Find maximum PER CHANNEL
     fHistFile = TFile::Open(fHistFileName.c_str());
-    TH1D *h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", 0, fSuffix.c_str()));
-    if (!h0) {
-      cout << "histogram " << Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", 0, fSuffix.c_str()) << " not found" << endl;
-      return;
-    }
-    double total = h0->GetSumOfWeights();
-    cout << "total events " << total << " for " << h0->GetName() << endl;
-    for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
-      h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithMassCuts_bdt_%d_%s_bdmmMcComb_chan0", ib, fSuffix.c_str()));
-      if (h0->GetSumOfWeights() < 0.05*total) {
-	BDTMAX = ib;
-	cout << " going up to bdt < " << BDTMAX << ", because there events = " << h0->GetSumOfWeights() << endl;
-	break;
+    for (int ichan = 0; ichan < fNchan; ++ichan) {
+      TH1D *h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithAllCuts_bdt_%d_%s_bdmmMcComb_chan%d", 0, fSuffix.c_str(), ichan));
+      if (!h0) {
+	cout << "histogram " << Form("bdmmMcComb/hMassWithAllCuts_bdt_%d_%s_bdmmMcComb_chan%d", 0, fSuffix.c_str(), ichan)
+	     << " not found" << endl;
+	return;
+      }
+      double total = h0->GetSumOfWeights();
+      cout << "total events " << total << " for " << h0->GetName() << endl;
+      for (int ib = BDTMIN; ib <= 60; ++ib) {
+	h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithAllCuts_bdt_%d_%s_bdmmMcComb_chan%d", ib, fSuffix.c_str(), ichan));
+	double integral = h0->GetSumOfWeights();
+	cout << "   integral(" << ib << ") = " << integral << endl;
+	if (integral < 0.05*total) {
+	  BDTMAX[ichan] = ib;
+	  cout << " chan " << ichan << " going up to bdt < " << BDTMAX[ichan]
+	       << ", because there events = " << h0->GetSumOfWeights()
+	       << endl;
+	  break;
+	}
       }
     }
     fHistFile->Close();
 
     // -- and now loop over all requested
-    for (int ib = BDTMIN; ib <= BDTMAX; ++ib) {
-      string idx = Form("bdt_%d_", ib);
-      fSuffixSel = idx + fSuffix;
-      cout << "  bdt > " << ib*0.01 << " fSuffixSel = " << fSuffixSel << endl;
-      calculateNumbers(idx + fSuffix);
+    fTEX.open(dsname.c_str());
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      cout << "producing numbers for chan = " << ichan << " and BDTMAX = " << BDTMAX[ichan] << endl;
+      for (int ib = BDTMIN; ib <= BDTMAX[ichan]; ++ib) {
+	string idx = Form("bdt_%d_", ib);
+	fSuffixSel = idx + fSuffix;
+	cout << "  bdt > " << ib*0.01 << " fSuffixSel = " << fSuffixSel << endl;
+	calculateNumbers(idx + fSuffix, ichan);
+      }
     }
     fTEX.close();
   }
@@ -657,7 +677,7 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
   int iMax(-1), bMax(-1);
   for (unsigned int i = 0; i < hbdt.size(); ++i) {
     string sname = hbdt[i]->GetName();
-    if (string::npos != sname.find("bdmm") && string::npos != sname.find("chan0")) {
+    if (string::npos != sname.find("bdmm") && (string::npos != sname.find("chan0") || string::npos != sname.find("chan1"))) {
       double tot = hbdt[i]->Integral();
       double rs = 0.;
       cout << "hist " << hbdt[i]->GetName() << " tot = " << tot << endl;
@@ -757,8 +777,8 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
   }
 
   if (0 == mode) {
-    inputFiles.push_back("results/scanBDT-2011.root");   colors.push_back(kRed);
-    inputFiles.push_back("results/scanBDT-2012.root");   colors.push_back(kBlack);
+    inputFiles.push_back("2011/scanBDT-2011.root");   colors.push_back(kRed);
+    inputFiles.push_back("2012/scanBDT-2012.root");   colors.push_back(kBlack);
     // inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
     // inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
     inputFiles.push_back("2016BF-00/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
@@ -854,8 +874,7 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
 
     TH1D *hbdt = (TH1D*)f->Get("bdtCuts");
     cout << "hbdt = " << hbdt << endl;
-    double bdtCut0 = 100.*hbdt->GetBinContent(1);
-    double bdtCut1 = 100.*hbdt->GetBinContent(2);
+    double bdtCut = 100.*hbdt->GetBinContent(chan+1);
 
     gStyle->SetOptStat(0);
     gStyle->SetOptTitle(0);
@@ -866,12 +885,12 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
       cout << "Did not find histogram ->" << s << "<-" << endl;
       return;
     }
-    double bdt0y   = h0->GetBinContent(h0->FindBin(bdtCut0));
-    double bdt0x(0.);
+    double bdty   = h0->GetBinContent(h0->FindBin(bdtCut));
+    double bdtx(0.);
     for (int ic = 0; ic < h0->GetNbinsX(); ++ic) {
-      if (h0->GetBinContent(ic) > 0.) bdt0x = h0->GetBinCenter(ic);
+      if (h0->GetBinContent(ic) > 0.) bdtx = h0->GetBinCenter(ic);
     }
-    bdt0x /= 100.;
+    bdtx /= 100.;
 
     h0->SetMinimum(0.0);
     if (what == "CSBF") {
@@ -881,23 +900,23 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     } else if (what == "SSB") {
       h0->SetMaximum(4.);
     } else if (what == "ZAD") {
-      h0->SetMaximum(2.);
+      h0->SetMaximum(1.);
     } else if (what == "ZAS") {
-      h0->SetMaximum(4.);
+      h0->SetMaximum(4.5);
     } else {
       h0->SetMaximum(1.4*h0->GetMaximum());
     }
     h0->SetLineColor(colors[ifile]);
     h0->SetMarkerColor(colors[ifile]);
-    h0->SetMarkerStyle(20);
-    h0->SetMarkerSize(0.2);
+    h0->SetMarkerStyle(24);
+    h0->SetMarkerSize(0.6);
     setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
     if (0 == ifile) {
       h0->DrawCopy("p");
     } else {
       h0->DrawCopy("psame");
     }
-    TMarker *pm = new TMarker(bdtCut0, bdt0y, 28);
+    TMarker *pm = new TMarker(bdtCut, bdty, 28);
     pm->SetMarkerColor(colors[ifile]);
     pm->SetMarkerSize(2.);
     pm->Draw();
@@ -1639,8 +1658,14 @@ void plotResults::scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio,
 
 
 // ----------------------------------------------------------------------
-void plotResults::calculateNumbers(string mode) {
-  cout << "==> calculateNumbers for mode: " << mode << endl;
+void plotResults::calculateNumbers(string mode, int chan) {
+  cout << "==> calculateNumbers for mode: " << mode << " chan = " << chan << endl;
+
+  // -- do two channels only
+  if (chan > 1) {
+    cout << "chan >1 requested, refusing to do so" << endl;
+    return;
+  }
 
   if (string::npos != mode.find("cnc")) {
     fDoUseBDT = false;
@@ -1652,44 +1677,37 @@ void plotResults::calculateNumbers(string mode) {
   fHistFile = TFile::Open(fHistFileName.c_str());
   cout << " opened " << endl;
 
-  for (unsigned int chan = 0; chan < fNchan; ++chan) {
-    cout << "calculateNumbers for channel " << chan << endl;
-    fChan = chan;
-    initNumbers(fNoNumbers[chan]);
-    initNumbers(fCsNumbers[chan]);
-    initNumbers(fB0Numbers[chan]);
-    initNumbers(fBsmmNumbers[chan]);
-    initNumbers(fBdmmNumbers[chan]);
-    initNumbers(fHhNumbers[chan]);
-    initNumbers(fSlNumbers[chan]);
-    initNumbers(fCombNumbers[chan]);
-    initNumbers(fNpNumbers[chan]);
-    initNumbers(fBgNumbers[chan]);
-    initNumbers(fSgAndBgNumbers[chan]);
+  cout << "calculateNumbers for channel " << chan << endl;
+  fChan = chan;
+  initNumbers(fNoNumbers[chan]);
+  initNumbers(fCsNumbers[chan]);
+  initNumbers(fB0Numbers[chan]);
+  initNumbers(fBsmmNumbers[chan]);
+  initNumbers(fBdmmNumbers[chan]);
+  initNumbers(fHhNumbers[chan]);
+  initNumbers(fSlNumbers[chan]);
+  initNumbers(fCombNumbers[chan]);
+  initNumbers(fNpNumbers[chan]);
+  initNumbers(fBgNumbers[chan]);
+  initNumbers(fSgAndBgNumbers[chan]);
 
-    // -- first to provide scaleYield base
-    calculateB2JpsiNumbers(fNoNumbers[chan]);
-    calculateB2JpsiNumbers(fCsNumbers[chan]);
+  // -- first to provide scaleYield base
+  calculateB2JpsiNumbers(fNoNumbers[chan]);
+  calculateB2JpsiNumbers(fCsNumbers[chan]);
 
-    // -- before rare backgrounds to provide trigger efficiency per channel!
-    calculateSgNumbers(fBsmmNumbers[chan]);
-    calculateSgNumbers(fBdmmNumbers[chan]);
-    calculateCombBgNumbers(fCombNumbers[chan]);
+  // -- before rare backgrounds to provide trigger efficiency per channel!
+  calculateSgNumbers(fBsmmNumbers[chan]);
+  calculateSgNumbers(fBdmmNumbers[chan]);
+  calculateCombBgNumbers(fCombNumbers[chan]);
 
-    // -- and finally the rare backgrounds
-    calculateRareBgNumbers(chan);
+  // -- and finally the rare backgrounds
+  calculateRareBgNumbers(chan);
 
-    // -- calculate Bs-> J/psi phi BF
-    calculateBs2Bu(chan);
-    calculatePerformance(chan);
-
-    // -- do two channels only
-    if (chan == 1) break;
-  }
+  // -- calculate Bs-> J/psi phi BF
+  calculateBs2Bu(chan);
+  calculatePerformance(chan);
 
   fHistFile->Close();
-
-
 }
 
 // ----------------------------------------------------------------------
