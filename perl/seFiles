@@ -27,8 +27,8 @@ my $srmprefix = 'srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/tri
 my $xroot     = 'root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat';
 my $scratch   = '/scratch/ursl';
 
-@files = <" $opt_p ">;
-my @files = `/bin/ls -1 $opt_p`;
+#@files = <" $opt_p ">;
+my @files = `/bin/ls -1 *$opt_p*`;
 
 
 if (!-d "$scratch/$opt_x") {
@@ -40,6 +40,6 @@ if (!-d "$scratch/$opt_x") {
 
 foreach $file (@files) {
     chop($file);
-    print "$file\n";
+    print "xrdcp $file $xroot/$opt_x/$file\n";
     system("xrdcp $file $xroot/$opt_x/$file");
 }
