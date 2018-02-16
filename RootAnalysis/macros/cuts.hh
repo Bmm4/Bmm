@@ -9,7 +9,7 @@ struct cuts {
   double bdtCut, bdtMuPt;
   std::vector<int> l1seeds;
   double mBdLo, mBdHi, mBsLo, mBsHi, mBuLo, mBuHi;
-  double etaMin, etaMax, pt;
+  double etaMin, etaMax, pt, phiMin, phiMax;
   double m1pt, m2pt, metaMin, metaMax, muonbdt;
   double iso, m1iso, m2iso, chi2dof, alpha, fls3d, flxyLo, flxyHi, flsxy, docatrk;
   double closetrk, closetrks1, closetrks2, closetrks3, maxdoca;
