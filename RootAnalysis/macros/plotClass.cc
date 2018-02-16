@@ -122,7 +122,11 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
 
 
   //  if (setup == "") fSuffix = Form("%d", fYear);
-  fSuffix = Form("%d%s", fYear, fSetup.c_str());
+  if (string::npos != fSetup.find(Form("%d", fYear))) {
+    fSuffix = Form("%s", fSetup.c_str());
+  } else {
+    fSuffix = Form("%d%s", fYear, fSetup.c_str());
+  }
 
   fIF = new initFunc();
 
@@ -137,6 +141,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
 
   fCncCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
   fCncCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
+  fCncCuts.addCut("fGoodPhi", "#phi_{B}", fGoodPhi);
   fCncCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
 
   fCncCuts.addCut("fGoodChi2", "#chi^{2}", fGoodChi2);
@@ -166,8 +171,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
   fBdtCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
 
   fBdtCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
-  fBdtCuts.addCut("fGoodPt", "p_{T,B} [GeV]", fGoodTracksPt);
-  fBdtCuts.addCut("fGoodEta", "#eta_{B} ", fGoodTracksEta);
+  fBdtCuts.addCut("fGoodPt", "p_{T,B} [GeV]", fGoodPt);
+  fBdtCuts.addCut("fGoodPhi", "#phi_{B} ", fGoodPhi);
+  fBdtCuts.addCut("fGoodEta", "#eta_{B} ", fGoodEta);
 
   fBdtCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
 
@@ -244,13 +250,17 @@ plotClass::~plotClass() {
 
 // ----------------------------------------------------------------------
 void plotClass::changeSetup(string dir, string name, string setup) {
-  if (setup == "") {
-    fHistFileName = Form("%s/%s.%d.root", dir.c_str(), name.c_str(), fYear);
-    fNumbersFileName = fDirectory + Form("/%s.%d.txt", name.c_str(), fYear);
-  } else {
-    fHistFileName = Form("%s/%s.%d%s.root", dir.c_str(), name.c_str(), fYear, setup.c_str());
-    fNumbersFileName = fDirectory + Form("/%s.%d%s.txt", name.c_str(), fYear, setup.c_str());
-  }
+  // if (setup == "") {
+  //   fHistFileName = Form("%s/%s.%d.root", dir.c_str(), name.c_str(), fYear);
+  //   fNumbersFileName = fDirectory + Form("/%s.%d.txt", name.c_str(), fYear);
+  // } else {
+  //   fHistFileName = Form("%s/%s.%d%s.root", dir.c_str(), name.c_str(), fYear, setup.c_str());
+  //   fNumbersFileName = fDirectory + Form("/%s.%d%s.txt", name.c_str(), fYear, setup.c_str());
+  // }
+
+  fHistFileName = Form("%s/%s.%s.root", dir.c_str(), name.c_str(), fSuffix.c_str());
+  fNumbersFileName = fDirectory + Form("/%s.%s.txt", name.c_str(), fSuffix.c_str());
+
 
   fTexFileName = fNumbersFileName;
   replaceAll(fTexFileName, ".txt", ".tex");
@@ -264,6 +274,7 @@ void plotClass::changeSetup(string dir, string name, string setup) {
        << "  name             = " << name << endl
        << "  setup            = " << setup << endl
        << "  fSetup           = " << fSetup << endl
+       << "  fSuffix          = " << fSuffix << endl
        << "  fYear            = " << fYear << endl
        << "  fHistFileName    = " << fHistFileName << endl
        << "  fNumbersFileName = " << fNumbersFileName << endl
@@ -652,11 +663,8 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("l1t",     &fb.l1t);
   t->SetBranchAddress("ls",      &fb.ls);
   t->SetBranchAddress("ps",      &fb.ps);
-  if (string::npos == mode.find("Mc")) {
-    t->SetBranchAddress("cw8",   &fb.corrW8);
-  } else {
-    fb.corrW8 = 1.;
-  }
+  t->SetBranchAddress("cw8",     &fb.corrW8);
+
   t->SetBranchAddress("chan",    &fb.chan);
   t->SetBranchAddress("cb",      &fb.cb);
   t->SetBranchAddress("json",    &fb.json);
@@ -765,9 +773,11 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("k1pt", &fb.k1pt);
     t->SetBranchAddress("k1gt", &fb.k1gt);
     t->SetBranchAddress("k1eta",&fb.k1eta);
+    t->SetBranchAddress("k1phi",&fb.k1phi);
     t->SetBranchAddress("k2pt", &fb.k2pt);
     t->SetBranchAddress("k2gt", &fb.k2gt);
     t->SetBranchAddress("k2eta",&fb.k2eta);
+    t->SetBranchAddress("k2phi",&fb.k2phi);
   }
 
 
@@ -788,6 +798,7 @@ void plotClass::setupTree(TTree *t, string mode) {
     t->SetBranchAddress("pipt", &fb.pipt);
     t->SetBranchAddress("pigt", &fb.pigt);
     t->SetBranchAddress("pieta",&fb.pieta);
+    t->SetBranchAddress("piphi",&fb.piphi);
   }
 
   if (string::npos != mode.find("dstarpi")) {
@@ -833,7 +844,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("m2phiE", &fb.m2phiE);
   t->SetBranchAddress("m2chi2", &fb.m2chi2);
 
-  if (string::npos != mode.find("psi")) {
+  if (string::npos != mode.find("bupsik")) {
     t->SetBranchAddress("ktkqual", &fb.ktkqual);
     t->SetBranchAddress("kalg", &fb.kalg);
     t->SetBranchAddress("kvalhits", &fb.kvalhits);
@@ -871,7 +882,7 @@ void plotClass::candAnalysis() {
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     fBDT = -99.;
     fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = false;
-    fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
+    fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
     fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
     fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
     fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
@@ -893,7 +904,7 @@ void plotClass::candAnalysis() {
   // -- reset all
   fBDT = -99.;
   fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodDcand = false;
-  fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
+  fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
   fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = fPreselectionBDT = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
 
@@ -1130,6 +1141,7 @@ void plotClass::candAnalysis() {
   fGoodLipS       = (TMath::Abs(fb.pvlips) < pCuts->pvlips);
 
   fGoodPt         = (fb.pt > pCuts->pt);
+  fGoodPhi        = ((fb.phi > pCuts->phiMin) && (fb.phi < pCuts->phiMax));
   fGoodEta        = ((fb.eta > -fAccEtaRec) && (fb.eta < fAccEtaRec));
   fGoodAlpha      = (fb.alpha < pCuts->alpha);
   fGoodChi2       = (fb.chi2/fb.dof < pCuts->chi2dof);
@@ -1160,6 +1172,7 @@ void plotClass::candAnalysis() {
     && fGoodIp
     && fGoodIpS
     && fGoodPt
+    && fGoodPhi
     && fGoodEta
     && fGoodAlpha
     && fGoodChi2
@@ -1516,6 +1529,16 @@ void plotClass::readCuts(string filename) {
 	if (dump) cout << j-1 << " " << "pt:                   " << cutvalue << endl;
       }
 
+      if (cutname == "phiMax") {
+	a->phiMax = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "phimax:               " << cutvalue << endl;
+      }
+
+      if (cutname == "phiMin") {
+	a->phiMin = cutvalue; ok = 1;
+	if (dump) cout << j-1 << " " << "phimin:               " << cutvalue << endl;
+      }
+
       if (cutname == "m1pt") {
 	a->m1pt = cutvalue; ok = 1;
 	if (dump) cout << j-1 << " " << "m1pt:                 " << cutvalue << endl;
@@ -1801,6 +1824,22 @@ void plotClass::printCuts(ostream &OUT) {
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->pt);
     fTEX <<  Form("\\vdef{%s:pt:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->pt) << endl;
+  }
+  OUT << endl;
+
+  OUT << "phiMin     ";
+  fTEX << Form("\\vdef{%s:phiMin:var}  {\\ensuremath{{\\phi } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->phiMin);
+    fTEX <<  Form("\\vdef{%s:phiMin:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->phiMin) << endl;
+  }
+  OUT << endl;
+
+  OUT << "phiMax     ";
+  fTEX << Form("\\vdef{%s:phiMax:var}  {\\ensuremath{{\\phi } } }", fSuffix.c_str()) << endl;
+  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
+    OUT << Form("%10.3f", fCuts[i]->phiMax);
+    fTEX <<  Form("\\vdef{%s:phiMax:%d}   {\\ensuremath{{%4.3f } } }", fSuffix.c_str(), fCuts[i]->index, fCuts[i]->phiMax) << endl;
   }
   OUT << endl;
 
