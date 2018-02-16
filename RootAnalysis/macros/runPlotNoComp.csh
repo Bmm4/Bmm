@@ -87,6 +87,7 @@ date
 ls -rtl
 ls -rtl results
 
+
 # ----------------------------------------------------------------------
 # -- Save Output to SE
 # ----------------------------------------------------------------------
@@ -99,11 +100,12 @@ foreach x ( *.root )
   echo "rootfile: $x"
   echo lcg-del -b -D srmv2 -l  "$PFNS/$STORAGE1/$x"
   lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$x"
-  echo "--> AM running xrdcp $x root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$x "
-  xrdcp $x root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$x
+  echo "--> AM running xrdcp $x root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/$STORAGE1/$x "
+  xrdcp $x root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/$STORAGE1/$x
   echo "--> lcg-ls : $PFNS/$STORAGE1/$x"
   echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$x"
   lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$x"
+  xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat/$STORAGE1/ | /bin/grep $FILE1
 end
 
 date

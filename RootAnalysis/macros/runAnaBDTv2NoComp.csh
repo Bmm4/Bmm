@@ -124,7 +124,7 @@ date
 ls -rtl
 
 touch /scratch/ursl/bmm4/bdt/*.root
-touch /scratch/ursl/bmm4/v06/*.root
+touch /scratch/ursl/bmm4/v10/*.root
 
 
 # ----------------------------------------------------------------------
