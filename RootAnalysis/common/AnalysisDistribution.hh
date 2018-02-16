@@ -27,7 +27,7 @@ public:
   void setBg1Window(double lo, double hi);
   void setBg2Window(double lo, double hi);
 
-  void fill(double value, double m);
+  void fill(double value, double m, double w8 = 1.0);
 
   double fitMass(TH1 *h, double &error, int mode = 0);
   // -- return simple sideband distribution

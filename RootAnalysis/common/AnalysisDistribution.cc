@@ -493,12 +493,16 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
 
   TH1D *hm  = (TH1D*)gDirectory->Get(Form("%sMass%s", variable, cut));
   TH1D *hSi = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
+  if (!hSi) return 0;
   TH1D *hsi = (TH1D*)hSi->Clone("hsi");
   TH1D *hBg = (TH1D*)gDirectory->Get(Form("%s%s1", variable, cut));
+  if (!hBg) return 0;
   TH1D *hbg = (TH1D*)hBg->Clone("hbg");
   TH1D *hLo = (TH1D*)gDirectory->Get(Form("%s%s3", variable, cut));
+  if (!hLo) return 0;
   TH1D *hlo = (TH1D*)hLo->Clone("hlo");
   TH1D *hHi = (TH1D*)gDirectory->Get(Form("%s%s4", variable, cut));
+  if (!hHi) return 0;
   TH1D *hhi = (TH1D*)hHi->Clone("hhi");
   TH1D *hAl = (TH1D*)gDirectory->Get(Form("%s%s2", variable, cut));
 
@@ -550,9 +554,9 @@ TH1D* AnalysisDistribution::sbDistribution(const char *variable, const char *cut
     aa.DrawArrow(x5, y5, x5, 0., asize-0.005);
 
     c0->cd(2);
-    hlo->SetLineColor(kRed);   hlo->Scale(1./hLo->GetSumOfWeights());
-    hhi->SetLineColor(kBlue);  hhi->Scale(1./hHi->GetSumOfWeights());
-    hsi->SetLineColor(kBlack); hsi->Scale(1./hSi->GetSumOfWeights());
+    hlo->SetLineColor(kRed);   hlo->Scale(1./(hLo->GetSumOfWeights()>0.?hLo->GetSumOfWeights():1.));
+    hhi->SetLineColor(kBlue);  hhi->Scale(1./(hHi->GetSumOfWeights()>0.?hHi->GetSumOfWeights():1.));
+    hsi->SetLineColor(kBlack); hsi->Scale(1./(hSi->GetSumOfWeights()>0.?hSi->GetSumOfWeights():1.));
     double ymax(hlo->GetMaximum());
     if (hhi->GetMaximum() > ymax) ymax = hhi->GetMaximum();
     if (hsi->GetMaximum() > ymax) ymax = hsi->GetMaximum();
@@ -1969,7 +1973,7 @@ TH1D* AnalysisDistribution::sbsDistribution(const char *variable, const char *cu
 
 
 // ----------------------------------------------------------------------
-void AnalysisDistribution::fill(double value, double mass) {
+void AnalysisDistribution::fill(double value, double mass, double w8) {
   int mBin(-1);
   // -- this was added later on for cases where the low and high sideband have different compositions and cannot be combined
   //    I want to keep backward compatibility with the old combined setup, therefore only new histograms are added.
@@ -1978,18 +1982,18 @@ void AnalysisDistribution::fill(double value, double mass) {
 
   // -- these histograms are just to KNOW afterwards what the mass windows were exactly
   //  cout <<   hMassAll << endl;
-  hMassAll->Fill(mass);
+  hMassAll->Fill(mass, w8);
   if ((fSigLo < mass) && (mass < fSigHi)) {
-    hMassSG->Fill(mass);
+    hMassSG->Fill(mass, w8);
     mBin = 0;
   }
   if ((fBg1Lo < mass) && (mass < fBg1Hi)) {
-    hMassBGL->Fill(mass);
+    hMassBGL->Fill(mass, w8);
     mBin = 1;
     lo = true;
   }
   if ((fBg2Lo < mass) && (mass < fBg2Hi)) {
-    hMassBGH->Fill(mass);
+    hMassBGH->Fill(mass, w8);
     mBin = 1;
     hi = true;
   }
@@ -2007,47 +2011,47 @@ void AnalysisDistribution::fill(double value, double mass) {
   }
 
   if (fpAnaCuts->singleCutTrue(fCutIdx)) {
-    if (mBin > -1) hSi[mBin]->Fill(value);
-    hSi[2]->Fill(value);
-    hMassSi->Fill(mass);
-    if (lo) hSi[3]->Fill(value);
-    if (hi) hSi[4]->Fill(value);
+    if (mBin > -1) hSi[mBin]->Fill(value, w8);
+    hSi[2]->Fill(value, w8);
+    hMassSi->Fill(mass, w8);
+    if (lo) hSi[3]->Fill(value, w8);
+    if (hi) hSi[4]->Fill(value, w8);
   }
   if (fpAnaCuts->nMinus1CutsTrue(fCutIdx)) {
-    if (mBin > -1) hNm[mBin]->Fill(value);
-    hNm[2]->Fill(value);
-    hMassNm->Fill(mass);
-    if (lo) hNm[3]->Fill(value);
-    if (hi) hNm[4]->Fill(value);
+    if (mBin > -1) hNm[mBin]->Fill(value, w8);
+    hNm[2]->Fill(value, w8);
+    hMassNm->Fill(mass, w8);
+    if (lo) hNm[3]->Fill(value, w8);
+    if (hi) hNm[4]->Fill(value, w8);
   }
   if (fpAnaCuts->cumulativeCutTrue(fCutIdx)) {
-    if (mBin > -1) hCu[mBin]->Fill(value);
-    hCu[2]->Fill(value);
-    hMassCu->Fill(mass);
-    if (lo) hCu[3]->Fill(value);
-    if (hi) hCu[4]->Fill(value);
+    if (mBin > -1) hCu[mBin]->Fill(value, w8);
+    hCu[2]->Fill(value, w8);
+    hMassCu->Fill(mass, w8);
+    if (lo) hCu[3]->Fill(value, w8);
+    if (hi) hCu[4]->Fill(value, w8);
   }
   if (fpAnaCuts->allOtherCutsTrue(fCutIdx)) {
-    if (mBin > -1) hAo[mBin]->Fill(value);
-    hAo[2]->Fill(value);
-    hMassAo->Fill(mass);
-    if (lo) hAo[3]->Fill(value);
-    if (hi) hAo[4]->Fill(value);
+    if (mBin > -1) hAo[mBin]->Fill(value, w8);
+    hAo[2]->Fill(value, w8);
+    hMassAo->Fill(mass, w8);
+    if (lo) hAo[3]->Fill(value, w8);
+    if (hi) hAo[4]->Fill(value, w8);
   }
   if (fpAnaCuts->singleCutTrue(fHLTIdx)) {
-    if (mBin > -1) hHLT[mBin]->Fill(value);
-    hHLT[2]->Fill(value);
-    hMassHLT->Fill(mass);
-    if (lo) hHLT[3]->Fill(value);
-    if (hi) hHLT[4]->Fill(value);
+    if (mBin > -1) hHLT[mBin]->Fill(value, w8);
+    hHLT[2]->Fill(value, w8);
+    hMassHLT->Fill(mass, w8);
+    if (lo) hHLT[3]->Fill(value, w8);
+    if (hi) hHLT[4]->Fill(value, w8);
   }
 
   if (true == *fpPreselCutTrue) {
-    if (mBin > -1) hPresel[mBin]->Fill(value);
-    hPresel[2]->Fill(value);
-    hMassPresel->Fill(mass);
-    if (lo) hPresel[3]->Fill(value);
-    if (hi) hPresel[4]->Fill(value);
+    if (mBin > -1) hPresel[mBin]->Fill(value, w8);
+    hPresel[2]->Fill(value, w8);
+    hMassPresel->Fill(mass, w8);
+    if (lo) hPresel[3]->Fill(value, w8);
+    if (hi) hPresel[4]->Fill(value, w8);
   }
 
 }
