@@ -78,12 +78,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2016BF.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "BF";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2016", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "BF";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2016", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   if ("2016GH" == syear) {
@@ -91,12 +93,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2016GH.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "GH";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2016", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "GH";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2016", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   if ("2016G" == syear) {
@@ -104,12 +108,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2016G.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "G";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2016", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "G";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2016", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   if ("2016H" == syear) {
@@ -117,12 +123,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2016H.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2016.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "H";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2016", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "H";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2016", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   if ("2012" == syear) {
@@ -130,12 +138,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2012.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2012.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2012", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2012", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   if ("2011" == syear) {
@@ -143,12 +153,14 @@ int main(int argc, char *argv[]) {
     if ("nada" == files) files = "plotResults.2011.files";
     if ("nada" == cuts)  cuts  = "baseCuts.2011.cuts";
     if ("nada" == dir)   dir   = "results";
-    if ("nada" == setup) setup = "";
-    string scuts = cuts;
-    replaceAll(scuts, "baseCuts.2011", "");
-    replaceAll(scuts, "baseCuts", "");
-    replaceAll(scuts, ".cuts", "");
-    setup += scuts;
+    if ("nada" == setup) {
+      setup = "";
+      string scuts = cuts;
+      replaceAll(scuts, "baseCuts.2011", "");
+      replaceAll(scuts, "baseCuts", "");
+      replaceAll(scuts, ".cuts", "");
+      setup += scuts;
+    }
   }
 
   cout << "syear: " << syear << " year: " << year << " setup: " << setup << " dir: " << dir << " cuts: " << cuts << endl;
