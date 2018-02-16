@@ -27,8 +27,9 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fYear    = fpReader->fYear;
   fNchan   = -1;
   fName    = name;
+  fApplyScaleFactors = false;
   cout << "======================================================================" << endl;
-  cout << "==> candAna: name = " << name << ", reading cutsfile " << cutsFile << " setup for year " << fYear << endl;
+  cout << "==> candAna: name = " << name << ", " << cutsFile << ", year " << fYear << endl;
 
   MASSMIN = 2.5;
   MASSMAX = 10.5;
@@ -37,7 +38,6 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fL1Seeds = 0;
   fGenBTmi = fGenM1Tmi = fGenM2Tmi = fNGenPhotons = fRecM1Tmi = fRecM2Tmi = fCandTmi = -1;
 
-  cout<<fName<<endl;
   fHistDir = gFile->mkdir(fName.c_str());
   pvStudy(true);
 
@@ -844,7 +844,9 @@ void candAna::candAnalysis() {
   fCandTauxy   = fpCand->fTauxy;
   fCandTauxyE  = fpCand->fTauxyE;
 
-  // -- correction weight for 2016BF
+  // ----------------------------------------------------------------------
+  // -- correction weights for 2016 (Jack's yield corrections)
+  // ----------------------------------------------------------------------
   double w = 1.;
   int run_t = fRun;
   int pvn_t = fPvN;
@@ -860,6 +862,22 @@ void candAna::candAnalysis() {
   else if (run_t>=278820 && run_t<=284044) w *= 1.;
   fCorrW8 = w;
 
+  // ----------------------------------------------------------------------
+  // -- test scaling of some variables.
+  // ----------------------------------------------------------------------
+  if (fApplyScaleFactors) {
+    static int beSure(1);
+    if (1 == beSure) {
+      beSure = 0;
+      cout << "Applying scaleFactors" << endl;
+    }
+    if (fChan > 0 && fChan < fNchan) {
+      fCandDoca *= fScaleFactors["MAXDOCA"][fChan];
+      fCandFL3d  *= fScaleFactors["FL3D"][fChan];
+      fCandFL3dE *= fScaleFactors["FL3DE"][fChan];
+      fCandFLS3d = fCandFL3d/fCandFL3dE;
+    }
+  }
 
   // -- variables for production mechanism studies
   //  fpOsCand      = osCand(fpCand);
@@ -1226,7 +1244,7 @@ int candAna::detChan(double m1eta, double m2eta) {
 
 // ----------------------------------------------------------------------
 void candAna::basicCuts() {
-  cout << "    candAna basic cuts" << endl;
+  cout << "*** candAna basic cuts" << endl;
   fAnaCuts.addCut("fWideMass", "m(B candidate) [GeV]", fWideMass);
   fAnaCuts.addCut("fGoodHLT", "HLT", fGoodHLT1);
   fAnaCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
@@ -1240,14 +1258,14 @@ void candAna::basicCuts() {
 
 // ----------------------------------------------------------------------
 void candAna::moreBasicCuts() {
-  cout << "    candAna more basic cuts?" << endl;
+  cout << "*** candAna more basic cuts?" << endl;
 
 }
 
 
 // ----------------------------------------------------------------------
 void candAna::candidateCuts() {
-  cout << "    candAna candidate cuts" << endl;
+  cout << "**** candAna candidate cuts" << endl;
   fAnaCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
   fAnaCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
   fAnaCuts.addCut("fGoodPvLip", "LIP(PV)", fGoodPvLip);
@@ -1271,7 +1289,7 @@ void candAna::candidateCuts() {
 
 // ----------------------------------------------------------------------
 void candAna::moreCandidateCuts() {
-  cout << "    candAna more candidate cuts?" << endl;
+  cout << "*** candAna more candidate cuts?" << endl;
 
 }
 
@@ -2117,6 +2135,16 @@ void candAna::readCuts(string fileName, int dump) {
 	  fCuts[j-1]->etaMax = cutvalue; ok = 1;
 	}
 
+	if (cutname == "phiMin") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->phiMin = cutvalue; ok = 1;
+	}
+
+	if (cutname == "phiMax") {
+	  cutvalue = atof(lineItems[j].c_str());
+	  fCuts[j-1]->phiMax = cutvalue; ok = 1;
+	}
+
 	if (cutname == "pt") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->pt = cutvalue; ok = 1;
@@ -2310,6 +2338,25 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->SetBinContent(ibin, 1);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, triggerlist));
     }
+
+    if (!strcmp(CutName, "SCALEFACTOR")) {
+      fApplyScaleFactors = true;
+      char triggerlist[1000];
+      sscanf(buffer, "%s %s", CutName, triggerlist);
+      string tl(triggerlist);
+      vector<double> r;
+      string var;
+      splitScaleFactors(tl, var, r);
+      if (dump) {
+	cout << "SCALEFACTOR:      " << var << " ";
+	for (unsigned int ic = 0; ic < fNchan; ++ic) {
+	  cout << "chan " << ic << ": " << r[ic] << " ";
+	}
+	cout << endl;
+	fScaleFactors.insert(make_pair(var, r));
+      }
+    }
+
 
     if (!strcmp(CutName, "NTRIGGERS")) {
       char triggerlist[1000];
@@ -2826,6 +2873,27 @@ string candAna::splitTrigRange(string tl, int &r1, int &r2) {
   //cout << "2nd a: " << a << " -> r2 = " << r2 << endl;
 
   return hlt;
+
+}
+
+// ----------------------------------------------------------------------
+void candAna::splitScaleFactors(string tl, string &var, vector<double> &r) {
+
+  string::size_type id1 = tl.find_first_of("(");
+  string::size_type id2 = tl.find_first_of(":");
+  string::size_type id3 = tl.find_first_of(")");
+
+  string bla = tl.substr(0, id1);
+  replaceAll(bla, " ", "");
+  var = bla;
+  //  cout << "bla ->" << bla << "<-" << endl;
+
+  string factors = tl.substr(id1+1, id3-id1-1);
+  vector<string> a = split(factors, ':');
+  for (unsigned int i = 0; i < a.size(); ++i) r.push_back(atof(a[i].c_str()));
+  //  cout << "factors ->" << factors << "<-" << endl;
+  //  cout << endl;
+  return;
 
 }
 

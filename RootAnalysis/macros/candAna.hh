@@ -135,6 +135,7 @@ public:
   bool                mvaMuonPassedPreselection(mvaMuonIDData mu);
 
   virtual std::string splitTrigRange(std::string tl, int &r1, int &r2);
+  virtual void        splitScaleFactors(std::string splitstring, std::string &var, std::vector<double> &r);
 
   virtual double      isoClassicWithDOCA(TAnaCand*, double dca, double r = 0.7, double ptmin = 0.9);
   virtual std::pair<int, int> nCloseTracks(TAnaCand*, double dca, double dcaS, double pt = 0.5);
@@ -316,6 +317,9 @@ public:
 
   bool    fPreselection;
   bool    fBadEvent;
+  bool    fApplyScaleFactors;
+  std::map<std::string, std::vector<double>> fScaleFactors;
+
   //int     fhltType; // to hold the HLT information d.k.
   double  fTrigMatchDeltaPt;
   //map<unsigned int, unsigned int, less<unsigned int> > hltObjMap;
