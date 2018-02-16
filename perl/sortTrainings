@@ -1,0 +1,43 @@
+#!/usr/bin/env perl
+
+# Usage:       cd /scratch/ursl/bmm4/jobs/abdt-6 && $BMMBASE/perl/sortTrainings -t tmva-trees-30 -x 2016BF
+# ------
+#
+
+use Getopt::Std;
+getopts('t:x:');
+
+opendir(DIR, ".") or die $!;
+
+while (my $dir = readdir(DIR)) {
+    next unless (-d "$dir");
+    next if ($dir =~ /\./);
+    next if ($dir =~ /\.\./);
+    next if ($dir =~ $opt_x);
+    ($batch = "$dir") =~ s/tmp-//;
+    ($logfile = "$dir.sge.log") =~ s/tmp-//;
+    $fulldir = "$dir";
+    print "$fulldir/$logfile\n";
+    if (!-e "$fulldir/$logfile") {
+	next;
+    }
+    open(IN, "$fulldir/$logfile") || die $!;
+    $trace = "";
+    while (my $line = <IN>) {
+	if ($line =~ $opt_t) {
+	    $trace = $opt_t;
+	    last;
+	}
+    }
+    close(IN);
+    if ($trace ne "") {
+	print "Found $trace, move $dir to $opt_x\n";
+	rename $dir, "$opt_x/$dir";
+    } else {
+	print "$opt_t not found, leave all alone\n";
+    }
+
+}
+
+closedir(DIR);
+exit 0;
