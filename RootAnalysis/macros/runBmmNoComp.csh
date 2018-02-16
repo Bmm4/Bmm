@@ -99,13 +99,14 @@ lcg-del -b -D srmv2 -l "$PFNS/$STORAGE1/$FILE1"
 #/swshare/psit3/bin/data_replica.py --from-site LOCAL --to-site $SITE dr.list "$STORAGE1"
 
 # -- switch to xrdcp
-echo "--> AM running xrdcp $FILE1 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$FILE1 "
-xrdcp $FILE1 root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat/$STORAGE1/$FILE1
+echo "--> AM running xrdcp $FILE1 root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/store/$STORAGE1/$FILE1 "
+xrdcp $FILE1 root://t3dcachedb.psi.ch:1094///pnfs/psi.ch/cms/trivcat/$STORAGE1/$FILE1
 
 echo "--> lcg-ls : $PFNS/$STORAGE1/$FILE1"
 echo lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 lcg-ls -b -D srmv2 -l  "$PFNS/$STORAGE1/$FILE1"
 
+xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat/$STORAGE1/ | /bin/grep $FILE1
 
 date
 
