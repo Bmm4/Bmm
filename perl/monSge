@@ -86,15 +86,14 @@ while(<IN>) {
 	}
     }
 
-
     if ($ok eq "running" || $ok eq "waiting") {
-	printf("%7i %10s %30s; %s\n", $sgeNumber, $jname, $mdir, $ok);
+	printf("%7i %-10s %33s, %s\n", $sgeNumber, $jname, $ok, $mdir);
     } else {
 	if ($rsize < 1) {
 	    $ok = "rootfile empty  ";
 	}
 	#old: printf("%7i %10s; %s/root: %10i, log: %7i %30s (%s)\n", $sgeNumber, $jname, $ok, $rsize, $lsize, $mdir, $workerNode);
-	printf("%7i %10s; %s/root: %10i, %30s (%s/%s)\n", $sgeNumber, $jname, $ok, $rsize, $mdir, $workerNode, $tfinished);
+	printf("%7i %-10s %s/root: %10i, %30s (%s/%s)\n", $sgeNumber, $jname, $ok, $rsize, $mdir, $workerNode, $tfinished);
     }
 
     if ($ok =~ /no problems seen/) {
@@ -215,6 +214,14 @@ sub rootFileSize {
 	    my @tmpstuff = split(/\ /, $stuff);
 	    $result = pop(@tmpstuff);
 	    #print "result = $result\n";
+	    $gotRoot = 1;
+	}
+
+	if (/root:\/\//) {
+	    ($stuff, $junk) = split(/root:\/\//);
+	    $stuff =~ s/\s{1,99}/\ /g;
+	    my @tmpstuff = split(/\ /, $stuff);
+	    $result = pop(@tmpstuff);
 	    $gotRoot = 1;
 	}
 
