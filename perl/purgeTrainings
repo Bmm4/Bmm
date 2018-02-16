@@ -39,7 +39,7 @@ while (my $dir = readdir(DIR)) {
     close(IN);
     if ($trace ne "") {
 	print "Found $trace, remove *-$trace-$batch.*\n";
-	system("/bin/rm *-$trace-$batch.*");
+#	system("/bin/rm *-$trace-$batch.*");
     } else {
 	print "no purge pattern found, leave all alone\n";
     }
