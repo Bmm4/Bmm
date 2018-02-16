@@ -65,9 +65,9 @@ $uhome .= "ursl";
 my $glite = "$home/grid/glite.conf";
 my $qsub = "/gridware/sge/bin/lx24-amd64/qsub  ";
 # -- if you want to exclude some nodes:
-if (1) {
+if (0) {
 #    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn42&!t3wn24' ";
-    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn24&!t3wn41&!t3wn49' ";
+    $qsub = "/gridware/sge/bin/lx24-amd64/qsub -l h='!t3wn24&!t3wn52&!t3wn55&!t3wn56' ";
 }
 
 # -- define mode if not provided
