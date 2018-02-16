@@ -32,7 +32,11 @@ my $command = "";
 foreach $file (@files) {
     chop($file);
     $command = "xrdcp $xroot/$opt_x/$file $file";
-    print "$command \n";
-    system("$command");
+    if (-e "$file") {
+	print "$file already exists here, skipping ... \n";
+    } else {
+	print "$command \n";
+	system("$command");
+    }
     sleep(2);
 }
