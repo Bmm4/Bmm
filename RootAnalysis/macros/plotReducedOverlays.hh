@@ -63,24 +63,27 @@ public:
 
   void makeAll(std::string what = "all");
 
-  /// run over sample with specified channel and selection and dump AD into rootfile
+  // -- run over sample with specified channel and selection and dump AD into rootfile
   void makeSample(std::string sample1,
 		  int nevents = -1, int nstart = 0);
 
-  /// overlay two sample previously makeSample'd (read AD in from rootfile)
+  // -- overlay two sample previously makeSample'd (read AD in from rootfile)
   void makeOverlay(std::string sample1, std::string sample2, std::string selection = "");
 
-  /// combine the previous two methods
+  // -- combine the previous two methods
   void makeSampleOverlay(std::string sample1, std::string sample2, int nevents = -1);
 
-  /// generate mass plots for illustration of the sbs-subtracted plots
+  // -- generate mass plots for illustration of the sbs-subtracted plots
   void plotMass(std::string sample = "bupsikData", std::string selection = "Presel");
 
 
-  /// Validation of MC samples
+  // -- Validation of MC samples
   void comparePrivateAndOfficial();
 
-  /// I forgot what this is for
+  // -- Derivation of scale factors for 2016 MC
+  void scaleFactors2016(std::string filename);
+
+  // -- I forgot what this is for
   void makeOverlay2Channels(std::string sample,
 			    std::string channel1,
 			    std::string channel2,
@@ -97,10 +100,9 @@ public:
   void sbsDistributions(std::string sample, std::string selection = "Presel", std::string what = "");
   void overlay(std::string sample1, std::string sample2, std::string selection = "Presel", std::string what = "");
   void overlayAndRatio(TCanvas *c, TH1D *h1, TH1D *h2);
-  void overlay2Files(std::string file1, std::string sample1,
-		     std::string file2, std::string sample2,
-		     std::string chan1 = "BLoPU", std::string chan2 = "BHiPU",
-		     std::string selection = "Presel", std::string what = "");
+  void overlay2Files(std::string file1, std::string sample1, std::string chan1, std::string selection1,
+		     std::string file2, std::string sample2, std::string chan2, std::string selection2,
+		     std::string what = "");
   void overlay3Samples(std::string sample1, std::string file1,
 		       std::string sample2, std::string file2,
 		       std::string sample3, std::string file3,

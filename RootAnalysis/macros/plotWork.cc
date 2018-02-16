@@ -36,11 +36,11 @@ plotWork::plotWork(string dir, string files, string cuts, string setup, int year
   changeSetup(dir, "plotWork", setup);
   init();
 
-  // -- initialize cuts
-  string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
-  cout << "===> Reading cuts from " << cutfile << endl;
-  readCuts(cutfile);
-  fNchan = fCuts.size();
+  // // -- initialize cuts
+  // string cutfile = Form("%s/%s", dir.c_str(), cuts.c_str());
+  // cout << "===> Reading cuts from " << cutfile << endl;
+  // readCuts(cutfile);
+  // fNchan = fCuts.size();
 
   printCuts(cout);
 

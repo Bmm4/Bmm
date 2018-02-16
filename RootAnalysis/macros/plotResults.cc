@@ -82,7 +82,7 @@ plotResults::plotResults(string dir, string files, string cuts, string setup, in
   fHistStrings.clear();
   fHistStrings.push_back("cnc" + fSuffix);
   fHistStrings.push_back("bdt" + fSuffix);
-  for (int i = 0; i <= 60; ++i) {
+  for (int i = 0; i <= 80; ++i) {
     fHistStrings.push_back(Form("bdt_%d_", i) + fSuffix);
   }
 
@@ -509,11 +509,12 @@ void plotResults::makeAll(string what) {
   }
 
   // -- this will recreate fHistFile!
-  if (what == "all" || string::npos != what.find("fill")) {
+  if ((what == "all") || (string::npos != what.find("fill"))  || (string::npos != what.find("ana"))) {
+    //    fillAndSaveHistograms(0, 50000);
     fillAndSaveHistograms();
   }
 
-  if (what == "all" || string::npos != what.find("ana")) {
+  if ((what == "all") || (string::npos != what.find("ana"))) {
     dumpDatasets();
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "cnc" + fSuffix;
@@ -613,7 +614,7 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
       }
       double total = h0->GetSumOfWeights();
       cout << "total events " << total << " for " << h0->GetName() << endl;
-      for (int ib = BDTMIN; ib <= 60; ++ib) {
+      for (int ib = BDTMIN; ib <= 80; ++ib) {
 	h0 = (TH1D*)fHistFile->Get(Form("bdmmMcComb/hMassWithAllCuts_bdt_%d_%s_bdmmMcComb_chan%d", ib, fSuffix.c_str(), ichan));
 	double integral = h0->GetSumOfWeights();
 	cout << "   integral(" << ib << ") = " << integral << endl;
@@ -728,7 +729,7 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
       double maximum(-1.);
       h1 = new TH1D(Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
 		    Form("bdtScan_%s_chan%d", plots[i].c_str(), ic),
-		    60, 0., 60.);
+		    80, 0., 80.);
       for (unsigned int ib = BDTMIN; ib <= bMax; ++ib) {
 	string idx = Form("bdt_%d_", ib);
 	fSuffixSel = idx + fSuffix;
@@ -781,8 +782,10 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("2012/scanBDT-2012.root");   colors.push_back(kBlack);
     // inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
     // inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
-    inputFiles.push_back("2016BF-00/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
-    inputFiles.push_back("2016GH-00/scanBDT-2016GH.root"); colors.push_back(kBlue);
+    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root"); colors.push_back(kGreen+2);
+    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root"); colors.push_back(kBlue);
+    inputFiles.push_back("2016BF-01/scanBDT-2016BF-01.root"); colors.push_back(kYellow+2);
+    inputFiles.push_back("2016GH-01/scanBDT-2016GH-01.root"); colors.push_back(kCyan+2);
   } else if (1 == mode) {
     inputFiles.push_back("results/scanBDT-2016BF.root");              colors.push_back(kBlack);
     inputFiles.push_back("results/scanBDT-2016BF-389-23.root");   colors.push_back(kRed);
@@ -850,6 +853,27 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     //    i = kMagenta;
     // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3369.root");    colors.push_back(i);  i = i -1;
     // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
+  } else if (6 == mode) {
+    int i = kCyan;
+    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root");    colors.push_back(i); i = i - 1;
+    i = kRed;
+    inputFiles.push_back("2016BF-10/scanBDT-2016BF-10.root");    colors.push_back(i); i = i - 1;
+    inputFiles.push_back("2016BF-11/scanBDT-2016BF-11.root");    colors.push_back(i); i = i - 2;
+    i = kMagenta;
+    inputFiles.push_back("2016BF-12/scanBDT-2016BF-12.root");    colors.push_back(i); i = i - 2;
+    inputFiles.push_back("2016BF-13/scanBDT-2016BF-13.root");    colors.push_back(i); i = i - 2;
+    i = kBlue;
+    inputFiles.push_back("2016BF-14/scanBDT-2016BF-14.root");    colors.push_back(i); i = i - 2;
+    i = kMagenta-9;
+    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root");    colors.push_back(i); i = i - 1;
+    i = kBlue-2;
+    inputFiles.push_back("2016GH-10/scanBDT-2016GH-10.root");    colors.push_back(i); i = i - 2;
+    i = kGreen - 2;
+    inputFiles.push_back("2016GH-11/scanBDT-2016GH-11.root");    colors.push_back(i); i = i - 2;
+    inputFiles.push_back("2016GH-12/scanBDT-2016GH-12.root");    colors.push_back(i); i = i - 2;
+    i = kYellow + 2;
+    inputFiles.push_back("2016GH-13/scanBDT-2016GH-13.root");    colors.push_back(i); i = i + 1;
+    inputFiles.push_back("2016GH-14/scanBDT-2016GH-14.root");    colors.push_back(i);
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -908,11 +932,11 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     }
     h0->SetLineColor(colors[ifile]);
     h0->SetMarkerColor(colors[ifile]);
-    h0->SetMarkerStyle(24);
+    h0->SetMarkerStyle(2);
     h0->SetMarkerSize(0.6);
     setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
     if (0 == ifile) {
-      h0->DrawCopy("p");
+      h0->DrawCopy("p"); // "p"
     } else {
       h0->DrawCopy("psame");
     }
@@ -1850,7 +1874,7 @@ void plotResults::calculatePerformance(int ichan) {
 			       )
 			   );
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
-  fTEX << " -- SOB chan: " << ichan << endl;
+  fTEX << "% -- SOB chan: " << ichan << endl;
   fTEX << formatTex(sob, Form("%s:SOB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
        << endl;
   fTEX << formatTex(ssb, Form("%s:SSB:chan%d:val", fSuffixSel.c_str(), ichan), 4)
@@ -2629,6 +2653,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
 void plotResults::loopFunction1() {
 
   if (fChan < 0) return;
+  if (fChan >= fNchan) return;
   double mass = fb.m;
   double ps   = static_cast<double>(fb.ps);
   if (fYear < 2016) {
@@ -2675,6 +2700,7 @@ void plotResults::loopFunction1() {
       && fGoodIp
       && fGoodIpS
       && fGoodPt
+      && fGoodPhi
       && fGoodEta
       && fGoodAlpha
       && fGoodChi2
@@ -3284,7 +3310,7 @@ void plotResults::saveHistograms(string smode) {
     }
   }
 
-  TH1D *hcuts = fDS["fakeMc"]->getHist("candAnaFakeMC/hcuts");
+  TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
   hcuts->SetName("hcuts");
   hcuts->SetDirectory(fHistFile);
   cout << "writing hcuts " << hcuts << " name: " << hcuts->GetName() << " to " << fHistFile->GetName() << endl;
