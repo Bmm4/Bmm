@@ -25,6 +25,9 @@
 #
 # -- submit runPlot jobs
 #  cd .../Bmm/RootAnalysis/macros/chains/runPlot; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz -x '-p overlays -m dbx' -s 423
+#
+# -- cleanup old jobs.list files:
+#  $BMMBASE/perl/runAll -b 2018/02/02 -s BuToJpsiK-2016 -m
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
