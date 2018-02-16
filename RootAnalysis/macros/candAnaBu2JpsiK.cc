@@ -175,7 +175,7 @@ void candAnaBu2JpsiK::candAnalysis() {
 
 // ----------------------------------------------------------------------
 void candAnaBu2JpsiK::moreBasicCuts() {
-  cout << "   candAnaBu2JpsiK: more basic cuts" << endl;
+  cout << "*** candAnaBu2JpsiK: more basic cuts" << endl;
   fAnaCuts.addCut("fGoodJpsiMass", "m(J/psi)", fGoodJpsiMass);
 }
 
