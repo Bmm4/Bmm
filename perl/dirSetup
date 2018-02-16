@@ -1,21 +1,23 @@
 #!/usr/bin/env perl
 
 use Getopt::Std;
-getopts('d:');
+getopts('d:v:');
 
 my $dir = "..";
 if ($opt_d) {
     $dir = $opt_d;
 }
-
-system("ln -s $dir/plotResults.2016BF.files");
-system("ln -s $dir/plotResults.2016GH.files");
+if ($opt_v eq "v10") {
+    system("ln -s $dir/plotResults.2016BFv10.files");
+    system("ln -s $dir/plotResults.2016GHv10.files");
+} else {
+    system("ln -s $dir/plotResults.2016BF.files");
+    system("ln -s $dir/plotResults.2016GH.files");
+}
 system("ln -s $dir/plotResults.2012.files");
 system("ln -s $dir/plotResults.2011.files");
 
 system("/bin/cp $dir/cuts/baseCuts.2016.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2016BF.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2016GH.cuts .");
 system("/bin/cp $dir/cuts/baseCuts.2011.cuts .");
 system("/bin/cp $dir/cuts/baseCuts.2012.cuts .");
 
