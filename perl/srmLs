@@ -20,6 +20,7 @@
 #          2016/06/13 migrate to gfal-ls
 #          2016/07/08 migrate to xrootd instead of dcap
 #          2016/07/08 migrate to xrdfs instead of gfal-ls
+#          2018/02/28 add even/odd options
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
@@ -31,7 +32,7 @@ $cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 
 # -- Get arguments
 use Getopt::Std;
-getopts('b:cCn:p:x:s:');
+getopts('b:cCen:op:x:s:');
 
 # -- shortcut for nfs-mounted multiple directories:
 if ($#ARGV > -1) {
@@ -45,6 +46,12 @@ if ($#ARGV > -1) {
 	@flist = ();
 	@flist = `xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat$dir`;
 	push(@filelist, @flist);
+    }
+    if ($opt_e) {
+	@filelist = &evenFiles(@filelist);
+    }
+    if ($opt_o) {
+	@filelist = &oddFiles(@filelist);
     }
     foreach $line (@filelist) {
 	($bla, $file) = split(/\/store\//, $line);
@@ -97,6 +104,13 @@ $postfix = substr($opt_x, index($opt_x, '/store'));
 #xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat/store/user/$USER/
 @filelist = `xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat$opt_x`;
 @filelist = grep(s/\ {1,99}/ /g, @filelist);
+if ($opt_e) {
+    @filelist = &evenFiles(@filelist);
+}
+if ($opt_o) {
+    @filelist = &oddFiles(@filelist);
+}
+
 foreach $line (@filelist) {
     @parts = split(/ /, $line);
     $line = substr($line, index($line, '/store'));
@@ -151,4 +165,34 @@ foreach $f (@filelist) {
 	}
 
     }
+}
+
+
+# ----------------------------------------------------------------------
+sub oddFiles() {
+    (@myfiles) = @_;
+    my @returnfiles = ();
+    foreach $file (@myfiles) {
+	$file =~ /.*-([0-9]{1,6})\.root/;
+	if ($1%2 == 1) {
+	    push(@returnfiles, $file);
+	    # print "$file is odd\n";
+	}
+    }
+    return @returnfiles;
+
+}
+
+# ----------------------------------------------------------------------
+sub evenFiles() {
+    (@myfiles) = @_;
+    my @returnfiles = ();
+    foreach $file (@myfiles) {
+	$file =~ /.*-([0-9]{1,6})\.root/;
+	if ($1%2 == 0) {
+	    push(@returnfiles, $file);
+	    # print "$file is even\n";
+	}
+    }
+    return @returnfiles;
 }
