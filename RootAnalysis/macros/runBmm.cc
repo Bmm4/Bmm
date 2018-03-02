@@ -50,6 +50,7 @@ int main(int argc, char *argv[]) {
   int year(0);
   int json(0);
   bool testType(0);
+  string era("");
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -73,6 +74,7 @@ int main(int argc, char *argv[]) {
 	cout << "-c filename   chain definition file" << endl;
 	cout << "-C filename   file with cuts" << endl;
 	cout << "-D path       where to put the output" << endl;
+	cout << "-e era        BF, GH, ...?" << endl;
 	cout << "-f filename   single file instead of chain" << endl;
 	cout << "-m            use MC information" << endl;
 	cout << "-n integer    number of events to run on" << endl;
@@ -90,6 +92,7 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-c"))  {fileName   = string(argv[++i]); file = 0; }     // file with chain definition
     if (!strcmp(argv[i],"-C"))  {cutFile    = string(argv[++i]);           }     // file with cuts
     if (!strcmp(argv[i],"-D"))  {dirName    = string(argv[++i]);  dirspec = 1; } // where to put the output
+    if (!strcmp(argv[i],"-e"))  {era        = string(argv[++i]);  }              // where to put the output
     if (!strcmp(argv[i],"-f"))  {fileName   = string(argv[++i]); file = 1; }     // single file instead of chain
     if (!strcmp(argv[i],"-j"))  {json       = 1; }                               // ignore JSON status
     if (!strcmp(argv[i],"-m"))  {isMC       = 1; }                               // use MC information?
@@ -218,6 +221,7 @@ int main(int argc, char *argv[]) {
 
   if (a) {
     a->setYear(year);
+    if (era != "") a->setEra(era);
     a->setCheckCandTypes(testType);
     if (verbose > -99) a->setVerbosity(verbose);
     a->openHistFile(histfile);
