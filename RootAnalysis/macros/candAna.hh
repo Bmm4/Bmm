@@ -176,6 +176,7 @@ public:
   int fEvent;
   int fRunRange;
   int fYear;
+  std::string fEra;
   double fLumi;
 
   double       MASSMIN,   MASSMAX;
