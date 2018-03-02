@@ -48,6 +48,7 @@ public:
   virtual bool       goodRun();
   virtual void       setVerbosity(int f) {std::cout << Form("setVerbosity(%d)", f) << std::endl;  fVerbose = f;}
   virtual void       setYear(int f) {std::cout << Form("setYear(%d)", f) << std::endl;  fYear = f;}
+  virtual void       setEra(std::string s) {std::cout << Form("setEra(%s)", s.c_str()) << std::endl;  fEra = s;}
   virtual void       setMC(int f) {std::cout << Form("setMC(%d)", f) << std::endl; fIsMC = f;}
   virtual void       setCheckCandTypes(bool f) {std::cout << "checking cand types: " << f << std::endl; fCheckCandTypes = f;}
   virtual void       runBlind() {std::cout << "running blinded" << std::endl; BLIND = 1;}
@@ -63,6 +64,7 @@ public:
 
   int fVerbose;
   int fYear;
+  std::string fEra;
 
 protected:
 
