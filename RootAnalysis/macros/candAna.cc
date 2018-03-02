@@ -25,11 +25,12 @@ candAna::candAna(bmmReader *pReader, string name, string cutsFile) {
   fVerbose = fpReader->fVerbose;
   fDbx     = -2;
   fYear    = fpReader->fYear;
+  fEra     = fpReader->fEra;
   fNchan   = -1;
   fName    = name;
   fApplyScaleFactors = false;
   cout << "======================================================================" << endl;
-  cout << "==> candAna: name = " << name << ", " << cutsFile << ", year " << fYear << endl;
+  cout << "==> candAna: name = " << name << ", " << cutsFile << ", year " << fYear << ", era ->" << fEra << "<-" << endl;
 
   MASSMIN = 2.5;
   MASSMAX = 10.5;
@@ -53,7 +54,7 @@ candAna::~candAna() {
 
 // ----------------------------------------------------------------------
 void candAna::endAnalysis() {
-  cout << "This was for year " << fYear << endl;
+  cout << "This was for year " << fYear << "and era ->" << fEra << "<-" << endl;
   TH1D *h1 = ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())));
   if (h1) {
     cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(1.)))) << endl;
@@ -2366,7 +2367,7 @@ void candAna::readCuts(string fileName, int dump) {
       string hlt = splitTrigRange(tl, r1, r2);
       NTRIGGERS.insert(make_pair(hlt, make_pair(r1, r2)));
       if (dump) {
-	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << endl;
+	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << " (candAna)" << endl;
       }
       ibin = 3;
       hcuts->SetBinContent(ibin, 1);
@@ -2601,6 +2602,9 @@ void candAna::readFile(string filename, vector<string> &lines) {
     if (buffer[0] != '+') {
       lines.push_back(sbuffer);
     } else {
+      if (string::npos != sbuffer.find("YEARERA")) {
+	replaceAll(sbuffer, "YEARERA", Form("%d%s", fYear, fEra.c_str()));
+      }
       if (string::npos != sbuffer.find("YEAR")) {
 	replaceAll(sbuffer, "YEAR", Form("%d", fYear));
       }
@@ -3563,13 +3567,23 @@ void candAna::getSigTracks(vector<int> &v, TAnaCand *pC) {
       getSigTracks(bla, pD);
     }
 
-    for (unsigned j = 0; j < bla.size(); ++j) v.push_back(bla[j]);
+    for (unsigned j = 0; j < bla.size(); ++j) {
+      v.push_back(bla[j]);
+    }
   }
 
+  // cout << "v: " ;
+  // for (unsigned j = 0; j < v.size(); ++j) {
+  //   cout << v[j] << " ";
+  // }
+  // cout << " size of sigtracks: " << fpEvt->nSigTracks() << endl;
+
   // -- add direct sigtracks
+  // cout << pC->fType << ": " << pC->fSig1 << " .. " << pC->fSig2 << endl;
   for (int i = pC->fSig1; i <= pC->fSig2; ++i) {
     if (i < 0) continue;
     pT = fpEvt->getSigTrack(i);
+    // cout << "pT: " << pT << endl;
     if (v.end() == find(v.begin(), v.end(), pT->fIndex)) {
       v.push_back(pT->fIndex);
     }
