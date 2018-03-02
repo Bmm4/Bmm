@@ -798,6 +798,7 @@ void plotBDT::tmvaPlots(string type) {
 void plotBDT::loopFunction1() {
 
   if (fChan < 0) return;
+  if (fChan >= fNchan) return;
 
   //  if ((1 == fMode) && ((fb.m < 4.9) || (fb.m > 5.9) || ((5.2 < fb.m) && fb.m < 5.45))) return;
   if ((1 == fMode) && ((fb.m < 4.9) || (fb.m > 5.9))) return;
