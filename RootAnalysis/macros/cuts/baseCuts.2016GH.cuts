@@ -40,8 +40,8 @@ pvlip      99.	     99.        99.	   99.
 pvlips     99.	     99.        99.	   99.
 pv2lip    -99.	    -99.       -99.	  -99.
 pv2lips   -99.	    -99.       -99.	  -99.
-bdtxml   TMVA-41329 TMVA-38149 TMVA-38149   TMVA-38149
-bdtcut      0.18      0.35 	0.35	   0.35
+bdtxml   TMVA-32959   TMVA-32959    TMVA-32959   TMVA-32959
+bdtcut      0.48      0.48      0.48       0.48
 bdtmupt     3.5       3.5       3.5        3.5
 # 0 L1_DoubleMu0er1p6_dEta_Max1p8      1
 # 1 L1_DoubleMu0er1p6_dEta_Max1p8_OS   2

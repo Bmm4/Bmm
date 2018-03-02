@@ -10,7 +10,7 @@ MD0LO     1.815
 MD0HI     1.915
 DELTAM    0.01
 # -- baseCuts
-+input cuts/baseCuts.YEAR.cuts
++input cuts/baseCuts.YEARERA.cuts
 # -- boxes
 +input cuts/boxes.cuts
 # -- tracks

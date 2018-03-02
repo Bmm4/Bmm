@@ -2,7 +2,7 @@ TYPE           300531
 TRUTHCAND         531
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.YEAR.cuts
++input cuts/baseCuts.YEARERA.cuts
 # -- trigger
 +input cuts/triggerDisplacedJpsi.cuts
 # -- boxes

@@ -5,7 +5,7 @@ HH_MLO 4.
 HH_MHI 7.
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.YEAR.cuts
++input cuts/baseCuts.YEARERA.cuts
 # -- trigger
 TRIGRANGE PDTRIGGER
 # -- boxes

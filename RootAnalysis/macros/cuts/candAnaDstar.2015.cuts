@@ -3,7 +3,7 @@ TRUTHCAND        413
 TRIGRANGE PDTRIGGER
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.YEAR.cuts
++input cuts/baseCuts.YEARERA.cuts
 # -- special cuts
 DSTARTYPE 300054
 D0TYPE    300050

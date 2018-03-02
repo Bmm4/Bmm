@@ -3,7 +3,7 @@ NOPRESELECTION      1
 TRIGRANGE    NOTRIGGER
 PVAVEW8          0.6
 # -- baseCuts
-+input cuts/baseCuts.YEAR.cuts
++input cuts/baseCuts.YEARERA.cuts
 fls3d     -1.0	    -1.0       -1.0        -1.0
 flsxy     -1.0	    -1.0       -1.0        -1.0
 flxyLo    -1.0	    -1.0       -1.0        -1.0
