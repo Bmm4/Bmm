@@ -30,24 +30,67 @@ getopts('c:dn:w:');
 
 my $USER = $ENV{USER};
 my $siesta = 600;
-@jobs = @ARGV;
 
 print "runCont($$): @ARGV\n";
 print "to stop:     touch STOP.$$\n";
 print "to suspend:  touch WAIT.$$\n";
 
-foreach $job (@jobs) {
-    if (-e "STOP.$$") {
-	unlink("STOP.$$");
-	print "runCont($$): saw STOP.$$ at $datum, exit\n";
-	exit(0);
-    }
-    while (-e "WAIT.$$") {
+
+if ($opt_c) {
+    @jobs = @ARGV;
+    foreach $job (@jobs) {
 	$datum = `date`;
 	chop($datum);
-	print "runCont($$): watching WAIT.$$ at $datum\n";
-	sleep(3600);
+	&checkUser($datum);
+	if ($opt_n) {
+	    $njobs = &countPending;
+	    $datum = `date`;
+	    chop($datum);
+	    print "runCont($$): $njobs jobs waiting at $datum\n";
+	    while ($njobs > $opt_n) {
+		sleep($siesta);
+		$datum = `date`;
+		chop($datum);
+		&checkUser($datum);
+		$njobs = &countPending;
+		$datum = `date`;
+		chop($datum);
+		print "runCont($$): $njobs jobs waiting at $datum\n";
+	    }
+	}
+
+	if ($opt_d) {
+	    print "$opt_c $job\n";
+	} else {
+	    print "runCont($$): submitting $opt_c $job\n";
+	    system("$opt_c $job");
+	}
+
+	if ($opt_w) {
+	    sleep($opt_w);
+	}
+
     }
+    print "This is the end, my friend\n";
+    exit(0);
+}
+
+
+# -- below is for direct job submission (not submitting files with job submission lines)
+@jobfiles = @ARGV;
+my @jobs;
+foreach $jf (@jobfiles) {
+    print "read jobs from $jf\n";
+    open(FH, "$jf") || die "Cannot open $jf\n";
+    while (<FH>) {
+	push(@jobs, $_);
+    }
+    close(FH);
+}
+foreach $j (@jobs) {
+    $datum = `date`;
+    chop($datum);
+    &checkUser($datum);
     if ($opt_n) {
 	$njobs = &countPending;
 	$datum = `date`;
@@ -55,20 +98,7 @@ foreach $job (@jobs) {
 	print "runCont($$): $njobs jobs waiting at $datum\n";
 	while ($njobs > $opt_n) {
 	    sleep($siesta);
-	    # -- bail out in case of STOP file
-	    if (-e "STOP.$$") {
-		unlink("STOP.$$");
-		print "runCont($$): saw STOP.$$ at $datum, exit\n";
-		exit(0);
-	    }
-	    # -- wait 1h in case of WAIT file
-	    while (-e "WAIT.$$") {
-		$datum = `date`;
-		chop($datum);
-		print "runCont($$): watching WAIT.$$ at $datum\n";
-		sleep(3600);
-	    }
-
+	    &checkUser($datum);
 	    $njobs = &countPending;
 	    $datum = `date`;
 	    chop($datum);
@@ -77,10 +107,10 @@ foreach $job (@jobs) {
     }
 
     if ($opt_d) {
-	print "$opt_c $job\n";
+	print "would submit: $j\n";
     } else {
-	print "runCont($$): submitting $opt_c $job\n";
-	system("$opt_c $job");
+	print "runCont($$): submitting: $j\n";
+	system("$j");
     }
 
     if ($opt_w) {
@@ -88,7 +118,12 @@ foreach $job (@jobs) {
     }
 
 }
+
 print "This is the end, my friend\n";
+exit(0);
+
+
+
 
 
 # ----------------------------------------------------------------------
@@ -97,4 +132,24 @@ sub countPending() {
     chop($n);
     # print "n = ->$n<- \n";
     return $n;
+}
+
+
+# ----------------------------------------------------------------------
+sub checkUser() {
+    ($ldatum) = @_;
+    # -- bail out in case of STOP file
+    if (-e "STOP.$$") {
+	unlink("STOP.$$");
+	print "runCont($$): saw STOP.$$ at $ldatum, exit\n";
+	exit(0);
+    }
+    # -- wait 1h in case of WAIT file
+    while (-e "WAIT.$$") {
+	$datum = `date`;
+	chop($datum);
+	print "runCont($$): watching WAIT.$$ at $ldatum\n";
+	sleep(3600);
+    }
+
 }
