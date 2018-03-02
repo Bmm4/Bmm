@@ -236,6 +236,7 @@ void bmmReader::readCuts(TString filename, int dump) {
   char buffer[1000];
   char className[200], cutFile[200];
   std::map<std::string, pair<int, int> > NTRIGGERS;
+  bool setNtriggers(false);
   while (is.getline(buffer, 1000, '\n')) {
     sscanf(buffer, "%s %s", className, cutFile);
 
@@ -367,6 +368,7 @@ void bmmReader::readCuts(TString filename, int dump) {
     }
 
     if (!strcmp(className, "NTRIGGERS")) {
+      setNtriggers = true;
       char triggerlist[1000];
       sscanf(buffer, "%s %s", className, triggerlist);
       string tl(triggerlist);
@@ -374,15 +376,16 @@ void bmmReader::readCuts(TString filename, int dump) {
       string hlt = splitTrigRange(tl, r1, r2);
       NTRIGGERS.insert(make_pair(hlt, make_pair(r1, r2)));
       if (dump) {
-	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << endl;
+	cout << "NTRIGGERS:      " << hlt << " from " << r1 << " to " << r2 << " (bmmReader)" << endl;
       }
     }
   }
 
-  for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
-    lCandAnalysis[i]->NTRIGGERS = NTRIGGERS;
+  if (setNtriggers) {
+    for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+      lCandAnalysis[i]->NTRIGGERS = NTRIGGERS;
+    }
   }
-
 
 }
 
