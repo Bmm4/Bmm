@@ -38,7 +38,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('b:Ccdhi:lmo:pq:s:t:w:x:y');
+getopts('b:Ccdehi:lmo:pq:s:t:w:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -371,4 +371,32 @@ void checkFile(const char *filename) {
 }
 
 EOF
+}
+
+# ----------------------------------------------------------------------
+sub listAllPyFiles() {
+    ($dir) = @_;
+    opendir(DIR, $dir) or die $!;
+    my @pylist = ();
+    while (my $dir = readdir(DIR)) {
+	if (!($dir =~/\.py/)) {next;}
+	push(@pylist, $dir)
+    }
+    close(DIR);
+    return @pylist;
+}
+
+# ----------------------------------------------------------------------
+sub addToJobs() {
+    ($ldir) = @_;
+    if ($opt_e) {
+	@pyfiles = &listAllPyFiles($ldir);
+	foreach $pyfile (@pyfiles) {
+	    $job =$ldir.":".$pyfile;
+#	    print "$job\n";
+	    $jobs{$job}  = "cd $ldir && ".&runCommand." $pyfile && cd - ";
+	}
+    } else {
+	$jobs{$ldir}   = "cd $ldir && ".&runCommand." *.py && cd - ";
+    }
 }
