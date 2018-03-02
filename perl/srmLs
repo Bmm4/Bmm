@@ -172,12 +172,16 @@ foreach $f (@filelist) {
 sub oddFiles() {
     (@myfiles) = @_;
     my @returnfiles = ();
-    foreach $file (@myfiles) {
-	$file =~ /.*-([0-9]{1,6})\.root/;
-	if ($1%2 == 1) {
-	    push(@returnfiles, $file);
-	    # print "$file is odd\n";
+    if ($#myfiles > 0) {
+	foreach $file (@myfiles) {
+	    $file =~ /.*-([0-9]{1,6})\.root/;
+	    if ($1%2 == 1) {
+		push(@returnfiles, $file);
+		# print "$file is odd\n";
+	    }
 	}
+    } else {
+	@returnfiles = @myfiles;
     }
     return @returnfiles;
 
@@ -187,12 +191,16 @@ sub oddFiles() {
 sub evenFiles() {
     (@myfiles) = @_;
     my @returnfiles = ();
-    foreach $file (@myfiles) {
-	$file =~ /.*-([0-9]{1,6})\.root/;
-	if ($1%2 == 0) {
-	    push(@returnfiles, $file);
-	    # print "$file is even\n";
+    if ($#myfiles > 0) {
+	foreach $file (@myfiles) {
+	    $file =~ /.*-([0-9]{1,6})\.root/;
+	    if ($1%2 == 0) {
+		push(@returnfiles, $file);
+		# print "$file is even\n";
+	    }
 	}
+    } else {
+	@returnfiles = @myfiles;
     }
     return @returnfiles;
 }
