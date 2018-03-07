@@ -1,0 +1,20 @@
+TYPE          3000070
+DATACAND       300511
+TRUTHCAND         511
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.YEARERA.cuts
+# -- trigger
++input cuts/triggerMixDisplacedJpsi.cuts
+# -- boxes
++input cuts/boxes.Bd2JpsiKstar.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/jpsimuons.YEAR.cuts
+# -- J/psi cuts
++input cuts/jpsi.cuts
+# -- kstar cuts
++input cuts/kstar.cuts
+# -- scale
++input cuts/scale.YEARERA.cuts

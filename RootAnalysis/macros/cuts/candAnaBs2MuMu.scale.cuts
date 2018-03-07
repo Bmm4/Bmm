@@ -1,0 +1,16 @@
+TYPE          1000080
+DATACAND         1313
+TRUTHCAND         531
+PVAVEW8          0.6
+# -- baseCuts
++input cuts/baseCuts.YEARERA.cuts
+# -- trigger
++input cuts/triggerMixBs.cuts
+# -- boxes
++input cuts/boxes.cuts
+# -- tracks
++input cuts/tracks.cuts
+# -- muons
++input cuts/muons.YEAR.cuts
+# -- scale factors
++input cuts/scale.YEARERA.cuts

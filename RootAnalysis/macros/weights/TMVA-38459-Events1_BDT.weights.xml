@@ -1,0 +1,143 @@
+<?xml version="1.0"?>
+<MethodSetup Method="BDT::BDT">
+  <GeneralInfo>
+    <Info name="TMVA Release" value="4.2.1 [262657]"/>
+    <Info name="ROOT Release" value="6.08/07 [395271]"/>
+    <Info name="Creator" value="ursl"/>
+    <Info name="Date" value="Fri Jan 19 16:38:46 2018"/>
+    <Info name="Host" value="Linux vocms0302.cern.ch 2.6.32-696.1.1.el6.x86_64 #1 SMP Wed Apr 12 08:44:28 CEST 2017 x86_64 x86_64 x86_64 GNU/Linux"/>
+    <Info name="Dir" value="/mnt/t3nfs01/data01/shome/ursl/bmm4/CMSSW_9_2_7/src/Bmm/RootAnalysis/macros"/>
+    <Info name="Training events" value="121141"/>
+    <Info name="TrainingTime" value="9.18579152e+01"/>
+    <Info name="AnalysisType" value="Classification"/>
+    <Info name="Preselection:PTMIN" value="5.000000"/>
+    <Info name="Preselection:PTMAX" value="9999.000000"/>
+    <Info name="Preselection:M1PTMIN" value="4.000000"/>
+    <Info name="Preselection:M1PTMAX" value="999.000000"/>
+    <Info name="Preselection:M2PTMIN" value="4.000000"/>
+    <Info name="Preselection:M2PTMAX" value="999.000000"/>
+    <Info name="Preselection:FL3DMAX" value="2.000000"/>
+    <Info name="Preselection:FLS3DMIN" value="4.000000"/>
+    <Info name="Preselection:FLS3DMAX" value="200.000000"/>
+    <Info name="Preselection:FLSXYMIN" value="4.000000"/>
+    <Info name="Preselection:CHI2DOFMAX" value="5.000000"/>
+    <Info name="Preselection:PVIPMAX" value="0.100000"/>
+    <Info name="Preselection:PVIPSMAX" value="5.000000"/>
+    <Info name="Preselection:PVLIPMAX" value="1.000000"/>
+    <Info name="Preselection:PVLIPSMAX" value="5.000000"/>
+    <Info name="Preselection:MAXDOCAMAX" value="0.080000"/>
+    <Info name="Preselection:CLOSETRKMAX" value="21.000000"/>
+    <Info name="Preselection:DOCATRKMAX" value="2.500000"/>
+    <Info name="Preselection:ISOMIN" value="0.000000"/>
+    <Info name="Preselection:ALPHAMAX" value="1.000000"/>
+    <Info name="Preselection:MASSERRORMAX" value="0.200000"/>
+    <Info name="Files:file-sg:/scratch/ursl/bmm4/v06/bmm-signal-2016-v06.root" value="0.000000"/>
+    <Info name="Files:file-bg:/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016-v08.root" value="0.000000"/>
+  </GeneralInfo>
+  <Options>
+    <Option name="V" modified="Yes">True</Option>
+    <Option name="VerbosityLevel" modified="No">Verbose</Option>
+    <Option name="VarTransform" modified="No">None</Option>
+    <Option name="H" modified="Yes">False</Option>
+    <Option name="CreateMVAPdfs" modified="No">False</Option>
+    <Option name="IgnoreNegWeightsInTraining" modified="No">False</Option>
+    <Option name="NTrees" modified="Yes">800</Option>
+    <Option name="MaxDepth" modified="Yes">4</Option>
+    <Option name="MinNodeSize" modified="Yes">5.000000</Option>
+    <Option name="nCuts" modified="Yes">20</Option>
+    <Option name="BoostType" modified="Yes">AdaBoost</Option>
+    <Option name="AdaBoostR2Loss" modified="No">quadratic</Option>
+    <Option name="UseBaggedBoost" modified="No">False</Option>
+    <Option name="Shrinkage" modified="No">1.000000e+00</Option>
+    <Option name="AdaBoostBeta" modified="Yes">5.000000e-01</Option>
+    <Option name="UseRandomisedTrees" modified="No">False</Option>
+    <Option name="UseNvars" modified="No">3</Option>
+    <Option name="UsePoissonNvars" modified="No">True</Option>
+    <Option name="BaggedSampleFraction" modified="No">6.000000e-01</Option>
+    <Option name="UseYesNoLeaf" modified="No">True</Option>
+    <Option name="NegWeightTreatment" modified="No">inverseboostnegweights</Option>
+    <Option name="Css" modified="No">1.000000e+00</Option>
+    <Option name="Cts_sb" modified="No">1.000000e+00</Option>
+    <Option name="Ctb_ss" modified="No">1.000000e+00</Option>
+    <Option name="Cbb" modified="No">1.000000e+00</Option>
+    <Option name="NodePurityLimit" modified="No">5.000000e-01</Option>
+    <Option name="SeparationType" modified="No">giniindex</Option>
+    <Option name="RegressionLossFunctionBDTG" modified="No">huber</Option>
+    <Option name="HuberQuantile" modified="No">7.000000e-01</Option>
+    <Option name="DoBoostMonitor" modified="No">False</Option>
+    <Option name="UseFisherCuts" modified="No">False</Option>
+    <Option name="MinLinCorrForFisher" modified="No">8.000000e-01</Option>
+    <Option name="UseExclusiveVars" modified="No">False</Option>
+    <Option name="DoPreselection" modified="No">False</Option>
+    <Option name="SigToBkgFraction" modified="No">1.000000e+00</Option>
+    <Option name="PruneMethod" modified="No">nopruning</Option>
+    <Option name="PruneStrength" modified="No">0.000000e+00</Option>
+    <Option name="PruningValFraction" modified="No">5.000000e-01</Option>
+    <Option name="SkipNormalization" modified="No">False</Option>
+    <Option name="nEventsMin" modified="No">0</Option>
+    <Option name="UseBaggedGrad" modified="No">False</Option>
+    <Option name="GradBaggingFraction" modified="No">6.000000e-01</Option>
+    <Option name="UseNTrainEvents" modified="No">0</Option>
+    <Option name="NNodesMax" modified="No">0</Option>
+  </Options>
+  <Variables NVar="8">
+    <Variable VarIndex="0" Expression="alpha" Label="alpha" Title="alpha" Unit="" Internal="alpha" Type="F" Min="2.35942371e-05" Max="9.98397410e-01"/>
+    <Variable VarIndex="1" Expression="pvips" Label="pvips" Title="pvips" Unit="" Internal="pvips" Type="F" Min="5.24922134e-03" Max="4.99652576e+00"/>
+    <Variable VarIndex="2" Expression="docatrk" Label="docatrk" Title="docatrk" Unit="" Internal="docatrk" Type="F" Min="1.55719408e-05" Max="6.00060761e-01"/>
+    <Variable VarIndex="3" Expression="chi2dof" Label="chi2dof" Title="chi2dof" Unit="" Internal="chi2dof" Type="F" Min="4.42004766e-10" Max="4.99983740e+00"/>
+    <Variable VarIndex="4" Expression="closetrk" Label="closetrk" Title="closetrk" Unit="" Internal="closetrk" Type="F" Min="0.00000000e+00" Max="2.00000000e+01"/>
+    <Variable VarIndex="5" Expression="iso" Label="iso" Title="iso" Unit="" Internal="iso" Type="F" Min="2.09584236e-02" Max="1.00000000e+00"/>
+    <Variable VarIndex="6" Expression="fls3d" Label="fls3d" Title="fls3d" Unit="" Internal="fls3d" Type="F" Min="4.00001812e+00" Max="1.99815964e+02"/>
+    <Variable VarIndex="7" Expression="othervtx" Label="othervtx" Title="othervtx" Unit="" Internal="othervtx" Type="F" Min="-1.11103058e-04" Max="9.74635363e-01"/>
+  </Variables>
+  <Spectators NSpec="1">
+    <Spectator SpecIndex="0" Expression="m" Label="m" Title="mass" Unit="GeV" Internal="m" Type="F" Min="4.48344946e+00" Max="5.89997005e+00"/>
+  </Spectators>
+  <Classes NClass="2">
+    <Class Name="Signal" Index="0"/>
+    <Class Name="Background" Index="1"/>
+  </Classes>
+  <Transformations NTransformations="0"/>
+  <MVAPdfs/>
+  <Weights NTrees="800" AnalysisType="0">
+    <BinaryTree type="DecisionTree" boostWeight="9.4770959513799125e-01" itree="0">
+      <Node pos="s" depth="0" NCoef="0" IVar="4" Cut="3.8095238208770752e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.0000000000000000e-01" nType="0">
+        <Node pos="l" depth="1" NCoef="0" IVar="0" Cut="4.7565203160047531e-02" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="8.6488699913024902e-01" nType="0">
+          <Node pos="l" depth="2" NCoef="0" IVar="-1" Cut="1.1428571939468384e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="9.5958632230758667e-01" nType="1"/>
+          <Node pos="r" depth="2" NCoef="0" IVar="5" Cut="9.5639568567276001e-01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="6.0373026132583618e-01" nType="0">
+            <Node pos="l" depth="3" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="8.4534829854965210e-01" nType="1"/>
+            <Node pos="r" depth="3" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="4.0919357538223267e-01" nType="-1"/>
+          </Node>
+        </Node>
+        <Node pos="r" depth="1" NCoef="0" IVar="5" Cut="8.1351590156555176e-01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="2.0669607818126678e-01" nType="0">
+          <Node pos="l" depth="2" NCoef="0" IVar="0" Cut="8.9263282716274261e-02" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.3058499097824097e-01" nType="0">
+            <Node pos="l" depth="3" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="7.2396069765090942e-01" nType="1"/>
+            <Node pos="r" depth="3" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="3.6869633197784424e-01" nType="-1"/>
+          </Node>
+          <Node pos="r" depth="2" NCoef="0" IVar="-1" Cut="6.0480996966362000e-02" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="7.7653512358665466e-02" nType="-1"/>
+        </Node>
+      </Node>
+    </BinaryTree>
+    <BinaryTree type="DecisionTree" boostWeight="6.8823042137618773e-01" itree="1">
+      <Node pos="s" depth="0" NCoef="0" IVar="5" Cut="7.6689487695693970e-01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.3149437904357910e-01" nType="0">
+        <Node pos="l" depth="1" NCoef="0" IVar="6" Cut="1.3324586868286133e+01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="7.3857718706130981e-01" nType="0">
+          <Node pos="l" depth="2" NCoef="0" IVar="-1" Cut="1.9065437316894531e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="9.5446646213531494e-01" nType="1"/>
+          <Node pos="r" depth="2" NCoef="0" IVar="1" Cut="2.3747451305389404e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.7491248846054077e-01" nType="0">
+            <Node pos="l" depth="3" NCoef="0" IVar="-1" Cut="7.1077790260314941e+00" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="6.4152699708938599e-01" nType="1"/>
+            <Node pos="r" depth="3" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="3.2249346375465393e-01" nType="-1"/>
+          </Node>
+        </Node>
+        <Node pos="r" depth="1" NCoef="0" IVar="6" Cut="1.1842200279235840e+01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="2.0510719716548920e-01" nType="0">
+          <Node pos="l" depth="2" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.8676093816757202e-01" nType="1"/>
+          <Node pos="r" depth="2" NCoef="0" IVar="-1" Cut="1.6770278215408325e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="1.2079442292451859e-01" nType="-1"/>
+        </Node>
+      </Node>
+    </BinaryTree>
+    <BinaryTree type="DecisionTree" boostWeight="5.4363178369750609e-01" itree="2">
+      <Node pos="s" depth="0" NCoef="0" IVar="4" Cut="1.9047619104385376e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="4.9410343170166016e-01" nType="0">
+        <Node pos="l" depth="1" NCoef="0" IVar="-1" Cut="1.3326962471008301e+01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="8.5443484783172607e-01" nType="1"/>
+        <Node pos="r" depth="1" NCoef="0" IVar="5" Cut="6.7365282773971558e-01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="3.5839655995368958e-01" nType="0">
+          <Node pos="l" depth="2" NCoef="0" IVar="5" Cut="9.0675872564315796e-01" cType="0" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="4.6459659934043884e-01" nType="0">
+            <Node pos="l" depth="3" NCoef="0" IVar="-1" Cut="6.9608062505722046e-01" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="6.0961484909057617e-01" nType="1"/>
+            <Node pos="r" depth="3" NCoef="0" IVar="0" Cut="4.4749334454536438e-02" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="3.8497915863990784e-01" nType="0">
+              <Node pos="l" depth="4" NCoef="0" IVar="-1" Cut="0.0000000000000000e+00" cType="1" res="-9.9000000000000000e+01" rms="0.0000000000000000e+00" purity="5.7097852230072021e-01" nType="1"/>
