@@ -855,25 +855,53 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
   } else if (6 == mode) {
     int i = kCyan;
-    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root");    colors.push_back(i); i = i - 1;
-    i = kRed;
-    inputFiles.push_back("2016BF-10/scanBDT-2016BF-10.root");    colors.push_back(i); i = i - 1;
-    inputFiles.push_back("2016BF-11/scanBDT-2016BF-11.root");    colors.push_back(i); i = i - 2;
-    i = kMagenta;
-    inputFiles.push_back("2016BF-12/scanBDT-2016BF-12.root");    colors.push_back(i); i = i - 2;
-    inputFiles.push_back("2016BF-13/scanBDT-2016BF-13.root");    colors.push_back(i); i = i - 2;
+    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root");    colors.push_back(i);
     i = kBlue;
-    inputFiles.push_back("2016BF-14/scanBDT-2016BF-14.root");    colors.push_back(i); i = i - 2;
-    i = kMagenta-9;
-    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root");    colors.push_back(i); i = i - 1;
-    i = kBlue-2;
-    inputFiles.push_back("2016GH-10/scanBDT-2016GH-10.root");    colors.push_back(i); i = i - 2;
-    i = kGreen - 2;
-    inputFiles.push_back("2016GH-11/scanBDT-2016GH-11.root");    colors.push_back(i); i = i - 2;
-    inputFiles.push_back("2016GH-12/scanBDT-2016GH-12.root");    colors.push_back(i); i = i - 2;
-    i = kYellow + 2;
-    inputFiles.push_back("2016GH-13/scanBDT-2016GH-13.root");    colors.push_back(i); i = i + 1;
+    inputFiles.push_back("2016BF-10/scanBDT-2016BF-10.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("2016BF-11/scanBDT-2016BF-11.root");    colors.push_back(i);
+    i = kOrange;
+    inputFiles.push_back("2016BF-12/scanBDT-2016BF-12.root");    colors.push_back(i);
+    i = kSpring;
+    inputFiles.push_back("2016BF-13/scanBDT-2016BF-13.root");    colors.push_back(i);
+    i = kGreen+1;
+    inputFiles.push_back("2016BF-14/scanBDT-2016BF-14.root");    colors.push_back(i);
+    i = kBlack;
+    inputFiles.push_back("2016BF-20/scanBDT-2016BF-20.root");    colors.push_back(i);
+    i = kCyan+1;
+  } else if (7 == mode) {
+    int i = kCyan;
+    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root");    colors.push_back(i);
+    i = kBlue;
+    inputFiles.push_back("2016GH-10/scanBDT-2016GH-10.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("2016GH-11/scanBDT-2016GH-11.root");    colors.push_back(i);
+    i = kOrange;
+    inputFiles.push_back("2016GH-12/scanBDT-2016GH-12.root");    colors.push_back(i);
+    i = kSpring;
+    inputFiles.push_back("2016GH-13/scanBDT-2016GH-13.root");    colors.push_back(i);
+    i = kGreen+1;
     inputFiles.push_back("2016GH-14/scanBDT-2016GH-14.root");    colors.push_back(i);
+    i = kBlack;
+    inputFiles.push_back("2016GH-20/scanBDT-2016GH-20.root");    colors.push_back(i);
+  } else if (8 == mode) {
+    int i = kBlue;
+    inputFiles.push_back("s00/scanBDT-2016BFs00.root");    colors.push_back(i);
+    i = kGreen+2;
+    inputFiles.push_back("s01/scanBDT-2016BFs01.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("s02/scanBDT-2016BFs02.root");    colors.push_back(i);
+    i = kMagenta;
+    inputFiles.push_back("s03/scanBDT-2016BFs03.root");    colors.push_back(i);
+  } else if (9 == mode) {
+    int i = kBlue;
+    inputFiles.push_back("s00/scanBDT-2016GHs00.root");    colors.push_back(i);
+    i = kGreen+2;
+    inputFiles.push_back("s01/scanBDT-2016GHs01.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("s02/scanBDT-2016GHs02.root");    colors.push_back(i);
+    i = kMagenta;
+    inputFiles.push_back("s03/scanBDT-2016GHs03.root");    colors.push_back(i);
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -1069,13 +1097,13 @@ void plotResults::genSummary(std::string dsname, std::string dir) {
   T->Draw("g1eta>>m1eta");
   T->Draw("g2eta>>m2eta");
 
-  T->Draw("gpt>>tpt", "hlt1&&tos");
-  T->Draw("g1pt>>tm1pt", "hlt1&&tos");
-  T->Draw("g2pt>>tm2pt", "hlt1&&tos");
+  T->Draw("gpt>>tpt", "hlt1");
+  T->Draw("g1pt>>tm1pt", "hlt1");
+  T->Draw("g2pt>>tm2pt", "hlt1");
 
-  T->Draw("geta>>teta", "hlt1&&tos");
-  T->Draw("g1eta>>tm1eta", "hlt1&&tos");
-  T->Draw("g2eta>>tm2eta", "hlt1&&tos");
+  T->Draw("geta>>teta", "hlt1");
+  T->Draw("g1eta>>tm1eta", "hlt1");
+  T->Draw("g2eta>>tm2eta", "hlt1");
 
 
   bool addKaon(false);
@@ -1209,7 +1237,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
 
   TTree *t(0);
 
-  //  fSaveSmallTree = true;
+  fSaveSmallTree = true;
   string mode("");
 
   if (0) {
@@ -1764,7 +1792,11 @@ void plotResults::calculateBs2Bu(int ichan) {
   fTEX << "%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%" << endl;
   fTEX << "% -- BF(Bs -> J/psi phi):  chan: " << ichan << " BFCS/CSBF" << endl;
   dumpTex(bf, Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan), 7);
-}
+  dumpTex(fNoNumbers[ichan].fW8SignalFit, Form("%s:BUNW8:chan%d", fSuffixSel.c_str(), ichan), 7);
+  dumpTex(fNoNumbers[ichan].fSignalFit, Form("%s:BUNW0:chan%d", fSuffixSel.c_str(), ichan), 7);
+  dumpTex(fCsNumbers[ichan].fW8SignalFit, Form("%s:BSNW8:chan%d", fSuffixSel.c_str(), ichan), 7);
+  dumpTex(fCsNumbers[ichan].fSignalFit, Form("%s:BSNW0:chan%d", fSuffixSel.c_str(), ichan), 7);
+  }
 
 
 // ----------------------------------------------------------------------
@@ -2965,7 +2997,7 @@ void plotResults::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
     replaceAll(tname, "Comb", "");
 
     dir = gDirectory;
-    fLocal = TFile::Open(Form("%s/small%d%s-%s.root", fDirectory.c_str(), fYear, fSetup.c_str(), tname.c_str()), "RECREATE");
+    fLocal = TFile::Open(Form("%s/small%s-%s.root", fDirectory.c_str(), fSetup.c_str(), tname.c_str()), "RECREATE");
     small = new TTree(Form("%s", tname.c_str()), Form("%s", tname.c_str()));
     small->SetDirectory(fLocal);
     small->Branch("run",    &fb.run,       "run/I");
