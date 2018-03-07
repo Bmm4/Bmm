@@ -54,7 +54,7 @@ candAna::~candAna() {
 
 // ----------------------------------------------------------------------
 void candAna::endAnalysis() {
-  cout << "This was for year " << fYear << "and era ->" << fEra << "<-" << endl;
+  cout << "This was for year " << fYear << " and era ->" << fEra << "<-" << endl;
   TH1D *h1 = ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())));
   if (h1) {
     cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(1.)))) << endl;
