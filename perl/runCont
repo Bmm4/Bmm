@@ -9,6 +9,11 @@
 # ==============
 #
 # $BMMBASE/perl/runCont -n 200 -c '/bin/tcsh  ' c-* >& runCont.log &
+# $BMMBASE/perl/runCont -n 200 allJobs >& runCont.log &
+#
+#
+# $BMMBASE/perl/runAll -t /shome/ursl/bmm4/CMSSW_8_0_29/180226-v11.tar.gz -s bmmCharmonium2016H -e -C -q 'local -b' -d > ! crashedH
+# $BMMBASE/perl/runCont -n 5 -l 2016H crashedH > & runCont-crashedH.log &
 #
 #
 # Create the jobs files based on a template c-20 as follows:
@@ -25,7 +30,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('c:dn:w:');
+getopts('c:dl:n:w:');
 
 
 my $USER = $ENV{USER};
@@ -76,7 +81,7 @@ if ($opt_c) {
 }
 
 
-# -- below is for direct job submission (not submitting files with job submission lines)
+# -- below is for direct job submission (reading job submission lines individually from file[s])
 @jobfiles = @ARGV;
 my @jobs;
 foreach $jf (@jobfiles) {
@@ -95,14 +100,22 @@ foreach $j (@jobs) {
 	$njobs = &countPending;
 	$datum = `date`;
 	chop($datum);
-	print "runCont($$): $njobs jobs waiting at $datum\n";
+	if ($opt_l) {
+	    print "runCont($$): $njobs jobs running at $datum\n";
+	} else {
+	    print "runCont($$): $njobs jobs waiting at $datum\n";
+	}
 	while ($njobs > $opt_n) {
 	    sleep($siesta);
 	    &checkUser($datum);
 	    $njobs = &countPending;
 	    $datum = `date`;
 	    chop($datum);
-	    print "runCont($$): $njobs jobs waiting at $datum\n";
+	    if ($opt_l) {
+		print "runCont($$): $njobs jobs running at $datum\n";
+	    } else {
+		print "runCont($$): $njobs jobs waiting at $datum\n";
+	    }
 	}
     }
 
@@ -128,12 +141,24 @@ exit(0);
 
 # ----------------------------------------------------------------------
 sub countPending() {
-    $n = `qstat -s p -u $USER | wc -l `;
-    chop($n);
-    # print "n = ->$n<- \n";
-    return $n;
+    if ($opt_l) {
+	$jobname = $opt_l;
+	# print "ps -fu ursl | /bin/grep $jobname | /bin/grep csh | wc\n";
+	$line = `ps -fu ursl | /bin/grep $jobname | /bin/grep csh | wc`;
+	chop($line);
+	# print "line ->$line<-\n";
+	$line =~ s/\s{2,99}/:/g;
+	$line =~ s/^://;
+	($n, $nw, $nl) = split(/:/, $line, 3);
+	# print "n = ->$n<- \n";
+	return $n;
+    } else {
+	$n = `qstat -s p -u $USER | wc -l `;
+	chop($n);
+	# print "n = ->$n<- \n";
+	return $n;
+    }
 }
-
 
 # ----------------------------------------------------------------------
 sub checkUser() {
