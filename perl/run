@@ -250,6 +250,12 @@ foreach $jobfile (@ARGV) {
 	    } else {
 		system("./$job.csh >& local.log");
 	    }
+	    open(IN, ">>$jobsList") || die "Cannot open $jobsList\n";
+	    print IN "###Submitted Job Ids###\n";
+	    print IN "local $tdir \n";
+	    print IN "\# $timeStamp $pwd/$tdir $host $host\n";
+	    close(IN);
+	    system("/usr/bin/tail -2 $jobsList >> ../$jobsList");
 	}
     } elsif ($opt_m eq "batch") {
 	print "batch submission: $job\n";
