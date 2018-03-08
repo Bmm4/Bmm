@@ -56,7 +56,7 @@ while(<IN>) {
     my $line = <IN>; chop($line);
 
     # -- fixed screwed jobs.list input
-    while ($line =~ /https/ || $line =~ /sge/) {
+    while ($line =~ /https/ || $line =~ /sge/  || $line =~ /local/) {
 	$url = $line;
 	$line = <IN>; chop($line);
     }
@@ -77,6 +77,11 @@ while(<IN>) {
 	$ok = parseOutput("$mdir/$logfile");
 	($rsize, $lsize, $srmFile) = rootFileSize("$mdir/$logfile");
 	$lsize = -s "$mdir/$logfile";
+    } elsif (-e "$mdir/local.log") {
+	if ($opt_v) {print "parseOutput(\"$mdir/local.log\")\n";}
+	$ok = parseOutput("$mdir/local.log");
+	($rsize, $lsize, $srmFile) = rootFileSize("$mdir/local.log");
+	$lsize = -s "$mdir/local.log";
     } else {
 	if (-e "$mdir/$jobslist") {
 	    $ok = "waiting";
