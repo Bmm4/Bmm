@@ -415,6 +415,7 @@ void plotBDT::tmvaPlots(string type) {
   c0->SetCanvasSize(700, 700);
   shrinkPad(0.15, 0.15, 0.15);
   TH2 *h2 = (TH2*)fRootFile->Get("dataset/CorrelationMatrixS");
+  if (!h2) h2 = (TH2*)fRootFile->Get("CorrelationMatrixS");
   h2->SetLabelSize(0.05, "x");
   h2->SetLabelSize(0.05, "y");
   h2->GetXaxis()->LabelsOption("v");
@@ -423,6 +424,7 @@ void plotBDT::tmvaPlots(string type) {
   c0->SaveAs(Form("%s/%s-%s-CorrelationMatrixS.pdf", fDirectory.c_str(), fBdtString.c_str(), type.c_str()));
 
   h2 = (TH2*)fRootFile->Get("dataset/CorrelationMatrixB");
+  if (!h2) h2 = (TH2*)fRootFile->Get("CorrelationMatrixB");
   h2->SetLabelSize(0.05, "x");
   h2->SetLabelSize(0.05, "y");
   h2->GetXaxis()->LabelsOption("v");
@@ -439,6 +441,7 @@ void plotBDT::tmvaPlots(string type) {
   // search for the right histograms in full list of keys
 
   TDirectory *pDir = (TDirectory *)fRootFile->Get("dataset");
+  if (!pDir) pDir = fRootFile;
   TIter next(pDir->GetListOfKeys());
   TKey *key(0);
   while ((key = (TKey*)next())) {
