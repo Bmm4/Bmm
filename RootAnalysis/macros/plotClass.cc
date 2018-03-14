@@ -1186,19 +1186,33 @@ void plotClass::candAnalysis() {
   calcBDT();
   fb.bdt = fBDT;
 
-  if (0) cout << "RARE? " << (fMode == RARE)
-	      << " fGoodAcceptance = " << fGoodAcceptance
-	      << " fGoodTracks = " << fGoodTracks
-	      << " fGoodTracksPt = " << fGoodTracksPt
-	      << " fGoodTracksEta = " << fGoodTracksEta
-	      << " fGoodMuonsPt = " << fGoodMuonsPt
-	      << " fGoodMuonsEta = " << fGoodMuonsEta
-	      << " fGoodBdtPt = " << fGoodBdtPt
-	      << " fGoodQ = " << fGoodQ
-	      << " fGoodJpsiCut = " << fGoodJpsiCuts
-	      << " fGoodPvAveW8 = " << fGoodPvAveW8
-	      << " BDT = " << fBDT
-	      << endl;
+  if (0) {
+    if (0) cout << "RARE? " << (fMode == RARE)
+		<< " fGoodAcceptance = " << fGoodAcceptance
+		<< " fGoodTracks = " << fGoodTracks
+		<< " fGoodTracksPt = " << fGoodTracksPt
+		<< " fGoodTracksEta = " << fGoodTracksEta
+		<< " fGoodMuonsPt = " << fGoodMuonsPt
+		<< " fGoodMuonsEta = " << fGoodMuonsEta
+		<< " fGoodBdtPt = " << fGoodBdtPt
+		<< " fGoodQ = " << fGoodQ
+		<< " fGoodJpsiCut = " << fGoodJpsiCuts
+		<< " fGoodPvAveW8 = " << fGoodPvAveW8
+		<< " m = " << fb.m
+		<< " fls3d = " << fb.fls3d
+		<< " alpha = " << fb.alpha
+		<< " BDT = " << fBDT
+		<< endl;
+    if (0) cout << "    eta: " << fb.m1eta << "/" << fb.m2eta << "/" << fb.eta
+		<< "    pt: " << fb.m1pt << "/" << fb.m2pt << "/" << fb.pt
+		<< "    gt: " << fb.m1gt << "/" << fb.m2gt
+		<< endl;
+    if (fb.m > 5.18 && fb.pt > 16.016 && fb.pt < 16.16 && fb.alpha < 0.114) {
+
+      cout << "m = " << fb.m << " pt = " << fb.pt << " alpha = " << fb.alpha << " fls3d = " << fb.fls3d << " BDT = " << fBDT << " evt = " << fb.evt << " remainder = " << fb.evt%3 << endl;
+    }
+
+  }
 
   fGoodBDT        = (fBDT > pCuts->bdtCut);
   fGoodHLT        = fb.hlt1 && fb.tos && fb.l1t;
@@ -1326,7 +1340,12 @@ void plotClass::calcBDT() {
   frd.m2eta = fb.m2eta;
   frd.m1pt = fb.m1pt;
   frd.m2pt = fb.m2pt;
+  frd.m1phi = fb.m1phi;
+  frd.m2phi = fb.m2phi;
+
   frd.fls3d = fb.fls3d;
+  frd.fl3d = fb.fl3d;
+  frd.flsxy = fb.flsxy;
   frd.alpha = fb.alpha;
   frd.maxdoca = fb.maxdoca;
   frd.pvip = fb.pvip;
@@ -1334,14 +1353,20 @@ void plotClass::calcBDT() {
   frd.iso = fb.iso;
   frd.docatrk = fb.docatrk;
   frd.chi2dof = fb.chi2dof;
-  frd.closetrk = fb.closetrk;
 
-  frd.m1iso = fb.m1iso;
-  frd.m2iso = fb.m2iso;
+  frd.closetrk = fb.closetrk;
 
   frd.closetrks1 = fb.closetrks1;
   frd.closetrks2 = fb.closetrks2;
   frd.closetrks3 = fb.closetrks3;
+
+  frd.m1iso = fb.m1iso;
+  frd.m2iso = fb.m2iso;
+  frd.pvdchi2 = fb.pvdchi2;
+  frd.othervtx = fb.othervtx;
+
+  frd.pvlip  = fb.pvlip;
+  frd.pvlips = fb.pvlips;
 
   frd.pv2lip  = fb.pv2lip;
   frd.pv2lips = fb.pv2lips;
