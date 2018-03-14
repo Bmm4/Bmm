@@ -28,13 +28,6 @@
 
 #include "ReaderData.hh"
 
-struct bdtSetup {
-  int NTrees, nEventsMin, MaxDepth, NNodesMax;
-  int nCuts;
-  float AdaBoostBeta;
-};
-
-
 struct files {
   std::string dname;
   std::string sname;
@@ -59,12 +52,6 @@ class tmva1: public TObject {
   void createInputFile(std::string fname, std::string sfile, std::string dfile, int randomSeed = -1);
 
   void setBDTParameters(std::string pars) {fBDTParameters = pars;}
-  void setNTrees(int i) {fBdtSetup.NTrees = i;}
-  void setnEventsMin(int i) {fBdtSetup.nEventsMin = i;};
-  void setMaxDepth(int i) {fBdtSetup.MaxDepth = i;};
-  void setnCuts(int i) {fBdtSetup.nCuts = i;};
-  void setAdaBoostBeta(float f) {fBdtSetup.AdaBoostBeta = f;};
-  void setNNodesMax(int f) {fBdtSetup.NNodesMax = f;};
   void newLegend(double x1, double y1, double x2, double y2, std::string title = "");
   void writeOut(TFile*, TH1*);
 
@@ -75,7 +62,6 @@ class tmva1: public TObject {
   void setChannel(int channel) {fChannel = channel;};
 
   files fInputFiles;
-  bdtSetup fBdtSetup;
 
   std::vector<double> fKS, fMaxSSB, fMaxBdt;
   TH1D *fH1s, *fH1b, *fH1r;
