@@ -5,6 +5,8 @@ setenv SCRAM_ARCH
 setenv SRMCP
 
 setenv JOB
+setenv YEAR
+setenv SEL
 setenv EXECUTABLE
 setenv FILE1 $JOB.root
 setenv STORAGE1
@@ -93,7 +95,7 @@ if ("$myVar" == "") then
   echo "the string is blank, continue"
 else
   echo "the string is NOT blank, do not continue and do not store results, exit"
-  echo "run: This is the end, my friend"`
+  echo "run: This is the end, my friend"
   exit
 endif
 
@@ -101,30 +103,15 @@ endif
 pwd
 ls -rtl
 ls -rtl results
-echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
-bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
-date
-pwd
-ls -rtl
-ls -rtl results
-echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
-bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
+echo "RUNPLOT -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y $YEAR -f plotResults.$YEAR$SEL.files |& tee -a $JOB.log"
+bin/runPlot -p overlays -m bdtopt -c baseCuts-$JOB.cuts -y $YEAR -f plotResults.$YEAR$SEL.files |& tee -a $JOB.log
 date
 pwd
 ls -rtl results
-echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log"
-bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016BF -f plotResults.2016BFse.files |& tee -a $JOB.log
-date
-pwd
-ls -rtl
-ls -rtl results
-echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log"
-bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y 2016GH -f plotResults.2016GHse.files |& tee -a $JOB.log
+echo "RUNPLOT -p results  -m bdtopt -c baseCuts-$JOB.cuts -y $YEAR -f plotResults.$YEAR$SEL.files |& tee -a $JOB.log"
+bin/runPlot -p results  -m bdtopt -c baseCuts-$JOB.cuts -y $YEAR -f plotResults.$YEAR$SEL.files |& tee -a $JOB.log
 date
 ls -rtl
-
-touch /scratch/ursl/bmm4/bdt/*.root
-touch /scratch/ursl/bmm4/v10/*.root
 
 
 # ----------------------------------------------------------------------
