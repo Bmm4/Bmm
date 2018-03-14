@@ -37,6 +37,8 @@
 //2012  12/7405 = 0.00162
 //#define LUMISCALE 0.00162
 
+#define MINKS 0.05
+
 ClassImp(tmva1)
 
 using namespace std;
@@ -75,41 +77,12 @@ tmva1::tmva1(int year, string vars, string pars) {
   fLumiScale = 1.86e-3; // 37/19845
   if (year == 2011) {
     fLumiScale = 3.1e-4; // 4.9/16000
-    fInputFiles.sname = "/scratch/ursl/bmm4/v06/";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v06/";
   } else if (year == 2012) {
     fLumiScale = 2.8e-4; // 20/714000
-    fInputFiles.sname = "/scratch/ursl/bmm4/v06/";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v06/";
   } else if (year == 2016) {
     fLumiScale = 1.86e-3; // 37/19845 I think this was wrong, 19845 refers to the bsmmMcComb lumi, not the official one!
-    // fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-v06.root";
-    // fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
     fLumiScale = 8.8e-4; // 37/42185 (combined bsmm und bdmm signal MC)
-    fInputFiles.sname = "/scratch/ursl/bmm4/v06/bmm-signal-2016-v06.root";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v06/bmm-data-bmmCharmonium2016-v06.root";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016BF-v08.root";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016GH-v08.root";
-    fInputFiles.dname = "/scratch/ursl/bmm4/v08/bmm-data-bmmLegacyCharmonium2016-v08.root";
   }
-
-//   // -- BDT setup 108/109
-//   fBdtSetup.NTrees = 800;
-//   fBdtSetup.nEventsMin = 50;
-//   fBdtSetup.MaxDepth = 2;
-//   //  fBdtSetup.MaxDepth = 3;
-//   fBdtSetup.nCuts = 20;
-//   fBdtSetup.AdaBoostBeta = 1.0;
-//   fBdtSetup.NNodesMax = 5;
-//   //  fBdtSetup.NNodesMax = 20;
-
-  // -- TMVA default
-  fBdtSetup.NTrees = 800;
-  fBdtSetup.nEventsMin = 100;
-  fBdtSetup.MaxDepth = 3;
-  fBdtSetup.nCuts = 20;
-  fBdtSetup.AdaBoostBeta = 1.0;
-  fBdtSetup.NNodesMax = 100000;
 
   fApplyOn0 = false;
   fApplyOn1 = false;
@@ -162,25 +135,55 @@ void tmva1::makeAll(int offset, string filename, int chan) {
   make(offset, filename, 2);
   cout << "----------------------------------------------------------------------" << endl;
   cout << "KS probabilities: " << endl;
-  bool good(true);
+  bool good(true), badSSB(false), badBDT(false);
   double minKS(99.);
   for (unsigned int i = 0; i < fKS.size(); i += 2) {
     cout << "sb/bg = " << fKS[i] << "/" << fKS[i+1] << endl;
-    if (fKS[i] < 0.1) good = false;
-    if (fKS[i+1] < 0.1) good = false;
+    if (fKS[i] < MINKS) good = false;
+    if (fKS[i+1] < MINKS) good = false;
     if (fKS[i] < minKS)   minKS = fKS[i];
     if (fKS[i+1] < minKS) minKS = fKS[i+1];
   }
   double  avbdt =  (fMaxBdt[0]+fMaxBdt[1]+fMaxBdt[2])/3;
-  cout << "ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << endl;
+  if (TMath::Abs(avbdt - fMaxBdt[0]) > 0.1*avbdt) {
+    good = false;
+    badBDT = true;
+  }
+  if (TMath::Abs(avbdt - fMaxBdt[1]) > 0.1*avbdt) {
+    good = false;
+    badBDT = true;
+  }
+  if (TMath::Abs(avbdt - fMaxBdt[2]) > 0.1*avbdt) {
+    good = false;
+    badBDT = true;
+  }
+  double  avssb =  (fMaxSSB[0]+fMaxSSB[1]+fMaxSSB[2])/3;
+  if (TMath::Abs(avssb - fMaxSSB[0]) > 0.1*avssb) {
+    good = false;
+    badSSB = true;
+  }
+  if (TMath::Abs(avssb - fMaxSSB[1]) > 0.1*avssb) {
+    good = false;
+    badSSB = true;
+  }
+  if (TMath::Abs(avssb - fMaxSSB[2]) > 0.1*avssb) {
+    good = false;
+    badSSB = true;
+  }
+  cout << "ssb: " << fMaxSSB[0] << "/" << fMaxSSB[1] << "/" << fMaxSSB[2] << " -> avssb = " << Form("%3.2f", avssb) << endl;
   cout << "bdt: " << fMaxBdt[0] << "/" << fMaxBdt[1] << "/" << fMaxBdt[2] << " -> avbdt = " << Form("%3.2f", avbdt) << endl;
-  cout << "offset = " << offset << " is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0] << endl;
+  cout << "offset = " << offset << " is a " << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0]
+       << " spreads:  " << badSSB << " " << badBDT
+       << endl;
   cout << "----------------------------------------------------------------------" << endl;
 
-
+  double minssb(99.);
+  if (fMaxSSB[0] < minssb)  minssb = fMaxSSB[0];
+  if (fMaxSSB[1] < minssb)  minssb = fMaxSSB[1];
+  if (fMaxSSB[2] < minssb)  minssb = fMaxSSB[2];
   ofstream OUT;
   OUT.open("/shome/ursl/abdt.log", ios::app);
-  OUT << "offset = " << offset << "/" << (good? "good": "bad") << " BDT, minKS = " << minKS << ", ssb0 = " << fMaxSSB[0]
+  OUT << "offset = " << offset << "/" << (good? "good": "bad") << " BDT, minKS = " << minKS << ", avssb = " << avssb << ", minssb = " << minssb << ", avbdt = " << avbdt
       << "/" << fBDTParameters << "/" << fVariables << "/" << filename
       << endl;
   OUT.close();
@@ -254,15 +257,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   i =  5; hSetup->SetBinContent(i, fApplyOn0?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn0");
   i =  6; hSetup->SetBinContent(i, fApplyOn1?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn1");
   i =  7; hSetup->SetBinContent(i, fApplyOn2?1:0); hSetup->GetXaxis()->SetBinLabel(i, "applyOn2");
-  i = 10; hSetup->SetBinContent(i, fBdtSetup.NTrees); hSetup->GetXaxis()->SetBinLabel(i, "NTrees");
-  i = 11; hSetup->SetBinContent(i, fBdtSetup.nEventsMin); hSetup->GetXaxis()->SetBinLabel(i, "nEventsMin");
-  i = 12; hSetup->SetBinContent(i, fBdtSetup.nCuts); hSetup->GetXaxis()->SetBinLabel(i, "nCuts");
-  i = 13; hSetup->SetBinContent(i, fBdtSetup.AdaBoostBeta); hSetup->GetXaxis()->SetBinLabel(i, "AdaBoostBeta");
-
   i = 14; hSetup->SetBinContent(i, offset); hSetup->GetXaxis()->SetBinLabel(i, "bdtname");
-
-  i = 20; hSetup->SetBinContent(i, fBdtSetup.MaxDepth); hSetup->GetXaxis()->SetBinLabel(i, "MaxDepth");
-  i = 21; hSetup->SetBinContent(i, fBdtSetup.NNodesMax); hSetup->GetXaxis()->SetBinLabel(i, "NNodesMax");
 
   cout << "----------------------------------------------------------------------" << endl;
   cout << "==> oname: " << oname << " antimuon: " << fTrainAntiMuon <<  endl;
@@ -321,7 +316,6 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
-    cout << "trainBg = " << trainBg << endl;
     cout << "==============> trainSg =  " << trainSg->GetDirectory()->GetName() << " entries: " << trainSg->GetEntries() << endl;
     cout << "==============> testSg  =  " << testSg->GetDirectory()->GetName()  << " entries: " << testSg->GetEntries() << endl;
     cout << "==============> applySg =  " << applySg->GetDirectory()->GetName()  << " entries: " << applySg->GetEntries() << endl;
@@ -341,6 +335,9 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
+    cout << "==============> trainSg =  " << trainSg->GetDirectory()->GetName() << " entries: " << trainSg->GetEntries() << endl;
+    cout << "==============> testSg  =  " << testSg->GetDirectory()->GetName()  << " entries: " << testSg->GetEntries() << endl;
+    cout << "==============> applySg =  " << applySg->GetDirectory()->GetName()  << " entries: " << applySg->GetEntries() << endl;
     cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
     cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
     cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
@@ -356,6 +353,9 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
     applyBg = (TTree*)inFile->Get(Form("sideband%sEvents2/events", sChannel.c_str()));
     trainBg = (TTree*)inFile->Get(Form("sideband%sEvents0/events", sChannel.c_str()));
     testBg  = (TTree*)inFile->Get(Form("sideband%sEvents1/events", sChannel.c_str()));
+    cout << "==============> trainSg =  " << trainSg->GetDirectory()->GetName() << " entries: " << trainSg->GetEntries() << endl;
+    cout << "==============> testSg  =  " << testSg->GetDirectory()->GetName()  << " entries: " << testSg->GetEntries() << endl;
+    cout << "==============> applySg =  " << applySg->GetDirectory()->GetName()  << " entries: " << applySg->GetEntries() << endl;
     cout << "==============> trainBg =  "<< trainBg->GetDirectory()->GetName() << " entries: " << trainBg->GetEntries() << endl;
     cout << "==============> testBg  =  "<< testBg->GetDirectory()->GetName()  << " entries: " << testBg->GetEntries() << endl;
     cout << "==============> applyBg =  "<< applyBg->GetDirectory()->GetName()  << " entries: " << applyBg->GetEntries() << endl;
@@ -374,10 +374,10 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   cout << "--> cbackground weight: " << cbackgroundWeight << endl;
   cout << "--> rbackground weight: " << rbackgroundWeight << endl;
 
-  dataloader->AddSignalTree(trainSg,     signalWeight,      "Training");
-  dataloader->AddSignalTree(testSg,      signalWeight,      "Test");
-  dataloader->AddBackgroundTree(trainBg, cbackgroundWeight, "Training");
-  dataloader->AddBackgroundTree(testBg,  tbackgroundWeight, "Test");
+  dataloader->AddSignalTree(trainSg,     signalWeight,      TMVA::Types::kTraining);
+  dataloader->AddSignalTree(testSg,      signalWeight,      TMVA::Types::kTesting);
+  dataloader->AddBackgroundTree(trainBg, cbackgroundWeight, TMVA::Types::kTraining);
+  dataloader->AddBackgroundTree(testBg,  tbackgroundWeight, TMVA::Types::kTesting);
 
   int nSgTrain = trainSg->GetEntries();
   int nSgTest  = testSg->GetEntries();
@@ -395,6 +395,12 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
     nBgTest = nbg;
   }
 
+  if (nSgTrain > nBgTrain) {
+    nSgTrain =  nBgTrain;
+  } else {
+    nBgTrain =  nSgTrain;
+  }
+
   int seed = static_cast<int>(100*gRandom->Rndm());
 
   // optstring=Form("nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:V");
@@ -405,19 +411,9 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
 		   nSgTrain, nSgTest, nBgTrain, nBgTest);
   cout << "==> PrepareTrainingAndTestTree: " << optstring << " cuts ->" << cut << "<-" << endl;
   TCut tCut(cut.c_str());
-  dataloader->PrepareTrainingAndTestTree(tCut, tCut, optstring.c_str());
+  dataloader->PrepareTrainingAndTestTree(tCut, optstring.c_str());
 
-  if (0) {
-    optstring = Form("!H:V:NTrees=%d", fBdtSetup.NTrees);
-    optstring += Form(":nCuts=%d:PruneMethod=NoPruning", fBdtSetup.nCuts);
-    optstring += Form(":PruneMethod=NoPruning");
-    optstring += Form(":BoostType=AdaBoost:AdaBoostBeta=%f:SeparationType=GiniIndex", fBdtSetup.AdaBoostBeta);
-    optstring += Form(":MaxDepth=%d", fBdtSetup.MaxDepth);
-    optstring += Form(":NNodesMax=%d", fBdtSetup.NNodesMax);
-    //     optstring += Form(":nEventsMin=%d", fBdtSetup.nEventsMin);
-  } else {
-    optstring = "!H:V" + fBDTParameters;
-  }
+  optstring = "!H:V" + fBDTParameters;
 
   cout << "==> BookMethod: " << optstring << endl;
   factory->BookMethod(dataloader, TMVA::Types::kBDT, "BDT", optstring);
@@ -445,7 +441,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   TH1D *hpresel = (TH1D*)inFile->Get("hpresel");
   if (hpresel) {
     string xmlName = Form("dataset/weights/%s_BDT.weights.xml", oname.c_str());
-    cout << "xmlName = " << xmlName  <<  ", ls -l: " << endl;
+    cout << "xmlName = " << xmlName  << endl;
     vector<string> lines;
     char  buffer[1000];
     ifstream is(xmlName);
@@ -460,7 +456,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
       ++icnt;
     }
     is.close();
-    cout << "read a total of " << lines.size() << " lines, icnt = " << icnt << endl;
+    cout << "read a total of " << lines.size() << " lines, icnt = " << icnt << ", now adding preselection info" << endl;
 
     system(Form("/bin/mv %s %s.bac", xmlName.c_str(), xmlName.c_str()));
 
@@ -495,7 +491,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   TH1D *hs = (TH1D*)sig->Clone("hs");
   hs->Scale(1./hs->Integral());
   TH1D *hb = (TH1D*)bgd->Clone("hb");
-  hb->Scale(1./hs->Integral());
+  hb->Scale(1./hb->Integral());
 
   sig = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_S" ));
   bgd = dynamic_cast<TH1*>(outputFile->Get(hname + "_Train_B" ));
@@ -561,6 +557,11 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   fH1r->Draw();
   gPad->SaveAs(Form("h1r-%s", outfileName.Data()));
 
+  if ((kolS < MINKS) || (kolB < MINKS)) {
+    cout << "bad BDT" << endl;
+    exit(0);
+  }
+
 }
 
 
@@ -620,26 +621,28 @@ void tmva1::createInputFile(string filename, string sfile, string dfile, int ran
       if (randomSeed > -1) typeCut = "3*rndm%3==2";
     }
 
-    for (int i = 0; i < nchan; ++i) {
-      // -- signal
-      sdir = Form("signalChan%d%s", i, type.c_str());
-      chanCut = chanDef[i].c_str();
-      outFile->mkdir(sdir.c_str());
-      outFile->cd(sdir.c_str());
-      copyCuts = sgcut + muonid + chanCut + typeCut;
-      cout << "sg copyCuts: " << copyCuts << endl;
-      copyTree = signal->CopyTree(copyCuts);
-      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
+    if (0 /*no statistics*/) {
+      for (int i = 0; i < nchan; ++i) {
+	// -- signal
+	sdir = Form("signalChan%d%s", i, type.c_str());
+	chanCut = chanDef[i].c_str();
+	outFile->mkdir(sdir.c_str());
+	outFile->cd(sdir.c_str());
+	copyCuts = sgcut + muonid + chanCut + typeCut;
+	cout << "sg copyCuts: " << copyCuts << endl;
+	copyTree = signal->CopyTree(copyCuts);
+	cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
 
-      // -- background
-      sdir = Form("sidebandChan%d%s", i, type.c_str());
-      chanCut = chanDef[i].c_str();
-      outFile->mkdir(sdir.c_str());
-      outFile->cd(sdir.c_str());
-      copyCuts = sgcut + muonid + massbg + masscut + chanCut + typeCut;
-      cout << "bg copyCuts: " << copyCuts << endl;
-      copyTree = cbackground->CopyTree(copyCuts);
-      cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
+	// -- background
+	sdir = Form("sidebandChan%d%s", i, type.c_str());
+	chanCut = chanDef[i].c_str();
+	outFile->mkdir(sdir.c_str());
+	outFile->cd(sdir.c_str());
+	copyCuts = sgcut + muonid + massbg + masscut + chanCut + typeCut;
+	cout << "bg copyCuts: " << copyCuts << endl;
+	copyTree = cbackground->CopyTree(copyCuts);
+	cout << "--> " << copyTree->GetEntries() << " events in tree" << endl;
+      }
     }
 
     // -- combined version:
