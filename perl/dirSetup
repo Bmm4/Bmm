@@ -1,28 +1,29 @@
 #!/usr/bin/env perl
 
+# $BMMBASE/perl/dirSetup -b 2279 -s GHs01
+
 use Getopt::Std;
-getopts('d:v:');
+getopts('b:s:');
 
-my $dir = "..";
-if ($opt_d) {
-    $dir = $opt_d;
-}
-if (!$opt_v) {
-    system("ln -s $dir/plotResults.2016BF.files");
-    system("ln -s $dir/plotResults.2016GH.files");
-}
-system("ln -s $dir/plotResults.2012.files");
-system("ln -s $dir/plotResults.2011.files");
+my $dir = $opt_s . "_" . $opt_b;
 
-system("/bin/cp $dir/cuts/baseCuts.2016.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2016BF.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2016GH.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2011.cuts .");
-system("/bin/cp $dir/cuts/baseCuts.2012.cuts .");
+system("/bin/cp dataset/weights/TMVA-$opt_b-*.xml weights");
+
+mkdir($dir);
+
+system("/bin/cp plotResults.2016$opt_s.files $dir");
+system("/bin/mv $dir/plotResults.2016$opt_s.files $dir/plotResults.$opt_s.files");
+my $cuts = "baseCuts.$opt_s".".cuts";
+system("/bin/cp cuts/baseCuts.nobdt.cuts $dir/$cuts");
+open(OUT, ">>$dir/$cuts") || die "cannot open $dir/$cuts for appending\n";
+print OUT << "EOF";
+bdtxml   TMVA-$opt_b   TMVA-$opt_b    TMVA-$opt_b   TMVA-$opt_b
+bdtcut         0.20          0.20          0.20          0.20
+EOF
+
+chdir($dir);
 
 system("mkdir -p overlays/2016");
-system("mkdir -p overlays/2012");
-system("mkdir -p overlays/2011");
 system("mkdir -p sbso");
 system("mkdir -p adfpy");
 system("mkdir -p sbsctrl");
