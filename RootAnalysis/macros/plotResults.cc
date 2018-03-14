@@ -545,24 +545,22 @@ void plotResults::makeAll(string what) {
 
   if (what == "dbx2") {
 
-    frd.pt = 10.;
-    frd.eta = 0.1;
-    frd.m1eta = 0.2;
-    frd.m2eta = 0.3;
-    frd.m1pt = 6.;
-    frd.m2pt = 5.;
-    frd.fls3d = -1.;
-    frd.alpha = 0.01;
+    frd.pt = 16.016298;
+    frd.eta = -0.337338;
+    frd.fls3d = 5.8128776;
+    frd.alpha = 0.1133278;
     frd.maxdoca = 0.001;
-    frd.pvip = 0.001;
-    frd.pvips = 1.;
-    frd.iso = 0.9;
-    frd.docatrk = 0.02;
-    frd.chi2dof = 1.1;
-    frd.closetrk = 0;
+    frd.pvip = 0.0034266;
+    frd.pvips = 1.0469902;
+    frd.iso = 0.9435766;
+    frd.docatrk = 0.0077934;
+    frd.chi2dof = 1.335e-06;
+    frd.closetrk = 10;
 
-    frd.m1iso = 0.9;
-    frd.m2iso = 0.9;
+    frd.fl3d = 0.0321190;
+    frd.flsxy = 6.6656122;
+    frd.m1iso = 0.8524752;
+    frd.m2iso = 0.7810096;
 
     frd.closetrks1 = 0.;
     frd.closetrks2 = 0.;
@@ -574,6 +572,8 @@ void plotResults::makeAll(string what) {
     frd.m  = fb.m;
     cout << fPresel.preselection() << endl;
     cout << fReaderEvents0[0]->EvaluateMVA("BDT") << endl;
+    cout << fReaderEvents1[0]->EvaluateMVA("BDT") << endl;
+    cout << fReaderEvents2[0]->EvaluateMVA("BDT") << endl;
   }
 
 
@@ -900,6 +900,24 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     inputFiles.push_back("s01/scanBDT-2016GHs01.root");    colors.push_back(i);
     i = kRed;
     inputFiles.push_back("s02/scanBDT-2016GHs02.root");    colors.push_back(i);
+    i = kMagenta;
+    inputFiles.push_back("s03/scanBDT-2016GHs03.root");    colors.push_back(i);
+  } else if (11 == mode) {
+    int i = kBlue;
+    inputFiles.push_back("BFs00_1479/scanBDT-2016BFs00_1479.root");    colors.push_back(i);
+    i = kGreen+2;
+    inputFiles.push_back("BFs01_3539/scanBDT-2016BFs01_3539.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("BFs02_1779/scanBDT-2016BFs02_1779.root");    colors.push_back(i);
+    i = kMagenta;
+    inputFiles.push_back("s03/scanBDT-2016BFs03.root");    colors.push_back(i);
+  } else if (12 == mode) {
+    int i = kBlue;
+    inputFiles.push_back("GHs00_1159/scanBDT-2016GHs00_1159.root");    colors.push_back(i);
+    i = kGreen+2;
+    //    inputFiles.push_back("GHs01_7319/scanBDT-2016GHs01_7319.root");    colors.push_back(i);
+    i = kRed;
+    inputFiles.push_back("GHs02_2719/scanBDT-2016GHs02_2719.root");    colors.push_back(i);
     i = kMagenta;
     inputFiles.push_back("s03/scanBDT-2016GHs03.root");    colors.push_back(i);
   }
@@ -1243,7 +1261,7 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   if (0) {
     // -- ONLY for debugging
     resetHistograms();
-    mode = "bdpsikstarData";
+    mode = "bdmmMcComb";
     setup(mode);
     t = getTree(mode, fTreeDir);
     setupTree(t, mode);
@@ -2690,11 +2708,6 @@ void plotResults::loopFunction1() {
   double ps   = static_cast<double>(fb.ps);
   if (fYear < 2016) {
     ps = 1.;
-  }
-
-  // -- allow to skip 2016B-F:
-  if (0) {
-    if (!fIsMC && (2016 == fYear) && (iera(fb.run) < 7)) return;
   }
 
   for (unsigned int im = 0; im < fHistStrings.size(); ++im) {
