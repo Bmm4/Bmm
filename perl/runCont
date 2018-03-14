@@ -13,8 +13,8 @@
 #
 #
 # $BMMBASE/perl/runAll -t /shome/ursl/bmm4/CMSSW_8_0_29/180226-v11.tar.gz -s bmmCharmonium2016H -e -C -q 'local -b' -d > ! crashedH
-# $BMMBASE/perl/runCont -n 5 -l 2016H crashedH > & runCont-crashedH.log &
-#
+# $BMMBASE/perl/runCont -n 5 -l 2016H crashed? > & runCont-crashed.log &
+# $BMMBASE/perl/runCont -n 8 -l bmm-data crashedG >& runCont-crashedG.log
 #
 # Create the jobs files based on a template c-20 as follows:
 #
@@ -112,7 +112,7 @@ foreach $j (@jobs) {
 	    $datum = `date`;
 	    chop($datum);
 	    if ($opt_l) {
-		print "runCont($$): $njobs jobs running at $datum\n";
+		print "runCont($$): $njobs jobs ($opt_l) running at $datum\n";
 	    } else {
 		print "runCont($$): $njobs jobs waiting at $datum\n";
 	    }
@@ -143,8 +143,8 @@ exit(0);
 sub countPending() {
     if ($opt_l) {
 	$jobname = $opt_l;
-	# print "ps -fu ursl | /bin/grep $jobname | /bin/grep csh | wc\n";
-	$line = `ps -fu ursl | /bin/grep $jobname | /bin/grep csh | wc`;
+	# print "ps -fu ursl  | /bin/grep csh | /bin/grep $jobname | wc\n";
+	$line = `ps -fu ursl  | /bin/grep csh | /bin/grep $jobname | wc`;
 	chop($line);
 	# print "line ->$line<-\n";
 	$line =~ s/\s{2,99}/:/g;
