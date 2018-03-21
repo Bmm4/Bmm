@@ -52,6 +52,7 @@ public :
   void calculatePerformance(int chan);
   void scanBDT(std::string fname, bool createTexFile = true);
   void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
+  void showScanBDT(string what = "all");
   double findVarValue(std::string varName, std::vector<std::string> &lines);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};

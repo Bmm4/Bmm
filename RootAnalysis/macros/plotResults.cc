@@ -49,7 +49,6 @@ plotResults::plotResults(string dir, string files, string cuts, string setup, in
   plotResults::loadFiles(files);
 
   changeSetup(dir, "plotResults", setup);
-  init();
 
   fSaveSmallTree = false;
 
@@ -58,8 +57,6 @@ plotResults::plotResults(string dir, string files, string cuts, string setup, in
   // cout << "===> Reading cuts from " << cutfile << endl;
   // readCuts(cutfile);
   // fNchan = fCuts.size();
-
-  printCuts(cout);
 
   fMassLo = 4.9;
   fMassHi = 5.9;
@@ -391,22 +388,37 @@ plotResults::~plotResults() {
 
 // ----------------------------------------------------------------------
 void plotResults::init() {
+  cout << "***************************************************************" << endl;
   fTEX.close();
   cout << Form("/bin/rm -f %s", fTexFileName.c_str()) << endl;
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
   cout << Form("open for TeX output: %s", fTexFileName.c_str()) << endl;
   fTEX.open(fTexFileName.c_str(), ios::app);
-
+  dumpDatasets();
+  printCuts(cout);
 }
 
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
+  if (what == "display") {
+    int istart = 20;
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      for (int i = istart; i < istart+2; ++i) {
+	displayScanBDT("all", i, ichan);
+      }
+    }
+  }
+
+  if (what == "show") {
+    showScanBDT("all");
+  }
 
   if (what == "bdtopt") {
+    init();
     fHistWithAllCuts = "hMassWithAllCuts";
-    //    fillAndSaveHistograms(0, 10000);
     fillAndSaveHistograms();
+    //    fillAndSaveHistograms(0, 10000);
     fSuffixSel = "bdt" + fSuffix;
     for (int i = 0; i < fNchan; ++i) {
       calculateNumbers("bdt" + fSuffix, i);
@@ -420,8 +432,8 @@ void plotResults::makeAll(string what) {
     return;
   }
 
-  if (what == "all" || what == "dumpdatasets" || what == "ana" || what == "genvalidation") {
-    dumpDatasets();
+  if (what == "dumpdatasets" || what == "genvalidation") {
+    init();
   }
 
   if (what == "all" || what == "genvalidation") {
@@ -496,6 +508,7 @@ void plotResults::makeAll(string what) {
   // -- this will recreate fHistFile!
   if (what == "small") {
     string mode = "bupsikMcComb";
+    init();
     fHistFile = TFile::Open("bla.root", "RECREATE");
     fSaveSmallTree = true;
     resetHistograms();
@@ -515,7 +528,8 @@ void plotResults::makeAll(string what) {
   }
 
   if ((what == "all") || (string::npos != what.find("ana"))) {
-    dumpDatasets();
+    init();
+
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "cnc" + fSuffix;
     for (int i = 0; i < fNchan; ++i) {
@@ -526,7 +540,8 @@ void plotResults::makeAll(string what) {
     scanBDT(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), true);
   }
 
-  if (what == "all" || string::npos != what.find("cnc")) {
+  if (string::npos != what.find("cnc")) {
+    init();
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "cnc" + fSuffix;
     for (int i = 0; i < fNchan; ++i) {
@@ -534,7 +549,7 @@ void plotResults::makeAll(string what) {
     }
   }
 
-  if (what == "all" || string::npos != what.find("bdt")) {
+  if (string::npos != what.find("bdt")) {
     fHistWithAllCuts = "hMassWithAllCuts";
     fSuffixSel = "bdt" + fSuffix;
     for (int i = 0; i < fNchan; ++i) {
@@ -544,7 +559,6 @@ void plotResults::makeAll(string what) {
   }
 
   if (what == "dbx2") {
-
     frd.pt = 16.016298;
     frd.eta = -0.337338;
     frd.fls3d = 5.8128776;
@@ -584,11 +598,11 @@ void plotResults::makeAll(string what) {
 
 // ----------------------------------------------------------------------
 void plotResults::bookHist(string dsname) {
-  fHistWithAllCuts = "hMassWithAllCuts";
-  fSuffixSel = "bdt" + fSuffix;
-  for (int i = 0; i < fNchan; ++i) {
-    calculateNumbers("bdt" + fSuffix, i);
-  }
+  // fHistWithAllCuts = "hMassWithAllCuts";
+  // fSuffixSel = "bdt" + fSuffix;
+  // for (int i = 0; i < fNchan; ++i) {
+  //   calculateNumbers("bdt" + fSuffix, i);
+  // }
 }
 
 
@@ -757,6 +771,8 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
   }
   HistFile->Close();
   fHistFile->Close();
+
+  showScanBDT("all");
 }
 
 
@@ -777,149 +793,28 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
     return;
   }
 
-  if (0 == mode) {
-    inputFiles.push_back("2011/scanBDT-2011.root");   colors.push_back(kRed);
-    inputFiles.push_back("2012/scanBDT-2012.root");   colors.push_back(kBlack);
-    // inputFiles.push_back("results/scanBDT-2016BF.root"); colors.push_back(kGreen+2);
-    // inputFiles.push_back("results/scanBDT-2016GH.root"); colors.push_back(kBlue);
-    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root"); colors.push_back(kGreen+2);
-    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root"); colors.push_back(kBlue);
-    inputFiles.push_back("2016BF-01/scanBDT-2016BF-01.root"); colors.push_back(kYellow+2);
-    inputFiles.push_back("2016GH-01/scanBDT-2016GH-01.root"); colors.push_back(kCyan+2);
-  } else if (1 == mode) {
-    inputFiles.push_back("results/scanBDT-2016BF.root");              colors.push_back(kBlack);
-    inputFiles.push_back("results/scanBDT-2016BF-389-23.root");   colors.push_back(kRed);
-    inputFiles.push_back("results/scanBDT-2016BF-409-23.root");   colors.push_back(kGreen+1);
-    inputFiles.push_back("results/scanBDT-2016BF-429-23.root");   colors.push_back(kGreen+2);
-    inputFiles.push_back("results/scanBDT-2016BF-419-23.root");   colors.push_back(kBlue);
-  } else if (2 == mode) {
-    inputFiles.push_back("results/scanBDT-2016GH.root");    colors.push_back(kBlack);
-    inputFiles.push_back("se/scanBDT-2016GH-5559.root");    colors.push_back(kRed);
-    inputFiles.push_back("se/scanBDT-2016GH-2329.root");    colors.push_back(kGreen+1);
-    inputFiles.push_back("se/scanBDT-2016GH-2489.root");    colors.push_back(kBlue);
-  } else if (3 == mode) {
-    int i = kRed;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-9619.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-7639.root");    colors.push_back(i); i = i -1;
-    i = kBlue;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-16309.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-2029.root");    colors.push_back(i); i = i -1;
-    i = kMagenta;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-9999.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-4459.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-11549.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-6769.root");    colors.push_back(i); i = i -1;
-    i = kGreen;
-    inputFiles.push_back("/scratch/ursl/bmm4/se/abdt-4/scanBDT-2016GH-10019.root");    colors.push_back(i); i = i -1;
-  } else if (4 == mode) {
-    int i = kRed;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2329.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2489.root");    colors.push_back(i); i = i -1;
-    i = kBlue;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2569.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2809.root");    colors.push_back(i); i = i -1;
-    i = kMagenta;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2969.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3289.root");    colors.push_back(i); i = i -1;
-    i = kYellow-2;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3369.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
-    i = kGreen;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-4909.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5209.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5849.root");    colors.push_back(i); i = i -1;
-  } else if (5 == mode) {
-    int i = kRed;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2399.root");    colors.push_back(i);  i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2799.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-2959.root");    colors.push_back(i); i = i -1;
-    i = kBlue;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3279.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3439.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-4849.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5809.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-5839.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-7409.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-8049.root");    colors.push_back(i); i = i -1;
-    i = kYellow-2;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-36559.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-37029.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38159.root");    colors.push_back(i); i = i -1;
-    i = kGreen;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38319.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-38799.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-39119.root");    colors.push_back(i); i = i -1;
-    inputFiles.push_back("se/abdt-5/scanBDT-2016BF-41329.root");    colors.push_back(i); i = i -1;
-    //    i = kMagenta;
-    // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3369.root");    colors.push_back(i);  i = i -1;
-    // inputFiles.push_back("se/abdt-5/scanBDT-2016BF-3529.root");    colors.push_back(i); i = i -1;
-  } else if (6 == mode) {
-    int i = kCyan;
-    inputFiles.push_back("2016BF-00/scanBDT-2016BF-00.root");    colors.push_back(i);
-    i = kBlue;
-    inputFiles.push_back("2016BF-10/scanBDT-2016BF-10.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("2016BF-11/scanBDT-2016BF-11.root");    colors.push_back(i);
-    i = kOrange;
-    inputFiles.push_back("2016BF-12/scanBDT-2016BF-12.root");    colors.push_back(i);
-    i = kSpring;
-    inputFiles.push_back("2016BF-13/scanBDT-2016BF-13.root");    colors.push_back(i);
+  if (20 == mode) {
+    int i = kCyan+1;
+    inputFiles.push_back("BFs00_2/scanBDT-2016BFs00_2.root");    colors.push_back(i);
+    i = kCyan+2;
+    inputFiles.push_back("BFs00_219/scanBDT-2016BFs00_219.root");    colors.push_back(i);
     i = kGreen+1;
-    inputFiles.push_back("2016BF-14/scanBDT-2016BF-14.root");    colors.push_back(i);
-    i = kBlack;
-    inputFiles.push_back("2016BF-20/scanBDT-2016BF-20.root");    colors.push_back(i);
-    i = kCyan+1;
-  } else if (7 == mode) {
-    int i = kCyan;
-    inputFiles.push_back("2016GH-00/scanBDT-2016GH-00.root");    colors.push_back(i);
-    i = kBlue;
-    inputFiles.push_back("2016GH-10/scanBDT-2016GH-10.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("2016GH-11/scanBDT-2016GH-11.root");    colors.push_back(i);
-    i = kOrange;
-    inputFiles.push_back("2016GH-12/scanBDT-2016GH-12.root");    colors.push_back(i);
-    i = kSpring;
-    inputFiles.push_back("2016GH-13/scanBDT-2016GH-13.root");    colors.push_back(i);
-    i = kGreen+1;
-    inputFiles.push_back("2016GH-14/scanBDT-2016GH-14.root");    colors.push_back(i);
-    i = kBlack;
-    inputFiles.push_back("2016GH-20/scanBDT-2016GH-20.root");    colors.push_back(i);
-  } else if (8 == mode) {
-    int i = kBlue;
-    inputFiles.push_back("s00/scanBDT-2016BFs00.root");    colors.push_back(i);
-    i = kGreen+2;
-    inputFiles.push_back("s01/scanBDT-2016BFs01.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("s02/scanBDT-2016BFs02.root");    colors.push_back(i);
-    i = kMagenta;
-    inputFiles.push_back("s03/scanBDT-2016BFs03.root");    colors.push_back(i);
-  } else if (9 == mode) {
-    int i = kBlue;
-    inputFiles.push_back("s00/scanBDT-2016GHs00.root");    colors.push_back(i);
-    i = kGreen+2;
-    inputFiles.push_back("s01/scanBDT-2016GHs01.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("s02/scanBDT-2016GHs02.root");    colors.push_back(i);
-    i = kMagenta;
-    inputFiles.push_back("s03/scanBDT-2016GHs03.root");    colors.push_back(i);
-  } else if (11 == mode) {
-    int i = kBlue;
-    inputFiles.push_back("BFs00_1479/scanBDT-2016BFs00_1479.root");    colors.push_back(i);
-    i = kGreen+2;
-    inputFiles.push_back("BFs01_3539/scanBDT-2016BFs01_3539.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("BFs02_1779/scanBDT-2016BFs02_1779.root");    colors.push_back(i);
-    i = kMagenta;
-    inputFiles.push_back("s03/scanBDT-2016BFs03.root");    colors.push_back(i);
-  } else if (12 == mode) {
-    int i = kBlue;
-    inputFiles.push_back("GHs00_1159/scanBDT-2016GHs00_1159.root");    colors.push_back(i);
-    i = kGreen+2;
-    //    inputFiles.push_back("GHs01_7319/scanBDT-2016GHs01_7319.root");    colors.push_back(i);
-    i = kRed;
-    inputFiles.push_back("GHs02_2719/scanBDT-2016GHs02_2719.root");    colors.push_back(i);
-    i = kMagenta;
-    inputFiles.push_back("s03/scanBDT-2016GHs03.root");    colors.push_back(i);
+    inputFiles.push_back("BFs00_8669/scanBDT-2016BFs00_8669.root");    colors.push_back(i);
+    i = kBlue+1;
+    inputFiles.push_back("BFs01_100/scanBDT-2016BFs01_100.root");    colors.push_back(i);
+    i = kBlue+2;
+    inputFiles.push_back("BFs01_7849/scanBDT-2016BFs01_7849.root");    colors.push_back(i);
+    i = kRed+1;
+    inputFiles.push_back("BFs02_1919/scanBDT-2016BFs02_1919.root");    colors.push_back(i);
+  } else if (21 == mode) {
+    int i = kCyan+1;
+    inputFiles.push_back("GHs00_2/scanBDT-2016GHs00_2.root");    colors.push_back(i);
+    i = kCyan+2;
+    inputFiles.push_back("GHs00_219/scanBDT-2016GHs00_219.root");    colors.push_back(i);
+    i = kBlue+1;
+    inputFiles.push_back("GHs01_101/scanBDT-2016GHs01_101.root");    colors.push_back(i);
+    i = kRed+1;
+    inputFiles.push_back("GHs02_32959/scanBDT-2016GHs02_32959.root");    colors.push_back(i);
   }
 
   string bname("hBdt_bsmmMcComb");
@@ -1009,12 +904,110 @@ void plotResults::displayScanBDT(string what, int mode, int chan) {
 }
 
 
+// ----------------------------------------------------------------------
+void plotResults::showScanBDT(string what) {
+  c0->Clear();
+  c0->SetCanvasSize(700, 500);
+
+  if ("all" == what) {
+    showScanBDT("ZAS");
+    showScanBDT("CSBF");
+    showScanBDT("BSMMBFS");
+    return;
+  }
+
+  string bname("hBdt_bsmmMcComb");
+  if (string::npos != what.find("CSBF")) {
+    bname = "hBdt_bspsiphiMcComb";
+  }
+
+  vector<Color_t> colors;
+  colors.push_back(kBlue+2);
+  colors.push_back(kRed+2);
+
+  string inputFile = Form("%s/scanBDT-%d%s.root", fDirectory.c_str(), fYear, fDirectory.c_str());
+  cout << "open " << inputFile << endl;
+  TFile *f = TFile::Open(inputFile.c_str());
+  string hname(Form("bdtScan_%s", what.c_str()));
+  string pdfname(inputFile.c_str());
+  replaceAll(pdfname, Form("%s/", fDirectory.c_str()), "");
+  replaceAll(pdfname, "scanBDT-", "");
+  replaceAll(pdfname, ".root", "");
+
+  TH1D *h0(0), *h1(0);
+  TH1D *b0(0), *b1(0);
+  string s("");
+
+  TH1D *hbdt = (TH1D*)f->Get("bdtCuts");
+  cout << "hbdt = " << hbdt << endl;
+  for (int chan = 0; chan < 2; ++chan) {
+    double bdtCut = 100.*hbdt->GetBinContent(chan+1);
+
+    gStyle->SetOptStat(0);
+    gStyle->SetOptTitle(0);
+
+    s = hname + Form("_chan%d", chan);
+    h0 = (TH1D*)f->Get(s.c_str());
+    if (!h0) {
+      cout << "Did not find histogram ->" << s << "<-" << endl;
+      return;
+    }
+    double bdty   = h0->GetBinContent(h0->FindBin(bdtCut));
+    double bdtx(0.);
+    for (int ic = 0; ic < h0->GetNbinsX(); ++ic) {
+      if (h0->GetBinContent(ic) > 0.) bdtx = h0->GetBinCenter(ic);
+    }
+    bdtx /= 100.;
+
+    h0->SetMinimum(0.0);
+    if (what == "CSBF") {
+      h0->SetMaximum(5.e-5);
+    } else if (what == "BSMMBFS") {
+      h0->SetMaximum(7.e-9);
+    } else if (what == "SSB") {
+      h0->SetMaximum(4.);
+    } else if (what == "ZAD") {
+      h0->SetMaximum(1.);
+    } else if (what == "ZAS") {
+      h0->SetMaximum(4.5);
+    } else {
+      h0->SetMaximum(1.4*h0->GetMaximum());
+    }
+    h0->SetLineColor(colors[chan]);
+    h0->SetMarkerColor(colors[chan]);
+    h0->SetMarkerStyle(2);
+    h0->SetMarkerSize(0.6);
+    setTitles(h0, "100 #times BDT >", what.c_str(), 0.05, 1.2, 1.6);
+    if (0 == chan) {
+      h0->DrawCopy("p"); // "p"
+    } else {
+      h0->DrawCopy("psame");
+    }
+    TMarker *pm = new TMarker(bdtCut, bdty, 28);
+    pm->SetMarkerColor(colors[chan]);
+    pm->SetMarkerSize(2.);
+    pm->Draw();
+    h0->GetListOfFunctions()->Add(pm);
+
+    tl->SetTextSize(0.05);
+    tl->SetTextColor(colors[chan]); tl->DrawLatexNDC(0.25, 0.72 - chan*0.055, Form("chan %d", chan));
+  }
+
+  tl->SetTextSize(0.05);
+  tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.25, 0.80, Form("%s", fDirectory.c_str()));
+  c0->SaveAs(Form("%s/showScanBDT-%s-%s.pdf", fDirectory.c_str(), fDirectory.c_str(), what.c_str()));
+
+}
+
+
 
 // ----------------------------------------------------------------------
 void plotResults::dumpDatasets() {
 
+  printCuts(cout);
+
   ofstream TEX;
-  string dsname = Form("%s/%d-datasets.tex", fDirectory.c_str(), fYear);
+  string dsname = Form("%s/%s-datasets.tex", fDirectory.c_str(), fSetup.c_str());
   system(Form("/bin/rm -f %s", dsname.c_str()));
   TEX.open(dsname.c_str(), ios::app);
 
@@ -1814,7 +1807,7 @@ void plotResults::calculateBs2Bu(int ichan) {
   dumpTex(fNoNumbers[ichan].fSignalFit, Form("%s:BUNW0:chan%d", fSuffixSel.c_str(), ichan), 7);
   dumpTex(fCsNumbers[ichan].fW8SignalFit, Form("%s:BSNW8:chan%d", fSuffixSel.c_str(), ichan), 7);
   dumpTex(fCsNumbers[ichan].fSignalFit, Form("%s:BSNW0:chan%d", fSuffixSel.c_str(), ichan), 7);
-  }
+}
 
 
 // ----------------------------------------------------------------------
@@ -2836,109 +2829,97 @@ void plotResults::loopFunction1() {
   // -- BDT histograms
   // -----------------
   bool goodBDT(false);
-  goodBDT = fGoodBDT;
+  if (fGoodQ
+      && fGoodPvAveW8
+      && fGoodTracks
+      && fGoodTracksPt
+      && fGoodTracksEta
+      && fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
+      && fGoodMuonsEta
+      && fGoodJpsiCuts
+      ) {
 
-  for (unsigned int i = 1; i < fHistStrings.size(); ++i) {
-    if (1 == i) {
-      goodBDT = fGoodBDT;
-    } else {
-      goodBDT = (fBDT > (i-2)*0.01);
-    }
-
-    if (fGoodQ
-	&& fGoodPvAveW8
-	&& fGoodTracks
-	&& fGoodTracksPt
-	&& fGoodTracksEta
-	&& fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
-	&& fGoodMuonsEta
-	&& fGoodJpsiCuts
-	&& fGoodMuonsID
-	&& fGoodDcand
-	&& fGoodHLT
-	) {
+    if (fGoodMuonsID && fGoodDcand && fGoodHLT) {
       fhBdt[fChan]->Fill(fBDT);
     }
 
-    if (fGoodQ
-	&& fGoodPvAveW8
-	&& fGoodTracks
-	&& fGoodTracksPt
-	&& fGoodTracksEta
-	&& fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
-	&& fGoodMuonsEta
-	&& fGoodJpsiCuts
-	&& goodBDT
-	) {
+    for (unsigned int i = 1; i < fHistStrings.size(); ++i) {
+      if (1 == i) {
+	goodBDT = fGoodBDT;
+      } else {
+	goodBDT = (fBDT > (i-2)*0.01);
+      }
 
-      fhBdtCrossCheck[fHistStrings[i]][fChan]->Fill(fBDT);
 
-      fhMassWithAnaCuts[fHistStrings[i]][fChan]->Fill(mass);
+      if (goodBDT) {
+	fhBdtCrossCheck[fHistStrings[i]][fChan]->Fill(fBDT);
+	fhMassWithAnaCuts[fHistStrings[i]][fChan]->Fill(mass);
 
-      if (fGoodMuonsID && fGoodDcand) {
-	fhMassWithMuonCuts[fHistStrings[i]][fChan]->Fill(mass);
-	if (fGoodHLT) {
-	  fhMassWithTriggerCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  fhMassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  if (fIsCowboy) {
-	    fhMassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass);
-	  } else {
-	    fhMassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass);
-	  }
-	  // -- blind version
-	  if ((5.2 < mass) && (mass < 5.45)) {
-	  } else {
-	    fhMassWithAllCutsBlind[fHistStrings[i]][fChan]->Fill(mass);
+	if (fGoodMuonsID && fGoodDcand) {
+	  fhMassWithMuonCuts[fHistStrings[i]][fChan]->Fill(mass);
+	  if (fGoodHLT) {
+	    fhMassWithTriggerCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    fhMassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass);
 	    if (fIsCowboy) {
-	      fhMassWithAllCutsCowboyBlind[fHistStrings[i]][fChan]->Fill(mass);
+	      fhMassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass);
 	    } else {
-	      fhMassWithAllCutsSeagullBlind[fHistStrings[i]][fChan]->Fill(mass);
+	      fhMassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass);
 	    }
-	  }
+	    // -- blind version
+	    if ((5.2 < mass) && (mass < 5.45)) {
+	    } else {
+	      fhMassWithAllCutsBlind[fHistStrings[i]][fChan]->Fill(mass);
+	      if (fIsCowboy) {
+		fhMassWithAllCutsCowboyBlind[fHistStrings[i]][fChan]->Fill(mass);
+	      } else {
+		fhMassWithAllCutsSeagullBlind[fHistStrings[i]][fChan]->Fill(mass);
+	      }
+	    }
 
-	  // -- weighted with fake rate
-	  if (0) cout << "fW8MisId = " << fW8MisId
-		      << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
-		      << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
-		      << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
-		      << endl;
+	    // -- weighted with fake rate
+	    if (0) cout << "fW8MisId = " << fW8MisId
+			<< " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+			<< " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+			<< " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+			<< endl;
 
-	  fhW8MassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
-	  if (fIsCowboy) {
-	    fhW8MassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
-	  } else {
-	    fhW8MassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
-	  }
+	    fhW8MassWithAllCuts[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	    if (fIsCowboy) {
+	      fhW8MassWithAllCutsCowboy[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	    } else {
+	      fhW8MassWithAllCutsSeagull[fHistStrings[i]][fChan]->Fill(mass, fW8MisId);
+	    }
 
-	  // - include prescale values on y axis
-	  if ((fMode == BS2JPSIPHI)
-	      || (fMode == BD2JPSIKSTAR)
-	      || (fMode == BU2JPSIKP)) {
-	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, -0.1, ps);
-	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, 0.1);
-	    fhNorm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1);
-	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, ps);
-	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1);
-	    fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1);
+	    // - include prescale values on y axis
+	    if ((fMode == BS2JPSIPHI)
+		|| (fMode == BD2JPSIKSTAR)
+		|| (fMode == BU2JPSIKP)) {
+	      fhNorm[fHistStrings[i]][fChan]->Fill(mass, -0.1, ps);
+	      fhNorm[fHistStrings[i]][fChan]->Fill(mass, 0.1);
+	      fhNorm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1);
+	      fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, ps);
+	      fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1);
+	      fhNormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1);
 
-	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
-	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, 0.1, fb.corrW8);
-	    fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
-	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
-	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
-	    fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
-	  }
+	      fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, -0.1, fb.corrW8*ps);
+	      fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, 0.1, fb.corrW8);
+	      fhW8Norm[fHistStrings[i]][fChan]->Fill(mass, ps+0.1, fb.corrW8);
+	      fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, -0.1, fb.corrW8*ps);
+	      fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, 0.1, fb.corrW8);
+	      fhW8NormC[fHistStrings[i]][fChan]->Fill(fb.cm, ps+0.1, fb.corrW8);
+	    }
 
-	  if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
-	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  } else if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
-	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  } else if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
-	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  } else if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
-	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
-	  } else if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
-	    fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    if (fMode == BSMM && fCuts[fChan]->mBsLo < mass && mass < fCuts[fChan]->mBsHi) {
+	      fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    } else if (fMode == BDMM && fCuts[fChan]->mBdLo < mass && mass < fCuts[fChan]->mBdHi) {
+	      fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    } else if (fMode == BU2JPSIKP && fNoLo < mass && mass < fNoHi) {
+	      fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    } else if (fMode == BS2JPSIPHI && fCsLo < mass && mass < fCsHi) {
+	      fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    } else if (fMode == BD2JPSIKSTAR && fNoLo < mass && mass < fNoHi) {
+	      fhMassWithMassCuts[fHistStrings[i]][fChan]->Fill(mass);
+	    }
 	  }
 	}
       }
