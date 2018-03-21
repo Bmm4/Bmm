@@ -5,20 +5,34 @@
 use Getopt::Std;
 getopts('b:s:');
 
+
+# -- get baseline BDT threshold cuts
+$logfile = "abdt-$opt_s-$opt_b.log";
+$line = `/bin/grep avbdt $logfile`;
+chop($line);
+my $cut = 0.2;
+if ($line ne "") {
+    ($bla, $cut) = split(/avbdt =/, $line, 2);
+}
+
 my $dir = $opt_s . "_" . $opt_b;
 
 system("/bin/cp dataset/weights/TMVA-$opt_b-*.xml weights");
+system("/bin/cp TMVA-$opt_b-*.root weights");
+system("/bin/cp $logfile weights/TMVA-$opt_b.log");
 
 mkdir($dir);
 
 system("/bin/cp plotResults.2016$opt_s.files $dir");
 system("/bin/mv $dir/plotResults.2016$opt_s.files $dir/plotResults.$opt_s.files");
+
+
 my $cuts = "baseCuts.$opt_s".".cuts";
 system("/bin/cp cuts/baseCuts.nobdt.cuts $dir/$cuts");
 open(OUT, ">>$dir/$cuts") || die "cannot open $dir/$cuts for appending\n";
 print OUT << "EOF";
-bdtxml   TMVA-$opt_b   TMVA-$opt_b    TMVA-$opt_b   TMVA-$opt_b
-bdtcut         0.20          0.20          0.20          0.20
+bdtxml   TMVA-$opt_b   TMVA-$opt_b
+bdtcut         $cut          $cut
 EOF
 
 chdir($dir);
