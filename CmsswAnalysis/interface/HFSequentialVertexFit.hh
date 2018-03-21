@@ -12,7 +12,7 @@
 
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 
-#include "RecoVertex/KinematicFitPrimitives/interface/RefCountedKinematicTree.h" 
+#include "RecoVertex/KinematicFitPrimitives/interface/RefCountedKinematicTree.h"
 #include "DataFormats/VertexReco/interface/Vertex.h"
 
 #include "Bmm/CmsswAnalysis/interface/HFDecayTree.hh"
@@ -23,26 +23,27 @@
 
 class HFSequentialVertexFit {
 public:
-  HFSequentialVertexFit(edm::Handle<edm::View<reco::Track> > hTracks, 
-			const reco::MuonCollection* muons, 
-			const TransientTrackBuilder *TTB, 
-			edm::Handle<reco::VertexCollection> pvCollection, 
-			const MagneticField *field, 
-			reco::BeamSpot beamSpot, 
+  HFSequentialVertexFit(edm::Handle<edm::View<reco::Track> > hTracks,
+			const reco::MuonCollection* muons,
+			const TransientTrackBuilder *TTB,
+			edm::Handle<reco::VertexCollection> pvCollection,
+			const MagneticField *field,
+			reco::BeamSpot beamSpot,
 			int verbose = 0, bool removeCandTracksFromVtx = true);
 
   virtual ~HFSequentialVertexFit();
-  
+
   void doFit(HFDecayTree *tree);
   void setPvW8(double x) {fPvW8 = x;}
-  
+  void useBeamspotConstraint(bool val) {fUseBeamspotConstraint = val;}
+
 private:
   bool fitTree(HFDecayTree *tree);
   bool passAllCuts(HFDecayTree *tree);
   void calculateAll(HFDecayTree *tree);
   void calculateStuff(HFDecayTree *tree, VertexState *);
   void saveTree(HFDecayTree *tree);
-  
+
   double getMaxDoca(std::vector<RefCountedKinematicParticle> &kinParticles);
   double getMinDoca(std::vector<RefCountedKinematicParticle> &kinParticles);
 
@@ -66,7 +67,7 @@ private:
   jac9_t makeJacobianVector2d(const ROOT::Math::PositionVector3D<ROOT::Math::Cartesian3D<double>, ROOT::Math::DefaultCoordinateSystemTag> &vtx1,
 			      const GlobalPoint &vtx2, const TVector3 &tv3momentum);
   jac9_t makeJacobianVector2d(const GlobalPoint &vtx1, const GlobalPoint &vtx2, const TVector3 &tv3momentum);
-  
+
 private:
   int                                  fVerbose;
   const TransientTrackBuilder         *fpTTB;
@@ -77,8 +78,8 @@ private:
   reco::BeamSpot                       fBeamSpot;
   bool                                 fRemoveCandTracksFromVtx;
 
-  double           fPvW8; 
+  double                               fPvW8;
+  bool                                 fUseBeamspotConstraint;
 };
 
 #endif
-

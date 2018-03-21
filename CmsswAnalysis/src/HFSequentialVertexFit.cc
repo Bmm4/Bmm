@@ -76,7 +76,8 @@ HFSequentialVertexFit::HFSequentialVertexFit(Handle<View<Track> > hTracks,
   fMagneticField(field),
   fBeamSpot(beamSpot),
   fRemoveCandTracksFromVtx(removeCandTracksFromVtx),
-  fPvW8(0.6)
+  fPvW8(0.6),
+  fUseBeamspotConstraint(true)
 {}
 
 
@@ -802,9 +803,16 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
 	}
       }
 
-      if (vrtxRefit.size() < 2) continue; // next one
+      if (vrtxRefit.size() < 5) continue; // increased from 2 to be consistent with requirement below (which is limited by CrossingPtBasedLinPtFinder)!
       //DBX      TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
-      TransientVertex newVtx = avf.vertex(vrtxRefit);
+      //         TransientVertex newVtx = avf.vertex(vrtxRefit);
+      TransientVertex newVtx;
+      if (fUseBeamspotConstraint) {
+	newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+      } else {
+	newVtx = avf.vertex(vrtxRefit);
+      }
+
       if (!newVtx.isValid()) continue; // no valid refit, take next one
       Vertex currentPV = reco::Vertex(newVtx);
 
@@ -932,7 +940,13 @@ void HFSequentialVertexFit::calculateStuff(HFDecayTree *tree, VertexState *wrtVe
     if (fVerbose > 5) cout << "==> HFSequentialVertexFit::addCandidate(): refitting with vrtxRefit.size() = " << vrtxRefit.size() << endl;
 
     //DBX    TransientVertex newVtx = avf.vertex(vrtxRefit, fBeamSpot);
-    TransientVertex newVtx = avf.vertex(vrtxRefit);
+    //       TransientVertex newVtx = avf.vertex(vrtxRefit);
+    TransientVertex newVtx;
+    if (fUseBeamspotConstraint) {
+      newVtx = avf.vertex(vrtxRefit, fBeamSpot);
+    } else {
+      newVtx = avf.vertex(vrtxRefit);
+    }
     if (newVtx.isValid()) {
       currentPV = reco::Vertex(newVtx);
     } else {
