@@ -48,7 +48,8 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fMaxD0(iConfig.getUntrackedParameter<double>("maxD0", 999.)),
   fMaxDz(iConfig.getUntrackedParameter<double>("maxDz", 999.)),
   fPvWeight(iConfig.getUntrackedParameter<double>("pvWeight", 0.6)),
-  fType(iConfig.getUntrackedParameter<int>("type")) {
+  fType(iConfig.getUntrackedParameter<int>("type")),
+  fUseBeamspotConstraint(iConfig.getUntrackedParameter<bool>("useBeamspotConstraint", true)) {
 
   fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel);
   fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
@@ -66,7 +67,7 @@ void HFVirtualDecay::dumpConfiguration() {
   cout << "---  PrimaryVertexLabel          " << fPrimaryVertexLabel << endl;
   cout << "---  BeamSpotLabel               " << fBeamSpotLabel << endl;
   cout << "---  muonsLabel                  " << fMuonsLabel << endl;
-  cout << "---  muonQuality:                " << fMuonQualityString << endl;
+  cout << "---  muonQuality                 " << fMuonQualityString << endl;
 
   cout << "---  trackPt                     " << fTrackPt << endl;
   cout << "---  muonPt                      " << fMuonPt << endl;
@@ -85,9 +86,10 @@ void HFVirtualDecay::dumpConfiguration() {
   cout << "---  maxDoca                     " << fMaxDoca << endl;
   cout << "---  maxD0                       " << fMaxD0 << endl;
   cout << "---  maxDz                       " << fMaxDz << endl;
-  cout << "---  pvWeight:                   " << fPvWeight << endl;
+  cout << "---  pvWeight                    " << fPvWeight << endl;
 
   cout << "---  type                        " <<  fType << endl;
+  cout << "---  useBeamSpotConstraint       " <<  fUseBeamspotConstraint << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -155,4 +157,5 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   // -- construct the sequential vertex fitter
   fSequentialFitter.reset(new HFSequentialVertexFit(fTracksHandle, fMuonCollection, fTTB.product(), hVertexCollection, fMagneticField, fBeamSpot, fVerbose));
   fSequentialFitter->setPvW8(fPvWeight);
+  fSequentialFitter->useBeamspotConstraint(fUseBeamspotConstraint);
 }

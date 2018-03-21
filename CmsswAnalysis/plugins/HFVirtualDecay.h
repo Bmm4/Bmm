@@ -27,24 +27,24 @@ HFSetupException(const char* msg) : fMsg(msg) {}
 
 // ----------------------------------------------------------------------
 class HFVirtualDecay : public edm::EDAnalyzer {
-	
+
  public:
   explicit HFVirtualDecay(const edm::ParameterSet& iConfig);
-	
+
  protected:
   virtual void analyze(const edm::Event &iEvent, const edm::EventSetup &iSetup);
-		
+
   virtual void dumpConfiguration();
  protected:
   int fVerbose;
-		
+
   edm::InputTag fTracksLabel;
   std::string   fTrackQualityString;
   edm::InputTag fPrimaryVertexLabel;
   edm::InputTag fBeamSpotLabel;
   edm::InputTag fMuonsLabel;
   std::string   fMuonQualityString;
-		
+
   double fTrackPt;
   double fMuonPt;
   double fChi2;
@@ -61,18 +61,19 @@ class HFVirtualDecay : public edm::EDAnalyzer {
   double fMaxD0;
   double fMaxDz;
   double fPvWeight;
-		
-  int fType;
-	
+
+  int    fType;
+  bool   fUseBeamspotConstraint;
+
  protected:
   const MagneticField                 *fMagneticField;
   const reco::MuonCollection          *fMuonCollection;
   reco::VertexCollection               fVertexCollection;
   reco::BeamSpot                       fBeamSpot;
-		
+
   edm::Handle<edm::View<reco::Track> > fTracksHandle;
   edm::ESHandle<TransientTrackBuilder> fTTB;
-		
+
   std::auto_ptr<HFTrackListBuilder>    fListBuilder;
   std::auto_ptr<HFSequentialVertexFit> fSequentialFitter;
 
