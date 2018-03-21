@@ -264,12 +264,11 @@ void plotClass::changeSetup(string dir, string name, string setup) {
 
   fTexFileName = fNumbersFileName;
   replaceAll(fTexFileName, ".txt", ".tex");
-  string old = fTexFileName;
-  old += ".old";
-  cout << "old: " << old << endl;
-  system(Form("/bin/mv %s %s", fTexFileName.c_str(), old.c_str()));
+  // string old = fTexFileName;
+  // old += ".old";
+  // cout << "old: " << old << endl;
+  // system(Form("/bin/mv %s %s", fTexFileName.c_str(), old.c_str()));
 
-  fTEX.open(fTexFileName.c_str(), ios::app);
   cout << "plotClass::changeSetup: " << endl
        << "  name             = " << name << endl
        << "  setup            = " << setup << endl
