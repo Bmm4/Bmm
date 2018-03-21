@@ -34,8 +34,10 @@ void HFDiTracks::dumpConfiguration() {
   cout << "---  leadingTrackPt:           " << fLeadingTrackPt << endl;
   cout << "---  track1Mass:               " << fTrack1Mass << endl;
   cout << "---  track2Mass:               " << fTrack2Mass << endl;
+  cout << "---  extra:                    " << fExtra << endl;
   cout << "---  nbrMuons:                 " << fNbrMuons << endl;
   cout << "---  closeToMuons:             " << fCloseToMuons << endl;
+  cout << "---  unlikeCharge:             " << fUnlikeCharge << endl;
   cout << "----------------------------------------------------------------------" << endl;
 }
 
