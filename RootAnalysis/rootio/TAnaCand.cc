@@ -30,6 +30,7 @@ void TAnaCand::clear() {
   fMassCE = -99.;
 
   fPlab.SetXYZ(-999., -999., -999.);
+  fPoca.SetXYZ(-999., -999., -999.);
   fPtE = fPhiE = fEtaE = -999.;
   fAlpha = -999.;
 
