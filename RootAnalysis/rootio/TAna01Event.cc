@@ -734,6 +734,13 @@ void TAna01Event::dump() {
     pTrgObjv2->dump();
   }
 
+  cout << "sig tracks: " << fnSigTracks << endl;
+  for (int i = 0; i < fnSigTracks; ++i) {
+    pTrk = getSigTrack(i);
+    pTrk->dump();
+  }
+  cout << endl;
+
   cout << "candidates: " << fnCandidates << endl;
   for (int i = 0; i < fnCandidates; ++i) {
     pCand = getCand(i);
