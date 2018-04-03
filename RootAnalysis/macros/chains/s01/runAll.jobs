@@ -1,6 +1,6 @@
 my $version = "s01";
-my $vda     = "v08";
-my $vmc     = "v06"; # also serves the 2011/2012 data
+my $vda     = "v11";
+my $vmc     = "v11"; # also serves the 2011/2012 data
 
 my $dataset = "bla";
 my $mode    = "bla";
