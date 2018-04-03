@@ -28,7 +28,7 @@ public:
 
   explicit HFTruthCandidate(const edm::ParameterSet&);
   ~HFTruthCandidate();
-  
+
   virtual void beginJob() ;
   virtual void analyze(const edm::Event&, const edm::EventSetup&);
   virtual void endJob() ;
@@ -51,13 +51,10 @@ private:
   bool               fPartialDecayMatching;
 
   double             fMaxDoca;
-  int                fVerbose; 
-  
-  int                fStableDaughters; 
-  std::multiset<int> fDaughtersSet;
-  std::multiset<int> fDaughtersGammaSet;
-  std::multiset<int> fDaughtersGamma2Set;
+  int                fVerbose;
 
+  int                fStableDaughters;
+  std::multiset<int> fDaughtersSet;
   std::vector<int>   fDaughtersID;
 
   edm::ESHandle<TransientTrackBuilder> fTTB;

@@ -98,17 +98,11 @@ HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
   fDaughtersID = iConfig.getUntrackedParameter<vector<int> >("daughtersID", defaultIDs);
 
   cout << "----------------------------------------------------------------------" << endl;
-  cout << "--- HFTruthCandidate constructor" << endl;
-  cout << "--- verbose:               " << fVerbose << endl;
-  cout << "--- tracksLabel:           " << fTracksLabel << endl;
-  cout << "--- PrimaryVertexLabel:    " << fPrimaryVertexLabel << endl;
-  cout << "--- BeamSpotLabel:         " << fBeamSpotLabel << endl;
-  cout << "---  muonsLabel            " << fMuonsLabel << endl;
+  cout << "--- HFTruthCandidate configuration" << endl;
   cout << "--- motherID:              " << fMotherID << endl;
   cout << "--- type:                  " << fType << endl;
   cout << "--- GenType:               " << fGenType << endl;
   cout << "--- partialDecayMatching:  " << fPartialDecayMatching << endl;
-  cout << "--- maxDoca:               " << fMaxDoca << endl;
   fDaughtersSet.clear();
   fStableDaughters = 0;
   for (unsigned int i = 0; i < fDaughtersID.size(); ++i) {
@@ -119,13 +113,8 @@ HFTruthCandidate::HFTruthCandidate(const edm::ParameterSet& iConfig):
     if (TMath::Abs(fDaughtersID[i]) == 321)  ++fStableDaughters;
     if (TMath::Abs(fDaughtersID[i]) == 2212) ++fStableDaughters;
     fDaughtersSet.insert(TMath::Abs(fDaughtersID[i]));
-    fDaughtersGammaSet.insert(TMath::Abs(fDaughtersID[i]));
-    fDaughtersGamma2Set.insert(TMath::Abs(fDaughtersID[i]));
   }
   cout << "---    total stable particles: " << fStableDaughters << endl;
-  fDaughtersGammaSet.insert(22);
-  fDaughtersGamma2Set.insert(22);
-  fDaughtersGamma2Set.insert(22);
   cout << "----------------------------------------------------------------------" << endl;
 }
 
@@ -169,7 +158,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     cout << "======================================================================" << endl;
     cout << "=== HFTruthCandidate run = " << iEvent.id().run()
 	 << " evt = " << iEvent.id().event()
-	 << "----------------------------------------------------------------------"
+	 << " for type = " << fType << endl
+	 << " ----------------------------------------------------------------------"
 	 << endl;
   }
   //  cout << " ngenCands: " << gHFEvent->nGenCands() << endl;
@@ -226,44 +216,32 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
 	}
       }
 
-      // -- now check whether this is the decay channel in question
-      if (fDaughtersSet == genDaughters) {
-	matchedDecay = 1;
-	if (fVerbose > 0) cout << "matched decay" << endl;
-	break;
-      }
-      if (fDaughtersGammaSet == genDaughters) {
-	matchedDecay = 1;
-	if (fVerbose > 0) cout << "matched decay with bremsstrahlung photon" << endl;
-	break;
-      }
-      if (fDaughtersGamma2Set == genDaughters) {
-	matchedDecay = 1;
-	if (fVerbose > 0) cout << "matched decay with 2 bremsstrahlung photons" << endl;
-	break;
-      }
-
       // -- allow for arbitrary number of photons
       multiset<int> genDaughters2 = genDaughters;
+      bool missingParticles(false);
       for (multiset<int>::iterator it = fDaughtersSet.begin(); it != fDaughtersSet.end(); ++it) {
 	std::multiset<int>::iterator hit(genDaughters2.find(*it));
 	if (hit!= genDaughters2.end()) {
 	  genDaughters2.erase(hit);
-	}
-      }
-      bool onlyPhotonsLeft(true);
-      int nphotons(0);
-      for (multiset<int>::iterator it = genDaughters2.begin(); it != genDaughters2.end(); ++it) {
-	if (*it != 22) {
-	  onlyPhotonsLeft = false;
 	} else {
-	  ++nphotons;
+	  missingParticles = true;
 	}
       }
-      if (onlyPhotonsLeft) {
-	matchedDecay = 1;
-	if (fVerbose > 0) cout << "matched decay with " << nphotons << " bremsstrahlung photons" << endl;
-	break;
+      if (!missingParticles) {
+	bool onlyPhotonsLeft(true);
+	int nphotons(0);
+	for (multiset<int>::iterator it = genDaughters2.begin(); it != genDaughters2.end(); ++it) {
+	  if (*it != 22) {
+	    onlyPhotonsLeft = false;
+	  } else {
+	    ++nphotons;
+	  }
+	}
+	if (onlyPhotonsLeft) {
+	  matchedDecay = 1;
+	  if (fVerbose > 0) cout << "matched decay with " << nphotons << " bremsstrahlung photons" << endl;
+	  break;
+	}
       }
     }
   }
@@ -287,13 +265,16 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
     pCand->fType = fGenType;
     pCand->fIndex= motherIndex;
     if (fVerbose > 1) {
-      char line[200];
-      sprintf(line, "p=%8.3f(%+9.3f,%+9.3f,%+9.3f), mass = %f",
+      char line[300];
+      cout << "-----------------------------------------" << endl;
+      sprintf(line, "==> HFTruthCandidate: Filling gen cand %d with mIdx %d, p=%8.3f(%+9.3f,%+9.3f,%+9.3f), m = %f",
+	      pCand->fType, pCand->fIndex,
 	      pCand->fPlab.Mag(),
 	      pCand->fPlab.X(), pCand->fPlab.Y(), pCand->fPlab.Z(),
 	      pCand->fMass);
       cout << line << endl;
-    }
+      cout << "-----------------------------------------" << endl;
+   }
 
   }
 
@@ -301,7 +282,7 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
   if (fVerbose > 2 && 0 == matchedDecay)  {
     cout << "Did not match decay" << endl;
     for (multiset<int>::iterator i = genDaughters.begin(); i != genDaughters.end(); ++i) {
-      cout << " unmatched genDaughter: " << *i << endl;
+      cout << "  genDaughter: " << *i << endl;
     }
   }
 
@@ -432,6 +413,8 @@ void HFTruthCandidate::analyze(const Event& iEvent, const EventSetup& iSetup) {
       BeamSpot bspot = *bspotHandle;
 
       HFSequentialVertexFit aSeq(hTracks, muonCollection, fTTB.product(), recoPrimaryVertexCollection, field, bspot, fVerbose);
+      aSeq.setPvW8(0.6);
+      aSeq.useBeamspotConstraint(true);
       // -- setup with (relevant) muon hypothesis
       HFDecayTree theTree(1000000+fType, true, 0, false);
       int ID(0), IDX(0);
