@@ -234,8 +234,6 @@ public:
   double mass() { return fMass; };
   double mass_tracks() { return fMassTracks; }
   double massSigma() { return fMassSigma; };
-  double maxDoca() { return fMaxDoca; };
-  double minDoca() { return fMinDoca; };
   bool   daughtersToPV() { return fDaughtersToPV; }
 
   void set_vertexing(bool vertexing) { fVertexing = vertexing; };
@@ -244,8 +242,6 @@ public:
   void set_mass(double mass) { fMass = mass; };
   void set_mass_tracks(double mass_tracks) { fMassTracks = mass_tracks; }
   void set_massSigma(double massSigma) { fMassSigma = massSigma; };
-  void set_maxDoca(double maxDoca) { fMaxDoca = maxDoca; };
-  void set_minDoca(double minDoca) { fMinDoca = minDoca; };
   void set_daughtersToPV(bool daughtersToPV) { fDaughtersToPV = daughtersToPV; }
 
   void clearTreeVariables();
@@ -260,8 +256,6 @@ private:
   double fMassTracks; // apply a mass constraint to the tracks
   bool   fMassConstraint; // false: no massconstraint at this vertex
   double fMassSigma;
-  double fMaxDoca;
-  double fMinDoca;
   bool   fDaughtersToPV;
 
   void dumpTabs(unsigned indent); // used by dump()
