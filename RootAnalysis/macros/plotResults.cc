@@ -1252,16 +1252,22 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
   string mode("");
 
   if (0) {
-    // -- ONLY for debugging
     resetHistograms();
-    mode = "bdmmMcComb";
+    mode = "bupsikData";
     setup(mode);
-    t = getTree(mode, fTreeDir);
-    setupTree(t, mode);
-    //    loopOverTree(t, 1, 1000000, start);
-    loopOverTree(t, 1, -1, start);
-    saveHistograms(mode);
-    fHistFile->Close();
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
+    loopOverTree(t, 1, nevents, start);
+    saveHistograms(fSample);
+
+    resetHistograms();
+    setup("bupsikMcComb");
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
+    loopOverTree(t, 1, nevents, start);
+    cout << "done with loopovertree" << endl;
+    otherNumbers(fSample);
+    saveHistograms(fSample);
     return;
   }
 
