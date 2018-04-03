@@ -79,11 +79,99 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   fBadEvent = false;
 
   if (1233 == fVerbose) {
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << "new event: " << fEvt << endl;
-    cout << "----------------------------------------------------------------------" << endl;
+    // int genID(-80);
+    // int recID(1000080);
+    int genID(-68);
+    int recID(3000068);
+    TAnaCand *pCand(0);
+    TAnaTrack *q1(0), *q2(0);
+    vector<int> genParticles;
+    TGenCand *pMom(0);
     for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      fpEvt->getCand(iC)->dump();
+      pCand = fpEvt->getCand(iC);
+      //      if (-80 == pCand->fType) {
+      if (genID == pCand->fType) {
+	pMom = fpEvt->getGenCand(pCand->fIndex);
+	//	cout << "pCand->fIndex = " << pCand->fIndex << " matched to gen index = " << pMom->fNumber << " with ID = " << pMom->fID << endl;
+	break;
+      }
+    }
+
+    TGenCand *pGC(0), *pG1(0), *pG2(0);
+    for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+      pGC = fpEvt->getGenCand(iC);
+      if (isStableCharged(pGC->fID) && fpEvt->isAncestor(pMom, pGC)) {
+	genParticles.push_back(iC);
+      }
+    }
+
+    TSimpleTrack *sTrk;
+    int cnt(0);
+    for (int it = 0; it < fpEvt->nSimpleTracks(); ++it) {
+      sTrk = fpEvt->getSimpleTrack(it);
+      for (unsigned int ig = 0; ig < genParticles.size(); ++ig) {
+	if (sTrk->getGenIndex() == genParticles[ig]) {
+	  ++cnt;
+	  //	  cout << "found genparticle at " << genParticles[ig] << " as genindex of simple track " << it << endl;
+	}
+      }
+    }
+    if (cnt == genParticles.size()) {
+      //      cout << "all gen particles found as simpletracks, cand " << recID << " should exist" << endl;
+      int candIdx(-1);
+      for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+	pCand = fpEvt->getCand(iC);
+	if (pCand->fType == recID) {
+	  candIdx = iC;
+	  break;
+	}
+      }
+      if (candIdx > -1) {
+	//	cout << "all OK, found cand " << recID << " at position " << candIdx << endl;
+      } else {
+	cout << "================> " << fEvt << "/" << fEvent << " did NOT find cand " << recID << endl;
+	for (int it = 0; it < fpEvt->nSimpleTracks(); ++it) {
+	  if (fpEvt->getSimpleTrack(it)->getGenIndex() > -1) fpEvt->getSimpleTrack(it)->dump();
+	}
+	for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+	  fpEvt->getCand(iC)->dump();
+	}
+	for (unsigned int i = 0; i < genParticles.size(); ++i) {
+	  fpEvt->getGenCand(genParticles[i])->dump();
+	}
+
+      }
+    }
+
+    return;
+
+
+    //    if (1313 == TYPE) {
+    if (285047008 == fEvt && 1000080==TYPE) {
+      cout << "----------------------------------------------------------------------" << endl;
+      cout << "new event: " << fEvt << " " << fEvent << " nsigtrk = " << fpEvt->nSigTracks() << endl;
+      cout << "----------------------------------------------------------------------" << endl;
+      TAnaCand *pCand(0);
+      TAnaTrack *q1(0), *q2(0);
+      for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+	pCand = fpEvt->getCand(iC);
+	pCand->dump();
+	if (pCand->fSig1 > -1) {
+	  q1 = fpEvt->getSigTrack(pCand->fSig1);
+	  q1->dump();
+	}
+	if (pCand->fSig2 > -1) {
+	  q2 = fpEvt->getSigTrack(pCand->fSig2);
+	  q2->dump();
+	}
+      }
+
+      cout << "simple tracks: " << fpEvt->nSimpleTracks() << endl;
+      TSimpleTrack *sTrk;
+      for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+	sTrk = fpEvt->getSimpleTrack(i);
+	sTrk->dump();
+      }
     }
     return;
   }
@@ -177,6 +265,70 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     return;
   }
 
+  if (1239 == fVerbose) {
+    cout << "----------------------------------------------------------------------" << endl;
+    cout << "new event: " << fEvt << endl;
+    cout << "----------------------------------------------------------------------" << endl;
+    bool candSeen(false);
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      TAnaCand *pCand = fpEvt->getCand(iC);
+      if (TYPE == pCand->fType) {
+	pCand->dump();
+	candSeen = true;
+      }
+    }
+    if (!candSeen) {
+      int newTYPE = -1 * (TYPE - 1000000);
+      if (TYPE > 3000000) newTYPE =  -1 * (TYPE - 3000000);
+      cout << "NO CANDIDATE of TYPE " << TYPE << " seen! Looking for "  << newTYPE << endl;
+      int motherIdx(-1);
+      for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+	TAnaCand *pCand = fpEvt->getCand(iC);
+	if (newTYPE == pCand->fType) {
+	  pCand->dump();
+	  motherIdx = pCand->fIndex;
+	}
+      }
+      TGenCand *pGC(0), *pG1(0), *pG2(0);
+      int nmatch(0);
+      bool trackFound(false);
+      for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+	pGC = fpEvt->getGenCand(iC);
+	if (0 == pGC->fQ) continue;
+	if (motherIdx == pGC->fMom1) {
+	  pGC->dump();
+	  trackFound = false;
+	  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+	    int idx = fpEvt->getSimpleTrack(i)->getGenIndex();
+	    if (idx == iC) {
+	      fpEvt->getSimpleTrack(i)->dump();
+	      trackFound = true;
+	      break;
+	    }
+	  }
+	  if (!trackFound) {
+	    cout << "no matching track found for this gencand? Check nearby tracks yourself:" << endl;
+	    TSimpleTrack *pT(0);
+	    bool printedSomething(false);
+	    for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+	      pT = fpEvt->getSimpleTrack(i);
+	      if (pT->getP().DeltaR(pGC->fP.Vect()) < 0.1) {
+		pT->dump();
+		printedSomething = true;
+	      }
+	    }
+	    if (!printedSomething) {
+	      cout << "nothing around?! trks = " << fpEvt->nSimpleTracks() << endl;
+	    }
+	  }
+
+	}
+      }
+    }
+    return;
+  }
+
+
   if (fVerbose>0 || fVerbose == -32) {
     cout << "======================================================================" << endl;
     int cnt(0);
@@ -188,15 +340,22 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	cout << "type = " << pCand->fType << ", mass = " << mass << " : ";
 	for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
 	  if (i < 0) continue;
+	  cout << " getting sig track " << i << endl;
 	  TAnaTrack *pT = fpEvt->getSigTrack(i);
-	  cout << "  " << pT->fIndex;
+	  if (pT) {
+	    cout << "  " << pT->fIndex;
+	  } else {
+	    cout << " did not find signal track!? i = " << i << " nsigtracks = " << fpEvt->nSigTracks() << endl;
+	    fpEvt->dump();
+	  }
 	}
 	cout << endl;
 	++cnt;
       }
     }
 
-    cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " cands: " << fpEvt->nCands() << " verbose: "
+    cout << " event: " << fEvt << " run: " << fRun << " LS: " << fLS << " JSON: " << fJSON << " ievt: " << fEvent
+	 << " cands: " << fpEvt->nCands() << " verbose: "
 	 << fVerbose << " MC: " << fIsMC << " n(" << TYPE << ") = " << cnt << " m = " << mass << endl;
   }
 
