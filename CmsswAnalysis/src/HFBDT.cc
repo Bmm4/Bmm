@@ -347,7 +347,7 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   unsigned int csc1(0),csc2(0),csc3(0),csc4(0);
   float comb(0);
   const reco::HitPattern &pattern = gTrack->hitPattern();
-  for (int i=0;i<pattern.numberOfHits(reco::HitPattern::TRACK_HITS);i++)
+  for (int i=0;i<pattern.numberOfAllHits(reco::HitPattern::TRACK_HITS);i++)
     {
       uint32_t hit = pattern.getHitPattern(reco::HitPattern::TRACK_HITS,i);
       if (pattern.validHitFilter(hit) != 1) {continue;}
