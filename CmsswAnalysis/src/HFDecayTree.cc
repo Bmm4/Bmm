@@ -39,8 +39,6 @@ HFDecayTree::HFDecayTree(int pID, bool doVertexing, double mass, bool massConstr
   fMassTracks(0),
   fMassConstraint(massConstraint),
   fMassSigma(massSigma),
-  fMaxDoca(0),
-  fMinDoca(0),
   fDaughtersToPV(daughtersToPV),
   fpKinTree(0)
 {
@@ -129,8 +127,6 @@ void HFDecayTree::clear(int pID, bool doVertexing, double mass, bool massConstra
   fMass = mass;
   fMassConstraint = massConstraint;
   fMassSigma = massSigma;
-  fMaxDoca = -1.0;
-  fMinDoca = -1.0;
   fDaughtersToPV = daughtersToPV;
   fMassTracks = 0.0;
 
