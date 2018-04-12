@@ -15,34 +15,28 @@ sub runCommand() {
 
 # -- 2011 BMM data jobs
 $dataset = "bmmMuOnia2011A";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011A-12Oct2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2011B";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2011-XXXX.py -f ../../../catalogs/Run2011_MuOnia_12Oct2013/MuOnia_Run2011B-12Oct2013 -s $version -e 30000; ";
 
 
 # -- 2012 BMM data jobs
 $dataset = "bmmMuOnia2012A";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012A-22Jan2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2012B";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012B-22Jan2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2012C";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012C-22Jan2013 -s $version -e 30000; ";
 
 $dataset = "bmmMuOnia2012D";
-#$jobs{$dataset}   = "cd $dataset && ".&runCommand." *.py && cd - ";
 &addToJobs($dataset);
 $catalogs{$dataset} = "$BMMBASE/perl/mkPyFiles -t ../bmm-rereco-Run2012-XXXX.py -f ../../../catalogs/Run2012_MuOnia_22Jan2013/MuOnia_Run2012D-22Jan2013 -s $version -e 30000; ";
 
