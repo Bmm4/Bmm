@@ -35,6 +35,7 @@ public:
   bool varsSet() {return varsAreSet_;}
   void unsetVars() {varsAreSet_ = false;varsValid_ = false;}
   bool areVarsValid() {return varsValid_;}
+  void printValues();
 
 private:
   float pt, eta;
