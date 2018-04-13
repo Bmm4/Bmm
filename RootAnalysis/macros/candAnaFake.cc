@@ -206,6 +206,7 @@ void candAnaFake::candAnalysis() {
     dist2PdTrigger(pt[im], d2trig, dm1, dm2);
     fFakeDistTrig[im]          = d2trig;
     fFakeDistMuon[im]          = distToMuon(pt[im]);
+    fFakeDistNMuon[im] = distToNextNonCandGM(pt[im]);
 
     if (0 == pm[im]) {
       fFakeGm[im]                     = -99;
@@ -385,6 +386,7 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("flsxy",   &fCandFLSxy,         "flsxy/D");
   fFakeTree->Branch("maxdoca", &fCandDoca,          "maxdoca/D");
   fFakeTree->Branch("tis",     &fTIS,               "tis/O");
+  fFakeTree->Branch("vetoSameSign", &fvetoSameSignTrigger, "vetoSameSign/O");
   fFakeTree->Branch("cowboy",  &fCowboy,            "cowboy/O");
 
   fFakeTree->Branch("ntrk",    &fFakeNtrk,          "ntrk/I");
@@ -397,6 +399,7 @@ void candAnaFake::bookHist() {
   fFakeTree->Branch("hp",      fFakeHP,             "hp[ntrk]/O");
   fFakeTree->Branch("dtrig",   fFakeDistTrig,       "dtrig[ntrk]/F");
   fFakeTree->Branch("dmuon",   fFakeDistMuon,       "dmuon[ntrk]/F");
+  fFakeTree->Branch("dNmuon",   fFakeDistNMuon,       "dNmuon[ntrk]/F");
 
   fFakeTree->Branch("bdt",         fFakeBdt,               "bdt[ntrk]/F");
 

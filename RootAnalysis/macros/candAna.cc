@@ -1101,7 +1101,8 @@ void candAna::candAnalysis() {
   fChan = detChan(fMu1Eta, fMu2Eta);
 
   fTOS = tos(fpCand);
-  fTIS = tis(fpCand);
+  // fTIS = tis(fpCand);
+  fTIS = swtis(fpCand,fvetoSameSignTrigger);
   fL1T = false;
   if (fChan > -1) {
     // -- NOTE: L1seeds may be prescaled, but still appear here (they are not zeroed if prescaled)
@@ -4540,6 +4541,140 @@ bool candAna::tis(TAnaCand *pC) {
 
 
 // ----------------------------------------------------------------------
+// -- search for a PD trigger that has no overlap with the tracks of the candidate
+bool candAna::swtis(TAnaCand *pC, bool& VETO_SameSign) {
+  bool result(false);
+  int verbose(0);
+  stringstream buffer; // print only in the end in case of tis==true
+
+  // -- get list of indices of tracks making up candidate
+  vector<int> sigIdx;
+  getSigTracks(sigIdx, pC);
+
+  //check if at least one global muon is present
+  bool GMpresent = false;
+  for (unsigned int i = 0; i < sigIdx.size(); ++i) 
+    {
+      TAnaMuon *swMu;
+      int index = fpEvt->getSimpleTrackMuonIdx(sigIdx[i]);
+      if (index>0) {swMu = fpEvt->getMuon(index);}
+      else {continue;}
+      if ((swMu->fMuID & 2) == 2) 
+	{
+	  buffer << "track: " << sigIdx[i] << " is a global muon" << std::endl;
+	  GMpresent=true;
+	}
+      else {buffer << "track: " << sigIdx[i] << " is NOT a global muon" << std::endl;}
+    }
+
+  buffer << "considering the following candidate: " << pC->fType << std::endl;
+  buffer << "pt: " << fCandPt << " pvip: " << fCandPvIp << " pvips: " << fCandPvIpS << " mass: " << fCandM 
+	 << " fls3d: " << fCandFLS3d << " flxy: " << fCandFLxy
+	 << " flsxy : " << fCandFLSxy << " maxdoca: " << fCandDoca << std::endl;
+  for (int i=pC->fSig2;i>=pC->fSig1;i--)
+    {
+      buffer << "sigTrack index: " << std::setw(4) << i;
+      TAnaTrack *t = fpEvt->getSigTrack(i);
+      buffer << std::setw(15) << "track index: " << std::setw(4) << t->fIndex << std::endl;
+    }
+
+  VETO_SameSign = true;
+  // -- get list of PD triggers from histogram  e.g. triggers_Charmonium_run273730
+  TString triggerHistoName = Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun));
+  buffer << "getting the triggers from the following histo: " << triggerHistoName.Data() << std::endl;
+  TH1D* ht = (TH1D*)fpReader->getFile()->Get(triggerHistoName);
+  if (!ht) {buffer << ">tis: could not find triggers." << endl;return false;}
+  string hltPath("nada");
+  TTrgObjv2 *pTO(0);
+  buffer << "==> candAna::tis> trigger objects for these paths" << endl;
+  map<string, set<int> > trgTrkIdx;
+  TH1D *h1 = (TH1D*)(fHistDir->Get(Form("dr_%s", fName.c_str())));
+  for (int j = 1; j <= ht->GetNbinsX(); ++j) {
+    hltPath =  ht->GetXaxis()->GetBinLabel(j);
+    buffer << "found hlt path: " << hltPath << std::endl;
+    // -- determine trigger objects for this path
+    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+      pTO = fpEvt->getTrgObjv2(i);
+      if (hltPath == pTO->fHltPath) {
+	if (hltPath.find("HLT_Dimuon3p5_SameSign_v")==std::string::npos) {VETO_SameSign=false;} // veto on trigger
+	vector<int> muonIndex = pTO->fIndex;
+	vector<int> muonID = pTO->fID;
+	vector<TLorentzVector> muonP = pTO->fP;
+	int num = muonIndex.size();
+	// -- skip L1 and L2 objects (bad resolution for matching)
+	if (pTO->fType.Contains("L1Filter")) continue;
+	if (pTO->fType.Contains("L1T")) continue;
+	if (pTO->fType.Contains("L2")) continue;
+	buffer << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
+	for (int jj = 0; jj < num; ++jj) {
+	  double dr(0.);
+	  int trkIdx = matchTrgObj2Trk(muonP[jj].Vect(), dr);
+	  h1->Fill(dr);
+	  if (trkIdx < 0) {
+	    buffer << "XXXXXXXXX NO MATCHING TRACK FOUND -> dr = " << dr << endl;
+	    continue;
+	  }
+	  buffer << "        " << muonP[jj].Perp() << "/" << muonP[jj].Eta() << "/" << muonP[jj].Phi() << " muon? " << muonID[jj]
+			    << " matched to track idx " << trkIdx << " pt/eta/phi = "
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
+			    << fpEvt->getSimpleTrack(trkIdx)->getP().Phi()
+			    << " with dr = " << dr
+			    << endl;
+	  trgTrkIdx[hltPath].insert(trkIdx);
+	}
+
+      }
+    }
+
+  }
+
+  buffer << "==> searching for non-overlapping trigger" << endl;
+  map<string, set<int> >::iterator it;
+  for (it = trgTrkIdx.begin(); it != trgTrkIdx.end(); ++it) {
+    set<int>::iterator is;
+    buffer << it->first << " size = " << it->second.size() << ": " << std::endl;
+    bool overlap(false);
+    
+    //this loops over the tracks matched to trigger objects and for each such track loops over the signal tracks
+    // e.g. 2 signal tracks: each trigger track shows up twice. If it matches a sigTrack it will be printed in brackets
+
+    buffer << "signal tracks: ";
+    for (unsigned int i = 0; i < sigIdx.size(); ++i) {buffer << sigIdx[i] << " ";}
+    buffer << std::endl;
+    for (is = it->second.begin(); is != it->second.end(); ++is) {
+      for (unsigned int i = 0; i < sigIdx.size(); ++i) {
+	if (*is == sigIdx[i]) {
+	  buffer << "(" << *is << ") ";
+	  overlap = true;
+	} else {
+	  buffer << " " << *is << " ";
+	}
+      }
+    }
+    if (!overlap) {
+      result = true;
+      buffer << " TIS trigger: NOT overlapping!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!";
+    }
+    buffer << endl;
+
+  }
+
+
+  //now print tis output if result==true
+  if (result && verbose)
+    {
+      if (!GMpresent) {cout << "##### TIS == true NO GM present######" << endl;}
+      else {cout << "##### TIS == true ######" << endl;}
+      cout << buffer.str() << std::flush << endl;
+      cout << "##################" << endl;
+    }
+
+
+  return result;
+}
+
+// ----------------------------------------------------------------------
 // -- check whether all trigger primitives are matched to the candidate's tracks
 bool candAna::tos(TAnaCand *pC) {
   fHltD1 = fHltD2 = 9999.;
@@ -4853,7 +4988,80 @@ double candAna::distToMuon(TSimpleTrack *ps) {
   return drMin;
 }
 
+// ----------------------------------------------------------------------
+//get the distance to the closest GM which is not the other candidate track
+double candAna::distToNextNonCandGM(TSimpleTrack *ps) {
 
+  bool verbose(0);
+  std::string prompt = "distToNextNonCandGM2> ";
+
+  if (verbose) 
+    {std::cout << prompt << "simple track index = " << ps->getIndex() << " with pt/eta/phi = "
+	      << ps->getP().Perp() << "/" << ps->getP().Eta() << "/" << ps->getP().Phi()
+	       << std::endl;}
+
+  TAnaTrack *t1,*t2;
+  if (!fpCand) {if (verbose) {std::cout << prompt << "fpCand invalid." << std::endl;}return -1;}
+  int sig1idx(0),sig2idx(0);
+  sig1idx = fpCand->fSig1;
+  sig2idx = fpCand->fSig2;
+  t1 = fpEvt->getSigTrack(sig1idx);
+  t2 = fpEvt->getSigTrack(sig2idx);
+  // if (verbose) 
+  //   {std::cout << prompt << "mother tracks: " << t1->fIndex << " / " << t2->fIndex << std::endl;}
+
+  if (verbose) 
+    {
+      std::cout << "tracks of mother (type " << fpCand->fType << "): " << std::endl;
+      for (int j=fpCand->fSig1;j<=fpCand->fSig2;j++)
+	{std::cout << std::setw(4) << j << std::setw(5) << (fpEvt->getSigTrack(j))->fIndex << std::endl;}
+    }
+
+  int numMuons(fpEvt->nMuons());
+
+  TVector3 trackMom = ps->getP();
+  int psIdx = ps->getIndex();
+
+  TVector3 muonMom;
+  TAnaMuon *pM(0);
+
+
+  int pmIdx(-1), bestIdx(-1);
+  double drMin(9999.), dr(0.);
+  for (int im = 0; im < numMuons; ++im) {
+    pM = fpEvt->getMuon(im);
+    pmIdx = pM->fIndex;
+    // skip if not global muon
+    if ((pM->fMuID & 2) != 2) {
+      if (verbose) {cout << prompt << "muon with track index " << pmIdx << " is not a GM" << endl;}
+      continue;
+    }
+    // skip if same track index
+    if (pmIdx == psIdx) {
+      if (verbose) cout << prompt << "skipping muon with same track index " << pmIdx << endl;
+      continue;
+    }
+    //skip tracks of same candidate
+    if (t1->fIndex==pmIdx || t2->fIndex==pmIdx)
+      {if (verbose) {std::cout << prompt << "skipping muon (index " << pmIdx << ") of the same candidate" << std::endl;}continue;}
+
+
+    dr = pM->fPlab.DeltaR(trackMom);
+    if (dr < drMin) {
+      if (verbose) cout << prompt << "muon with track index " << pmIdx << " has smaller dr = " << dr << endl;
+      drMin = dr;
+      bestIdx = pmIdx;
+    }
+  }
+
+  TSimpleTrack *s = fpEvt->getSimpleTrack(bestIdx);
+
+  if (0) cout << " muon " << bestIdx
+	      << " with pt/eta/phi = "
+	      << s->getP().Perp() << "/" << s->getP().Eta() << "/" << s->getP().Phi()
+	      << " has dr = " << drMin << endl;
+  return drMin;
+}
 
 //-----------------------------------------------------------------------------------
 // Loops over all muons, returns dR of the closests muon, excluding the

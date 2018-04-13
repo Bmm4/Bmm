@@ -53,7 +53,7 @@ private:
   TTree *fFakeTree;
   double  fCandMKS, fCandMconv, fCandMLambda, fCandMEta;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
-  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDistTrig[NTRKMAX], fFakeDistMuon[NTRKMAX];
+  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDistTrig[NTRKMAX], fFakeDistMuon[NTRKMAX], fFakeDistNMuon[NTRKMAX];
   bool   fFakeHP[NTRKMAX];
 
   float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX]

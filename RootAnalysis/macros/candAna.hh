@@ -83,6 +83,7 @@ public:
   virtual void        setupMuonIdTree(TTree *);
 
   virtual bool        tis(TAnaCand *pC);
+  virtual bool        swtis(TAnaCand *pC, bool& vetoSameSignTrigger);
   virtual bool        tos(TAnaCand *pC);
   virtual bool        refTrigger(TAnaCand *pC, std::string refTriggerPath);
   virtual int         matchTrgObj2Trk(TVector3 t, double &dr);
@@ -150,6 +151,7 @@ public:
   virtual void        boostGames();
   virtual double      matchToMuon(TAnaTrack *pt, bool skipSame = false); // match a single track to ALL muons
   virtual double      distToMuon(TSimpleTrack *pt); // calculate DR separation of a track to closest (other) muon
+  virtual double    distToNextNonCandGM(TSimpleTrack *ps);
   virtual void        play();
   virtual void        play2();
   virtual void        play3();
@@ -309,6 +311,7 @@ public:
   bool    fGoodQ, fGoodPt, fGoodEta, fGoodCosA, fGoodAlpha, fGoodIso, fGoodM1Iso, fGoodM2Iso, fGoodChi2, fGoodFLS;
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
   bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fL1T, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
+  bool    fvetoSameSignTrigger;
   bool    fPreselAlpha, fPreselFLS, fPreselOther;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
