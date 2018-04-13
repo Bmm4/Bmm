@@ -3,6 +3,7 @@
 // HFBDT
 // ---------------------
 //
+// 2018/03/12 Stephan Wiederkehr      moved to hitpattern.numberOfAllHits (not backwards compatible!)
 // 2017/05/08 Stephan Wiederkehr      added variables glbKinkFinderLog & Qprod
 // 2016/09/27 Stephan Wiederkehr      updated variables
 // 2016/08/25 Stephan Wiederkehr      first shot
@@ -31,7 +32,9 @@ HFBDT::HFBDT(edm::FileInPath weightFile, bool verbose = false): verbose_(verbose
   muon = new BDTmuon();
   ifstream wfile(weightFile_.fullPath());
   if (!wfile.is_open())
-    {cout << "Could not open weight file: " << weightFile_.fullPath() << endl;}
+    {cout << "HFBDT> Could not open weight file: " << weightFile_.fullPath() << endl;}
+  else
+    {cout << "HFBDT> Configuring BDT using: " << weightFile_.fullPath() << endl;}
 }
 
 HFBDT::~HFBDT(){
@@ -44,7 +47,7 @@ HFBDT::~HFBDT(){
 void HFBDT::addVarToReader(TMVA::Reader* reader,string str) {
 
   if (isSetup)
-    {cout << "ERROR: The reader is already set up." << endl;return;}
+    {cout << "HFBDT> ERROR: The reader is already set up." << endl;return;}
 
   cout << " Adding variable " << str << " to the reader." << endl;
   // cout << "value: " << muon->getVar(str) 
@@ -56,7 +59,7 @@ void HFBDT::addVarToReader(TMVA::Reader* reader,string str) {
 void HFBDT::addSpecToReader(TMVA::Reader* reader,string str) {
 
   if (isSetup)
-    {cout << "ERROR: The reader is already set up." << endl;return;}
+    {cout << "HFBDT> ERROR: The reader is already set up." << endl;return;}
 
   cout << " Adding spectator " << str << " to the reader (dummy value)." << endl;
   // cout << "value: " << muon->getVar(str) 
@@ -119,7 +122,7 @@ void HFBDT::setupReader() {
 	  addSpecToReader(reader, spectatorName);
 	}
       //stop search
-      if (line.find("</Variables") != string::npos)
+      if (line.find("<Classes") != string::npos)
 	{break;}
 
       //debug
@@ -136,9 +139,9 @@ double HFBDT::evaluate() {
 
   if (BDTreader == 0) return -42;
   if (isSetup == false)
-    {cout << "WARNING: The BDT was not set up correctly beforehand." << endl;}
+    {cout << "HFBDT> WARNING: The BDT was not set up correctly beforehand." << endl;}
   if (!muon->varsSet())
-    {cout << "WARNING: The values are not up to date, e.g. old or not set." << endl;}
+    {cout << "HFBDT> WARNING: The values are not up to date, e.g. old or not set." << endl;}
   if ( !muon->areVarsValid() )
     {return -1;}
 
@@ -257,7 +260,7 @@ void BDTmuon::createVariableMap() {
 
 float BDTmuon::getVar(string str) {
   if (!mapIsSet)
-    {cout << "ERROR: Variable map is not set." << endl;return -42;}
+    {cout << "HFBDT> ERROR: Variable map is not set." << endl;return -42;}
   else
     {
       if (variableMap.find(str) != variableMap.end())
@@ -269,7 +272,7 @@ float BDTmuon::getVar(string str) {
 
 float* BDTmuon::getPtr(string str) {
   if (!mapIsSet)
-    {cout << "ERROR: Variable map is not set." << endl;return 0;}
+    {cout << "HFBDT> ERROR: Variable map is not set." << endl;return 0;}
   else
     {
       if (variableMap.find(str) != variableMap.end())
@@ -281,15 +284,17 @@ float* BDTmuon::getPtr(string str) {
 
 void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollection* vc, reco::BeamSpot* bs, int staTrkMult_150, int tmTrkMult_100) {
 
+  //cout << "HFBDT> fillBDTmuon" << endl;
   reco::TrackRef gTrack = recoMuon.globalTrack();
   reco::TrackRef iTrack = recoMuon.innerTrack();
   reco::TrackRef oTrack = recoMuon.outerTrack();
-  const reco::HitPattern gHits = gTrack->hitPattern();
-  const reco::HitPattern iHits = iTrack->hitPattern();
-  const reco::MuonQuality muonQuality = recoMuon.combinedQuality();
   if ( iTrack.isNonnull() && oTrack.isNonnull() && gTrack.isNonnull() )
     {varsValid_ = true;}
   else {return;}
+
+  const reco::HitPattern gHits = gTrack->hitPattern();
+  const reco::HitPattern iHits = iTrack->hitPattern();
+  const reco::MuonQuality muonQuality = recoMuon.combinedQuality();
 
   int pvIndex = getPv(iTrack.index(),vc); //HFDumpUtitilies
   math::XYZPoint refPoint;
@@ -300,7 +305,7 @@ void BDTmuon::fillBDTmuon(const reco::Muon& recoMuon, const reco::VertexCollecti
       if (bs)
 	{refPoint = bs->position();}
       else
-	{cout << "ERROR: No beam sport found!" << endl;}
+	{cout << "HFBDT> ERROR: No beam spot found!" << endl;}
     }
 
   pt = iTrack->pt();
@@ -395,6 +400,62 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   vCSChits_3 = csc3;
   vCSChits_4 = csc4;
   vMuonHitComb = comb;
+
+//   cout << "HFBDT> dt_tot: " 
+//        << " dt1(" << dt1 << ")"
+//        << " dt2(" << dt2 << ")" 
+//        << " dt3(" << dt3 << ")"
+//        << " dt4(" << dt4 << ")"
+//        << " csc1(" << csc1 << ")"
+//        << " csc2(" << csc2 << ")"
+//        << " csc3(" << csc3 << ")"
+//        << " csc4(" << csc4 << ")"
+//        << " rpc1(" << rpc1 << ")"
+//        << " rpc2(" << rpc2 << ")"
+//        << " rpc3(" << rpc3<< ")"
+//        << " rpc4(" << rpc4 << ")"
+// << endl;
+//   cout << "HFBDT> numberOfValidMuonDTHits(): " << pattern.numberOfValidMuonDTHits()  << " numberOfValidMuonCSCHits(): " <<  pattern.numberOfValidMuonCSCHits() << " numberOfValidMuonRPCHits(): " << pattern.numberOfValidMuonRPCHits() << endl;
+}
+
+void BDTmuon::printValues() {
+
+  cout << "HFBDT> print values: " << endl;
+  cout << "   " << "  pt: " <<   pt << endl;
+  cout << "   " << "  eta: " <<   eta << endl;
+  cout << "   " << "  deltaR: " <<   deltaR << endl;
+  cout << "   " << "  gNchi2: " <<   gNchi2 << endl;
+  cout << "   " << "  vMuHits: " <<   vMuHits << endl;
+  cout << "   " << "  mMuStations: " <<   mMuStations << endl;
+  cout << "   " << "  dxyRef: " <<   dxyRef << endl;
+  cout << "   " << "  dzRef: " <<   dzRef << endl;
+  cout << "   " << "  LWH: " <<   LWH << endl;
+  cout << "   " << "  valPixHits: " <<   valPixHits << endl;
+  cout << "   " << "  innerChi2: " <<   innerChi2 << endl;
+  cout << "   " << "  outerChi2: " <<   outerChi2 << endl;
+  cout << "   " << "  iValFrac: " <<   iValFrac << endl;
+  cout << "   " << "  segComp: " <<   segComp << endl;
+  cout << "   " << "  chi2LocMom: " <<   chi2LocMom << endl;
+  cout << "   " << "  chi2LocPos: " <<   chi2LocPos << endl;
+  cout << "   " << "  glbTrackTailProb: " <<   glbTrackTailProb << endl;
+  cout << "   " << "  NTrkVHits: " <<   NTrkVHits << endl;
+  cout << "   " << "  kinkFinder: " <<   kinkFinder << endl;
+  cout << "   " << "  vRPChits: " <<   vRPChits << endl;
+  cout << "   " << "  glbKinkFinder: " <<   glbKinkFinder << endl;
+  cout << "   " << "  glbKinkFinderLog: " <<   glbKinkFinderLog << endl;
+  cout << "   " << "  staRelChi2: " <<   staRelChi2 << endl;
+  cout << "   " << "  glbDeltaEtaPhi: " <<   glbDeltaEtaPhi << endl;
+  cout << "   " << "  trkRelChi2: " <<   trkRelChi2 << endl;
+  cout << "   " << "  vDThits: " <<   vDThits << endl;
+  cout << "   " << "  vCSChits: " <<   vCSChits << endl;
+  cout << "   " << "  timeAtIpInOut: " <<   timeAtIpInOut << endl;
+  cout << "   " << "  timeAtIpInOutErr: " <<   timeAtIpInOutErr << endl;
+  cout << "   " << "  vMuonHitComb: " << vMuonHitComb << endl;
+  // getMuonHitsPerStation(gTrack); //also fills vMuonHitComb
+  cout << "   " << "  STATrkMult_150: " <<   STATrkMult_150 << endl;
+  cout << "   " << "  TMTrkMult_100: " <<   TMTrkMult_100 << endl;
+  cout << "   " << "  Qprod: " <<   Qprod << endl;
+
 }
 
 double getDeltaR(reco::Track track1,reco::Track track2) {
