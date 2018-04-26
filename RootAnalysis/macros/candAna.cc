@@ -488,7 +488,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  // -- ntrigger || hlt1, but no analysis preselection (adding fBDT cut || fGoodCNC to reduce combinatorics)
 	  fPreselection = (fGoodCNC || fBDT > 0.) && ((fGoodHLT1 && fTOS && fL1T) || fNtrgSet);
 	} else {
-	  // what here?
+	  //  what here?
 	}
 	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
 
@@ -1099,6 +1099,16 @@ void candAna::candAnalysis() {
   }
 
   fChan = detChan(fMu1Eta, fMu2Eta);
+
+  // // DBX FIXME
+  // if (fCandPvIp3D<0.006 && fCandFLS3d>20 && fCandM>0.49 && fCandM<0.505 && fCandPt>4
+  //     && fCandDoca<0.004 && fCandFLxy<4 && fCandFLSxy>15 && fCandPvIpS<5
+  //     && (fMu1GmId || fMu2GmId)
+  //     ) {
+  //   fTIS = tis(fpCand);
+  // }
+  // return;
+  // // DBX FIXME
 
   fTOS = tos(fpCand);
   fTIS = tis(fpCand);
@@ -3776,41 +3786,44 @@ void candAna::calcBDT() {
 
 
 
-  frd.pt = fCandPt;
-  frd.eta = fCandEta;
-  frd.m1eta = fMu1Eta;
-  frd.m2eta = fMu2Eta;
-  frd.m1pt = fMu1Pt;
-  frd.m2pt = fMu2Pt;
-  frd.m1phi = fMu1Phi;
-  frd.m2phi = fMu2Phi;
-  frd.fls3d = fCandFLS3d;
-  frd.alpha = fCandA;
-  frd.maxdoca = fCandDoca;
-  frd.pvip = fCandPvIp;
-  frd.pvips = fCandPvIpS;
-  frd.iso = fCandIso;
-  frd.docatrk = fCandDocaTrk;
-  frd.chi2dof = fCandChi2Dof;
-  frd.closetrk = fCandCloseTrk;
+  frd.pt         = fCandPt;
+  frd.eta        = fCandEta;
+  frd.m1eta      = fMu1Eta;
+  frd.m2eta      = fMu2Eta;
+  frd.m1pt       = fMu1Pt;
+  frd.m2pt       = fMu2Pt;
+  frd.m1phi      = fMu1Phi;
+  frd.m2phi      = fMu2Phi;
+
+  frd.fls3d      = fCandFLS3d;
+  frd.fl3d       = fCandFL3d;
+  frd.flsxy      = fCandFLSxy;
+  frd.alpha      = fCandA;
+  frd.maxdoca    = fCandDoca;
+  frd.pvip       = fCandPvIp;
+  frd.pvips      = fCandPvIpS;
+  frd.iso        = fCandIso;
+  frd.docatrk    = fCandDocaTrk;
+  frd.chi2dof    = fCandChi2Dof;
+  frd.closetrk   = fCandCloseTrk;
 
   frd.closetrks1 = fCandCloseTrkS1;
   frd.closetrks2 = fCandCloseTrkS2;
   frd.closetrks3 = fCandCloseTrkS3;
 
-  frd.m1iso = fMu1Iso;
-  frd.m2iso = fMu2Iso;
+  frd.m1iso      = fMu1Iso;
+  frd.m2iso      = fMu2Iso;
 
-  frd.pvdchi2  = fCandPvDeltaChi2;
-  frd.othervtx = fCandOtherVtx;
+  frd.pvdchi2    = fCandPvDeltaChi2;
+  frd.othervtx   = fCandOtherVtx;
 
-  frd.pvlip  = fCandPvLip;
-  frd.pvlips = fCandPvLipS;
+  frd.pvlip      = fCandPvLip;
+  frd.pvlips     = fCandPvLipS;
 
-  frd.pv2lip  = fCandPv2Lip;
-  frd.pv2lips = fCandPv2LipS;
+  frd.pv2lip     = fCandPv2Lip;
+  frd.pv2lips    = fCandPv2LipS;
 
-  frd.m  = fCandM;
+  frd.m          = fCandM;
   int remainder = TMath::Abs(fEvt%3);
   if (0 == remainder) {
     fBDT   = fReaderEvents0[fChan]->EvaluateMVA("BDT");
@@ -4410,7 +4423,7 @@ void candAna::dist2PdTrigger(TSimpleTrack *pS, double &dr, double &dm1, double &
   TH1D* ht = (TH1D*)fpReader->getFile()->Get(Form("triggers_%s_run%d", DSNAME.c_str(), static_cast<int>(fRun)));
   if (!ht) return;
   string hltPath("nada");
-  if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
+  if (verbose) cout << "==> candAna::dsit2PdTriggert> trigger objects for these paths" << endl;
   for (int j = 1; j <= ht->GetNbinsX(); ++j) {
     // -- determine trigger objects for this path
     hltPath =  ht->GetXaxis()->GetBinLabel(j);
@@ -4466,14 +4479,62 @@ bool candAna::tis(TAnaCand *pC) {
   if (!ht) return false;
   string hltPath("nada");
   TTrgObjv2 *pTO(0);
+  if (verbose) {
+    cout << endl << endl << "**********************************************************************" << endl;
+    pC->dump();
+    for (int i = pC->fSig1; i <= pC->fSig2; ++i) {
+      fpEvt->getSigTrack(i)->dump();
+    }
+  }
+  if (verbose) {
+    TString a("");
+    cout << "==> candAna::tis> all fired HLT paths" << endl;
+    for (int i = 0; i < NHLT; ++i) {
+      bool result(false), wasRun(false), error(false);
+      a = fpEvt->fHLTNames[i];
+      int ps = fpEvt->fHLTPrescale[i];
+      wasRun = fpEvt->fHLTWasRun[i];
+      result = fpEvt->fHLTResult[i];
+      error  = fpEvt->fHLTError[i];
+
+      if (result) { // passed
+	cout << "candAna::tis HLT path " << a << " wasrun = " << wasRun << " ps = " << ps << " run = "
+	     << fRun << " ls = " << fLS << " json = " << fJSON
+	     << endl;
+      }
+    }
+
+    cout << "==> candAna::tis> all trigger objects" << endl;
+    for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
+      pTO = fpEvt->getTrgObjv2(i);
+      vector<int> muonIndex = pTO->fIndex;
+      vector<int> muonID = pTO->fID;
+      vector<TLorentzVector> muonP = pTO->fP;
+      int num = muonIndex.size();
+      // -- skip L1 and L2 objects (bad resolution for matching)
+      if (pTO->fType.Contains("L1Filter")) continue;
+      if (pTO->fType.Contains("L1T")) continue;
+      if (pTO->fType.Contains("L2")) continue;
+      if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << ":" << endl;
+      for (int ij = 0; ij < num; ++ij) {
+	cout << "   "
+	     << muonP[ij].Perp() << "/" << muonP[ij].Eta() << "/" << muonP[ij].Phi() << " muon? " << muonID[ij]
+	     << endl;
+      }
+
+    }
+  }
+
   if (verbose) cout << "==> candAna::tis> trigger objects for these paths" << endl;
   map<string, set<int> > trgTrkIdx;
   TH1D *h1 = (TH1D*)(fHistDir->Get(Form("dr_%s", fName.c_str())));
   for (int j = 1; j <= ht->GetNbinsX(); ++j) {
     hltPath =  ht->GetXaxis()->GetBinLabel(j);
+    if (verbose) cout << "**** checking PD trigger path:" << hltPath << ":" << endl;
     // -- determine trigger objects for this path
     for (int i = 0; i < fpEvt->nTrgObjv2(); ++i) {  // loop over all saved hlt objects
       pTO = fpEvt->getTrgObjv2(i);
+      if (verbose) cout << "->check trgobj from path:" << pTO->fHltPath << ": type:" << pTO->fType << ": label:" << pTO->fLabel << ":  " << endl;
       if (hltPath == pTO->fHltPath) {
 	vector<int> muonIndex = pTO->fIndex;
 	vector<int> muonID = pTO->fID;
@@ -4484,15 +4545,17 @@ bool candAna::tis(TAnaCand *pC) {
 	if (pTO->fType.Contains("L1T")) continue;
 	if (pTO->fType.Contains("L2")) continue;
 	if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  " << " with n(particles) = " << num << endl;
-	for (int j = 0; j < num; ++j) {
+	for (int ij = 0; ij < num; ++ij) {
 	  double dr(0.);
-	  int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
+	  int trkIdx = matchTrgObj2Trk(muonP[ij].Vect(), dr);
 	  h1->Fill(dr);
 	  if (trkIdx < 0) {
-	    if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND" << endl;
+	    if (verbose) cout << "XXXXXXXXX NO MATCHING TRACK FOUND for trgobj pt/eta/phi = "
+			      << muonP[ij].Perp() << "/" << muonP[ij].Eta() << "/" << muonP[ij].Phi() << " muon? " << muonID[ij]
+			      << endl;
 	    continue;
 	  }
-	  if (verbose) cout << "        " << muonP[j].Perp() << "/" << muonP[j].Eta() << "/" << muonP[j].Phi() << " muon? " << muonID[j]
+	  if (verbose) cout << "        " << muonP[ij].Perp() << "/" << muonP[ij].Eta() << "/" << muonP[ij].Phi() << " muon? " << muonID[ij]
 			    << " matched to track idx " << trkIdx << " pt/eta/phi = "
 			    << fpEvt->getSimpleTrack(trkIdx)->getP().Perp() << "/"
 			    << fpEvt->getSimpleTrack(trkIdx)->getP().Eta() << "/"
