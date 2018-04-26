@@ -57,6 +57,26 @@
 //   float pv2lip, pv2lips;
 // };
 
+// -- TMVA related
+#include "TMVA/Reader.h"
+
+struct mvaMuonIDData {
+  // -- Luca's original setup
+  float trkValidFract, glbNChi2;
+  float pt, eta;
+  float segComp, chi2LocMom, chi2LocPos, glbTrackProb;
+  float NTrkVHits, NTrkEHitsOut;
+  // -- Stephan's other variables
+  float glbTrackTailProb, glbDeltaEtaPhi, iValFrac;
+  float LWH; //int
+  float dxyRef, dzRef;
+  float kinkFinder, glbKinkFinder, glbKinkFinderLOG, timeAtIpInOutErr, outerChi2;
+  float valPixHits, TMTrkMult100; //int
+  float innerChi2, trkRelChi2;
+  float vMuonHitComb;
+  float Qprod; //int
+  float spectatorDummy;
+};
 
 // ----------------------------------------------------------------------
 class plotClass: public TObject {
@@ -92,6 +112,7 @@ public :
   void           changeSetup(std::string dir, std::string name, std::string setup);
   void           insertDataset(std::string dsname, dataset *);
   void           muonBdtSetup(TH1D *h1, std::string &prefixB, double &cutB, std::string &prefixE, double &cutE);
+  TMVA::Reader* setupMuonMvaReader(string xmlFile, mvaMuonIDData &d);
 
   std::string    era(int run);
   int            iera(int run);

@@ -71,7 +71,6 @@ struct adsetFake {
 
 };
 
-
 // ----------------------------------------------------------------------
 class plotFake: public plotClass {
 
