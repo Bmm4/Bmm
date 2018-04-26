@@ -394,8 +394,6 @@ void plotResults::init() {
   system(Form("/bin/rm -f %s", fTexFileName.c_str()));
   cout << Form("open for TeX output: %s", fTexFileName.c_str()) << endl;
   fTEX.open(fTexFileName.c_str(), ios::app);
-  dumpDatasets();
-  printCuts(cout);
 }
 
 
@@ -412,6 +410,11 @@ void plotResults::makeAll(string what) {
 
   if (what == "show") {
     showScanBDT("all");
+  }
+
+  if (what == "ds") {
+    dumpDatasets();
+    printCuts(cout);
   }
 
   if (what == "bdtopt") {
@@ -522,7 +525,7 @@ void plotResults::makeAll(string what) {
   }
 
   // -- this will recreate fHistFile!
-  if ((what == "all") || (string::npos != what.find("fill"))  || (string::npos != what.find("ana"))) {
+  if ((what == "all") || (string::npos != what.find("fill"))) {
     //    fillAndSaveHistograms(0, 50000);
     fillAndSaveHistograms();
   }
@@ -531,8 +534,8 @@ void plotResults::makeAll(string what) {
     init();
 
     fHistWithAllCuts = "hMassWithAllCuts";
-    fSuffixSel = "cnc" + fSuffix;
     for (int i = 0; i < fNchan; ++i) {
+      fSuffixSel = "cnc" + fSuffix;
       calculateNumbers("cnc" + fSuffix, i);
       fSuffixSel = "bdt" + fSuffix;
       calculateNumbers("bdt" + fSuffix, i);
@@ -925,7 +928,7 @@ void plotResults::showScanBDT(string what) {
   colors.push_back(kBlue+2);
   colors.push_back(kRed+2);
 
-  string inputFile = Form("%s/scanBDT-%d%s.root", fDirectory.c_str(), fYear, fDirectory.c_str());
+  string inputFile = Form("%s/scanBDT-%s.root", fDirectory.c_str(), fSuffix.c_str(), fDirectory.c_str());
   cout << "open " << inputFile << endl;
   TFile *f = TFile::Open(inputFile.c_str());
   string hname(Form("bdtScan_%s", what.c_str()));
@@ -1007,7 +1010,7 @@ void plotResults::dumpDatasets() {
   printCuts(cout);
 
   ofstream TEX;
-  string dsname = Form("%s/%s-datasets.tex", fDirectory.c_str(), fSetup.c_str());
+  string dsname = Form("%s/%s-datasets.tex", fDirectory.c_str(), fSuffix.c_str());
   system(Form("/bin/rm -f %s", dsname.c_str()));
   TEX.open(dsname.c_str(), ios::app);
 
@@ -2340,14 +2343,11 @@ void plotResults::calculateRareBgNumbers(int chan) {
     anaNumbers *a = fRareNumbers[it->first][chan];
     string accname = rareAccName(it->first);
     cout << "rec: " << Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan) << endl;
-    // TH1D *h1 = (TH1D*)fHistFile->Get(Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), modifier.c_str(), it->first.c_str(), chan));
     TH1D *h1 = (TH1D*)fHistFile->Get(Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan));
     double effGenSel = getValueByLabel(h1,  "effGenSel");
     double genYield  = getValueByLabel(h1,  "genYield");
     double acc       = getValueByLabel(h1,  "acc");
 
-    // u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), modifier.c_str(), it->first.c_str(), chan);
-    // w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), modifier.c_str(), it->first.c_str(), chan);
     u8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), uname.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan);
     w8name = Form("%s/%s_%s_%s_chan%d", it->first.c_str(), wname.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan);
     TH1D *hu = (TH1D*)fHistFile->Get(u8name.c_str());

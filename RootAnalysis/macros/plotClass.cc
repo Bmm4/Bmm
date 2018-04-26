@@ -629,6 +629,7 @@ void plotClass::setupTree(TTree *t, string mode) {
   t->SetBranchAddress("pvlips",  &fb.pvlips);
   t->SetBranchAddress("pv2lip",  &fb.pv2lip);
   t->SetBranchAddress("pv2lips", &fb.pv2lips);
+  t->SetBranchAddress("osmdr",   &fb.osmdr);
   t->SetBranchAddress("maxdoca", &fb.maxdoca);
   t->SetBranchAddress("pvip",    &fb.pvip);
   t->SetBranchAddress("pvips",   &fb.pvips);
@@ -1352,7 +1353,6 @@ void plotClass::calcBDT() {
   frd.iso = fb.iso;
   frd.docatrk = fb.docatrk;
   frd.chi2dof = fb.chi2dof;
-
   frd.closetrk = fb.closetrk;
 
   frd.closetrks1 = fb.closetrks1;
@@ -1361,6 +1361,7 @@ void plotClass::calcBDT() {
 
   frd.m1iso = fb.m1iso;
   frd.m2iso = fb.m2iso;
+
   frd.pvdchi2 = fb.pvdchi2;
   frd.othervtx = fb.othervtx;
 
@@ -3084,7 +3085,7 @@ void plotClass::loadFiles(string afiles) {
     if (2011 == fYear) {
       directory = string("weights/pidtables/");
       TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-      string prefixB("bmm4-25"), prefixE("bmm4-25");
+      string prefixB("bmm4-42"), prefixE("bmm4-42");
       double cutB(0.0), cutE(0.0);
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
@@ -3100,7 +3101,7 @@ void plotClass::loadFiles(string afiles) {
       fptM = fptNegMuons;
     } else if (2012 == fYear) {
       directory = string("weights/pidtables/");
-      string prefixB("bmm4-25"), prefixE("bmm4-25");
+      string prefixB("bmm4-42"), prefixE("bmm4-42");
       double cutB(0.0), cutE(0.0);
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
@@ -3117,14 +3118,6 @@ void plotClass::loadFiles(string afiles) {
     } else if (2016 == fYear) {
       directory = string("weights/pidtables/");
       string prefixB("bmm4-25"), prefixE("bmm4-25");
-      double cutB(0.08), cutE(0.08);
-      if (0) {
-	TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-	if (0 && hcuts) {
-	  muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
-	  cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
-	}
-      }
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
 
@@ -3336,4 +3329,201 @@ void plotClass::muonBdtSetup(TH1D *hcuts, std::string &prefixB, double &cutB, st
     }
   }
 
+}
+
+
+// ----------------------------------------------------------------------
+TMVA::Reader* plotClass::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
+  TMVA::Reader *reader = new TMVA::Reader( "!Color:!Silent" );
+  TString dir    = "weights/";
+  TString methodNameprefix = "BDT";
+  // -- read in variables from weight file
+  vector<string> allLines;
+  char  buffer[2000];
+  string weightFile = "weights/TMVA-" + xmlFile + ".weights.xml";
+  cout << "setupMuonMvaReader, open file " << weightFile << endl;
+  ifstream is(weightFile.c_str());
+  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+  int nvars(-1);
+  string::size_type m1, m2;
+  string stype;
+  cout << "  read " << allLines.size() << " lines " << endl;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add variables
+    if (string::npos != allLines[i].find("Variables NVar")) {
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+      cout << "  " << stype << " variables" << endl;
+      nvars = atoi(stype.c_str());
+      if (-1 == nvars) continue;
+      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+	m1 = allLines[j].find("Expression=\"")+10;
+	m2 = allLines[j].find("\" Label=\"");
+	stype = allLines[j].substr(m1+2, m2-m1-2);
+	if (stype == "segComp") {
+	  //	  cout << "  adding segComp" << endl;
+	  reader->AddVariable("segComp", &d.segComp);
+	  continue;
+	}
+	if (stype == "chi2LocMom") {
+	  //	  cout << "  adding chi2LocMom" << endl;
+	  reader->AddVariable("chi2LocMom", &d.chi2LocMom);
+	  continue;
+	}
+	if (stype == "chi2LocPos") {
+	  //	  cout << "  adding chi2LocPos" << endl;
+	  reader->AddVariable("chi2LocPos", &d.chi2LocPos);
+	  continue;
+	}
+	if (stype == "NTrkVHits") {
+	  //	  cout << "  adding NTrkVHits" << endl;
+	  reader->AddVariable("NTrkVHits", &d.NTrkVHits);
+	  continue;
+	}
+
+	if (stype == "trkValidFract") {
+	  //	  cout << "  adding trkValidFract" << endl;
+	  reader->AddVariable( "trkValidFract", &d.trkValidFract);
+	  continue;
+	}
+	if (stype == "glbNChi2") {
+	  reader->AddVariable("glbNChi2", &d.glbNChi2);
+	  //	  cout << "  adding glbNChi2" << endl;
+	  continue;
+	}
+	if (stype == "eta") {
+	  //	  cout << "  adding eta" << endl;
+	  reader->AddVariable("eta", &d.eta);
+	  continue;
+	}
+	if (stype == "pt") {
+	  //	  cout << "  adding pt" << endl;
+	  reader->AddVariable("pt", &d.pt);
+	  continue;
+	}
+	if (stype == "glbTrackProb") {
+	  //	  cout << "  adding glbTrackProb" << endl;
+	  reader->AddVariable("glbTrackProb", &d.glbTrackProb);
+	  continue;
+	}
+	if (stype == "NTrkEHitsOut") {
+	  //	  cout << "  adding NTrkEHitsOut" << endl;
+	  reader->AddVariable("NTrkEHitsOut", &d.NTrkEHitsOut);
+	  continue;
+	}
+
+	// -- variables for SW's BDT
+	if (stype == "glbTrackTailProb") {
+	  //	  cout << "  adding glbTrackTailProb" << endl;
+	  reader->AddVariable("glbTrackTailProb", &d.glbTrackTailProb);
+	  continue;
+	}
+	if (stype == "glbDeltaEtaPhi") {
+	  //	  cout << "  adding glbDeltaEtaPhi" << endl;
+	  reader->AddVariable("glbDeltaEtaPhi", &d.glbDeltaEtaPhi);
+	  continue;
+	}
+	if (stype == "iValFrac") {
+	  //	  cout << "  adding iValFrac (aka trkValidFract)" << endl;
+	  reader->AddVariable("iValFrac", &d.trkValidFract);
+	  continue;
+	}
+	if (stype == "LWH") {
+	  //	  cout << "  adding LWH" << endl;
+	  reader->AddVariable("LWH", &d.LWH);
+	  continue;
+	}
+	if (stype == "dxyRef") {
+	  //	  cout << "  adding dxyRef" << endl;
+	  reader->AddVariable("dxyRef", &d.dxyRef);
+	  continue;
+	}
+	if (stype == "kinkFinder") {
+	  //	  cout << "  adding kinkFinder" << endl;
+	  reader->AddVariable("kinkFinder", &d.kinkFinder);
+	  continue;
+	}
+	if (stype == "dzRef") {
+	  //	  cout << "  adding dzRef" << endl;
+	  reader->AddVariable("dzRef", &d.dzRef);
+	  continue;
+	}
+	if (stype == "glbKinkFinder") {
+	  //	  cout << "  adding glbKinkFinder" << endl;
+	  reader->AddVariable("glbKinkFinder", &d.glbKinkFinder);
+	  continue;
+	}
+	if (stype == "TMath::Log(2+glbKinkFinder)") {
+	  //	  cout << "  adding TMath::Log(2+glbKinkFinder)" << endl;
+	  reader->AddVariable("TMath::Log(2+glbKinkFinder)", &d.glbKinkFinderLOG);
+	  continue;
+	}
+	if (stype == "timeAtIpInOutErr") {
+	  //	  cout << "  adding timeAtIpInOutErr" << endl;
+	  reader->AddVariable("timeAtIpInOutErr", &d.timeAtIpInOutErr);
+	  continue;
+	}
+	if (stype == "outerChi2") {
+	  //	  cout << "  adding outerChi2" << endl;
+	  reader->AddVariable("outerChi2", &d.outerChi2);
+	  continue;
+	}
+	if (stype == "valPixHits") {
+	  //	  cout << "  adding valPixHits" << endl;
+	  reader->AddVariable("valPixHits", &d.valPixHits);
+	  continue;
+	}
+	if (stype == "TMTrkMult100") {
+	  //	  cout << "  adding TMTrkMult100" << endl;
+	  reader->AddVariable("TMTrkMult100", &d.TMTrkMult100);
+	  continue;
+	}
+	if (stype == "innerChi2") {
+	  //	  cout << "  adding innerChi2" << endl;
+	  reader->AddVariable("innerChi2", &d.innerChi2);
+	  continue;
+	}
+	if (stype == "trkRelChi2") {
+	  //	  cout << "  adding trkRelChi2" << endl;
+	  reader->AddVariable("trkRelChi2", &d.trkRelChi2);
+	  continue;
+	}
+	if (stype == "vMuonHitComb") {
+	  //	  cout << "  adding vMuonHitComb" << endl;
+	  reader->AddVariable("vMuonHitComb", &d.vMuonHitComb);
+	  continue;
+	}
+	if (stype == "Qprod") {
+	  //	  cout << "  adding Qprod" << endl;
+	  reader->AddVariable("Qprod", &d.Qprod);
+	  continue;
+	}
+      }
+      break;
+    }
+  }
+
+  nvars = -1;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add spectators
+    if (string::npos != allLines[i].find("Spectators NSpec")) {
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+      //      cout << "==> " << stype << endl;
+      nvars = atoi(stype.c_str());
+      if (-1 == nvars) continue;
+      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+	m1 = allLines[j].find("Expression=\"")+10;
+	m2 = allLines[j].find("\" Label=\"");
+	stype = allLines[j].substr(m1+2, m2-m1-2);
+	//	cout << "ivar " << j-i << " spectator string: ->" << stype << "<-" << endl;
+	//	cout << " adding " << stype << " as a spectator dummy" << endl;
+	reader->AddSpectator( stype.c_str(), &d.spectatorDummy);
+      }
+      break;
+    }
+  }
+
+  reader->BookMVA("BDT", TString(weightFile.c_str()));
+  return reader;
 }

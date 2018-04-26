@@ -93,6 +93,8 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("lip2");
     fDoList.push_back("lips2");
 
+    fDoList.push_back("osmdr");
+
     fDoList.push_back("m1iso");
     fDoList.push_back("m2iso");
     fDoList.push_back("othervtx");
@@ -1130,6 +1132,8 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
 				      pCuts, 50, 0., 4, p);
     a->fpLipS2     = bookDistribution(Form("%slips2", name.c_str()), "|#it{l_{z}}^{(2)}|/#sigma(#it{l_{z}}^{(2)})", (bdt? "fGoodBDT": "fGoodLipS"),
 				      pCuts, 50, 0., 100., p);
+    a->fpOsmDr     = bookDistribution(Form("%sosmdr", name.c_str()), "osmdr", (bdt? "fGoodBDT": "fGoodFLS"),
+				      pCuts, 50, 0., 5., p);
 
 
     a->fpDocaTrk   = bookDistribution(Form("%sdocatrk", name.c_str()), "#it{d}_{ca}^{0} [cm]", (bdt? "fGoodBDT": "fGoodDocaTrk"), pCuts, 50, 0., 0.20, p);
@@ -2022,7 +2026,8 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpLipS->fill(TMath::Abs(fb.pvlips), mass, w8);
 
   fAdMap[mapname]->fpLip2->fill(TMath::Abs(fb.pv2lip), mass, w8);
-  fAdMap[mapname]->fpLipS2->fill(TMath::Abs(fb.pv2lips), mass, w8);
+  fAdMap[mapname]->fpOsmDr->fill(fb.osmdr, mass, w8);
+
   // fAdMap[mapname]->fpLastCut->fill(mass, mass);
 
   fAdMap[mapname]->fpOtherVtx->fill(fb.othervtx, mass, w8);

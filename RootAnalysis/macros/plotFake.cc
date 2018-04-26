@@ -173,13 +173,23 @@ void plotFake::init() {
 // ----------------------------------------------------------------------
 void plotFake::makeAll(string what) {
   if (what == "dbx0") {
-      makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
-      makeOverlay("fakeData_phi", "fakeMc_phi", "Cu");
-      makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
-      makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
-      for (unsigned int ic = 0; ic < fNchan; ++ic) {
-	fTEX << formatTex(fCuts[ic]->muonbdt, Form("%s:muonidBdtCut_responseCut_chan%i:val", fSuffix.c_str(), ic), 3) << endl;
-      }
+    double cutB(0.08), cutE(0.08);
+    TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
+    if (hcuts) {
+      muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
+      cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
+    }
+    return;
+  }
+
+  if (what == "dbx1") {
+    makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
+    makeOverlay("fakeData_phi", "fakeMc_phi", "Cu");
+    makeOverlay("fakeData_lambda", "fakeMc_lambda", "Cu");
+    makeOverlay("fakeData_psi", "fakeMc_psi", "Cu");
+    for (unsigned int ic = 0; ic < fNchan; ++ic) {
+      fTEX << formatTex(fCuts[ic]->muonbdt, Form("%s:muonidBdtCut_responseCut_chan%i:val", fSuffix.c_str(), ic), 3) << endl;
+    }
   }
 
   if (what == "all" || string::npos != what.find("sample")) {
@@ -209,7 +219,7 @@ void plotFake::makeAll(string what) {
     system(Form("/bin/rm -f %s", fTexFileName.c_str()));
     fTEX.open(fTexFileName.c_str(), ios::app);
     system(Form("/bin/rm -f %s", fNumbersFileName.c_str()));
-    system(Form("/bin/rm -f %s/*sbsctrl_ad*_fake*.pdf", fDirectory.c_str()));
+    system(Form("/bin/rm -f %s/%d%s*sbsctrl_ad*_fake*.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
     system(Form("/bin/rm -f %s/ad*_fake*.pdf", fDirectory.c_str()));
 
     if ((what == "all") || (what == "plot") || (string::npos != what.find("plot") && string::npos != what.find("ks"))) {
@@ -260,10 +270,20 @@ void plotFake::makeAll(string what) {
   }
 
   if ((what == "all") || string::npos != what.find("pidtables") || string::npos != what.find("plot")) {
-    mkPidTables("");
+    if (2016 == fYear) {
+      mkPidTables("bmm4-25");
+      plotPidTables("");
+    }
+
+    if (2012 == fYear) {
+      mkPidTables("bmm4-42");
+    }
+
+    if (2011 == fYear) {
+      mkPidTables("bmm4-42");
+    }
     plotPidTables("");
   }
-
 }
 
 
@@ -679,20 +699,20 @@ void plotFake::bookDistributions() {
     a->fpFakeRPChits4 = bookDistribution(Form("%sFakeRPChits4", name.c_str()), "RPChits4", "GlobalMuon", 10, 0., 10.);
     a->fpFakeCombHits = bookDistribution(Form("%sFakeCombHits", name.c_str()), "CombHits", "GlobalMuon", 35, 0., 35.);
 
-    a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 48, -2.4, 2.4);
-    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TIS", 10, 0., 20.);
-    a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISFAKE", 10, 0., 20.);
+    a->fpFakeTisAllEta  = bookDistribution(Form("%sFakeTisAllEta", name.c_str()), "#eta", "TIS", 12, -2.4, 2.4);
+    a->fpFakeTisAllPt   = bookDistribution(Form("%sFakeTisAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TIS", 5, 0., 20.);
+    a->fpFakeTisFakeEta = bookDistribution(Form("%sFakeTisFakeEta", name.c_str()), "#eta", "TISFAKE", 12, -2.4, 2.4);
+    a->fpFakeTisFakePt  = bookDistribution(Form("%sFakeTisFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISFAKE", 5, 0., 20.);
 
-    a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 48, -2.4, 2.4);
-    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDT", 10, 0., 20.);
-    a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTFAKE", 10, 0., 20.);
+    a->fpFakeTisDtAllEta  = bookDistribution(Form("%sFakeTisDtAllEta", name.c_str()), "#eta", "TISDT", 12, -2.4, 2.4);
+    a->fpFakeTisDtAllPt   = bookDistribution(Form("%sFakeTisDtAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDT", 5, 0., 20.);
+    a->fpFakeTisDtFakeEta = bookDistribution(Form("%sFakeTisDtFakeEta", name.c_str()), "#eta", "TISDTFAKE", 12, -2.4, 2.4);
+    a->fpFakeTisDtFakePt  = bookDistribution(Form("%sFakeTisDtFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTFAKE", 5, 0., 20.);
 
-    a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDM", 10, 0., 20.);
-    a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 48, -2.4, 2.4);
-    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDMFAKE", 10, 0., 20.);
+    a->fpFakeTisDtDmAllEta  = bookDistribution(Form("%sFakeTisDtDmAllEta", name.c_str()), "#eta", "TISDTDM", 12, -2.4, 2.4);
+    a->fpFakeTisDtDmAllPt   = bookDistribution(Form("%sFakeTisDtDmAllPt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDM", 5, 0., 20.);
+    a->fpFakeTisDtDmFakeEta = bookDistribution(Form("%sFakeTisDtDmFakeEta", name.c_str()), "#eta", "TISDTDMFAKE", 12, -2.4, 2.4);
+    a->fpFakeTisDtDmFakePt  = bookDistribution(Form("%sFakeTisDtDmFakePt", name.c_str()), "#it{p_{T}} [GeV]", "TISDTDMFAKE", 5, 0., 20.);
 
 
     fAdMap.insert(make_pair(mapname, a));
@@ -1904,7 +1924,7 @@ void plotFake::loopFunction2() {
     fHists[h0name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
     h1name = pname + name;
     //    cout << h1name << endl;
-    if (TMath::Abs(fFakeEta[i]) < 0.9) {
+    if (TMath::Abs(fFakeEta[i]) < 1.4) {
       if (fFakeBdt[i] > fMuBdtCutB) fHists[h1name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
     } else {
       if (fFakeBdt[i] > fMuBdtCutE) fHists[h1name]->Fill(TMath::Abs(fFakeEta[i]), fFakePt[i]);
