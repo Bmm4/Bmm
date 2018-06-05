@@ -130,16 +130,21 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
 
   fIF = new initFunc();
 
+  fCncCuts.addCut("fGoodAcceptance", "acceptance", fGoodAcceptance);
+  fCncCuts.addCut("fGoodJpsiCuts", "J/psi", fGoodJpsiCuts);
   fCncCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
   fCncCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
-  fCncCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
+  fCncCuts.addCut("fGoodDcand", "Dcand", fGoodDcand);
   fCncCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
   fCncCuts.addCut("fGoodMuonsEta", "#eta_{#mu} ", fGoodMuonsEta);
+  fCncCuts.addCut("fGoodGlobalMuons", "lepton ID", fGoodGlobalMuons);
+  fCncCuts.addCut("fGoodGlobalMuonsKin", "lepton ID kin", fGoodGlobalMuonsKin);
+  fCncCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
   fCncCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
   fCncCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
   fCncCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
 
-  fCncCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+  fCncCuts.addCut("fGoodQ", "q_{1} q_{2}", fGoodQ);
   fCncCuts.addCut("fGoodPt", "p_{T,B}", fGoodPt);
   fCncCuts.addCut("fGoodPhi", "#phi_{B}", fGoodPhi);
   fCncCuts.addCut("fGoodEta", "#eta_{B}", fGoodEta);
@@ -161,20 +166,26 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
   fCncCuts.addCut("fGoodM2Iso", "I_{trk}^{#mu,2}", fGoodM2Iso);
   fCncCuts.addCut("fGoodCloseTrack", "close track veto", fGoodCloseTrack);
 
+  fBdtCuts.addCut("fGoodAcceptance", "acceptance", fGoodAcceptance);
+  fBdtCuts.addCut("fGoodJpsiCuts", "J/psi", fGoodJpsiCuts);
   fBdtCuts.addCut("fGoodHLT", "HLT", fGoodHLT);
   fBdtCuts.addCut("fGoodPvAveW8", "<w8>", fGoodPvAveW8);
-  fBdtCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
+  fBdtCuts.addCut("fGoodDcand", "Dcand", fGoodDcand);
   fBdtCuts.addCut("fGoodMuonsPt", "p_{T,#mu} [GeV]", fGoodMuonsPt);
   fBdtCuts.addCut("fGoodMuonsEta", "#eta_{#mu} ", fGoodMuonsEta);
+  fBdtCuts.addCut("fGoodGlobalMuons", "lepton ID", fGoodGlobalMuons);
+  fBdtCuts.addCut("fGoodGlobalMuonsKin", "lepton ID kin", fGoodGlobalMuonsKin);
+  fBdtCuts.addCut("fGoodMuonsID", "lepton ID", fGoodMuonsID);
   fBdtCuts.addCut("fGoodTracks", "good tracks", fGoodTracks);
   fBdtCuts.addCut("fGoodTracksPt", "p_{T,trk} [GeV]", fGoodTracksPt);
   fBdtCuts.addCut("fGoodTracksEta", "#eta_{trk} ", fGoodTracksEta);
 
-  fBdtCuts.addCut("fGoodQ", "q_{1} 1_{2}", fGoodQ);
+  fBdtCuts.addCut("fGoodQ", "q_{1} q_{2}", fGoodQ);
   fBdtCuts.addCut("fGoodPt", "p_{T,B} [GeV]", fGoodPt);
   fBdtCuts.addCut("fGoodPhi", "#phi_{B} ", fGoodPhi);
   fBdtCuts.addCut("fGoodEta", "#eta_{B} ", fGoodEta);
 
+  fBdtCuts.addCut("fGoodBdtPresel", "BDTPresel", fGoodBdtPresel);
   fBdtCuts.addCut("fGoodBDT", "bdt", fGoodBDT);
 
 
@@ -350,8 +361,6 @@ int plotClass::iera(int run) {
 
 // ----------------------------------------------------------------------
 void plotClass::setup(string ds) {
-  //NO!!! fSetup contains the possible argument to plotClass c'tor
-  //fSetup   = ds;
   fSample = ds;
   string dir = "candAnaMuMu";
   fMode = BMM;
@@ -881,10 +890,11 @@ void plotClass::candAnalysis() {
     if (0) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     fBDT = -99.;
-    fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = false;
+    fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = false;
+    fGoodCmssw = fGoodCandAna = false;
     fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
     fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
-    fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = false;
+    fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fGoodBdtPresel = fPreselection = false;
     fGoodAcceptance = fGoodBdtPt = fGoodMuonsPt = fGoodMuonsEta = fGoodTracks =  fGoodTracksPt = fGoodTracksEta = false;
     fGoodDcand= false;
     return;
@@ -903,12 +913,16 @@ void plotClass::candAnalysis() {
 
   // -- reset all
   fBDT = -99.;
-  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodDcand = false;
+  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = fGoodDcand = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
-  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fPreselection = fPreselectionBDT = false;
+  fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fGoodBdtPresel = fPreselection = fPreselectionBDT = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
 
   fGoodJpsiCuts = true;
+
+  // -- ensure that the underlying cuts are also applied/applicable at the plot* level
+  fGoodCmssw   =  (fb.m1pt>4.) && (fb.m2pt>4.)  && (fb.pvips < 5.) && (fb.flsxy > 4.) && (fb.maxdoca < 0.08) && (fb.chi2/fb.dof < 5.);
+  fGoodCandAna =  (fb.alpha<0.2) && (fb.fls3d>4.) && (TMath::Abs(fb.pvips) < 4.) && (TMath::Abs(fb.pvip) < 0.02);
 
   fGoodAcceptance = true;
   fGoodBdtPt      = true;
@@ -1074,10 +1088,12 @@ void plotClass::candAnalysis() {
   }
 
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
+  fGoodGlobalMuonsKin = fGoodGlobalMuons && fGoodMuonsPt && fGoodMuonsEta ;
   fGoodMuonsID     = (fb.m1mvabdt > fCuts[0]->muonbdt) && (fb.m2mvabdt > fCuts[0]->muonbdt);
   if (RARE == fMode) {
     fGoodMuonsID = true;
     fGoodGlobalMuons = true;
+    fGoodGlobalMuonsKin = true;
     fGoodDcand = true;
   }
 
@@ -1214,6 +1230,7 @@ void plotClass::candAnalysis() {
 
   }
 
+  fGoodBdtPresel  = (fBDT > -50.);
   fGoodBDT        = (fBDT > pCuts->bdtCut);
   fGoodHLT        = fb.hlt1 && fb.tos && fb.l1t;
 

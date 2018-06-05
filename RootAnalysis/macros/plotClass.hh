@@ -189,8 +189,8 @@ public :
   // -- setup and cuts
   double MASSMIN, MASSMAX, SIGBOXMIN, SIGBOXMAX, BGLBOXMIN, BGLBOXMAX, BGHBOXMIN, BGHBOXMAX;
 
-  bool fGoodAcceptance, fPreselection, fPreselectionBDT, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons,
-    fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta;
+  bool fGoodAcceptance, fPreselection, fPreselectionBDT, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons, fGoodGlobalMuonsKin,
+    fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta, fGoodBdtPresel, fGoodCmssw, fGoodCandAna;
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
     fGoodPt, fGoodEta, fGoodPhi, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;
   bool fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3,
