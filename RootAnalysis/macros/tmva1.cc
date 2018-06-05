@@ -395,11 +395,11 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
     nBgTest = nbg;
   }
 
-  if (nSgTrain > nBgTrain) {
-    nSgTrain =  nBgTrain;
-  } else {
-    nBgTrain =  nSgTrain;
-  }
+  // if (nSgTrain > nBgTrain) {
+  //   nSgTrain =  nBgTrain;
+  // } else {
+  //   nBgTrain =  nSgTrain;
+  // }
 
   int seed = static_cast<int>(100*gRandom->Rndm());
 
