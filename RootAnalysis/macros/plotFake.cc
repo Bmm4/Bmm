@@ -172,15 +172,6 @@ void plotFake::init() {
 
 // ----------------------------------------------------------------------
 void plotFake::makeAll(string what) {
-  if (what == "dbx0") {
-    double cutB(0.08), cutE(0.08);
-    TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-    if (hcuts) {
-      muonBdtSetup(hcuts, prefixB, cutB, prefixE, cutE);
-      cout << "muonBdtSetup: " << prefixB << " " << cutB << "  " << prefixE  << " " << cutE << endl;
-    }
-    return;
-  }
 
   if (what == "dbx1") {
     makeOverlay("fakeData_ks", "fakeMc_ks", "Cu");
@@ -267,6 +258,11 @@ void plotFake::makeAll(string what) {
       fakeRate("fakeData_lambda", "fakeMc_lambda", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
     }
 
+    if ((what == "all") || (what == "fakerate") || (what == "plot") || (string::npos != what.find("psi"))) {
+      fakeRate("fakeData_psi", "fakeMc_psi", "FakeTisDtDmFakePt", "FakeTisDtDmAllPt");
+      fakeRate("fakeData_psi", "fakeMc_psi", "FakeTisDtDmFakeEta", "FakeTisDtDmAllEta");
+    }
+
   }
 
   if ((what == "all") || string::npos != what.find("pidtables") || string::npos != what.find("plot")) {
@@ -318,7 +314,7 @@ void  plotFake::massPlots(std::string varname) {
       }
       shrinkPad(0.15, 0.2);
       if (h1) h1->Draw();
-      savePad(Form("%d%s-fakemass_ad%d_%s_%s.pdf", fYear, fSetup.c_str(), ic, modes[im].c_str(), varname.c_str()));
+      savePad(Form("%s-fakemass_ad%d_%s_%s.pdf", fSetup.c_str(), ic, modes[im].c_str(), varname.c_str()));
     }
   }
 }
@@ -430,13 +426,13 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
       overlay(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()),
 	      Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str())
 	      );
-      savePad(Form("%d%s-fakeoverlay_ad%s_%s_ad%s_%s_%s-%s.pdf",
-		   fYear, fSetup.c_str(),
+      savePad(Form("%s-fakeoverlay_ad%s_%s_ad%s_%s_%s-%s.pdf",
+		   fSetup.c_str(),
 		   fChannelList[ic].c_str(), what1.c_str(),
 		   fChannelList[ic].c_str(), what2.c_str(),
 		   fDoList[id].c_str(), selection.c_str()));
 
-      // -- determine muon id/misid systematics
+      // -- determine muon id/misid systematics // FAIL: I don't think this works in any form for the misid rate!!!!
       if (string::npos != fDoList[id].find("FakeBdt")) {
 	TH1D *h1 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what1.c_str(), fDoList[id].c_str(), selection.c_str()));
 	TH1D *h2 = (TH1D*)gDirectory->Get(Form("sbs_ad%s_%s_%s%s", fChannelList[ic].c_str(), what2.c_str(), fDoList[id].c_str(), selection.c_str()));
@@ -449,33 +445,58 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	  if (int1 < 0.) int1 *= -1.;
 	  double int2 = h2->Integral(ib, nmax);
 	  if (int2 < 0.) int2 *= -1.;
+	  double iave = 0.5*(int1+int2);
 	  double err1 = dEff(static_cast<int>(int1), static_cast<int>(itot));
 	  double err2 = dEff(static_cast<int>(int2), static_cast<int>(itot));
+	  double sgn1 = TMath::Abs(int1/itot - int2/itot)/TMath::Sqrt(err1*err1 + err2*err2);
+	  // -- this would be the absolute efficiency error
 	  hd->SetBinContent(ib, (int1-int2)/itot);
+	  if (TMath::Abs((int1-int2)/itot) > imax) imax = TMath::Abs((int1-int2)/itot);
+	  if (ib == h1->FindBin(fCuts[0]->muonbdt)) icut = TMath::Abs((int1-int2)/itot);
+	  // -- this is the relative efficiency error (turns out to be too large to be practical, for misid rates!)
+	  // if (iave > 0.) {
+	  //   hd->SetBinContent(ib, (int1-int2)/iave);
+	  // } else {
+	  //   hd->SetBinContent(ib, 0.);
+	  // }
+	  // if (TMath::Abs((int1-int2)/itot) > imax) imax = TMath::Abs((int1-int2)/iave);
+	  // if (ib == h1->FindBin(fCuts[0]->muonbdt)) icut = TMath::Abs((int1-int2)/iave);
+	  // -- difference-significance scaled control sample error
+	  // double error(0.);
+	  // if (int1 > 0) {
+	  //   error = err1/(int1/itot); // relative error on data efficiency
+	  // } else {
+	  //   error = 0.;
+	  // }
+	  // if (sgn1 > 1.) {
+	  //   error = error * sgn1;
+	  // }
+	  // hd->SetBinContent(ib, error);
+	  // if (error > imax) imax = error;
+	  // if (ib == h1->FindBin(fCuts[0]->muonbdt)) icut = error;
 	  hd->SetBinError(ib, TMath::Sqrt(err1*err1 + err2*err2));
 	  cout << "bin " << ib << " center = " << h1->GetBinCenter(ib)
 	       << " itot = " << itot
-	       << " int1 = " << int1 << "+/-" << err1
-	       << " int2 = " << int2 << "+/-" << err2
+	       << " eps1 = " << int1/itot << "+/-" << err1
+	       << " eps2 = " << int2/itot << "+/-" << err2
 	       << " diff = " << (int1-int2)/itot
-	       << " err = " << TMath::Sqrt(err1*err1 + err2*err2)/itot
-	       << " err = " << TMath::Sqrt(err1*err1 + err2*err2)
 	       << endl;
-	  if (TMath::Abs((int1-int2)/itot) > imax) imax = TMath::Abs((int1-int2)/itot);
-	  if (ib == h1->FindBin(fCuts[0]->muonbdt)) icut = TMath::Abs((int1-int2)/itot);
 	}
-	hd->SetMinimum(-0.25);
-	hd->SetMaximum(0.25);
+	hd->SetMinimum(-0.50);
+	hd->SetMaximum(0.50);
 	hd->GetXaxis()->SetTitle("BDT > ");
-	hd->GetYaxis()->SetTitle("#varepsilon(cut; data) - #varepsilon(cut; MC)");
+	hd->GetYaxis()->SetTitle("(#varepsilon(cut; data) - #varepsilon(cut; MC)");
+	// hd->GetYaxis()->SetTitle("(#varepsilon(cut; data) - #varepsilon(cut; MC)/mean");
+	// hd->GetYaxis()->SetTitle("#Delta#varepsilon(cut; data) (#times f)");
 	hd->SetTitleOffset(1.5, "y");
 	hd->SetNdivisions(505, "X");
 	hd->SetNdivisions(505, "Y");
 	gPad->SetGridy(true);
 	hd->Draw();
 	tl->SetTextSize(0.04);
-	tl->DrawLatexNDC(0.2, 0.92, Form("#Delta max: %4.3f cut: %4.3f", imax, icut));
+	tl->DrawLatexNDC(0.20, 0.92, Form("#Delta max: %4.3f cut: %4.3f", imax, icut));
 	tl->DrawLatexNDC(0.73, 0.92, Form("%s chan %d", label1.c_str(), ic));
+	tl->DrawLatexNDC(0.20, 0.84, Form("(cut BDT > %4.3f", fCuts[0]->muonbdt));
 
 	double err(0.);
 	if (imax < 0.02) err = 0.02;
@@ -500,8 +521,8 @@ void plotFake::makeOverlay(string what1, string what2, string selection, string 
 	fTEX << formatTex(icut, Form("%s:muonidBdtCut_%s_chan%i:val", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
 	fTEX << formatTex(err, Form("%s:muonidBdtCut_%s_chan%i:err", fSuffix.c_str(), label1.c_str(), ic), 3) << endl;
 
-	savePad(Form("%d%s-systematics_ad%s_%s_ad%s_%s_%s-%s.pdf",
-		     fYear, fSetup.c_str(),
+	savePad(Form("%s-systematics_ad%s_%s_ad%s_%s_%s-%s.pdf",
+		     fSetup.c_str(),
 		     fChannelList[ic].c_str(),
 		     what1.c_str(), fChannelList[ic].c_str(),
 		     what2.c_str(), fDoList[id].c_str(),
@@ -755,7 +776,7 @@ AnalysisDistribution* plotFake::bookDistribution(string hn, string ht, std::stri
 // ----------------------------------------------------------------------
 void plotFake::sbsDistributions(string sample, string selection, std::string what) {
   cout << "plotFake::sbsDistributions(" << sample << ", " << selection << ", " << what << ")" << endl;
-  string sbsControlPlotsFileName = Form("%d%s-sbsctrl", fYear, fSetup.c_str());
+  string sbsControlPlotsFileName = Form("%s-sbsctrl", fSetup.c_str());
   AnalysisDistribution a(Form("%s_FakePt", sample.c_str()));
   a.fVerbose = 0;
   a.fControlPlotsFileName = sbsControlPlotsFileName;
@@ -795,7 +816,7 @@ void plotFake::sbsDistributions(string sample, string selection, std::string wha
       TF1 *f1 = fIF->pol1gauss(h, a.fMassPeak, a.fMassSigma);
       cout << "now prefitting: h = " << h << " f1 = " << f1 << endl;
       h->Fit(f1, "lsr", "", a.fMassLo, a.fMassHi);
-      savePad(Form("%d%s-prefit-%s-%s-%s.pdf", fYear, fSetup.c_str(), sample.c_str(), selection.c_str(), what.c_str()));
+      savePad(Form("%s-prefit-%s-%s-%s.pdf", fSetup.c_str(), sample.c_str(), selection.c_str(), what.c_str()));
       a.fpIF->limitPar(1, f1->GetParameter(1) - 3.*f1->GetParError(1), f1->GetParameter(1) + 3.*f1->GetParError(1));
       a.fpIF->limitPar(2, f1->GetParameter(2) - 3.*f1->GetParError(2), f1->GetParameter(2) + 3.*f1->GetParError(2));
       cout << "done prefitting: h = " << h << " f1 = " << f1 << endl;
@@ -1070,6 +1091,7 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
 
   int nBins;
   double int1V, int1E, int2V, int2E;
+  vector<double> vval, verr;
   for (unsigned int i = 0; i < fChannelList.size(); ++i) {
     cout << "===> sbsDistributions " << Form("ad%s_%s", fChannelList[i].c_str(), dataset1.c_str()) << "Si" << varF << endl;
     sbsDistributions(Form("ad%s_%s", fChannelList[i].c_str(), dataset1.c_str()), "Si", varF);
@@ -1098,20 +1120,23 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     h1p->Draw();
     int1V = int2V = int1E = int2E = 0.;
     nBins = 1;
-    double xlo(3.9), xhi(19.9);
+    double xlo(3.9), xhi(23.9);
     if (string::npos != varF.find("Eta")) {
       xlo = -2.5;
       xhi = 2.5;
     }
-    for (int i = 1; i <= h1p->GetNbinsX(); ++i) {
-      if (h1p->GetBinLowEdge(i+1) < xlo) continue;
-      if (h1p->GetBinLowEdge(i+1) > xhi) break;
+    for (int ibin = 1; ibin <= h1p->GetNbinsX(); ++ibin) {
+      if (h1p->GetBinLowEdge(ibin) < xlo) continue;
+      if (h1p->GetBinLowEdge(ibin+1) > xhi) break;
       //      ++nBins;
-      int1V += h1p->GetBinContent(i);
-      int1E += h1p->GetBinError(i)*h1p->GetBinError(i);
-
-      int2V += h2p->GetBinContent(i);
-      int2E += h2p->GetBinError(i)*h2p->GetBinError(i);
+      cout << "looking at bin " << i << " with bin center: " << h1p->GetBinCenter(ibin) << ": ";
+      if (h1p->GetBinContent(ibin) > 0) {
+	int1V += h1p->GetBinContent(ibin);
+        int1E += h1p->GetBinError(ibin)*h1p->GetBinError(ibin);
+      }
+      int2V += h2p->GetBinContent(ibin);
+      int2E += h2p->GetBinError(ibin)*h2p->GetBinError(ibin);
+      cout << h1p->GetBinContent(ibin)    << ", " << h2p->GetBinContent(ibin) << endl;
     }
     int1V = int1V/nBins;
     int1E = TMath::Sqrt(int1E)/nBins;
@@ -1121,7 +1146,12 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     setHist(h2p, kBlue);
     h2p->Draw("histsame");
     cout << "SYSTEMATIC " << dataset2 << " integral 2: " << int2V << " +/- " << int2E << endl;
-
+    if (string::npos != varA.find("FakeTisDtDmAllPt") && (i < 2)) {
+      vval.push_back(int1V);
+      verr.push_back(int1E);
+      vval.push_back(int2V);
+      verr.push_back(int2E);
+    }
     newLegend(0.21, 0.7, 0.41, 0.87);
 
     legg->SetHeader(header.c_str());
@@ -1140,9 +1170,17 @@ void plotFake::fakeRate(string dataset1, string dataset2, string varF, string va
     tl->DrawLatexNDC(0.49, 0.66, Form("#Delta = %+6.5f#pm%6.5f", dV, dE));
 
 
-    savePad(Form("%d%s-fakerate_%s_ad%s_%s_ad%s_%s.pdf",
-		 fYear, fSetup.c_str(),
+    savePad(Form("%s-fakerate_%s_ad%s_%s_ad%s_%s.pdf",
+		 fSetup.c_str(),
 		 varA.c_str(), fChannelList[i].c_str(), dataset1.c_str(), fChannelList[i].c_str(), dataset2.c_str()));
+  }
+
+  if (varA == "FakeTisDtDmAllPt") {
+    double sysVal(0.), sysErr(0.);
+    average(sysVal, sysErr, vval, verr);
+    fTEX << formatTex(sysVal, Form("%s:muonidSystematics_%s:val", fSetup.c_str(), dataset1.c_str()), 5) << endl;
+    fTEX << formatTex(sysErr, Form("%s:muonidSystematics_%s:err", fSetup.c_str(), dataset1.c_str()), 5) << endl;
+    fTEX << formatTex(sysErr/sysVal, Form("%s:muonidSystematics_%s:sys", fSetup.c_str(), dataset1.c_str()), 4) << endl;
   }
 
   fHistFile->Close();
@@ -1459,14 +1497,20 @@ void plotFake::loopFunction1() {
 
     mapname = fChannelSample[fChan];
 
+    if (fYear > 2012 || fIsMC) {
+      fFakeSsVeto = false;
+    }
+
     fGoodPt      = (fFakePt[i] > 4.);
-    fGoodDtrig   = (fFakeDtrig[i] > 0.01) && fTIS;
-    //    fGoodDtrig   = fTIS;
+    fGoodDtrig   = (fFakeDtrig[i] > 0.01) && fTIS && !fFakeSsVeto;
     fGoodDmuon   = (fFakeDmuon[i] > 0.5);
+    fGoodDNmuon  = (fFakeDNmuon[i] > 0.5);
 
     if (fIsMC) {
-      fTIS       = true;
-      fGoodDtrig = true; // does not work on MC (PD not well defined there)
+      fTIS        = true;
+      fGoodDtrig  = true; // does not work on MC (PD not well defined there)
+    } else {
+      fGoodDmuon =  fGoodDNmuon;
     }
 
     if (fMode == FAKEPSI) {
@@ -1726,39 +1770,39 @@ void plotFake::plotPidTables(string prefix) {
     cout << "Hallo" << endl;
     a->print(cout);
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakePosKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakePosKaons.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakePosKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakePosKaons.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptFakeNegKaons;  h2->Reset(); h2->SetTitle(Form("neg. kaons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakeNegKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakeNegKaons.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakeNegKaons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakeNegKaons.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptFakePosPions;  h2->Reset(); h2->SetTitle(Form("pos. pions (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakePosPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakePosPions.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakePosPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakePosPions.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptFakeNegPions;  h2->Reset(); h2->SetTitle(Form("neg. pions (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakeNegPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakeNegPions.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakeNegPions.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakeNegPions.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptFakePosProtons;  h2->Reset(); h2->SetTitle(Form("pos. protons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakePosProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakePosProtons.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakePosProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakePosProtons.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptFakeNegProtons;  h2->Reset(); h2->SetTitle(Form("neg. protons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effFakeNegProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effFakeNegProtons.pdf", fDirectory.c_str(), fSetup.c_str()));
     a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-errFakeNegProtons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-errFakeNegProtons.pdf", fDirectory.c_str(), fSetup.c_str()));
   }
 
 
@@ -1785,13 +1829,13 @@ void plotFake::plotPidTables(string prefix) {
     a->eff2d(h2);
     h2->Draw("coltext");
     tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effPosMuons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effPosMuons.pdf", fDirectory.c_str(), fSetup.c_str()));
 
     a = fptNegMuons;  h2->Reset(); h2->SetTitle(Form("neg. muons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2);
     h2->Draw("coltext");
     tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-effNegMuons.pdf", fDirectory.c_str(), fYear, fSetup.c_str()));
+    c0->SaveAs(Form("%s/%s-effNegMuons.pdf", fDirectory.c_str(), fSetup.c_str()));
   }
 
 
@@ -1836,9 +1880,9 @@ void plotFake::plotPidTables(string prefix) {
 
 	h2->Reset(); h2->SetTitle(Form("%s %s (%d, %s)", q[iq].c_str(), sIds[i].c_str(), fYear, a->getComment().Data()));
 	a->eff2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-	c0->SaveAs(Form("%s/%d%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, fSetup.c_str(), vIds[i], q[iq].c_str(), prefix.c_str()));
+	c0->SaveAs(Form("%s/%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fSetup.c_str(), vIds[i], q[iq].c_str(), prefix.c_str()));
 	a->err2d(h2); h2->Draw("coltext"); tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-	c0->SaveAs(Form("%s/%d%s-err-%d%s-%s.pdf", fDirectory.c_str(), fYear, fSetup.c_str(), vIds[i], q[iq].c_str(), prefix.c_str()));
+	c0->SaveAs(Form("%s/%s-err-%d%s-%s.pdf", fDirectory.c_str(), fSetup.c_str(), vIds[i], q[iq].c_str(), prefix.c_str()));
       }
     }
   }
@@ -1866,13 +1910,13 @@ void plotFake::plotPidTables(string prefix) {
     PidTable *a = new PidTable(Form(name.c_str()));
     h2->Reset(); h2->SetTitle(Form("Pos muons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, fSetup.c_str(), 13, "Pos", prefix.c_str()));
+    c0->SaveAs(Form("%s/%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fSetup.c_str(), 13, "Pos", prefix.c_str()));
 
     name = Form("weights/pidtables/%d-%d%s-%s.dat", fYear, 13, "Neg", prefix.c_str());
     a = new PidTable(Form(name.c_str()));
     h2->Reset(); h2->SetTitle(Form("Neg muons (%d, %s)", fYear, a->getComment().Data()));
     a->eff2d(h2);  h2->Draw("coltext");  tl->DrawLatexNDC(0.20, 0.92, h2->GetTitle());
-    c0->SaveAs(Form("%s/%d%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fYear, fSetup.c_str(), 13, "Neg", prefix.c_str()));
+    c0->SaveAs(Form("%s/%s-eff-%d%s-%s.pdf", fDirectory.c_str(), fSetup.c_str(), 13, "Neg", prefix.c_str()));
   }
 
 
@@ -2101,6 +2145,7 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("flsxy",   &fCandFLSxy);
   t->SetBranchAddress("maxdoca", &fCandDoca);
   t->SetBranchAddress("tis",     &fTIS);
+  t->SetBranchAddress("vetoSameSign", &fFakeSsVeto);
   t->SetBranchAddress("cowboy",  &fCowboy);
 
   t->SetBranchAddress("ntrk",    &fFakeNtrk);
@@ -2112,6 +2157,8 @@ void plotFake::setupTree(TTree *t) {
   t->SetBranchAddress("phi",     fFakePhi);
   t->SetBranchAddress("dtrig",   fFakeDtrig);
   t->SetBranchAddress("dmuon",   fFakeDmuon);
+  t->SetBranchAddress("dNmuon",  fFakeDNmuon);
+
   t->SetBranchAddress("hp",      fFakeHP);
   t->SetBranchAddress("bdt",     fFakeBdt);
 

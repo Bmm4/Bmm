@@ -136,9 +136,9 @@ private:
 
   static const int NTRKMAX = 10;
   double fCandM, fCandPvIp, fCandPvIpS, fCandChi2Dof, fCandFLS3d, fCandFL3d, fCandFLxy, fCandFL3dE, fCandFLSxy, fCandDoca;
-  bool   fTIS, fCowboy;
+  bool   fTIS, fCowboy, fFakeSsVeto;
   int    fFakeNtrk, fFakeId[NTRKMAX], fFakeQ[NTRKMAX], fFakeGm[NTRKMAX];
-  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDtrig[NTRKMAX], fFakeDmuon[NTRKMAX];
+  float  fFakePt[NTRKMAX], fFakeEta[NTRKMAX], fFakePhi[NTRKMAX], fFakeBdt[NTRKMAX], fFakeDtrig[NTRKMAX], fFakeDmuon[NTRKMAX], fFakeDNmuon[NTRKMAX];
   bool   fFakeHP[NTRKMAX];
   float  fFakeTip[NTRKMAX], fFakeLip[NTRKMAX], fFakeQprod[NTRKMAX], fFakeInnerChi2[NTRKMAX]
     , fFakeOuterChi2[NTRKMAX]
@@ -176,7 +176,7 @@ private:
     ;
 
 
-  bool fGoodCand, fGlobalMuon, fGoodPt, fGoodDtrig, fGoodDmuon, fGoodCowboy;
+  bool fGoodCand, fGlobalMuon, fGoodPt, fGoodDtrig, fGoodDmuon, fGoodDNmuon, fGoodCowboy;
   bool fGood, fGoodFake;
   bool fGoodTIS, fGoodTISFake;
   bool fGoodTISDT, fGoodTISDTDM, fGoodTISDTFake, fGoodTISDTDMFake;
