@@ -634,7 +634,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  if (fMassPeak < 0.) {
+  if (fMassPeak < l0) {
     fMassPeak = 0.5*(s0+s1);
   }
   if (fMassSigma < 0.) {
@@ -645,7 +645,12 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   fpIF->fLo = fMassLo;
   fpIF->fHi = fMassHi;
 
-  cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << ", fMassSigma = " << fMassSigma << endl;
+  if (fVerbose > 0) {
+    cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << endl;
+    cout << "l0: " << l0 << " l1: " << l1 << endl;
+    cout << "s0: " << s0 << " s1: " << s1 << endl;
+    cout << "u0: " << u0 << " u1: " << u1 << endl;
+  }
 
   fitPsYield a(0, fVerbose);
   string sname = fDirectory + string("/adfpy/adfpy") + fControlPlotsFileName;
@@ -671,20 +676,40 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 
   TH1D *h0 = (TH1D*)hSi->Clone(Form("sb0_%s%s", variable, cut));
   h0->Sumw2();
+  TString fname = fControlPlotsFileName;
   // -- subtract combinatorial background from signal region
+  cout << "signal region before comb subtraction: " << hSi->GetSumOfWeights() << endl;
   h0->Add(hSi, hHi, 1., -expoSg/expoBgh);
+  cout << "BGH integral: " << expoBgh/hMassBGH->GetBinWidth(1)
+       << " BGH(" << u0 << ", " << u1 << "): " << hm->Integral(hm->FindBin(u0+1.e-6), hm->FindBin(u1-1.e-6))
+       << " [bins " << hm->FindBin(u0+1.e-6) << " .. " << hm->FindBin(u1-1.e-6) << "]"
+       << " BGH sum of weights: " << hHi->GetSumOfWeights() << " entries = " << hHi->GetEntries()
+       << endl;
+  cout << "expoSg/expoBgh = " << expoSg/expoBgh << endl;
+  cout << "signal region after comb subtraction: " << h0->GetSumOfWeights() << endl;
+  c0->cd();
+  h0->Draw();
+  c0->SaveAs(Form("%s/h0%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
+
   // -- subtract combinatorial background from low sideband
   TH1D *h1 = (TH1D*)hLo->Clone(Form("sb1_%s%s", variable, cut));
   h1->Sumw2();
   h1->Add(hLo, hHi, 1., -expoBgl/expoBgh);
+  cout << "low sideband after comb subtraction: " << h1->GetSumOfWeights() << endl;
+  c0->cd();
+  h1->Draw();
+  c0->SaveAs(Form("%s/h1%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
   // -- subtract remaining partially reco'ed bg from signal region
   TH1D *h2 = (TH1D*)h0->Clone(Form("sbs_%s%s", variable, cut));
   h2->Sumw2();
   h2->Add(h0, h1, 1., -err2Sg/err2Bgl);
+  cout << "signal region after err2 subtraction: " << h2->GetSumOfWeights() << endl;
+  c0->cd();
+  h2->Draw();
+  c0->SaveAs(Form("%s/h2%s_%s-%s.pdf", fDirectory.c_str(), fname.Data(), variable, cut));
 
   if (1) {
     {
-      TString fname = fControlPlotsFileName;
       c0->Clear();
       c0->cd(1);
 
@@ -863,7 +888,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  if (fMassPeak  < 0.) {
+  if (fMassPeak  < l0) {
     fMassPeak = 0.5*(s0+s1);
   }
   if (fMassSigma < 0.) {
@@ -1055,11 +1080,30 @@ TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, cons
   TH1D *hSi = (TH1D*)gDirectory->Get(Form("%s%s0", variable, cut));
   TH1D *hLo = (TH1D*)gDirectory->Get(Form("%s%s3", variable, cut));
   TH1D *hHi = (TH1D*)gDirectory->Get(Form("%s%s4", variable, cut));
-  if (0 == hm) {
+  if (0 == hm || 0 == hLo || 0 == hHi) {
     cout << "no histogram " << Form("%sMass%s", variable, cut) << " found in gDirectory = "; gDirectory->pwd();
+    cout << "missing histograms: " << Form("%sMass%s", variable, cut) << ": " << hm
+	 << ", " <<  Form("%s%s3", variable, cut) << hLo
+	 << ", " <<  Form("%s%s4", variable, cut) << hHi
+	 << endl;
+      return 0;
+  }
+  TH1D *hCo = (TH1D*)hLo->Clone("combBg"); hCo->Reset();
+  if (1) {
+    // -- combination (linear average) of low and high sideband
+    hCo->Add(hHi, hLo, 1./hHi->GetSumOfWeights(), 1./hLo->GetSumOfWeights());
+    hCo->Scale(0.5*(hHi->GetSumOfWeights() + hLo->GetSumOfWeights()));
+  }
+  if (0) {
+    // --low sideband ONLY, scaled to number of entries in both
+    hCo->Reset();
+    hCo->Add(hLo, 1./hLo->GetSumOfWeights());
+    hCo->Scale(hHi->GetSumOfWeights() + hLo->GetSumOfWeights());
+  }
+  if (hCo->GetSumOfWeights() < 1. || hSi->GetSumOfWeights() < 1.) {
+    cout << "no entries in " << hCo->GetName() << " or " << hSi->GetName() << endl;
     return 0;
   }
-
   double l0   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
   double l1   = hMassBGL->GetBinLowEdge(hMassBGL->FindLastBinAbove(1.)+1);
   double s0   = hMassSG->GetBinLowEdge(hMassSG->FindFirstBinAbove(1.));
@@ -1067,8 +1111,15 @@ TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, cons
   double u0   = hMassBGH->GetBinLowEdge(hMassBGH->FindFirstBinAbove(1.));
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
+  if (fVerbose > 0) {
+    cout << "fMass: " << fMassLo << " .. " << fMassHi << ", fMassPeak = " << fMassPeak << endl;
+    cout << "l0: " << l0 << " l1: " << l1 << endl;
+    cout << "s0: " << s0 << " s1: " << s1 << endl;
+    cout << "u0: " << u0 << " u1: " << u1 << endl;
+  }
+
   // -- fit mass distribution
-  if (fMassPeak  < 0.) {
+  if (fMassPeak  < l0) {
     fMassPeak = 0.5*(s0+s1);
   }
   if (fMassSigma < 0.) {
@@ -1089,17 +1140,21 @@ TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, cons
   double expoBgl = fexpo->Integral(l0, l1);
   double expoSg  = fexpo->Integral(s0, s1);
   double expoBgh = fexpo->Integral(u0, u1);
+  double expoBg  = expoBgl + expoBgh;
 
   if (fVerbose > 0) {
     cout << "expoBgl (" << l0 << " .. " << l1 << ") = " << expoBgl << endl;
     cout << "expoSg  (" << s0 << " .. " << s1 << ") = " << expoSg << endl;
     cout << "expoBgh (" << u0 << " .. " << u1 << ") = " << expoBgh << endl;
+    cout << "expoBg  (" << u0 << " .. " << u1 << ") = " << expoBg << endl;
   }
 
   TH1D *h2 = (TH1D*)hSi->Clone(Form("sbs_%s%s", variable, cut));
-  h2->Sumw2();
-  // -- subtract combinatorial background from signal region
-  h2->Add(hSi, hHi, 1., -expoSg/expoBgh);
+  // -- just the high sideband:
+  // h2->Sumw2();
+  // h2->Add(hSi, hHi, 1., -expoSg/expoBgh);
+  // -- include the low sideband as well:
+  h2->Add(hSi, hCo, 1., -expoSg/expoBg);
 
   if (1) {
     {
@@ -1199,31 +1254,36 @@ TH1D* AnalysisDistribution::sbsDistributionBs2JpsiPhi(const char *variable, cons
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
-    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
-    hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
+    //    hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
+    hCo->Scale(expoSg/expoBg); hCo->SetLineColor(kMagenta); hCo->DrawCopy("samehist");
     TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->AddEntry(h2, "Signal", "p");
     l->AddEntry(hSi, "signal box", "l");
-    l->AddEntry(hHi, "combinat. shape", "l");
+    //    l->AddEntry(hHi, "combinat. shape", "l");
+    l->AddEntry(hCo, "combinat. shape", "l");
     l->Draw();
 
     c0->cd(2);  shrinkPad(0.12, 0.12);
     hLo->SetLineColor(kRed);   hLo->Scale(1./hLo->GetSumOfWeights());
     hHi->SetLineColor(kBlue);  hHi->Scale(1./hHi->GetSumOfWeights());
+    hCo->SetLineColor(kMagenta); hCo->Scale(1./hCo->GetSumOfWeights());
     hSi->SetLineColor(kBlack); hSi->Scale(1./hSi->GetSumOfWeights());
     double ymax(hLo->GetMaximum());
     if (hHi->GetMaximum() > ymax) ymax = hHi->GetMaximum();
     if (hSi->GetMaximum() > ymax) ymax = hSi->GetMaximum();
+    if (hCo->GetMaximum() > ymax) ymax = hCo->GetMaximum();
     hLo->SetMaximum(1.2*ymax);
     hLo->Draw("hist");
     hHi->Draw("histsame");
     hSi->Draw("histsame");
+    hCo->Draw("histsame");
 
     l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->SetHeader("normalized to unity");
     l->AddEntry(hSi, "signal box", "l");
     l->AddEntry(hHi, "bg box (high)", "l");
     l->AddEntry(hLo, "bg box (low)", "l");
+    l->AddEntry(hCo, "bg (combined)", "l");
     l->Draw();
 
     fname = fControlPlotsFileName;
@@ -1270,7 +1330,7 @@ TH1D* AnalysisDistribution::sbsDistributionBd2JpsiKstar(const char *variable, co
   double u1   = hMassBGH->GetBinLowEdge(hMassBGH->FindLastBinAbove(1.)+1);
 
   // -- fit mass distribution
-  if (fMassPeak  < 0.) {
+  if (fMassPeak  < l0) {
     fMassPeak = 0.5*(s0+s1);
   }
   if (fMassSigma < 0.) {
