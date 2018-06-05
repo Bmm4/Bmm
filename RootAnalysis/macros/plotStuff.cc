@@ -2993,7 +2993,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   string effName  = Form("tau_%s_eff", fSample.c_str());
   TH1D *h1 = new TH1D(normName.c_str(), normName.c_str(), 48, 0., 12.e-12);
   h1->Sumw2();
-  setTitles(h1, "#tau #it{[ps]}", "");
+  setTitles(h1, "#tau [ps]", "");
   setFilledHist(h1, kBlue, kYellow, 1000, 2);
   TH1D *h2 = new TH1D(passName.c_str(), passName.c_str(), 48, 0., 12.e-12);
   h2->Sumw2();
@@ -3014,7 +3014,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
   c0->SetCanvasSize(700, 700);
   c0->cd();
-  shrinkPad(0.15, 0.18);
+  shrinkPad(0.15, 0.18, 0.15);
   gPad->SetTicks(1,0);
 
   h1->Draw("hist");
@@ -3025,7 +3025,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   tl->DrawLatexNDC(0.5, 0.84, Form("cuts: %s", cut.c_str()));
   tl->DrawLatexNDC(0.5, 0.80, Form("base: %s", otherSelection.c_str()));
   tl->SetTextSize(0.05);
-  tl->DrawLatexNDC(0.2, 0.92, varname.c_str());
+  tl->DrawLatexNDC(0.3, 0.92, varname.c_str());
 
   double xmin(0.e-12);
   if (h3->GetBinContent(2) < 0.4) xmin = 4.e-12;
@@ -3052,7 +3052,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
 
   c0->cd();
-  savePad(Form("tauEff%d%s_%s_%s.pdf", fYear, fSetup.c_str(), varname.c_str(), fSample.c_str()));
+  savePad(Form("tauEff%s_%s_%s.pdf", fSetup.c_str(), varname.c_str(), fSample.c_str()));
 
   delete h1;
   delete h2;
