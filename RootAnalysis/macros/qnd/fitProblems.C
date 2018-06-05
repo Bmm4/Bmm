@@ -1,6 +1,16 @@
 // ----------------------------------------------------------------------
 void fitProblems(int bdtCut = 20) {
 
+  TFile *f = TFile::Open(Form("s01/plotResults.2016BFs01.root"));
+  f->cd("bspsiphiData");
+  string hname(Form("hNorm_cnc2016BFs01_bspsiphiData_chan0"));
+  fitPsYield *a = new fitPsYield(hname, 0);
+  a->fitBs2JpsiPhi(-1, "bla");
+}
+
+// ----------------------------------------------------------------------
+void fitProblems6(int bdtCut = 20) {
+
   vector<string> years;
   years.push_back("2011");
   years.push_back("2012");
