@@ -51,9 +51,13 @@ public :
   void calculateBs2Bu(int chan);
   void calculatePerformance(int chan);
   void scanBDT(std::string fname, bool createTexFile = true);
+  void scanBDTEffRatio(std::string fname, std::string string1, std::string string2);
+  void sysAna(std::string sample1, std::string sample2, int ichan = 0);
   void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
   void showScanBDT(string what = "all");
   double findVarValue(std::string varName, std::vector<std::string> &lines);
+  double findVarEtot(std::string varName, std::vector<std::string> &lines);
+  double findVarEstat(std::string varName, std::vector<std::string> &lines);
 
   enum INTMODE {LO=0, BD, BS, HI, ALL};
   double massIntegral(TH1* h, INTMODE i, int chan);
@@ -105,6 +109,8 @@ private:
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
   std::map<std::string, std::vector<TH2D*> > fhW8Norm, fhW8NormC;
+  std::map<std::string, std::vector<TH2D*> > fhMassBeforeAnaCuts;
+  std::map<std::string, std::vector<TH2D*> > fhMassBeforeAnaCutsC;
 
   std::vector<TH1D*> fhBdt;
 
