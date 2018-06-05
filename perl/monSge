@@ -156,6 +156,9 @@ sub parseOutput {
     $foundException = `/bin/grep -i cms::exception  $llogfile`;
     if ($foundException) { return "cms::exception found"; }
 
+    $foundException = `/bin/grep -i 'Begin Fatal Exception'  $llogfile`;
+    if ($foundException) { return "Begin Fatal Exception found"; }
+
     $foundException = `/bin/grep -i 'Abort (core dumped)'  $llogfile`;
     if ($foundException) { return "abort/core dump detected"; }
 
@@ -170,6 +173,9 @@ sub parseOutput {
 
     $foundJavaProblem   = `/bin/grep -i "java.lang.Error" $llogfile`;
     if ($foundJavaProblem) {return "java.lang.Error detected"; }
+
+    $foundROOTProblem   = `/bin/grep -i "TNetXNGFile::Open" $llogfile`;
+    if ($foundROOTProblem) {return "TNetXNGFile::Open failure"; }
 
     # --
     $foundMyEnd     = `/bin/grep -i "run: This is the end, my friend"  $llogfile`;
