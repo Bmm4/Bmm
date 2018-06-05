@@ -485,8 +485,8 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  // -- original NOPRESELECTION,  this likely leads to very big reduced trees (too big for Chandi)
 	  fPreselection = true;
 	} else if (2 == NOPRESELECTION) {
-	  // -- ntrigger || hlt1, but no analysis preselection (adding fBDT cut || fGoodCNC to reduce combinatorics)
-	  fPreselection = (fGoodCNC || fBDT > 0.) && ((fGoodHLT1 && fTOS && fL1T) || fNtrgSet);
+	  // -- ntrigger || hlt1 || TIS, but no analysis preselection (adding fBDT cut || fGoodCNC to reduce combinatorics)
+	  fPreselection = (fGoodCNC || fBDT > 0.) && ((fGoodHLT1 && fTOS && fL1T) || fNtrgSet || fTIS);
 	} else {
 	  //  what here?
 	}
@@ -1111,8 +1111,8 @@ void candAna::candAnalysis() {
   // // DBX FIXME
 
   fTOS = tos(fpCand);
-  // fTIS = tis(fpCand);
-  fTIS = swtis(fpCand,fvetoSameSignTrigger);
+  fTIS = tis(fpCand);
+  //  fTIS = swtis(fpCand,fvetoSameSignTrigger);
   fL1T = false;
   if (fChan > -1) {
     // -- NOTE: L1seeds may be prescaled, but still appear here (they are not zeroed if prescaled)
@@ -1195,6 +1195,7 @@ void candAna::candAnalysis() {
   fGoodQ          = (fMu1Q*fMu2Q < 0);
   fGoodPvAveW8    = (fPvAveW8 > PVAVEW8);
 
+  // -- this must be synchronized to plotReducedOverlays if using a loose (pre)selection there!
   fPreselAlpha    = (fCandA < 0.2);
   fPreselFLS      = ((fCandFLS3d > 4.) && (fCandFLSxy > 4.));
   fPreselOther    = ((TMath::Abs(fCandPvIpS) < 4) && (TMath::Abs(fCandPvIp) < 0.02));
@@ -4616,13 +4617,13 @@ bool candAna::swtis(TAnaCand *pC, bool& VETO_SameSign) {
 
   //check if at least one global muon is present
   bool GMpresent = false;
-  for (unsigned int i = 0; i < sigIdx.size(); ++i) 
+  for (unsigned int i = 0; i < sigIdx.size(); ++i)
     {
       TAnaMuon *swMu;
       int index = fpEvt->getSimpleTrackMuonIdx(sigIdx[i]);
       if (index>0) {swMu = fpEvt->getMuon(index);}
       else {continue;}
-      if ((swMu->fMuID & 2) == 2) 
+      if ((swMu->fMuID & 2) == 2)
 	{
 	  buffer << "track: " << sigIdx[i] << " is a global muon" << std::endl;
 	  GMpresent=true;
@@ -4631,7 +4632,7 @@ bool candAna::swtis(TAnaCand *pC, bool& VETO_SameSign) {
     }
 
   buffer << "considering the following candidate: " << pC->fType << std::endl;
-  buffer << "pt: " << fCandPt << " pvip: " << fCandPvIp << " pvips: " << fCandPvIpS << " mass: " << fCandM 
+  buffer << "pt: " << fCandPt << " pvip: " << fCandPvIp << " pvips: " << fCandPvIpS << " mass: " << fCandM
 	 << " fls3d: " << fCandFLS3d << " flxy: " << fCandFLxy
 	 << " flsxy : " << fCandFLSxy << " maxdoca: " << fCandDoca << std::endl;
   for (int i=pC->fSig2;i>=pC->fSig1;i--)
@@ -4698,7 +4699,7 @@ bool candAna::swtis(TAnaCand *pC, bool& VETO_SameSign) {
     set<int>::iterator is;
     buffer << it->first << " size = " << it->second.size() << ": " << std::endl;
     bool overlap(false);
-    
+
     //this loops over the tracks matched to trigger objects and for each such track loops over the signal tracks
     // e.g. 2 signal tracks: each trigger track shows up twice. If it matches a sigTrack it will be printed in brackets
 
@@ -5058,7 +5059,7 @@ double candAna::distToNextNonCandGM(TSimpleTrack *ps) {
   bool verbose(0);
   std::string prompt = "distToNextNonCandGM2> ";
 
-  if (verbose) 
+  if (verbose)
     {std::cout << prompt << "simple track index = " << ps->getIndex() << " with pt/eta/phi = "
 	      << ps->getP().Perp() << "/" << ps->getP().Eta() << "/" << ps->getP().Phi()
 	       << std::endl;}
@@ -5070,10 +5071,10 @@ double candAna::distToNextNonCandGM(TSimpleTrack *ps) {
   sig2idx = fpCand->fSig2;
   t1 = fpEvt->getSigTrack(sig1idx);
   t2 = fpEvt->getSigTrack(sig2idx);
-  // if (verbose) 
+  // if (verbose)
   //   {std::cout << prompt << "mother tracks: " << t1->fIndex << " / " << t2->fIndex << std::endl;}
 
-  if (verbose) 
+  if (verbose)
     {
       std::cout << "tracks of mother (type " << fpCand->fType << "): " << std::endl;
       for (int j=fpCand->fSig1;j<=fpCand->fSig2;j++)
