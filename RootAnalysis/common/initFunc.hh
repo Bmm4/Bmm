@@ -71,6 +71,9 @@ public:
   TF1* pisat(double norm);
   static double iF_int_pisat(double norm);
 
+  TF1* kstarsat(double norm);
+  static double iF_int_kstarsat(double norm);
+
   TF1* pol1Err(double lo, double hi);
   TF1* expoErr(double lo, double hi);
   TF1* expoErr2(double lo, double hi);
@@ -124,10 +127,12 @@ public:
   TF1* phiKK(TH1 *h);
   TF1* bupsik(TH1 *h);
   TF1* bupsik1(TH1 *h);
+  TF1* bspsiphi(TH1 *h, double sigma = 0.01);
 
   void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);
   void initExpo(double &p0, double &p1, TH1 *h);
+  void initExpoHS(double &p0, double &p1, double &p2, TH1 *h);
 
   double fLo, fHi;
   double fBgFractionLo, fBgFractionHi;

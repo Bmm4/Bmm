@@ -38,6 +38,15 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  double iF_expo_HS(double *x, double *par) {
+    if (x[0] > par[2]) {
+      return par[0]*TMath::Exp((x[0]-par[2])*par[1]);
+    } else {
+      return 0.;
+    }
+  }
+
+  // ----------------------------------------------------------------------
   double iF_err(double *x, double *par) {
     // from DK: a4*(TMath::Erf((a1-x)/a2))+a3)
     return par[3]*(TMath::Erf((par[0]-x[0])/par[1])+par[2]);
@@ -429,63 +438,6 @@ namespace {
 
 
   // ----------------------------------------------------------------------
-  // satellite peak from B+ -> J/psi pi+
-  double iF_pisat(double *x, double *par) {
-    double g3par[] = {par[0], 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
-		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
-    return iF_gauss3(x, g3par);
-  }
-
-  // ----------------------------------------------------------------------
-  // double gaussian with same mean
-  double iF_gauss2c_sat(double *x, double *par) {
-    // constrained to have the same mean in the second gaussian
-    // par[0] -> const
-    // par[1] -> mean
-    // par[2] -> sigma
-    // par[3] -> fraction in second gaussian
-    // par[4] -> sigma of second gaussian
-    double fracSat(0.04);
-
-    Double_t arg1(0.), arg2(0.), fitval1(0.), fitval2(0.);
-    if (par[2] > 0) {
-      arg1 = (x[0] - par[1]) / par[2];
-      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
-    }
-    if (par[4] > 0.) {
-      arg2 = (x[0] - par[1]) / par[4];
-      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
-    }
-    Double_t fitval = fitval1 + fitval2;
-
-    // -- double Gaussian integral:
-    double sqrt2pi = 2.506628275;
-    double gintegral = sqrt2pi*par[0]*(par[2] + par[3]*par[4]);
-
-    // -- B+ -> J/psi pi normalization:
-    double satintegral = initFunc::iF_int_pisat(1.);
-    double norm        = fracSat*gintegral/satintegral;
-
-    double g3par[] = {norm, 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
-		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
-    double peakingBg = iF_gauss3(x, g3par);
-    double sintegral = initFunc::iF_int_pisat(norm);
-
-    if (0) cout << " satintegral = " << satintegral
-		<< " gintegral = " << gintegral
-		<< " norm = " << norm
-		<< " sintegral = " << sintegral
-		<< " frac = " << sintegral/gintegral
-		<< endl;
-
-    return  (fitval + peakingBg);
-  }
-
-
-
-
-
-  // ----------------------------------------------------------------------
   // bigauss and crystal ball and satellite peak
   double iF_bigauss_cb_sat(double *x, double *par) {
     // par[0]:  norm  Gauss, ratio to xball normalization
@@ -563,8 +515,8 @@ namespace {
     //   par[0] = normalization of gaussian
     //   par[1] = mean of gaussian
     //   par[2] = sigma of gaussian
-    //   par[3] = par 0 of expo
-    //   par[4] = par 1 of expo
+    //   par[3] = base of expo
+    //   par[4] = exponent of expo
     return  (iF_expo(x, &par[3]) + iF_Gauss(x, &par[0]));
   }
 
@@ -574,7 +526,7 @@ namespace {
     //   par[0] = normalization of gaussian
     //   par[1] = mean of gaussian
     //   par[2] = sigma of gaussian
-    //   par[3] = norm
+    //   par[3] = base
     //   par[4] = exp
     //   par[5] = par[0] of err
     //   par[6] = par[1] of err
@@ -589,7 +541,7 @@ namespace {
     //   par[0] = normalization of gaussian
     //   par[1] = mean of gaussian
     //   par[2] = sigma of gaussian
-    //   par[3] = norm
+    //   par[3] = base
     //   par[4] = exp
     //   par[5] = par[0] of err2
     //   par[6] = par[1] of err2
@@ -605,7 +557,7 @@ namespace {
     // par[2] -> sigma
     // par[3] -> fraction in second gaussian
     // par[4] -> sigma of second gaussian
-    //   par[5]  = norm
+    //   par[5]  = base
     //   par[6]  = exp
     //   par[7]  = par[0] of err
     //   par[8]  = par[1] of err
@@ -623,7 +575,7 @@ namespace {
     // par[3] -> fraction in second gaussian
     // par[4] -> mean of second gaussian
     // par[5] -> sigma of second gaussian
-    //   par[6]  = norm
+    //   par[6]  = base
     //   par[7]  = exp
     //   par[8]  = par[0] of err
     //   par[9]  = par[1] of err
@@ -643,7 +595,7 @@ namespace {
     // par[3] -> fraction in second gaussian
     // par[4] -> mean of second gaussian
     // par[5] -> sigma of second gaussian
-    //   par[6]  = norm
+    //   par[6]  = base
     //   par[7]  = exp
     //   par[8]  = par[0] of err
     //   par[9]  = par[1] of err
@@ -663,7 +615,7 @@ namespace {
     // par[3] -> fraction in second gaussian
     // par[4] -> mean of second gaussian
     // par[5] -> sigma of second gaussian
-    //   par[6]  = norm
+    //   par[6]  = base
     //   par[7]  = exp
     //   par[8]  = par[0] of err
     //   par[9]  = par[1] of err
@@ -689,7 +641,7 @@ namespace {
     // par[0] -> const
     // par[1] -> mean
     // par[2] -> sigma
-    //   par[3]  = norm
+    //   par[3]  = base
     //   par[4]  = exp
     //   par[5]  = par[0] of err
     //   par[6]  = par[1] of err
@@ -712,7 +664,7 @@ namespace {
   // ----------------------------------------------------------------------
   // expo and err
   double iF_expo_err(double *x, double *par) {
-    //   par[0] = norm
+    //   par[0] = base
     //   par[1] = exp
     //   par[2] = par[0] of err
     //   par[3] = par[1] of err
@@ -724,7 +676,7 @@ namespace {
   // ----------------------------------------------------------------------
   // expo and err2
   double iF_expo_err2(double *x, double *par) {
-    //   par[0] = norm
+    //   par[0] = base
     //   par[1] = exp
     //   par[2] = par[0] of err2
     //   par[3] = par[1] of err2
@@ -851,8 +803,8 @@ namespace {
     // par[3] -> fraction in second gaussian
     // par[4] -> mean of second gaussian
     // par[5] -> sigma of second gaussian
-    // par[6] = par 0 of expo
-    // par[7] = par 1 of expo
+    // par[6] = base
+    // par[7] = exp
     return  (iF_expo(x, &par[6]) + iF_gauss2(x, &par[0]));
   }
 
@@ -864,8 +816,8 @@ namespace {
     //   par[2] = sigma of gaussian
     //   par[3] = fraction in second gaussian
     //   par[4] = sigma of gaussian
-    //   par[5] = par 0 of expo
-    //   par[6] = par 1 of expo
+    //   par[5] = base
+    //   par[6] = exp
     return  (iF_expo(x, &par[5]) + iF_gauss2c(x, &par[0]));
   }
 
@@ -881,6 +833,103 @@ namespace {
     return  (iF_pol1(x, &par[3]) + iF_landau(x, &par[0]));
   }
 
+
+  // ----------------------------------------------------------------------
+  // satellite peak from B+ -> J/psi pi+
+  double iF_pisat(double *x, double *par) {
+    double g3par[] = {par[0], 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
+		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
+    return iF_gauss3(x, g3par);
+  }
+
+  // ----------------------------------------------------------------------
+  // satellite peak from B0 -> J/psi Kstar0 (for Bs -> J/psi phi)
+  double iF_kstarsat(double *x, double *par) {
+    // double g2pol1par[] = {par[0], 5.381, 0.04847, 0.4206, 5.415,
+    // 			  0.1104, 19.81, -3.269};
+    double g2pol1par[] = {par[0], 5.381, 0.04847, 0.4206, 5.415,
+			  0.1104, 0., 0.};
+    return iF_pol1_gauss2(x, g2pol1par);
+  }
+
+  // ----------------------------------------------------------------------
+  // double gaussian with same mean
+  double iF_gauss2c_sat(double *x, double *par) {
+    // constrained to have the same mean in the second gaussian
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> sigma of second gaussian
+    double fracSat(0.04);
+
+    Double_t arg1(0.), arg2(0.), fitval1(0.), fitval2(0.);
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[4] > 0.) {
+      arg2 = (x[0] - par[1]) / par[4];
+      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+    Double_t fitval = fitval1 + fitval2;
+
+    // -- double Gaussian integral:
+    double sqrt2pi = 2.506628275;
+    double gintegral = sqrt2pi*par[0]*(par[2] + par[3]*par[4]);
+
+    // -- B+ -> J/psi pi normalization:
+    double satintegral = initFunc::iF_int_pisat(1.);
+    double norm        = fracSat*gintegral/satintegral;
+
+    double g3par[] = {norm, 5.36416e+00, 4.83167e-02, 3.39117e-01, 5.46405e+00,
+		      9.83832e-02, 9.36584e-02, 5.52549e+00, 2.69386e-01};
+    double peakingBg = iF_gauss3(x, g3par);
+    double sintegral = initFunc::iF_int_pisat(norm);
+
+    if (0) cout << " satintegral = " << satintegral
+		<< " gintegral = " << gintegral
+		<< " norm = " << norm
+		<< " sintegral = " << sintegral
+		<< " frac = " << sintegral/gintegral
+		<< endl;
+
+    return  (fitval + peakingBg);
+  }
+
+
+  // ----------------------------------------------------------------------
+  // double gaussian with same mean plus kstar satellite peak
+  double iF_gauss2c_kstarsat(double *x, double *par) {
+    // constrained to have the same mean in the second gaussian
+    // par[0] -> const
+    // par[1] -> mean
+    // par[2] -> sigma
+    // par[3] -> fraction in second gaussian
+    // par[4] -> sigma of second gaussian
+    // par[5] -> normalization of K*0 satellite peak
+
+    Double_t arg1(0.), arg2(0.), fitval1(0.), fitval2(0.);
+    if (par[2] > 0) {
+      arg1 = (x[0] - par[1]) / par[2];
+      fitval1 =  par[0]*TMath::Exp(-0.5*arg1*arg1);
+    }
+    if (par[4] > 0.) {
+      arg2 = (x[0] - par[1]) / par[4];
+      fitval2 =  par[3]*par[0]*TMath::Exp(-0.5*arg2*arg2);
+    }
+    Double_t fitval = fitval1 + fitval2;
+
+    double peakingBg = 0.;
+    double parArr[] = {par[5]};
+    if (4.5 < x[0] && x[0] < 6.) {
+      peakingBg = iF_kstarsat(x, parArr);
+    }
+
+    return  (fitval + peakingBg);
+  }
+
+
   // ----------------------------------------------------------------------
   // B+ -> J/psi K+ pdf
   double iF_bupsik(double *x, double *par) {
@@ -891,6 +940,13 @@ namespace {
   // B+ -> J/psi K+ pdf (too complicated)
   double iF_bupsik1(double *x, double *par) {
     return (iF_bigauss_cb_sat(x, &par[0]) + iF_expo(x, &par[10]) + iF_err2(x, &par[12]));
+  }
+
+
+  // ----------------------------------------------------------------------
+  // Bs-> J/psi phi pdf
+  double iF_bspsiphi(double *x, double *par) {
+    return (iF_gauss2c_kstarsat(x, &par[0]) + iF_expo_HS(x, &par[6]));
   }
 
 
@@ -1047,7 +1103,7 @@ TF1* initFunc::pol1Err(double lo, double hi) {
 // ----------------------------------------------------------------------
 TF1* initFunc::expo(double lo, double hi) {
   TF1 *f = new TF1(Form("%s_expo", fName.c_str()), iF_expo, lo, hi, 2);
-  f->SetParNames("norm", "expo");
+  f->SetParNames("base", "expo");
   return f;
 }
 
@@ -1251,6 +1307,16 @@ TF1* initFunc::pisat(double norm) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::kstarsat(double norm) {
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_kstarsat", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_kstarsat", fName.c_str()), iF_kstarsat, 0., 100., 1);
+  f->SetParNames("satnorm");
+  f->SetParameter(0, norm);
+  return f;
+}
+
+// ----------------------------------------------------------------------
 TF1* initFunc::pol1(TH1 *h) {
   if (0 == h) {
     cout << "empty histogram pointer" << endl;
@@ -1291,7 +1357,7 @@ TF1* initFunc::expo(TH1 *h) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo", fName.c_str()), iF_expo, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 2);
-  f->SetParNames("norm", "exp");
+  f->SetParNames("base", "exp");
   //  cout << "Created f1 from " << h->GetBinLowEdge(1) << " to " << h->GetBinLowEdge(h->GetNbinsX()+1) << endl;
 
   double p1(0.), p0(0.);
@@ -1754,7 +1820,7 @@ TF1* initFunc::expoGauss(TH1 *h, double peak, double sigma) {
   TF1 *f = (TF1*)gROOT->FindObject(Form("%s_expo_Gauss", fName.c_str()));
   if (f) delete f;
   f = new TF1(Form("%s_expo_Gauss", fName.c_str()), iF_expo_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
-  f->SetParNames("area", "peak", "sigma", "const", "exp");
+  f->SetParNames("area", "peak", "sigma", "base", "exp");
   //  f->SetLineColor(kBlue);
   f->SetLineWidth(2);
 
@@ -1789,7 +1855,7 @@ TF1* initFunc::expoErrGauss(TH1 *h, double peak, double sigma, double preco) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_Gauss", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_Gauss", fName.c_str()), iF_expo_err_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 9);
-  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("area", "peak", "sigma", "base", "exp", "err0", "err1", "err2");
   //  f->SetLineColor(kBlue);
   f->SetLineWidth(2);
 
@@ -1868,7 +1934,7 @@ TF1* initFunc::expoErr2Gauss(double lo, double hi) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err2_Gauss", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err2_Gauss", fName.c_str()), iF_expo_err2_Gauss, lo, hi, 8);
-  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("area", "peak", "sigma", "base", "exp", "err0", "err1", "err2");
   //  f->SetLineColor(kBlue);
   f->SetLineWidth(2);
   return f;
@@ -1880,7 +1946,7 @@ TF1* initFunc::expoErr2Gauss(TH1 *h, double peak, double sigma, double preco) {
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err2_Gauss", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err2_Gauss", fName.c_str()), iF_expo_err2_Gauss, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 8);
-  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("area", "peak", "sigma", "base", "exp", "err0", "err1", "err2");
   //  f->SetLineColor(kBlue);
   f->SetLineWidth(2);
 
@@ -1929,7 +1995,7 @@ TF1* initFunc::expoErrGaussLandau(TH1 *h, double peak, double sigma, double prec
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_Gauss_landau", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_Gauss_landau", fName.c_str()), iF_expo_err_Gauss_landau, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 12);
-  f->SetParNames("area", "peak", "sigma", "const", "exp", "err0", "err1", "err2", "err3");
+  f->SetParNames("area", "peak", "sigma", "base", "exp", "err0", "err1", "err2", "err3");
   f->SetParName(9, "mpvl");
   f->SetParName(10, "sigl");
   //f->SetParName(11, "consl");
@@ -1989,7 +2055,7 @@ TF1* initFunc::expoErrgauss2c(TH1 *h, double peak, double sigma1, double sigma2,
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_gauss2c", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_gauss2c", fName.c_str()), iF_expo_err_gauss2c, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 11);
-  f->SetParNames("const", "peak", "sigma", "f2ndG", "s2ndG", "const", "exp", "err0", "err1", "err2", "err3");
+  f->SetParNames("const", "peak", "sigma", "f2ndG", "s2ndG", "base", "exp", "err0", "err1", "err2", "err3");
 
   f->SetLineWidth(2);
 
@@ -2106,7 +2172,7 @@ TF1* initFunc::expoErrgauss2(TH1 *h, double peak1, double sigma1, double peak2, 
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_gauss2", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_gauss2", fName.c_str()), iF_expo_err_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 12);
-  f->SetParNames("const", "peak", "sigma", "f2ndG", "p2ndG", "s2ndG", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("const", "peak", "sigma", "f2ndG", "p2ndG", "s2ndG", "base", "exp", "err0", "err1", "err2");
   f->SetParName(11, "err3");
 
   f->SetLineWidth(2);
@@ -2175,7 +2241,7 @@ TF1* initFunc::expoErrgauss2f(TH1 *h, double peak1, double sigma1, double peak2,
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_gauss2f", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_gauss2f", fName.c_str()), iF_expo_err_gauss2f, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 12);
-  f->SetParNames("const", "peak", "sigma", "fraction","p2ndG", "s2ndG", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("const", "peak", "sigma", "fraction","p2ndG", "s2ndG", "base", "exp", "err0", "err1", "err2");
   f->SetParName(11, "err3");
 
   f->SetLineWidth(2);
@@ -2245,7 +2311,7 @@ TF1* initFunc::expoErrgauss2Landau(TH1 *h, double peak1, double sigma1, double p
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_err_gauss2_landau", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_err_gauss2_landau", fName.c_str()), iF_expo_err_gauss2_landau, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 14);
-  f->SetParNames("const", "peak", "sigma", "f2ndG", "p2ndG", "s2ndG", "const", "exp", "err0", "err1", "err2");
+  f->SetParNames("const", "peak", "sigma", "f2ndG", "p2ndG", "s2ndG", "base", "exp", "err0", "err1", "err2");
   f->SetParName(11, "err3");
   f->SetParName(12, "mpvl");
   f->SetParName(13, "sigl");
@@ -2393,7 +2459,7 @@ TF1* initFunc::expogauss2(TH1 *h, double peak, double sigma, double deltaPeak, d
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_gauss2", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_gauss2", fName.c_str()), iF_expo_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 8);
-  f->SetParNames("norm", "peak", "sigma", "fraction", "peak2", "sigma2", "norm", "exp");
+  f->SetParNames("norm", "peak", "sigma", "fraction", "peak2", "sigma2", "base", "exp");
   f->SetLineWidth(2);
 
   int lbin(1), hbin(h->GetNbinsX()+1);
@@ -2432,7 +2498,7 @@ TF1* initFunc::expogauss2c(TH1 *h, double peak, double sigma, double scaleSigma)
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_expo_gauss2c", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_expo_gauss2c", fName.c_str()), iF_expo_gauss2c, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 7);
-  f->SetParNames("norm", "peak", "sigma", "fraction", "sigma2", "norm", "exp");
+  f->SetParNames("norm", "peak", "sigma", "fraction", "sigma2", "base", "exp");
   f->SetLineWidth(2);
 
   int lbin(1), hbin(h->GetNbinsX()+1);
@@ -2468,7 +2534,7 @@ TF1* initFunc::pol1gauss2(TH1 *h, double peak, double sigma, double deltaPeak, d
   TF1 *f(0);
   while ((f = (TF1*)gROOT->FindObject(Form("%s_pol1_gauss2", fName.c_str())))) if (f) delete f;
   f = new TF1(Form("%s_pol1_gauss2", fName.c_str()), iF_pol1_gauss2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 8);
-  f->SetParNames("norm", "peak", "sigma", "fraction", "peak2", "sigma2", "constant", "slope");
+  f->SetParNames("1norm", "peak", "sigma", "fraction", "peak2", "sigma2", "constant", "slope");
   f->SetLineWidth(2);
 
   int lbin(1), hbin(h->GetNbinsX()+1);
@@ -2546,9 +2612,12 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
   if (fLo < fHi) {
     lbin = h->FindBin(fLo);
     hbin = h->FindBin(fHi);
+  } else {
+    fLo = h->GetBinLowEdge(lbin);
+    fHi = h->GetBinLowEdge(hbin+1);
   }
 
-  double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
+  double dx = h->GetBinLowEdge(hbin+1) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
   double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
 
@@ -2569,13 +2638,62 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
   //   p1 = -10.;
   // }
 
+  if (p0 > 1.e9) p0 = 1.e9;
+
   if (fVerbose) {
+    cout << "initFunc::initExpo dx: " << dx << endl;
     cout << "initFunc::initExpo fLo: " << fLo << " fHi: " << fHi << endl;
     cout << "initFunc::initExpo ylo: " << ylo << " yhi: " << yhi << endl;
     cout << "initFunc::initExpo  p0:  " << p0 <<  " p1:  " << p1 << endl;
+    cout << "initFunc::initExpo integral: " <<  lbin << " .. " <<  lbin+EDG << endl;
+    cout << "initFunc::initExpo integral: " <<	hbin-EDG-1 << " .. " << hbin-1 << endl;
   }
 }
 
+
+// ----------------------------------------------------------------------
+void initFunc::initExpoHS(double &p0, double &p1, double &p2, TH1 *h) {
+
+  int EDG(4), NB(EDG+1);
+  int lbin(1), hbin(h->GetNbinsX()+1);
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  } else {
+    fLo = h->GetBinLowEdge(lbin);
+    fHi = h->GetBinLowEdge(hbin+1);
+  }
+  p2   = fLo;
+
+  double dx = h->GetBinLowEdge(hbin+1) - h->GetBinLowEdge(lbin);
+  double ylo = h->Integral(lbin, lbin+EDG)/NB;
+  double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
+
+  if (ylo > 0 && yhi > 0) {
+    p1 = (TMath::Log(yhi) - TMath::Log(ylo))/dx;
+    p0 = ylo;
+  } else {
+    if (yhi > ylo) {
+      p1 = 1.;
+    } else {
+      p1 = -1.;
+    }
+    p0 = 50.;
+  }
+
+  if (fVerbose) {
+    cout << "initFunc::initExpoHS lbin: " << lbin << " hbin: " << hbin << endl;
+    cout << "initFunc::initExpoHS dx: " << dx << endl;
+    cout << "initFunc::initExpoHS fLo: " << fLo << " fHi: " << fHi << endl;
+    cout << "initFunc::initExpoHS ylo: " << ylo << " yhi: " << yhi << endl;
+    cout << "initFunc::initExpoHS  p0:  " << p0 <<  " p1:  " << p1 <<  " p2:  " << p2 << endl;
+    cout << "initFunc::initExpoHS integral: " <<  lbin << " .. " <<  lbin+EDG << endl;
+    cout << "initFunc::initExpoHS integral: " <<	hbin-EDG-1 << " .. " << hbin-1 << endl;
+    double par[] = {p0, p1, p2};
+    double x[] = {fLo+0.001};
+    cout << "initFunc::initExpoHS expoHS(" << x[0] << ") = " << iF_expo_HS(x, par) << endl;
+  }
+}
 
 // ----------------------------------------------------------------------
 // Uses the usual Landau from ROOT
@@ -2683,7 +2801,8 @@ TF1* initFunc::bupsik(TH1 *h) {
   f->SetParameter(5, a);
   f->SetParameter(6, b);
 
-  fixPar(7, 5.142);
+  //  fixPar(7, 5.142);
+  f->SetParameter(7, 5.142); limitPar(7, 5.137, 5.147);
   f->SetParameter(8, 0.04);  limitPar(8, 0.030, 0.060);
   f->SetParameter(9, 0.4*h->Integral(1, 5)/5);
   applyLimits(f, "bupsik");
@@ -2734,6 +2853,44 @@ TF1* initFunc::bupsik1(TH1 *h) {
   applyLimits(f, "bupsik1");
   return f;
 }
+
+
+// ----------------------------------------------------------------------
+TF1* initFunc::bspsiphi(TH1 *h, double sigma) {
+  TVirtualFitter::SetMaxIterations(10000);
+  TVirtualFitter::SetPrecision(1.e-4);
+  int npar(9);
+  TF1 *f = (TF1*)gROOT->FindObject(Form("%s_bspsiphi", fName.c_str()));
+  if (f) delete f;
+  f = new TF1(Form("%s_bspsiphi", fName.c_str()), iF_bspsiphi, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), npar);
+  f->SetParNames("gnorm", "gpeak", "gsig1", "gfrac", "gsig2", "satnorm");
+
+  f->SetParName(6, "exp0");
+  f->SetParName(7, "exp1");
+  f->SetParName(8, "cutoff");
+
+  f->SetLineWidth(2);
+
+  f->SetParameter(0, h->GetMaximum());
+  f->SetParameter(1, 5.37);
+  f->SetParameter(2, sigma); limitPar(2, 0.5*sigma, 1.4*sigma);
+  f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.600);
+  f->SetParameter(4, 2.*sigma); limitPar(4, 1.5*sigma, 4.*sigma);
+  f->SetParameter(5, 0.005*f->GetParameter(0)); limitPar(5, 0.001*f->GetParameter(0), 0.02*f->GetParameter(0));
+
+  double a(-1.), b(-1.), c(-1.);
+  fLo = 5.2; fHi = 5.8;
+  initExpoHS(a, b, c, h);
+  f->SetParameter(6, a);
+  f->SetParameter(7, b);
+  // limitPar(6, 0.0, 1.e5);
+  // limitPar(7, -10., 10.);
+  fixPar(8, c);
+  applyLimits(f, "bspsiphi");
+  return f;
+}
+
+
 
 // ----------------------------------------------------------------------=
 double initFunc::iF_int_pisat(double norm) {
