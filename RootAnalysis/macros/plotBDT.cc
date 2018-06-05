@@ -72,7 +72,7 @@ void plotBDT::init() {
 // ----------------------------------------------------------------------
 void plotBDT::makeAll(string what) {
 
-  if ("all" == what) {
+  if ("all" == what || "tlf" == what) {
     setBdtStrings(0);
 
     string old("nada");
@@ -1318,27 +1318,39 @@ void plotBDT::getTLFEventNumbers() {
   int bg0(-1), bg1(-1), bg2(-1);
   string snum("");
   for (unsigned int i = 0; i < fLogFileLines.size(); ++i) {
-    if (string::npos != fLogFileLines[i].find("==============> applySg =  signalAllEvents0")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> applySg =  signalAllEvents0"))
+	|| (string::npos != fLogFileLines[i].find("==============> applySg =  signalChan0Events0"))
+	|| (string::npos != fLogFileLines[i].find("==============> applySg =  signalChan1Events0"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       sg0 = atoi(snum.c_str());
     }
-    if (string::npos != fLogFileLines[i].find("==============> trainSg =  signalAllEvents1")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> trainSg =  signalAllEvents1"))
+	|| (string::npos != fLogFileLines[i].find("==============> trainSg =  signalChan0Events1"))
+	|| (string::npos != fLogFileLines[i].find("==============> trainSg =  signalChan1Events1"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       sg1 = atoi(snum.c_str());
     }
-    if (string::npos != fLogFileLines[i].find("==============> testSg  =  signalAllEvents2")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> testSg  =  signalAllEvents2"))
+	|| (string::npos != fLogFileLines[i].find("==============> testSg  =  signalChan0Events2"))
+	|| (string::npos != fLogFileLines[i].find("==============> testSg  =  signalChan1Events2"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       sg2 = atoi(snum.c_str());
     }
-    if (string::npos != fLogFileLines[i].find("==============> applyBg =  sidebandAllEvents0")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> applyBg =  sidebandAllEvents0"))
+	|| (string::npos != fLogFileLines[i].find("==============> applyBg =  sidebandChan0Events0"))
+	|| (string::npos != fLogFileLines[i].find("==============> applyBg =  sidebandChan1Events0"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       bg0 = atoi(snum.c_str());
     }
-    if (string::npos != fLogFileLines[i].find("==============> trainBg =  sidebandAllEvents1")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> trainBg =  sidebandAllEvents1"))
+	|| (string::npos != fLogFileLines[i].find("==============> trainBg =  sidebandChan0Events1"))
+	|| (string::npos != fLogFileLines[i].find("==============> trainBg =  sidebandChan1Events1"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       bg1 = atoi(snum.c_str());
     }
-    if (string::npos != fLogFileLines[i].find("==============> testBg  =  sidebandAllEvents2")) {
+    if (   (string::npos != fLogFileLines[i].find("==============> testBg  =  sidebandAllEvents2"))
+	|| (string::npos != fLogFileLines[i].find("==============> testBg  =  sidebandChan0Events2"))
+	|| (string::npos != fLogFileLines[i].find("==============> testBg  =  sidebandChan1Events2"))) {
       snum = fLogFileLines[i].substr(9 + fLogFileLines[i].rfind("entries: "));
       bg2 = atoi(snum.c_str());
     }
