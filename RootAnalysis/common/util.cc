@@ -462,6 +462,37 @@ void average(double &av, double &error, int n, double *val, double *verr) {
 
 
 // ----------------------------------------------------------------------
+void average(double &av, double &error, vector<double> &val, vector<double> &verr) {
+
+  double e(0.), w8(0.), sumW8(0.), sumAve(0.);
+  for (unsigned int i = 0; i < val.size(); ++i) {
+    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
+
+    // -- calculate mean and error
+    e = verr[i];
+    if (e > 0.) {
+      w8 = 1./(e*e);
+      sumW8  += w8;
+      sumAve += w8*val[i];
+    } else {
+      cout << "average: Error = 0 for " << val[i] << endl;
+      continue;
+    }
+  }
+  cout << "sumW8 = " << sumW8 << endl;
+  if (sumW8 > 0.) {
+    av = sumAve/sumW8;
+    sumW8 = TMath::Sqrt(sumW8);
+    error = 1./sumW8;
+  } else {
+    av = -99.;
+    error = -99.;
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
 void replaceAll(string &str, const string &from, const string &to) {
   if (from.empty()) return;
   size_t start_pos = 0;
@@ -661,11 +692,26 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.4f \\pm %5.4f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.4f \\pm %5.4f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (5 == digits ) {
-    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.5f \\pm %5.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
-    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.5f \\pm %5.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%6.5f \\pm %6.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+6.5f \\pm %6.5f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (6 == digits ) {
-    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
-    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.6f \\pm %5.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%7.6f \\pm %7.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+7.6f \\pm %7.6f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (7 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%8.7f \\pm %8.7f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+8.7f \\pm %8.7f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (8 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%9.8f \\pm %9.8f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+9.8f \\pm %9.8f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (9 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%10.9f \\pm %10.9f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+10.9f \\pm %10.9f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (10 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%11.10f \\pm %11.10f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+11.10f \\pm %11.10f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+  } else if (11 == digits ) {
+    sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%12.11f \\pm %12.11f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
+    if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+12.11f \\pm %12.11f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (digits <0) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{%5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{%+5.1f \\times 10^{%d}} } }", name.c_str(), mantN, static_cast<int>(expoN));
@@ -910,4 +956,14 @@ TLegend* newLegend(double x1, double y1, double x2, double y2) {
   legg->SetFillColor(0);
   legg->SetTextFont(52);
   return legg;
+}
+
+// ----------------------------------------------------------------------
+void zeroNegativeEntries(TH1D *h) {
+  for (int i = 0; i <= h->GetNbinsX()+1; ++i) {
+    if ((h->GetBinContent(i) < 0.) || (TMath::IsNaN(h->GetBinContent(i)))) {
+      h->SetBinContent(i, 0.);
+      h->SetBinError(i, 0.);
+    }
+  }
 }

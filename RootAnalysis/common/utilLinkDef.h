@@ -35,9 +35,11 @@
 #pragma link C++ function showOverflow(TH1 *);
 #pragma link C++ function unmix(TH1D *, TH1D *, double);
 #pragma link C++ function average(double&, double&, int, double *, double *);
+#pragma link C++ function average(double&, double&, std::vector<double> &, std::vector<double> &);
 
 #pragma link C++ function addOverflow(TH1D *);
 #pragma link C++ function addUnderflow(TH1D *);
+#pragma link C++ function zeroNegativeEntries(TH1D *);
 
 // #pragma link C++ function scanParameter(int, int, TMinuit &, void (*func)(int &, double *, double &, double *, int));
 

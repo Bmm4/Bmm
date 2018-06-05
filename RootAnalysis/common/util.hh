@@ -60,6 +60,7 @@ std::vector<std::string> split(const std::string &s, char delim);
 
 void addOverflow(TH1D *);
 void addUnderflow(TH1D *);
+void zeroNegativeEntries(TH1D *);
 
 
 // ======================================================================
@@ -101,6 +102,7 @@ double chi2Test(TH1*, TH1*, double& chi2, double& ndof, int constrain = 0);
 double chi2TestErr(TH1*, TH1*, double& chi2, double& ndof, int constrain = 0);
 
 void average(double &av, double &error, int n, double *val, double *err);
+void average(double &av, double &error, std::vector<double> &vval, std::vector<double> &verr);
 
 // TGraph* scanParameter(int parnum, int nsig, TMinuit &a, void (*func)(int &, double *, double &, double *, int));
 
