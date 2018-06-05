@@ -260,9 +260,11 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   fpIF->fName = "fit";
   fpIF->fVerbose = true;
   TF1 *f1 = fpIF->bupsik(h);
+  f1->SetNpx(1000);
   fpIF->fName = "comp";
   TF1 *fcnSig  = fpIF->gauss2c(h);
   fcnSig->SetLineColor(kBlue+1);
+  fcnSig->SetNpx(1000);
   TF1 *fcnExpo = fpIF->expo(0., 100.);
   fcnExpo->SetLineColor(kRed+1);
   fcnExpo->SetLineStyle(kSolid);
@@ -280,16 +282,16 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   c0->Clear();
   shrinkPad(0.13, 0.19);
 
-  fpIF->fLo = 5.0;
+  fpIF->fLo = 5.02;
   fpIF->fHi = 5.85;
+
   cout << "==> fitPsYield::fit0_Bu2JpsiKp> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
   double xmin(4.9), xmax(6.0), expoLo(5.15), expoHi(6.0);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
-  string fitopt = "lr";
-  if (0 == fVerbose) fitopt += "q";
   h->SetMinimum(0.);
   h->SetAxisRange(fpIF->fLo, fpIF->fHi);
+  h->SetAxisRange(5.0, 5.9);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
     f1->SetParLimits(0, 0., 10.*h->GetMaximum());
@@ -334,6 +336,8 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
     }
   }
   if (fVerbose > -1) fpIF->dumpParameters(f1);
+  string fitopt = "lr";
+  if (0 == fVerbose) fitopt += "q";
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
@@ -389,10 +393,12 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
        << "NORM OF SAT: " << fcnSat->Integral(4.9, 6.0)
        << endl;
 
-  fcnSig->Draw("same");
-  fcnExpo->Draw("same");
-  fcnErr2->Draw("same");
-  fcnSat->Draw("same");
+  if (1) {
+    fcnSig->Draw("same");
+    fcnExpo->Draw("same");
+    fcnErr2->Draw("same");
+    fcnSat->Draw("same");
+  }
 
   // -- store for possible later usage
   if (limitpars < 0) {
@@ -525,10 +531,10 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   shrinkPad(0.13, 0.19);
 
   fpIF->fLo = 5.0;
-  fpIF->fHi = 5.8;
+  fpIF->fHi = 5.85;
   cout << "==> fitPsYield::fit0_Bu2JpsiKp> FITTING " << h->GetName()
        << " with limitpars = " << limitpars << endl;
-  double xmin(5.0), xmax(5.8), expoLo(5.15), expoHi(5.85);
+  double xmin(5.0), xmax(5.8), expoLo(5.15), expoHi(fpIF->fHi);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights()
 		     << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
@@ -688,7 +694,7 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
   double sig   = fcnSig->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
 				  res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
   double sigE  = TMath::Sqrt((fcnSig->GetParError(0)/fcnSig->GetParameter(0)) * (fcnSig->GetParError(0)/fcnSig->GetParameter(0))
-			     + (fcnSig->GetParError(8)/fcnSig->GetParameter(8)) * (fcnSig->GetParError(8)/fcnSig->GetParameter(8))
+<			     + (fcnSig->GetParError(8)/fcnSig->GetParameter(8)) * (fcnSig->GetParError(8)/fcnSig->GetParameter(8))
 			     )*sig;
 
 
@@ -735,24 +741,24 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, bool 
 
 
 // ----------------------------------------------------------------------
-void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix, int whichfit) {
+void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix, int whichfit, double lo, double hi, double sigma) {
   if (0 == fH2) {
     cout << "no histogram found/setup/defined, returning!" << endl;
     return;
   }
 
-  void (fitPsYield::*pF)(psd *, int, string, bool);
+  void (fitPsYield::*pF)(psd *, int, string, double, double, double, bool);
   if (0 == whichfit) pF = &fitPsYield::fit0_Bs2JpsiPhi;
-  //  if (1 == whichfit) pF = &fitPsYield::fit1_Bs2JpsiPhi;
+  if (1 == whichfit) pF = &fitPsYield::fit1_Bs2JpsiPhi;
 
   // -- prefit weighted combination:
-  (this->*pF)(fW8Combined, -1, pdfprefix, false);
+  (this->*pF)(fW8Combined, -1, pdfprefix, lo, hi, sigma, false);
   // -- prefit unweighted combination:
-  (this->*pF)(fUnW8Combined, -1, pdfprefix, false);
+  (this->*pF)(fUnW8Combined, -1, pdfprefix, lo, hi, sigma, false);
 
   // -- fit all prescales
   for (unsigned int ips = 0; ips < fData.size(); ++ips) {
-    (this->*pF)(fData[ips], limitpars, pdfprefix, false);
+    (this->*pF)(fData[ips], limitpars, pdfprefix, lo, hi, sigma, false);
   }
 
   fSummary.clear();
@@ -768,14 +774,22 @@ void fitPsYield::fitBs2JpsiPhi(int limitpars, string pdfprefix, int whichfit) {
 }
 
 // ----------------------------------------------------------------------
-void fitPsYield::fit0_Bs2JpsiPhi(TH1D *h1, int limitpars, string pdfprefix) {
+void fitPsYield::fit0_Bs2JpsiPhi(TH1D *h1, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
   fUnW8Combined           = new psd();
   fUnW8Combined->fPs      = 0;
   fUnW8Combined->fEntries = h1->Integral(1, h1->GetNbinsX());
   fUnW8Combined->fH1      = h1;
   fData.push_back(fUnW8Combined);
 
-  fit0_Bs2JpsiPhi(fUnW8Combined, limitpars, pdfprefix, true);
+  fit0_Bs2JpsiPhi(fUnW8Combined, limitpars, pdfprefix, lo, hi, sigma, keepFunctions);
+
+  fSummary.fSg      = fUnW8Combined->fResults.fSg;
+  fSummary.fSgE     = fUnW8Combined->fResults.fSgE;
+  fSummary.fBg      = fUnW8Combined->fResults.fBg;
+  fSummary.fBgE     = fUnW8Combined->fResults.fBgE;
+  fSummary.fSgSigma = fUnW8Combined->fResults.fSgSigma;
+  fSummary.fSgPeak  = fUnW8Combined->fResults.fSgPeak;
+
 }
 
 
@@ -784,7 +798,11 @@ void fitPsYield::fit0_Bs2JpsiPhi(TH1D *h1, int limitpars, string pdfprefix) {
 // limitpars < 0: determine starting values for fit
 //           = 0: unconstrained fit, based on starting values of prior (limitpars < 0) call
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
-void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool keepFunctions) {
+void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
+  if (0 == res) {
+    cout << "ERROR: calling for empty psd (prescale data), returning." << endl;
+    return;
+  }
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]",
 	    Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
@@ -792,10 +810,13 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
   fSummary.clear();
 
   fpIF->fName = "fit";
-  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.05, 1.1);
+  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.025, 1.1);
+  f1->SetParameter(2, sigma);
+  f1->SetNpx(1000);
   fpIF->fName = "comp";
   TF1 *fg  = fpIF->gauss2c(0., 100.);
   fg->SetLineColor(kBlue+1);
+  fg->SetNpx(1000);
   TF1 *fe = fpIF->expo(0., 100.);
   fe->SetLineColor(kRed+2);
   fe->SetLineStyle(kSolid);
@@ -807,23 +828,29 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
   c0->Clear();
   shrinkPad(0.13, 0.19);
 
-  fpIF->fLo = 5.0;
-  fpIF->fHi = 5.85;
+  fpIF->fLo = lo;
+  fpIF->fHi = hi;
+  if (h->GetXaxis()->GetXmax() < fpIF->fHi)  fpIF->fHi = h->GetXaxis()->GetXmax();
   cout << "==> fitPsYield::fit0_Bs2JpsiPhi> FITTING " << h->GetName()
        << " with limitpars = " << limitpars << endl;
   double xmin(5.0), xmax(6.0), expoLo(5.15), expoHi(6.0);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights()
 		     << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
-  string fitopt = "lr";
-  if (0 == fVerbose) fitopt += "q";
   h->SetMinimum(0.);
   h->SetAxisRange(fpIF->fLo, fpIF->fHi);
 
   if (limitpars < 0) {
-    f1->SetParLimits(0, 0.,  1.e10);
-    f1->SetParLimits(1, 5.3, 5.4); // this is a Bs fit, after all
+    for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
+      f1->ReleaseParameter(ipar);
+    }
     fCombMax = h->GetMaximum();
+    f1->SetParLimits(0, 0.,  10.*h->GetMaximum());
+    f1->SetParLimits(1, 5.35, 5.37); // this is a Bs fit, after all
+    f1->SetParLimits(2, 0.2*sigma, 1.1*sigma);
+    f1->SetParLimits(3, 0.01, 0.5);
+    f1->SetParLimits(4, sigma*1.1*1.01, sigma*1.1*1.5);
+    f1->SetParLimits(5, 0., 1.e9);
   } else {
     for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
       f1->ReleaseParameter(ipar);
@@ -832,7 +859,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
       cout << "FIXME: fCombMax = " << fCombMax << endl;
       fCombMax = h->GetMaximum();
     }
-    double scale = h->GetMaximum()/fCombMax;
+    double scale = 1.2*h->GetMaximum()/fCombMax;
 
     double s1lo = fPar[2] - limitpars*fParE[2];
     double s1hi = fPar[2] + limitpars*fParE[2];
@@ -878,13 +905,35 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
     }
     if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
+  string fitopt = "lr";
+  if (h->GetSumOfWeights() > 200) fitopt = "r";
+  if (0 == fVerbose) fitopt += "q";
+  if (0) {
+    h->Draw();
+    f1->Draw("same");
+    c0->Modified();
+    c0->Update();
+    cout << "fitPsYield::fit0_Bs2JpsiPhi> printing "
+	 << Form("%s-prefit-%s.pdf", pdfprefix.c_str(), h->GetName())
+	 << endl;
+    c0->SaveAs(Form("%s-prefit-%s.pdf", pdfprefix.c_str(), h->GetName()));
+    f1->Draw("");
+    c0->Modified();
+    c0->Update();
+    cout << "fitPsYield::fit0_Bs2JpsiPhi> printing "
+	 << Form("%s-func-%s.pdf", pdfprefix.c_str(), h->GetName())
+	 << endl;
+    c0->SaveAs(Form("%s-func-%s.pdf", pdfprefix.c_str(), h->GetName()));
+  }
 
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      cout << "Fitting with fitop ->" << fitopt << "<-" << endl;
+      h->Fit(f1, fitopt.c_str(), "", lo, hi);
     } else {
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      cout << "Fitting with fitop ->" << fitopt << "<-" << endl;
+      h->Fit(f1, fitopt.c_str(), "", lo, hi);
     }
   } else {
     h->Draw();
@@ -916,6 +965,10 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
     fe->SetParameter(ipar, f1->GetParameter(ipar+5));
     fe->SetParError(ipar, f1->GetParError(ipar+5));
   }
+
+
+  fg->Draw("same");
+  fe->Draw("same");
 
   // -- other parameters of interest
   res->fChi2 = f1->GetChisquare();
@@ -992,6 +1045,261 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, bool
 
 
 // ----------------------------------------------------------------------
+void fitPsYield::fit1_Bs2JpsiPhi(TH1D *h1, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
+  fUnW8Combined           = new psd();
+  fUnW8Combined->fPs      = 0;
+  fUnW8Combined->fEntries = h1->Integral(1, h1->GetNbinsX());
+  fUnW8Combined->fH1      = h1;
+  fData.push_back(fUnW8Combined);
+
+  fit1_Bs2JpsiPhi(fUnW8Combined, limitpars, pdfprefix, lo, hi, sigma, keepFunctions);
+
+  fSummary.fSg      = fUnW8Combined->fResults.fSg;
+  fSummary.fSgE     = fUnW8Combined->fResults.fSgE;
+  fSummary.fBg      = fUnW8Combined->fResults.fBg;
+  fSummary.fBgE     = fUnW8Combined->fResults.fBgE;
+  fSummary.fSgSigma = fUnW8Combined->fResults.fSgSigma;
+  fSummary.fSgPeak  = fUnW8Combined->fResults.fSgPeak;
+
+}
+
+// ----------------------------------------------------------------------
+// limitpars < 0: determine starting values for fit
+//           = 0: only allow normalizations to float
+//           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
+void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
+  if (0 == res) {
+    cout << "ERROR: calling for empty psd (prescale data), returning." << endl;
+    return;
+  }
+  TH1D *h = res->fH1;
+  setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  if (0 == fData.size()) return;
+  fSummary.clear();
+
+  fpIF->fName = "fit";
+  fpIF->fVerbose = true;
+  TF1 *f1 = fpIF->bspsiphi(h, sigma);
+  f1->SetParameter(2, sigma);
+  f1->SetNpx(1000);
+  fpIF->fName = "comp";
+  TF1 *fcnSig  = fpIF->gauss2c(h);
+  fcnSig->SetLineColor(kBlue+1);
+  fcnSig->SetNpx(1000);
+  TF1 *fcnExpo = fpIF->expo(0., 100.);
+  fcnExpo->SetLineColor(kRed+1);
+  fcnExpo->SetLineStyle(kSolid);
+  TF1 *fcnSat = fpIF->kstarsat(1.);
+  fcnSat->SetLineColor(kRed+3);
+  fcnSat->SetLineStyle(kSolid);
+
+  TCanvas *c0(0);
+  c0 = (TCanvas*)gROOT->FindObject("fpy_c0");
+  if (!c0) c0 = new TCanvas("fpy_c0","--c0--",0,0,700,700);
+  c0->cd();
+  c0->Clear();
+  shrinkPad(0.13, 0.19);
+
+  fpIF->fLo = lo;
+  fpIF->fHi = hi;
+
+  cout << "==> fitPsYield::fit1_Bs2JpsiPhi> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
+  double xmin(lo), xmax(hi), expoLo(5.15), expoHi(6.0);
+  if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
+  //  if (fVerbose) fpIF->dumpParameters(f1);
+  h->SetMinimum(0.);
+  h->SetAxisRange(fpIF->fLo, fpIF->fHi);
+  //  h->SetAxisRange(5.0, 5.9);
+  if (limitpars < 0) {
+    fCombMax = h->GetMaximum();
+    f1->SetParLimits(0, 0., 10.*h->GetMaximum());
+    f1->SetParLimits(1, 5.35,  5.40); // it's a Bs fit!
+  } else {
+    for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {
+      f1->ReleaseParameter(ipar);
+    }
+    if (fCombMax < 1) {
+      cout << "FIXME: fCombMax = " << fCombMax << endl;
+      fCombMax = h->GetMaximum();
+    }
+    double scale = h->GetMaximum()/fCombMax;
+    if (fVerbose) cout << "==> limitpars = " << limitpars << " fPar[3] = " << fPar[3] << endl;
+    if (limitpars > 0) {
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + fParE[0]));
+      f1->SetParameter(1, fPar[1]);        f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
+      f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
+      //f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      f1->FixParameter(3, fPar[3]);
+      f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[4] - limitpars*fParE[4], fPar[4] + limitpars*fParE[4]);
+      f1->SetParameter(5, scale*fPar[5]);  f1->SetParLimits(5, 0.,                           scale*(fPar[5] + fParE[5]));
+      f1->SetParameter(6, fPar[6]);        f1->SetParLimits(6, fPar[6] - limitpars*fParE[6], fPar[6] + limitpars*fParE[6]);
+      f1->SetParameter(7, fPar[7]);        f1->SetParLimits(7, fPar[7] - limitpars*fParE[7], fPar[7] + limitpars*fParE[7]);
+      f1->SetParameter(8, fPar[8]);        f1->SetParLimits(8, fPar[8] - limitpars*fParE[8], fPar[8] + limitpars*fParE[8]);
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           scale*(fPar[9] + fParE[9]));
+    } else if (limitpars == 0) {
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0,  0.,                           1.e15);
+      f1->FixParameter(1, fPar[1]);
+      f1->FixParameter(2, fPar[2]);
+      f1->FixParameter(3, fPar[3]);
+      f1->FixParameter(4, fPar[4]);
+      f1->SetParameter(5, scale*fPar[5]);   f1->SetParLimits(5,  0.,                           1.e15);
+      f1->FixParameter(6, fPar[6]);
+      f1->FixParameter(7, fPar[7]);
+      f1->FixParameter(8, fPar[8]);
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           1.e15);
+    } else {
+      // do nothing, boot strap!
+    }
+  }
+  if (fVerbose > -1) fpIF->dumpParameters(f1);
+  string fitopt = "lr";
+  if (0 == fVerbose) fitopt += "q";
+  if (h->GetSumOfWeights() > 100) {
+    if (h->GetSumOfWeights() > h->GetEntries()) {
+      fitopt += "w";
+      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+    } else {
+      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+    }
+  } else {
+    h->Draw();
+    if (limitpars < 0) {
+      cout << "XX> you are screwed: fitting the (un)weighted combined data and less than 100 entries" << endl;
+    } else {
+
+    }
+  }
+
+  // -- store for possible later usage
+  if (limitpars < 0) {
+    fPar.clear();
+    fParE.clear();
+    for (int i = 0; i < f1->GetNpar(); ++i) {
+      fPar.push_back(f1->GetParameter(i));
+      fParE.push_back(f1->GetParError(i));
+      cout << "fPar[" << i << "] = " << f1->GetParameter(i) << " +/- " << f1->GetParError(i) << endl;
+    }
+  }
+
+  // -- copy parameters into components and draw them
+  for (int ipar = 0; ipar < fcnSig->GetNpar(); ++ipar) {
+    fcnSig->SetParameter(ipar, f1->GetParameter(ipar));
+    fcnSig->SetParError(ipar, f1->GetParError(ipar));
+  }
+  for (int ipar = 0; ipar < fcnExpo->GetNpar(); ++ipar) {
+    fcnExpo->SetParameter(ipar, f1->GetParameter(ipar+6));
+    fcnExpo->SetParError(ipar, f1->GetParError(ipar+6));
+  }
+  for (int ipar = 0; ipar < fcnSat->GetNpar(); ++ipar) {
+    fcnSat->SetParameter(ipar, f1->GetParameter(ipar+5));
+    fcnSat->SetParError(ipar, f1->GetParError(ipar+5));
+  }
+
+  if (1) {
+    fcnSig->Draw("same");
+    fcnExpo->Draw("same");
+    fcnSat->Draw("same");
+  }
+
+  // -- store for possible later usage
+  if (limitpars < 0) {
+    fPar.clear();
+    fParE.clear();
+    for (int i = 0; i < f1->GetNpar(); ++i) {
+      fPar.push_back(f1->GetParameter(i));
+      fParE.push_back(f1->GetParError(i));
+    }
+  }
+
+  // -- other parameters of interest
+  res->fChi2 = f1->GetChisquare();
+  res->fNdof = f1->GetNDF();
+  res->fProb = TMath::Prob(res->fChi2, res->fNdof);
+  res->fResults.fSgPeak = f1->GetParameter(1);
+
+  TH1D *hbla = new TH1D("hbla", "", 100, 4.5, 7.0);
+  for (int i = 0; i < 10000; ++i) hbla->Fill(fcnSig->GetRandom());
+  res->fResults.fSgSigma = hbla->GetRMS();
+  delete hbla;
+
+  // -- double gaussian integral over 3 sigma region
+  double sig   = fcnSig->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+				  res->fResults.fSgPeak + 3.*res->fResults.fSgSigma);
+  double sigE  = (fcnSig->GetParError(0)/fcnSig->GetParameter(0)) * sig;
+
+  double bg   = f1->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
+			     res->fResults.fSgPeak + 3.*res->fResults.fSgSigma)
+    - sig ;
+  double bgE  = fcnExpo->GetParError(0)/fcnExpo->GetParameter(0)*bg;
+
+  cout << "XXXXX sig = " << sig << " +/- " << sigE
+       << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " to "
+       << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+       << " XXXXX " << endl;
+
+  // -- create 'sensible' errors
+  sig  /= h->GetBinWidth(1);
+  sigE /= h->GetBinWidth(1);
+  bg   /= h->GetBinWidth(1);
+  bgE  /= h->GetBinWidth(1);
+  if (sigE > sig) {
+    cout << "rescaled error: " << sigE << " (sig = " << sig << ") to ";
+    sigE = TMath::Sqrt(sig);
+    cout << sigE << endl;
+
+  } else {
+    cout << "integral error from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+	 << " .. " << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
+	 << ": " << sigE << " (sig = " << sig << ")"
+	 << endl;
+  }
+  res->fResults.fSg  = sig;
+  res->fResults.fSgE = sigE;
+  res->fResults.fBg  = bg;
+  res->fResults.fBgE = bgE;
+
+  TLatex tl;
+  tl.SetTextSize(0.03);
+  if (-1 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else if (0 == res->fPs) {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  } else {
+    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  }
+
+  tl.SetTextAngle(90.);
+  tl.DrawLatexNDC(0.93, 0.15, h->GetName());
+  tl.SetTextAngle(0.);
+
+  c0->Modified();
+  c0->Update();
+  c0->SaveAs(Form("%s%s.pdf", pdfprefix.c_str(), h->GetName()));
+  delete c0;
+
+  if (keepFunctions) {
+    f1->SetName(Form("f1_%s", h->GetName()));        fFunctions.insert(make_pair(f1->GetName(), f1));
+    fcnSig->SetName(Form("sig_%s", h->GetName()));   fFunctions.insert(make_pair(fcnSig->GetName(), fcnSig));
+    fcnExpo->SetName(Form("expo_%s", h->GetName())); fFunctions.insert(make_pair(fcnExpo->GetName(), fcnExpo));
+    fcnSat->SetName(Form("sat_%s", h->GetName()));   fFunctions.insert(make_pair(fcnSat->GetName(), fcnSat));
+  } else {
+    delete f1;
+    delete fcnSig;
+    delete fcnExpo;
+    delete fcnSat;
+  }
+}
+
+
+
+
+
+
+
+
+
+
+// ----------------------------------------------------------------------
 void fitPsYield::fitBd2JpsiKstar(int limitpars, string pdfprefix, int whichfit) {
   if (0 == fH2) {
     cout << "no histogram found/setup/defined, returning!" << endl;
@@ -1042,7 +1350,7 @@ void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bo
   fSummary.clear();
 
   fpIF->fName = "fit";
-  TF1 *f1 = fpIF->expogauss2c(h, 5.37, 0.04, 1.3);
+  TF1 *f1 = fpIF->expogauss2c(h, 5.27, 0.04, 1.3);
   fpIF->fName = "comp";
   TF1 *fg  = fpIF->gauss2c(0., 100.);
   fg->SetLineColor(kBlue+1);
@@ -1071,6 +1379,7 @@ void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bo
   if (limitpars <= 0) {
     f1->SetParLimits(0, 0.,  1.e10);
     f1->SetParLimits(1, 5.2, 5.3); // this is a Bd fit, after all
+    if (f1->GetParameter(5) > 1.e9) f1->SetParameter(5, 1.e9);
     fCombMax = h->GetMaximum();
   } else {
     for (int ipar = 0; ipar < f1->GetNpar(); ++ipar) {

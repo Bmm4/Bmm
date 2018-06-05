@@ -68,6 +68,10 @@ public:
   double getSignalUnW8Yield() {return fUnW8Combined->fResults.fSg; }
   double getSignalUnW8Error() {return fUnW8Combined->fResults.fSgE;}
 
+  double getSignalUnW8Chi2() {return fUnW8Combined->fChi2; }
+  double getSignalUnW8Ndof() {return fUnW8Combined->fNdof; }
+
+
   void printSummary();
 
   TH1D* getUnweightedCombination() {return fCombined;}
@@ -79,9 +83,11 @@ public:
   void fit0_Bu2JpsiKp(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
   void fit1_Bu2JpsiKp(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
 
-  void fitBs2JpsiPhi(int limitpars, std::string pdfprefix, int whichfit = 0);
-  void fit0_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
-  void fit0_Bs2JpsiPhi(TH1D *h, int limitpars = 0, std::string pdfprefix = ".");
+  void fitBs2JpsiPhi(int limitpars, std::string pdfprefix, int whichfit = 0, double lo = 5.0, double hi = 5.8, double sigma = 0.020);
+  void fit0_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".", double lo = 5.0, double hi = 5.8, double sigma = 0.020, bool keepFunctions = false);
+  void fit0_Bs2JpsiPhi(TH1D *h, int limitpars = 0, std::string pdfprefix = ".", double lo = 5.0, double hi = 5.8, double sigma = 0.020, bool keepFunctions = false);
+  void fit1_Bs2JpsiPhi(psd *res, int limitpars = 0, std::string pdfprefix = ".", double lo = 5.0, double hi = 5.8, double sigma = 0.020, bool keepFunctions = false);
+  void fit1_Bs2JpsiPhi(TH1D *h, int limitpars = 0, std::string pdfprefix = ".", double lo = 5.0, double hi = 5.8, double sigma = 0.020, bool keepFunctions = false);
 
   void fitBd2JpsiKstar(int limitpars, std::string pdfprefix, int whichfit = 0);
   void fit0_Bd2JpsiKstar(psd *res, int limitpars = 0, std::string pdfprefix = ".", bool keepFunctions = false);
