@@ -17,7 +17,9 @@
 struct adset {
   AnalysisDistribution
   *fpMuonsEta, *fpMuonsPhi, *fpMuon1Pt, *fpMuon2Pt
+    , *fpMuon1Bdt, *fpMuon2Bdt, *fpMuonsBdt, *fpMuonmBdt
     , *fpKaonsEta, *fpKaonsPhi, *fpKaonsPt
+    , *fpPhiDeltaR, *fpMkk
     , *fpPt, *fpP, *fpPz, *fpEta, *fpPhi
     , *fpAlpha
     , *fpIso, *fpCloseTrk, *fpDocaTrk
@@ -26,7 +28,7 @@ struct adset {
     , *fpFLSxy, *fpFLxy, *fpFLxyE
     , *fpMaxDoca, *fpIp, *fpIpS
     , *fpBDT
-    , *fpBDTSel0, *fpBDTSel1, *fpBDTSel2
+    , *fpBDTSel0, *fpBDTSel1, *fpBDTSel2, *fpBDTSel3
     , *fpPvZ, *fpPvN, *fpPvNtrk, *fpPv2Ntrk, *fpPvAveW8
     , *fpLip, *fpLipS, *fpLip2, *fpLipS2, *fpOsmDr, *fpDzmin,  *fpDz12
     , *fpCloseTrkS1, *fpCloseTrkS2, *fpCloseTrkS3
@@ -91,6 +93,7 @@ public:
 
   void allSystematics();
   void sysBdtCut(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada", bool bdtscan = false);
+  void sysDoubleRatio(std::string sample1, std::string sample2, std::string chanSel, std::string var, std::string cutlevel, double cut);
   void sysComparison(std::string sample1, std::string sample2, std::string selection, std::string file2 = "nada");
   void compareBsAndBp(std::string file = "2012/anaBmm.plotReducedOverlaysSystematics.2012.root");
 
@@ -121,7 +124,7 @@ public:
   std::map<string, adset*> fAdMap;
 
   bool fIncludeOverflowInLastBin, fDoCNC;
-  bool fSel0, fSel1, fSel2;
+  bool fSel0, fSel1, fSel2, fSel3;
 
   ClassDef(plotReducedOverlays,1) //Testing plotReducedOverlays
 
