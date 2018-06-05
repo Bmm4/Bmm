@@ -458,6 +458,9 @@ TH1D* presel::getPreselectionNumbers() {
 std::string preselection() {
   std::string cut = Form(" (%3.2f<pt)&&(pt<%3.2f) && (%3.2f<m1pt)&&(m1pt<%3.2f) && (%3.2f<m2pt)&&(m2pt<%3.2f)",
 			 PTMIN, PTMAX, M1PTMIN, M1PTMAX, M2PTMIN, M2PTMAX);
+
+  //FIXME DBX  cout << "this is a wrong function: it is all commented code, returning minimal string" << endl;
+
   // cut += Form(" && (flsxy>%3.2f) && (fl3d<%3.2f) && (pvip<%3.2f) && !(TMath::IsNaN(pvips)) && (pvips>0) && (pvips<%3.2f)",
   // 	      FLSXYMIN, FL3DMAX, PVIPMAX, PVIPSMAX);
   // cut += Form(" && TMath::Abs(pvlip) < %3.2f && TMath::Abs(pvlips) < %3.2f", PVLIPMAX, PVLIPSMAX);
@@ -472,6 +475,8 @@ std::string preselection() {
 // ----------------------------------------------------------------------
 bool preselection(redTreeData &b) {
   // const int verbose(-1);
+
+  //FIXME DBX  cout << "this is a wrong function: it is all commented code!" << endl;
 
   // //NO?!?!?!?!  if (!b.gmugmid) return false;
 
@@ -536,33 +541,32 @@ bool preselection(redTreeData &b) {
 // ----------------------------------------------------------------------
 TH1D* getPreselectionNumbers() {
   TH1D *h  = new TH1D("hpresel", "", 100, 0., 100.);
-  // int ibin(1);
-  // ibin = 1; h->SetBinContent(ibin, PTMIN); h->GetXaxis()->SetBinLabel(ibin, "PTMIN");
-  // ibin = 2; h->SetBinContent(ibin, PTMAX); h->GetXaxis()->SetBinLabel(ibin, "PTMAX");
-  // ibin = 3; h->SetBinContent(ibin, M1PTMIN); h->GetXaxis()->SetBinLabel(ibin, "M1PTMIN");
-  // ibin = 4; h->SetBinContent(ibin, M1PTMAX); h->GetXaxis()->SetBinLabel(ibin, "M1PTMAX");
-  // ibin = 5; h->SetBinContent(ibin, M2PTMIN); h->GetXaxis()->SetBinLabel(ibin, "M2PTMIN");
-  // ibin = 6; h->SetBinContent(ibin, M2PTMAX); h->GetXaxis()->SetBinLabel(ibin, "M2PTMAX");
+  int ibin(1);
+  ibin = 1; h->SetBinContent(ibin, PTMIN); h->GetXaxis()->SetBinLabel(ibin, "PTMIN");
+  ibin = 2; h->SetBinContent(ibin, PTMAX); h->GetXaxis()->SetBinLabel(ibin, "PTMAX");
+  ibin = 3; h->SetBinContent(ibin, M1PTMIN); h->GetXaxis()->SetBinLabel(ibin, "M1PTMIN");
+  ibin = 4; h->SetBinContent(ibin, M1PTMAX); h->GetXaxis()->SetBinLabel(ibin, "M1PTMAX");
+  ibin = 5; h->SetBinContent(ibin, M2PTMIN); h->GetXaxis()->SetBinLabel(ibin, "M2PTMIN");
+  ibin = 6; h->SetBinContent(ibin, M2PTMAX); h->GetXaxis()->SetBinLabel(ibin, "M2PTMAX");
 
-  // ibin = 10; h->SetBinContent(ibin, FL3DMAX); h->GetXaxis()->SetBinLabel(ibin, "FL3DMAX");
-  // ibin = 11; h->SetBinContent(ibin, FLS3DMIN); h->GetXaxis()->SetBinLabel(ibin, "FLS3DMIN");
-  // ibin = 12; h->SetBinContent(ibin, FLS3DMAX); h->GetXaxis()->SetBinLabel(ibin, "FLS3DMAX");
-  // ibin = 13; h->SetBinContent(ibin, FLSXYMIN); h->GetXaxis()->SetBinLabel(ibin, "FLSXYMIN");
-  // ibin = 14; h->SetBinContent(ibin, CHI2DOFMAX); h->GetXaxis()->SetBinLabel(ibin, "CHI2DOFMAX");
+  ibin = 10; h->SetBinContent(ibin, FL3DMAX); h->GetXaxis()->SetBinLabel(ibin, "FL3DMAX");
+  ibin = 11; h->SetBinContent(ibin, FLS3DMIN); h->GetXaxis()->SetBinLabel(ibin, "FLS3DMIN");
+  ibin = 12; h->SetBinContent(ibin, FLS3DMAX); h->GetXaxis()->SetBinLabel(ibin, "FLS3DMAX");
+  ibin = 13; h->SetBinContent(ibin, FLSXYMIN); h->GetXaxis()->SetBinLabel(ibin, "FLSXYMIN");
+  ibin = 14; h->SetBinContent(ibin, CHI2DOFMAX); h->GetXaxis()->SetBinLabel(ibin, "CHI2DOFMAX");
 
-  // ibin = 20; h->SetBinContent(ibin, PVIPMAX); h->GetXaxis()->SetBinLabel(ibin, "PVIPMAX");
-  // ibin = 21; h->SetBinContent(ibin, PVIPSMAX); h->GetXaxis()->SetBinLabel(ibin, "PVIPSMAX");
-  // ibin = 22; h->SetBinContent(ibin, PVLIPMAX); h->GetXaxis()->SetBinLabel(ibin, "PVLIPMAX");
-  // ibin = 23; h->SetBinContent(ibin, PVLIPSMAX); h->GetXaxis()->SetBinLabel(ibin, "PVLIPSMAX");
+  ibin = 20; h->SetBinContent(ibin, PVIPMAX); h->GetXaxis()->SetBinLabel(ibin, "PVIPMAX");
+  ibin = 21; h->SetBinContent(ibin, PVIPSMAX); h->GetXaxis()->SetBinLabel(ibin, "PVIPSMAX");
+  ibin = 22; h->SetBinContent(ibin, PVLIPMAX); h->GetXaxis()->SetBinLabel(ibin, "PVLIPMAX");
+  ibin = 23; h->SetBinContent(ibin, PVLIPSMAX); h->GetXaxis()->SetBinLabel(ibin, "PVLIPSMAX");
 
-  // ibin = 30; h->SetBinContent(ibin, MAXDOCAMAX); h->GetXaxis()->SetBinLabel(ibin, "MAXDOCAMAX");
-  // ibin = 31; h->SetBinContent(ibin, CLOSETRKMAX); h->GetXaxis()->SetBinLabel(ibin, "CLOSETRKMAX");
-  // ibin = 32; h->SetBinContent(ibin, DOCATRKMAX); h->GetXaxis()->SetBinLabel(ibin, "DOCATRKMAX");
+  ibin = 30; h->SetBinContent(ibin, MAXDOCAMAX); h->GetXaxis()->SetBinLabel(ibin, "MAXDOCAMAX");
+  ibin = 31; h->SetBinContent(ibin, CLOSETRKMAX); h->GetXaxis()->SetBinLabel(ibin, "CLOSETRKMAX");
+  ibin = 32; h->SetBinContent(ibin, DOCATRKMAX); h->GetXaxis()->SetBinLabel(ibin, "DOCATRKMAX");
 
-  // ibin = 40; h->SetBinContent(ibin, ISOMIN); h->GetXaxis()->SetBinLabel(ibin, "ISOMIN");
-  // ibin = 41; h->SetBinContent(ibin, ALPHAMAX); h->GetXaxis()->SetBinLabel(ibin, "ALPHAMAX");
-  // ibin = 42; h->SetBinContent(ibin, MASSERRORMAX); h->GetXaxis()->SetBinLabel(ibin, "MASSERRORMAX");
-
+  ibin = 40; h->SetBinContent(ibin, ISOMIN); h->GetXaxis()->SetBinLabel(ibin, "ISOMIN");
+  ibin = 41; h->SetBinContent(ibin, ALPHAMAX); h->GetXaxis()->SetBinLabel(ibin, "ALPHAMAX");
+  ibin = 42; h->SetBinContent(ibin, MASSERRORMAX); h->GetXaxis()->SetBinLabel(ibin, "MASSERRORMAX");
 
   return h;
 }
