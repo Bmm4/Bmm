@@ -19,7 +19,7 @@
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
-getopts('p:x:');
+getopts('fp:x:');
 
 
 my $fileglob  = $opt_p;
@@ -40,6 +40,12 @@ if (!-d "$scratch/$opt_x") {
 
 foreach $file (@files) {
     chop($file);
+    if ($opt_f) {
+	if (-e "$scratch$opt_x/$file") {
+	    print "$scratch$opt_x/$file already exists, deleting first\n";
+	    unlink("$scratch$opt_x/$file");
+	}
+    }
     print "xrdcp $file $xroot/$opt_x/$file\n";
     system("xrdcp $file $xroot/$opt_x/$file");
 }
