@@ -76,7 +76,11 @@ void bmmReader::eventProcessing() {
   static double rlumi(-1.);
   if (fIsMC) {
     json = true;
-    processTypePythia8();
+    if (fYear < 2015) {
+      processTypePythia6();
+    } else {
+      processTypePythia8();
+    }
   } else if (fIgnoreJson) {
     json = true;
   } else {
@@ -396,6 +400,8 @@ void bmmReader::readCuts(TString filename, int dump) {
 void bmmReader::processTypePythia8() {
 
   TGenCand *pG;
+
+  fProcessType = -99;
 
   // hard-scatter partons (entries { d, u, s, c, b, t } )
   double hsPartCnt[6];
