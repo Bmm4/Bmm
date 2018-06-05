@@ -34,9 +34,16 @@ void number::setErrors(double sta, double sys, double tot) {
 
 // ----------------------------------------------------------------------
 void number::add2Errors(number &n) {
-  estat = TMath::Sqrt(estat*estat + n.estat*estat);
-  esyst = TMath::Sqrt(esyst*esyst + n.esyst*esyst);
-  etot  = TMath::Sqrt(etot*etot + n.etot*etot);
+  estat = TMath::Sqrt(estat*estat + n.estat*n.estat);
+  esyst = TMath::Sqrt(esyst*esyst + n.esyst*n.esyst);
+  etot  = TMath::Sqrt(etot*etot + n.etot*n.etot);
+}
+
+// ----------------------------------------------------------------------
+void number::scaleErrors(double sf) {
+  estat = sf*estat;
+  esyst = sf*esyst;
+  etot  = sf*etot;
 }
 
 

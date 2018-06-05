@@ -18,6 +18,7 @@ public:
   void setErrors(double sta, double sys);
   void setErrors(double sta, double sys, double tot);
   void add2Errors(number &);
+  void scaleErrors(double sf);
   void calcEtot();
   double val;
   double estat, esyst, etot;
@@ -49,7 +50,7 @@ public:
   number fAccRecoYield, fAccCandYield;
   number fCandYield, fAnaYield, fMuidYield, fTrigYield;
   // -- efficiency and acceptance
-  number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffMuidMC, fEffTot, fEffProdMC;
+  number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffMuidMC, fEffTot4R, fEffTot, fEffProdMC;
   number fEffFilter; // this is the MC filter efficiency, used for eq lumi calculation!
   number fEffGenSel; // this is the gen-level filter efficiency, needed to go from non-Acc samples to acc samples! Obtained from ratio of effFilter's
 };
