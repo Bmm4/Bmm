@@ -2663,7 +2663,6 @@ void initFunc::initExpoHS(double &p0, double &p1, double &p2, TH1 *h) {
     fLo = h->GetBinLowEdge(lbin);
     fHi = h->GetBinLowEdge(hbin+1);
   }
-  p2   = fLo;
 
   double dx = h->GetBinLowEdge(hbin+1) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
@@ -2771,7 +2770,7 @@ TF1* initFunc::phiKK(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
-TF1* initFunc::bupsik(TH1 *h) {
+TF1* initFunc::bupsik(TH1 *h, double sigma) {
   TVirtualFitter::SetMaxIterations(10000);
   TVirtualFitter::SetPrecision(1.e-4);
   int npar(10);
@@ -2791,9 +2790,9 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   f->SetParameter(0, h->GetMaximum());
   f->SetParameter(1, 5.28);
-  f->SetParameter(2, 0.03); limitPar(2, 0.010, 0.040);
-  f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.400);
-  f->SetParameter(4, 0.05); limitPar(4, 0.030, 0.100);
+  f->SetParameter(2, sigma); limitPar(2, 0.5*sigma, 2.*sigma);
+  f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.60);
+  f->SetParameter(4, 2.*sigma); limitPar(4, 2.*sigma, 4.*sigma);
 
   double a(-1.), b(-1.);
   fLo = 5.5; fHi = 5.8;
@@ -2803,7 +2802,7 @@ TF1* initFunc::bupsik(TH1 *h) {
 
   //  fixPar(7, 5.142);
   f->SetParameter(7, 5.142); limitPar(7, 5.137, 5.147);
-  f->SetParameter(8, 0.04);  limitPar(8, 0.030, 0.060);
+  f->SetParameter(8, 0.04);  limitPar(8, 0.020, 0.080);
   f->SetParameter(9, 0.4*h->Integral(1, 5)/5);
   applyLimits(f, "bupsik");
   return f;
@@ -2811,7 +2810,7 @@ TF1* initFunc::bupsik(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
-TF1* initFunc::bupsik1(TH1 *h) {
+TF1* initFunc::bupsik1(TH1 *h, double sigma) {
   TVirtualFitter::SetMaxIterations(10000);
   TVirtualFitter::SetPrecision(1.e-4);
   int npar(15);
@@ -2834,7 +2833,7 @@ TF1* initFunc::bupsik1(TH1 *h) {
   f->SetParameter(3, 1.1); limitPar(3, 1.00, 2.00);
 
   f->SetParameter(4, 5.28);
-  f->SetParameter(5, 0.03);
+  f->SetParameter(5, sigma);
   fixPar(6, 4.); //  f->SetParameter(6, 1.6); //limitPar(6, 1.0, 5.0);
   fixPar(7, 2.); //f->SetParameter(7, 4.0); //limitPar(7, 2.0, 8.0);
   f->SetParameter(8, 0.7*h->GetMaximum());
@@ -2856,7 +2855,7 @@ TF1* initFunc::bupsik1(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
-TF1* initFunc::bspsiphi(TH1 *h, double sigma) {
+TF1* initFunc::bspsiphi(TH1 *h, double lo, double hi, double sigma) {
   TVirtualFitter::SetMaxIterations(10000);
   TVirtualFitter::SetPrecision(1.e-4);
   int npar(9);
@@ -2879,13 +2878,13 @@ TF1* initFunc::bspsiphi(TH1 *h, double sigma) {
   f->SetParameter(5, 0.005*f->GetParameter(0)); limitPar(5, 0.001*f->GetParameter(0), 0.02*f->GetParameter(0));
 
   double a(-1.), b(-1.), c(-1.);
-  fLo = 5.2; fHi = 5.8;
+  fLo = lo; fHi = hi;
   initExpoHS(a, b, c, h);
   f->SetParameter(6, a);
   f->SetParameter(7, b);
   // limitPar(6, 0.0, 1.e5);
   // limitPar(7, -10., 10.);
-  fixPar(8, c);
+  fixPar(8, lo);
   applyLimits(f, "bspsiphi");
   return f;
 }
