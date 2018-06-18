@@ -32,8 +32,8 @@ public :
   void genSummary(std::string dsname, std::string dir);
 
   // -- main results
-  void fillAndSaveHistograms(int nevents = -1, int start = 0);
-  void saveHistograms(std::string smode);
+  void fillAndSaveHistograms(int start = 0, int nevents = -1);
+  void saveHistograms(std::string smode, TFile *f = 0);
   void resetHistograms(bool deleteThem = false);
   void initNumbers(anaNumbers &a);
   void otherNumbers(string ds);
@@ -52,7 +52,10 @@ public :
   void calculatePerformance(int chan);
   void scanBDT(std::string fname, bool createTexFile = true);
   void scanBDTEffRatio(std::string fname, std::string string1, std::string string2);
-  void sysAna(std::string sample1, std::string sample2, int ichan = 0);
+  void sysAna(std::string sample1, std::string sample2, std::string massc = "C", int ichan = 0, int buversion = 0, int bsversion = 1);
+  void sysNorm(std::string sample1, int ichan = 0, int version = 0);
+  void sysBsVsBu();
+  void sysDoubleRatio(string sample1, string sample2, string chansel, string var, string cutlevel, double cut);
   void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
   void showScanBDT(string what = "all");
   double findVarValue(std::string varName, std::vector<std::string> &lines);
@@ -109,8 +112,10 @@ private:
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
   std::map<std::string, std::vector<TH2D*> > fhW8Norm, fhW8NormC;
-  std::map<std::string, std::vector<TH2D*> > fhMassBeforeAnaCuts;
-  std::map<std::string, std::vector<TH2D*> > fhMassBeforeAnaCutsC;
+  std::map<std::string, std::vector<TH2D*> > fhMassSysStep0;
+  std::map<std::string, std::vector<TH2D*> > fhMassSysStep0C;
+  std::map<std::string, std::vector<TH2D*> > fhMassSysStep1;
+  std::map<std::string, std::vector<TH2D*> > fhMassSysStep1C;
 
   std::vector<TH1D*> fhBdt;
 

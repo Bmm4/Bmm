@@ -116,6 +116,7 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("bdt");
     fDoList.push_back("bdtsel0");
     fDoList.push_back("bdtsel1");
+    fDoList.push_back("bdtsel3");
 
     fDoList.push_back("kaonspt");
     fDoList.push_back("kaonseta");
@@ -285,7 +286,7 @@ void plotReducedOverlays::makeAll(string what) {
     }
 
     system(Form("/bin/rm -f %s/plotSbsHistograms-%s.root", fDirectory.c_str(), fSuffix.c_str()));
-    makeSampleOverlay("bspsiphiData", "bspsiphiMcComb", 100000);
+    makeSampleOverlay("bspsiphiData", "bspsiphiMcComb", 10000);
     return;
   }
 
@@ -417,9 +418,9 @@ void plotReducedOverlays::makeAll(string what) {
     makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
     makeSampleOverlay("bmmData", "bdmmMcComb");
-    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
+    //    makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
 
-    allSystematics();
+    //    allSystematics();
 
     // -- validation of private MC vs official MC
   }
@@ -448,7 +449,7 @@ void plotReducedOverlays::makeAll(string what) {
     makeOverlay("bmmData", "bdmmMcComb", "bdt");
     makeOverlay("bupsikData", "bupsikMcComb", "bdt");
     //    makeOverlay("bdpsikstarData", "bdpsikstarMcComb", "bdt");
-    allSystematics();
+    //    allSystematics();
   }
 
 }
@@ -851,8 +852,8 @@ void plotReducedOverlays::loopOverTree(TTree *t, int ifunc, int nevts, int nstar
 // ----------------------------------------------------------------------
 void plotReducedOverlays::loopFunction1() {
 
-  bool cmsswPresel =  (fb.m1pt>4.) && (fb.m2pt>4.)  && (fb.pvips < 5.) && (fb.flsxy > 4.) && (fb.maxdoca < 0.08) && (fb.chi2/fb.dof < 5.);
-  bool candanaPresel =  (fb.alpha<0.2) && (fb.fls3d>4.) && (TMath::Abs(fb.pvips) < 4.) && (TMath::Abs(fb.pvip) < 0.02);
+  bool cmsswPresel   = fGoodCmssw;
+  bool candanaPresel = fGoodCandAna;
 
   if (fMode == BU2JPSIKP) {
     cmsswPresel = cmsswPresel && (fb.kpt > 0.6);
@@ -866,19 +867,6 @@ void plotReducedOverlays::loopFunction1() {
     cmsswPresel = cmsswPresel && (fb.kpt > 0.6) && (fb.pipt > 0.6);
   }
 
-  // -- tests
-  //  cmsswPresel = cmsswPresel && (fb.m1pix  >=1) && (fb.m2pix >= 1);
-
-  // // -- copy from plotClass
-  // fPreselection = fb.hlt1 && fb.tos && fb.l1t
-  //   && fGoodAcceptance
-  //   && fGoodGlobalMuons && fGoodMuonsPt && fGoodMuonsEta && fGoodTracksPt && fGoodTracksEta
-  //   && cmsswPresel
-  //   && fGoodJpsiCuts
-  //   && fGoodDcand
-  //   && (fb.alpha < 0.1) && (fb.fls3d > 5) && (fb.pvips < 4.) ;
-
-
   // -- local redefinition
   fGoodHLT = fb.hlt1 && fb.tos && fb.l1t
     && fGoodAcceptance
@@ -890,8 +878,6 @@ void plotReducedOverlays::loopFunction1() {
     && fGoodDcand
     && fGoodBdtPresel
     ;
-
-
 
   double bdtCut(0.1);
   if (-1 < fChan && fChan < fNchan) {
@@ -1379,11 +1365,11 @@ void plotReducedOverlays::allSystematics() {
   // sysBdtCut("bdpsikstarData", "bdpsikstarMcComb", "bdt");
 
   for (int i = 0; i < fNchan; ++i) {
-    sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "muonmbdt", "HLT", fCuts[i]->muonbdt);
-    sysDoubleRatio("bdmm", "bupsik", Form("ad%dbdt", i), "muonmbdt", "HLT", fCuts[i]->muonbdt);
-    sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "Presel", fCuts[i]->bdtCut);
-    sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "Cu", fCuts[i]->bdtCut);
-    sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "HLT", fCuts[i]->bdtCut);
+    // sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "muonmbdt", "HLT", fCuts[i]->muonbdt);
+    // sysDoubleRatio("bdmm", "bupsik", Form("ad%dbdt", i), "muonmbdt", "HLT", fCuts[i]->muonbdt);
+    // sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "Presel", fCuts[i]->bdtCut);
+    // sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "Cu", fCuts[i]->bdtCut);
+    // sysDoubleRatio("bspsiphi", "bupsik", Form("ad%dbdt", i), "bdt", "HLT", fCuts[i]->bdtCut);
   }
 
 }
@@ -1464,149 +1450,6 @@ void plotReducedOverlays::sysComparison(string sample1, string sample2, string s
 }
 
 
-// ----------------------------------------------------------------------
-// -- calculate double ratio [eps(mu|bspsiphiMc)/eps(mu|bupsiMc)] / [eps(mu|bspsiphiData)/eps(mu|bupsiData)] from sideband-subtracted distribution
-void plotReducedOverlays::sysDoubleRatio(string sample1, string sample2, string chansel, string var, string cutlevel, double cut) {
-
-  // -- add an epsilon
-  cut += 1.e-6;
-
-  c0->SetCanvasSize(700, 700);
-  c0->cd();
-  shrinkPad(0.15, 0.18);
-
-  string hfname = Form("%s/plotSbsHistograms-%s.root", fDirectory.c_str(), fSuffix.c_str());
-  cout << "open " << hfname << endl;
-  TFile *f1 = TFile::Open(hfname.c_str());
-
-  string h1mName = Form("%sMcComb", sample1.c_str());
-  string h1dName = Form("%sData", sample1.c_str());
-  string h2mName = Form("%sMcComb", sample2.c_str());
-  string h2dName = Form("%sData", sample2.c_str());
-
-  // -- data dimuons have no 's' or 'd' in name
-  if (string::npos != h1dName.find("bsmm")) replaceAll(h1dName, "bsmm", "bmm");
-  if (string::npos != h1dName.find("bdmm")) replaceAll(h1dName, "bdmm", "bmm");
-
-  double nd1(0.), nd2(0.), Nd1(0.), Nd2(0.);
-  double nm1(0.), nm2(0.), Nm1(0.), Nm2(0.);
-  double epsd1(0.), epsd1E(0.), epsd2(0.), epsd2E(0.), depsd(0.), depsdE(0.);
-  double epsm1(0.), epsm1E(0.), epsm2(0.), epsm2E(0.), depsm(0.), depsmE(0.);
-  int lo(-1), hi(-1);
-
-  string sysname("");
-  string d1name, d2name, m1name, m2name;
-  TH1D *d1(0), *d2(0), *m1(0), *m2(0);
-  d1name = Form("sbs_%s_%s_%s%s", chansel.c_str(), h1dName.c_str(), var.c_str(), cutlevel.c_str());
-  d1 = (TH1D*)f1->Get(d1name.c_str());
-  d2name = Form("sbs_%s_%s_%s%s", chansel.c_str(), h2dName.c_str(), var.c_str(), cutlevel.c_str());
-  d2 = (TH1D*)f1->Get(d2name.c_str());
-
-  m1name = Form("sbs_%s_%s_%s%s", chansel.c_str(), h1mName.c_str(), var.c_str(), cutlevel.c_str());
-  m1 = (TH1D*)f1->Get(m1name.c_str());
-  m2name = Form("sbs_%s_%s_%s%s", chansel.c_str(), h2mName.c_str(), var.c_str(), cutlevel.c_str());
-  m2 = (TH1D*)f1->Get(m2name.c_str());
-
-  if (!d1 || !d2 || !m1 || !m2) {
-    cout << "histogram(s) not found: " << endl;
-    cout << d1name << ": " << d1 << endl;
-    cout << d2name << ": " << d2 << endl;
-    cout << m1name << ": " << m1 << endl;
-    cout << m2name << ": " << m2 << endl;
-    return;
-  }
-
-  int INTLO = d1->FindBin(0.);
-  INTLO = 1;
-  int ichan(0);
-  if (string::npos != chansel.find("1")) ichan = 1;
-  lo    = d1->FindBin(cut);
-  hi    = d1->GetNbinsX();
-  nd1   = d1->Integral(lo, hi);
-  Nd1   = d1->Integral(INTLO, hi);
-  epsd1 = nd1/Nd1;
-  nd2   = d2->Integral(lo, hi);
-  Nd2   = d2->Integral(INTLO, hi);
-  epsd2 = nd2/Nd2;
-  depsd = (epsd1/epsd2);
-  epsd1E = dRatio(nd1, Nd1);
-  epsd2E = dRatio(nd2, Nd2);
-  depsdE = dRatio(epsd1, epsd1E, epsd2, epsd2E);
-
-  INTLO = m1->FindBin(0.);
-  INTLO = 1;
-  lo    = m1->FindBin(cut);
-  hi    = m1->GetNbinsX();
-  nm1   = m1->Integral(lo, hi);
-  Nm1   = m1->Integral(INTLO, hi);
-  epsm1 = nm1/Nm1;
-  nm2   = m2->Integral(lo, hi);
-  Nm2   = m2->Integral(INTLO, hi);
-  epsm2 = nm2/Nm2;
-  depsm = (epsm1/epsm2);
-  epsm1E = dRatio(nm1, Nm1);
-  epsm2E = dRatio(nm2, Nm2);
-  depsmE = dRatio(epsm1, epsm1E, epsm2, epsm2E);
-  cout << "lo: " << lo << " hi: " << hi << " INTLO = " << INTLO << " epsd1: " << epsd1 << " epsd2 = " << epsd2 << endl;
-  cout << "data: depsd = " << depsd << " +/- " << depsdE << " nd1: " << nd1 << "/" << Nd1 << " nd2: " << nd2 << "/" << Nd2 << " " << d1name << "/" << d2name << endl;
-  cout << "mc:   depsm = " << depsm << " +/- " << depsmE << " nm1: " << nm1 << "/" << Nm1 << " nm2: " << nm2 << "/" << Nm2 << " " << m1name << "/" << m2name << endl;
-  cout << d1->GetName() << "/" << d2->GetName() << endl;
-  cout << m1->GetName() << "/" << m2->GetName() << endl;
-  d1->Scale(1./d1->GetSumOfWeights());
-  d2->Scale(1./d2->GetSumOfWeights());
-  m1->Scale(1./m1->GetSumOfWeights());
-  m2->Scale(1./m2->GetSumOfWeights());
-  //FIXME	h1->SetMinimum(0.);
-  setHist(d1, fDS[h1dName]);
-  d1->SetMarkerColor(fDS[h1mName]->fColor);
-  setHist(d2, fDS[h2dName]);
-  d2->SetMarkerColor(fDS[h2mName]->fColor);
-  d2->SetMarkerStyle(20);
-  setHist(m1, fDS[h1mName]);
-  setHist(m2, fDS[h2mName]);
-
-  double ymax(d1->GetMaximum());
-  if (d2->GetMaximum() > ymax) ymax = d2->GetMaximum();
-  if (m1->GetMaximum() > ymax) ymax = m1->GetMaximum();
-  if (m2->GetMaximum() > ymax) ymax = m2->GetMaximum();
-  d1->SetMaximum(1.2*ymax);
-  d1->SetMinimum(-0.02*ymax);
-  d1->Draw();
-  d2->Draw("samee");
-  m1->Draw("histsame");
-  m2->Draw("histsame");
-
-
-  newLegend(0.2, 0.65, 0.5, 0.87);
-  legg->SetHeader((chansel + "/" + cutlevel + "/" + fSetup).c_str());
-  legg->SetTextSize(0.03);
-  legg->AddEntry(d1, Form("%s #varepsilon = %4.3f#pm%4.3f", sample1.c_str(), epsd1, epsd1E), "p");
-  legg->AddEntry(d2, Form("%s #varepsilon = %4.3f#pm%4.3f", sample2.c_str(), epsd2, epsd2E), "p");
-  legg->AddEntry(m1, Form("%s #varepsilon = %4.3f#pm%4.3f", sample1.c_str(), epsm1, epsm1E), "l");
-  legg->AddEntry(m2, Form("%s #varepsilon = %4.3f#pm%4.3f", sample2.c_str(), epsm2, epsm2E), "l");
-  legg->Draw();
-  tl->SetTextSize(0.03);
-  tl->DrawLatexNDC(0.2, 0.60, Form("ratio(data): %5.4f #pm %5.4f", depsd, depsdE));
-  tl->DrawLatexNDC(0.2, 0.55, Form("ratio(MC):  %5.4f #pm %5.4f", depsm, depsmE));
-  tl->DrawLatexNDC(0.2, 0.50, Form("Systematics: %5.4f ", 1.-(depsd/depsm)));
-  pl->DrawLine(cut, 0., cut, 1.2*ymax);
-  tl->DrawLatex(cut, 1.3*ymax, Form("cut = %5.4f", cut));
-
-  sysname = Form("%s:%s_%s_%s_%s_%s", fSetup.c_str(), chansel.c_str(), sample1.c_str(),  sample2.c_str(), var.c_str(), cutlevel.c_str());
-  fTEX << formatTex(epsm1,  Form("%s_Eps1Mc:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(epsm2,  Form("%s_Eps2Mc:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(epsd1,  Form("%s_Eps1Dt:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(epsd2,  Form("%s_Eps2Dt:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(depsm,  Form("%s_ratioEpsMc:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(depsmE, Form("%s_ratioEpsMc:err", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(depsd,  Form("%s_ratioEpsDt:val", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(depsdE, Form("%s_ratioEpsDt:err", sysname.c_str()), 3) << endl;
-  fTEX << formatTex(1.-(depsd/depsm),  Form("%s_ratioEps:sys", sysname.c_str()), 3) << endl;
-
-  savePad(Form("sbso/sysDoubleRatio%s_%s_%s_%s_%s_chan%d.pdf", fSetup.c_str(), var.c_str(), sample1.c_str(), sample2.c_str(), cutlevel.c_str(), ichan));
-
-
-}
 
 
 // ----------------------------------------------------------------------
