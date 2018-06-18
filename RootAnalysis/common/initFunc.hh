@@ -125,9 +125,9 @@ public:
 
   // -- Specific models
   TF1* phiKK(TH1 *h);
-  TF1* bupsik(TH1 *h);
-  TF1* bupsik1(TH1 *h);
-  TF1* bspsiphi(TH1 *h, double sigma = 0.01);
+  TF1* bupsik(TH1 *h, double sigma = 0.01);
+  TF1* bupsik1(TH1 *h, double sigma = 0.01);
+  TF1* bspsiphi(TH1 *h, double lo = 5.2, double hi = 5.8, double sigma = 0.01);
 
   void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);
