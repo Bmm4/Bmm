@@ -107,7 +107,7 @@ sub cntGen {
 	    print "===$dc===\n";
 	    $doesitexist = `srmls srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat$dc`;
 	    if ($? == 0) {
-		@bla = `root -q -b -x '/shome/ursl/macros/cntEvents.C\(\"dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/$dc\"\);'`;
+		@bla = `root -q -b -x '/t3home/ursl/macros/cntEvents.C\(\"dcap://t3se01.psi.ch:22125/pnfs/psi.ch/cms/trivcat/$dc\"\);'`;
 		@ble = grep(/CNTEVENTS/, @bla);
 		$ble = pop(@ble);
 		($bla, $generated) = split(/:/, $ble);

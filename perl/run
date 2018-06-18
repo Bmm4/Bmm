@@ -260,7 +260,7 @@ foreach $jobfile (@ARGV) {
     } elsif ($opt_m eq "batch") {
 	print "batch submission: $job\n";
 	$jobName = "$job.csh";
-	if ($user eq "ursl") { $jobName = `/shome/$user/perl/rline`; chop($jobName); }
+	if ($user eq "ursl") { $jobName = `$home/perl/rline`; chop($jobName); }
 	if ($opt_d) {
 	    print "$qsub -q $opt_q $nodelist -N $jobName -o $pwd/$tdir/$job.sge.log -e $pwd/$tdir/$job.sge.err ./$job.csh\n";
 	} else {
