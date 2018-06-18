@@ -654,7 +654,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
 
   fitPsYield a(0, fVerbose);
   string sname = fDirectory + string("/adfpy/adfpy") + fControlPlotsFileName;
-  a.fit0_Bu2JpsiKp(hm, -1, sname);
+  a.fit0_Bu2JpsiKp(hm, -1, sname, fMassLo, fMassHi, fMassSigma);
   a.listFunctions();
   TF1 *fexpo = a.getFunction(string("expo_") + string(hm->GetName()));
   double expoBgl = fexpo->Integral(l0, l1);
