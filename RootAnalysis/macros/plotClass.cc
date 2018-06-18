@@ -27,6 +27,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
 
   setTdrStyle();
 
+  fCutFile = cuts;
+  fFilesFile = files;
+
   // without this line the calling of fReaderEvents2[fChan]->EvaluateMVA("BDT") fill crash?!?!
   fMvaMethod = TString("BDT");
 
@@ -78,9 +81,9 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
   fCrossSection  = 5.679e+01; // mb
   fCrossSection *= 1.0e12;
 
-  fFsfu.val  = 0.256;
+  fFsfu.val  = 0.250;
   fFsfu.name = "fsfu";
-  fFsfu.setErrors(0.004, 0.020, 0.020);
+  fFsfu.setErrors(0.0001, 0.012, 0.012);
 
   fBfPsiMuMu     = 0.05961;
   fBfPsiMuMuE    = 0.00033;
@@ -1346,6 +1349,13 @@ void plotClass::calcBDT() {
     && fGoodJpsiCuts
     && fGoodPvAveW8
       ) {
+    // do nothing
+  } else {
+    return;
+  }
+
+  fBDT = -90.;
+  if (fGoodCandAna && fGoodCmssw) {
     // do nothing
   } else {
     return;

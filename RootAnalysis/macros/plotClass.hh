@@ -230,7 +230,7 @@ public :
   int    fVerbose;
   double fEpsilon;
 
-  std::string fDirectory, fSetup, fSuffix, fSuffixSel, fSample, fNumbersFileName, fTreeDir;
+  std::string fDirectory, fSetup, fSuffix, fSuffixSel, fSample, fNumbersFileName, fTreeDir, fCutFile, fFilesFile;
   int   fSetupInt;
   // -- datasets (files and associated information)
   std::map<std::string, dataset*> fDS;
