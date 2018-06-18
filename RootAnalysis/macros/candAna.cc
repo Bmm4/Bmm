@@ -1275,6 +1275,16 @@ void candAna::candAnalysis() {
   fGoodLip          = fGoodPvLip;
   fGoodLipS         = fGoodPvLipS;
 
+  fGoodCmssw   =  (fMu1Pt > 4.) && (fMu2Pt > 4.)
+    && (TMath::Abs(fCandPvIpS) < 5.)
+    && (fCandFLSxy > 4.)
+    && (TMath::Abs(fCandDoca) < 0.08)
+    && (fCandChi2/fCandDof < 5.);
+
+  fGoodCandAna =  (fCandA < 0.2) && (fCandFLS3d > 4.) && (TMath::Abs(fCandPvIpS) < 4.) && (TMath::Abs(fCandPvIp) < 0.02);
+
+
+
   fGoodJpsiCuts     = true; // this will be overridden in the derived classes
 }
 
@@ -3786,7 +3796,12 @@ void candAna::calcBDT() {
     return;
   }
 
-
+  fBDT = -90.;
+  if (fGoodCandAna && fGoodCmssw) {
+    // do nothing
+  } else {
+    return;
+  }
 
   frd.pt         = fCandPt;
   frd.eta        = fCandEta;

@@ -312,7 +312,7 @@ public:
   bool    fGoodCloseTrack, fGoodCloseTrackS1, fGoodCloseTrackS2, fGoodCloseTrackS3;
   bool    fGoodDocaTrk, fGoodLastCut, fTIS, fTOS, fL1T, fRefTrigger, fGoodAcceptance, fGoodJpsiCuts;
   bool    fvetoSameSignTrigger;
-  bool    fPreselAlpha, fPreselFLS, fPreselOther;
+  bool    fPreselAlpha, fPreselFLS, fPreselOther, fGoodCmssw, fGoodCandAna;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
   bool    fGoodHLT1;
   string  fHLT1Path, fL1SeedString;
