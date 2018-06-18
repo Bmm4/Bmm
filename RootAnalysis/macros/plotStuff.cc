@@ -1570,9 +1570,9 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  if (string::npos != dsname.find("bupsik") || string::npos != dsname.find("bspsiphi")) {
 	    fitPsYield fpy(hBlock, 0);
 	    if (string::npos != dsname.find("bupsik")) {
-	      fpy.fitBu2JpsiKp(0, fDirectory + "/ys-" + trg + "-");
+	      fpy.fitBu2JpsiKp(0, fDirectory + "/ys-" + trg + "-", 5.0, 5.8, 0.025);
 	    } else if (string::npos != dsname.find("bspsiphi")) {
-	      fpy.fitBs2JpsiPhi(0, fDirectory + "/");
+	      fpy.fitBs2JpsiPhi(0, fDirectory + "/", 5.0, 5.8, 0.025);
 	    }
 	    if (1) {
 	      result  = fpy.getSignalYield();
@@ -1684,9 +1684,9 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	  if (string::npos != dsname.find("bupsik") || string::npos != dsname.find("bspsiphi")) {
 	    fitPsYield fpy(hBlock, 1);
 	    if (string::npos != dsname.find("bupsik")) {
-	      fpy.fitBu2JpsiKp(0, fDirectory + "/ys-" + trg + "-");
+	      fpy.fitBu2JpsiKp(0, fDirectory + "/ys-" + trg + "-", 5.0, 5.8, 0.025);
 	    } else if (string::npos != dsname.find("bspsiphi")) {
-	      fpy.fitBs2JpsiPhi(0, fDirectory + "/ys-" + trg + "-");
+	      fpy.fitBs2JpsiPhi(0, fDirectory + "/ys-" + trg + "-", 5.0, 5.8, 0.025);
 	    }
 	    if (1) {
 	      result  = fpy.getSignalYield();
