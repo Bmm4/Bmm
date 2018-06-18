@@ -351,6 +351,7 @@ $year = 2016;
     "BuToPiMuMu"                => "bmmReader.mix-Bu2PiMuMu",
     "BsToKMuNuAcc"              => "bmmReader.mix-Bs2KMuNu",
     "BsToKMuNu"                 => "bmmReader.mix-Bs2KMuNu",
+    "BcToJpsiMuNu"              => "bmmReader.mix-Bc2JpsiMuNu",
     "LbToPK"                    => "bmmReader.mix-Lb2PK",
     "LbToPMuNu"                 => "bmmReader.mix-Lb2PMuNu"
     );
