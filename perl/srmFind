@@ -1,0 +1,159 @@
+#!/usr/bin/env perl
+
+# ----------------------------------------------------------------------
+#
+# Usage: srmFind -x URI -p pattern [-c] [-C] [-e|o]
+# -----
+#          ASSUMES THAT the SE filesystem is locally mounted!
+#
+#          -c   create output suitable for chain files
+#          -p   pattern to search for
+#          -e|o even or odd fies
+#
+# Examples:  $BMMBASE/perl/srmFind -x /store/user/ckar/Charmonium
+#
+# History: 2017/07/04 First shot, starting from srmLs
+# ----------------------------------------------------------------------
+# Send all questions, wishes and complaints to the
+#
+# Author    Urs Langenegger <urslangenegger@gmail.com>
+# ----------------------------------------------------------------------
+
+$cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
+
+# -- Get arguments
+use Getopt::Std;
+getopts('cCeop:x:');
+
+# -- shortcut for nfs-mounted multiple directories:
+if ($#ARGV > -1) {
+    @filelist = ();
+    for ($i = 0; $i <= $#ARGV; ++$i) {
+	$dir = $ARGV[$i];
+	@flist = ();
+	@flist = `find $dir -name \\*.root -print`;
+	@flist = grep(s/.*\/store/\/store/g, @flist);
+	push(@filelist, @flist);
+    }
+    if ($opt_e) {
+	@filelist = &evenFiles(@filelist);
+    }
+    if ($opt_o) {
+	@filelist = &oddFiles(@filelist);
+    }
+    foreach $line (@filelist) {
+	print "$file";
+    }
+    if ($opt_e) {
+	@filelist = &evenFiles(@filelist);
+    }
+    if ($opt_o) {
+	@filelist = &oddFiles(@filelist);
+    }
+
+    foreach $f (@filelist) {
+	chop($f);
+	$f =~ s/^\ *//g;
+	if (($opt_p eq "") && !($f =~ /\.root/)) {next; } # skip empty lines if no pattern is provided
+	if (($opt_p eq "") || ($f =~ /$opt_p/)) {
+	    # -- search for pattern
+	    if ($opt_c) {
+		print "$cprefix/$f\n";
+		# } elsif ($opt_p && !$opt_s) {
+	    } elsif ($opt_C) {
+		print "/$lfn\n";
+	    } elsif (!$opt_s) {
+		print "$size $ffn\n";
+	    }
+
+	}
+    }
+    exit(0);
+
+}
+
+$prefix = substr($opt_x, 0, index($opt_x, '/store'));
+$postfix = substr($opt_x, index($opt_x, '/store'));
+
+if ($#filelist == 0) {
+    print "running xrdfs .. ls .. \n";
+    @filelist = `xrdfs t3dcachedb03.psi.ch ls -l -u //pnfs/psi.ch/cms/trivcat$opt_x`;
+    @filelist = grep(s/\ {1,99}/ /g, @filelist);
+    if ($opt_e) {
+	@filelist = &evenFiles(@filelist);
+    }
+    if ($opt_o) {
+	@filelist = &oddFiles(@filelist);
+    }
+}
+
+foreach $line (@filelist) {
+    @parts = split(/ /, $line);
+    $line = substr($line, index($line, '/store'));
+    $line = $parts[3] . " " . $line;
+}
+
+my $sum = 0;
+my $fidx = 0;
+$filename = "$opt_b"."_$fidx";
+if ($opt_b) {open(OUT, ">$filename") || die "Cannot open $filename\n";}
+
+foreach $f (@filelist) {
+    chop($f);
+    $f =~ s/^\ *//g;
+    if (($opt_p eq "") && !($f =~ /\.root/)) {next; } # skip empty lines if no pattern is provided
+    if (($opt_p eq "") || ($f =~ /$opt_p/)) {
+	# -- search for pattern
+	($size, $file) = split(/ /, $f, 2);
+	$lfn = substr($file, rindex($file, '/store')+1, length($file));
+	$ffn = $prefix."/".$lfn;
+	# print "lfn: $lfn -> $size\n";
+	if ($opt_c) {
+	    print "$cprefix/$lfn\n";
+	# } elsif ($opt_p && !$opt_s) {
+	} elsif ($opt_C) {
+	    print "/$lfn\n";
+	} elsif (!$opt_s) {
+	    print "$size $ffn\n";
+	}
+
+    }
+}
+
+
+# ----------------------------------------------------------------------
+sub oddFiles() {
+    (@myfiles) = @_;
+    my @returnfiles = ();
+    if ($#myfiles > 0) {
+	foreach $file (@myfiles) {
+	    $file =~ /.*-([0-9]{1,6})\.root/;
+	    if ($1%2 == 1) {
+		push(@returnfiles, $file);
+		# print "$file is odd\n";
+	    }
+	}
+    } else {
+	@returnfiles = @myfiles;
+    }
+    return @returnfiles;
+
+}
+
+# ----------------------------------------------------------------------
+sub evenFiles() {
+    (@myfiles) = @_;
+    my @returnfiles = ();
+    if ($#myfiles > 0) {
+	foreach $file (@myfiles) {
+	    $file =~ /.*-([0-9]{1,6})\.root/;
+	    if ($1%2 == 0) {
+		push(@returnfiles, $file);
+		# print "$file is even\n";
+	    }
+	}
+    } else {
+	@returnfiles = @myfiles;
+    }
+    return @returnfiles;
+}
