@@ -1,0 +1,6 @@
+# -- ntriggers for 2018
+# -- ntriggers
+#NTRIGGERS    notrigger
+#TRIGRANGE    HLT_DoubleMu4_JpsiTrk_Displaced_v14(315257:999999)
+#TRIGRANGE     HLT_Dimuon25_Jpsi_v13(315257:999999)
+TRIGRANGE    HLT_DoubleMu4_Jpsi_Displaced_v6(315257:999999)
