@@ -20,7 +20,7 @@ $PSI =~ s/\?/\\\?/g;
 if ($PSI eq "") {
     die "PSI not defined, but required ...\n";
 }
-my $LFN = "/store/user/ckar/Charmonium/";
+my $LFN = "/store/user/ursl/bmm5/runBmm/$version/";
 my $SEDIR = "$LFN";
 
 # -- edit the following if you produced your own T1 trees with cmsRun:
@@ -117,8 +117,8 @@ my @list2018 = ("A");
 foreach $let (@list2018) {
     $dataset = "bmmCharmonium2018$let";
     $mode = "bmm-data-$dataset-$version"; $pattern = "Run2018";
-    # $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016' c$mode-*  && cd - ";
-    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016 ' ");
+    # $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2018 -e $era -C cuts/bmmReader.2016' c$mode-*  && cd - ";
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2018 -C cuts/bmmReader.2018 ' ");
     $catalogs{$mode} = "$BMMBASE/perl/srmFind -c -p $pattern $T1LOC/Charmonium | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
