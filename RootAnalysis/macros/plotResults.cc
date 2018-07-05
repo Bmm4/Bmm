@@ -384,6 +384,8 @@ plotResults::plotResults(string dir, string files, string cuts, string setup, in
   fSystematics["effmuid"] = vector<double>(effmuid, effmuid + sizeof(effmuid)/sizeof(effmuid[0]));
   double efftrig[] = {0.03, 0.03};
   fSystematics["efftrig"] = vector<double>(efftrig, efftrig + sizeof(efftrig)/sizeof(efftrig[0]));
+  double efflifetime[] = {0.03, 0.04};
+  fSystematics["efflifetime"] = vector<double>(efflifetime, efflifetime + sizeof(efflifetime)/sizeof(efflifetime[0]));
 
   // -- pions and kaons
   double fakemuid[fNchan];
@@ -604,7 +606,13 @@ void plotResults::makeAll(string what) {
 
 
   if ((what == "all") || (string::npos != what.find("ana")) || (string::npos != what.find("sys"))) {
-    fTEX.close();
+
+    if (2016 == fYear) {
+      sysEffLifetime("WithAnaCuts");
+      sysEffLifetime("WithAllCuts");
+    }
+
+    // -- now the systematics part
     replaceAll(fTexFileName, "Results", "Systematics");
     cout << Form("/bin/rm -f %s", fTexFileName.c_str()) << endl;
     system(Form("/bin/rm -f %s", fTexFileName.c_str()));
@@ -627,14 +635,48 @@ void plotResults::makeAll(string what) {
       sysAna("bupsikData", "bspsiphiData", "C", i, 0, 1);
       sysAna("bupsikData", "bspsiphiData", "", i, 0, 1);
     }
-    sysBsVsBu();
-    scanBDTEffRatio(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), "EFF-TRIG-MC-bupsik", "EFF-TRIG-MC-bsmm");
-    fTEX.close();
 
+    sysBsVsBu();
+
+    scanBDTEffRatio(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), "EFF-TRIG-MC-bupsik", "EFF-TRIG-MC-bsmm");
+
+    fTEX.close();
   }
 
   if (what == "argh") {
-    sysBsVsBu();
+    fSaveSmallTree = false;
+
+    string bac = fHistFileName;
+    replaceAll(fHistFileName, "Results", "Lifetime");
+    fHistFile = TFile::Open(fHistFileName.c_str(), "RECREATE");
+    vector<int> v;
+    v.push_back(35);
+    v.push_back(40);
+    v.push_back(45);
+    v.push_back(50);
+    v.push_back(55);
+    v.push_back(60);
+    v.push_back(65);
+    v.push_back(66);
+    v.push_back(67);
+    v.push_back(68);
+    v.push_back(69);
+    v.push_back(70);
+    v.push_back(75);
+    v.push_back(80);
+    TTree *t(0);
+
+    for (unsigned int i = 0; i < v.size(); ++i) {
+      resetHistograms();
+      setup(Form("bsmm%dMc", v[i]));
+      t = getTree(fSample, fTreeDir);
+      setupTree(t, fSample);
+      loopOverTree(t, 1);
+      saveHistograms(fSample);
+    }
+    fHistFile->Close();
+    fHistFileName = bac;
+    return;
   }
 
   if (what == "dbx1") {
@@ -866,6 +908,131 @@ void plotResults::scanBDT(string fname, bool createTexFile) {
 
   showScanBDT("all");
 }
+
+
+// ----------------------------------------------------------------------
+void plotResults::sysEffLifetime(string cutname) {
+  fTEX.open(fTexFileName.c_str(), ios::app);
+  string bac = fHistFileName;
+  vector<int> v;
+  v.push_back(35);
+  v.push_back(40);
+  v.push_back(45);
+  v.push_back(50);
+  v.push_back(55);
+  v.push_back(60);
+  v.push_back(65);
+  v.push_back(66);
+  v.push_back(67);
+  v.push_back(68);
+  v.push_back(69);
+  v.push_back(70);
+  v.push_back(75);
+  v.push_back(80);
+
+  double tsm(1.615);
+  TH1D *hAll(0), *hCut(0);
+  double nAll(0.), nCut(0.);
+  string hname("");
+  for (int ic = 0; ic < fNchan; ++ic) {
+    TH1D *hEff = new TH1D("heff", "", 60, 1.3, 1.9); hEff->Sumw2();
+    setTitles(hEff, "#tau_{gen} [ps]", "#varepsilon", 0.05, 1.2, 1.1);
+    replaceAll(fHistFileName, "Results", "Lifetime");
+    fHistFile = TFile::Open(fHistFileName.c_str());
+
+    for (unsigned int i = 0; i < v.size(); ++i) {
+      hname = Form("bsmm%dMc/hMassNoCuts_bdt%s_bsmm%dMc_chan%d", v[i], fSetup.c_str(), v[i], ic);
+      //	    cout << "hname = " << hname << endl;
+      hAll = (TH1D*)fHistFile->Get(hname.c_str());
+      nAll = hAll->Integral();
+      hname = Form("bsmm%dMc/hMass%s_bdt%s_bsmm%dMc_chan%d", v[i], cutname.c_str(), fSetup.c_str(), v[i], ic);
+      //	    cout << "hname = " << hname << endl;
+      hCut = (TH1D*)fHistFile->Get(hname.c_str());
+      nCut = hCut->Integral();
+      cout << "Efficiency(" << v[i] << ", ic=" << ic << ") = " << nCut/nAll << endl;
+      double effV = nCut/nAll;
+      double effE = dEff(static_cast<int>(nCut), static_cast<int>(nAll));
+      hEff->SetBinContent(hEff->FindBin(1+static_cast<double>(v[i])/100), effV);
+      hEff->SetBinError(hEff->FindBin(1+static_cast<double>(v[i])/100), effE);
+      fTEX << formatTex(effV,  Form("%s:%s_efftau%d_chan%d:val", cutname.c_str(), fSetup.c_str(), v[i], ic), 3) << endl;
+      fTEX << formatTex(effE,  Form("%s:%s_efftau%d_chan%d:err", cutname.c_str(), fSetup.c_str(), v[i], ic), 3) << endl;
+    }
+
+    fHistFile->Close();
+    fHistFileName = bac;
+    fHistFile = TFile::Open(fHistFileName.c_str());
+    hAll = (TH1D*)fHistFile->Get(Form("bsmmMcComb/hMassNoCuts_bdt%s_bsmmMcComb_chan%d", fSetup.c_str(), ic));
+    nAll = hAll->Integral();
+    hCut = (TH1D*)fHistFile->Get(Form("bsmmMcComb/hMass%s_bdt%s_bsmmMcComb_chan%d", cutname.c_str(), fSetup.c_str(), ic));
+    nCut = hCut->Integral();
+    cout << "Efficiency(default) = " << nCut/nAll << endl;
+    double effV = nCut/nAll;
+    double effE = dEff(static_cast<int>(nCut), static_cast<int>(nAll));
+    hEff->SetBinContent(hEff->FindBin(1.471), effV);
+    hEff->SetBinError(hEff->FindBin(1.471), effE);
+    fTEX << formatTex(effV,  Form("%s:%s_efftauDef_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fTEX << formatTex(effE,  Form("%s:%s_efftauDef_chan%d:err", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fHistFile->Close();
+
+    //      hEff->Draw();
+    double ymax = 1.1*hEff->GetBinContent(hEff->FindBin(1.8));
+    hEff->SetMaximum(ymax);
+    hEff->SetMinimum(0.001);
+    hEff->Fit("pol1");
+    double p0 = hEff->GetFunction("pol1")->GetParameter(0);
+    double p1 = hEff->GetFunction("pol1")->GetParameter(1);
+    tl->SetTextSize(0.05);
+    tl->SetTextColor(kBlack);
+    tl->SetTextAngle(90.);
+    pl->SetLineColor(kBlack);
+    pl->SetLineStyle(kDotted);
+    pl->DrawLine(1.415, 0., 1.415, ymax);
+    tl->DrawLatex(1.405, 0.2*ymax, "(#Gamma_{L}, A = -1)");
+    pl->SetLineStyle(kSolid);
+    pl->DrawLine(tsm, 0., tsm, ymax);
+    tl->DrawLatex(1.605, 0.2*ymax, "SM (#Gamma_{H}, A = +1)");
+    pl->SetLineStyle(kDotted);
+    pl->DrawLine(0.5*(tsm+1.415), 0., 0.5*(tsm+1.415), ymax);
+    tl->DrawLatex(1.505, 0.2*ymax, "(A = 0)");
+    pl->SetLineColor(kRed);
+    tl->SetTextColor(kRed);
+    pl->SetLineStyle(kSolid);
+    pl->DrawLine(1.475, 0., 1.475, ymax);
+    tl->DrawLatex(1.47, 0.05*ymax, "CMS MC");
+    tl->SetTextAngle(0.);
+    tl->SetTextColor(kBlack);
+    double ecms = hEff->GetBinContent(hEff->FindBin(1.475));
+    double esmh = p0 + p1*tsm;
+    double esml = p0 + p1*1.415;
+    double esm  = p0 + p1*1.415;
+    double esm0 = p0 + p1*1.515;
+    tl->SetTextSize(0.03);
+    tl->DrawLatex(1.34, 0.15*ymax, Form("#varepsilon(fit) = %4.3f", esml));
+    tl->SetTextColor(kRed);
+    tl->DrawLatex(1.48, 0.03*ymax, Form("#varepsilon(CMS) = %4.3f", ecms));
+    tl->SetTextColor(kBlack);
+    tl->DrawLatex(1.52, 0.15*ymax, Form("#varepsilon(fit)  = %4.3f", esm0));
+    tl->DrawLatex(1.62, 0.15*ymax, Form("#varepsilon(fit)  = %4.3f", esmh));
+    tl->DrawLatex(1.62, 0.11*ymax, Form("#Delta(rel) = %4.3f (compared to CMS MC)", (esmh-ecms)/esmh));
+    tl->DrawLatex(1.62, 0.07*ymax, Form("#Delta(rel) = %4.3f (compared to #Gamma_{L}, A=-1)", (esmh-esml)/esmh));
+    tl->DrawLatex(1.62, 0.03*ymax, Form("#Delta(rel) = %4.3f (compared to A=0)", (esmh-esm0)/esmh));
+
+    fTEX << formatTex(esmh/ecms, Form("%s:%s_efftauScale_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fTEX << formatTex(ecms,  Form("%s:%s_efftauCMS_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fTEX << formatTex(esmh,  Form("%s:%s_efftauHeavy_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fTEX << formatTex(esml,  Form("%s:%s_efftauLight_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+    fTEX << formatTex(esm0,  Form("%s:%s_efftauA0_chan%d:val", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+
+    fTEX << formatTex((esmh-esml)/esmh/TMath::Sqrt(12),  Form("%s:%s_efftau_chan%d:sys", cutname.c_str(), fSetup.c_str(), ic), 3) << endl;
+
+    savePad(Form("sys/sysEffLifetime_%s_%s_chan%d.pdf", fSetup.c_str(), cutname.c_str(), ic));
+    delete hEff;
+  }
+  fTEX.close();
+
+}
+
+
 
 
 // ----------------------------------------------------------------------
@@ -2026,11 +2193,44 @@ void plotResults::fillAndSaveHistograms(int start, int nevents) {
       otherNumbers(fSample);
       saveHistograms(fSample);
     }
+
+
+
   }
 
   fHistFile->Close();
 
   fSaveSmallTree = false;
+
+  string bac = fHistFileName;
+  replaceAll(fHistFileName, "Results", "Lifetime");
+  fHistFile = TFile::Open(fHistFileName.c_str(), "RECREATE");
+  vector<int> v;
+  v.push_back(35);
+  v.push_back(40);
+  v.push_back(45);
+  v.push_back(50);
+  v.push_back(55);
+  v.push_back(60);
+  v.push_back(65);
+  v.push_back(66);
+  v.push_back(67);
+  v.push_back(68);
+  v.push_back(69);
+  v.push_back(70);
+  v.push_back(75);
+  v.push_back(80);
+
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    resetHistograms();
+    setup(Form("bsmm%dMc", v[i]));
+    t = getTree(fSample, fTreeDir);
+    setupTree(t, fSample);
+    loopOverTree(t, 1);
+    saveHistograms(fSample);
+  }
+  fHistFileName = bac;
+
 }
 
 // ----------------------------------------------------------------------

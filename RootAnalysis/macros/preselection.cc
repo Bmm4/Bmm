@@ -36,7 +36,7 @@ using namespace std;
 #define DOCATRKMAX 2.5
 
 #define ISOMIN 0.0
-#define ALPHAMAX 1.0
+#define ALPHAMAX 0.2
 
 #define MASSERRORMAX 0.2
 

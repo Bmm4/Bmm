@@ -55,9 +55,10 @@ public :
   void sysAna(std::string sample1, std::string sample2, std::string massc = "C", int ichan = 0, int buversion = 0, int bsversion = 1);
   void sysNorm(std::string sample1, int ichan = 0, int version = 0);
   void sysBsVsBu();
-  void sysDoubleRatio(string sample1, string sample2, string chansel, string var, string cutlevel, double cut);
-  void displayScanBDT(string what = "CSBF", int mode = 0, int chan = 0);
-  void showScanBDT(string what = "all");
+  void sysEffLifetime(std::string cutname = "WithAnaCuts");
+  void sysDoubleRatio(std::string sample1, std::string sample2, std::string chansel, std::string var, std::string cutlevel, double cut);
+  void displayScanBDT(std::string what = "CSBF", int mode = 0, int chan = 0);
+  void showScanBDT(std::string what = "all");
   double findVarValue(std::string varName, std::vector<std::string> &lines);
   double findVarEtot(std::string varName, std::vector<std::string> &lines);
   double findVarEstat(std::string varName, std::vector<std::string> &lines);

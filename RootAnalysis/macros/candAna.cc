@@ -3264,6 +3264,7 @@ int candAna::osMuon(TAnaCand *pC, double r) {
 
 
 // ----------------------------------------------------------------------
+//  double iso = isoClassicWithDOCA(fpCand, 0.05, 0.7, 0.9); // 500um DOCA cut
 double candAna::isoClassicWithDOCA(TAnaCand *pC, double docaCut, double r, double ptmin) {
   const double ptCut(ptmin), coneSize(r);
   const bool verbose(false);
@@ -3480,6 +3481,7 @@ double candAna::isoMuon(TAnaCand *pCand, TAnaMuon *pMuon) {
 
 
 // ----------------------------------------------------------------------
+//  fMu2Iso      = isoTrack(fpCand, p2, 0.1, 0.5, 0.5);
 double candAna::isoTrack(TAnaCand *pC, TAnaTrack *pTrack, double docaCut, double r, double pmin) {
 
   const double pCut(pmin), coneSize(r);
