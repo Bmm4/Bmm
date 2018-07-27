@@ -1,0 +1,107 @@
+my $version = "Charmonium";
+my $vda     = "YY";
+my $vmc     = "YY";
+
+my $dataset = "bla";
+my $mode    = "bla";
+my $pattern = "bla";
+
+
+my $year = 0;
+my %modes = ();
+tie %modes, "Tie::IxHash";
+
+# -- grid SE prefix
+my $PSI = $ENV{'PSI'};
+$PSI =~ s/\?/\\\?/g;
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+# -- where to put the output at the SE
+my $LFN = "/store/user/ursl/bmm5/runBmm/$version/";
+my $SEDIR = "$LFN";
+# -- output directory on local scratch disk
+$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+
+# -- location of the T1 trees. This example implies a symlink,
+#    obtained with "gfalFS /scratch/ursl/store gsiftp://t3se01.psi.ch/pnfs/psi.ch/cms/trivcat/store"
+my $T1LOC = "/scratch/ursl/store/user/ckar";
+
+# -- did not manage to do this with refs, so do it with functions:
+sub runCommand() {
+    $runCmd  = "$BMMBASE/perl/run $opt_C $opt_q -t $opt_t -c $BMMBASE/RootAnalysis/macros/runBmmNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+sub runPlotCommand() {
+    $runCmd  = "$BMMBASE/perl/run -t $opt_t -c $BMMBASE/RootAnalysis/macros/runPlotNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+sub mCC() {
+    return " && $BMMBASE/perl/mkCheckedChain $mode ; ";
+}
+
+sub srmHadd() {
+    ($lmode) = @_;
+    if ($opt_w) {
+	return "$BMMBASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode-$opt_w.root";
+    } else {
+	return "$BMMBASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode.root";
+    }
+}
+
+# ######################
+# -- define all the jobs
+# ######################
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+%catalogs = ();
+tie %catalogs, "Tie::IxHash";
+
+my $NDA = 800000;
+my $NMC = 200000;
+my $NHA = 100000;
+
+# -----------------------------------------------
+# -- example combinations
+# -----------------------------------------------
+$combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
+$combine{"combined"} = "cd $SCRATCH; cp bmm-mc-Summer16_private-BdToPiMuNu-2016BF-$version.root bmm-mc-combined-BdToPiMuNu-2016BF-$version.root; cd - ; ";
+
+# ----------------------------------------------------------------------
+# 2018
+# ----------------------------------------------------------------------
+my @list2018 = ("A", "B");
+# -- BMM
+foreach $let (@list2018) {
+    $dataset = "bmmCharmonium2018$let";
+    $mode = "bmm-data-$dataset-$version"; $pattern = "Run2018";
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2018 -C cuts/bmmReader.2018 ' ");
+    $catalogs{$mode} = "$BMMBASE/perl/srmFind -c -p $pattern $T1LOC/Charmonium | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
+
+
+# -----------------------------------------------
+$dataset = "RunIISpring16DR80";  # real 2018 should have a different name ...
+# -----------------------------------------------
+$year = 2018;
+%modes = ();
+%modes = (
+    "BsToMuMu_BMuonFilter"      => "bmmReader.scale-Bs2MuMu",
+    "BdToKPi"                   => "bmmReader.mix-Bd2KPi",
+    );
+
+foreach $mds (keys %modes) {
+    my $odd = "-e";
+    $mode = "bmm-mc-$dataset-$mds-$year-$version";  ($pattern = $mode) =~ s/$year-$version/$vmc/g;
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2018<  -C cuts/$modes{$mds} -m ' ");
+    $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
