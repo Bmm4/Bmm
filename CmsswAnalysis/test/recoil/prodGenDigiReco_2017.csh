@@ -4,13 +4,15 @@
 # ----------------------------------------------------------------------
 # example submission:
 # -------------------
-# $BMMBASE/perl/run -t ../../../digireco.tar.gz -m local -c $BMMBASE/CmsswAnalysis/test/bmm4/prodDigiReco.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/ursl/bmm4/prod/gen/Bs2MuMu_EtaPtFilter%STORAGE2 /store/user/ursl/bmm4/prod/aodsim/Bs2MuMu_EtaPtFilter%SITE T3_CH_PSI' PYTHIA8_Bs2MuMu_EtaPtFilter_CUEP8M1_13TeV_step1-40000
+# t3ui01>wpd                                                                                                                                                    # /t3home/ursl/recoil/mcprod/CMSSW_9_3_1/jobs/recoil0
+# t3ui01>$BASE/perl/run -t ../../gendigireco-180904.tar.gz -m local -c $BASE/CmsswAnalysis/test/recoil/prodGenDigiReco_2017.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE3 /store/user/ursl/recoil/mcprod2017/aodsim/recoil0%SITE T3_CH_PSI' recoil0_gensim-40000.py
+# t3ui01>$BASE/perl/run -t ../../gendigireco-180904.tar.gz -q all.q -c $BASE/CmsswAnalysis/test/recoil/prodGenDigiReco_2017.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE3 /store/user/ursl/recoil/mcprod2017/aodsim/recoil0%SITE T3_CH_PSI' recoil0_gensim-40000.py
 #
 # Note: this script uses the py file with which it is submitted for GENERATION,
-#       it uses step2.py and step3.py which should be in the digireco.tar.gz file.
+#       it uses step1.py and step2.py which should be in the digireco.tar.gz file.
 # ----------------------------------------------------------------------
 setenv GENRELEASE CMSSW_9_3_1
-setenv RECRELEASE CMSSW_9_4_4
+setenv RECRELEASE CMSSW_9_4_0_patch1
 
 setenv SCRAM_ARCH
 setenv SRMCP
@@ -18,8 +20,8 @@ setenv SRMCP
 setenv JOB
 setenv STORAGE3
 setenv FILE1    file:./$JOB.root
-setenv FILE2    file:./$JOB:s/step1/step2/.root
-setenv FILE3    $JOB:s/step1/step3/.root
+setenv FILE2    file:./$JOB:s/gensim/step1/.root
+setenv FILE3    $JOB:s/gensim/step2/.root
 setenv PFNS
 setenv SITE
 
@@ -109,11 +111,11 @@ pwd
 
 #echo "--> Extract tar file"
 #date
+tar zxvf ../$JOB.tar.gz step1.py
 tar zxvf ../$JOB.tar.gz step2.py
-tar zxvf ../$JOB.tar.gz step3.py
 cd src
+cp ../step1.py .
 cp ../step2.py .
-cp ../step3.py .
 pwd
 ls -rtl
 mv ../../$GENRELEASE/src/$JOB.root .
@@ -126,14 +128,14 @@ echo "--> Run cmsRun for DIGIRECO"
 pwd
 date
 which cmsRun
-echo "cmsRun step2.py "
-cmsRun step2.py |& tee step2.log
+echo "cmsRun step1.py "
+cmsRun step1.py |& tee step1.log
 date
 pwd
-cp ../step3.py .
+cp ../step2.py .
 ls -rtl
-echo "cmsRun step3.py "
-cmsRun step3.py |& tee step3.log
+echo "cmsRun step2.py "
+cmsRun step2.py |& tee step2.log
 date
 pwd
 ls -rtl
