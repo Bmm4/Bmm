@@ -1,3 +1,4 @@
+# Usage: cmsRun testgen.py /t3home/ursl/recoil/mcprod/CMSSW_9_3_1/jobs/bdtomumu/bdtomumu_step1-40000.root testgen.root
 import os
 import sys
 import FWCore.ParameterSet.Config as cms
@@ -32,8 +33,8 @@ print 'Number of arguments:', len(sys.argv), 'arguments.'
 print 'Argument List:', str(sys.argv)
 cmsFile  = "file:%s" % sys.argv[2]
 rootFile = "file:%s" % sys.argv[3]
-print cmsFile
-print rootFile
+print "Input file:  ", cmsFile
+print "Output file: ", rootFile
 
 
 process.source = cms.Source(
