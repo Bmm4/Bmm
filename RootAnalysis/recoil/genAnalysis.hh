@@ -26,6 +26,7 @@ public:
 
   int          muonType(TGenCand *pCand);
   void         printBdecays();
+  void         printB2JpsiXdecays();
   void         recoilValidation();
   bool         decayModeValidation(TGenCand *pGen, int mode);
 

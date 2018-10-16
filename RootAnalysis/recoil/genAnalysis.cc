@@ -52,6 +52,7 @@ void genAnalysis::eventProcessing() {
   if (0) fpEvt->dumpGenBlock();
 
   if (1) printBdecays();
+  if (0) printB2JpsiXdecays();
   if (0) recoilValidation();
 
   fTree->Fill();
@@ -154,8 +155,63 @@ void genAnalysis::printBdecays() {
   cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
-    if ((TMath::Abs(pCand->fID) == 531) || (TMath::Abs(pCand->fID) == 511) || (TMath::Abs(pCand->fID) == 521)) {
+    if ((TMath::Abs(pCand->fID) == 531)
+	|| (TMath::Abs(pCand->fID) == 511)
+	|| (TMath::Abs(pCand->fID) == 521)
+	|| (TMath::Abs(pCand->fID) == 541)
+	|| (TMath::Abs(pCand->fID) == 5122)
+	|| (TMath::Abs(pCand->fID) == 5112)
+	|| (TMath::Abs(pCand->fID) == 5212)
+	|| (TMath::Abs(pCand->fID) == 5222)
+	) {
       cout << "B meson" << endl;
+      pCand->dump(1);
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pD = fpEvt->getGenCand(iD);
+	pD->dump(1);
+	// -- tau decays are not part of the B candidate daughters!? ONLY if the tau is the last particle in the decay chain!
+	// if (15 == TMath::Abs(pD->fID)) {
+	//   for (int idd = pD->fDau1; idd <= pD->fDau2; ++idd) {
+	//     pDD = fpEvt->getGenCand(idd);
+	//     pDD->dump(1);
+	//   }
+	// }
+      }
+    }
+  }
+
+  return;
+}
+
+// ----------------------------------------------------------------------
+void genAnalysis::printB2JpsiXdecays() {
+  TGenCand *pCand, *pD, *pDD;
+  cout << "--- Event " << fChainEvent << " ------------------------------------------------------------------" << endl;
+  cout << "gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    if ((TMath::Abs(pCand->fID) == 531)
+	|| (TMath::Abs(pCand->fID) == 511)
+	|| (TMath::Abs(pCand->fID) == 521)
+	|| (TMath::Abs(pCand->fID) == 541)
+	|| (TMath::Abs(pCand->fID) == 5122)
+	|| (TMath::Abs(pCand->fID) == 5112)
+	|| (TMath::Abs(pCand->fID) == 5212)
+	|| (TMath::Abs(pCand->fID) == 5222)
+	) {
+      int OK(0);
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pD = fpEvt->getGenCand(iD);
+	if (TMath::Abs(pD->fID) == 443) {
+	  OK = 1;
+	}
+      }
+      if (0 == OK) {
+	cout << "B meson" << endl;
+	pCand->dump(1);
+	continue;
+      }
+      cout << "B -> J/psiX meson" << endl;
       pCand->dump(1);
       for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
 	pD = fpEvt->getGenCand(iD);

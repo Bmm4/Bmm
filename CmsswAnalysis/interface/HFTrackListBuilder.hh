@@ -17,13 +17,13 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 
 class HFTrackListBuilder {
-	
+
 public:
   HFTrackListBuilder(edm::Handle<edm::View<reco::Track> > &hTracks, const reco::MuonCollection *muons, const TransientTrackBuilder *ttb, int verbose);
-		
+
   std::vector<int> getMuonList();
   std::vector<int> getTrackList();
-		
+
   // accessor functions
   void setMaxD0(double maxD0) { fMaxD0 = maxD0; }
   void setMaxDz(double maxDz) { fMaxDz = maxDz; }
@@ -33,18 +33,28 @@ public:
   void setMaxDocaToTracks(double docaToTrks) { fMaxDocaToTrks = docaToTrks; }
   void setCloseTracks(std::vector<int> *closeTracks) { fCloseTracks = closeTracks; }
   void setCallerName(const char *callerName) { fCallerName = std::string(callerName); }
-		
+
+  void setRecoilTrkIdx(std::vector<int> &v) {
+    fRecoilTrkIdx = v;
+    fDoFilter = true;
+    std::cout << "HFTrackListBuilder> recoil track list size = " << fRecoilTrkIdx.size() << std::endl;
+  }
+  void setRecoilPvIdx(int idx) {
+    fRecoilPvIdx = idx;
+    std::cout << "HFTrackListBuilder> recoil PV idx = " << fRecoilPvIdx << std::endl;
+  }
+
 public:
   // for STL
   bool operator()(int ix);
-		
+
 private:
   edm::Handle<edm::View<reco::Track> > &fhTracks;
   const reco::MuonCollection *fMuons;
   const TransientTrackBuilder *fTTB;
-		
+
   int fVerbose;
-	
+
 private:
   // cuts applied to the tracks
   std::string fCallerName;
@@ -52,9 +62,14 @@ private:
   double fMaxDz;
   double fMinPt;
   double fMaxDocaToTrks;
-  std::string fTrackQuality; 
-  muon::SelectionType fMuonQuality; 
+  std::string fTrackQuality;
+  muon::SelectionType fMuonQuality;
   std::vector<int> *fCloseTracks;
+
+  /// -- recoil
+  bool             fDoFilter;
+  std::vector<int> fRecoilTrkIdx;
+  int              fRecoilPvIdx;
 };
 
 #endif

@@ -38,6 +38,7 @@ class HFVirtualDecay : public edm::EDAnalyzer {
  protected:
   int fVerbose;
 
+  edm::InputTag fFilterLabel;
   edm::InputTag fTracksLabel;
   std::string   fTrackQualityString;
   edm::InputTag fPrimaryVertexLabel;
@@ -82,6 +83,13 @@ class HFVirtualDecay : public edm::EDAnalyzer {
   edm::EDGetTokenT<reco::MuonCollection>  fTokenMuon;
   edm::EDGetTokenT<reco::VertexCollection> fTokenVertex;
 
+  // -- (recoil) filtering
+  edm::Handle<std::vector<int> > fTrkIdxHandle;
+  edm::EDGetTokenT<std::vector<int> > fTokenTrkIdx;
+  edm::Handle<int> fPvIdxHandle;
+  edm::EDGetTokenT<int> fTokenPvIdx;
+
+  bool fDoFilter;
 };
 
 #endif

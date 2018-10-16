@@ -30,7 +30,8 @@ HFTrackListBuilder::HFTrackListBuilder(edm::Handle<edm::View<reco::Track> > &hTr
   fMaxDocaToTrks(999.),
   fTrackQuality("highPurity"),
   fMuonQuality(muon::AllGlobalMuons),
-  fCloseTracks(NULL)
+  fCloseTracks(NULL),
+  fDoFilter(false)
 {}
 
 
@@ -40,12 +41,23 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
   vector<int> trackList;
   vector<int>::iterator trackIt;
 
+  if (fDoFilter) {
+    cout << "filter track list has " << fRecoilTrkIdx.size() << " entries" << endl;
+  }
+
   trackList.reserve(50); // 50 muons should be enough
   int ix(0);
   for (muonIt = fMuons->begin(); muonIt != fMuons->end(); ++muonIt) {
     if (!muon::isGoodMuon(*muonIt, fMuonQuality)) continue;
     int ixMu = muonIt->track().index();
     if (ixMu < 0) continue;
+    // -- recoil filtering
+    if (fDoFilter && (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ixMu))) {
+      cout << "found ixMu = " << ixMu << " in fRecoilTrkIdx" << endl;
+    } else {
+      continue;
+    }
+
     if (!(*this)(ixMu)) {
       trackList.push_back(ixMu);
     } else {
@@ -57,7 +69,11 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
 
   if (fVerbose > 0) {
     cout << "==>" << fCallerName << "> nMuons = " << fMuons->size() << endl;
-    cout << "==>" << fCallerName << "> nMuonIndices = " << trackList.size() << endl;
+    cout << "==>" << fCallerName << "> nMuonIndices = " << trackList.size() << ": ";
+    for (unsigned int im = 0; im < trackList.size(); ++im) {
+      cout << trackList[im] << " ";
+    }
+    cout << endl;
   }
 
   return trackList;
@@ -69,11 +85,21 @@ std::vector<int> HFTrackListBuilder::getTrackList() {
   vector<int> trackList; // allocate capacity
   int ix;
 
-  trackList.reserve(200);
+  if (fDoFilter) {
+    cout << "filter track list has " << fRecoilTrkIdx.size() << " entries" << endl;
+  }
+
+  trackList.reserve(300);
   for (ix = 0; (unsigned)ix < fhTracks->size(); ix++) {
     reco::TrackBaseRef rTrackView(fhTracks, ix);
     const reco::Track trackView(*rTrackView);
     if (!trackView.quality(reco::TrackBase::qualityByName(fTrackQuality))) continue;
+    // -- recoil filtering
+    if (fDoFilter && fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ix)) {
+      //      cout << "found ix = " << ix << " in fRecoilTrkIdx" << endl;
+    } else {
+      continue;
+    }
     if (!(*this)(ix)) trackList.push_back(ix);
   }
 

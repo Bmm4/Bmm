@@ -5,6 +5,7 @@
 #include <math.h>
 
 #include "TROOT.h"
+#include "TRandom3.h"
 #include "TRint.h"
 #include "TChain.h"
 #include "TFile.h"
@@ -16,6 +17,7 @@
 #include "TKey.h"
 
 #include "t1Reader.hh"
+#include "recoilReader.hh"
 #include "genAnalysis.hh"
 
 #include "common/util.hh"
@@ -47,10 +49,10 @@ int main(int argc, char *argv[]) {
   int verbose(-99);
   int blind(1);
   int isMC(0);
-  int year(0);
+  int year(2017);
   int json(0);
-  bool testType(0);
-  string era("");
+  bool testType(false);
+  string era("A");
 
   // Change the MaxTreeSize to 100 GB (default since root v5.26)
   TTree::SetMaxTreeSize(100000000000ll); // 100 GB
@@ -63,7 +65,7 @@ int main(int argc, char *argv[]) {
   string treeName("T1");
   string evtClassName("TAna01Event");
 
-  string readerName("bmmReader");
+  string readerName("");
   TString histfile("");
 
   // -- command line arguments
@@ -106,6 +108,9 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i],"-y"))  {year       = atoi(argv[++i]); }                 // set year
   }
 
+  delete gRandom;
+  gRandom = (TRandom*) new TRandom3;
+  gRandom->SetSeed(randomSeed);
 
   // -- Prepare histfilename variation with (part of) cut file name
   TString fn(cutFile);
@@ -216,6 +221,9 @@ int main(int argc, char *argv[]) {
     a = new genAnalysis(chain, TString(evtClassName));
   } else if ("skim" == readerName) {
     skimEvents(chain);
+  } else {
+    cout << "instantiating recoilReader" << endl;
+    a = new recoilReader(chain, TString(evtClassName));
   }
 
 

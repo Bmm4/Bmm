@@ -1,10 +1,6 @@
-#include "Bmm/CmsswAnalysis/interface/HfrTrackListProducer.hh"
+#include "Bmm/CmsswAnalysis/plugins/HfrTrackListProducer.h"
 
 #include <memory>
-#include "RecoParticleFlow/PFTracking/interface/PFTrackProducer.h"
-#include "RecoParticleFlow/PFTracking/interface/PFTrackTransformer.h"
-#include "DataFormats/ParticleFlowReco/interface/PFRecTrack.h"
-#include "DataFormats/ParticleFlowReco/interface/PFRecTrackFwd.h"
 #include "DataFormats/TrackReco/interface/Track.h"
 #include "TrackingTools/PatternTools/interface/Trajectory.h"
 #include "FWCore/Framework/interface/ESHandle.h"
@@ -22,15 +18,9 @@ using namespace reco;
 
 // ----------------------------------------------------------------------
 HfrTrackListProducer::HfrTrackListProducer(const ParameterSet& iConfig) :
-  fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
-  fTracksLabel(iConfig.getUntrackedParameter<InputTag>("tracksLabel", InputTag("generalTracks"))),
-  fTrackQualityString(iConfig.getUntrackedParameter<string>("trackQualityString", string("highPurity"))),
-  fPrimaryVertexLabel(iConfig.getUntrackedParameter<InputTag>("PrimaryVertexLabel", InputTag("offlinePrimaryVertices"))),
-  fBeamSpotLabel(iConfig.getUntrackedParameter<InputTag>("BeamSpotLabel", InputTag("offlineBeamSpot"))),
-  fMuonsLabel(iConfig.getUntrackedParameter<InputTag>("muonsLabel", InputTag("muons"))),
-  fMuonQualityString(iConfig.getUntrackedParameter<string>("muonQuality", string("AllGlobalMuons"))),
-  fTrackMinPt(iConfig.getUntrackedParameter<double>("trackMinPt", 3.0)) {
-  produces<TrackCollection>();
+  HfrBaseProducer(iConfig) {
+  produces<vector<int> >(); // vector of track indices
+  produces<int>();          // possibly a PV index
 }
 
 
@@ -51,63 +41,34 @@ void HfrTrackListProducer::dumpConfiguration() {
 
 // ----------------------------------------------------------------------
 void HfrTrackListProducer::produce(Event& iEvent, const EventSetup& iSetup) {
-  // -- magnetic field
-  edm::ESHandle<MagneticField> fieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(fieldHandle);
-  fMagneticField = fieldHandle.product();
+  if (fVerbose > 0)  cout << " ======================================================================"
+			  << "=== HfrTrackListProducer run = " << iEvent.id().run()
+			  << " evt = " << iEvent.id().event() << endl
+			  << " ----------------------------------------------------------------------"
+			  << endl;
 
-  // -- primary vertices
-  Handle<VertexCollection> hVertexCollection;
-  try {
-    iEvent.getByToken(fTokenVertex, hVertexCollection);
-    hVertexCollection.isValid();
-    fVertexCollection = *hVertexCollection;
-  } catch(cms::Exception&){
-    //    throw HFSetupException("No primary vertex collection found, skipping");
-  }
-
-  // -- beam spot
-  Handle<BeamSpot> hBeamSpot;
-  try {
-    iEvent.getByToken(fTokenBeamSpot, hBeamSpot);
-    hBeamSpot.isValid();
-    fBeamSpot = *hBeamSpot;
-  } catch(cms::Exception&){
-    //    throw HFSetupException("No beam spot collection found, skipping");
-  }
-
-  // -- tracks
-  try {
-    iEvent.getByToken(fTokenTrack, fTracksHandle);
-    fTracksHandle.isValid();
-  } catch(cms::Exception&){
-    //    throw HFSetupException(Form("No valid TrackCollection with label '%s' found, skipping", fTracksLabel.encode().c_str()));
-  }
-
-  // -- muons
-  Handle<MuonCollection> hMuonCollection;
-  try {
-    iEvent.getByToken(fTokenMuon, hMuonCollection);
-    hMuonCollection.isValid();
-    fMuonCollection = hMuonCollection.product();
-  } catch(cms::Exception&){
-    //    throw HFSetupException(Form("No valid MuonCollection with label '%s' found, skipping",fMuonsLabel.encode().c_str()));
-  }
-
+  HfrBaseProducer::analyze(iEvent, iSetup);
 
   // -- create and fill the track collections
-  auto trackColl = std::make_unique<reco::TrackCollection>();
+  auto trkIdxColl = std::make_unique<vector<int> >();
+  int ntracks(0);
   for (unsigned int ix = 0; ix < fTracksHandle->size(); ix++) {
     reco::TrackBaseRef rTrackView(fTracksHandle, ix);
     const reco::Track track(*rTrackView);
+    ++ntracks;
     if (!track.quality(reco::TrackBase::qualityByName(fTrackQualityString))) continue;
     if (track.pt() < fTrackMinPt) continue;
-    trackColl->push_back(track);
+    trkIdxColl->push_back(ix);
+    cout << " adding track idx = " << ix << " with pT = " << track.pt() << " to hfrtracks list" << endl;
   }
+  cout << "==>HfrTrackListProducer> put into event tracklist with " << trkIdxColl->size()
+       << " tracks, removed "  << ntracks - trkIdxColl->size()
+       << endl;
 
+  iEvent.put(std::move(trkIdxColl));
 
-
-  iEvent.put(std::move(trackColl));
+  auto pvIdx = std::make_unique<int>(1234);
+  iEvent.put(std::move(pvIdx));
 }
 
 // ----------------------------------------------------------------------
@@ -119,3 +80,5 @@ void HfrTrackListProducer::beginRun(const edm::Run& run, const EventSetup& iSetu
 // ----------------------------------------------------------------------
 void HfrTrackListProducer::endRun(const edm::Run& run, const EventSetup& iSetup) {
 }
+
+DEFINE_FWK_MODULE(HfrTrackListProducer);
