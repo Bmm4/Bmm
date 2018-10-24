@@ -168,7 +168,7 @@ public:
   TTree *fTree;
   TAna01Event *fpEvt;
   TAnaCand *fpCand, *fpOsCand;
-  int fCandIdx;
+  int fCandIdx, fDcandIdx;
 
   int fVerbose, fDbx;
   int fIsMC;

@@ -430,6 +430,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(3);
     fpCand = pCand;
     fCandIdx = iC;
+    fDcandIdx = -1;
 
     // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
     candAnalysis();
@@ -526,8 +527,28 @@ void candAna::candAnalysis() {
 
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(1);
 
-  // -- Check whether data cand exists and has 100% overlap
   fCandDcand = checkDataCand(fpCand);
+  // -- Check whether data cand exists and has 100% overlap
+  if (0 && fCandDcand && fDcandIdx > -1) {
+    TAnaCand *dCand = fpEvt->getCand(fDcandIdx);
+
+    for (unsigned int i = fpCand->fSig1; i <= fpCand->fSig2; ++i) {
+      TAnaTrack *pS0 = fpEvt->getSigTrack(i);
+      for (unsigned int j = dCand->fSig1; j <= dCand->fSig2; ++j) {
+	TAnaTrack *pS1 = fpEvt->getSigTrack(j);
+	if (pS0 && pS1 && (pS1->fQ == pS0->fQ) && (pS1->fMCID == pS0->fMCID)) {
+	  if (((pS0->fd0 - pS1->fd0) > 1.e-5) || ((pS0->fdsz - pS1->fdsz) > 1.e-5) || ((pS0->fdz - pS1->fdz) > 1.e-5) || ((pS0->fdxy - pS1->fdxy) > 1.e-5)
+	      ) {
+	    cout << "pS0: " << pS0 << " pS1: " << pS1 << endl;
+	    cout << "d0:  " << pS0->fd0 << " " << pS1->fd0 << endl;
+	    cout << "dsz: " << pS0->fdsz << " " << pS1->fdsz << endl;
+	    cout << "dz:  " << pS0->fdz << " " << pS1->fdz << endl;
+	    cout << "dxy: " << pS0->fdxy << " " << pS1->fdxy << endl;
+	  }
+	}
+      }
+    }
+  }
 
   TAnaVertex *pVtx;
   fPvN = 0;
@@ -6275,7 +6296,8 @@ double candAna::getDetVarComb(TAnaMuon *mu) {
 
 // ----------------------------------------------------------------------
 bool candAna::checkDataCand(TAnaCand *pC0) {
-  if (DATACAND > -1) {
+  fDcandIdx = -1;
+    if (DATACAND > -1) {
     vector<int> cIdx, pIdx;
     getSigTracks(cIdx, pC0);
     TAnaCand *pC(0);
@@ -6287,6 +6309,7 @@ bool candAna::checkDataCand(TAnaCand *pC0) {
       sort(cIdx.begin(), cIdx.end());
       sort(pIdx.begin(), pIdx.end());
       if (pIdx == cIdx) {
+	fDcandIdx = iC;
 	return true;
       }
     }
