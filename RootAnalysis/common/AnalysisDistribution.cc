@@ -637,7 +637,7 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
   if (fMassPeak < l0) {
     fMassPeak = 0.5*(s0+s1);
   }
-  if (fMassSigma < 0.) {
+  if (fMassSigma <1.e-3) {
     fMassSigma= 0.2*(s1-s0);
   }
   fMassLo   = hMassBGL->GetBinLowEdge(hMassBGL->FindFirstBinAbove(1.));
