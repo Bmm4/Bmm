@@ -462,7 +462,7 @@ void average(double &av, double &error, int n, double *val, double *verr) {
 
 
 // ----------------------------------------------------------------------
-void average(double &av, double &error, vector<double> &val, vector<double> &verr) {
+void average(double &av, double &error, vector<double> &val, vector<double> &verr, double &chi2) {
 
   double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (unsigned int i = 0; i < val.size(); ++i) {
@@ -489,6 +489,16 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
     error = -99.;
   }
 
+  chi2 = 0;
+  for (unsigned int i = 0; i < val.size(); ++i) {
+    e = verr[i];
+    if (e > 0.) {
+      w8 = 1./(e*e);
+    } else {
+      w8 = 0.;
+    }
+    chi2 += w8*(av-val[i])*(av-val[i]);
+  }
 }
 
 
@@ -677,15 +687,12 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
   if (TMath::IsNaN(n) || TMath::IsNaN(nE)) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
   } else if (1 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (2 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (3 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (4 == digits ) {
