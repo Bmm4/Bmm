@@ -216,9 +216,11 @@ void plotStuff::makeAll(string what) {
     massResolution("bsmmMcComb", "bsmmMcRun1");
   }
 
-  if (what == "all" || string::npos != what.find("tauefficiency")) {
+  if (what == "all" || string::npos != what.find("tau")) {
+    tau2dPlot("all", "", "", "");
     tauEfficiency("all", "", "", "");
   }
+
 
   if (what == "all" || what == "pvstudy") {
     pvStudy("bdmmMcOff", "&& (fl1>0.01)", "fl1");
@@ -2927,35 +2929,31 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
     samples.push_back("bupsikMcComb");
     for (int is = 0; is < samples.size(); ++is) {
       for (int i = 0; i < 2; ++i) {
-	tauEfficiency(Form("flsxy_chan%d", i), "flsxy>10", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("fls3d_chan%d", i), "fls3d>15", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("alpha_chan%d", i), "alpha<0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("chi2dof_chan%d", i), "chi2dof<2", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("maxdoca_chan%d", i), "maxdoca<0.02", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-	tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.015", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("closetrk_chan%d", i), "closetrk<3", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-	tauEfficiency(Form("iso_chan%d", i), "iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("iso_chan%d", i), "iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("pvip_chan%d", i), "pvip<0.01", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("pvips_chan%d", i), "pvips<5", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("pvips_chan%d", i), "pvips<2.5", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 
 	tauEfficiency("hlt1_chan0", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==0)", samples[is]);
 	tauEfficiency("hlt1_chan1", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==1)", samples[is]);
-	tauEfficiency("hlt1_chan2", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==2)", samples[is]);
-	tauEfficiency("hlt1_chan3", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==3)", samples[is]);
-
 
 	tauEfficiency(Form("m1pt_chan%d", i), "m1pt>8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("m2pt_chan%d", i), "m2pt>6", Form("m1pt>6.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("cnc_chan%d", i), "cnc", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("bdt_chan%d", i), "bdt>0.34", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("bdt_chan%d", i), Form("bdt>%f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("gmuid_chan%d", i), "gmuid", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("gtqual_chan%d", i), "gtqual", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
@@ -2969,6 +2967,9 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
     return;
   }
 
+  string var = varname;
+  replaceAll(var, "_chan0", "");
+  replaceAll(var, "_chan1", "");
 
   fSample = dsname;
   cout << "==> plotStuff::efficiencyVariable> sample = " << fSample << endl;;
@@ -3025,7 +3026,16 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   tl->DrawLatexNDC(0.5, 0.84, Form("cuts: %s", cut.c_str()));
   tl->DrawLatexNDC(0.5, 0.80, Form("base: %s", otherSelection.c_str()));
   tl->SetTextSize(0.05);
-  tl->DrawLatexNDC(0.3, 0.92, varname.c_str());
+  tl->DrawLatexNDC(0.3, 0.92, var.c_str());
+
+  for (int ib = 1; ib <= h3->GetNbinsX(); ++ib) {
+    if (h3->GetBinContent(ib) > 0.99 && h3->GetBinError(ib) < 0.01) {
+      cout << "RESETTING BIN " << ib << ": " << h3->GetBinContent(ib) << " +/- " << h3->GetBinError(ib) << " -> ";
+      h3->SetBinError(ib, dEff(static_cast<int>(h2->GetBinContent(ib)), static_cast<int>(h1->GetBinContent(ib))));
+      cout << h3->GetBinContent(ib) << " +/- " << h3->GetBinError(ib) << endl;
+    }
+  }
+
 
   double xmin(0.e-12);
   if (h3->GetBinContent(2) < 0.4) xmin = 4.e-12;
@@ -3056,6 +3066,118 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
   delete h1;
   delete h2;
+}
+
+
+
+// ----------------------------------------------------------------------
+void plotStuff::tau2dPlot(string varname, string cut, string otherSelection, string dsname) {
+  int nbins(10);
+  double ymin(0.), ymax(0.);
+  if (varname == "all") {
+    vector<string> samples;
+    samples.push_back("bsmmMcComb");
+    samples.push_back("bupsikMcComb");
+    for (int is = 0; is < samples.size(); ++is) {
+      for (int i = 0; i < 2; ++i) {
+	tau2dPlot(Form("fls3d_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("alpha_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("pvip_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("pvips_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("m1iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("m2iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("chi2dof_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("closetrk_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("docatrk_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+      }
+    }
+    return;
+  } else if (string::npos != varname.find("fls3d")) { ymin = 0.; ymax = 100.;
+  } else if (string::npos != varname.find("alpha")) { ymin = 0.; ymax = 0.1;
+  } else if (string::npos != varname.find("pvips")) { ymin = 0.; ymax = 4.;
+  } else if (string::npos != varname.find("pvip")) { ymin = 0.; ymax = 0.01;
+  } else if (string::npos != varname.find("iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("m1iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("m2iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("chi2dof")) { ymin = 0.; ymax = 5.;
+  } else if (string::npos != varname.find("docatrk")) { ymin = 0.; ymax = 0.15;
+  } else if (string::npos != varname.find("closetrk")) { ymin = 0.; ymax = 20.;
+  }
+
+  fSample = dsname;
+  cout << "==> plotStuff::tau2dPlot> sample = " << fSample << endl;;
+
+  string dir("candAnaMuMu");
+  if (string::npos != dsname.find("bupsik")) {
+    dir = "candAnaBu2JpsiK";
+  }
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  } else {
+    cout << "tree for sample = " << fSample << " found" << endl;
+  }
+
+  gStyle->SetHatchesLineWidth(2);
+  string var = varname;
+  replaceAll(var, "_chan0", "");
+  replaceAll(var, "_chan1", "");
+  string normName = Form("h%sNorm", fSample.c_str());
+  string passName = Form("h%sPass", fSample.c_str());
+  string effName  = Form("h%sEff", fSample.c_str());
+  TH2D *h1 = new TH2D(normName.c_str(), normName.c_str(), 6, 0., 12.e-12, nbins, ymin, ymax);
+  cout << h1->GetDirectory()->GetName() << endl;
+  setTitles(h1, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.4);
+  TH2D *h2 = new TH2D(passName.c_str(), passName.c_str(), 6, 0., 12.e-12, nbins, ymin, ymax);
+  setTitles(h2, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.4);
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = otherSelection;
+  t->Draw(Form("%s:tau>>%s", var.c_str(), normName.c_str()), tselection.c_str());
+  cout << "==> " << tselection << " histogram contents =        " << h1->Integral(1, h1->GetNbinsX()+1) << endl;
+  tselection = cut + " && " + otherSelection;
+  t->Draw(Form("%s:tau >>%s", var.c_str(), passName.c_str()), tselection.c_str());
+  cout << "==> " << tselection << " histogram contents = " << h2->Integral(1, h1->GetNbinsX()+1) << endl;
+
+  TH2D *h3 = (TH2D*)(h1->Clone(effName.c_str())); h3->Reset();
+  setHist(h3);
+  h3->Divide(h2, h1, 1., 1., "b");
+  setTitles(h3, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.3);
+
+  c0->SetCanvasSize(1500, 500);
+  c0->Clear();
+  c0->Divide(3,1);
+
+  c0->cd(1);
+  shrinkPad(0.15, 0.18, 0.18);
+  h1->Draw("colz");
+  tl->SetTextSize(0.05);
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.15, 0.92, Form("%s", otherSelection.c_str()));
+
+  c0->cd(2);
+  shrinkPad(0.15, 0.18, 0.18);
+  h2->Draw("colz");
+  tl->SetTextSize(0.05);
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.15, 0.92, Form("%s && %s", otherSelection.c_str(), cut.c_str()));
+
+  c0->cd(3);
+  shrinkPad(0.15, 0.18, 0.15);
+  h3->Draw("colz");
+
+  tl->SetTextSize(0.05);
+  tl->DrawLatexNDC(0.20, 0.92, Form("Efficiency(%s)", var.c_str()));
+
+  c0->cd();
+  savePad(Form("tau2dPlot%s_%s_%s.pdf", fSetup.c_str(), varname.c_str(), fSample.c_str()));
+
+  delete h1;
+  delete h2;
+  delete h3;
 }
 
 
