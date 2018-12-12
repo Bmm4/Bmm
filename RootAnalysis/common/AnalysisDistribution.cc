@@ -809,8 +809,6 @@ TH1D* AnalysisDistribution::sbsDistributionExpoErrGauss(const char *variable, co
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
-    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
-    Color_t cerr2 = a.getFunction(string("err2_") + string(hm->GetName()))->GetLineColor();
     hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
     h1->Scale(err2Sg/err2Bgl);  h1->SetLineColor(kRed);  h1->DrawCopy("samehist");
     TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
@@ -1019,7 +1017,6 @@ TH1D* AnalysisDistribution::sbsDistributionExpoGauss(const char *variable, const
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
-    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
     hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
     TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->AddEntry(h2, "Signal", "p");
@@ -1461,7 +1458,6 @@ TH1D* AnalysisDistribution::sbsDistributionBd2JpsiKstar(const char *variable, co
     h2->SetMinimum(0.);
     h2->Draw();
     hSi->DrawCopy("histsame");
-    Color_t cexpo = a.getFunction(string("expo_") + string(hm->GetName()))->GetLineColor();
     hHi->Scale(expoSg/expoBgh); hHi->SetLineColor(kBlue); hHi->DrawCopy("samehist");
     TLegend *l = newLegend(0.5, 0.75, 0.8, 0.88);
     l->AddEntry(h2, "Signal", "p");
