@@ -6,7 +6,7 @@
 #include <vector>
 #include <map>
 
-// the number of mass region windows: low sideband, B0 window, Bs window, high sideband, all
+// the number of mass region windows: low sideband, B0 window, Bs window, high sideband, all (including under/overflow!)
 #define NWIN 5
 
 
@@ -33,11 +33,13 @@ public:
   std::string fName, fNameMc, fNameDa, fSel;
   int fChan;
   // -- NWIN-element vectors for mass window yields: lo, Bd, Bs, hi, all
-  std::vector<number> fMcYield, fObsYield, fFitYield;
+  std::vector<number> fMcYield, fObsYield, fObsYieldAm, fFitYield, fFitYieldAm;
+  // -- antimuon selection for rare background estimate
+  std::vector<number> fAmYield;
   // -- NWIN-element vector for signal migration
   std::vector<number> fFrac;
   // -- overall results of fits and scaled yields
-  number fSignalFit, fScaledYield;
+  number fSignalFit, fScaledYield, fScaledYieldAm;
   number fW8SignalFit; // with (correction) weights applied
   double fScaleFactor;
   // -- yield numbers for dataset
@@ -50,7 +52,7 @@ public:
   number fAccRecoYield, fAccCandYield;
   number fCandYield, fAnaYield, fMuidYield, fTrigYield;
   // -- efficiency and acceptance
-  number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffMuidMC, fEffTot4R, fEffTot, fEffProdMC;
+  number fAcc, fEffCand, fEffAna, fEffAccAna, fEffTrigMC, fEffTrigMCAm, fEffMuidMC, fEffTot4R, fEffTot, fEffTotAm, fEffProdMC;
   number fEffFilter; // this is the MC filter efficiency, used for eq lumi calculation!
   number fEffGenSel; // this is the gen-level filter efficiency, needed to go from non-Acc samples to acc samples! Obtained from ratio of effFilter's
 };

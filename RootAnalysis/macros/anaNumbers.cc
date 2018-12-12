@@ -47,9 +47,10 @@ void number::scaleErrors(double sf) {
 }
 
 
+
 // ----------------------------------------------------------------------
 anaNumbers::anaNumbers(string name, int ichan) : fName(name), fChan(ichan)
-					       , fMcYield(NWIN), fObsYield(NWIN), fFitYield(NWIN)
+					       , fMcYield(NWIN), fObsYield(NWIN), fObsYieldAm(NWIN), fFitYield(NWIN), fFitYieldAm(NWIN), fAmYield(NWIN)
 {
   clear();
 };
@@ -59,9 +60,17 @@ void anaNumbers::clear() {
   //  cout << "clearing numbers for name = " << fName << " chan = " << fChan << endl;
   for (int iwin = 0; iwin < NWIN; ++iwin) {
     fMcYield[iwin].clear(fName);
+    fAmYield[iwin].clear(fName);
     fObsYield[iwin].clear(fName);
+    fObsYieldAm[iwin].clear(fName);
     fFitYield[iwin].clear(fName);
+    fFitYieldAm[iwin].clear(fName);
   }
+
+  fSignalFit.clear(fName);
+  fW8SignalFit.clear(fName);
+  fScaledYield.clear(fName);
+  fScaledYieldAm.clear(fName);
 
   vector<string> names;
   names.push_back("lo");
@@ -72,7 +81,9 @@ void anaNumbers::clear() {
   vector<vector<number> *> p;
   p.push_back(&fMcYield);
   p.push_back(&fObsYield);
+  p.push_back(&fObsYieldAm);
   p.push_back(&fFitYield);
+  p.push_back(&fFitYieldAm);
   for (unsigned int iv = 0; iv < p.size(); ++iv) {
     for (unsigned int i = 0; i < names.size(); ++i) {
       p[iv]->at(i).name = names[i];
