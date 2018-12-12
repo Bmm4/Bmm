@@ -84,7 +84,6 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     int genID(-68);
     int recID(3000068);
     TAnaCand *pCand(0);
-    TAnaTrack *q1(0), *q2(0);
     vector<int> genParticles;
     TGenCand *pMom(0);
     for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
@@ -97,7 +96,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
       }
     }
 
-    TGenCand *pGC(0), *pG1(0), *pG2(0);
+    TGenCand *pGC(0);
     for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
       pGC = fpEvt->getGenCand(iC);
       if (isStableCharged(pGC->fID) && fpEvt->isAncestor(pMom, pGC)) {
@@ -106,7 +105,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
     }
 
     TSimpleTrack *sTrk;
-    int cnt(0);
+    unsigned int cnt(0);
     for (int it = 0; it < fpEvt->nSimpleTracks(); ++it) {
       sTrk = fpEvt->getSimpleTrack(it);
       for (unsigned int ig = 0; ig < genParticles.size(); ++ig) {
@@ -289,8 +288,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
 	  motherIdx = pCand->fIndex;
 	}
       }
-      TGenCand *pGC(0), *pG1(0), *pG2(0);
-      int nmatch(0);
+      TGenCand *pGC(0);
       bool trackFound(false);
       for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
 	pGC = fpEvt->getGenCand(iC);
@@ -360,7 +358,7 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   }
 
   // -- trigger selection (trigger matching is done AFTER [or in] candAnalysis)
-  fTIS = fTOS = fGoodHLT1 = fRefTrigger = false;
+  fTIS = fTOS = fGoodHLT1 = fGoodRareHLT1 = fRefTrigger = false;
 
   triggerHLT();
   triggerL1T();
@@ -532,9 +530,9 @@ void candAna::candAnalysis() {
   if (0 && fCandDcand && fDcandIdx > -1) {
     TAnaCand *dCand = fpEvt->getCand(fDcandIdx);
 
-    for (unsigned int i = fpCand->fSig1; i <= fpCand->fSig2; ++i) {
+    for (int i = fpCand->fSig1; i <= fpCand->fSig2; ++i) {
       TAnaTrack *pS0 = fpEvt->getSigTrack(i);
-      for (unsigned int j = dCand->fSig1; j <= dCand->fSig2; ++j) {
+      for (int j = dCand->fSig1; j <= dCand->fSig2; ++j) {
 	TAnaTrack *pS1 = fpEvt->getSigTrack(j);
 	if (pS0 && pS1 && (pS1->fQ == pS0->fQ) && (pS1->fMCID == pS0->fMCID)) {
 	  if (((pS0->fd0 - pS1->fd0) > 1.e-5) || ((pS0->fdsz - pS1->fdsz) > 1.e-5) || ((pS0->fdz - pS1->fdz) > 1.e-5) || ((pS0->fdxy - pS1->fdxy) > 1.e-5)
@@ -1555,6 +1553,33 @@ void candAna::triggerHLT() {
     fL1T      = true;
     fHLT1Path = "NOTRIGGER";
     fHltPrescale = 1;
+    fGoodRareHLT1 = false;
+
+    string spath;
+    int rmin, rmax;
+    bool good(false);
+    for (map<string, pair<int, int> >::iterator imap = RARETRIGGERRANGE.begin(); imap != RARETRIGGERRANGE.end(); ++imap) {
+      spath = imap->first;
+      rmin = imap->second.first;
+      rmax = imap->second.second;
+      if (fRun < rmin) continue;
+      if (fRun > rmax) continue;
+      if (fpReader->fHltPathInfo[spath].result) {
+	sa = spath;
+	ps = fpReader->fHltPathInfo[spath].prescale;
+	good = true;
+	break;
+      }
+      string sas = spath.substr(0, sa.rfind("_v")+2);
+      if (fpReader->fHltPathInfo[sas].result) {
+	good = true;
+	break;
+      }
+    }
+    if (good) {
+      fGoodRareHLT1    = true;
+    }
+
     return;
   }
   if (fVerbose == -32) {
@@ -1574,7 +1599,6 @@ void candAna::triggerHLT() {
     }
   }
 
-  hltPathInfo hpi;
   string spath;
   int rmin, rmax;
   bool good(false);
@@ -1616,50 +1640,6 @@ void candAna::triggerHLT() {
     }
   }
 
-  // for (int i = 0; i < NHLT; ++i) {
-  //   result = wasRun = error = false;
-  //   a = fpEvt->fHLTNames[i];
-  //   ps = fpEvt->fHLTPrescale[i];
-  //   wasRun = fpEvt->fHLTWasRun[i];
-  //   result = fpEvt->fHLTResult[i];
-  //   error  = fpEvt->fHLTError[i];
-
-  //   if (wasRun && result) { // passed
-  //     if (verbose>1  || (-32 == verbose) ) cout << "triggerHLT::passed: " << a
-  // 						<< " ps = " << ps << " run = " << fRun << " ls = " << fLS << " json = " << fJSON
-  // 						<< endl;
-  //     bool good = false;
-  //     string spath;
-  //     int rmin, rmax;
-  //     for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
-  // 	spath = imap->first;
-  // 	rmin = imap->second.first;
-  // 	rmax = imap->second.second;
-  // 	if (fRun < rmin) continue;
-  // 	if (fRun > rmax) continue;
-  // 	if (!a.CompareTo(imap->first.c_str())) {
-  // 	  good = true;
-  // 	  if (verbose > 1 || -32 == verbose  )
-  // 	    cout << "triggerHLT::exact match: " << imap->first.c_str() << " HLT: " << a
-  // 		 << " result: " << result << endl;
-  // 	  break;
-  // 	}
-  // 	if (a.Contains(spath.c_str()) && (rmin <= fRun) && (fRun <= rmax)) {
-  // 	  good = true;
-  // 	  if (verbose > 1 || -32 == verbose)
-  // 	    cout << "triggerHLT::close match: " << imap->first.c_str() << " HLT: " << a
-  // 		 << " result: " << result << " in run " << fRun << endl;
-  // 	  break;
-  // 	}
-  //     }
-  //     if (good) {
-  // 	fHltPrescale = ps;
-  // 	fHLT1Path    = a;
-  // 	fGoodHLT1    = true;
-  // 	return;
-  //     }
-  //   }
-  // }
 }
 
 // ----------------------------------------------------------------------
@@ -1912,6 +1892,7 @@ void candAna::bookHist() {
   fEffTree->Branch("evt",    &fEvt,               "evt/L");
   //fEffTree->Branch("hlt",    &fGoodHLT,           "hlt/O");
   fEffTree->Branch("hlt1",   &fGoodHLT1,          "hlt1/O");
+  fEffTree->Branch("rhlt1",  &fGoodRareHLT1,      "rhlt1/O");
   fEffTree->Branch("chan",   &fETchan,            "chan/I");
   fEffTree->Branch("procid", &fProcessType,       "procid/I");
   fEffTree->Branch("bidx",   &fGenBTmi,           "bidx/I");
@@ -1972,6 +1953,7 @@ void candAna::setupReducedTree(TTree *t) {
   t->Branch("procid",  &fProcessType,       "procid/I");
   //t->Branch("hlt",     &fGoodHLT,           "hlt/O");
   t->Branch("hlt1",    &fGoodHLT1,          "hlt1/O");
+  t->Branch("rhlt1",   &fGoodRareHLT1,      "rhlt1/O");
   t->Branch("l1s",     &fL1Seeds,           "l1s/I");
   t->Branch("ps",      &fHltPrescale,       "ps/I");
   t->Branch("cw8",     &fCorrW8,            "cw8/D");
@@ -2542,6 +2524,18 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: %s", CutName, triggerlist));
     }
 
+    if (!strcmp(CutName, "RARETRIGGERRANGE")) {
+      char triggerlist[1000];
+      sscanf(buffer, "%s %s", CutName, triggerlist);
+      string tl(triggerlist);
+      int r1(0), r2(0);
+      string hlt = splitTrigRange(tl, r1, r2);
+      RARETRIGGERRANGE.insert(make_pair(hlt, make_pair(r1, r2)));
+      if (dump) {
+	cout << "RARETRIGGERRANGE:       " << hlt << " from " << r1 << " to " << r2 << endl;
+      }
+    }
+
     if (!strcmp(CutName, "SCALEFACTOR")) {
       fApplyScaleFactors = true;
       char triggerlist[1000];
@@ -2552,7 +2546,7 @@ void candAna::readCuts(string fileName, int dump) {
       splitScaleFactors(tl, var, r);
       if (dump) {
 	cout << "SCALEFACTOR:      " << var << " ";
-	for (unsigned int ic = 0; ic < fNchan; ++ic) {
+	for (int ic = 0; ic < fNchan; ++ic) {
 	  cout << "chan " << ic << ": " << r[ic] << " ";
 	}
 	cout << endl;
@@ -2797,7 +2791,6 @@ void candAna::readFile(string filename, vector<string> &lines) {
   if (!is) {
     exit(1);
   }
-  char input[1000];
   string sbuffer;
   while (is.getline(buffer, 200, '\n')) {
     sbuffer = string(buffer);
@@ -2968,6 +2961,7 @@ bool candAna::mvaMuon(TAnaMuon *pt, double &result, bool hadronsPass) {
       mrd.Qprod            = qprod;
       if (!mvaMuonPassedPreselection(mrd)) {return false;}
       result = fMvaMuonID->EvaluateMVA("BDT");
+      //cout << "mrd.chi2LocMom = " << mrd.chi2LocMom << " mrd.chi2LocPos = " << mrd.chi2LocPos << endl;
       return (result > MUBDT);
     } else {
       mrd1.segComp          = pt->fSegmentComp;
@@ -4399,7 +4393,7 @@ bool candAna::refTrigger(TAnaCand *pC, string refTriggerPath) {
       nTrgIdx = muonIndex.size();
       if (verbose) cout << "  " << pTO->fHltPath << ": " << pTO->fType << " .. " << pTO->fLabel << "  "
 			<< " with n(particles) = " << nTrgIdx << endl;
-      for (int j = 0; j < nTrgIdx; ++j) {
+      for (unsigned int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
 	if (trkIdx < 0) {
@@ -4530,12 +4524,11 @@ bool candAna::tis(TAnaCand *pC) {
     TString a("");
     cout << "==> candAna::tis> all fired HLT paths" << endl;
     for (int i = 0; i < NHLT; ++i) {
-      bool result(false), wasRun(false), error(false);
+      bool result(false), wasRun(false);
       a = fpEvt->fHLTNames[i];
       int ps = fpEvt->fHLTPrescale[i];
       wasRun = fpEvt->fHLTWasRun[i];
       result = fpEvt->fHLTResult[i];
-      error  = fpEvt->fHLTError[i];
 
       if (result) { // passed
 	cout << "candAna::tis HLT path " << a << " wasrun = " << wasRun << " ps = " << ps << " run = "
@@ -4784,7 +4777,6 @@ bool candAna::tos(TAnaCand *pC) {
   bool result(false);
   int verbose(fVerbose);
   if (fVerbose == -32) verbose = 1;
-  int goldenMatch(-1);
   if ("NOTRIGGER" == fHLT1Path) {
     return true;
   }
@@ -4829,7 +4821,7 @@ bool candAna::tos(TAnaCand *pC) {
       muonID.clear();    muonID = pTO->fID;
       muonP.clear();     muonP = pTO->fP;
       nTrgIdx = muonIndex.size();
-      for (int j = 0; j < nTrgIdx; ++j) {
+      for (unsigned int j = 0; j < nTrgIdx; ++j) {
 	double dr(0.);
 	int trkIdx = matchTrgObj2Trk(muonP[j].Vect(), dr);
 	if (trkIdx < 0) continue;
