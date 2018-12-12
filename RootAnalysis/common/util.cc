@@ -466,7 +466,7 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
 
   double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (unsigned int i = 0; i < val.size(); ++i) {
-    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
+    cout << i << " " << val[i] << " +/- " << verr[i];
 
     // -- calculate mean and error
     e = verr[i];
@@ -474,12 +474,12 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
       w8 = 1./(e*e);
       sumW8  += w8;
       sumAve += w8*val[i];
+      cout << " w8 = " << w8 << " sumW8 = " << sumW8 << " sumAve = " << sumAve << endl;
     } else {
       cout << "average: Error = 0 for " << val[i] << endl;
       continue;
     }
   }
-  cout << "sumW8 = " << sumW8 << endl;
   if (sumW8 > 0.) {
     av = sumAve/sumW8;
     sumW8 = TMath::Sqrt(sumW8);
@@ -488,6 +488,7 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
     av = -99.;
     error = -99.;
   }
+  cout << "sqrt(sumW8) = " << sumW8 << " av = " << av << " +/- " << error << endl;
 
   chi2 = 0;
   for (unsigned int i = 0; i < val.size(); ++i) {
