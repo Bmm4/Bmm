@@ -37,7 +37,7 @@ public :
   void resetHistograms(bool deleteThem = false);
   void initNumbers(anaNumbers &a);
   void otherNumbers(string ds);
-  void rareBgHists(string ds, int nevents = -1);
+  void rareBgHists(string ds, int nevents = -1, int nbg = -1);
   void scaleYield(anaNumbers &aSig, anaNumbers &aNorm, double pRatio = 1.0, bool useW8 = true);
   void getAccAndEffFromEffTree(string ds, anaNumbers &a, cuts &b, int proc);
   void numbersFromHist(anaNumbers &a, std::string syst);
@@ -50,6 +50,7 @@ public :
   void calculateRareBgNumbers(int chan);
   void calculateBs2Bu(int chan);
   void calculatePerformance(int chan);
+  void triggerEfficiency(int chan, double &eff, double &effE, std::string mode, std::string sample = "bg");
   void scanBDT(std::string fname, bool createTexFile = true);
   void scanBDTEffRatio(std::string fname, std::string string1, std::string string2);
   void sysAna(std::string sample1, std::string sample2, std::string massc = "C", int ichan = 0, int buversion = 0, int bsversion = 1);
@@ -109,6 +110,14 @@ private:
   std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCuts;
   std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsSeagull;
   std::map<std::string, std::vector<TH1D*> > fhW8MassWithAllCutsCowboy;
+
+  // -- anti-muon sample
+  std::map<std::string, std::vector<TH1D*> > fhAmMassWithAllCuts;
+  std::map<std::string, std::vector<TH1D*> > fhAmMassWithMuonCuts;
+  std::map<std::string, std::vector<TH1D*> > fhAmW8MassWithAllCuts;
+  // -- real (anti-)muon sample
+  std::map<std::string, std::vector<TH1D*> > fhRMMassWithMuonCuts,  fhRMMassWithAllCuts;
+  std::map<std::string, std::vector<TH1D*> > fhRAmMassWithMuonCuts, fhRAmMassWithAllCuts;
 
   std::map<std::string, std::vector<TH1D*> > fhMassWithMassCuts;
   std::map<std::string, std::vector<TH2D*> > fhNorm, fhNormC;
