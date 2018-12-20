@@ -513,10 +513,7 @@ void plotTrigger::refTrgEfficiency(string selection, string dsname) {
 
   gStyle->SetOptStat(0);
 
-  double nNorm(0.), nPass(0.), effMc(0.), effRt(0.), effMcE(0.), effRtE
-    (0.);
-  double mBp(5.28), sBp(0.05);
-
+  double nNorm(0.), nPass(0.), effMc(0.), effRt(0.), effMcE(0.), effRtE(0.);
   string fitopt("lm");
 
   // -- basic MC HLT efficiency
@@ -919,7 +916,6 @@ void plotTrigger::loopFunction2() {
   if (TMath::Abs(fb.m2eta) > 1.4) return;
   if (fb.m1q * fb.m2q > 0) return;
 
-  double m = fb.m;
   if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR) || (fMode == BS2JPSIPHI)) {
     if (fb.mpsi < 3.04) return;
     if (fb.mpsi > 3.15) return;
@@ -950,7 +946,6 @@ void plotTrigger::loopFunction2() {
   }
 
 
-  bool doubleMu0(false), highPtMu(false);
   if (((fb.l1s & 0x1) == 1) || ((fb.l1s & 0x2) == 2) || ((fb.l1s & 0x4) == 4)) {
     fHLs0[hname0]->Fill(fb.ls, -0.5);
     if (fb.chan > -1) fHLs0[hname0]->Fill(fb.ls, fb.chan);
@@ -973,15 +968,15 @@ void plotTrigger::loopFunction2() {
 // ----------------------------------------------------------------------
 void plotTrigger::loopFunction1() {
 
-  bool goodRun(false);
+  // bool goodRun(false);
 
-  if (fLargeRuns.end() != find(fLargeRuns.begin(), fLargeRuns.end(), fb.run)) {
-    goodRun = true;
-    //    cout << "found " << fb.run << " in fLargeRuns" << endl;
-  } else {
-    // -- comment the following if you want to look at large runs only
-    //goodRun = true;
-  }
+  // if (fLargeRuns.end() != find(fLargeRuns.begin(), fLargeRuns.end(), fb.run)) {
+  //   goodRun = true;
+  //   //    cout << "found " << fb.run << " in fLargeRuns" << endl;
+  // } else {
+  //   // -- comment the following if you want to look at large runs only
+  //   //goodRun = true;
+  // }
 
 
   if (fb.chan < 0 || fb.chan > 1) return;

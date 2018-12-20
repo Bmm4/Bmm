@@ -314,9 +314,7 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
 
   tl->SetTextSize(0.05);
   makeCanvas(1);
-  int ncol(4);
   c1->Divide(5,1);
-  ncol = 5;
 
   tl->SetTextSize(0.07);
 
@@ -342,7 +340,7 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
   eta->Draw("sameaxis");
   tl->SetTextSize(0.07);
   tl->DrawLatexNDC(0.75, 0.75, "B");
-  tl->DrawLatexNDC(0.15, 0.93, Form("Events: %d", T->GetEntries()));
+  tl->DrawLatexNDC(0.15, 0.93, Form("Events: %lld", T->GetEntries()));
 
   c1->cd(3);
   gPad->SetTopMargin(0.12);
@@ -372,8 +370,6 @@ void plotWork::genSummary(std::string dsname, std::string dir) {
   gStyle->SetOptFit(0);
   tau->Fit("expo", "lr", "", 0., 15.e-12);
   TF1 *f = (TF1*)tau->GetFunction("expo");
-  double chi2 = f->GetChisquare();
-  int    ndf  = f->GetNDF();
   double t    = -1./f->GetParameter(1);
   double tE   = -t*f->GetParError(1)/f->GetParameter(1);
   t  *= 1.e12;
@@ -1127,7 +1123,7 @@ void  plotWork::fitStudiesFit0(TH1D *h1, int i) {
 
   TF1 *f1(0);
   double xmin(5.0), xmax(6.0);
-  double mBs(5.37), sBs(0.04), stepBs(5.21);
+  double mBs(5.37), sBs(0.04);
 
   TF1 *fb = new TF1(Form("b%s_%d", h1->GetName(), i), "[0] * TMath::Exp([1]*x)", 5.0, 6.0);
   TF1 *fs = new TF1(Form("s%s_%d", h1->GetName(), i), "[0] * TMath::Gaus(x, [1], [2], false)", 5.0, 6.0);
@@ -1549,8 +1545,6 @@ void plotWork::ups2(std::string file1, std::string file2) {
   TH1D *hSep1 = new TH1D("hsep1", "Phase 2", 13, 0.+eps, 2.6+eps); hSep1->Sumw2();
 
   // -- EXPO slope of background
-  TH1D *hBg0 = new TH1D("bgslope0", "Run 2", 13, 0., 2.6); hBg0->Sumw2();
-  TH1D *hBg1 = new TH1D("bgslope1", "Phase 2", 13, 0.+eps, 2.6+eps); hBg1->Sumw2();
   double nbs, nbd;
   double nbs0E, nbs1E, nbd0E, nbd1E;
   double FITRMS(2.0);
@@ -1560,8 +1554,6 @@ void plotWork::ups2(std::string file1, std::string file2) {
     TH1D *hbs1 = (TH1D*)fHistFile->Get(Form("HBs1_%d", i));
     TH1D *hbd0 = (TH1D*)fHistFile->Get(Form("HBd0_%d", i));
     TH1D *hbd1 = (TH1D*)fHistFile->Get(Form("HBd1_%d", i));
-    TH1D *hbg0 = (TH1D*)fHistFile->Get(Form("HBg0_%d", i));
-    TH1D *hbg1 = (TH1D*)fHistFile->Get(Form("HBg1_%d", i));
     int lobin(hbs0->FindBin(5.2)), hibin(hbs0->FindBin(5.3));
 
     if (hbs0->Integral() > 0 && hbd0->Integral() > 0) {

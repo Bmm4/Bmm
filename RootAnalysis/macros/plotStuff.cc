@@ -1409,20 +1409,12 @@ void plotStuff::runStudy(string ds, string what) {
 void plotStuff::yieldStability(string dsname, string trg) {
   cout << "yieldStability> dsname: " << dsname << " for setup: " << trg << endl;
   double MINLUMI(2.);
-  double mBp(5.28), sBp(0.015), stepBp(5.15);
-  double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
-
   int nchan = fNchan;
   nchan = 2;
 
   fMode = BMM;
   fSample = dsname;
   setup(dsname);
-  if (string::npos != fSample.find("bspsiphi")) {
-    mBp    = 5.369;
-    sBp    = 0.015;
-    stepBp = 5.15;
-  }
 
   if (trg == "fill") {
     fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
@@ -1501,7 +1493,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
     // -- the result histograms
     const int nx(7);
     const char *ceras[nx] = {"B", "C", "D", "E", "F", "G", "H"};
-    for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
+    for (int ichan = 0; ichan < nchan; ++ichan) {
       string hname = Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
       fvHists.insert(make_pair(hname, new TH1D(hname.c_str(), hname.c_str(),
 					       lastLumiRun-firstLumiRun+1, firstLumiRun, lastLumiRun)));
@@ -1740,7 +1732,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
     gStyle->SetOptFit(0);
     gPad->SetGridx();
     gPad->SetGridy();
-    for (unsigned ichan = 0; ichan < nchan; ++ichan) {
+    for (int ichan = 0; ichan < nchan; ++ichan) {
       if (0) {
 	string hname = Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
 	setTitles(fvHists[hname], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 2.1);
@@ -1771,17 +1763,11 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	setTitles(fvHists[hname], "era", Form("N(%s) / pb^{-1}", fDS[dsname]->fName.c_str()), 0.05, 1., 2.1);
 	fvHists[hname]->SetMinimum(0.);
 	fvHists[hname]->Draw();
-	if (2016 == fYear) {
-	  double ymax(fvHists[hname]->GetMaximum());
-	}
 	savePad(Form("ys-%d-yieldPerLumi-era-%s-%s-chan%d.pdf", fYear, trg.c_str(), dsname.c_str(), ichan));
 
 	hname = Form("hEra%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
 	fvHists[hname]->SetMinimum(0.);
 	fvHists[hname]->Draw();
-	if (2016 == fYear) {
-	  double ymax(fvHists[hname]->GetMaximum());
-	}
 	savePad(Form("ys-%d-yield-era-%s-%s-chan%d.pdf", fYear, trg.c_str(), dsname.c_str(), ichan));
       }
 
@@ -2052,7 +2038,7 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 
     int nchan = 2;
     for (int ichan = 0; ichan < nchan; ++ichan) {
-      for (int iplot = 0; iplot < plots.size(); ++iplot) {
+      for (unsigned int iplot = 0; iplot < plots.size(); ++iplot) {
 	cout << "overlay " << it->first << " and " << it->second << " chan " << ichan << endl;
 	string hname1 = Form("%s%s_%s_chan%d", plots[iplot].c_str(), trgname.c_str(), it->first.c_str(), ichan);
 	string hname2 = Form("%s%s_%s_chan%d", plots[iplot].c_str(), trgname.c_str(), it->second.c_str(), ichan);
@@ -2361,7 +2347,6 @@ void plotStuff::loopFunction2() {
   if (TMath::Abs(fb.m2eta) > 1.4) return;
   if (fb.m1q * fb.m2q > 0) return;
 
-  double m = fb.m;
   if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR) || (fMode == BS2JPSIPHI)) {
     if (fb.mpsi < 3.04) return;
     if (fb.mpsi > 3.15) return;
@@ -2391,8 +2376,6 @@ void plotStuff::loopFunction2() {
 
   }
 
-
-  bool doubleMu0(false), highPtMu(false);
   if (((fb.l1s & 0x1) == 1) || ((fb.l1s & 0x2) == 2) || ((fb.l1s & 0x4) == 4)) {
     fHLs0[hname0]->Fill(fb.ls, -0.5);
     if (fb.chan > -1) fHLs0[hname0]->Fill(fb.ls, fb.chan);
@@ -2626,7 +2609,7 @@ void plotStuff::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
     t->GetEntry(jentry);
-    if (jentry%step == 0) cout << Form(" .. evt = %d, run = %d", jentry, fb.run) << endl;
+    if (jentry%step == 0) cout << Form(" .. evt = %d, run = %lld", jentry, fb.run) << endl;
 
     candAnalysis();
     (this->*pF)();
@@ -2927,7 +2910,7 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
     vector<string> samples;
     samples.push_back("bsmmMcComb");
     samples.push_back("bupsikMcComb");
-    for (int is = 0; is < samples.size(); ++is) {
+    for (unsigned int is = 0; is < samples.size(); ++is) {
       for (int i = 0; i < 2; ++i) {
 	tauEfficiency(Form("fls3d_chan%d", i), "fls3d>15", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("alpha_chan%d", i), "alpha<0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
@@ -3078,7 +3061,7 @@ void plotStuff::tau2dPlot(string varname, string cut, string otherSelection, str
     vector<string> samples;
     samples.push_back("bsmmMcComb");
     samples.push_back("bupsikMcComb");
-    for (int is = 0; is < samples.size(); ++is) {
+    for (unsigned int is = 0; is < samples.size(); ++is) {
       for (int i = 0; i < 2; ++i) {
 	tau2dPlot(Form("fls3d_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tau2dPlot(Form("alpha_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
@@ -3373,9 +3356,9 @@ void plotStuff::wrongReco(string ds1, string mode, string selection) {
     tl->SetTextSize(0.05);  tl->DrawLatexNDC(0.2, 0.92, fDS["bdpsikstarMcComb"]->fName.c_str());
     TF1 *f1 = fIF->expoErr(5.0, 6.0);
     double preco(5.145);
-    double e0(preco),  e0Min(preco-0.01), e0Max(preco+0.01);
-    double e1(0.075),  e1Min(0.050), e1Max(0.100);
-    double e2(1.15), e2Min(1.05),  e2Max(1.25);
+    double e0(preco);
+    double e1(0.075);
+    double e2(1.15);
     double e3(h1->GetMaximum());
     double p0, p1;
     fIF->fLo = 5.25;
