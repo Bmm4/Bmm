@@ -47,7 +47,6 @@ void candAnaRecoil::evtAnalysis(TAna01Event *evt) {
       ((TH2D*)fHistDir->Get("recoilTRPVzVsY"))->Fill(pB->fP.Rapidity(), fGenPV.Z() - vB->fPoint.Z());
 
 
-      TGenCand *pA = pB;
       pB = fpEvt->getGenCand(fGenBrecoBTmi);
       pC = fpEvt->getCand(fCandBrecoTmi);
       vB = fpEvt->getPV(pC->fPvIdx);
