@@ -19,6 +19,68 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
+// -- from arxiv:physics/0403046 (R. Barlow)
+double poissonError(int n, double &up, double &down) {
+  if (n > 9) {
+    up = down = TMath::Sqrt(n);
+    return (0.5*(up+down));
+  }
+
+  if (n < 0) {
+    up = down = -99.;
+    return -99.;
+  }
+  if (n < 2) {
+    down = 0.827;
+    up   = 2.299;
+    return (0.5*(up+down));
+  }
+  if (2 == n) {
+    down = 1.292;
+    up   = 2.637;
+    return (0.5*(up+down));
+  }
+  if (3 == n) {
+    down = 1.633;
+    up   = 2.918;
+    return (0.5*(up+down));
+  }
+  if (4 == n) {
+    down = 1.914;
+    up   = 3.162;
+    return (0.5*(up+down));
+  }
+  if (5 == n) {
+    down = 2.159;
+    up   = 3.382;
+    return (0.5*(up+down));
+  }
+  if (6 == n) {
+    down = 2.380;
+    up   = 2.581;
+    return (0.5*(up+down));
+  }
+  if (7 == n) {
+    down = 2.581;
+    up   = 3.770;
+    return (0.5*(up+down));
+  }
+  if (8 == n) {
+    down = 2.768;
+    up   = 3.944;
+    return (0.5*(up+down));
+  }
+  if (9 == n) {
+    down = 2.943;
+    up   = 4.110;
+    return (0.5*(up+down));
+  }
+
+  return -1.;
+}
+
+
+// ----------------------------------------------------------------------
 void setMaximum(double scale, TH1 *h1, TH1 *h2) {
   double m(-99.), m1(-99.), m2(-99.);
   if (0 != h1) m1 = h1->GetMaximum();

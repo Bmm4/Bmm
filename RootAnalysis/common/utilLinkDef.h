@@ -59,6 +59,7 @@
 
 #pragma link C++ function getError(TH1*);
 #pragma link C++ function getErrorRange(TH1*, int, int);
+#pragma link C++ function poissonError(int , double &, double &);
 
 #pragma link C++ function isBeautyMeson(int);
 #pragma link C++ function isBeautyMesonWeak(int);
