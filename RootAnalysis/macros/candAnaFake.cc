@@ -3,6 +3,7 @@
 #include <string>
 
 #include "common/HFMasses.hh"
+#include "common/util.hh"
 
 
 using namespace std;
@@ -42,6 +43,7 @@ void candAnaFake::candAnalysis() {
 
   TAnaMuon  *pm[NTRKMAX];
   TSimpleTrack *pt[NTRKMAX];
+  int vMidx[NTRKMAX];
 
   bool skip(false);
   if (!fIsMC) {
@@ -154,42 +156,91 @@ void candAnaFake::candAnalysis() {
 
     fFakeNtrk = 2;
   } else {
-    // -- fill arrays based on MC truth
+    fFakeNtrk = 0;
+    // -- fill arrays based on MC truth (use only two-body decays from B)
     TSimpleTrack *pT(0);
     int cnt(0);
+    // bool bhadron(false);
     for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
       pT = fpEvt->getSimpleTrack(i);
       if (pT->getP().Perp() < 4.0) continue;
       if (TMath::Abs(pT->getP().Eta()) > 2.4) continue;
       // -- check if simple track is matched to gen level
       if (pT->getGenIndex() < 0) continue;
+      // -- check if gen-level parent is B
+      int gid  = fpEvt->getGenCand(pT->getGenIndex())->fID;
+      TGenCand *pMom = fpEvt->getGenCand(fpEvt->getGenCand(pT->getGenIndex())->fMom1);
+      int mid(0), midx(fpEvt->getGenCand(pT->getGenIndex())->fMom1);
+      int ndau(0);
+      // -- the following requirements kill so much statistics for the proton pidtables that the Bayesian central value is too high
+      // bhadron = false;
+      // if (pMom) {
+      // 	mid = pMom->fID;
+      // 	if (isBeautyMeson(mid)) bhadron = true;
+      // 	if (isBeautyBaryon(mid)) bhadron = true;
+      // 	// -- count descendents from mother
+      // 	for (int iC = midx+1; iC < fpEvt->nGenCands(); ++iC) {
+      // 	  TGenCand *pGC = fpEvt->getGenCand(iC);
+      // 	  if (fpEvt->isAncestor(pMom, pGC)) ++ndau;
+      // 	}
+      // }
+      // if (!bhadron) continue;
+      // if (ndau > 2) {
+      // 	continue;
+      // }
       // -- check if simple track has entry in muon list
       TAnaMuon *pM(0);
+      bool isGM(false);
       if (pT->getMuonID() > 0) {
-	bool isGM(false);
 	int idx = pT->getIndex();
 	for (int im = 0; im < fpEvt->nMuons(); ++im) {
 	  pM = fpEvt->getMuon(im);
 	  if (idx == pM->fIndex) {
 	    // -- found the corresponding muon, now check if it is a global muon
 	    isGM = ((pM->fMuID & 2) == 2);
-	    // cout << "check if simple track idx = " << i << " is a global muon: " << (isGM?"yes":"no")
-	    //  	 << ": genidx = " << pT->getGenIndex()
-	    // 	 << " pT(ST) = " << pT->getP().Perp() << " pT(TAnaMuon) = " << pM->fPlab.Perp()
-	    //    	 << endl;
-	    if (isGM) break;
+	    if (isGM) {
+	      break;
+	    } else {
+	      pM = 0;
+	    }
 	  } else {
 	    pM = 0;
 	  }
 	}
       }
+      vMidx[cnt]   = midx;
       pt[cnt]      = pT;
       pm[cnt]      = pM;
       fFakeId[cnt] = TMath::Abs(fpEvt->getGenCand(pT->getGenIndex())->fID);
       ++cnt;
+      if (0) cout << "check if simple track idx = " << i << " is a global muon: " << (isGM?"yes":"no")
+		  << ": genidx = " << pT->getGenIndex()
+		  << " evt = " << fEvt
+		  << " mid = " << mid << " midx = " << midx
+		  << " pT(ST) = " << pT->getP().Perp()
+		  << " cnt = " << cnt
+		  << endl;
       if (cnt == NTRKMAX-1) break;
     }
     fFakeNtrk = cnt;
+  }
+
+  if (0 && (3 == fFakeNtrk)) {
+    fpEvt->dumpGenBlock();
+    for (int im = 0; im < fFakeNtrk; ++im) {
+      cout <<  pt[im]->getGenIndex() << endl;
+    }
+  }
+
+
+  if (2 == fFakeNtrk) {
+    fCowboy = false;
+    if (vMidx[0] == vMidx[1]) {
+      double dphi = pt[0]->getP().DeltaPhi(pt[1]->getP());
+      fCowboy = (pt[0]->getCharge()*dphi > 0);
+    } else {
+      //      cout << "two tracks from different mother?!" << endl;
+    }
   }
 
   // -- now fill into tree
@@ -529,7 +580,6 @@ void candAnaFake::readCuts(string filename, int dump) {
   TH1D *hcuts = (TH1D*)fHistDir->Get("hcuts");
   hcuts->GetXaxis()->SetBinLabel(200, fCutFile.c_str());
   string cstring = "B cand";
-  int ibin;
 
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
     sprintf(buffer, "%s", cutLines[i].c_str());
