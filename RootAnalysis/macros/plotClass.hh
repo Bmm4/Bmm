@@ -175,21 +175,19 @@ public :
   PidTable *fptT1, *fptT2, *fptM;
   PidTable *fptT1MC, *fptT2MC, *fptMMC;
 
-  // -- split into seagull and cowboys
-  PidTable *fptSgT1, *fptSgT2, *fptSgM;
-  PidTable *fptSgT1MC, *fptSgT2MC, *fptSgMMC;
-
-  PidTable *fptCbT1, *fptCbT2, *fptCbM;
-  PidTable *fptCbT1MC, *fptCbT2MC, *fptCbMMC;
-
   PidTable *fptFakePosKaons, *fptFakePosPions, *fptFakePosProtons, *fptPosMuons;
   PidTable *fptFakeNegKaons, *fptFakeNegPions, *fptFakeNegProtons, *fptNegMuons;
+
+  // -- anti-muon selection
+  PidTable *famFakePosKaons, *famFakePosPions, *famFakePosProtons, *famPosMuons;
+  PidTable *famFakeNegKaons, *famFakeNegPions, *famFakeNegProtons, *famNegMuons;
 
 
   // -- setup and cuts
   double MASSMIN, MASSMAX, SIGBOXMIN, SIGBOXMAX, BGLBOXMIN, BGLBOXMAX, BGHBOXMIN, BGHBOXMAX;
 
-  bool fGoodAcceptance, fPreselection, fPreselectionBDT, fWideMass, fGoodHLT, fGoodMuonsID, fGoodGlobalMuons, fGoodGlobalMuonsKin,
+  bool fGoodAcceptance, fPreselection, fPreselectionBDT, fWideMass, fGoodHLT,
+    fGoodMuonsID, fGoodAmsID, fGoodRealMuonsID, fGoodRealAmsID, fGoodGlobalMuons, fGoodGlobalMuonsKin,
     fGoodBdtPt, fGoodMuonsPt, fGoodMuonsEta, fGoodTracks, fGoodTracksPt, fGoodTracksEta, fGoodBdtPresel, fGoodCmssw, fGoodCandAna;
   bool fGoodQ, fGoodPvAveW8, fGoodLip, fGoodLipS, fGoodIp, fGoodIpS, fGoodMaxDoca,
     fGoodPt, fGoodEta, fGoodPhi, fGoodAlpha, fGoodFLS, fGoodChi2, fGoodIso, fGoodM1Iso, fGoodM2Iso;
@@ -199,6 +197,7 @@ public :
   bool fIsCowboy;
 
   double fW8, fW8MisId, fW8MmuID, fW8Mtrig, fW8DmuID, fW8Dtrig;
+  double fW8AmMisId; // anti-muon ID (=global muon && !MVA-muid)
 
   int fRunMin, fRunMax; // if you want to look at a specific run range
 
