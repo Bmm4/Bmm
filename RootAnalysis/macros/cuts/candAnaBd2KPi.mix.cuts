@@ -3,6 +3,8 @@ DATACAND         1313
 TRUTHCAND         511
 TRIGRANGE    NOTRIGGER
 PVAVEW8          0.6
+# -- rare trigger
++input cuts/triggerMixRare.cuts
 # -- baseCuts
 +input cuts/baseCuts.YEARERA.cuts
 # -- boxes
