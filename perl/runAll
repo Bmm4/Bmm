@@ -41,7 +41,7 @@ use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
-getopts('b:Ccdehi:lmo:pq:s:t:w:x:y');
+getopts('b:Ccdehi:lmo:pq:s:t:uw:x:y');
 
 my $dir        = ".";
 if ($opt_o) {
@@ -56,6 +56,12 @@ if (!$opt_q) {
     } else {
 	$opt_q = "-m $opt_q";
     }
+}
+
+# -- unblind!
+my $unblind = " ";
+if ($opt_u) {
+    $unblind = " -b 0";
 }
 
 if (!$opt_C) {
