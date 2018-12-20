@@ -41,6 +41,10 @@ struct adset {
     , *fpMuchi2, *fpMudz, *fpMudzE, *fpMud0, *fpMud0E, *fpMudsz, *fpMudszE, *fpMudxy, *fpMudxyE, *fpMuptE, *fpMuptEpt, *fpMuetaE, *fpMuphiE
     , *fpKapixhits, *fpKatrkhits, *fpKatkqual, *fpKaalg, *fpKavalhits, *fpKavalhitfraction, *fpKalayerswithhits
     , *fpKachi2, *fpKadz, *fpKadzE, *fpKad0, *fpKad0E, *fpKadsz, *fpKadszE, *fpKadxy, *fpKadxyE, *fpKaptE, *fpKaptEpt, *fpKaetaE, *fpKaphiE
+    // high-pT kaons (to have a control sample for peaking backgrounds)
+    , *fpHpKapixhits, *fpHpKatrkhits, *fpHpKatkqual, *fpHpKaalg, *fpHpKavalhits, *fpHpKavalhitfraction, *fpHpKalayerswithhits
+    , *fpHpKachi2, *fpHpKadz, *fpHpKadzE, *fpHpKad0, *fpHpKad0E, *fpHpKadsz, *fpHpKadszE, *fpHpKadxy, *fpHpKadxyE, *fpHpKaptE, *fpHpKaptEpt, *fpHpKaetaE, *fpHpKaphiE
+    , *fpHpKaMuMVA
     // -- END for tracking studies
     ;
 };
