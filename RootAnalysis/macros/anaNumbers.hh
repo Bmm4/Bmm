@@ -12,7 +12,7 @@
 
 class number {
 public:
-  number() : val(0), estat(0), esyst(0), etot(0), name("") {};
+  number() : val(0), estat(0), esyst(0), etot(0), estatLo(0.), estatHi(0.), name("") {};
   ~number() {};
   void clear(std::string sname) {val = estat = esyst = etot = 0.; name = sname;}
   void setErrors(double sta, double sys);
@@ -22,6 +22,7 @@ public:
   void calcEtot();
   double val;
   double estat, esyst, etot;
+  double estatLo, estatHi;
   std::string name;
 };
 
