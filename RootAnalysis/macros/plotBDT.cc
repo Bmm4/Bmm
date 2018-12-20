@@ -319,9 +319,6 @@ void plotBDT::bdtOptAnaTree(string rootfile) {
 
   int nentries = int(t->GetEntries());
 
-  TH1D *h1(0);
-  TH2D *h2(0);
-
   double minksCut(0.25);
   map<string, TH1*> hists;
   hists.insert(make_pair("ssb0_minks", new TH2D("ssb0_minks", "ssb0_minks", 40, 0., 1., 40, 2.0, 3.0)));
@@ -1465,7 +1462,7 @@ void plotBDT::getTLFParameters(string prefix, string type) {
 
   string::size_type m1, m2;
   string varn, vars, varp;
-  int bail(0), istart(0);
+  int istart(0);
   string after;
 
   if (type == "Events0") {
