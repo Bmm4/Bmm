@@ -173,6 +173,7 @@ int main(int argc, char *argv[]) {
   string shistfile = histfile.Data();
   replaceAll(shistfile, "..", ".");
   histfile = shistfile.c_str();
+  cout << "Using random seed " << randomSeed << endl;
   cout << "Opening " << histfile.Data() << " for output histograms" << endl;
   cout << "Opening " << fileName.c_str() << " for input" << endl;
 
