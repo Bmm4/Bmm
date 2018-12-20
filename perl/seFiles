@@ -25,7 +25,7 @@ getopts('fp:x:');
 my $fileglob  = $opt_p;
 my $srmprefix = 'srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat';
 my $xroot     = 'root://t3se01.psi.ch:1094/pnfs/psi.ch/cms/trivcat';
-my $scratch   = '/scratch/ursl';
+my $scratch   = '/t3home/ursl/';
 
 #@files = <" $opt_p ">;
 my @files = `/bin/ls -1 *$opt_p*`;
