@@ -87,7 +87,7 @@ plotClass::plotClass(string dir, string files, string cuts, string setup, int ye
 
   fBfPsiMuMu     = 0.05961;
   fBfPsiMuMuE    = 0.00033;
-  fBfPhiKpKm     = 0.489;
+  fBfPhiKpKm     = 0.492;
   fBfPhiKpKmE    = 0.005;
 
   // L6134 of /cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw-patch/CMSSW_8_0_19_patch2/src/GeneratorInterface/EvtGenInterface/data/DECAY_NOLONGLIFE.DEC
@@ -893,7 +893,8 @@ void plotClass::candAnalysis() {
     if (0) cout << "plotClass::candAnalysis: " << fb.run << " " << fb.evt
 		<< " could not determine channel: " << fb.m1eta << " " << fb.m2eta << endl;
     fBDT = -99.;
-    fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = false;
+    fGoodHLT = fGoodMuonsID = fGoodAmsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = false;
+    fGoodRealMuonsID = fGoodRealAmsID = false;
     fGoodCmssw = fGoodCandAna = false;
     fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
     fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
@@ -916,7 +917,8 @@ void plotClass::candAnalysis() {
 
   // -- reset all
   fBDT = -99.;
-  fGoodHLT = fGoodMuonsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = fGoodDcand = false;
+  fGoodHLT = fGoodMuonsID = fGoodAmsID = fGoodGlobalMuons = fGoodGlobalMuonsKin = fGoodDcand = false;
+  fGoodRealMuonsID = fGoodRealAmsID = false;
   fGoodQ = fGoodPvAveW8 = fGoodMaxDoca = fGoodIp = fGoodIpS = fGoodPt = fGoodEta = fGoodPhi = fGoodAlpha =  fGoodChi2 = fGoodFLS = false;
   fGoodIso = fGoodM1Iso = fGoodM2Iso = fGoodDocaTrk = fGoodCNC = fGoodBDT = fGoodBdtPresel = fPreselection = fPreselectionBDT = false;
   fGoodCloseTrack = fGoodCloseTrackS1 = fGoodCloseTrackS2 = fGoodCloseTrackS3 = false;
@@ -1092,9 +1094,15 @@ void plotClass::candAnalysis() {
 
   fGoodGlobalMuons = (fb.m1mvabdt > -2.5) && (fb.m2mvabdt > -2.5);
   fGoodGlobalMuonsKin = fGoodGlobalMuons && fGoodMuonsPt && fGoodMuonsEta ;
-  fGoodMuonsID     = (fb.m1mvabdt > fCuts[0]->muonbdt) && (fb.m2mvabdt > fCuts[0]->muonbdt);
+  fGoodMuonsID     = (fGoodGlobalMuonsKin && (fb.m1mvabdt > fCuts[0]->muonbdt) && (fb.m2mvabdt > fCuts[0]->muonbdt));
+  fGoodAmsID       = (fGoodGlobalMuonsKin && (fb.m1mvabdt < fCuts[0]->muonbdt) && (fb.m2mvabdt < fCuts[0]->muonbdt));
+
+  fGoodRealMuonsID = ((fb.m1rmvabdt > -2.5) && (fb.m2rmvabdt > -2.5) && fGoodMuonsPt && fGoodMuonsEta && (fb.m1rmvabdt > fCuts[0]->muonbdt) && (fb.m2rmvabdt > fCuts[0]->muonbdt));
+  fGoodRealAmsID   = ((fb.m1rmvabdt > -2.5) && (fb.m2rmvabdt > -2.5) && fGoodMuonsPt && fGoodMuonsEta && (fb.m1rmvabdt < fCuts[0]->muonbdt) && (fb.m2rmvabdt < fCuts[0]->muonbdt));
+
   if (RARE == fMode) {
     fGoodMuonsID = true;
+    fGoodAmsID   = true;
     fGoodGlobalMuons = true;
     fGoodGlobalMuonsKin = true;
     fGoodDcand = true;
@@ -1105,17 +1113,19 @@ void plotClass::candAnalysis() {
   double w1(-1.), w2(-1.);
 
   if (fIsMC) {
-    PidTable *pT, *pT1, *pT2;
+    // FIXME REMOVE    PidTable *pT, *pT1, *pT2;
 
     double am1eta = TMath::Abs(fb.m1eta);
     double am2eta = TMath::Abs(fb.m2eta);
 
-    pT  = fptM;
-    if (RARE == fMode) {
+    //FIXME REMOVE    pT  = fptM;
+    if ((RARE == fMode) || (BDMM == fMode) || (BSMM == fMode)) {
+
+      // -- normal muon ID
       w1 = w2 = -1.;
       // -- track 1
-      if (  13 == fb.g1id) w1 = pT->effD(fb.m1pt, am1eta, 1.);
-      if ( -13 == fb.g1id) w1 = pT->effD(fb.m1pt, am1eta, 1.);
+      if (  13 == fb.g1id) w1 = fptNegMuons->effD(fb.m1pt, am1eta, 1.);
+      if ( -13 == fb.g1id) w1 = fptPosMuons->effD(fb.m1pt, am1eta, 1.);
 
       if (  321 == fb.g1id) w1 = fptFakePosKaons->effD(fb.m1pt, am1eta, 1.);
       if ( -321 == fb.g1id) w1 = fptFakeNegKaons->effD(fb.m1pt, am1eta, 1.);
@@ -1127,8 +1137,8 @@ void plotClass::candAnalysis() {
       if (-2212 == fb.g1id) w1 = fptFakeNegProtons->effD(fb.m1pt, am1eta, 1.);
 
       // -- track 2
-      if (  13 == fb.g2id) w2 = pT->effD(fb.m2pt, am2eta, 1.);
-      if ( -13 == fb.g2id) w2 = pT->effD(fb.m2pt, am2eta, 1.);
+      if (  13 == fb.g2id) w2 = fptNegMuons->effD(fb.m2pt, am2eta, 1.);
+      if ( -13 == fb.g2id) w2 = fptPosMuons->effD(fb.m2pt, am2eta, 1.);
 
       if (  321 == fb.g2id) w2 = fptFakePosKaons->effD(fb.m2pt, am2eta, 1.);
       if ( -321 == fb.g2id) w2 = fptFakeNegKaons->effD(fb.m2pt, am2eta, 1.);
@@ -1140,8 +1150,43 @@ void plotClass::candAnalysis() {
       if (-2212 == fb.g2id) w2 = fptFakeNegProtons->effD(fb.m2pt, am2eta, 1.);
 
       fW8MisId = w1*w2;
-
       if (0) cout << "fW8MisId = " << fW8MisId << " w1 = " << w1 << " w2 = " << w2
+		  << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
+		  << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
+		  << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
+		  << endl;
+
+      // -- anti-muon ID
+      w1 = w2 = -1.;
+      // -- track 1
+      if (  13 == fb.g1id) w1 = famNegMuons->effD(fb.m1pt, am1eta, 1.);
+      if ( -13 == fb.g1id) w1 = famPosMuons->effD(fb.m1pt, am1eta, 1.);
+
+      if (  321 == fb.g1id) w1 = famFakePosKaons->effD(fb.m1pt, am1eta, 1.);
+      if ( -321 == fb.g1id) w1 = famFakeNegKaons->effD(fb.m1pt, am1eta, 1.);
+
+      if (  211 == fb.g1id) w1 = famFakePosPions->effD(fb.m1pt, am1eta, 1.);
+      if ( -211 == fb.g1id) w1 = famFakeNegPions->effD(fb.m1pt, am1eta, 1.);
+
+      if ( 2212 == fb.g1id) w1 = famFakePosProtons->effD(fb.m1pt, am1eta, 1.);
+      if (-2212 == fb.g1id) w1 = famFakeNegProtons->effD(fb.m1pt, am1eta, 1.);
+
+      // -- track 2
+      if (  13 == fb.g2id) w2 = famNegMuons->effD(fb.m2pt, am2eta, 1.);
+      if ( -13 == fb.g2id) w2 = famPosMuons->effD(fb.m2pt, am2eta, 1.);
+
+      if (  321 == fb.g2id) w2 = famFakePosKaons->effD(fb.m2pt, am2eta, 1.);
+      if ( -321 == fb.g2id) w2 = famFakeNegKaons->effD(fb.m2pt, am2eta, 1.);
+
+      if (  211 == fb.g2id) w2 = famFakePosPions->effD(fb.m2pt, am2eta, 1.);
+      if ( -211 == fb.g2id) w2 = famFakeNegPions->effD(fb.m2pt, am2eta, 1.);
+
+      if ( 2212 == fb.g2id) w2 = famFakePosProtons->effD(fb.m2pt, am2eta, 1.);
+      if (-2212 == fb.g2id) w2 = famFakeNegProtons->effD(fb.m2pt, am2eta, 1.);
+
+      fW8AmMisId = w1*w2;
+
+      if (0) cout << "fW8AmMisId = " << fW8AmMisId << " w1 = " << w1 << " w2 = " << w2
 		  << " m1eta =  " << fb.m1eta << " m2eta =  " << fb.m2eta
 		  << " m1pt =  " << fb.m1pt << " m2pt =  " << fb.m2pt
 		  << " g1id =  " << fb.g1id << " g2id =  " << fb.g2id
@@ -2132,11 +2177,9 @@ void plotClass::loadFiles(string afiles) {
       m1 = sbuffer.find("bf=");
       useBf = true;
     }
-    bool useEff(true);
     double eff(0.), effE(0.);
     if (m2 > sbuffer.size()) {
       m2 = sbuffer.find("file=");
-      useEff = false;
     } else {
       string seff = sbuffer.substr(m2+4, m3-m2-4);
       float val, err;
@@ -2274,8 +2317,44 @@ void plotClass::loadFiles(string afiles) {
       ds->fSize = 0.1;
       ds->fWidth = 2.;
 
+      double bfbsmmVal = 3.57e-9;
+      double bfbsmmErr = 0.16e-9;
+
+
       if (string::npos != stype.find("fake,")) {
         sname = "fakeMc";
+        sdecay = "fake";
+	ldecay = "fake";
+	ds->fColor = kMagenta;
+	ds->fSymbol = 25;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
+      }
+
+      if (string::npos != stype.find("fakePions,")) {
+        sname = "fakePionsMc";
+        sdecay = "fake";
+	ldecay = "fake";
+	ds->fColor = kMagenta;
+	ds->fSymbol = 25;
+	ds->fF      = pF;
+	ds->fBf     = bf;
+	ds->fBfE    = bfE;
+	ds->fFilterEff = eff;
+	ds->fFilterEffE = effE;
+	ds->fMass   = 1.;
+	ds->fFillStyle = 3365;
+	ds->fLumi   = atof(slumi.c_str());
+      }
+
+      if (string::npos != stype.find("fakeKaons,")) {
+        sname = "fakeKaonsMc";
         sdecay = "fake";
 	ldecay = "fake";
 	ds->fColor = kMagenta;
@@ -2301,8 +2380,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fSymbol = 24;
 	ds->fWidth  = 2.;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 6.021E-05;
+	ds->fBfE    = 1.761E-06;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2322,8 +2401,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 3.167E-05;
+	ds->fBfE    = 2.375E-06;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2343,8 +2422,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 0.1; // FIXME DUMMY
+	ds->fBfE    = 0.1;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2365,10 +2444,10 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fMass   = 1.;
 	ds->fFillStyle = 3365;
 	TH1D *h1     = ds->getHist("monEvents", false);
@@ -2385,8 +2464,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2406,8 +2485,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2427,8 +2506,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2448,8 +2527,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2469,8 +2548,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2490,8 +2569,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2511,8 +2590,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2532,8 +2611,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2553,8 +2632,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2574,8 +2653,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2595,8 +2674,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2616,8 +2695,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2637,8 +2716,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2658,8 +2737,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2679,8 +2758,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2700,8 +2779,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = bfbsmmVal;
+	ds->fBfE    = bfbsmmErr;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2721,8 +2800,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 5.040E-05;
+	ds->fBfE    = 2.004E-06;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2764,8 +2843,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 1.96e-5;
+	ds->fBfE    = 0.05e-5;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2786,8 +2865,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue-10;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 7.8e-8;
+	ds->fBfE    = 1.5e-8;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2808,8 +2887,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue-7;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 5.12e-6;
+	ds->fBfE    = 0.19e-6;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2830,8 +2909,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue-9;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 1.50e-4;
+	ds->fBfE    = 0.06e-4;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2852,8 +2931,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kBlue-8;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 5.3e-8;
+	ds->fBfE    = 0.53e-8;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2876,8 +2955,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed-10;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 7.0e-7;
+	ds->fBfE    = 0.8e-7;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2898,8 +2977,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed-7;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 5.7e-6;
+	ds->fBfE    = 0.6e-6;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2920,8 +2999,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 2.59e-5;
+	ds->fBfE    = 0.17e-5;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2942,8 +3021,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kRed-9;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 9.4e-5;
+	ds->fBfE    = 2.4e-5;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2964,8 +3043,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kGreen-7;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 4.2e-6;
+	ds->fBfE    = 0.8e-6;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -2986,8 +3065,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 5.1e-6;
+	ds->fBfE    = 0.9e-6;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -3008,8 +3087,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kGreen-9;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 4.1e-4;
+	ds->fBfE    = 1.0e-4;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -3030,8 +3109,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kMagenta-3;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 2.96e-2;
+	ds->fBfE    = 1.06e-2;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -3052,8 +3131,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kYellow+3;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 1.76e-8;
+	ds->fBfE    = 0.23e-8;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -3074,8 +3153,8 @@ void plotClass::loadFiles(string afiles) {
 	ds->fColor = kYellow+2;
 	ds->fSymbol = 24;
 	ds->fF      = pF;
-	ds->fBf     = bf;
-	ds->fBfE    = bfE;
+	ds->fBf     = 2.313e-6;
+	ds->fBfE    = 7.3e-8;
 	ds->fFilterEff = eff;
 	ds->fFilterEffE = effE;
 	ds->fMass   = 1.;
@@ -3111,9 +3190,7 @@ void plotClass::loadFiles(string afiles) {
     string name("");
     if (2011 == fYear) {
       directory = string("weights/pidtables/");
-      TH1D *hcuts = fDS["bmmData"]->getHist("candAnaMuMu/hcuts");
-      string prefixB("bmm4-42"), prefixE("bmm4-42");
-      double cutB(0.0), cutE(0.0);
+      string prefixB("bmm4-42");
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
 
@@ -3125,11 +3202,24 @@ void plotClass::loadFiles(string afiles) {
 
       name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
-      fptM = fptNegMuons;
+
+      // -- antimuon ID
+      prefixB = "am-bmm4-42";
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  famFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegKaons   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  famFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); famFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); famFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); famPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); famNegMuons = new PidTable(Form(name.c_str()));
+
     } else if (2012 == fYear) {
       directory = string("weights/pidtables/");
-      string prefixB("bmm4-42"), prefixE("bmm4-42");
-      double cutB(0.0), cutE(0.0);
+      string prefixB("bmm4-42");
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
 
@@ -3141,10 +3231,24 @@ void plotClass::loadFiles(string afiles) {
 
       name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
-      fptM = fptNegMuons;
+
+      // -- anti-muon ID
+      prefixB = "am-bmm4-42";
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  famFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegKaons   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  famFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); famFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); famFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); famPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); famNegMuons = new PidTable(Form(name.c_str()));
+
     } else if (2016 == fYear) {
       directory = string("weights/pidtables/");
-      string prefixB("bmm4-25"), prefixE("bmm4-25");
+      string prefixB("bmm4-25");
       name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  fptFakePosKaons   = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  fptFakeNegKaons   = new PidTable(Form(name.c_str()));
 
@@ -3156,7 +3260,20 @@ void plotClass::loadFiles(string afiles) {
 
       name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); fptPosMuons = new PidTable(Form(name.c_str()));
       name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); fptNegMuons = new PidTable(Form(name.c_str()));
-      fptM = fptNegMuons;
+
+      prefixB = "am-bmm4-25";
+      name = directory + Form("%d-321Pos-%s.dat", fYear, prefixB.c_str());  famFakePosKaons   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-321Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegKaons   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-211Pos-%s.dat", fYear, prefixB.c_str());  famFakePosPions   = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-211Neg-%s.dat", fYear, prefixB.c_str());  famFakeNegPions   = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-2212Pos-%s.dat", fYear, prefixB.c_str()); famFakePosProtons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-2212Neg-%s.dat", fYear, prefixB.c_str()); famFakeNegProtons = new PidTable(Form(name.c_str()));
+
+      name = directory + Form("%d-13Pos-%s.dat", fYear, prefixB.c_str()); famPosMuons = new PidTable(Form(name.c_str()));
+      name = directory + Form("%d-13Neg-%s.dat", fYear, prefixB.c_str()); famNegMuons = new PidTable(Form(name.c_str()));
+
     }
   }
 
