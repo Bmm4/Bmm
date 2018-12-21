@@ -10,8 +10,9 @@ HepPDTESSource = cms.ESSource(
 genParticles = cms.EDProducer(
     "GenParticleProducer",
     saveBarCodes          = cms.untracked.bool(True),
+    src                   = cms.InputTag("generatorSmeared"),
 #    src                   = cms.InputTag("generator"),
-    src                   = cms.InputTag("source"),
+#    src                   = cms.InputTag("source"),
     abortOnUnknownPDGCode = cms.untracked.bool(False)
     )
 
@@ -28,4 +29,3 @@ genDump = cms.EDAnalyzer(
 # Sequences
 # ######################################################################
 MCTruthSequence     = cms.Sequence(genParticles*genDump)
-

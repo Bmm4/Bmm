@@ -25,6 +25,7 @@ using namespace reco;
 // ----------------------------------------------------------------------
 HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
+  fFilterLabel(iConfig.getUntrackedParameter<edm::InputTag>("filterLabel", edm::InputTag(""))),
   fTracksLabel(iConfig.getUntrackedParameter<edm::InputTag>("tracksLabel", edm::InputTag("generalTracks"))),
   fTrackQualityString(iConfig.getUntrackedParameter<std::string>("trackQualityString",std::string("highPurity"))),
   fPrimaryVertexLabel(iConfig.getUntrackedParameter<edm::InputTag>("PrimaryVertexLabel", edm::InputTag("offlinePrimaryVertices"))),
@@ -49,12 +50,18 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
   fMaxDz(iConfig.getUntrackedParameter<double>("maxDz", 999.)),
   fPvWeight(iConfig.getUntrackedParameter<double>("pvWeight", 0.6)),
   fType(iConfig.getUntrackedParameter<int>("type")),
-  fUseBeamspotConstraint(iConfig.getUntrackedParameter<bool>("useBeamspotConstraint", true)) {
+  fUseBeamspotConstraint(iConfig.getUntrackedParameter<bool>("useBeamspotConstraint", true)),
+  fDoFilter(false) {
 
   fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel);
   fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
   fTokenMuon       = consumes<MuonCollection>(fMuonsLabel) ;
   fTokenVertex      = consumes<VertexCollection>(fPrimaryVertexLabel);
+  if (fFilterLabel.encode() != "") {
+    fDoFilter = true;
+    fTokenTrkIdx      = consumes<vector<int> >(fFilterLabel);
+    fTokenPvIdx       = consumes<int>(fFilterLabel) ;
+  }
 }
 
 
@@ -62,6 +69,7 @@ HFVirtualDecay::HFVirtualDecay(const edm::ParameterSet& iConfig) :
 void HFVirtualDecay::dumpConfiguration() {
   using namespace std;
   cout << "---  verbose                     " << fVerbose << endl;
+  cout << "---  filterLabel                 " << fFilterLabel << endl;
   cout << "---  tracksLabel                 " << fTracksLabel << endl;
   cout << "---  trackQualityString          " << fTrackQualityString << endl;
   cout << "---  PrimaryVertexLabel          " << fPrimaryVertexLabel << endl;
@@ -140,6 +148,29 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
     throw HFSetupException(Form("No valid MuonCollection with label '%s' found, skipping",fMuonsLabel.encode().c_str()));
   }
 
+  // -- setup filtering for recoil physics
+  int pvidx(0);
+  vector<int> vidx;
+  if (fDoFilter) {
+    // -- recoil track indices
+    try {
+      iEvent.getByToken(fTokenTrkIdx, fTrkIdxHandle);
+      fTrkIdxHandle.isValid();
+    } catch(cms::Exception&){
+      throw HFSetupException(Form("No valid TrkIdxCollection with label '%s' found, skipping", fFilterLabel.encode().c_str()));
+    }
+
+    // -- recoil pv index
+    try {
+      iEvent.getByToken(fTokenPvIdx, fPvIdxHandle);
+      fPvIdxHandle.isValid();
+    } catch(cms::Exception&){
+      throw HFSetupException(Form("No valid PvIndex with label '%s' found, skipping", fFilterLabel.encode().c_str()));
+    }
+    pvidx = (*fPvIdxHandle);
+    vidx  = (*fTrkIdxHandle);
+  }
+
   // -- load the transient track builder
   iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", fTTB);
   if (!fTTB.isValid()) throw HFSetupException("Error: no TransientTrackBuilder found");
@@ -150,6 +181,11 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   fListBuilder->setMaxDz(fMaxDz);
   fListBuilder->setMinPt(fTrackPt);
   fListBuilder->setTrackQuality(fTrackQualityString);
+
+  if (fDoFilter) {
+    fListBuilder->setRecoilTrkIdx(vidx);
+    fListBuilder->setRecoilPvIdx(pvidx);
+  }
 
   muon::SelectionType muonType = muon::selectionTypeFromString(fMuonQualityString);
   fListBuilder->setMuonQuality(muonType);

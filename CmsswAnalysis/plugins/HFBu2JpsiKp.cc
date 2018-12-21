@@ -118,12 +118,15 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       if (tKaon.pt() < fTrackPt) continue;
       ka.SetXYZM(tKaon.px(), tKaon.py(), tKaon.pz(), MKAON);
       if ((fDeltaR < 90.) && (psi.DeltaR(ka) > fDeltaR)) continue;
+      if (fVerbose > 1) cout << "==>HFBu2JpsiKp> looking at track with index " << *trkIt << endl;
 
       bu = ka + psi;
       mass = bu.M();
 
       if (mass < (fCandLo-0.3)) continue;
       if (mass > (fCandHi+0.3)) continue;
+
+      if (fVerbose > 1) cout << " has cand mass = " << mass << ", entering fit" << endl;
 
       // -- sequential fit: J/Psi kaon
       theTree.clear(300521, true, MBPLUS, false, -1.0, true);
@@ -166,6 +169,10 @@ void HFBu2JpsiKp::analyze(const Event& iEvent, const EventSetup& iSetup) {
       // -- but we store its relevant information into the unconstrained candidate, saved above
       pCand->fMassC  = theTree.fTV.mass;
       pCand->fMassCE = theTree.fTV.masserr;
+      if (fVerbose > 1) cout << " filling tree. trk indices: "
+			     << " m1: " << iMuon1
+			     << " m2: " << iMuon2
+			     << " trk: " << *trkIt<< endl;
     }
   }
 }

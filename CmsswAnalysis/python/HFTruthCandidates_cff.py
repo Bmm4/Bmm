@@ -7,6 +7,17 @@ trackList = "generalTracks"
 # ######################################################################
 
 # ----------------------------------------------------------------------
+truthBuToKMuTauDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    verbose      = cms.untracked.int32(0),
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(521),
+    type         = cms.untracked.int32(200),
+    GenType      = cms.untracked.int32(-200),
+    daughtersID  = cms.untracked.vint32(321, -15, 211, 211, -211, -16, 13)
+    )
+
+# ----------------------------------------------------------------------
 truthBsToMuMuDump = cms.EDAnalyzer(
     "HFTruthCandidate",
     tracksLabel  = cms.untracked.InputTag(trackList),
@@ -660,6 +671,9 @@ truthBmtSequence         = cms.Sequence(truthSignalsSequence
                                         *truthDstarToD0PiToKPiPi
                                         *truthOniaSequence
                                         )
+
+truthRecoilSequence      = cms.Sequence(truthBuToKMuTauDump
+)
 
 truthFakeSequence        = cms.Sequence(truthKsToPiPiDump
                                         *truthPhiToKKDump
