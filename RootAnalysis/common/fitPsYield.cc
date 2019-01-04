@@ -298,6 +298,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     fCombMax = h->GetMaximum();
     f1->SetParLimits(0, 0., 10.*h->GetMaximum());
     f1->SetParLimits(1, 5.25,  5.30); // it's a B+ fit!
+    f1->SetParLimits(2, 0.010,  0.04);
     //    f1->SetParLimits(5, 0.,  1.e15);
     f1->SetParLimits(9, 0.,  10.*h->GetMaximum());
   } else {
@@ -311,7 +312,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     double scale = h->GetMaximum()/fCombMax;
     if (fVerbose) cout << "==> limitpars = " << limitpars << " fPar[3] = " << fPar[3] << endl;
     if (limitpars > 0) {
-      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + fParE[0]));
+      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + limitpars*fParE[0]));
       f1->SetParameter(1, fPar[1]);        f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
       f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
       //f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);

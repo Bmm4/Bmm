@@ -115,6 +115,7 @@ public :
 
   void   loopFunction1(); // for the fake studies
   void   loopFunction2(); // for the PidTables
+  void   loopFunction3(); // for the PidTables of the anti-muon sample
 
   void   setupTree(TTree *t);
 

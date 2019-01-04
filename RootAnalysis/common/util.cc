@@ -19,6 +19,68 @@
 using namespace std;
 
 // ----------------------------------------------------------------------
+// -- from arxiv:physics/0403046 (R. Barlow)
+double poissonError(int n, double &up, double &down) {
+  if (n > 9) {
+    up = down = TMath::Sqrt(n);
+    return (0.5*(up+down));
+  }
+
+  if (n < 0) {
+    up = down = -99.;
+    return -99.;
+  }
+  if (n < 2) {
+    down = 0.827;
+    up   = 2.299;
+    return (0.5*(up+down));
+  }
+  if (2 == n) {
+    down = 1.292;
+    up   = 2.637;
+    return (0.5*(up+down));
+  }
+  if (3 == n) {
+    down = 1.633;
+    up   = 2.918;
+    return (0.5*(up+down));
+  }
+  if (4 == n) {
+    down = 1.914;
+    up   = 3.162;
+    return (0.5*(up+down));
+  }
+  if (5 == n) {
+    down = 2.159;
+    up   = 3.382;
+    return (0.5*(up+down));
+  }
+  if (6 == n) {
+    down = 2.380;
+    up   = 2.581;
+    return (0.5*(up+down));
+  }
+  if (7 == n) {
+    down = 2.581;
+    up   = 3.770;
+    return (0.5*(up+down));
+  }
+  if (8 == n) {
+    down = 2.768;
+    up   = 3.944;
+    return (0.5*(up+down));
+  }
+  if (9 == n) {
+    down = 2.943;
+    up   = 4.110;
+    return (0.5*(up+down));
+  }
+
+  return -1.;
+}
+
+
+// ----------------------------------------------------------------------
 void setMaximum(double scale, TH1 *h1, TH1 *h2) {
   double m(-99.), m1(-99.), m2(-99.);
   if (0 != h1) m1 = h1->GetMaximum();
@@ -462,11 +524,11 @@ void average(double &av, double &error, int n, double *val, double *verr) {
 
 
 // ----------------------------------------------------------------------
-void average(double &av, double &error, vector<double> &val, vector<double> &verr) {
+void average(double &av, double &error, vector<double> &val, vector<double> &verr, double &chi2) {
 
   double e(0.), w8(0.), sumW8(0.), sumAve(0.);
   for (unsigned int i = 0; i < val.size(); ++i) {
-    cout << i << " " << val[i] << " +/- " << verr[i] << endl;
+    cout << i << " " << val[i] << " +/- " << verr[i];
 
     // -- calculate mean and error
     e = verr[i];
@@ -474,12 +536,12 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
       w8 = 1./(e*e);
       sumW8  += w8;
       sumAve += w8*val[i];
+      cout << " w8 = " << w8 << " sumW8 = " << sumW8 << " sumAve = " << sumAve << endl;
     } else {
       cout << "average: Error = 0 for " << val[i] << endl;
       continue;
     }
   }
-  cout << "sumW8 = " << sumW8 << endl;
   if (sumW8 > 0.) {
     av = sumAve/sumW8;
     sumW8 = TMath::Sqrt(sumW8);
@@ -488,7 +550,18 @@ void average(double &av, double &error, vector<double> &val, vector<double> &ver
     av = -99.;
     error = -99.;
   }
+  cout << "sqrt(sumW8) = " << sumW8 << " av = " << av << " +/- " << error << endl;
 
+  chi2 = 0;
+  for (unsigned int i = 0; i < val.size(); ++i) {
+    e = verr[i];
+    if (e > 0.) {
+      w8 = 1./(e*e);
+    } else {
+      w8 = 0.;
+    }
+    chi2 += w8*(av-val[i])*(av-val[i]);
+  }
 }
 
 
@@ -677,15 +750,12 @@ string formatTexErrSci(double n, double nE, string name, int digits, int sgn) {
   if (TMath::IsNaN(n) || TMath::IsNaN(nE)) {
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{\\mathrm{NaN} } } }", name.c_str());
   } else if (1 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.1f \\pm %5.1f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (2 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.2f \\pm %5.2f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (3 == digits ) {
-    if (nE < 1.e-8) mantNE = 0.;
     sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
     if (sgn) sprintf(line, "\\vdef{%s}   {\\ensuremath{{(%+5.3f \\pm %5.3f)\\times 10^{%d}} } }", name.c_str(), mantN, mantNE, static_cast<int>(expoN));
   } else if (4 == digits ) {

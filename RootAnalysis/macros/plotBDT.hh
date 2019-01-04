@@ -43,6 +43,11 @@ public :
   void setBdtStrings(int ichan);
   void readLogFile(std::string sfile);
 
+  void xmlParsingVariables(std::string weightfile);
+  void xmlParsingReadTree(std::string xmlfile);
+  double getMaximum(TH1 *h1, TH1 *h2);
+
+
   // -- migrated from tmva1 (TLF = TMVA logfile)
   void getTLFEventNumbers();
   void getTLFRanking(std::string prefix = "BDT", std::string type = "events0");

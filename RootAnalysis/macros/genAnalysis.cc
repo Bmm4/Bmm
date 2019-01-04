@@ -63,13 +63,15 @@ void genAnalysis::genKstarMass() {
   int aid(0);
   cout << "----------------------------------------------------------------------" << endl;
   string decay("");
-  bool skip(true);
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
     aid = TMath::Abs(pCand->fID);
     if (313 == aid) {
       cout << pCand << endl;
-      cout << pCand->fMass << " LorentzVector: " << pCand->fP.X() << "/" << pCand->fP.Y() << "/" << pCand->fP.Z() << " pt = " << pCand->fP.Perp() << " m = " << pCand->fP.M() << endl;
+      cout << pCand->fMass
+	   << " LorentzVector: " << pCand->fP.X() << "/" << pCand->fP.Y() << "/" << pCand->fP.Z()
+	   << " pt = " << pCand->fP.Perp() << " m = " << pCand->fP.M()
+	   << endl;
       fKstarMass->Fill(pCand->fMass);
     }
   }
@@ -82,18 +84,15 @@ void genAnalysis::nonPromptJpsi() {
   int aid(0);
   cout << "----------------------------------------------------------------------" << endl;
   string decay("");
-  bool skip(true);
   for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
     pCand = fpEvt->getGenCand(iC);
     aid = TMath::Abs(pCand->fID);
     if (443 == aid) {
       pMother = fpEvt->getGenCand(pCand->fMom1);
       if (((TMath::Abs(pMother->fID)%1000)/100) != 5 ) {
-	skip = true;
 	continue;
       }
       decay = "";
-      skip = false;
       decay += Form("%d ->", TMath::Abs(pMother->fID));
       ++fB2JpsiCnt;
       pMother->dump();
@@ -350,10 +349,8 @@ void genAnalysis::validateLb2PMuNu() {
       lby = static_cast<int>(1000*pCand->fP.Y());
       pair<int, int> runEvent(lbx, lby);
       //      cout << lbx << " " << lby << endl;
-      bool duplicate(false);
       for (unsigned int i = 0; i < fRunEvents.size(); ++i) {
 	if (fRunEvents[i].first == lbx && fRunEvents[i].second == lby) {
-	  duplicate = true;
 	  cout << "duplicate proton" << endl;
 	}
       }

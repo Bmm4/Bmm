@@ -176,7 +176,6 @@ void bmmReader::eventProcessing() {
   TH1D *h2 = (TH1D*)fpHistFile->Get("pvz");
   TH1D *h0 = (TH1D*)fpHistFile->Get("pv0z");
   for (int i = 0; i < fpEvt->nPV(); ++i) {
-    double z = fpEvt->getPV(i)->fPoint.Z();
     if (0 == i) h0->Fill(fpEvt->getPV(i)->fPoint.Z());
     h2->Fill(fpEvt->getPV(i)->fPoint.Z());
 
@@ -407,23 +406,14 @@ void bmmReader::processTypePythia8() {
   double hsPartCnt[6];
   double hsAntiCnt[6];
 
-  // partons
-  double parPartCnt[6];
-  double parAntiCnt[6];
-
   for (int i = 0; i < 6; i++) {
     hsPartCnt[i] = 0;
     hsAntiCnt[i] = 0;
-    parPartCnt[i] = 0;
-    parAntiCnt[i] = 0;
   }
-  int aid(0);
   for (int i = 0; i < fpEvt->nGenCands(); ++i) {
     pG = fpEvt->getGenCand(i);
     // -- in PYTHIA8 the hard scatter particles are 21-29
     if (pG->fStatus > 20 && pG->fStatus < 30) {
-      aid = TMath::Abs(pG->fID);
-
       for (int j = 0; j < 6; j++) {
         if (pG->fID == j+1) {
           hsPartCnt[j]++;

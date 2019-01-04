@@ -1777,7 +1777,8 @@ void candAnaDstar::bookHist() {
 
   //fHistDir->cd();
 
-  TH1 *h = new TH1D("Status", "Status", 50, -0.5, 49.5);
+  TH1 *h(0);
+  (void)h;
 
   // Dstar histos
   h = new TH1D("mds", "m(dstar)",100, 1.5, 2.5);
@@ -1797,6 +1798,7 @@ void candAnaDstar::bookHist() {
   h = new TH1D("ptPi",  "pT", 50, 0., 10);
   h = new TH1D("ptPis", "pT", 50, 0., 5);
   TH2F *h2 = new TH2F("h2d", "m(d0) vs dm", 60, 1.8, 1.92, 60, 0.13, 0.16);
+  (void)h2;
 
   h = new TH1D("dm1", "delta(m)", 60, 0.13, 0.16);
   h = new TH1D("dm2", "delta(m)", 60, 0.13, 0.16);

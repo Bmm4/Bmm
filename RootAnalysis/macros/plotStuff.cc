@@ -216,9 +216,11 @@ void plotStuff::makeAll(string what) {
     massResolution("bsmmMcComb", "bsmmMcRun1");
   }
 
-  if (what == "all" || string::npos != what.find("tauefficiency")) {
+  if (what == "all" || string::npos != what.find("tau")) {
+    tau2dPlot("all", "", "", "");
     tauEfficiency("all", "", "", "");
   }
+
 
   if (what == "all" || what == "pvstudy") {
     pvStudy("bdmmMcOff", "&& (fl1>0.01)", "fl1");
@@ -1407,20 +1409,12 @@ void plotStuff::runStudy(string ds, string what) {
 void plotStuff::yieldStability(string dsname, string trg) {
   cout << "yieldStability> dsname: " << dsname << " for setup: " << trg << endl;
   double MINLUMI(2.);
-  double mBp(5.28), sBp(0.015), stepBp(5.15);
-  double xmin(5.0), xmax(5.9), ymax(0.), expoLo(5.16), expoHi(5.85);
-
   int nchan = fNchan;
   nchan = 2;
 
   fMode = BMM;
   fSample = dsname;
   setup(dsname);
-  if (string::npos != fSample.find("bspsiphi")) {
-    mBp    = 5.369;
-    sBp    = 0.015;
-    stepBp = 5.15;
-  }
 
   if (trg == "fill") {
     fHistFile = TFile::Open(fHistFileName.c_str(), "UPDATE");
@@ -1499,7 +1493,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
     // -- the result histograms
     const int nx(7);
     const char *ceras[nx] = {"B", "C", "D", "E", "F", "G", "H"};
-    for (unsigned int ichan = 0; ichan < nchan; ++ichan) {
+    for (int ichan = 0; ichan < nchan; ++ichan) {
       string hname = Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
       fvHists.insert(make_pair(hname, new TH1D(hname.c_str(), hname.c_str(),
 					       lastLumiRun-firstLumiRun+1, firstLumiRun, lastLumiRun)));
@@ -1738,7 +1732,7 @@ void plotStuff::yieldStability(string dsname, string trg) {
     gStyle->SetOptFit(0);
     gPad->SetGridx();
     gPad->SetGridy();
-    for (unsigned ichan = 0; ichan < nchan; ++ichan) {
+    for (int ichan = 0; ichan < nchan; ++ichan) {
       if (0) {
 	string hname = Form("hRun%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
 	setTitles(fvHists[hname], "run", Form("N(%s)", fDS[dsname]->fName.c_str()), 0.05, 1.1, 2.1);
@@ -1769,17 +1763,11 @@ void plotStuff::yieldStability(string dsname, string trg) {
 	setTitles(fvHists[hname], "era", Form("N(%s) / pb^{-1}", fDS[dsname]->fName.c_str()), 0.05, 1., 2.1);
 	fvHists[hname]->SetMinimum(0.);
 	fvHists[hname]->Draw();
-	if (2016 == fYear) {
-	  double ymax(fvHists[hname]->GetMaximum());
-	}
 	savePad(Form("ys-%d-yieldPerLumi-era-%s-%s-chan%d.pdf", fYear, trg.c_str(), dsname.c_str(), ichan));
 
 	hname = Form("hEra%s_%s_chan%d", trg.c_str(), dsname.c_str(), ichan);
 	fvHists[hname]->SetMinimum(0.);
 	fvHists[hname]->Draw();
-	if (2016 == fYear) {
-	  double ymax(fvHists[hname]->GetMaximum());
-	}
 	savePad(Form("ys-%d-yield-era-%s-%s-chan%d.pdf", fYear, trg.c_str(), dsname.c_str(), ichan));
       }
 
@@ -2050,7 +2038,7 @@ void plotStuff::yieldStabilityRatios(string trgname) {
 
     int nchan = 2;
     for (int ichan = 0; ichan < nchan; ++ichan) {
-      for (int iplot = 0; iplot < plots.size(); ++iplot) {
+      for (unsigned int iplot = 0; iplot < plots.size(); ++iplot) {
 	cout << "overlay " << it->first << " and " << it->second << " chan " << ichan << endl;
 	string hname1 = Form("%s%s_%s_chan%d", plots[iplot].c_str(), trgname.c_str(), it->first.c_str(), ichan);
 	string hname2 = Form("%s%s_%s_chan%d", plots[iplot].c_str(), trgname.c_str(), it->second.c_str(), ichan);
@@ -2359,7 +2347,6 @@ void plotStuff::loopFunction2() {
   if (TMath::Abs(fb.m2eta) > 1.4) return;
   if (fb.m1q * fb.m2q > 0) return;
 
-  double m = fb.m;
   if ((fMode == BU2JPSIKP) || (fMode == BD2JPSIKSTAR) || (fMode == BS2JPSIPHI)) {
     if (fb.mpsi < 3.04) return;
     if (fb.mpsi > 3.15) return;
@@ -2389,8 +2376,6 @@ void plotStuff::loopFunction2() {
 
   }
 
-
-  bool doubleMu0(false), highPtMu(false);
   if (((fb.l1s & 0x1) == 1) || ((fb.l1s & 0x2) == 2) || ((fb.l1s & 0x4) == 4)) {
     fHLs0[hname0]->Fill(fb.ls, -0.5);
     if (fb.chan > -1) fHLs0[hname0]->Fill(fb.ls, fb.chan);
@@ -2624,7 +2609,7 @@ void plotStuff::loopOverTree(TTree *t, int ifunc, int nevts, int nstart) {
   // -- the real loop starts here
   for (int jentry = nbegin; jentry < nend; jentry++) {
     t->GetEntry(jentry);
-    if (jentry%step == 0) cout << Form(" .. evt = %d, run = %d", jentry, fb.run) << endl;
+    if (jentry%step == 0) cout << Form(" .. evt = %d, run = %lld", jentry, fb.run) << endl;
 
     candAnalysis();
     (this->*pF)();
@@ -2925,37 +2910,33 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
     vector<string> samples;
     samples.push_back("bsmmMcComb");
     samples.push_back("bupsikMcComb");
-    for (int is = 0; is < samples.size(); ++is) {
+    for (unsigned int is = 0; is < samples.size(); ++is) {
       for (int i = 0; i < 2; ++i) {
-	tauEfficiency(Form("flsxy_chan%d", i), "flsxy>10", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("fls3d_chan%d", i), "fls3d>15", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("alpha_chan%d", i), "alpha<0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("chi2dof_chan%d", i), "chi2dof<2", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("maxdoca_chan%d", i), "maxdoca<0.02", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-	tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.015", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("docatrk_chan%d", i), "docatrk>0.05", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("closetrk_chan%d", i), "closetrk<3", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
-	tauEfficiency(Form("iso_chan%d", i), "iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("iso_chan%d", i), "iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m1iso_chan%d", i), "m1iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("m2iso_chan%d", i), "m2iso>0.7", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("pvip_chan%d", i), "pvip<0.01", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("pvips_chan%d", i), "pvips<5", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("pvips_chan%d", i), "pvips<2.5", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 
 	tauEfficiency("hlt1_chan0", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==0)", samples[is]);
 	tauEfficiency("hlt1_chan1", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==1)", samples[is]);
-	tauEfficiency("hlt1_chan2", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==2)", samples[is]);
-	tauEfficiency("hlt1_chan3", "hlt1&&tos&&l1t", "m2pt>4.&&(chan==3)", samples[is]);
-
 
 	tauEfficiency(Form("m1pt_chan%d", i), "m1pt>8", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("m2pt_chan%d", i), "m2pt>6", Form("m1pt>6.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("cnc_chan%d", i), "cnc", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
-	tauEfficiency(Form("bdt_chan%d", i), "bdt>0.34", Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tauEfficiency(Form("bdt_chan%d", i), Form("bdt>%f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
 
 	tauEfficiency(Form("gmuid_chan%d", i), "gmuid", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
 	tauEfficiency(Form("gtqual_chan%d", i), "gtqual", Form("m1pt>4.&&(chan==%d)", i), samples[is]);
@@ -2969,6 +2950,9 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
     return;
   }
 
+  string var = varname;
+  replaceAll(var, "_chan0", "");
+  replaceAll(var, "_chan1", "");
 
   fSample = dsname;
   cout << "==> plotStuff::efficiencyVariable> sample = " << fSample << endl;;
@@ -3025,7 +3009,16 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
   tl->DrawLatexNDC(0.5, 0.84, Form("cuts: %s", cut.c_str()));
   tl->DrawLatexNDC(0.5, 0.80, Form("base: %s", otherSelection.c_str()));
   tl->SetTextSize(0.05);
-  tl->DrawLatexNDC(0.3, 0.92, varname.c_str());
+  tl->DrawLatexNDC(0.3, 0.92, var.c_str());
+
+  for (int ib = 1; ib <= h3->GetNbinsX(); ++ib) {
+    if (h3->GetBinContent(ib) > 0.99 && h3->GetBinError(ib) < 0.01) {
+      cout << "RESETTING BIN " << ib << ": " << h3->GetBinContent(ib) << " +/- " << h3->GetBinError(ib) << " -> ";
+      h3->SetBinError(ib, dEff(static_cast<int>(h2->GetBinContent(ib)), static_cast<int>(h1->GetBinContent(ib))));
+      cout << h3->GetBinContent(ib) << " +/- " << h3->GetBinError(ib) << endl;
+    }
+  }
+
 
   double xmin(0.e-12);
   if (h3->GetBinContent(2) < 0.4) xmin = 4.e-12;
@@ -3056,6 +3049,118 @@ void plotStuff::tauEfficiency(string varname, string cut, string otherSelection,
 
   delete h1;
   delete h2;
+}
+
+
+
+// ----------------------------------------------------------------------
+void plotStuff::tau2dPlot(string varname, string cut, string otherSelection, string dsname) {
+  int nbins(10);
+  double ymin(0.), ymax(0.);
+  if (varname == "all") {
+    vector<string> samples;
+    samples.push_back("bsmmMcComb");
+    samples.push_back("bupsikMcComb");
+    for (unsigned int is = 0; is < samples.size(); ++is) {
+      for (int i = 0; i < 2; ++i) {
+	tau2dPlot(Form("fls3d_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("alpha_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("pvip_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("pvips_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("m1iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("m2iso_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("chi2dof_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("closetrk_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+	tau2dPlot(Form("docatrk_chan%d", i), Form("bdt>%4.3f", fCuts[i]->bdtCut), Form("m2pt>4.&&(chan==%d)", i), samples[is]);
+      }
+    }
+    return;
+  } else if (string::npos != varname.find("fls3d")) { ymin = 0.; ymax = 100.;
+  } else if (string::npos != varname.find("alpha")) { ymin = 0.; ymax = 0.1;
+  } else if (string::npos != varname.find("pvips")) { ymin = 0.; ymax = 4.;
+  } else if (string::npos != varname.find("pvip")) { ymin = 0.; ymax = 0.01;
+  } else if (string::npos != varname.find("iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("m1iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("m2iso")) { ymin = 0.; ymax = 1.01;
+  } else if (string::npos != varname.find("chi2dof")) { ymin = 0.; ymax = 5.;
+  } else if (string::npos != varname.find("docatrk")) { ymin = 0.; ymax = 0.15;
+  } else if (string::npos != varname.find("closetrk")) { ymin = 0.; ymax = 20.;
+  }
+
+  fSample = dsname;
+  cout << "==> plotStuff::tau2dPlot> sample = " << fSample << endl;;
+
+  string dir("candAnaMuMu");
+  if (string::npos != dsname.find("bupsik")) {
+    dir = "candAnaBu2JpsiK";
+  }
+
+  TTree *t = getTree(fSample, dir);
+  if (0 == t) {
+    cout << "tree for sample = " << fSample << " not found" << endl;
+    return;
+  } else {
+    cout << "tree for sample = " << fSample << " found" << endl;
+  }
+
+  gStyle->SetHatchesLineWidth(2);
+  string var = varname;
+  replaceAll(var, "_chan0", "");
+  replaceAll(var, "_chan1", "");
+  string normName = Form("h%sNorm", fSample.c_str());
+  string passName = Form("h%sPass", fSample.c_str());
+  string effName  = Form("h%sEff", fSample.c_str());
+  TH2D *h1 = new TH2D(normName.c_str(), normName.c_str(), 6, 0., 12.e-12, nbins, ymin, ymax);
+  cout << h1->GetDirectory()->GetName() << endl;
+  setTitles(h1, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.4);
+  TH2D *h2 = new TH2D(passName.c_str(), passName.c_str(), 6, 0., 12.e-12, nbins, ymin, ymax);
+  setTitles(h2, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.4);
+
+  // -- basic HLT efficiency derived from MC
+  string tselection = otherSelection;
+  t->Draw(Form("%s:tau>>%s", var.c_str(), normName.c_str()), tselection.c_str());
+  cout << "==> " << tselection << " histogram contents =        " << h1->Integral(1, h1->GetNbinsX()+1) << endl;
+  tselection = cut + " && " + otherSelection;
+  t->Draw(Form("%s:tau >>%s", var.c_str(), passName.c_str()), tselection.c_str());
+  cout << "==> " << tselection << " histogram contents = " << h2->Integral(1, h1->GetNbinsX()+1) << endl;
+
+  TH2D *h3 = (TH2D*)(h1->Clone(effName.c_str())); h3->Reset();
+  setHist(h3);
+  h3->Divide(h2, h1, 1., 1., "b");
+  setTitles(h3, "#tau [ps]", var.c_str(), 0.05, 1.1, 1.3);
+
+  c0->SetCanvasSize(1500, 500);
+  c0->Clear();
+  c0->Divide(3,1);
+
+  c0->cd(1);
+  shrinkPad(0.15, 0.18, 0.18);
+  h1->Draw("colz");
+  tl->SetTextSize(0.05);
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.15, 0.92, Form("%s", otherSelection.c_str()));
+
+  c0->cd(2);
+  shrinkPad(0.15, 0.18, 0.18);
+  h2->Draw("colz");
+  tl->SetTextSize(0.05);
+  tl->SetTextColor(kBlack);
+  tl->DrawLatexNDC(0.15, 0.92, Form("%s && %s", otherSelection.c_str(), cut.c_str()));
+
+  c0->cd(3);
+  shrinkPad(0.15, 0.18, 0.15);
+  h3->Draw("colz");
+
+  tl->SetTextSize(0.05);
+  tl->DrawLatexNDC(0.20, 0.92, Form("Efficiency(%s)", var.c_str()));
+
+  c0->cd();
+  savePad(Form("tau2dPlot%s_%s_%s.pdf", fSetup.c_str(), varname.c_str(), fSample.c_str()));
+
+  delete h1;
+  delete h2;
+  delete h3;
 }
 
 
@@ -3251,9 +3356,9 @@ void plotStuff::wrongReco(string ds1, string mode, string selection) {
     tl->SetTextSize(0.05);  tl->DrawLatexNDC(0.2, 0.92, fDS["bdpsikstarMcComb"]->fName.c_str());
     TF1 *f1 = fIF->expoErr(5.0, 6.0);
     double preco(5.145);
-    double e0(preco),  e0Min(preco-0.01), e0Max(preco+0.01);
-    double e1(0.075),  e1Min(0.050), e1Max(0.100);
-    double e2(1.15), e2Min(1.05),  e2Max(1.25);
+    double e0(preco);
+    double e1(0.075);
+    double e2(1.15);
     double e3(h1->GetMaximum());
     double p0, p1;
     fIF->fLo = 5.25;

@@ -1069,7 +1069,8 @@ int candAnaHh::truthMatch(TAnaCand *pCand, int verbose) {
 // ----------------------------------------------------------------------
 void candAnaHh::bookHist() {
   cout << "==>candAnaHh: bookHist" << endl;
-  TH1 *h=NULL;
+  TH1 *h(0);
+  (void)h;
 
   candAna::bookHist();
 

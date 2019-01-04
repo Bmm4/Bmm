@@ -84,6 +84,8 @@ $combine{"bmmAnaselCharmonium2016GH"} = "cd $SCRATCH; hadd -f bmm-data-bmmAnasel
 $combine{"dstarMuOnia2011"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2011-$version.root dstar-data-dstarMuOnia2011A-$version.root dstar-data-dstarMuOnia2011B-$version.root; cd -  ";
 $combine{"dstarMuOnia2012"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2012-$version.root dstar-data-dstarMuOnia2012A-$version.root dstar-data-dstarMuOnia2012B-$version.root dstar-data-dstarMuOnia2012C-$version.root dstar-data-dstarMuOnia2012D-$version.root; cd -  ";
 $combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016-$version.root dstar-data-dstarCharmonium2016B-$version.root dstar-data-dstarCharmonium2016C-$version.root dstar-data-dstarCharmonium2016D-$version.root dstar-data-dstarCharmonium2016E-$version.root dstar-data-dstarCharmonium2016F-$version.root dstar-data-dstarCharmonium2016G-$version.root dstar-data-dstarCharmonium2016H-$version.root; cd -  ";
+$combine{"dstarCharmonium2016BF"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016BF-$version.root dstar-data-dstarCharmonium2016B-$version.root dstar-data-dstarCharmonium2016C-$version.root dstar-data-dstarCharmonium2016D-$version.root dstar-data-dstarCharmonium2016E-$version.root dstar-data-dstarCharmonium2016F-$version.root; cd -  ";
+$combine{"dstarCharmonium2016GH"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016GH-$version.root dstar-data-dstarCharmonium2016G-$version.root dstar-data-dstarCharmonium2016H-$version.root; cd -  ";
 
 
 $combine{"combined"} = "cd $SCRATCH; cp bmm-mc-Summer16_private-BdToPiMuNu-2016BF-$version.root bmm-mc-combined-BdToPiMuNu-2016BF-$version.root; cd - ; ";
@@ -119,8 +121,7 @@ foreach $let (@list2016) {
     $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-legacy-Run2016";
     $era = "BF$version";
     if ($let eq "G" || $let eq "H") {$era = "GH$version";}
-    # $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016' c$mode-*  && cd - ";
-    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016 ' ");
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era $unblind -C cuts/bmmReader.2016 ' ");
     $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vda/$dataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -164,8 +165,7 @@ my @list2012 = ("A", "B", "C", "D");
 foreach $let (@list2012) {
     $dataset = "bmmMuOnia2012$let";
     $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2012$let";
-    # $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.2012' c$mode-*  && cd - ";
-    &addModeToJobs($mode, " -x 'bin/runBmm -y 2012  -C cuts/bmmReader.2012 ' ");
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2012 $unblind  -C cuts/bmmReader.2012 ' ");
     $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/v06/$dataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -204,7 +204,7 @@ my @list2011 = ("A", "B");
 foreach $let (@list2011) {
     $dataset = "bmmMuOnia2011$let";
     $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-rereco-Run2011$let";
-    $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2011 -C cuts/bmmReader.2011' c$mode-*  && cd - ";
+    $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2011 $unblind -C cuts/bmmReader.2011' c$mode-*  && cd - ";
     $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/v06/$dataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
@@ -238,7 +238,7 @@ $dataset = "fakeMC2016";
 # -----------------------------------------------
 $mode = "$dataset-$version"; $pattern = "bmm-mc";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
-$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v BsToMuMu | grep -v MuNu | sort  > $mode " . &mCC;
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/RunIISpring16DR80 -c -p $pattern | grep -v Jpsi | grep -v BsToMuMu | grep -v MuNu  | grep -v PiMu | sort  > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
@@ -248,7 +248,7 @@ $dataset = "fakeMC2012";
 # -----------------------------------------------
 $mode = "$dataset-$version"; $pattern = "bmm-mc";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2012 -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
-$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/Winter17_private -c -p $pattern   | grep -v Jpsi | grep -v BsToMuMu | grep -v MuNu | sort > $mode " . &mCC;
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/Winter17_private -c -p $pattern   | grep -v Jpsi | grep -v BsToMuMu | grep -v PiMu | grep -v KMu | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 
@@ -257,7 +257,7 @@ $dataset = "fakeMC2011";
 # -----------------------------------------------
 $mode = "$dataset-$version"; $pattern = "bmm-mc";
 $jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2011 -C cuts/bmmReader.fakeMC -m' c$mode-*  && cd - ";
-$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/Summer17_private -c -p $pattern   | grep -v Jpsi | grep -v BsToMuMu | grep -v MuNu | sort > $mode " . &mCC;
+$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/Summer17_private -c -p $pattern   | grep -v Jpsi | grep -v BsToMuMu | grep -v PiMu | grep -v KMu | sort > $mode " . &mCC;
 $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NHA c$mode && rm checkChain.C";
 $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 

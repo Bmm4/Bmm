@@ -44,7 +44,6 @@ int main(int argc, char *argv[]) {
 
   string dir("nada"), cuts("nada"), files("nada"), plot("nada"), mode("nada"), setup("nada"), rootfilename("nada"), syear("0");
   int year(0);
-  bool remove(false);
 
   // -- command line arguments
   for (int i = 0; i < argc; i++){                             // tmva1:               trainingfiles:
@@ -56,7 +55,6 @@ int main(int argc, char *argv[]) {
     if (!strcmp(argv[i], "-r"))  {rootfilename  = argv[++i];} // input rootfilename   output rootfilename
     if (!strcmp(argv[i], "-s"))  {setup = argv[++i];}         // vars                 signal input filename
     if (!strcmp(argv[i], "-w"))  {mode  = argv[++i];}         // BDT parameters
-    if (!strcmp(argv[i], "-x"))  {remove= true;}              //
     if (!strcmp(argv[i], "-y"))  {syear = argv[++i];}         //
   }
 

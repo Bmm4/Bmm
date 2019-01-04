@@ -401,8 +401,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
   //   nBgTrain =  nSgTrain;
   // }
 
-  int seed = static_cast<int>(100*gRandom->Rndm());
-
+  // int seed = static_cast<int>(100*gRandom->Rndm());
   // optstring=Form("nTrain_Signal=0:nTrain_Background=0:SplitMode=Random:NormMode=None:V");
   // optstring=Form("nTrain_Signal=%d:nTest_Signal=%d:nTrain_Background=%d:nTest_Background=%d:SplitMode=random:SplitSeed=%d:NormMode=None:V",
   // nSgTrain, nSgTest, nBgTrain, nBgTest, seed);
@@ -449,7 +448,6 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
       cout << "file ->" << xmlName << "<- not found, exit(1)" << endl;
       exit(1);
     }
-    char input[1000];
     int icnt(0);
     while (is.getline(buffer, 1000, '\n')) {
       lines.push_back(string(buffer));
@@ -465,7 +463,7 @@ void tmva1::train(string oname, string filename, int nsg, int nbg, string cut) {
 
     for (unsigned int i = 0; i < lines.size(); ++i) {
       if (string::npos != lines[i].find("</GeneralInfo>")) {
-	for (unsigned int ibin = 1; ibin <= hpresel->GetNbinsX(); ++ibin) {
+	for (int ibin = 1; ibin <= hpresel->GetNbinsX(); ++ibin) {
 	  string label = hpresel->GetXaxis()->GetBinLabel(ibin);
 	  if (string::npos != label.find("cut:")) {
 	    replaceAll(label, "cut:", "");

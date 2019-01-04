@@ -197,7 +197,7 @@ void PidTable::printAll(int i) {
 double PidTable::getMean() {
   int cells(0);
   double pass(0.), total(0.);
-  double a(0.), wi(0.), w(0.), meanE(0.), meanS(0.), meanU(0.);
+  double a(0.), wi(0.), w(0.), meanE(0.), meanS(0.);
   double tmin(9999.), tmax(-9999.), pmin(9999.), pmax(-9999.);
 
   TIter next(fDataVector); PidData *iTable;

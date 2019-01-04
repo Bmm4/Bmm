@@ -168,7 +168,7 @@ public:
   TTree *fTree;
   TAna01Event *fpEvt;
   TAnaCand *fpCand, *fpOsCand;
-  int fCandIdx;
+  int fCandIdx, fDcandIdx;
 
   int fVerbose, fDbx;
   int fIsMC;
@@ -202,7 +202,7 @@ public:
 
   int BLIND, TYPE, SELMODE, MUIDMASK, MUIDRESULT, TRACKQUALITY, TRUTHCAND, DATACAND, IGNORETRIGGER, NOPRESELECTION;
 
-  std::map<std::string, pair<int, int> > HLTRANGE, NTRIGGERS;
+  std::map<std::string, pair<int, int> > HLTRANGE, RARETRIGGERRANGE, NTRIGGERS;
   string DSNAME; // data set name
 
   bool fBarrel, fWideMass;
@@ -314,7 +314,7 @@ public:
   bool    fvetoSameSignTrigger;
   bool    fPreselAlpha, fPreselFLS, fPreselOther, fGoodCmssw, fGoodCandAna;
   // -- the following are for UL's trigger selection and matching (as a cross check for DK's original)
-  bool    fGoodHLT1;
+  bool    fGoodHLT1, fGoodRareHLT1;
   string  fHLT1Path, fL1SeedString;
   // --
   double  fHltD1, fHltD2;

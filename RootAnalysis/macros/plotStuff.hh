@@ -44,7 +44,8 @@ public :
 
   // -- variety of methods
   void massResolution(std::string file1, std::string file2);
-  void tauEfficiency(string varname, string cut, string otherSelection, string dsname);
+  void tauEfficiency(std::string varname, std::string cut, std::string otherSelection, std::string dsname);
+  void tau2dPlot(std::string varname, std::string cut, std::string otherSelection, std::string dsname);
 
 
   // -- code for loops

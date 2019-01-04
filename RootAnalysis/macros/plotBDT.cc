@@ -47,6 +47,13 @@ plotBDT::plotBDT(string dir, string files, string cuts, string setup, int year) 
 
   string hfname  = fDirectory + "/plotBDT." + fSuffix + ".root";
 
+
+  fhBdtNodes   = 0;
+  fhBdtNodesW8 = 0;
+
+  fhBdtVariables   = 0;
+  fhBdtVariablesW8 = 0;
+
 }
 
 
@@ -97,10 +104,26 @@ void plotBDT::makeAll(string what) {
     apply("fill");
   }
 
-  if (("all" == what) || ("opspt" == what)) {
+   if (("all" == what) || ("opspt" == what)) {
     setBdtStrings(0);
     opspt("hi");
   }
+
+   if (("all" == what) || ("xml" == what)) {
+     if (fhBdtNodes) fhBdtNodes->Reset();
+     if (fhBdtNodesW8) fhBdtNodesW8->Reset();
+
+     if (fhBdtVariables) fhBdtVariables->Reset();
+     if (fhBdtVariablesW8) fhBdtVariablesW8->Reset();
+
+     fhBdtVariableCuts.clear();
+     fhBdtVariableCutsW8.clear();
+     setBdtStrings(0);
+     string xmlfile = string("weights/") + fCuts[0]->bdtXml + string("-Events0_BDT.weights.xml");
+     cout << "read xmlfile: " << xmlfile << endl;
+     xmlParsingVariables(xmlfile);
+     xmlParsingReadTree(xmlfile);
+   }
 
 }
 
@@ -295,9 +318,6 @@ void plotBDT::bdtOptAnaTree(string rootfile) {
   t->SetBranchAddress("m2iso",   &m2iso);
 
   int nentries = int(t->GetEntries());
-
-  TH1D *h1(0);
-  TH2D *h2(0);
 
   double minksCut(0.25);
   map<string, TH1*> hists;
@@ -1442,7 +1462,7 @@ void plotBDT::getTLFParameters(string prefix, string type) {
 
   string::size_type m1, m2;
   string varn, vars, varp;
-  int bail(0), istart(0);
+  int istart(0);
   string after;
 
   if (type == "Events0") {
@@ -1504,4 +1524,196 @@ void plotBDT::getTLFParameters(string prefix, string type) {
 		 fSuffix.c_str(), fBdtString.c_str(), varn.c_str(), vars.c_str())
 	 << endl;
   }
+}
+
+// ----------------------------------------------------------------------
+void plotBDT::xmlParsingVariables(string weightfile) {
+
+  fhBdtVariables   = new TH1D("bdtVariables", "", 20, 0., 20.);
+  fhBdtVariablesW8 = new TH1D("bdtVariablesW8", "", 20, 0., 20.);
+
+  fhBdtNodes       = new TH1D("bdtNodes", "", 10, 0., 10.);
+  fhBdtNodesW8     = new TH1D("bdtNodesW8", "", 10, 0., 10.);
+
+  // -- read in variables from weight file
+  vector<string> allLines;
+  char  buffer[2000];
+  ifstream is(weightfile.c_str());
+  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+  int nvars(-1), ivar(-1);
+  string::size_type m0, m1, m2;
+  string stype, varidx;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add variables
+    if (string::npos != allLines[i].find("Variables NVar")) {
+      m1 = allLines[i].find("=\"");
+      stype = allLines[i].substr(m1+2, allLines[i].size()-m1-2-2);
+      cout << "  " << stype << " variables" << endl;
+      nvars = atoi(stype.c_str());
+      if (-1 == nvars) continue;
+      for (unsigned int j = i+1; j < i+nvars+1; ++j) {
+        m0 = allLines[j].find("VarIndex=\"");
+        m1 = allLines[j].find("Expression=\"")+10;
+        m2 = allLines[j].find("\" Label=\"");
+        varidx = allLines[j].substr(m0+10, m1-m0-22);
+        ivar = atoi(varidx.c_str());
+        stype = allLines[j].substr(m1+2, m2-m1-2);
+        fVariableMap.insert(make_pair(ivar, stype));
+        fhBdtVariables->GetXaxis()->SetBinLabel(ivar+1, stype.c_str());
+        fhBdtVariablesW8->GetXaxis()->SetBinLabel(ivar+1, stype.c_str());
+      }
+      break;
+    }
+  }
+
+
+  TH1D *h1(0);
+  for (map<int, string>::iterator imap = fVariableMap.begin(); imap != fVariableMap.end(); ++imap) {
+    cout << "index: " << imap->first << " name: " << imap->second << endl;
+    if (imap->second == "m1pt")     h1 = new TH1D("m1pt", "m1pt", 100, 0., 40.);
+    if (imap->second == "m2pt")     h1 = new TH1D("m2pt", "m2pt", 100, 0., 20.);
+    if (imap->second == "m1eta")    h1 = new TH1D("m1eta", "m1eta", 100, -2.4, 2.4);
+    if (imap->second == "m2eta")    h1 = new TH1D("m2eta", "m2eta", 100, -2.4, 2.4);
+    if (imap->second == "pt")       h1 = new TH1D("pt", "pt", 100, 0., 50.);
+    if (imap->second == "eta")      h1 = new TH1D("eta", "eta", 100, -2.4, 2.4);
+    if (imap->second == "fls3d")    h1 = new TH1D("fls3d", "fls3d", 100, 0., 100.);
+    if (imap->second == "alpha")    h1 = new TH1D("alpha", "alpha", 100, 0., 0.3);
+    if (imap->second == "maxdoca")  h1 = new TH1D("maxdoca", "maxdoca", 100, 0., 0.05);
+    if (imap->second == "pvip")     h1 = new TH1D("pvip", "pvip", 100, 0., 0.05);
+    if (imap->second == "pvips")    h1 = new TH1D("pvips", "pvips", 100, 0., 5.);
+    if (imap->second == "iso")      h1 = new TH1D("iso", "iso", 101, 0., 1.01);
+    if (imap->second == "closetrk") h1 = new TH1D("closetrk", "closetrk", 21, 0., 21.);
+    if (imap->second == "docatrk")  h1 = new TH1D("docatrk", "docatrk", 100, 0., 0.2);
+    if (imap->second == "chi2dof")  h1 = new TH1D("chi2dof", "chi2dof", 100, 0., 10.);
+
+    if (imap->second == "m1iso")      h1 = new TH1D("m1iso", "m1iso", 101, 0., 1.01);
+    if (imap->second == "m2iso")      h1 = new TH1D("m2iso", "m2iso", 101, 0., 1.01);
+    if (imap->second == "closetrks1") h1 = new TH1D("closetrks1", "closetrks1", 21, 0., 21.);
+    if (imap->second == "closetrks2") h1 = new TH1D("closetrks2", "closetrks2", 21, 0., 21.);
+    if (imap->second == "closetrks3") h1 = new TH1D("closetrks3", "closetrks3", 21, 0., 21.);
+
+    if (imap->second == "pvdchi2") h1 = new TH1D("pvdchi2", "pvdchi2", 100, 0., 10.);
+    if (imap->second == "othervtx") h1 = new TH1D("othervtx", "othervtx", 101, 0., 1.01);
+
+    h1->SetLineColor(kRed); h1->SetLineStyle(kDashed);
+    fhBdtVariableCuts.push_back(h1);
+
+    h1 = (TH1D*)h1->Clone(Form("w8_%s", h1->GetName()));
+    h1->SetLineColor(kBlue); h1->SetLineStyle(kSolid);
+    fhBdtVariableCutsW8.push_back(h1);
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
+void plotBDT::xmlParsingReadTree(string xmlfile) {
+  vector<string> allLines;
+  char  buffer[2000];
+  ifstream is(xmlfile.c_str());
+  while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
+  float w8(0.), cut(0.);
+  int ivar(-1), nnodes(0);
+  string::size_type m0, m1;
+  string stype, varidx;
+  for (unsigned int i = 0; i < allLines.size(); ++i) {
+    // -- parse and add variables
+    if (string::npos != allLines[i].find("<BinaryTree type=\"DecisionTree\" boostWeight=")) {
+      fhBdtNodes->Fill(nnodes);
+      fhBdtNodesW8->Fill(nnodes, w8);
+      nnodes = 0;
+      m0 = allLines[i].find("boostWeight=\"") + 13;
+      m1 = allLines[i].find("\" itree");
+      stype = allLines[i].substr(m0, m1-m0);
+      w8 = atof(stype.c_str());
+      //cout << "boost weight: " << w8 << " ->" << stype << "<-"
+      //   << " from m0: " << m0 << " m1: " << m1
+      //   << endl;
+    }
+
+    if (string::npos != allLines[i].find("nType=\"0\"")) {
+      ++nnodes;
+      m0 = allLines[i].find("IVar=\"") + 6;
+      m1 = allLines[i].find("\" Cut");
+      stype = allLines[i].substr(m0, m1-m0);
+      ivar = atoi(stype.c_str());
+      //      cout << "  ivar: ->" << stype << "<- " << ivar << endl;
+      m0 = allLines[i].find("Cut=\"") + 5;
+      m1 = allLines[i].find("\" cType=");
+      stype = allLines[i].substr(m0, m1-m0);
+      cut = atof(stype.c_str());
+      //      cout << "  cut: ->" << stype << "<- " << cut << endl;
+
+      fhBdtVariables->Fill(ivar);
+      fhBdtVariablesW8->Fill(ivar, w8);
+
+      fhBdtVariableCuts[ivar]->Fill(cut);
+      fhBdtVariableCutsW8[ivar]->Fill(cut, w8);
+    }
+  }
+
+  zone(3,4);
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+  double maxh(0.);
+  for (unsigned int i = 0; i < fhBdtVariableCuts.size(); ++i) {
+    c0->cd(i+1); shrinkPad(0.20, 0.15);
+    setTitles(fhBdtVariableCuts[i], Form("%s cut", fhBdtVariableCuts[i]->GetTitle()), "N(decision trees)", 0.09, 1.01, 0.85, 0.08);
+    fhBdtVariableCutsW8[i]->Scale(fhBdtVariableCuts[i]->GetSumOfWeights()/fhBdtVariableCutsW8[i]->GetSumOfWeights());
+    maxh = getMaximum(fhBdtVariableCuts[i], fhBdtVariableCutsW8[i]);
+    fhBdtVariableCuts[i]->SetMaximum(1.3*maxh);
+    fhBdtVariableCuts[i]->Draw("hist");
+    fhBdtVariableCutsW8[i]->Draw("samehist");
+  }
+  c0->SaveAs(Form("%s/%s-bdtVariableCuts.pdf", fDirectory.c_str(), fBdtString.c_str()));
+
+  gStyle->SetOptTitle(0);
+  gStyle->SetOptStat(0);
+
+  string pdfname = xmlfile;
+  rmSubString(pdfname, "weights/");
+  rmSubString(pdfname, "_BDT.weights.xml");
+
+  c0->Clear();
+  shrinkPad(0.20, 0.15);
+  setTitles(fhBdtVariables, "BDT Variables", "Number of decision trees", 0.06, 1.7, 1.3);
+  fhBdtVariables->GetXaxis()->LabelsOption("v");
+  setHist(fhBdtVariables, kRed, 20, 1, 3); fhBdtVariables->SetLineStyle(kDashed);
+  fhBdtVariablesW8->Scale(fhBdtVariables->GetSumOfWeights()/fhBdtVariablesW8->GetSumOfWeights());
+  setHist(fhBdtVariablesW8, kBlue, 20, 1, 3);
+
+  maxh = getMaximum(fhBdtVariables, fhBdtVariablesW8);
+  fhBdtVariables->SetMaximum(1.3*maxh);
+  fhBdtVariables->Draw();
+
+  fhBdtVariablesW8->GetXaxis()->LabelsOption("v");
+  fhBdtVariablesW8->Draw("same");
+  c0->Modified();  c0->Update();
+  c0->SaveAs(Form("%s/%s-bdtVariables.pdf", fDirectory.c_str(), fBdtString.c_str()));
+
+  c0->Clear();
+  shrinkPad(0.20, 0.15);
+  setTitles(fhBdtNodes, "BDT Nodes", "Number of decision trees", 0.06, 1.1, 1.3);
+  setHist(fhBdtNodes, kRed, 20, 1, 3); fhBdtNodes->SetLineStyle(kDashed);
+  fhBdtNodesW8->Scale(fhBdtNodes->GetSumOfWeights()/fhBdtNodesW8->GetSumOfWeights());
+  setHist(fhBdtNodesW8, kBlue, 20, 1, 3);
+
+  maxh = getMaximum(fhBdtNodes, fhBdtNodesW8);
+  fhBdtNodes->SetMaximum(1.3*maxh);
+
+  fhBdtNodes->Draw();
+
+  fhBdtNodesW8->Draw("same");
+  c0->Modified();  c0->Update();
+  c0->SaveAs(Form("%s/%s-bdtNodes.pdf", fDirectory.c_str(), fBdtString.c_str()));
+}
+
+// ----------------------------------------------------------------------
+double plotBDT::getMaximum(TH1 *h1, TH1 *h2) {
+  if (0 == h1 || 0 == h2) return -1.;
+  double max1 = h1->GetMaximum();
+  double max2 = h2->GetMaximum();
+  if (max2 > max1) return max2;
+  return max1;
+
 }
