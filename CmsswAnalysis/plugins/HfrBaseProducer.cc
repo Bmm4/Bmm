@@ -55,13 +55,8 @@ void HfrBaseProducer::dumpConfiguration() {
 
 
 // ----------------------------------------------------------------------
+// -- this is called from all derived classes
 void HfrBaseProducer::analyze(Event& iEvent, const EventSetup& iSetup) {
-  if (fVerbose > 0)  cout << " ======================================================================"
-			  << endl
-			  << "=== HfrBaseProducer run = " << iEvent.id().run()
-			  << " evt = " << iEvent.id().event() << endl
-			  << " ----------------------------------------------------------------------"
-			  << endl;
   // -- magnetic field
   edm::ESHandle<MagneticField> fieldHandle;
   iSetup.get<IdealMagneticFieldRecord>().get(fieldHandle);
@@ -119,6 +114,7 @@ void HfrBaseProducer::analyze(Event& iEvent, const EventSetup& iSetup) {
 
 
 // ----------------------------------------------------------------------
+// -- this is NOT called from any derived class!
 void HfrBaseProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   if (fVerbose > 0)  cout << " ======================================================================"
 			  << "=== HfrBaseProducer run = " << iEvent.id().run()

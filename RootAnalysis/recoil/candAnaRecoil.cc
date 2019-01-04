@@ -151,10 +151,12 @@ void candAnaRecoil::brecoAnalysis() {
 	trueTrkIdx.push_back(pS->fIndex);
 	pS->dump();
       }
-      //      cout << endl;
     }
 
+
     // -- study the JpsiX BRECO candidate
+    if (1) break;
+
     int itrk(0);
     for (int i = 0; i < NTRKMAX; ++i) {
       fDoca[i] = fProb1[i] = fProb2[i] = fChi2[i] = fDof[i] = fTrkMass[i] = -1.;

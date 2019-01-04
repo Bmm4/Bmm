@@ -139,7 +139,7 @@ process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 # ----------------------------------------------------------------------
-rootFileName = "testRecoil10.root"
+rootFileName = "testSimpleRecoil10.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
@@ -222,10 +222,21 @@ process.bupsikpDump = cms.EDAnalyzer(
     )
 
 # ----------------------------------------------------------------------
-process.hfrsimple = cms.EDProducer(
+process.hfrbupsik = cms.EDProducer(
     "HfrSimpleRecoilProducer",
     verbose    = cms.untracked.int32(0),
 )
+
+# ----------------------------------------------------------------------
+process.hfrTest = cms.EDAnalyzer(
+    "HfrTest",
+    verbose            = cms.untracked.int32(0),
+    trkIdxLabel        = cms.untracked.InputTag("hfrbupsik"),
+    pvIdxLabel         = cms.untracked.InputTag("hfrbupsik"),
+    vertexLabel        = cms.untracked.InputTag("hfrbupsik")
+)
+
+
 
 # ----------------------------------------------------------------------
 process.p = cms.Path(
@@ -235,6 +246,7 @@ process.p = cms.Path(
     process.truthBu2JpsiKpDump*
     process.bupsikpDump*
     process.bmmDump*
-    process.hfrsimple*
+    process.hfrbupsik*
+    process.hfrTest*
     process.tree
 )
