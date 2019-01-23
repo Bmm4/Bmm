@@ -55,10 +55,14 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
     int ixMu = muonIt->track().index();
     if (ixMu < 0) continue;
     // -- recoil filtering
-    if (fDoFilter && (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ixMu))) {
-      // cout << "found ixMu = " << ixMu << " in fRecoilTrkIdx" << endl;
-    } else {
-      continue;
+    if (fDoFilter) {
+      if (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ixMu)) {
+	if (fVerbose > 0) {
+	  cout << "found ixMu = " << ixMu << " in fRecoilTrkIdx" << endl;
+	}
+      } else {
+	continue;
+      }
     }
 
     if (!(*this)(ixMu)) {
@@ -96,15 +100,21 @@ std::vector<int> HFTrackListBuilder::getTrackList() {
   }
 
   trackList.reserve(300);
+  if (fVerbose > 0) {
+    cout << "==>" << fCallerName << "> nTracks = " << fhTracks->size() << " filter: " << fDoFilter << endl;
+  }
+
   for (ix = 0; (unsigned)ix < fhTracks->size(); ix++) {
     reco::TrackBaseRef rTrackView(fhTracks, ix);
     const reco::Track trackView(*rTrackView);
     if (!trackView.quality(reco::TrackBase::qualityByName(fTrackQuality))) continue;
     // -- recoil filtering
-    if (fDoFilter && fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ix)) {
-      //cout << "found ix = " << ix << " in fRecoilTrkIdx" << endl;
-    } else {
-      continue;
+    if (fDoFilter) {
+      if (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ix)) {
+	//cout << "found ix = " << ix << " in fRecoilTrkIdx" << endl;
+      } else {
+	continue;
+      }
     }
     if (!(*this)(ix)) {
       // cout << "added ix = " << ix << " to trackList" << endl;
@@ -123,7 +133,6 @@ bool HFTrackListBuilder::operator()(int ix) {
   reco::TrackBaseRef rTrackView(fhTracks,ix);
   reco::Track tTrack(*rTrackView);
   bool skip = tTrack.d0() > fMaxD0 || tTrack.dz() > fMaxDz || tTrack.pt() < fMinPt;
-
   if (!skip && fCloseTracks) {
     // check wether this track is nearby anyone in the fCloseTracks vector
     reco::TransientTrack tTrkCur = fTTB->build(tTrack);
@@ -140,7 +149,6 @@ bool HFTrackListBuilder::operator()(int ix) {
       if (md.distance() < minDoca)
 	minDoca = md.distance();
     }
-
     skip = minDoca > fMaxDocaToTrks;
   }
 
