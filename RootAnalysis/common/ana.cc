@@ -12,6 +12,10 @@
 
 using namespace std;
 
+bool highPurity(TAnaTrack *pt) {
+  if (pt->fTrackQuality & 4) return true;
+  return false;
+}
 
 // ----------------------------------------------------------------------
 int  numberOfBPixLayers(TAnaTrack *pTrack) {
