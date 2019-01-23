@@ -54,6 +54,7 @@ public:
   virtual void          readFile(std::string fileName, std::vector<std::string> &lines);
   virtual TMVA::Reader* setupMuonMvaReader(std::string xmlFile, mvaMuonIDData &rd);
   virtual void          setupReducedTree(TTree *);
+  virtual void          genAnalysis();
   virtual void          candAnalysis();
   virtual void          candEvaluation();
   virtual void          endAnalysis();

@@ -64,32 +64,13 @@ void candAna::endAnalysis() {
 
 // ----------------------------------------------------------------------
 void candAna::evtAnalysis(TAna01Event *evt) {
-  cout << "  candAna: " << fChainEvent << endl;
-
   fpEvt = evt;
-
-  if (0) {
-    TAnaCand *pCand(0);
-    TAnaTrack *pT(0);
-    static int ngen(0), nrec(0);
-    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      pCand = fpEvt->getCand(iC);
-      if (-200 == pCand->fType) ++ngen;
-      if (2000200 == pCand->fType) {
-	++nrec;
-	for (int iD = pCand->fSig1; iD <= pCand->fSig2; ++iD) {
-	  pT = fpEvt->getSigTrack(iD);
-	  pT->dump();
-	}
-	cout << Form("%4d", iC) << " cand -> " << pCand->fType << ", nrec/ngen = " << nrec << "/" << ngen << " = " << static_cast<double>(nrec)/ngen << endl;
-      }
-    }
-    return;
-  }
-
 
   bool fillNoCand(true);
   TAnaCand *pCand(0);
+
+  genAnalysis();
+
   for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
     pCand = fpEvt->getCand(iC);
 
@@ -155,6 +136,13 @@ void candAna::candAnalysis() {
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(1);
 
 }
+
+// ----------------------------------------------------------------------
+void candAna::genAnalysis() {
+  cout << "==>candAna::genAnalysis()> wrong function" << endl;
+  return;
+}
+
 
 // ----------------------------------------------------------------------
 void candAna::candEvaluation() {
@@ -250,6 +238,7 @@ void candAna::readCuts(string fileName, int dump) {
   string cutname("nada");
 
   // -- determine fNchan
+  fNchan = 1; // initialize to something?!
   cuts *a = 0;
   for (unsigned int i = 0; i < cutLines.size(); ++i) {
     if (string::npos != cutLines[i].find("nchan")) {
