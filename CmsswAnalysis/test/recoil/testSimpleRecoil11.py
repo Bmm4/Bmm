@@ -133,7 +133,7 @@ process.source = cms.Source(
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil10/recoil10_step2-40099.root"
     )
 )
-process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(100) )
+process.maxEvents = cms.untracked.PSet( input = cms.untracked.int32(200) )
 
 
 process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
