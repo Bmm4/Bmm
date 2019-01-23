@@ -10,6 +10,8 @@ int  numberOfPixelHits(TAnaTrack *pTrack);
 int  numberOfBPixLayer1Hits(TAnaTrack *t);
 int  numberOfTrackerLayers(TAnaTrack *t);
 
+bool highPurity(TAnaTrack *pt);
+
 bool tightMuon(TAnaMuon *pM, bool hadronsPass = false, int year = -1);
 
 #endif
