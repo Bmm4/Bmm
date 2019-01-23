@@ -123,9 +123,6 @@ void HfrSimpleRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     if (doca.value() > 0.1) continue;
 
     trkIdxColl->push_back(ix);
-    // cout << "==>HfrSimpleRecoilProducer>  " << cnt
-    // 	 << " adding track idx = " << ix << " from PV " << getPv(ix, &fVertexCollection)  << " with pT = " << track.pt() << " and doca = " << doca.value()
-    // 	 << endl;
     ++cnt;
   }
   cout << "==>HfrSimpleRecoilProducer> put into event tracklist with " << trkIdxColl->size()
