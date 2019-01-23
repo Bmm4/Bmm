@@ -9,6 +9,8 @@
 
 #include "Bmm/CmsswAnalysis/plugins/HfrBaseProducer.h"
 
+#include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
+
 #include <memory>
 #include <vector>
 
@@ -24,8 +26,8 @@ private:
   RefCountedKinematicTree fitTree(std::vector<reco::TransientTrack> &);
   std::pair<int, double> findBestPV(std::vector<reco::TransientTrack> &, RefCountedKinematicTree &);
   reco::Vertex mkVertex(RefCountedKinematicTree &);
+  TAnaCand *fillCand(std::vector<int> v, int pvIdx);
 
-  ///Produce the PFRecTrack collection
   void produce(edm::Event&, const edm::EventSetup&) override;
   void put(edm::Event&, std::unique_ptr<std::vector<int> >&, std::unique_ptr<int>&, std::unique_ptr<reco::VertexCollection>&);
   double fVtxProb;
