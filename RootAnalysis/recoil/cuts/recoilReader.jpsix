@@ -1,3 +1,3 @@
-candAnaRecoil  cuts/candAnaRecoil.recoil0.cuts
-#candAnaRecoil  cuts/candAnaRecoil.recoil2.cuts
+#candAnaRecoil  cuts/candAnaRecoil.recoil0.cuts
+candAnaRecoil  cuts/candAnaRecoil.Bmtk.cuts
 #genAnalysis    cuts/genAnalysis.recoil0.cuts
