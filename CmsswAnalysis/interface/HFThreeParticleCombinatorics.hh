@@ -17,17 +17,14 @@ public:
   };
 
   bool operator==(triplet t) {return (kaon==t.ka() && pion1==t.pi1() && pion2==t.pi2()); };
-  bool different(triplet a){
-    if (pion1 == a.kaon) return false;
-    if (pion1 == a.pion1) return false;
-    if (pion1 == a.pion2) return false;
-    if (pion2 == a.kaon) return false;
-    if (pion2 == a.pion1) return false;
-    if (pion2 == a.pion2) return false;
-    if (kaon == a.kaon) return false;
-    if (kaon == a.pion1) return false;
-    if (kaon == a.pion2) return false;
-    return true;
+  bool isPermutation(triplet a){
+    std::vector<int> va = {a.kaon, a.pion1, a.pion2};
+    sort(va.begin(), va.end());
+
+    std::vector<int> v = {kaon, pion1, pion2};
+    sort(v.begin(), v.end());
+
+    return (va == v);
   };
   int pi1(){ return pion1;};
   int pi2(){ return pion2;};
@@ -62,7 +59,7 @@ public:
 //
   void combine(std::vector<triplet > &combList,
 	       std::vector<std::pair<int, TLorentzVector> > &piList,
-	       double loMass = 0.4, double hiMass = 20., double loResMass = 0., double hiResMass = 0.);
+	       double loMass = 0.4, double hiMass = 20., double loResMass = -1., double hiResMass = -1.);
 
   int fVerbose;
 };
