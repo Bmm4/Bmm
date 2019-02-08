@@ -92,19 +92,21 @@ void fillSimpleTrack(TSimpleTrack *pTrack, const reco::Track &trackView,
 }
 
 // ----------------------------------------------------------------------
-void fillSigTrack(TAnaTrack *pTrack, int tidx,
+TAnaTrack* fillSigTrack(int tidx,
 		  Handle<View<Track> > &hTracks, const reco::VertexCollection *vc, const reco::MuonCollection *mc, const reco::BeamSpot *bs) {
 
+  TAnaTrack *pTrack = gHFEvent->addSigTrack();
   TrackBaseRef baseRef(hTracks, tidx);
   Track trackView(*baseRef);
   TSimpleTrack *sTrack = gHFEvent->getSimpleTrack(tidx);
   int gidx = sTrack->getGenIndex();
   if (0 == sTrack) {
     cout << "fillSigTrack> did not find track index " << tidx << " in simple track collection, not filling sig track" << endl;
-    return;
+    return 0;
   }
 
   fillAnaTrack(pTrack, trackView, tidx, gidx, vc, mc,bs);
+  return pTrack;
 }
 
 
@@ -426,19 +428,19 @@ pair<double, double> vtxSeparation(const Vertex &v0, const Vertex &v1) {
 
 // ----------------------------------------------------------------------
 pair<int, double> findBestPV(vector<TransientTrack> &vtt, RefCountedKinematicTree &kinTree, reco::VertexCollection&vc, const MagneticField *mf) {
-  // -- fit vertex
-  KinematicParticleFactoryFromTransientTrack factory;
-  ParticleMass muon_mass = 0.1056583;
-  float muon_sigma = 0.0000000001;
-  float chi = 0.;
-  float ndf = 0.;
-  vector<RefCountedKinematicParticle> particles;
-  for(vector<TransientTrack>::const_iterator i = vtt.begin();  i != vtt.end(); ++i) {
-    particles.push_back(factory.particle(*i, muon_mass, chi, ndf, muon_sigma));
-  }
-  KinematicParticleVertexFitter fitter;
-  kinTree = fitter.fit(particles);
-  kinTree->movePointerToTheTop();
+  // // -- fit vertex
+  // KinematicParticleFactoryFromTransientTrack factory;
+  // ParticleMass muon_mass = 0.1056583;
+  // float muon_sigma = 0.0000000001;
+  // float chi = 0.;
+  // float ndf = 0.;
+  // vector<RefCountedKinematicParticle> particles;
+  // for(vector<TransientTrack>::const_iterator i = vtt.begin();  i != vtt.end(); ++i) {
+  //   particles.push_back(factory.particle(*i, muon_mass, chi, ndf, muon_sigma));
+  // }
+  // KinematicParticleVertexFitter fitter;
+  // kinTree = fitter.fit(particles);
+  // kinTree->movePointerToTheTop();
 
   // -- setup extrapolators
   RefCountedKinematicParticle kinParticle = kinTree->currentParticle();
@@ -469,7 +471,6 @@ pair<int, double> findBestPV(vector<TransientTrack> &vtt, RefCountedKinematicTre
 RefCountedKinematicTree fitTree(vector<TransientTrack> &vtt, vector<int> &particleId) {
   // -- fit vertex
   KinematicParticleFactoryFromTransientTrack factory;
-  ParticleMass mass = 0.1056583;
   float sigma = 0.0000000001;
   float chi = 0.;
   float ndf = 0.;
@@ -480,7 +481,7 @@ RefCountedKinematicTree fitTree(vector<TransientTrack> &vtt, vector<int> &partic
   }
   KinematicParticleVertexFitter fitter;
   RefCountedKinematicTree kinTree = fitter.fit(particles);
-  kinTree->movePointerToTheTop();
+  if (!kinTree->isEmpty()) kinTree->movePointerToTheTop();
   return kinTree;
 }
 

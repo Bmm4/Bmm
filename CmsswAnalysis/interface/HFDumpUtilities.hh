@@ -37,9 +37,9 @@ void fillSimpleTrack(TSimpleTrack *pTrack, const reco::Track &trackView,
 void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int gidx,
 		  const reco::VertexCollection *vc, const reco::MuonCollection *mc, const reco::BeamSpot *bs);
 
-void fillSigTrack(TAnaTrack *pTrack, int tidx,
-		  edm::Handle<edm::View<reco::Track> > &,
-		  const reco::VertexCollection *vc, const reco::MuonCollection *mc, const reco::BeamSpot *bs);
+TAnaTrack* fillSigTrack(int tidx,
+			edm::Handle<edm::View<reco::Track> > &,
+			const reco::VertexCollection *vc, const reco::MuonCollection *mc, const reco::BeamSpot *bs);
 
 
 int getPv(int tidx, const reco::VertexCollection *vc);
