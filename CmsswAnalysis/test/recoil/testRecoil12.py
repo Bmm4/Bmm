@@ -33,11 +33,12 @@ process.GlobalTag = GlobalTag(process.GlobalTag, 'auto:run2_mc', '')
 process.source = cms.Source(
     "PoolSource",
     fileNames = cms.untracked.vstring( *(
+        "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40085.root",
+        "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40004.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40000.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40001.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40002.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40003.root",
-        "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40004.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40005.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40006.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40007.root",
@@ -118,7 +119,6 @@ process.source = cms.Source(
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40082.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40083.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40084.root",
-        "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40085.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40086.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40087.root",
         "/store/user/ursl/recoil/mcprod2017/aodsim/recoil12/recoil12_step2-40088.root",
@@ -997,6 +997,7 @@ process.source.duplicateCheckMode = cms.untracked.string('noDuplicateCheck')
 
 # ----------------------------------------------------------------------
 rootFileName = "testRecoil12.root"
+rootFileName = "/scratch/ursl/recoil/t1/testRecoil12.root"
 
 process.tree = cms.EDAnalyzer(
     "HFTree",
@@ -1067,7 +1068,7 @@ process.bdpsikstarDump = cms.EDAnalyzer(
 process.hfbumutauk = cms.EDProducer(
     "HFSimpleListProducer",
     verbose    = cms.untracked.int32(1),
-    type       = cms.untracked.int32(2000200),
+    type       = cms.untracked.int32(2002000),
 )
 
 # ----------------------------------------------------------------------
@@ -1094,7 +1095,8 @@ process.butomutaukDump = cms.EDAnalyzer(
     maxD0              = cms.untracked.double(99.0),
     maxDz              = cms.untracked.double(99.0),
     pvWeight           = cms.untracked.double(0.6),
-    type               = cms.untracked.int32(511)
+    type               = cms.untracked.int32(32000),
+    mcType             = cms.untracked.int32(3002000)
 )
 
 
