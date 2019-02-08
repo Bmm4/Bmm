@@ -170,6 +170,11 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // -- find best PV with J/psi only
   RefCountedKinematicTree psiTree;
   pair<int, double> psiPV = findBestPV(vtt, psiTree);
+  if (psiTree->isEmpty()) {
+    if (fVerbose) cout << "==>HfrJpsiXRecoilProducer> psi tree empty" << endl;
+    put(iEvent, trkIdxColl, pvIdx, vertexColl);
+    return;
+  }
   RefCountedKinematicVertex   psiVertex = psiTree->currentDecayVertex();
   Vertex                       myVertex = mkVertex(psiTree);
 
@@ -226,6 +231,11 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     reco::TrackBaseRef baseRef(fTracksHandle, trkIdxDoca[ix].first);
     vtt.push_back(fTTB->build(*baseRef));
     pair<int, double> psitPV = findBestPV(vtt, psitTree);
+    if (psitTree->isEmpty()) {
+      if (fVerbose) cout << "==>HfrJpsiXRecoilProducer> psit tree empty" << endl;
+      vtt.pop_back();
+      continue;
+    }
     RefCountedKinematicVertex psitVertex = psitTree->currentDecayVertex();
 
     double prob = 0.0;
@@ -308,7 +318,7 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
       recoilList.push_back(ix);
       trkIdxColl->push_back(ix);
     } else {
-      int trkPvIdx = getPv(ix, &fVertexCollection);
+      // NEEDED? int trkPvIdx = getPv(ix, &fVertexCollection);
       // miss list contains high-purity tracks from nearby
       if ((doca.value() < 1.0) && (track.quality(reco::TrackBase::qualityByName(fTrackQualityString)))
 	  ) {
@@ -318,12 +328,12 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   }
 
   pCand = fillCand(recoilList, psiPV.first);
-  pCand->fType  = fType+1; // override the value set
+  pCand->fType  = fType+1; // override the value set fillCand (fType)
   pCand->fPvIdx = psiPV.first;
   pCand->fPvLip = psiPV.second;
 
   pCand = fillCand(missList, psiPV.first);
-  pCand->fType  = fType+2; // override the value set
+  pCand->fType  = fType+2; // override the value set in fillCand (fType)
   pCand->fPvIdx = psiPV.first;
   pCand->fPvLip = psiPV.second;
 
@@ -358,6 +368,10 @@ RefCountedKinematicTree HfrJpsiXRecoilProducer::fitTree(std::vector<reco::Transi
   }
   KinematicParticleVertexFitter fitter;
   RefCountedKinematicTree kinTree = fitter.fit(particles);
+  if (kinTree->isEmpty()) {
+    RefCountedKinematicTree blaTree;
+    return blaTree;
+  }
   kinTree->movePointerToTheTop();
   return kinTree;
 }
@@ -376,6 +390,9 @@ pair<int, double> HfrJpsiXRecoilProducer::findBestPV(vector<TransientTrack> &vtt
   }
   KinematicParticleVertexFitter fitter;
   kinTree = fitter.fit(particles);
+  if (kinTree->isEmpty()) {
+    return make_pair(-1, -99.);
+  }
   kinTree->movePointerToTheTop();
 
   // -- setup extrapolators
