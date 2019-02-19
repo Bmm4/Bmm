@@ -109,6 +109,7 @@ public:
   // -- Variables
   int fPreselection, fNchan;
   int fCandIdx;
+  int fPvN;
 
   // -- inherited from t1Reader/recoilReader
   int fIsMC;

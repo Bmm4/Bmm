@@ -70,58 +70,59 @@ void candAna::evtAnalysis(TAna01Event *evt) {
   TAnaCand *pCand(0);
 
   genAnalysis();
+  // for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+  //   pCand = fpEvt->getCand(iC);
 
-  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    pCand = fpEvt->getCand(iC);
+  //   if (fVerbose == -66) {
+  //     cout << Form("%4d", iC) << " cand -> " << pCand->fType << endl;
+  //     continue;
+  //   }
 
-    if (fVerbose == -66) {
-      cout << Form("%4d", iC) << " cand -> " << pCand->fType << endl;
-      continue;
-    }
+  //   if (CANDTYPE != pCand->fType) {
+  //     continue;
+  //   } else {
+  //     //      cout << "candAna: found cand with type " << CANDTYPE << endl;
+  //   }
+  //   // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
+  //   candAnalysis();
+  //   candEvaluation();
+  // }
 
-    if (CANDTYPE != pCand->fType) {
-      continue;
+  candAnalysis();
+
+  if (fIsMC) {
+    fTree->Fill();
+  } else {  // DATA
+    if (BLIND && (fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)) {
+      // -- do nothing
     } else {
-      //      cout << "candAna: found cand with type " << CANDTYPE << endl;
-    }
-    // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
-    candAnalysis();
-    candEvaluation();
-
-    if (fIsMC) {
-      fTree->Fill();
-    } else {  // DATA
-      if (BLIND && (fpCand->fMass > SIGBOXMIN && fpCand->fMass < SIGBOXMAX)) {
-	// -- do nothing
+      if (0 == NOPRESELECTION) {
+	// -- use fPreselection as filled in candEvaluation (below)
+      } else if (1 == NOPRESELECTION) {
+	// -- original NOPRESELECTION,  this likely leads to very big reduced trees (too big for Chandi)
+	fPreselection = true;
       } else {
-	if (0 == NOPRESELECTION) {
-	  // -- use fPreselection as filled in candEvaluation (below)
-	} else if (1 == NOPRESELECTION) {
-	  // -- original NOPRESELECTION,  this likely leads to very big reduced trees (too big for Chandi)
-	  fPreselection = true;
-	} else {
-	  //  what here?
-	}
-	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
+	//  what here?
+      }
+      ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(32);
 
-	if (fPreselection) {
-	  if (fJSON) {
-	    fTree->Fill();
-	    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
-	  } else {
-	    ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
-	  }
-
-	  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
-	  if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
+      if (fPreselection) {
+	if (fJSON) {
+	  fTree->Fill();
+	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(11);
 	} else {
 	  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
-	  if ( fVerbose > 9 ) cout << " failed preselection" << endl;
+	}
 
-	} // if preselection
-      } // if blind
-    } // if MC
-  }  // loop over cands
+	((TH1D*)fHistDir->Get("../monEvents"))->Fill(12);
+	if (fJSON) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(33);
+      } else {
+	((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(20);
+	if ( fVerbose > 9 ) cout << " failed preselection" << endl;
+
+      } // if preselection
+    } // if blind
+  } // if MC
 
   // -- fill events with no passing candidate (one entry per event)
   if (fillNoCand) ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(2);
@@ -317,11 +318,6 @@ void candAna::readCuts(string fileName, int dump) {
 	  fCuts[j-1]->metaMax = cutvalue; ok = 1;
 	}
 
-	if (cutname == "muonbdt") {
-	  cutvalue = atof(lineItems[j].c_str());
-	  fCuts[j-1]->muonbdt = cutvalue; ok = 1;
-	}
-
 	if (cutname == "m1pt") {
 	  cutvalue = atof(lineItems[j].c_str());
 	  fCuts[j-1]->m1pt = cutvalue; ok = 1;
@@ -462,12 +458,7 @@ void candAna::readCuts(string fileName, int dump) {
 	  fCuts[j-1]->pv2lips = cutvalue; ok = 1;
 	}
 
-	if (0 == ok) {
-	  cout << "XXXX unknown cut or cannot parse ->" << cutLines[i] << "<-" << endl;
-	}
-
       }
-
     }
 
     // -- now back to the original cut reading
@@ -491,7 +482,7 @@ void candAna::readCuts(string fileName, int dump) {
 
     if (!strcmp(CutName, "CANDTRUTH")) {
       CANDTRUTH = int(CutValue);
-      if (dump) cout << "CANDTRUTH:           " << CANDTRUTH << endl;
+      if (dump) cout << "CANDTRUTH:    " << CANDTRUTH << endl;
       ibin = 4;
       hcuts->SetBinContent(ibin, CANDTRUTH);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: CAND TRUTH", CutName));
@@ -689,19 +680,6 @@ void candAna::printCuts(ostream &OUT) {
   OUT << "metaMax    ";
   for (unsigned int i = 0; i < fCuts.size(); ++i)  {
     OUT << Form("%10.3f", fCuts[i]->metaMax);
-  }
-  OUT << endl;
-
-  OUT << "muonBDT    ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    OUT << Form("%10.3f", fCuts[i]->muonbdt);
-  }
-  OUT << " (ignored) " << endl;
-
-  OUT << "l1seeds     ";
-  for (unsigned int i = 0; i < fCuts.size(); ++i)  {
-    for (int is = fCuts[i]->l1seeds.size()*2; is < 10; ++is) OUT << " ";
-    for (unsigned is = 0; is < fCuts[i]->l1seeds.size(); ++is) OUT << Form("%d ", fCuts[i]->l1seeds[is]);
   }
   OUT << endl;
 
