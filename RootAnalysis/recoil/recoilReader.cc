@@ -79,7 +79,7 @@ void recoilReader::eventProcessing() {
 
   if (fRun != oldRun) {
     oldRun = fRun;
-    if (!fIsMC && json) {
+    if (!fIsMC && json && !fIgnoreJson) {
       if (0 != fpLumi->contains(fRun)) {
 	rlumi = fpLumi->lumi(fRun);
       } else {
@@ -106,13 +106,17 @@ void recoilReader::eventProcessing() {
   for (int i = 0; i < fpEvt->nPV(); ++i) {
     double z = fpEvt->getPV(i)->fPoint.Z();
     if (0 == i) h0->Fill(fpEvt->getPV(i)->fPoint.Z());
-    h2->Fill(fpEvt->getPV(i)->fPoint.Z());
+    h2->Fill(z);
 
   }
 
+  unsigned int ilm = lCandAnalysis.size();
+  if (ilm < 1) return;
+
   // -- call candidate analyses
-  //  cout << "recoilReader: " << fChainEvent << endl;
-  for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+  // cout << "recoilReader: " << fChainEvent << endl;
+  // cout << "lCandAnalysis.size() = " << lCandAnalysis.size() << endl;
+  for (unsigned int i = 0; i < ilm; ++i) {
     if (fCheckCandTypes) {
       if (fCandTypes.find(lCandAnalysis[i]->CANDTYPE) == fCandTypes.end()) {
 	continue;
@@ -165,11 +169,14 @@ void recoilReader::readCuts(TString filename, int dump) {
   char buffer[1000];
   char className[200], cutFile[200];
   while (is.getline(buffer, 1000, '\n')) {
+    if ('#' == buffer[0]) continue;
     sscanf(buffer, "%s %s", className, cutFile);
 
     // -- set up candidate analyzer classes
-    if (!strcmp(className, "candAnaRecoil")) {
-      candAna *a = new candAnaRecoil(this, "candAnaRecoil", cutFile);
+    string sclass(className);
+    //    if (!strcmp(className, "candAnaRecoil")) {
+    if (string::npos != sclass.find("candAnaRecoil")) {
+      candAna *a = new candAnaRecoil(this, sclass, cutFile);
       a->BLIND = BLIND;
       lCandAnalysis.push_back(a);
     }
@@ -196,4 +203,6 @@ void recoilReader::readCuts(TString filename, int dump) {
 
   }
 
+
+  cout << "Added " << lCandAnalysis.size() << " candidate analysis modules to lCandAnalysis" << endl;
 }

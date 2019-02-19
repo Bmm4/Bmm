@@ -52,11 +52,11 @@ void genAnalysis::eventProcessing() {
   if (0) fpEvt->dumpGenBlock();
 
   if (1) printBdecays();
-  if (1) plotBdecays(531);
+  if (0) plotBdecays(531);
   if (0) printB2JpsiXdecays();
   if (0) recoilValidation();
 
-  fTree->Fill();
+  //  fTree->Fill();
 }
 
 

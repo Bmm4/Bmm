@@ -1,4 +1,4 @@
-CANDTYPE          300
-CANDTRUTH         521
+CANDTYPE        32000
+CANDTRUTH          -1
 BRECOTYPE           1
 BRECOTRUTH        511

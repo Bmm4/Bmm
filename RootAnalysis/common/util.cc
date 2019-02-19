@@ -669,6 +669,24 @@ vector<int> defVector(int n, ...) {
   return vect;
 }
 
+//. ----------------------------------------------------------------------
+string formatTLV(const TLorentzVector &v, int mode) {
+  if (1 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f, E=%5.4f)", v.X(), v.Y(), v.Z(), v.E()));
+  } else if (2 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f, m=%5.4f)", v.X(), v.Y(), v.Z(), v.M()));
+  }
+  return string(Form("(%5.4f, %+3.2f, %+3.2f)", v.Perp(), v.Eta(), v.Phi()));
+}
+
+// ----------------------------------------------------------------------
+string formatTVector3(const TVector3 &v, int mode) {
+  if (1 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f)", v.X(), v.Y(), v.Z()));
+  }
+  return string(Form("(%5.4f, %+3.2f, %+3.2f)", v.Perp(), v.Eta(), v.Phi()));
+}
+
 
 // ----------------------------------------------------------------------
 string formatTex(double n, string name, int digits, int sgn) {

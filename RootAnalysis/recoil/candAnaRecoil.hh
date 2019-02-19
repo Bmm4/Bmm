@@ -35,12 +35,14 @@ public:
   void        moreReducedTree(TTree *);
   void        readCuts(string filename, int dump);
 
-  std::pair<TVector3, TVector3>  parallelAndPerp(TVector3 direction, TVector3 momVis);
+  std::pair<TVector3, TVector3> parallelAndPerp(TVector3 direction, TVector3 momVis);
+  std::pair<TVector3, TVector3> parallelAndPerp2(TVector3 direction, TVector3 momVis);
   std::pair<double, double>  nuRecoMom0(double compVisPar, double compVisPerp, double eVis, double mVis, double mTot = 1.777);
   double      minMassPair(std::vector<TLorentzVector> a);
   double      maxMassPair(std::vector<TLorentzVector> a);
 
   void        dump();
+  TH1D*       getHist(std::string);
   void        dumpBkmt();
   void        printGenBDecays();
   bool        decayModeValidation(TGenCand *pCand, int mode);
@@ -65,19 +67,43 @@ public:
   TGenCand    *fpGenB,  *fpGenMu,  *fpGenKa, *fpGenTau, *fpGenHad1, *fpGenHad2, *fpGenHad3, *fpGenNu, *fpGenGa1, *fpGenGa2;
   TVector3    fGenVtxBProd, fGenVtxBDecay, fGenVtxTauDecay, fGenDirectionTau;
   // -- calculated/derived quantities
-  TLorentzVector f4GenTauAtDecay, f4GenTauHad, f4GenNur0, f4GenNur0Pos,  f4GenNur0Neg, f4GenBr0, f4GenBr0Pos,  f4GenBr0Neg;
+  TLorentzVector f4GenTauAtDecay, f4GenTauHad, f4GenNur0, f4GenNur0Pos, f4GenNur0Neg, f4GenBr0, f4GenBr0Pos, f4GenBr0Neg;
+  // -- reco'ed/derived quantities
+  TVector3    fVtxBProd, fVtxBDecay, fVtxTauDecay, fDirectionTau;
+  TLorentzVector f4Muon, f4Kaon, f4TauHad, f4Nur0Pos, f4Nur0Neg, f4Br0Pos, f4Br0Neg;
   int            fNgamma;
+
+  // -- gen quantities
   double         fGenBPt,
     fGenBr0Mass, fGenBr0PosMass, fGenBr0NegMass,
-    fGenTauPt, fGenTauDecTime,
+    fGenTauPt, fGenTauDecTime, fGenTauPara, fGenTauPerp,
     fGenTaur0Pt, fGenTaur0PosPt, fGenTaur0NegPt,
     fGenTauHadPt, fGenTauHadMass, fGenTauHadAngle, fGenTauHadPerp, fGenTauHadPara,
     fGen2HadMinMass, fGen2HadMaxMass,
+    fGen2HadSSMass, fGen2HadOSminMass, fGen2HadOSmaxMass,
     fGenHad1Pt, fGenHad2Pt, fGenHad3Pt,
     fGenMuPt, fGenKaPt, fGenMuKaMass,
     fGenNur0PosPara, fGenNur0NegPara,
     fGenNuPara, fGenNuPerp
     ;
+
+
+  // -- reco quantities
+  double fPvX, fPvY, fPvZ,
+    fBPt,
+    fBrMass, fBr0PosMass, fBr0NegMass,
+    fTauPt, fTauDecTime,
+    fTaur0Pt, fTaur0PosPt, fTaur0NegPt,
+    fTauHadPt, fTauHadMass, fTauHadAngle, fTauHadPerp, fTauHadPara, fTauFl, fTauFls,
+    fBTauAngle,
+    f2HadMinMass,f2HadMaxMass,
+    f2HadSSMass, f2HadOSminMass, f2HadOSmaxMass,
+    fHad1Pt, fHad2Pt, fHad3Pt, fHad1Eta, fHad2Eta, fHad3Eta,
+    fMuPt, fKaPt, fMuEta, fKaEta, fMuKaMass,
+    fNur0PosPara, fNur0NegPara
+    ;
+
+
 
   TAnaCand    *fpBreco;
   std::vector<int> fGenIndices;
