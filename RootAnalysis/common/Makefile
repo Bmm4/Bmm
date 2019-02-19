@@ -86,7 +86,7 @@ all: vars prep lib
 lib: lib/libUtil.so
 
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) lib/libAna00.so -o lib/libUtil.so
 
 # ======================================================================
 links:
@@ -102,6 +102,7 @@ copy:
 prep:
 	mkdir -p obj bin lib
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
+	cd lib && ln -f -s ../../rootio/lib/libAna00.so && cd -
 
 # -- clean up
 clean:
