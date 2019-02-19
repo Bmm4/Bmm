@@ -3,6 +3,7 @@
 #include "TMinuit.h"
 #include "TLatex.h"
 #include "TCanvas.h"
+#include "TLorentzVector.h"
 
 #include "dataset.hh"
 
@@ -40,6 +41,8 @@
 #pragma link C++ function addOverflow(TH1D *);
 #pragma link C++ function addUnderflow(TH1D *);
 #pragma link C++ function zeroNegativeEntries(TH1D *);
+#pragma link C++ function formatTLV(const TLorentzVector &, int);
+#pragma link C++ function formatTVector3(const TVector3 &, int);
 
 // #pragma link C++ function scanParameter(int, int, TMinuit &, void (*func)(int &, double *, double &, double *, int));
 

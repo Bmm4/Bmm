@@ -11,6 +11,7 @@
 #include "TDirectory.h"
 #include "TColor.h"
 #include "TLatex.h"
+#include "TLorentzVector.h"
 #include "TLegend.h"
 
 #include <vector>
@@ -52,7 +53,6 @@ void rmPath(std::string &sInput);
 void cleanupString(std::string &s);
 bool bothAreSpaces(char lhs, char rhs);
 
-
 std::vector<std::string> glob(std::string basedir, std::string basename);
 
 std::vector<std::string>& split(const std::string &s, char delim, std::vector<std::string> &elems);
@@ -61,6 +61,9 @@ std::vector<std::string> split(const std::string &s, char delim);
 void addOverflow(TH1D *);
 void addUnderflow(TH1D *);
 void zeroNegativeEntries(TH1D *);
+
+std::string formatTLV(const TLorentzVector &, int mode = 0);
+std::string formatTVector3(const TVector3 &, int mode = 0);
 
 
 // ======================================================================
