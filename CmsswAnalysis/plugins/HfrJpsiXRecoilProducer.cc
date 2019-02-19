@@ -1,4 +1,5 @@
 #include "Bmm/CmsswAnalysis/plugins/HfrJpsiXRecoilProducer.h"
+#include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
 #include "Bmm/RootAnalysis/common/HFMasses.hh"
 
 #include <memory>
@@ -26,10 +27,18 @@
 
 #include <TLorentzVector.h>
 
+
+#include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
+#include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
+#include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
+#include "Bmm/RootAnalysis/rootio/TGenCand.hh"
+
 using namespace std;
 using namespace edm;
 using namespace reco;
 
+// -- Yikes!
+extern TAna01Event *gHFEvent;
 
 // ----------------------------------------------------------------------
 // Utility routine to sort the mindoca array of the candidate...
@@ -100,10 +109,10 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   }
 
   if (midx.size() < 2) {
-    cout << "==>HfrJpsiXRecoilProducer> less than 2 global muons in event, not putting any track list into event " << endl
-	 << "   midx.size() = " << midx.size() << endl
-	 << "   fMuonCollection->size() = " << fMuonCollection->size()
-	 << endl;
+    if (0) cout << "==>HfrJpsiXRecoilProducer> less than 2 global muons in event, not putting any track list into event " << endl
+		<< "   midx.size() = " << midx.size() << endl
+		<< "   fMuonCollection->size() = " << fMuonCollection->size()
+		<< endl;
     put(iEvent, trkIdxColl, pvIdx, vertexColl);
     return;
   }
@@ -119,9 +128,9 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
       reco::TrackBaseRef m2(fTracksHandle, midx[in]);
       reco::Track t2(*m2);
       if (t1.charge()*t2.charge() > 0) {
-	cout << "==>HfrJpsiXRecoilProducer> charge correlation failed: "  << t1.charge() << " x " << t2.charge()
-	     << " for muon idxs = " << midx[im] << " and " << midx[in]
-	     << endl;
+	if (0) cout << "==>HfrJpsiXRecoilProducer> charge correlation failed: "  << t1.charge() << " x " << t2.charge()
+		    << " for muon idxs = " << midx[im] << " and " << midx[in]
+		    << endl;
 	continue;
       }
       p4m1.SetXYZM(t1.px(), t1.py(), t1.pz(), MMUON);
@@ -141,13 +150,13 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 
   if ((im1 < 0) || (im2 < 0)) {
     put(iEvent, trkIdxColl, pvIdx, vertexColl);
-    cout << "==>HfrJpsiXRecoilProducer> charge correlation failed "  << endl;
+    if (0) cout << "==>HfrJpsiXRecoilProducer> charge correlation failed "  << endl;
     return;
   }
 
   if ((mbest < 2.5) || (mbest > 4.5)) {
     put(iEvent, trkIdxColl, pvIdx, vertexColl);
-    cout << "==>HfrJpsiXRecoilProducer> psi mass outside of range: " << mbest << endl;
+    if (0) cout << "==>HfrJpsiXRecoilProducer> psi mass outside of range: " << mbest << endl;
     return;
   }
 
@@ -161,6 +170,11 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // -- find best PV with J/psi only
   RefCountedKinematicTree psiTree;
   pair<int, double> psiPV = findBestPV(vtt, psiTree);
+  if (psiTree->isEmpty()) {
+    if (fVerbose) cout << "==>HfrJpsiXRecoilProducer> psi tree empty" << endl;
+    put(iEvent, trkIdxColl, pvIdx, vertexColl);
+    return;
+  }
   RefCountedKinematicVertex   psiVertex = psiTree->currentDecayVertex();
   Vertex                       myVertex = mkVertex(psiTree);
 
@@ -170,7 +184,10 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   if ((psiVertex->chiSquared() >= 0.0) && (psiVertex->degreesOfFreedom() > 0)) {
     vtxProb = TMath::Prob(psiVertex->chiSquared(), psiVertex->degreesOfFreedom());
   }
-  cout << "==>HfrJpsiXRecoilProducer> J/psi mass = " << mbest << " from muons with trk idx = " << im1 << " and " << im2 << " and prob = " << vtxProb << endl;
+  if (0) cout << "==>HfrJpsiXRecoilProducer> J/psi mass = " << mbest << " from muons with trk idx = " << im1 << " and " << im2
+	      << " and prob = " << vtxProb
+	      << " PV(idx, |lip|) = " << psiPV.first << ", " << psiPV.second
+	      << endl;
   if (vtxProb < fVtxProb) {
     // cout << "skipping vertex with probability " << vtxProb << " and mass = " << mbest << endl;
     put(iEvent, trkIdxColl, pvIdx, vertexColl);
@@ -182,7 +199,6 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   TrajectoryStateOnSurface tsos;
   VertexDistance3D a3d;
   vector<pair<int, double> > trkIdxDoca;
-  int ntracks(0);
   for (unsigned int ix = 0; ix < fTracksHandle->size(); ix++) {
     // -- skip muons, already added above to be the first in the list
     if (ix == static_cast<unsigned int>(im1)) continue;
@@ -190,7 +206,6 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     reco::TrackBaseRef rTrackView(fTracksHandle, ix);
     const reco::Track track(*rTrackView);
     TransientTrack transTrack = fTTB->build(*rTrackView);
-    ++ntracks;
     if (!track.quality(reco::TrackBase::qualityByName(fTrackQualityString))) continue;
     if (track.pt() < fTrackMinPt) continue;
 
@@ -201,62 +216,128 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   }
   sort(trkIdxDoca.begin(), trkIdxDoca.end(), docaLess);
 
+  // -- create track index list with J/psi muon indices and all qualifying hadronic tracks.
   RefCountedKinematicTree psitTree;
   double psitProb(vtxProb);
+  double psitlip(psiPV.second);
+  vector<int> trkList;
+  trkList.push_back(im1);
+  trkList.push_back(im2);
   for (unsigned int ix = 0; ix < trkIdxDoca.size(); ++ix) {
-    if (trkIdxDoca[ix].second > 0.025) {
-      cout << "reached doca = " << trkIdxDoca[ix].second << ", breaking" << endl;
+    if (trkIdxDoca[ix].second > 0.020) {
+      if (0) cout << "reached doca = " << trkIdxDoca[ix].second << ", breaking at track " << trkIdxDoca[ix].first << " at position " << ix << endl;
       break;
     }
     reco::TrackBaseRef baseRef(fTracksHandle, trkIdxDoca[ix].first);
     vtt.push_back(fTTB->build(*baseRef));
     pair<int, double> psitPV = findBestPV(vtt, psitTree);
+    if (psitTree->isEmpty()) {
+      if (fVerbose) cout << "==>HfrJpsiXRecoilProducer> psit tree empty" << endl;
+      vtt.pop_back();
+      continue;
+    }
     RefCountedKinematicVertex psitVertex = psitTree->currentDecayVertex();
 
     double prob = 0.0;
     if ((psitVertex->chiSquared() >= 0.0) && (psitVertex->degreesOfFreedom() > 0)) {
       prob = TMath::Prob(psitVertex->chiSquared(), psitVertex->degreesOfFreedom());
     }
-    if (prob < psitProb) {
-      cout << "skipping vertex with probability " << prob << " because J/psi vtx had prob = " << psitProb << endl;
+    if (0 && prob < psitProb) {
+      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob << " because J/psi vtx had prob = " << psitProb << endl;
       vtt.pop_back();
       continue;
     }
-    if (prob < fVtxProb) {
-      cout << "skipping vertex with probability " << prob << " because fVtxProb = " << fVtxProb << endl;
+    if (0 && prob < fVtxProb) {
+      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob << " because fVtxProb = " << fVtxProb << endl;
       vtt.pop_back();
       continue;
     }
 
+    if (psitPV.first == psiPV.first && psitPV.second > psitlip) {
+      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " |lip| increased to " << psitPV.second << " compared to = " << psitlip << endl;
+      vtt.pop_back();
+      continue;
+    }
+
+    if (psitPV.first != psiPV.first) {
+      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " PV changed to " << psitPV.first << " compared to = " << psiPV.first << endl;
+      vtt.pop_back();
+      continue;
+    }
+
+
+    psitlip  = psitPV.second;
     psitProb = prob;
-    cout << "keeping track " << trkIdxDoca[ix].first << " in vertex fit, with doca = " << trkIdxDoca[ix].second
-	 << " pt = " << baseRef->pt()
-	 << " prob = " << prob << " idx(pv) = " << psitPV.first
-	 << endl;
+
+    trkList.push_back(trkIdxDoca[ix].first);
+
+    if (0) cout << "keeping track " << trkIdxDoca[ix].first << " in vertex fit, with doca = " << trkIdxDoca[ix].second
+		<< " pt = " << baseRef->pt()
+		<< " prob = " << prob << " idx(pv) = " << psitPV.first << " |lip| = " << psitPV.second
+		<< endl;
   }
 
+  Vertex mypVertex = fVertexCollection[psiPV.first];
+  GlobalPoint pVertex(mypVertex.position().x(), mypVertex.position().y(), mypVertex.position().z());
 
-  vertexColl->push_back(mkVertex(psiTree));
+  // ----------------------------------------------------------------------
+  // -- store JpsiX cand in gHFEvent (cf. HFListCand)
+  // ----------------------------------------------------------------------
+  TAnaCand *pCand = fillCand(trkList, psiPV.first);
+  pCand->fPvIdx = psiPV.first;
+  pCand->fPvLip = psiPV.second;
+
+  // ----------------------------------------------------------------------
+  // -- create list of recoil tracks (cf. HfrSimpleRecoilProducer)
+  // ----------------------------------------------------------------------
+  vector<int> recoilList, missList;
+  bool skip(false);
+  for (unsigned int ix = 0; ix < fTracksHandle->size(); ix++) {
+    skip = false;
+    // -- skip tracks from J/psi X
+    if (trkList.end() != find(trkList.begin(), trkList.end(), static_cast<int>(ix))) {
+      continue;
+    }
+    TrackBaseRef rTrackView(fTracksHandle, ix);
+    const Track track(*rTrackView);
+    TransientTrack transTrack = fTTB->build(*rTrackView);
+    if (!track.quality(reco::TrackBase::qualityByName(fTrackQualityString))) {
+      skip = true;
+    }
+    if (track.pt() < fTrackMinPt) {
+      skip = true;
+    }
+
+    tsos = extrapolator.extrapolate(transTrack.initialFreeState(), pVertex);
+    Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), mypVertex);
+    if (doca.value() > fDocaMaxPv) {
+      skip = true;
+    }
+
+    if (false == skip) {
+      recoilList.push_back(ix);
+      trkIdxColl->push_back(ix);
+    } else {
+      // NEEDED? int trkPvIdx = getPv(ix, &fVertexCollection);
+      // miss list contains high-purity tracks from nearby
+      if ((doca.value() < 1.0) && (track.quality(reco::TrackBase::qualityByName(fTrackQualityString)))
+	  ) {
+	missList.push_back(static_cast<int>(ix));
+      }
+    }
+  }
+
+  pCand = fillCand(recoilList, psiPV.first);
+  pCand->fType  = fType+1; // override the value set fillCand (fType)
+  pCand->fPvIdx = psiPV.first;
+  pCand->fPvLip = psiPV.second;
+
+  pCand = fillCand(missList, psiPV.first);
+  pCand->fType  = fType+2; // override the value set in fillCand (fType)
+  pCand->fPvIdx = psiPV.first;
+  pCand->fPvLip = psiPV.second;
 
   pvIdx = std::make_unique<int>(psiPV.first);
-
-  trkIdxColl->push_back(im1);
-  trkIdxColl->push_back(im2);
-
-
-  // -- now try to add the closest tracks and check that
-  //    - the vertex fit is good
-  //    - whether the PV changed
-
-
-
-  cout << "==>HfrJpsiXRecoilProducer> put into event tracklist with " << trkIdxColl->size()
-       << " tracks, removed "  << ntracks - trkIdxColl->size()
-       << " first two indices: " << trkIdxColl->at(0) << " " << trkIdxColl->at(1)
-       << " J/psi PV idx: " << psiPV.first << " with |lip| = " << psiPV.second
-       << endl;
-
-
 
   iEvent.put(std::move(trkIdxColl));
   iEvent.put(std::move(pvIdx));
@@ -287,6 +368,10 @@ RefCountedKinematicTree HfrJpsiXRecoilProducer::fitTree(std::vector<reco::Transi
   }
   KinematicParticleVertexFitter fitter;
   RefCountedKinematicTree kinTree = fitter.fit(particles);
+  if (kinTree->isEmpty()) {
+    RefCountedKinematicTree blaTree;
+    return blaTree;
+  }
   kinTree->movePointerToTheTop();
   return kinTree;
 }
@@ -305,6 +390,9 @@ pair<int, double> HfrJpsiXRecoilProducer::findBestPV(vector<TransientTrack> &vtt
   }
   KinematicParticleVertexFitter fitter;
   kinTree = fitter.fit(particles);
+  if (kinTree->isEmpty()) {
+    return make_pair(-1, -99.);
+  }
   kinTree->movePointerToTheTop();
 
   // -- setup extrapolators
@@ -342,38 +430,49 @@ Vertex HfrJpsiXRecoilProducer::mkVertex(RefCountedKinematicTree &kinTree) {
 }
 
 
+// ----------------------------------------------------------------------
+TAnaCand* HfrJpsiXRecoilProducer::fillCand(vector<int> trkList, int pvIdx) {
+  TAnaCand *pCand = gHFEvent->addCand();
+  pCand->fType = fType;
+  pCand->fSig1 = gHFEvent->nSigTracks();
+  pCand->fSig2 = pCand->fSig1 + trkList.size() - 1;
+  TAnaTrack *pTrack(0);
+
+  AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
+  TrajectoryStateOnSurface tsos;
+
+  Vertex mypVertex = fVertexCollection[pvIdx];
+  GlobalPoint pVertex(mypVertex.position().x(), mypVertex.position().y(), mypVertex.position().z());
+  VertexDistance3D a3d;
+
+  TLorentzVector p4t, p4tot;
+  p4tot.SetXYZT(0., 0., 0., 0.);
+  for (vector<int>::const_iterator trkIt = trkList.begin(); trkIt != trkList.end(); ++trkIt) {
+    int idx = *trkIt;
+    //    cout << "idx = " << ix << " -> track idx = " << idx << " pv idx = " << pvidx << endl;
+    TSimpleTrack *sTrack = gHFEvent->getSimpleTrack(idx);
+    int gidx = sTrack->getGenIndex();
+    pTrack = gHFEvent->addSigTrack();
+
+    TrackBaseRef baseRef(fTracksHandle, idx);
+    const Track trackView(*baseRef);
+    const BeamSpot *pBeamSpot = &fBeamSpot;
+
+    TransientTrack transTrack = fTTB->build(*baseRef);
+    tsos = extrapolator.extrapolate(transTrack.initialFreeState(), pVertex);
+    Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), mypVertex);
+
+    fillAnaTrack(pTrack, trackView, idx, gidx, &fVertexCollection, fMuonCollection, pBeamSpot);
+    pTrack->fDouble1 = doca.value();
+
+    p4t.SetXYZM(trackView.px(), trackView.py(), trackView.pz(), MPION);
+    p4tot += p4t;
+  }
+  pCand->fMass  = p4tot.M();
+  pCand->fPlab  = p4tot.Vect();
+  return pCand;
+}
+
+
+
 DEFINE_FWK_MODULE(HfrJpsiXRecoilProducer);
-
-
-  // KalmanVertexFitter fitter;
-  // TransientVertex myVertex = fitter.vertex(vtt);
-  // Vertex secVertex = myVertex;
-
-
-  // AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
-  // int psiPV(-1);
-  // double lip(999.), psiLip(9999.);
-  // for (unsigned int iv = 0; iv < fVertexCollection.size(); ++iv) {
-  //   Vertex currentPV = fVertexCollection[iv];
-
-  //   TrajectoryStateOnSurface tsos1 = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
-  // 							      RecoVertex::convertPos(currentPV.position()));
-  //   std::pair<bool,Measurement1D> currentIp = IPTools::signedDecayLength3D(tsos1, GlobalVector(0,0,1), currentPV);
-  //   lip = currentIp.second.value();
-  //   //    cout << "pv " << iv << " lip: " << lip << endl;
-  //   if (TMath::Abs(lip) < psiLip) {
-  //     psiLip = TMath::Abs(lip);
-  //     psiPV = iv;
-  //   }
-  // }
-
-  //  const reco::Vertex::Point& vpoint = secVertex.position();
-  // reco::Vertex::Error verr = secVertex.error();
-  // GlobalError err(verr.At(0,0), verr.At(1,0), verr.At(1,1), verr.At(2,0), verr.At(2,1), verr.At(2,2));
-  // GlobalPoint displacementFromBeamspot( -1.*((fBeamSpot.x0() -  secVertex.x()) +  (secVertex.z() - fBeamSpot.z0()) * fBeamSpot.dxdz()),
-  // 					-1.*((fBeamSpot.y0() - secVertex.y())+  (secVertex.z() - fBeamSpot.z0()) * fBeamSpot.dydz()),
-  // 					0.);
-  // float flxy  = displacementFromBeamspot.perp();
-  // float flxye = sqrt(err.rerr(displacementFromBeamspot));
-  // double flsxy = flxy/flxye;
-  // cout << "J/psi vtx = " << myVertex.position() << " with flxy/flxye = " << flxy << "/" << flxye << " = " << flsxy << endl;

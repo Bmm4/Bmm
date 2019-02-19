@@ -5,39 +5,39 @@
 # ==============
 #
 # -- generate python files
-#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p
-#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -p -s Summer15_private
+#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BASE/perl/runAll -p
+#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BASE/perl/runAll -p -s Summer15_private
 #
 # -- submit cmsRun jobs
-#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BMMBASE/perl/runAll -t $BMMBASE../../150826bmm4.tar.gz -s Summer15_private
+#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v01; $BASE/perl/runAll -t $BASE../../150826bmm4.tar.gz -s Summer15_private
 #
 # -- generate checked chains and split them
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -p -s bmm-v01-Run2015B__Charmonium__PromptReco-v1
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -p
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -p -s bmm-v01-Run2015B__Charmonium__PromptReco-v1
 #
 # -- submit runBmm jobs
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -h
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -y -s bmmCharmonium2016
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -t $BASE/../../150903bmm4.tar.gz
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -h
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -y -s bmmCharmonium2016
 #
 # -- collect crashed jobs and run in background locally
-#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz -C -q 'local -b'
+#  cd .../Bmm/RootAnalysis/macros/chains/v01; $BASE/perl/runAll -t $BASE/../../150903bmm4.tar.gz -C -q 'local -b'
 #
 # -- submit runPlot jobs
-#  cd .../Bmm/RootAnalysis/macros/chains/runPlot; $BMMBASE/perl/runAll -t $BMMBASE/../../150903bmm4.tar.gz -x '-p overlays -m dbx' -s 423
+#  cd .../Bmm/RootAnalysis/macros/chains/runPlot; $BASE/perl/runAll -t $BASE/../../150903bmm4.tar.gz -x '-p overlays -m dbx' -s 423
 #
 # -- produce output suited for runCont:
-#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v11; $BMMBASE/perl/runAll -t $BMMBASE../../150826bmm4.tar.gz -s Summer15_private -e -d > allJobs
-#  $BMMBASE/perl/runCont -n 100 allJobs > & runCont-allJobs.log &
+#  cd .../Bmm/CmsswAnalysis/test/bmm4/jobs/v11; $BASE/perl/runAll -t $BASE../../150826bmm4.tar.gz -s Summer15_private -e -d > allJobs
+#  $BASE/perl/runCont -n 100 allJobs > & runCont-allJobs.log &
 # -- cleanup old jobs.list files:
-#  $BMMBASE/perl/runAll -b 2018/02/02 -s BuToJpsiK-2016 -m
+#  $BASE/perl/runAll -b 2018/02/02 -s BuToJpsiK-2016 -m
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
 # Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
 
-use lib "$ENV{BMMBASE}/perl/modules/Tie-IxHash-1.23/lib";
+use lib "$ENV{BASE}/perl/modules/Tie-IxHash-1.23/lib";
 use Tie::IxHash;
 
 use Getopt::Std;
@@ -77,7 +77,7 @@ if ($opt_i) {
 
 my %jobs;
 
-my $BMMBASE = $ENV{BMMBASE};
+my $BASE = $ENV{BASE};
 my $USER = $ENV{USER};
 my $SCRATCH = "nada";
 
@@ -233,7 +233,7 @@ if ($opt_m) {
 	}
 
 	if (!$opt_d) {
-	    system("$BMMBASE/perl/monSge");
+	    system("$BASE/perl/monSge");
 	    # -- now count NOK files in all relevant tmp-* directories
 	    open(IN, $jobslist) || die "Cannot find file $joblist with grid jobs\n";
 	    while(<IN>) {

@@ -8,10 +8,10 @@
 #include "Bmm/RootAnalysis/rootio/TAnaTrack.hh"
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
+#include "Bmm/RootAnalysis/common/HFMasses.hh"
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTwoParticleCombinatoricsNew.hh"
-#include "Bmm/RootAnalysis/common/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFDecayTree.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTrackListBuilder.hh"
 #include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"

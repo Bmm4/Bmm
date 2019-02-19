@@ -19,6 +19,7 @@ using namespace reco;
 // ----------------------------------------------------------------------
 HfrBaseProducer::HfrBaseProducer(const ParameterSet& iConfig) :
   fVerbose(iConfig.getUntrackedParameter<int>("verbose", 0)),
+  fType(iConfig.getUntrackedParameter<int>("type", 0)),
   fTracksLabel(iConfig.getUntrackedParameter<InputTag>("tracksLabel", InputTag("generalTracks"))),
   fTrackQualityString(iConfig.getUntrackedParameter<string>("trackQualityString", string("highPurity"))),
   fPrimaryVertexLabel(iConfig.getUntrackedParameter<InputTag>("PrimaryVertexLabel", InputTag("offlinePrimaryVertices"))),
@@ -26,7 +27,8 @@ HfrBaseProducer::HfrBaseProducer(const ParameterSet& iConfig) :
   fMuonsLabel(iConfig.getUntrackedParameter<InputTag>("muonsLabel", InputTag("muons"))),
   fMuonQualityString(iConfig.getUntrackedParameter<string>("muonQuality", string("AllGlobalMuons"))),
   fTrackMinPt(iConfig.getUntrackedParameter<double>("trackMinPt", 0.4)),
-  fMuonMinPt(iConfig.getUntrackedParameter<double>("muonMinPt", 4.0)) {
+  fMuonMinPt(iConfig.getUntrackedParameter<double>("muonMinPt", 4.0)),
+  fDocaMaxPv(iConfig.getUntrackedParameter<double>("docaMaxPv", 0.2)) {
 
   // produces<vector<int> >(); // vector of track indices
   // produces<int>();          // possibly a PV index
@@ -42,6 +44,7 @@ HfrBaseProducer::HfrBaseProducer(const ParameterSet& iConfig) :
 // ----------------------------------------------------------------------
 void HfrBaseProducer::dumpConfiguration() {
   cout << "---  verbose                     " << fVerbose << endl;
+  cout << "---  type                        " << fType << endl;
   cout << "---  tracksLabel                 " << fTracksLabel << endl;
   cout << "---  trackQualityString          " << fTrackQualityString << endl;
   cout << "---  PrimaryVertexLabel          " << fPrimaryVertexLabel << endl;
@@ -50,6 +53,7 @@ void HfrBaseProducer::dumpConfiguration() {
   cout << "---  muonQuality                 " << fMuonQualityString << endl;
   cout << "---  trackMinPt                  " << fTrackMinPt << endl;
   cout << "---  muonMinPt                   " << fMuonMinPt << endl;
+  cout << "---  docaMaxPv                   " << fDocaMaxPv << endl;
 }
 
 

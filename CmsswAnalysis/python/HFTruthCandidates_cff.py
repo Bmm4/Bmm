@@ -12,8 +12,8 @@ truthBuToKMuTauDump = cms.EDAnalyzer(
     verbose      = cms.untracked.int32(0),
     tracksLabel  = cms.untracked.InputTag(trackList),
     motherID     = cms.untracked.int32(521),
-    type         = cms.untracked.int32(200),
-    GenType      = cms.untracked.int32(-200),
+    type         = cms.untracked.int32(2000),
+    GenType      = cms.untracked.int32(-2000),
     daughtersID  = cms.untracked.vint32(321, -15, 211, 211, -211, -16, 13)
     )
 
