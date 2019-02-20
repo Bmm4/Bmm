@@ -86,7 +86,7 @@ all: vars prep lib
 lib: lib/libUtil.so
 
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) lib/libAna00.so -o lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
 
 # ======================================================================
 links:
@@ -95,7 +95,7 @@ links:
 
 copy:
 	mkdir -p ../../../../lib/$(SCRAM_ARCH)
-	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so  && cp ../../src/Bmm/RootAnalysis/rootio/lib/libUtil.so  . && cd -
+	cd ../../../../lib/$(SCRAM_ARCH)/ && rm -f libUtil.so  && cp ../../src/Bmm/RootAnalysis/common/lib/libUtil.so  . && cd -
 
 
 # -- preparatory setup
