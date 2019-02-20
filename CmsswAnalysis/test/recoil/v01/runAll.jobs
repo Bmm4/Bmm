@@ -27,6 +27,6 @@ $dataset = "Charmonium__Run2017F";
 # -- 2017 private MC
 $dataset = "mc-2017";
 &addToJobs($dataset);
-$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil12 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil13 -s $version -n 50 -l;  \ \n";
-$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil14 -s $version -n 50 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil12 -s $version -n 40 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil13 -s $version -n 40 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil14 -s $version -n 40 -l;  \ \n";

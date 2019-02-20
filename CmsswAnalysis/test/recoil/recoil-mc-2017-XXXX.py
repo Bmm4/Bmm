@@ -89,8 +89,8 @@ process.butomutaukDump = cms.EDAnalyzer(
     maxD0              = cms.untracked.double(99.0),
     maxDz              = cms.untracked.double(99.0),
     pvWeight           = cms.untracked.double(0.6),
-    type               = cms.untracked.int32(32000),
-    mcType             = cms.untracked.int32(3002000)
+    type               = cms.untracked.int32(10032),
+    mcType             = cms.untracked.int32(4000032)
 )
 
 # ----------------------------------------------------------------------
@@ -117,8 +117,8 @@ process.butomupidDump = cms.EDAnalyzer(
     maxD0              = cms.untracked.double(99.0),
     maxDz              = cms.untracked.double(99.0),
     pvWeight           = cms.untracked.double(0.6),
-    type               = cms.untracked.int32(33000),
-    mcType             = cms.untracked.int32(3002000)
+    type               = cms.untracked.int32(10033),
+    mcType             = cms.untracked.int32(4000033)
 )
 
 # ----------------------------------------------------------------------

@@ -1,6 +1,6 @@
-CANDTYPE        32000
-CANDTRUTH     3002000
-BRECOTYPE     3000069
-BRECOTRUTH        511
+CLASSNAME    candAnaBuToMuTauK
+CANDTYPE        10032
+CANDTRUTH     3000032
+BRECOTYPE       10000
 # -- baseCuts
-+input cuts/baseCuts.cuts
++input cutfiles/baseCuts.cuts

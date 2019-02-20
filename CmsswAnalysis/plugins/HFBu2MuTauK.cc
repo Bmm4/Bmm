@@ -36,13 +36,13 @@ using namespace std;
 using namespace reco;
 using namespace edm;
 
-// 32000 = mu K tau(hhh)
-// 33000 = mu+ pi+ D-(K+ pi- pi-)
+// recoil + 32 = mu K tau(hhh)
+// recoil + 33 = mu+ pi+ D-(K+ pi- pi-)
 
 // ----------------------------------------------------------------------
 HFBu2MuTauK::HFBu2MuTauK(const ParameterSet& iConfig) :
   HFVirtualDecay(iConfig),
-  fMcType(iConfig.getUntrackedParameter<int>("mcType", 3002000)),
+  fMcType(iConfig.getUntrackedParameter<int>("mcType", 4000032)),
   fMuKaVtxProb(iConfig.getUntrackedParameter<double>("mukaVtxProb", 0.01)),
   fTauVtxProb(iConfig.getUntrackedParameter<double>("tauVtxProb", 0.01)) {
   dumpConfiguration();
@@ -130,9 +130,10 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
 
   HFTwoParticleCombinatoricsNew a(fTracksHandle, fVerbose);
   HFTwoParticleCombinatoricsSet promptList;
-  if (32000 == fType) {
+  int remainder = fType%100;
+  if (32 == remainder) {
     promptList = a.combine(muonList, MMUON, trkList, MKAON, 0.6, 3.6, 1);
-  } else if (33000 == fType) {
+  } else if (33 == remainder) {
     promptList = a.combine(muonList, MMUON, trkList, MPION, 0.2, 5.2, 1);
   }
   if (fVerbose > 0) cout << "==>HFBu2MuTauK> promptList  size: " << promptList.size() << endl;
@@ -141,9 +142,9 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- build 3-prong
   vector<triplet> tauList;
   HFThreeParticleCombinatorics tau(fVerbose);
-  if (32000 == fType) {
+  if (32 == remainder) {
     tau.combine(tauList, piList, 0.3, 2.0, 0.6, 1.1); // FIXME: Are the loresmass and hiresmass cuts good?!
-  } else if (33000 == fType) {
+  } else if (33 == remainder) {
     tau.combine(tauList, piList, kaList, 0.3, 2.0); // FIXME: Are the mass cuts good?
   }
   vector<triplet> filledTriplets;
@@ -219,9 +220,10 @@ bool HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cut) {
   vtt.clear(); vid.clear();
   vtt.push_back(mTT); vid.push_back(13);
   vtt.push_back(kTT);
-  if (32000 == fType) {
+  int remainder = fType%100;
+  if (32 == remainder) {
     vid.push_back(321);
-  } else if (33000 == fType) {
+  } else if (33 == remainder) {
     vid.push_back(211);
   }
   RefCountedKinematicTree mukaTree = fitTree(vtt, vid);
@@ -277,12 +279,12 @@ bool HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cut) {
   }
 
   vtt.clear(); vid.clear();
-  if (32000 == fType) {
+  if (32 == remainder) {
     // -- For tau+ -> pi- pi+ pi+ decays, all hadrons are pions. Ignore those decays with kaons included!?
     vtt.push_back(pi1TT); vid.push_back(211);
     vtt.push_back(pi2TT); vid.push_back(211);
     vtt.push_back(pi3TT); vid.push_back(211);
-  } else if (33000 == fType) {
+  } else if (33 == remainder) {
     // -- For D+ -> K- pi+ pi+ decays, the same-sign particles are the pions. DCS decays are ignored!
     if (pi1T.charge() == pi2T.charge()) {
       vtt.push_back(pi1TT); vid.push_back(211);
@@ -324,9 +326,9 @@ bool HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cut) {
   if (fVerbose > 0) {
     TLorentzVector tlv,  muka, mu, ka, bu, pi1, pi2, pi3;
     mu.SetPtEtaPhiM(tMuon.pt(), tMuon.eta(), tMuon.phi(), MMUON);
-    if (32000 == fType) {
+    if (32 == remainder) {
       ka.SetPtEtaPhiM(tKaon.pt(), tKaon.eta(), tKaon.phi(), MKAON);
-    } else if (33000 == fType) {
+    } else if (33 == remainder) {
       ka.SetPtEtaPhiM(tKaon.pt(), tKaon.eta(), tKaon.phi(), MPION);
     }
     muka = mu + ka;
