@@ -5,6 +5,7 @@
 #include "common/HFMasses.hh"
 #include "common/AnalysisDistribution.hh"
 #include "common/util.hh"
+#include "common/ana.hh"
 
 using namespace std;
 
@@ -49,6 +50,7 @@ void candAna::endAnalysis() {
   TH1D *h1 = ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())));
   if (h1) {
     cout << Form("==> mon%s: events seen    = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(1.)))) << endl;
+    cout << Form("==> mon%s: cands seen     = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(2.)))) << endl;
     cout << Form("==> mon%s: cands analysed = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(10.)))) << endl;
     cout << Form("==> mon%s: cands passed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(11.)))) << endl;
     cout << Form("==> mon%s: cands failed   = %d", fName.c_str(), static_cast<int>(h1->GetBinContent(h1->FindBin(20.)))) << endl;
@@ -61,35 +63,70 @@ void candAna::endAnalysis() {
 
 }
 
+// ----------------------------------------------------------------------
+void candAna::resetAllData() {
+  fMissedTracks = 0;
+  fGenBTmi = fCandTmi - 99;
+  fRecoTm = fTruthRm = false;
+  fNGenPhotons = fGenBpartial = fProcessType = 0;
+
+
+  fpCand = fpCandTruth = fpOsCand = 0;
+
+  fpGenB = 0;
+  fVtxBProd.SetXYZ(-99., -99., -99.);
+  fVtxBDecay.SetXYZ(-99., -99., -99.);
+
+  fPvN = fNchan =  -99;
+  fPreselection = false;
+  fPvX = fPvY = fPvZ = -99.;
+}
+
 
 // ----------------------------------------------------------------------
 void candAna::evtAnalysis(TAna01Event *evt) {
   fpEvt = evt;
+  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(1.);
+  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(2., static_cast<double>(fpEvt->nCands()));
 
   bool fillNoCand(true);
-  TAnaCand *pCand(0);
 
+  resetAllData();
+
+  // -- distill the TRUTH (for this SPECIFIC cand)
+  genMatch();
+  recoMatch();
+  candMatch();
   genAnalysis();
-  // for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-  //   pCand = fpEvt->getCand(iC);
+  // -- remember: brecoAnalysis CANNOT be called in recoilReader::eventProcessing() if other modules run in parallel
+  brecoAnalysis();
 
-  //   if (fVerbose == -66) {
-  //     cout << Form("%4d", iC) << " cand -> " << pCand->fType << endl;
-  //     continue;
-  //   }
+  // -- look at all candidates of type CANDTYPE
+  int cnt(0);
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    fpCand = fpEvt->getCand(iC);
 
-  //   if (CANDTYPE != pCand->fType) {
-  //     continue;
-  //   } else {
-  //     //      cout << "candAna: found cand with type " << CANDTYPE << endl;
-  //   }
-  //   // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
-  //   candAnalysis();
-  //   candEvaluation();
-  // }
+    if (fVerbose == -66) {
+      cout << Form("%4d", iC) << " cand -> " << fpCand->fType << endl;
+      continue;
+    }
 
-  candAnalysis();
+    if (CANDTYPE != fpCand->fType) {
+      continue;
+    } else {
+      //      cout << "candAna: found cand with type " << CANDTYPE << endl;
+    }
+    // -- call derived functions (will jump back into candAna::candAnalysis for the common stuff!)
+    candAnalysis();
+    candEvaluation();
+    ++cnt;
+    fTree->Fill();
+  }
+  return;
 
+  if (cnt > 1) {
+    cout << "YYYYYYYYYYY N(signal cands): " << cnt << endl;
+  }
   if (fIsMC) {
     fTree->Fill();
   } else {  // DATA
@@ -134,7 +171,7 @@ void candAna::candAnalysis() {
 
   if (0 == fpCand) return;
 
-  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(1);
+  //((TH1D*)fHistDir->Get("../monEvents"))->Fill(1);
 
 }
 
@@ -180,7 +217,7 @@ void candAna::bookHist() {
   h11 = new TH1D(Form("mon%s", fName.c_str()), Form("mon%s", fName.c_str()), 50, 0., 50.);
 
   // -- Reduced Tree
-  fTree = new TTree("events", "events");
+  fTree = new TTree("events", Form("events %s", fHistDir->GetName()));
   setupReducedTree(fTree);
 
   // -- Efficiency/Acceptance Tree
@@ -200,7 +237,18 @@ void candAna::setupReducedTree(TTree *t) {
 
   t->Branch("run",     &fRun,               "run/L");
   t->Branch("evt",     &fEvt,               "evt/L");
+  t->Branch("cevt",    &fChainEvent,        "cevt/I");
   t->Branch("ls",      &fLS,                "ls/I");
+
+  t->Branch("gngamma",     &fNGenPhotons,      "gngamma/I");
+  t->Branch("pvx",         &fPvX,              "pvx/D");
+  t->Branch("pvy",         &fPvY,              "pvy/D");
+  t->Branch("pvz",         &fPvZ,              "pvz/D");
+  t->Branch("pvn",         &fPvN,              "pvn/I");
+
+  t->Branch("pvc",         &fCandPvI,          "pvc/I");
+  t->Branch("pvr",         &fBrecoPvI,         "pvr/I");
+
 
 }
 
@@ -488,6 +536,14 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: CAND TRUTH", CutName));
     }
 
+    if (!strcmp(CutName, "BRECOTYPE")) {
+      BRECOTYPE = static_cast<int>(CutValue);
+      if (dump) cout << "BRECOTYPE:      " << BRECOTYPE << endl;
+      ibin = 210;
+      hcuts->SetBinContent(ibin, BRECOTYPE);
+      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BRECOTYPE :: %d", CutName, BRECOTYPE));
+    }
+
     if (!strcmp(CutName, "DATACAND")) {
       DATACAND = int(CutValue);
       if (dump) cout << "DATACAND:           " << DATACAND << endl;
@@ -495,7 +551,6 @@ void candAna::readCuts(string fileName, int dump) {
       hcuts->SetBinContent(ibin, DATACAND);
       hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: DATA CAND", CutName));
     }
-
 
     if (!strcmp(CutName, "NOPRESELECTION")) {
       NOPRESELECTION = int(CutValue);
@@ -1086,4 +1141,159 @@ TMVA::Reader* candAna::setupMuonMvaReader(string xmlFile, mvaMuonIDData &d) {
 
   reader->BookMVA("BDT", TString(weightFile.c_str()));
   return reader;
+}
+
+
+// ----------------------------------------------------------------------
+pair<TVector3,TVector3> candAna::parallelAndPerp(TVector3 direction, TVector3 momVis) {
+  TVector3 par, perp;
+
+  TVector3 unitDir = direction.Unit();
+  double compPar = momVis.Dot(unitDir);
+  //  cout << "perp: scale = " << compPar << " oder momVis*cos(alpha) = " << momVis.Mag()*TMath::Cos(momVis.Angle(direction)) << endl;
+  par = compPar*unitDir;
+
+  perp = momVis - par;
+  return make_pair(par, perp);
+}
+
+// ----------------------------------------------------------------------
+pair<TVector3,TVector3> candAna::parallelAndPerp2(TVector3 direction, TVector3 momVis) {
+  TVector3 par, perp;
+
+  long double dX(direction.X());
+  long double dY(direction.Y());
+  long double dZ(direction.Z());
+
+  long double mX(momVis.X());
+  long double mY(momVis.Y());
+  long double mZ(momVis.Z());
+
+  // -- long double version of Unit()
+  long double tot2 = dX*dX + dY*dY + dZ*dZ;
+  long double ld1 = 1.0;
+  long double tot = (tot2 > 0.) ?  ld1/sqrtl(tot2) : ld1;
+
+  long double uX = dX*tot;
+  long double uY = dY*tot;
+  long double uZ = dZ*tot;
+
+  // -- long double version of momVis.Dot(unitDir)
+  long double compPar = mX*uX + mY*uY + mZ*uZ;
+  cout << "perp2:scale = " << compPar << endl;
+
+  long double x = compPar*uX;
+  long double y = compPar*uY;
+  long double z = compPar*uZ;
+  par  = TVector3(x, y, z);
+  x = mX - compPar*uX;
+  y = mY - compPar*uY;
+  z = mZ - compPar*uZ;
+  perp = TVector3(x, y, z);
+  return make_pair(par, perp);
+}
+
+
+// ----------------------------------------------------------------------
+pair<double, double> candAna::nuRecoMom0(double compVisPar, double compVisPerp, double eVis, double mVis, double mTot) {
+  double mTot2  = mTot*mTot;
+  double eVis2  = eVis*eVis;
+  double mVis2  = mVis*mVis;
+  double pperp2 = compVisPerp * compVisPerp;
+  double ppar2  = compVisPar * compVisPar;
+
+  double paren  = (mTot2 - mVis2 - 2.*pperp2);
+
+  double a = (paren*compVisPar)/(2.*(ppar2 - eVis2));
+
+  double r = (paren*paren*eVis2)/(4.*(ppar2 - eVis2)*(ppar2 - eVis2)) + (eVis2*pperp2)/(ppar2 - eVis2);
+
+  double solPlus(0.), solMinus(0.);
+  if (r > 0) {
+    solPlus  = -a + TMath::Sqrt(r);
+    solMinus = -a - TMath::Sqrt(r);
+  }
+
+  return make_pair(solPlus, solMinus);
+}
+
+
+// ----------------------------------------------------------------------
+double candAna::minMassPair(vector<TLorentzVector> v ) {
+  double minMass(99999.);
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    for (unsigned int j = i+1; j < v.size(); ++j) {
+      double mass = (v[i] + v[j]).M();
+      if (mass < minMass) minMass = mass;
+    }
+  }
+  return minMass;
+}
+
+
+// ----------------------------------------------------------------------
+double candAna::maxMassPair(vector<TLorentzVector> v ) {
+  double maxMass(-99999.);
+  for (unsigned int i = 0; i < v.size(); ++i) {
+    for (unsigned int j = i+1; j < v.size(); ++j) {
+      double mass = (v[i] + v[j]).M();
+      if (mass > maxMass) maxMass = mass;
+    }
+  }
+  return maxMass;
+}
+
+
+// ----------------------------------------------------------------------
+TH1D* candAna::getHist(string name) {
+  TH1D *h1 = (TH1D*)fHistDir->Get(name.c_str());
+  if (!h1) {
+    h1 = new TH1D(name.c_str(), name.c_str(), 400, 1.0, 3.0);
+  }
+  return h1;
+}
+
+
+// ----------------------------------------------------------------------
+void candAna::brecoAnalysis() {
+  fPvN = fpEvt->nPV();
+
+  fpBrecoCand = fpRecoilCand = fpRecoilMissCand = 0;
+
+  TAnaTrack *pS(0);
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    TAnaCand *pCand = fpEvt->getCand(iC);
+    if (BRECOTYPE == pCand->fType) {
+      fpBrecoCand = pCand;
+      cout << "===> BRECOTYPE: candIdx = " << iC << " fpBrecoCand = " << fpBrecoCand << endl;
+      // pCand->dump();
+      // for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
+      // 	pS = fpEvt->getSigTrack(is);
+      // 	//	pS->dump();
+      // }
+    }
+    if (BRECOTYPE+1 == pCand->fType) {
+      fpRecoilCand = pCand;
+      cout << "===> RECOILLIST: candIdx = " << iC << " fpRecoilCand = " << fpRecoilCand << endl;
+      // pCand->dump();
+      // for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
+      // 	pS = fpEvt->getSigTrack(is);
+      // 	//	pS->dump();
+      // }
+    }
+    if (BRECOTYPE+2 == pCand->fType) {
+      fpRecoilMissCand = pCand;
+      cout << "===> RECOILMISSLIST: candIdx = " << iC << " fpRecoilMissCand = " << fpRecoilMissCand << endl;
+      // pCand->dump();
+      // for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
+      // 	pS = fpEvt->getSigTrack(is);
+      // 	//	pS->dump();
+      // }
+    }
+  }
+
+  // if (0 == fpBrecoCand) {
+  //   cout << "XXXXXXXXXXXXXXXX NO BRECO CANDIDATE FOUND XXXXXXXXXXXXXX" << endl;
+  // }
+
 }
