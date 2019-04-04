@@ -58,6 +58,7 @@ protected:
   double fTrackMinPt;
   double fMuonMinPt;
   double fDocaMaxPv;
+  double fDocaMaxTk;
 
   const MagneticField                 *fMagneticField;
   const reco::MuonCollection          *fMuonCollection;
