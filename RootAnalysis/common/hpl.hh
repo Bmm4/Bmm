@@ -8,11 +8,10 @@
 #include "TStyle.h"
 #include "TROOT.h"
 
-extern TROOT  *gROOT;
-extern TStyle *gStyle;
+//extern TROOT  *gROOT;
+//extern TStyle *gStyle;
 // extern TFile  *gFile;
 // extern TDirectory  *gDirectory;
 
 void  hpl(TH1 *h, const char *options="");
 void  hpl(const char *h, const char *options="");
-

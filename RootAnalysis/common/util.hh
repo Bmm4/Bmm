@@ -35,7 +35,7 @@ void stampAndSave(TCanvas *fC, const char *s = "bla.eps");
 void shrinkPad(double b = 0.1, double l = 0.1, double r = 0.1, double t = 0.1);
 void babar(double x, double y, double scale = 1.0, int prel = 0);
 void zone(int x = 1, int y = 1, TCanvas *c = 0);
-int  wait();
+int  wait(void);
 void colors(int choice = 0);
 void replaceAll(std::string &s, const std::string &from, const std::string &to);
 std::vector<int> defVector(int n, ...);
