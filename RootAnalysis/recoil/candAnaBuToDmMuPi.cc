@@ -35,6 +35,12 @@ void candAnaBuToDmMuPi::candAnalysis() {
 }
 
 // ----------------------------------------------------------------------
+void candAnaBuToDmMuPi::candEvaluation() {
+
+}
+
+
+// ----------------------------------------------------------------------
 // -- version for PYTHIA8 and new-style EvtGen daughter insertion
 void candAnaBuToDmMuPi::genMatch() {
 

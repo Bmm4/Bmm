@@ -18,20 +18,6 @@ candAnaBuToMuTauK::candAnaBuToMuTauK(recoilReader *pReader, std::string name, st
   cout << "==> candAnaBuToMuTauK: constructor..." << endl;
   readCuts(cutsFile, 1);
 
-  // -- signal modes
-  vector<int> v80; v80.push_back(531); v80.push_back(13); v80.push_back(13);
-  fDecayModes.insert(make_pair(80, v80));
-  vector<int> v200; v200.push_back(521); v200.push_back(321); v200.push_back(15); v200.push_back(211); v200.push_back(211); v200.push_back(211); v200.push_back(13);
-  fDecayModes.insert(make_pair(200, v200));
-  vector<int> v300; v300.push_back(521); v200.push_back(321); v200.push_back(15); v200.push_back(211); v200.push_back(211); v200.push_back(211); v200.push_back(13);
-  fDecayModes.insert(make_pair(200, v200));
-
-  // -- BRECO modes
-  vector<int> v68; v68.push_back(521); v68.push_back(443); v68.push_back(13); v68.push_back(13); v68.push_back(321);
-  fDecayModes.insert(make_pair(68, v68));
-  vector<int> v69; v69.push_back(511); v69.push_back(443); v69.push_back(13); v69.push_back(13); v69.push_back(321); v69.push_back(321); v69.push_back(211);
-  fDecayModes.insert(make_pair(69, v69));
-
 }
 
 
@@ -42,183 +28,66 @@ candAnaBuToMuTauK::~candAnaBuToMuTauK() {
 
 
 // ----------------------------------------------------------------------
-void candAnaBuToMuTauK::dumpBkmt() {
-  cout << "event " << fEvt << endl;
-  fGenIndices.clear();
-  TGenCand *pCand, *pD;
-  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
-    pCand = fpEvt->getGenCand(iC);
-    if (521 == TMath::Abs(pCand->fID)) {
-      //      if (decayModeValidation(pCand, 200)) {
-	for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
-	  pD = fpEvt->getGenCand(iD);
-	  pD->dump();
-	  // if (isStableCharged(pD->fID)) {
-	  //   if (fVerbose > -1) cout << "gen idx = " << pD->fNumber << " with pT = " << pD->fP.Perp() << " eta = " << pD->fP.Eta() << endl;
-	  //   fGenIndices.push_back(pD->fNumber);
-	  // }
-	}
-	//      }
-    }
-  }
+void candAnaBuToMuTauK::resetAllData() {
+  fSignalTracks.clear();
 
-}
+  // -- pointers to SIGNAL HepMC cands and vertices
+  fpGenMu=  fpGenKa= fpGenTau= fpGenHad1= fpGenHad2= fpGenHad3= fpGenNu= fpGenGa1= fpGenGa2 = 0;
+  fGenVtxBProd= fGenVtxBDecay= fGenVtxTauDecay= fGenDirectionTau= TVector3(0., 0., 0.);
+  // -- calculated/derived quantities
+  f4GenTauAtDecay= f4GenTauHad= f4GenNur0= f4GenNur0Pos= f4GenNur0Neg= f4GenBr0= f4GenBr0Pos= f4GenBr0Neg = TLorentzVector(0., 0., 0., 0.);
+  // -- reco'ed/derived quantities
+  fVtxTauDecay= fDirectionTau = fDirectionB = TVector3(0., 0., 0.);
+  f4Muon= f4Kaon= f4MuKa = f4Had= f4Nur0Pos= f4Nur0Neg= f4Br0Pos= f4Br0Neg = TLorentzVector(0., 0., 0., 0.);
 
+  // -- pointers to SIGNAL simpleTracks
+  fpTmMu=  fpTmKa= fpTmHad1= fpTmHad2= fpTmHad3 = 0;
 
-// ----------------------------------------------------------------------
-void candAnaBuToMuTauK::dump() {
-  fGenIndices.clear();
-
-  TGenCand *pCand, *pD;
-  if (fVerbose > 1)  {
-    cout << "----------------------------------------------------------------------" << endl;
-    cout << "New event: " << fChainEvent << " gen block with " << fpEvt->nGenCands() << " gen cands" << endl;
-  }
-  int nreco(0), ncand(0);
-  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
-    pCand = fpEvt->getGenCand(iC);
-    if (521 == TMath::Abs(pCand->fID)) {
-      if (decayModeValidation(pCand, 68)) {
-	for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
-	  pD = fpEvt->getGenCand(iD);
-	  if (isStableCharged(pD->fID)) {
-	    if (fVerbose > 1) cout << "gen idx = " << pD->fNumber << " with pT = " << pD->fP.Perp() << " eta = " << pD->fP.Eta() << endl;
-	    fGenIndices.push_back(pD->fNumber);
-	  }
-	}
-      }
-    }
-  }
-  if (fVerbose > 1) {
-    for (unsigned int i = 0; i < fGenIndices.size(); ++i) {
-      cout << "gen index: " << fGenIndices[i] << endl;
-    }
-  }
-
-  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    TAnaCand *pCand = fpEvt->getCand(iC);
-    if (fVerbose > 2) pCand->dump();
-
-    if (BRECOTYPE == pCand->fType) {
-      for (int i = 0; i < NTRKMAX; ++i) {
-	fDoca[i] = fDoca[i] = -1.;
-      }
-      int itrk(-1), nn(0);
-      for (int it = pCand->fSig1; it <= pCand->fSig2; ++it) {
-	TAnaTrack *p0 = fpEvt->getSigTrack(it);
-	int found(0);
-	for (unsigned int ig = 0; ig < fGenIndices.size(); ++ig) {
-	  if (p0->fGenIndex == fGenIndices[ig]) {
-	    found = 1;
-	    break;
-	  }
-	}
-	if (fVerbose > 1) cout << p0->fIndex << " pT = " << p0->fPlab.Perp() << " eta = " << p0->fPlab.Eta() << " fDouble1 = " << p0->fDouble1
-	     << " mcidx = " << p0->fGenIndex
-	     << " found = " << found
-	     << endl;
-	if (found) {
-	  ++itrk;
-	  fDoca[itrk] = p0->fDouble1;
-	  fCorrect[itrk] = true;
-	  if (TMath::Abs(p0->fMCID) != 13) {
-	    ((TH1D*)fHistDir->Get("doca0"))->Fill(p0->fDouble1);
-	  }
-	} else {
-	  ++itrk;
-	  fDoca[itrk] = p0->fDouble1;
-	  fCorrect[itrk] = false;
-	  ((TH1D*)fHistDir->Get("doca2"))->Fill(p0->fDouble1);
-	}
-	((TH1D*)fHistDir->Get("doca1"))->Fill(p0->fDouble1);
-	++nn;
-      }
-      fJpsiFlsxy = pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
-      fNTrk = itrk;
-    }
-  }
-}
-
-
-// ----------------------------------------------------------------------
-void candAnaBuToMuTauK::brecoAnalysis() {
-  TAnaTrack *pS(0);
-  vector<int> trueTrkIdx;
+  fCandPvI = fBrecoPvI = -99;;
   fNTrk = 0;
-  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    TAnaCand *pCand = fpEvt->getCand(iC);
-    // -- this is the "true"/cheating breco cand
-    if (BRECOTYPE == pCand->fType) {
-      cout << "===> BRECOTYPE" << endl;
-      pCand->dump();
-      for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
-	pS = fpEvt->getSigTrack(is);
-	trueTrkIdx.push_back(pS->fIndex);
-	pS->dump();
-      }
-    }
-
-
-    // -- study the JpsiX BRECO candidate
-    if (1) break;
-
-    int itrk(0);
-    for (int i = 0; i < NTRKMAX; ++i) {
-      fDoca[i] = fProb1[i] = fProb2[i] = fChi2[i] = fDof[i] = fTrkMass[i] = -1.;
-      fCorrect[i] = false;
-    }
-
-    if (1 == pCand->fType) {
-      cout << "===> TYPE = 1" << endl;
-      pCand->dump();
-      int icnt(0);
-      for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
-	pS = fpEvt->getSigTrack(is);
-	cout << pS->fIndex;
-	if (trueTrkIdx.end() != find(trueTrkIdx.begin(), trueTrkIdx.end(), pS->fIndex)) {
-	  cout << "*" <<  "(" << pS->fDouble1 << ")";
-	  if (icnt > 1) {
-	    fDoca[itrk]    = pS->fDouble1;
-	    fProb1[itrk]   = pS->fDouble2;
-	    fProb2[itrk]   = pS->fDouble3;
-	    fChi2[itrk]    = pS->fRefChi2;
-	    fDof[itrk]     = pS->fRefDof;
-	    fTrkMass[itrk] = pS->fBsTip;
-	    fCorrect[itrk] = true;
-	    ++itrk;
-	  }
-	} else {
-	  cout << "(" << pS->fDouble1 << ")";
-	  if (icnt > 1) {
-	    fDoca[itrk]    = pS->fDouble1;
-	    fProb1[itrk]   = pS->fDouble2;
-	    fProb2[itrk]   = pS->fDouble3;
-	    fChi2[itrk]    = pS->fRefChi2;
-	    fDof[itrk]     = pS->fRefDof;
-	    fTrkMass[itrk] = pS->fBsTip;
-	    fCorrect[itrk] = false;
-	    ++itrk;
-	    if (0 && pS->fDouble1 < 0.02 && pS->fDouble3 > 0.7) {
-	      cout << " doca = " << pS->fDouble1 << endl;
-	      fpEvt->dump();
-	    }
-	  }
-	}
-	++icnt;
-      }
-      cout << endl;
-      fNTrk = itrk;
-      fJpsiFlsxy = pCand->fVtx.fDxy/pCand->fVtx.fDxyE;
-    }
-
-
+  for (int i = 0; i < NTRKMAX; ++i) {
+    fCorrect[i] = fInRecoil[i] = false;
+    fDoca[i] = -99.;
+    fPt[i] = -99.;
   }
+  // -- gen quantities
+  fGenBPt=
+    fGenBr0Mass= fGenBr0PosMass= fGenBr0NegMass=
+    fGenTauPt= fGenTauDecTime= fGenTauPara= fGenTauPerp=
+    fGenTaur0Pt= fGenTaur0PosPt= fGenTaur0NegPt=
+    fGenTauHadPt= fGenTauHadMass= fGenTauHadAngle= fGenTauHadPerp= fGenTauHadPara=
+    fGen2HadMinMass= fGen2HadMaxMass=
+    fGen2HadSSMass= fGen2HadOSminMass= fGen2HadOSmaxMass=
+    fGenHad1Pt= fGenHad2Pt= fGenHad3Pt=
+    fGenMuPt= fGenKaPt= fGenMuKaMass=
+    fGenNur0PosPara= fGenNur0NegPara=
+    fGenNuPara= fGenNuPerp= -99.
+    ;
+
+
+  // -- reco quantities
+  fBPt=
+    fBrMass= fBr0PosMass= fBr0NegMass=
+    fMuKaDoca3D= fMuKaLip= fMuKaDocaMax=fMuKaFl= fMuKaFls=
+    fHadPt= fHadMass= fHadDecTime= fHadFl= fHadFls= fHadDoca3D= fHadLip= fHadDocaMax=
+    fTaur0Pt= fTaur0PosPt= fTaur0NegPt=
+    fTauHadAngle= fTauHadPerp= fTauHadPara=
+    fBTauAngle= fBMuKaAngle=
+    f2HadMinMass=f2HadMaxMass=
+    f2HadSSMass= f2HadOSminMass= f2HadOSmaxMass=
+    fHad1Pt= fHad2Pt= fHad3Pt= fHad1Eta= fHad2Eta= fHad3Eta=
+    fMuPt= fKaPt= fMuEta= fKaEta= fMuKaMass=
+    fNur0PosPara= fNur0NegPara=-99.
+    ;
+
+
+  candAna::resetAllData();
 
 }
 
 
 // ----------------------------------------------------------------------
-void candAnaBuToMuTauK::genAnalysis() {
+void candAnaBuToMuTauK::genMatch() {
   TGenCand *pCand, *pD, *pT;
   // -- Force initialization!
   fpGenB = fpGenMu = fpGenKa = fpGenTau = fpGenHad1 = fpGenHad2 = fpGenHad3 = fpGenNu = fpGenGa1 = fpGenGa2 = 0;
@@ -238,7 +107,9 @@ void candAnaBuToMuTauK::genAnalysis() {
     fGenNuPara = fGenNuPerp
     = -99.;
 
-  fNgamma = 0;
+  fNGenPhotons = 0;
+
+  fGenBTmi = -1;
 
   // -- now try to find signal decay
   bool goodMatch(false);
@@ -282,55 +153,204 @@ void candAnaBuToMuTauK::genAnalysis() {
 	    }
 	  }
 	}
-
       }
       if (fpGenB && fpGenMu && fpGenKa && fpGenTau && fpGenHad1 && fpGenHad2 && fpGenHad3) {
 	goodMatch = true;
+	fGenBTmi = fpGenB->fNumber;
+	// -- sort according to pT of hadronic tracks
+	double pt1 = fpGenHad1->fP.Perp();
+	double pt2 = fpGenHad2->fP.Perp();
+	double pt3 = fpGenHad3->fP.Perp();
+	TGenCand *tgc1(0), *tgc2(0), *tgc3(0);
+	if (pt1 > pt2 && pt1 > pt3) {
+	  tgc1 = fpGenHad1;
+	  if (pt2 > pt3) {
+	    tgc2 = fpGenHad2;
+	    tgc3 = fpGenHad3;
+	  } else {
+	    tgc2 = fpGenHad3;
+	    tgc3 = fpGenHad2;
+	  }
+	} else if (pt2 > pt1 && pt2 > pt3) {
+	  tgc1 = fpGenHad2;
+	  if (pt1 > pt3) {
+	    tgc2 = fpGenHad1;
+	    tgc3 = fpGenHad3;
+	  } else {
+	    tgc2 = fpGenHad3;
+	    tgc3 = fpGenHad1;
+	  }
+	} else if (pt3 > pt1 && pt3 > pt2) {
+	  tgc1 = fpGenHad3;
+	  if (pt1 > pt2) {
+	    tgc2 = fpGenHad1;
+	    tgc3 = fpGenHad2;
+	  } else {
+	    tgc2 = fpGenHad2;
+	    tgc3 = fpGenHad1;
+	  }
+	} else {
+	  cout << "THIS SHOULD NOT HAPPEN!!!" << endl;
+	}
+	fpGenHad1 = tgc1;
+	fpGenHad2 = tgc2;
+	fpGenHad3 = tgc3;
+
+
 	break;
       }
     }
   }
 
-  if (goodMatch) {
-    // -- sort according to pT of hadronic tracks
-    double pt1 = fpGenHad1->fP.Perp();
-    double pt2 = fpGenHad2->fP.Perp();
-    double pt3 = fpGenHad3->fP.Perp();
-    TGenCand *tgc1(0), *tgc2(0), *tgc3(0);
-    if (pt1 > pt2 && pt1 > pt3) {
-      tgc1 = fpGenHad1;
-      if (pt2 > pt3) {
-	tgc2 = fpGenHad2;
-	tgc3 = fpGenHad3;
-      } else {
-	tgc2 = fpGenHad3;
-	tgc3 = fpGenHad2;
-      }
-    } else if (pt2 > pt1 && pt2 > pt3) {
-      tgc1 = fpGenHad2;
-      if (pt1 > pt3) {
-	tgc2 = fpGenHad1;
-	tgc3 = fpGenHad3;
-      } else {
-	tgc2 = fpGenHad3;
-	tgc3 = fpGenHad1;
-      }
-    } else if (pt3 > pt1 && pt3 > pt2) {
-      tgc1 = fpGenHad3;
-      if (pt1 > pt2) {
-	tgc2 = fpGenHad1;
-	tgc3 = fpGenHad2;
-      } else {
-	tgc2 = fpGenHad2;
-	tgc3 = fpGenHad1;
-      }
-    } else {
-      cout << "THIS SHOULD NOT HAPPEN!!!" << endl;
-    }
-    fpGenHad1 = tgc1;
-    fpGenHad2 = tgc2;
-    fpGenHad3 = tgc3;
+  if (0 && fGenBTmi > -1) {
+    cout << "genMatch: pT = "
+      << fpGenMu->fP.Perp() << " "
+      << fpGenKa->fP.Perp() << " "
+      << fpGenHad1->fP.Perp() << " "
+      << fpGenHad2->fP.Perp() << " "
+      << fpGenHad3->fP.Perp() << " "
+      << endl;
+  } else {
+    //    cout << "candAnaBuToMuTauK::genMatch()" << endl;
+  }
+}
 
+// ----------------------------------------------------------------------
+void candAnaBuToMuTauK::recoMatch() {
+  fRecoTm = false;
+  // -- search for true tracks
+  fpTmMu = fpTmKa = fpTmHad1 = fpTmHad2 = fpTmHad3 = 0;
+  TSimpleTrack *pT(0);
+  for (int i = 0; i < fpEvt->nSimpleTracks(); ++i) {
+    pT = fpEvt->getSimpleTrack(i);
+    if (pT->getGenIndex() < 0) continue;
+    // -- muon
+    if (0 != fpGenMu && pT->getGenIndex() == fpGenMu->fNumber) {
+      fpTmMu = pT;
+    }
+
+    // -- kaon
+    if (0 != fpGenKa && pT->getGenIndex() == fpGenKa->fNumber) {
+      fpTmKa = pT;
+    }
+
+    // -- had1
+    if (0 != fpGenHad1 && pT->getGenIndex() == fpGenHad1->fNumber) {
+      fpTmHad1 = pT;
+    }
+
+    // -- had2
+    if (0 != fpGenHad2 && pT->getGenIndex() == fpGenHad2->fNumber) {
+      fpTmHad2 = pT;
+    }
+
+    // -- had3
+    if (0 != fpGenHad3 && pT->getGenIndex() == fpGenHad3->fNumber) {
+      fpTmHad3 = pT;
+    }
+
+
+    // -- skip rest if all matches found
+    if (0!= fpTmMu && 0 != fpTmKa && 0 != fpTmHad1 && 0 != fpTmHad2 && 0 != fpTmHad3) {
+      fRecoTm = true;
+      break;
+    }
+  }
+  if (fRecoTm) {
+    cout << "recoMatch:pT = "
+	 << fpTmMu->getP().Perp() << " "
+	 << fpTmKa->getP().Perp() << " "
+	 << fpTmHad1->getP().Perp() << " "
+	 << fpTmHad2->getP().Perp() << " "
+	 << fpTmHad3->getP().Perp() << " "
+	 << " indices: "
+	 << fpTmMu->getIndex() << " "
+	 << fpTmKa->getIndex() << " "
+	 << fpTmHad1->getIndex() << " "
+	 << fpTmHad2->getIndex() << " "
+	 << fpTmHad3->getIndex() << " "
+      	 << endl;
+  } else {
+      //    cout << "candAnaBuToMuTauK::recoMatch()" << endl;
+  }
+
+}
+
+
+
+// ----------------------------------------------------------------------
+// -- search for true candidate
+void candAnaBuToMuTauK::candMatch() {
+  fpCandTruth = 0;
+  fCandTmi = -1;
+  int idx(-1), type(-1);
+  int muMatched(0), kaMatched(0), had1Matched(0), had2Matched(0), had3Matched(0);
+  TAnaCand *pCand(0), *pTau(0);
+
+  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+    pCand = fpEvt->getCand(iC);
+
+    if (CANDTYPE != pCand->fType) continue;
+
+    muMatched = kaMatched = 0;
+    for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
+      idx = fpEvt->getSigTrack(i)->fIndex;
+      type = TMath::Abs(fpEvt->getSigTrack(i)->fMCID);
+      if (0 != fpTmMu && type == 13 && idx == fpTmMu->getIndex()) {
+        muMatched = 1;
+      }
+      if (0 != fpTmKa && type == 321 && idx == fpTmKa->getIndex()) {
+        kaMatched = 1;
+      }
+    }
+
+    for (int iCC = iC+1; iCC < fpEvt->nCands(); ++iCC) {
+      pTau = fpEvt->getCand(iCC);
+      if (pTau->fMom != iC) continue;
+
+      had1Matched = had2Matched = had3Matched = 0;
+      for (int ii = pTau->fSig1; ii <= pTau->fSig2; ++ii) {
+	idx = fpEvt->getSigTrack(ii)->fIndex;
+	type = TMath::Abs(fpEvt->getSigTrack(ii)->fMCID);
+	if (0 != fpTmHad1 && type == 211 && idx == fpTmHad1->getIndex()) {
+	  had1Matched = 1;
+	}
+	if (0 != fpTmHad2 && type == 211 && idx == fpTmHad2->getIndex()) {
+	  had2Matched = 1;
+	}
+	if (0 != fpTmHad3 && type == 211 && idx == fpTmHad3->getIndex()) {
+	  had3Matched = 1;
+	}
+      }
+      if (had1Matched && had2Matched  && had3Matched) break;
+    }
+
+    if (muMatched && kaMatched  && had1Matched && had2Matched && had3Matched) {
+      fCandTmi = iC;
+      fpCandTruth = fpEvt->getCand(iC);
+      break;
+    }
+  }
+
+  if (muMatched && kaMatched  && had1Matched && had2Matched && had3Matched) {
+    cout << "Matched cand idx = " << fCandTmi << " with all tracks to correct TGC, fCandTmi = " << fCandTmi << endl;
+  } else {
+    if (fRecoTm) {
+      cout << "candAnaBuToMuTauK::candMatch() FAILED" << endl;
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
+void candAnaBuToMuTauK::dump() {
+}
+
+
+
+// ----------------------------------------------------------------------
+void candAnaBuToMuTauK::genAnalysis() {
+  int verbose(0);
+  if (fGenBTmi > -1) {
     f4GenTauHad   = fpGenHad1->fP + fpGenHad2->fP + fpGenHad3->fP;
     fGenDirectionTau = fGenVtxTauDecay - fGenVtxBDecay;
     fGenTauDecTime = fGenDirectionTau.Mag()*MTAU/fpGenTau->fP.Vect().Mag()/TMath::Ccgs();
@@ -339,19 +359,19 @@ void candAnaBuToMuTauK::genAnalysis() {
     f4GenTauAtDecay = fpGenHad1->fP + fpGenHad2->fP + fpGenHad3->fP  + fpGenNu->fP;
     if (fpGenGa1) {
       f4GenTauAtDecay += fpGenGa1->fP;
-      ++fNgamma;
+      ++fNGenPhotons;
     }
     if (fpGenGa2) {
       f4GenTauAtDecay += fpGenGa2->fP;
-      ++fNgamma;
+      ++fNGenPhotons;
     }
 
-    if (fNgamma > 0) {
-      cout << "photons encountered, skipping event!" << endl;
-      return;
-    }
+    // if (fNGenPhotons > 0) {
+    //   // cout << "photons encountered, skipping event!" << endl;
+    //   // return;
+    // }
 
-    cout << "gen test" << endl;
+    if (verbose > 0) cout << "gen test" << endl;
     pair<TVector3, TVector3> nucomp = parallelAndPerp(fGenDirectionTau, fpGenNu->fP.Vect());
 
     fGenNuPara = nucomp.first.Mag();
@@ -378,14 +398,16 @@ void candAnaBuToMuTauK::genAnalysis() {
     TLorentzVector v4nu  = fpGenNu->fP;
     TLorentzVector v4had = f4GenTauHad;
 
-    cout << "along tau direction: tau = " << taucomp.first.Mag()
-	 << " sum(had + nu) = " << hcomp.first.Mag() + nucomp.first.Mag()
-	 << " had = " << hcomp.first.Mag() << " neutrino = " << nucomp.first.Mag()
-	 << endl;
-    cout << "orthogonal to tau direction: tau = " << taucomp.second.Mag()
-	 << " sum(had + nu) = " << hcomp.second.Mag() - nucomp.second.Mag()
-	 << " had = " << hcomp.second.Mag() << " neutrino = " << nucomp.second.Mag()
-	 << endl;
+    if (verbose > 0) {
+      cout << "along tau direction: tau = " << taucomp.first.Mag()
+	   << " sum(had + nu) = " << hcomp.first.Mag() + nucomp.first.Mag()
+	   << " had = " << hcomp.first.Mag() << " neutrino = " << nucomp.first.Mag()
+	   << endl;
+      cout << "orthogonal to tau direction: tau = " << taucomp.second.Mag()
+	   << " sum(had + nu) = " << hcomp.second.Mag() - nucomp.second.Mag()
+	   << " had = " << hcomp.second.Mag() << " neutrino = " << nucomp.second.Mag()
+	   << endl;
+    }
 
     // -- tests and checks ...
 
@@ -480,94 +502,23 @@ void candAnaBuToMuTauK::genAnalysis() {
     }
   }
 
-  ((TH1D*)fHistDir->Get("ngamma"))->Fill(fNgamma);
+  ((TH1D*)fHistDir->Get("ngamma"))->Fill(fNGenPhotons);
 
-}
-
-
-// ----------------------------------------------------------------------
-pair<TVector3,TVector3> candAnaBuToMuTauK::parallelAndPerp(TVector3 direction, TVector3 momVis) {
-  TVector3 par, perp;
-
-  TVector3 unitDir = direction.Unit();
-  double compPar = momVis.Dot(unitDir);
-  cout << "perp: scale = " << compPar << " oder momVis*cos(alpha) = " << momVis.Mag()*TMath::Cos(momVis.Angle(direction)) << endl;
-  par = compPar*unitDir;
-
-  perp = momVis - par;
-  return make_pair(par, perp);
-}
-
-// ----------------------------------------------------------------------
-pair<TVector3,TVector3> candAnaBuToMuTauK::parallelAndPerp2(TVector3 direction, TVector3 momVis) {
-  TVector3 par, perp;
-
-  long double dX(direction.X());
-  long double dY(direction.Y());
-  long double dZ(direction.Z());
-
-  long double mX(momVis.X());
-  long double mY(momVis.Y());
-  long double mZ(momVis.Z());
-
-  // -- long double version of Unit()
-  long double tot2 = dX*dX + dY*dY + dZ*dZ;
-  long double ld1 = 1.0;
-  long double tot = (tot2 > 0.) ?  ld1/sqrtl(tot2) : ld1;
-
-  long double uX = dX*tot;
-  long double uY = dY*tot;
-  long double uZ = dZ*tot;
-
-  // -- long double version of momVis.Dot(unitDir)
-  long double compPar = mX*uX + mY*uY + mZ*uZ;
-  cout << "perp2:scale = " << compPar << endl;
-
-  long double x = compPar*uX;
-  long double y = compPar*uY;
-  long double z = compPar*uZ;
-  par  = TVector3(x, y, z);
-  x = mX - compPar*uX;
-  y = mY - compPar*uY;
-  z = mZ - compPar*uZ;
-  perp = TVector3(x, y, z);
-  return make_pair(par, perp);
-}
-
-
-// ----------------------------------------------------------------------
-pair<double, double> candAnaBuToMuTauK::nuRecoMom0(double compVisPar, double compVisPerp, double eVis, double mVis, double mTot) {
-  double mTot2  = mTot*mTot;
-  double eVis2  = eVis*eVis;
-  double mVis2  = mVis*mVis;
-  double pperp2 = compVisPerp * compVisPerp;
-  double ppar2  = compVisPar * compVisPar;
-
-  double paren  = (mTot2 - mVis2 - 2.*pperp2);
-
-  double a = (paren*compVisPar)/(2.*(ppar2 - eVis2));
-
-  double r = (paren*paren*eVis2)/(4.*(ppar2 - eVis2)*(ppar2 - eVis2)) + (eVis2*pperp2)/(ppar2 - eVis2);
-
-  double solPlus(0.), solMinus(0.);
-  if (r > 0) {
-    solPlus  = -a + TMath::Sqrt(r);
-    solMinus = -a - TMath::Sqrt(r);
-  }
-
-  return make_pair(solPlus, solMinus);
 }
 
 
 // ----------------------------------------------------------------------
 void candAnaBuToMuTauK::candAnalysis() {
+  ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
+  ((TH1D*)fHistDir->Get("../monEvents"))->Fill(2);
 
-
+  fTm = (fpCand == fpCandTruth);
   fPvX = fPvY = fPvZ =
     fBPt =
     fBr0PosMass = fBr0NegMass =
-    fTauPt = fTauDecTime =
-    fTauHadPt = fTauHadMass = fTauHadAngle = fTauHadPerp = fTauHadPara = fTauFl = fTauFls =
+    fMuKaDoca3D= fMuKaLip= fMuKaDocaMax=fMuKaFl= fMuKaFls=
+    fHadPt = fHadDecTime = fHadMass = fHadFl = fHadFls = fHadDoca3D = fHadLip = fHadDocaMax=
+    fTauHadAngle = fTauHadPerp = fTauHadPara =
     f2HadMinMass = f2HadMaxMass =
     f2HadSSMass = f2HadOSminMass = f2HadOSmaxMass =
     fHad1Pt = fHad2Pt = fHad3Pt = fHad1Eta = fHad2Eta = fHad3Eta =
@@ -575,302 +526,312 @@ void candAnaBuToMuTauK::candAnalysis() {
     fNur0PosPara = fNur0NegPara =
     -99.;
   fPvN = -99;
+  fMissedTracks = 0;
 
-  fVtxBProd = fVtxBDecay = fVtxTauDecay = fDirectionTau = TVector3(0., 0., 0.);
-  f4TauHad = f4Nur0Pos = f4Nur0Neg = f4Br0Pos = f4Br0Neg = TLorentzVector(0., 0., 0., 0.);
+  fVtxBProd = fPV = fVtxBDecay = fVtxTauDecay = fDirectionTau = fDirectionB = TVector3(0., 0., 0.);
+  f4Had = f4Nur0Pos = f4Nur0Neg = f4Br0Pos = f4Br0Neg = TLorentzVector(0., 0., 0., 0.);
 
-  //  dumpBkmt();
-  // cout << "----------------------------------------------------------------------" << endl;
-  // cout << "candAnaBuToMuTauK::candAnalysis() event =  " << fChainEvent << endl;
-  brecoAnalysis();
-
-  TAnaTrack *pS(0);
-  // -- TRUTH candidate B+ -> mu tau K
+  // -- SIGNAL candidate B+ -> mu tau K
   TLorentzVector tlv, tlw;
-  vector<int> signalIdx;
-  for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-    TAnaCand *pCand = fpEvt->getCand(iC);
-    if (CANDTYPE == pCand->fType) {
-      cout << "dump signal candidate " << pCand->fType << endl;
-      dumpCand(pCand, fpEvt);
-      TAnaTrack *pMuon = fpEvt->getSigTrack(pCand->fSig1);
-      TAnaTrack *pKaon = fpEvt->getSigTrack(pCand->fSig1+1);
-      TAnaCand  *pTau  = fpEvt->getCand(pCand->fDau1);
-      TAnaTrack *pHad1 = fpEvt->getSigTrack(pTau->fSig1);
-      TAnaTrack *pHad2 = fpEvt->getSigTrack(pTau->fSig1+1);
-      TAnaTrack *pHad3 = fpEvt->getSigTrack(pTau->fSig1+2);
-
-      if (pHad1->fPlab.Perp() < pHad2->fPlab.Perp()) {
-	TAnaTrack *pHad = pHad1;
-	pHad1 = pHad2;
-	pHad2 = pHad;
-      }
-      if (pHad1->fPlab.Perp() < pHad3->fPlab.Perp()) {
-	TAnaTrack *pHad = pHad1;
-	pHad1 = pHad3;
-	pHad3 = pHad;
-      }
-      if (pHad2->fPlab.Perp() < pHad3->fPlab.Perp()) {
-	TAnaTrack *pHad = pHad2;
-	pHad2 = pHad3;
-	pHad3 = pHad;
-      }
-
-
-      // cout << "muon pT/eta/phi: "
-      // 	   << fpEvt->getSimpleTrack(pMuon->fIndex)->getP().Perp() << "/"
-      // 	   << fpEvt->getSimpleTrack(pMuon->fIndex)->getP().Eta() << "/"
-      // 	   << fpEvt->getSimpleTrack(pMuon->fIndex)->getP().Phi()
-      // 	   << endl;
-      // cout << "kaon pT/eta/phi: "
-      // 	   << fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Perp() << "/"
-      // 	   << fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Eta() << "/"
-      // 	   << fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Phi()
-      // 	   << endl;
-
-      // tlv.SetXYZM(fpEvt->getSimpleTrack(pMuon->fIndex)->getP().X(),
-      // 		  fpEvt->getSimpleTrack(pMuon->fIndex)->getP().Y(),
-      // 		  fpEvt->getSimpleTrack(pMuon->fIndex)->getP().Z(),
-      // 		  MMUON);
-      // tlw.SetXYZM(fpEvt->getSimpleTrack(pKaon->fIndex)->getP().X(),
-      // 		  fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Y(),
-      // 		  fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Z(),
-      // 		  MKAON);
-      // cout << "mass(muon, kaon): " << (tlv+tlw).M() << endl;
-      // tlw.SetXYZM(fpEvt->getSimpleTrack(pKaon->fIndex)->getP().X(),
-      // 		  fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Y(),
-      // 		  fpEvt->getSimpleTrack(pKaon->fIndex)->getP().Z(),
-      // 		  MMUON);
-      // cout << "mass(muon, kaon2): " << (tlv+tlw).M() << endl;
-
-
-      f4Muon.SetXYZM(pMuon->fPlab.X(), pMuon->fPlab.Y(), pMuon->fPlab.Z(), MMUON);
-      f4Kaon.SetXYZM(pKaon->fPlab.X(), pKaon->fPlab.Y(), pKaon->fPlab.Z(), MKAON);
-
-      vector<TLorentzVector> vHad;
-      tlv.SetXYZM(pHad1->fPlab.X(), pHad1->fPlab.Y(), pHad1->fPlab.Z(), MPION); vHad.push_back(tlv);
-      tlv.SetXYZM(pHad2->fPlab.X(), pHad2->fPlab.Y(), pHad2->fPlab.Z(), MPION); vHad.push_back(tlv);
-      tlv.SetXYZM(pHad3->fPlab.X(), pHad3->fPlab.Y(), pHad3->fPlab.Z(), MPION); vHad.push_back(tlv);
-      f4TauHad = vHad[0] + vHad[1] + vHad[2];
-
-      // big guess: take the closest to the gen PV
-      int    minI(-1);
-      double minDist(99.);
-      for (int ip = 0; ip < fpEvt->nPV(); ++ip) {
-	TAnaVertex *pv = fpEvt->getPV(ip);
-	cout << "PV " << ip << ": " << formatTVector3(pv->fPoint, 1) << endl;
-	double pvdist = (fGenVtxBProd - pv->fPoint).Mag();
-	if (pvdist < minDist) {
-	  minDist = pvdist;
-	  minI = ip;
-	}
-      }
-      cout << "gen PV " << ": " << formatTVector3(fGenVtxBProd, 1) << endl;
-      fVtxBProd     = fpEvt->getPV(minI)->fPoint;
-      fPvN = fpEvt->nPV();
-      fPvX = fVtxBProd.X();
-      fPvY = fVtxBProd.Y();
-      fPvZ = fVtxBProd.Z();
-      fVtxTauDecay  = pTau->fVtx.fPoint;
-      fVtxBDecay    = pCand->fVtx.fPoint;
-      fDirectionTau = fVtxTauDecay - fVtxBDecay;
-      fTauFl        = pTau->fVtx.fD3d;
-      fTauFls       = pTau->fVtx.fD3d / pTau->fVtx.fD3dE;
-
-      fTauDecTime   = fDirectionTau.Mag()*MTAU/f4TauHad.Rho()/TMath::Ccgs();
-      fTauHadAngle  = fDirectionTau.Angle(f4TauHad.Vect());
-      fBTauAngle    = fVtxBDecay.Angle(fVtxTauDecay);
-
-      if (fTauHadAngle > 2.9) {
-	cout << "fTauHadAngle = " << fTauHadAngle
-	     << " d(tv, sv) = " << formatTVector3(fVtxBDecay-fVtxTauDecay) << Form(" r = %5.4f", (fVtxBDecay-fVtxTauDecay).Mag())
-	     << " in tree = " << pTau->fVtx.fD3d << "/" << pTau->fVtx.fD3dE
-	     << endl;
-	cout << "PV: reco" << formatTVector3(fVtxBProd, 1) << " gen" << formatTVector3(fGenVtxBProd, 1) << endl;
-	cout << "SV: reco" << formatTVector3(fVtxBDecay, 1) << " gen" << formatTVector3(fGenVtxBDecay, 1) << endl;
-	cout << "TV: reco" << formatTVector3(fVtxTauDecay, 1) << " gen" << formatTVector3(fGenVtxTauDecay, 1) << endl;
-	cout << "muon: reco" << formatTVector3(f4Muon.Vect(), 1);
-	if (fpGenMu) {
-	  cout << " gen" << formatTVector3(fpGenMu->fP.Vect(), 1) << endl;
-	} else {
-	  cout << endl;
-	}
-	cout << "kaon: reco" << formatTVector3(f4Kaon.Vect(), 1);
-	if (fpGenKa) {
-	  cout << " gen" << formatTVector3(fpGenKa->fP.Vect(), 1) << endl;
-	} else {
-	  cout << endl;
-	}
-	cout << "had1: reco" << formatTVector3(vHad[0].Vect(), 1);
-	if (fpGenHad1) {
-	  cout << " gen" << formatTVector3(fpGenHad1->fP.Vect(), 1) << endl;
-	} else {
-	  cout << endl;
-	}
-	cout << "had2: reco" << formatTVector3(vHad[1].Vect(), 1);
-	if (fpGenHad2) {
-	  cout << " gen" << formatTVector3(fpGenHad2->fP.Vect(), 1) << endl;
-	} else {
-	  cout << endl;
-	}
-	cout << "had3: reco" << formatTVector3(vHad[2].Vect(), 1);
-	if (fpGenHad3) {
-	  cout << " gen" << formatTVector3(fpGenHad3->fP.Vect(), 1) << endl;
-	} else {
-	  cout << endl;
-	}
-      }
-
-      double ma =  (vHad[0] + vHad[1]).M();
-      double mb =  (vHad[0] + vHad[2]).M();
-      double mc =  (vHad[1] + vHad[2]).M();
-      if (pHad1->fQ == pHad2->fQ) {
-	f2HadSSMass = ma;
-	if (mb < mc) {
-	  f2HadOSminMass = mb;
-	  f2HadOSmaxMass = mc;
-	} else {
-	  f2HadOSminMass = mc;
-	  f2HadOSmaxMass = mb;
-	}
-      } else if (pHad1->fQ == pHad3->fQ) {
-	f2HadSSMass = mb;
-	if (ma < mc) {
-	  f2HadOSminMass = ma;
-	  f2HadOSmaxMass = mc;
-	} else {
-	  f2HadOSminMass = mc;
-	  f2HadOSmaxMass = ma;
-	}
-      } else if (pHad2->fQ == pHad3->fQ) {
-	f2HadSSMass = mc;
-	if (ma < mb) {
-	  f2HadOSminMass = ma;
-	  f2HadOSmaxMass = mb;
-	} else {
-	  f2HadOSminMass = mb;
-	  f2HadOSmaxMass = ma;
-	}
-      } else {
-	cout << "RECO confused?!       " << pHad1->fQ << " " << pHad2->fQ << " " << pHad3->fQ << endl;
-      }
-
-      // cout << "dump signal truth-identified candidate " << pCand->fType << endl;
-      // dumpCand(pCand, fpEvt);
-
-
-      pair<TVector3, TVector3> hcomp = parallelAndPerp(fDirectionTau, f4TauHad.Vect());
-      double evis  = f4TauHad.E();
-      double mvis  = f4TauHad.M();
-      double ppar  = hcomp.first.Mag();
-      double pperp = hcomp.second.Mag();
-      pair<double, double> twosol = nuRecoMom0(ppar, pperp, evis, mvis, MTAU);
-      fTauHadPerp = ppar;
-      fTauHadPara = pperp;
-
-      // -- calculate reconstructed neutrino 4-momentum
-      TVector3 vDirUnit = fDirectionTau.Unit();
-      TVector3 vRecoPos = twosol.first*vDirUnit - hcomp.second;
-      TVector3 vRecoNeg = twosol.second*vDirUnit - hcomp.second;
-      f4Nur0Pos.SetVectM(vRecoPos, 0.);
-      f4Nur0Neg.SetVectM(vRecoNeg, 0.);
-
-      fNur0PosPara = twosol.first;
-      fNur0NegPara = twosol.second;
-
-      f4Br0Pos = f4Nur0Pos + f4TauHad + f4Muon + f4Kaon;
-      f4Br0Neg = f4Nur0Neg + f4TauHad + f4Muon + f4Kaon;
-
-      fBPt = pCand->fPlab.Perp();
-
-      fBr0PosMass = f4Br0Pos.M();
-      fBr0NegMass = f4Br0Neg.M();
-
-      fTauPt = pTau->fPlab.Perp();
-      fTauDecTime = pTau->fTau3d;
-      fTauHadPt = pTau->fPlab.Perp();
-      fTauHadMass = pTau->fMass;
-      f2HadMinMass = minMassPair(vHad);
-      f2HadMaxMass = maxMassPair(vHad);
-      fHad1Pt  = pHad1->fPlab.Perp();
-      fHad2Pt  = pHad2->fPlab.Perp();
-      fHad3Pt  = pHad3->fPlab.Perp();
-      fHad1Eta = pHad1->fPlab.Eta();
-      fHad2Eta = pHad2->fPlab.Eta();
-      fHad3Eta = pHad3->fPlab.Eta();
-      fMuPt    = pMuon->fPlab.Perp();
-      fMuEta   = pMuon->fPlab.Eta();
-      fKaPt    = pKaon->fPlab.Perp();
-      fKaEta   = pKaon->fPlab.Eta();
-      fMuKaMass = pCand->fMass;
-      // cout << "fMuKaMass = " << fMuKaMass << " vs. " << (f4Muon+f4Kaon).M()
-      // 	   << " fTauMass = " << fTauHadMass << " vs. " << f4TauHad.M()
-      // 	   << endl;
-    }
-    // if (CANDTYPE == pCand->fType) {
-    //   cout << "dump signal reco candidate " << pCand->fType << endl;
-    //   dumpCand(pCand, fpEvt);
-    // }
-  }
-
-  // -- recoil of J/psi X candidate
   if (0) {
-    int nmatch = 0;
-    vector<int> recoilIdx;
-    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      TAnaCand *pCand = fpEvt->getCand(iC);
-      if (10001 == pCand->fType) {
-	cout << "===> J/psi X: RECOIL" << endl;
-	pCand->dump();
-	for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
-	  pS = fpEvt->getSigTrack(is);
-	  if (signalIdx.end() == find(signalIdx.begin(), signalIdx.end(), pS->fIndex)) {
-	    cout << pS->fIndex << " ";
-	  } else {
-	    cout << pS->fIndex << "* ";
-	    ++nmatch;
-	  }
-	  recoilIdx.push_back(pS->fIndex);
-	}
-	cout << endl;
-	if (nmatch == signalIdx.size()) cout << "** completely signal matched" << endl;
-      }
-    }
+    cout << "dump signal candidate " << fpCand->fType << endl;
+    dumpCand(fpCand, fpEvt);
+  }
+  TAnaTrack *pMuon = fpEvt->getSigTrack(fpCand->fSig1);
+  TAnaTrack *pKaon = fpEvt->getSigTrack(fpCand->fSig1+1);
+  TAnaCand  *pTau  = fpEvt->getCand(fpCand->fDau1);
+  TAnaTrack *pHad1 = fpEvt->getSigTrack(pTau->fSig1);
+  TAnaTrack *pHad2 = fpEvt->getSigTrack(pTau->fSig1+1);
+  TAnaTrack *pHad3 = fpEvt->getSigTrack(pTau->fSig1+2);
 
-    // -- missed recoil of J/psi X candidate
-    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
-      TAnaCand *pCand = fpEvt->getCand(iC);
-      if (10002 == pCand->fType) {
-	cout << "===> J/psi X: MISSED RECOIL" << endl;
-	pCand->dump();
-	for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
-	  pS = fpEvt->getSigTrack(is);
-	  cout << pS->fIndex << Form("(pv:%d/pt:%3.2f/doca:%4.3f) ", pS->fPvIdx, pS->fPlab.Perp(), pS->fDouble1);
-	  if ((pS->fPlab.Perp() > 0.5)
-	      && (recoilIdx.end() == find(recoilIdx.begin(), recoilIdx.end(), pS->fIndex))
-	      && highPurity(pS)
-	      ) {
-	    ((TH1D*)fHistDir->Get("doca"))->Fill(pS->fDouble1);
-	  }
+  if (pHad1->fPlab.Perp() < pHad2->fPlab.Perp()) {
+    TAnaTrack *pHad = pHad1;
+    pHad1 = pHad2;
+    pHad2 = pHad;
+  }
+  if (pHad1->fPlab.Perp() < pHad3->fPlab.Perp()) {
+    TAnaTrack *pHad = pHad1;
+    pHad1 = pHad3;
+    pHad3 = pHad;
+  }
+  if (pHad2->fPlab.Perp() < pHad3->fPlab.Perp()) {
+    TAnaTrack *pHad = pHad2;
+    pHad2 = pHad3;
+    pHad3 = pHad;
+  }
+  fSignalTracks.push_back(pMuon);
+  fSignalTracks.push_back(pKaon);
+  fSignalTracks.push_back(pHad1);
+  fSignalTracks.push_back(pHad2);
+  fSignalTracks.push_back(pHad3);
+
+  fCandPvI  = fpCand->fPvIdx;
+  if (fpRecoilCand) {
+    bool foundTrack(false);
+    fNTrk = fSignalTracks.size();
+    cout << "fpRecoilCand = " << fpRecoilCand << " for fName = " << fName << endl;
+    fBrecoPvI = fpRecoilCand->fPvIdx;
+    for (unsigned int is = 0; is < fSignalTracks.size(); ++is) {
+      TAnaTrack *ps = fSignalTracks[is];
+      foundTrack = false;
+      double docar(0.);
+      for (int ir = fpRecoilCand->fSig1; ir <= fpRecoilCand->fSig2; ++ir) {
+	TAnaTrack *pr = fpEvt->getSigTrack(ir);
+	if (pr->fIndex == ps->fIndex) {
+	  docar = pr->fDouble1;
+	  foundTrack = true;
+	  break;
 	}
-	cout << endl;
+      }
+      fDoca[is] = ps->fDouble1;
+      fPt[is]   = ps->fPlab.Perp();
+      if (false == foundTrack) {
+	double ntrk = TMath::Power(2, static_cast<int>(is));
+	fMissedTracks += ntrk;
+	fInRecoil[is] = false;
+      } else {
+	fInRecoil[is] = true;
       }
     }
   }
 
+  f4Muon.SetXYZM(pMuon->fPlab.X(), pMuon->fPlab.Y(), pMuon->fPlab.Z(), MMUON);
+  f4Kaon.SetXYZM(pKaon->fPlab.X(), pKaon->fPlab.Y(), pKaon->fPlab.Z(), MKAON);
+  f4MuKa = f4Muon + f4Kaon;
+
+  vector<TLorentzVector> vHad;
+  tlv.SetXYZM(pHad1->fPlab.X(), pHad1->fPlab.Y(), pHad1->fPlab.Z(), MPION); vHad.push_back(tlv);
+  tlv.SetXYZM(pHad2->fPlab.X(), pHad2->fPlab.Y(), pHad2->fPlab.Z(), MPION); vHad.push_back(tlv);
+  tlv.SetXYZM(pHad3->fPlab.X(), pHad3->fPlab.Y(), pHad3->fPlab.Z(), MPION); vHad.push_back(tlv);
+  f4Had = vHad[0] + vHad[1] + vHad[2];
+
+  // big guess: take the closest to the gen PV
+  int    minI(-1);
+  double minDist(99.);
+  for (int ip = 0; ip < fpEvt->nPV(); ++ip) {
+    TAnaVertex *pv = fpEvt->getPV(ip);
+    //    cout << "PV " << ip << ": " << formatTVector3(pv->fPoint, 1) << endl;
+    double pvdist = (fGenVtxBProd - pv->fPoint).Mag();
+    if (pvdist < minDist) {
+      minDist = pvdist;
+      minI = ip;
+    }
+  }
+  fVtxBProd     = fpEvt->getPV(minI)->fPoint;
+  if (fpCand->fPvIdx > -1 && fpCand->fPvIdx < fpEvt->nPV()) {
+    fPV           = fpEvt->getPV(fpCand->fPvIdx)->fPoint;
+  }
+  fPvX = fPV.X();
+  fPvY = fPV.Y();
+  fPvZ = fPV.Z();
+
+  fMuKaDoca3D   = fpCand->fPvIP3d;
+  fMuKaLip      = fpCand->fPvLip;
+  fMuKaDocaMax  = fpCand->fMaxDoca;
+  fMuKaFl       = fpCand->fVtx.fD3d;
+  fMuKaFls      = fpCand->fVtx.fD3d/fpCand->fVtx.fD3dE;
+
+  fVtxTauDecay  = pTau->fVtx.fPoint;
+  fVtxBDecay    = fpCand->fVtx.fPoint;
+  fDirectionB   = fVtxBDecay - fPV;
+  fDirectionTau = fVtxTauDecay - fVtxBDecay;
+  fHadFl        = pTau->fVtx.fD3d;
+  fHadFls       = pTau->fVtx.fD3d / pTau->fVtx.fD3dE;
+  fHadDoca3D    = pTau->fPvIP3d;
+  fHadDocaMax   = pTau->fMaxDoca;
+  fHadLip       = pTau->fPvLip;
+
+  fHadDecTime   = fDirectionTau.Mag()*MTAU/f4Had.Rho()/TMath::Ccgs();
+  fTauHadAngle  = fDirectionTau.Angle(f4Had.Vect());
+  fBTauAngle    = fDirectionB.Angle(fDirectionTau);
+  fBMuKaAngle   = fDirectionB.Angle(f4MuKa.Vect());
+
+  if (fTauHadAngle > 2.9) {
+    cout << "fTauHadAngle = " << fTauHadAngle
+	 << " d(tv, sv) = " << formatTVector3(fVtxBDecay-fVtxTauDecay) << Form(" r = %5.4f", (fVtxBDecay-fVtxTauDecay).Mag())
+	 << " in tree = " << pTau->fVtx.fD3d << "/" << pTau->fVtx.fD3dE
+	 << endl;
+    cout << "PV: reco" << formatTVector3(fVtxBProd, 1) << " gen" << formatTVector3(fGenVtxBProd, 1) << endl;
+    cout << "SV: reco" << formatTVector3(fVtxBDecay, 1) << " gen" << formatTVector3(fGenVtxBDecay, 1) << endl;
+    cout << "TV: reco" << formatTVector3(fVtxTauDecay, 1) << " gen" << formatTVector3(fGenVtxTauDecay, 1) << endl;
+    cout << "muon: reco" << formatTVector3(f4Muon.Vect(), 1);
+    if (fpGenMu) {
+      cout << " gen" << formatTVector3(fpGenMu->fP.Vect(), 1) << endl;
+    } else {
+      cout << endl;
+    }
+    cout << "kaon: reco" << formatTVector3(f4Kaon.Vect(), 1);
+    if (fpGenKa) {
+      cout << " gen" << formatTVector3(fpGenKa->fP.Vect(), 1) << endl;
+    } else {
+      cout << endl;
+    }
+    cout << "had1: reco" << formatTVector3(vHad[0].Vect(), 1);
+    if (fpGenHad1) {
+      cout << " gen" << formatTVector3(fpGenHad1->fP.Vect(), 1) << endl;
+    } else {
+      cout << endl;
+    }
+    cout << "had2: reco" << formatTVector3(vHad[1].Vect(), 1);
+    if (fpGenHad2) {
+      cout << " gen" << formatTVector3(fpGenHad2->fP.Vect(), 1) << endl;
+    } else {
+      cout << endl;
+    }
+    cout << "had3: reco" << formatTVector3(vHad[2].Vect(), 1);
+    if (fpGenHad3) {
+      cout << " gen" << formatTVector3(fpGenHad3->fP.Vect(), 1) << endl;
+    } else {
+      cout << endl;
+    }
+  }
+
+  double ma =  (vHad[0] + vHad[1]).M();
+  double mb =  (vHad[0] + vHad[2]).M();
+  double mc =  (vHad[1] + vHad[2]).M();
+  if (pHad1->fQ == pHad2->fQ) {
+    f2HadSSMass = ma;
+    if (mb < mc) {
+      f2HadOSminMass = mb;
+      f2HadOSmaxMass = mc;
+    } else {
+      f2HadOSminMass = mc;
+      f2HadOSmaxMass = mb;
+    }
+  } else if (pHad1->fQ == pHad3->fQ) {
+    f2HadSSMass = mb;
+    if (ma < mc) {
+      f2HadOSminMass = ma;
+      f2HadOSmaxMass = mc;
+    } else {
+      f2HadOSminMass = mc;
+      f2HadOSmaxMass = ma;
+    }
+  } else if (pHad2->fQ == pHad3->fQ) {
+    f2HadSSMass = mc;
+    if (ma < mb) {
+      f2HadOSminMass = ma;
+      f2HadOSmaxMass = mb;
+    } else {
+      f2HadOSminMass = mb;
+      f2HadOSmaxMass = ma;
+    }
+  } else {
+    cout << "RECO confused?!       " << pHad1->fQ << " " << pHad2->fQ << " " << pHad3->fQ << endl;
+  }
+
+  // cout << "dump signal truth-identified candidate " << fpCand->fType << endl;
+  // dumpCand(fpCand, fpEvt);
+
+
+  pair<TVector3, TVector3> hcomp = parallelAndPerp(fDirectionTau, f4Had.Vect());
+  double evis  = f4Had.E();
+  double mvis  = f4Had.M();
+  double ppar  = hcomp.first.Mag();
+  double pperp = hcomp.second.Mag();
+  pair<double, double> twosol = nuRecoMom0(ppar, pperp, evis, mvis, MTAU);
+  fTauHadPerp = ppar;
+  fTauHadPara = pperp;
+
+  // -- calculate reconstructed neutrino 4-momentum
+  TVector3 vDirUnit = fDirectionTau.Unit();
+  TVector3 vRecoPos = twosol.first*vDirUnit - hcomp.second;
+  TVector3 vRecoNeg = twosol.second*vDirUnit - hcomp.second;
+  f4Nur0Pos.SetVectM(vRecoPos, 0.);
+  f4Nur0Neg.SetVectM(vRecoNeg, 0.);
+
+  fNur0PosPara = twosol.first;
+  fNur0NegPara = twosol.second;
+
+  f4Br0Pos = f4Nur0Pos + f4Had + f4Muon + f4Kaon;
+  f4Br0Neg = f4Nur0Neg + f4Had + f4Muon + f4Kaon;
+
+  fBPt = fpCand->fPlab.Perp();
+
+  fBr0PosMass = f4Br0Pos.M();
+  fBr0NegMass = f4Br0Neg.M();
+
+  fHadDecTime = pTau->fTau3d;
+  fHadPt = pTau->fPlab.Perp();
+  fHadMass = pTau->fMass;
+  f2HadMinMass = minMassPair(vHad);
+  f2HadMaxMass = maxMassPair(vHad);
+  fHad1Pt  = pHad1->fPlab.Perp();
+  fHad2Pt  = pHad2->fPlab.Perp();
+  fHad3Pt  = pHad3->fPlab.Perp();
+  fHad1Eta = pHad1->fPlab.Eta();
+  fHad2Eta = pHad2->fPlab.Eta();
+  fHad3Eta = pHad3->fPlab.Eta();
+  fMuPt    = pMuon->fPlab.Perp();
+  fMuEta   = pMuon->fPlab.Eta();
+  fKaPt    = pKaon->fPlab.Perp();
+  fKaEta   = pKaon->fPlab.Eta();
+  fMuKaMass = fpCand->fMass;
+
+  //  -- check whether this (TRUTHCAND) candidate is also a reco candidate
+  if (CANDTYPE == CANDTRUTH) {
+    fTruthRm = false;
+    int idx(-1), type(-1);
+    int muMatched(0), kaMatched(0), had1Matched(0), had2Matched(0), had3Matched(0);
+    TAnaCand *pCand(0), *pTau(0);
+    for (int iC = 0; iC < fpEvt->nCands(); ++iC) {
+      pCand = fpEvt->getCand(iC);
+      if (10032 == pCand->fType) {
+
+	muMatched = kaMatched = 0;
+	for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
+	  idx = fpEvt->getSigTrack(i)->fIndex;
+	  type = TMath::Abs(fpEvt->getSigTrack(i)->fMCID);
+	  if (0 != fpTmMu && type == 13 && idx == fpTmMu->getIndex()) {
+	    muMatched = 1;
+	  }
+	  if (0 != fpTmKa && type == 321 && idx == fpTmKa->getIndex()) {
+	    kaMatched = 1;
+	  }
+	}
+
+	for (int iCC = iC+1; iCC < fpEvt->nCands(); ++iCC) {
+	  pTau = fpEvt->getCand(iCC);
+	  if (pTau->fMom != iC) continue;
+
+	  had1Matched = had2Matched = had3Matched = 0;
+	  for (int ii = pTau->fSig1; ii <= pTau->fSig2; ++ii) {
+	    idx = fpEvt->getSigTrack(ii)->fIndex;
+	    type = TMath::Abs(fpEvt->getSigTrack(ii)->fMCID);
+	    if (0 != fpTmHad1 && type == 211 && idx == fpTmHad1->getIndex()) {
+	      had1Matched = 1;
+	    }
+	    if (0 != fpTmHad2 && type == 211 && idx == fpTmHad2->getIndex()) {
+	      had2Matched = 1;
+	    }
+	    if (0 != fpTmHad3 && type == 211 && idx == fpTmHad3->getIndex()) {
+	      had3Matched = 1;
+	    }
+	  }
+	  if (had1Matched && had2Matched  && had3Matched) break;
+	}
+
+	if (muMatched && kaMatched  && had1Matched && had2Matched && had3Matched) {
+	  fTruthRm = true;
+	  break;
+	}
+      }
+
+    }
+  }
   candAna::candAnalysis();
 }
 
 
 // ----------------------------------------------------------------------
-void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
-  // -- gen level
-  t->Branch("gngamma",     &fNgamma,           "gngamma/I");
-  t->Branch("pvx",         &fPvX,              "pvx/D");
-  t->Branch("pvy",         &fPvY,              "pvy/D");
-  t->Branch("pvz",         &fPvZ,              "pvz/D");
-  t->Branch("pvn",         &fPvN,              "pvn/I");
+void candAnaBuToMuTauK::candEvaluation() {
 
+}
+
+// ----------------------------------------------------------------------
+void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
+  cout << "candAnaBuToMuTauK::moreReducedTree for fTree = " << t << " in directory " << fHistDir->GetName() << endl;
+  // -- gen level
   t->Branch("gptb",        &fGenBPt,           "gptb/D");
   t->Branch("gmtauhad",    &fGenTauHadMass,    "gmtauhad/D");
   t->Branch("gm2hadmax",   &fGen2HadMaxMass,   "gm2hadmax/D");
@@ -904,7 +865,16 @@ void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
   t->Branch("gpthad3",     &fGenHad3Pt,        "gpthad3/D");
 
   t->Branch("ptb",         &fBPt,            "ptb/D");
-  t->Branch("mtauhad",     &fTauHadMass,     "mtauhad/D");
+  t->Branch("tm",          &fTm,             "tm/O");
+  t->Branch("rm",          &fTruthRm,        "rm/O");
+  t->Branch("doca3dmuka",  &fMuKaDoca3D,     "doca3dmuka/D");
+  t->Branch("docamaxmuka", &fMuKaDocaMax,    "docamaxmuka/D");
+  t->Branch("lipmuka",     &fMuKaLip,        "lipmuka/D");
+  t->Branch("mmuka",       &fMuKaMass,       "mmuka/D");
+  t->Branch("flmuka",      &fMuKaFl,         "flmuka/D");
+  t->Branch("flsmuka",     &fMuKaFls,        "flsmuka/D");
+
+  t->Branch("mhad",        &fHadMass,        "mhad/D");
   t->Branch("m2hadmax",    &f2HadMaxMass,    "m2hadmax/D");
   t->Branch("m2hadmin",    &f2HadMinMass,    "m2hadmin/D");
   t->Branch("m2hadss",     &f2HadSSMass,     "m2hadss/D");
@@ -912,13 +882,17 @@ void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
   t->Branch("m2hadosmax",  &f2HadOSmaxMass,  "m2hadosmax/D");
   t->Branch("mbr0pos",     &fBr0PosMass,     "mbr0pos/D");
   t->Branch("mbr0neg",     &fBr0NegMass,     "mbr0neg/D");
-  t->Branch("abtau",       &fBTauAngle,      "btauangle/D");
-  t->Branch("t0tau",       &fTauDecTime,     "t0tau/D");
-  t->Branch("fltau",       &fTauFl,          "fltau/D");
-  t->Branch("flstau",      &fTauFls,         "flstau/D");
-  t->Branch("pttau",       &fTauPt,          "pttau/D");
-  t->Branch("pttauhad",    &fTauHadPt,       "pttauhad/D");
+  t->Branch("abtau",       &fBTauAngle,      "abtau/D");
+  t->Branch("t0had",       &fHadDecTime,     "t0had/D");
+  t->Branch("flhad",       &fHadFl,          "flhad/D");
+  t->Branch("flshad",      &fHadFls,         "flshad/D");
+  t->Branch("pthad",       &fHadPt,          "pthad/D");
+  t->Branch("doca3dhad",   &fHadDoca3D,      "doca3dhad/D");
+  t->Branch("docamaxhad",  &fHadDocaMax,     "docamaxhad/D");
+  t->Branch("liphad",      &fHadLip,         "liphad/D");
+  t->Branch("pthad",       &fHadPt,          "pthad/D");
   t->Branch("atauhad",     &fTauHadAngle,    "atauhad/D");
+  t->Branch("abmuka",      &fBMuKaAngle,     "abmuka/D");
   t->Branch("paranur0pos", &fNur0PosPara,    "paranur0pos/D");
   t->Branch("paranur0neg", &fNur0NegPara,    "paranur0neg/D");
   t->Branch("perptauhad",  &fTauHadPerp,     "perptauhad/D");
@@ -930,30 +904,24 @@ void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
   t->Branch("etamu",       &fMuEta,          "etamu/D");
   t->Branch("ptka",        &fKaPt,           "ptka/D");
   t->Branch("etaka",       &fKaEta,          "etaka/D");
-  t->Branch("mmuka",       &fMuKaMass,       "mmuka/D");
   t->Branch("pthad1",      &fHad1Pt,         "pthad1/D");
   t->Branch("pthad2",      &fHad2Pt,         "pthad2/D");
   t->Branch("pthad3",      &fHad3Pt,         "pthad3/D");
   t->Branch("etahad1",     &fHad1Eta,        "etahad1/D");
   t->Branch("etahad2",     &fHad2Eta,        "etahad2/D");
   t->Branch("etahad3",     &fHad3Eta,        "etahad3/D");
+  t->Branch("missedtracks",&fMissedTracks,   "missedtracks/I");
 
-
-
-  t->Branch("flsxy",      &fJpsiFlsxy,  "jpsiflsxy/D");
-  t->Branch("ntrk",   &fNTrk,   "ntrk/I");
-  t->Branch("correct",&fCorrect,"correct[ntrk]/O");
-  t->Branch("doca",   &fDoca,   "doca[ntrk]/D");
-  t->Branch("prob1",  &fProb1,  "prob1[ntrk]/D");
-  t->Branch("prob2",  &fProb2,  "prob2[ntrk]/D");
-  t->Branch("chi2",   &fChi2,   "chi2[ntrk]/D");
-  t->Branch("dof",    &fDof,    "dof[ntrk]/D");
-  t->Branch("trkmass",&fTrkMass,"trkmass[ntrk]/D");
+  t->Branch("ntrk",    &fNTrk,   "ntrk/I");
+  t->Branch("tcorrect",&fCorrect,"tcorrect[ntrk]/O");
+  t->Branch("inrecoil",&fInRecoil,"inrecoil[ntrk]/O");
+  t->Branch("doca",    &fDoca,    "doca[ntrk]/D");
+  t->Branch("pt",      &fPt,      "pt[ntrk]/D");
 }
 
 // ----------------------------------------------------------------------
 void candAnaBuToMuTauK::bookHist() {
-  cout << "==>candAnaBuToMuTauK: bookHist" << endl;
+  cout << "==>candAnaBuToMuTauK: bookHist in fHistDir = " << fHistDir->GetName() << endl;
   fHistDir->cd();
   new TH1D("ngamma", "ngamma", 5, 0., 5.);
   new TH1D("doca", "doca", 100, 0., 2.0);
@@ -1008,37 +976,6 @@ void candAnaBuToMuTauK::readCuts(string filename, int dump) {
     if (buffer[0] == '/') {continue;}
     sscanf(buffer, "%s %f", CutName, &CutValue);
 
-    if (!strcmp(CutName, "BRECOTYPE")) {
-      BRECOTYPE = static_cast<int>(CutValue);
-      if (dump) cout << "BRECOTYPE:      " << BRECOTYPE << endl;
-      ibin = 210;
-      hcuts->SetBinContent(ibin, BRECOTYPE);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BRECOTYPE :: %d", CutName, BRECOTYPE));
-    }
-
-    if (!strcmp(CutName, "BRECOTRUTH")) {
-      BRECOTRUTH = static_cast<int>(CutValue);
-      if (dump) cout << "BRECOTRUTH:      " << BRECOTRUTH << endl;
-      ibin = 211;
-      hcuts->SetBinContent(ibin, BRECOTRUTH);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BRECOTRUTH :: %d", CutName, BRECOTRUTH));
-    }
-
-    if (!strcmp(CutName, "CANDTYPE")) {
-      CANDTYPE = static_cast<int>(CutValue);
-      if (dump) cout << "CANDTYPE:      " << CANDTYPE << endl;
-      ibin = 212;
-      hcuts->SetBinContent(ibin, CANDTYPE);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: BRECOTYPE :: %d", CutName, CANDTYPE));
-    }
-
-    if (!strcmp(CutName, "CANDTRUTH")) {
-      CANDTRUTH = static_cast<int>(CutValue);
-      if (dump) cout << "CANDTRUTH:      " << CANDTRUTH << endl;
-      ibin = 213;
-      hcuts->SetBinContent(ibin, CANDTRUTH);
-      hcuts->GetXaxis()->SetBinLabel(ibin, Form("%s :: CANDTRUTH :: %d", CutName, CANDTRUTH));
-    }
   }
 
 }
@@ -1070,63 +1007,4 @@ void candAnaBuToMuTauK::printGenBDecays() {
   }
 
   return;
-}
-
-// ----------------------------------------------------------------------
-bool candAnaBuToMuTauK::decayModeValidation(TGenCand *pCand, int mode) {
-  vector<int> tDaughters = fDecayModes[mode];
-  if (tDaughters[0] != TMath::Abs(pCand->fID)) {
-    return false;
-  }
-  TGenCand *pD(0);
-  vector<int> cDaughters;
-  cDaughters.push_back(TMath::Abs(pCand->fID));
-  for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
-    pD = fpEvt->getGenCand(iD);
-    if (22 == pD->fID) continue;
-    cDaughters.push_back(TMath::Abs(pD->fID));
-  }
-
-  if (cDaughters.size() != tDaughters.size()) {
-    return false;
-  }
-  for (unsigned int i = 0; i < tDaughters.size(); ++i) {
-    if (tDaughters[i] != cDaughters[i]) return false;
-  }
-
-  return true;
-}
-
-
-// ----------------------------------------------------------------------
-double candAnaBuToMuTauK::minMassPair(vector<TLorentzVector> v ) {
-  double minMass(99999.);
-  for (unsigned int i = 0; i < v.size(); ++i) {
-    for (unsigned int j = i+1; j < v.size(); ++j) {
-      double mass = (v[i] + v[j]).M();
-      if (mass < minMass) minMass = mass;
-    }
-  }
-  return minMass;
-}
-
-// ----------------------------------------------------------------------
-double candAnaBuToMuTauK::maxMassPair(vector<TLorentzVector> v ) {
-  double maxMass(-99999.);
-  for (unsigned int i = 0; i < v.size(); ++i) {
-    for (unsigned int j = i+1; j < v.size(); ++j) {
-      double mass = (v[i] + v[j]).M();
-      if (mass > maxMass) maxMass = mass;
-    }
-  }
-  return maxMass;
-}
-
-// ----------------------------------------------------------------------
-TH1D* candAnaBuToMuTauK::getHist(string name) {
-  TH1D *h1 = (TH1D*)fHistDir->Get(name.c_str());
-  if (!h1) {
-    h1 = new TH1D(name.c_str(), name.c_str(), 400, 1.0, 3.0);
-  }
-  return h1;
 }

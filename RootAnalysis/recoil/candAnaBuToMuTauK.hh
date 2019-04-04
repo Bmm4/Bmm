@@ -19,8 +19,6 @@
 
 #include "candAna.hh"
 
-#define NTRKMAX 1000
-
 class candAnaBuToMuTauK : public candAna {
 
 public:
@@ -29,49 +27,39 @@ public:
 
   void        genAnalysis();
   void        candAnalysis();
-  void        brecoAnalysis();
+  void        candEvaluation();
 
+  void        genMatch();
+  void        recoMatch();
+  void        candMatch();
+
+
+  void        resetAllData();
   void        bookHist();
   void        moreReducedTree(TTree *);
   void        readCuts(string filename, int dump);
 
-  std::pair<TVector3, TVector3> parallelAndPerp(TVector3 direction, TVector3 momVis);
-  std::pair<TVector3, TVector3> parallelAndPerp2(TVector3 direction, TVector3 momVis);
-  std::pair<double, double>  nuRecoMom0(double compVisPar, double compVisPerp, double eVis, double mVis, double mTot = 1.777);
-  double      minMassPair(std::vector<TLorentzVector> a);
-  double      maxMassPair(std::vector<TLorentzVector> a);
-
   void        dump();
-  TH1D*       getHist(std::string);
   void        dumpBkmt();
   void        printGenBDecays();
-  bool        decayModeValidation(TGenCand *pCand, int mode);
-
-  std::map<int, std::vector<int> > fDecayModes;
-
-  int         BRECOTYPE, BRECOTRUTH;
-
-  double      fBrecoMass, fBrecoPt, fBrecoEta, fBrecoPhi, fBrecoPvZ;
-  int         fBrecoPvIdx;
-  double      fMu1BrecoPt, fMu1BrecoEta, fMu1BrecoPhi, fMu2BrecoPt, fMu2BrecoEta, fMu2BrecoPhi;
-  double      fJpsiFlsxy;
-  int         fNTrk;
-  double      fDoca[NTRKMAX], fProb1[NTRKMAX], fProb2[NTRKMAX], fChi2[NTRKMAX], fDof[NTRKMAX], fTrkMass[NTRKMAX];
-  bool        fCorrect[NTRKMAX];
 
   // -------------------
   // -- recoil = signal!
   // -------------------
 
-  // -- pointers to HepMC cands and vertices
-  TGenCand    *fpGenB,  *fpGenMu,  *fpGenKa, *fpGenTau, *fpGenHad1, *fpGenHad2, *fpGenHad3, *fpGenNu, *fpGenGa1, *fpGenGa2;
+  // -- pointers to SIGNAL HepMC cands and vertices
+  TGenCand    *fpGenMu,  *fpGenKa, *fpGenTau, *fpGenHad1, *fpGenHad2, *fpGenHad3, *fpGenNu, *fpGenGa1, *fpGenGa2;
   TVector3    fGenVtxBProd, fGenVtxBDecay, fGenVtxTauDecay, fGenDirectionTau;
   // -- calculated/derived quantities
   TLorentzVector f4GenTauAtDecay, f4GenTauHad, f4GenNur0, f4GenNur0Pos, f4GenNur0Neg, f4GenBr0, f4GenBr0Pos, f4GenBr0Neg;
   // -- reco'ed/derived quantities
-  TVector3    fVtxBProd, fVtxBDecay, fVtxTauDecay, fDirectionTau;
-  TLorentzVector f4Muon, f4Kaon, f4TauHad, f4Nur0Pos, f4Nur0Neg, f4Br0Pos, f4Br0Neg;
-  int            fNgamma;
+  TVector3    fVtxTauDecay, fDirectionB, fDirectionTau;
+  TLorentzVector f4Muon, f4Kaon, f4MuKa, f4Had, f4Nur0Pos, f4Nur0Neg, f4Br0Pos, f4Br0Neg;
+
+  // -- pointers to SIGNAL simpleTracks
+  TSimpleTrack *fpTmMu,  *fpTmKa, *fpTmHad1, *fpTmHad2, *fpTmHad3;
+  // -- vector of all signal tracks: mu, ka, had1, had2, had3
+  std::vector<TAnaTrack*> fSignalTracks;
 
   // -- gen quantities
   double         fGenBPt,
@@ -89,13 +77,13 @@ public:
 
 
   // -- reco quantities
-  double fPvX, fPvY, fPvZ,
-    fBPt,
+  double fBPt,
     fBrMass, fBr0PosMass, fBr0NegMass,
-    fTauPt, fTauDecTime,
+    fMuKaDoca3D, fMuKaLip, fMuKaDocaMax, fMuKaFl, fMuKaFls,
+    fHadPt, fHadDecTime, fHadFl, fHadFls, fHadMass, fHadDoca3D, fHadLip, fHadDocaMax,
     fTaur0Pt, fTaur0PosPt, fTaur0NegPt,
-    fTauHadPt, fTauHadMass, fTauHadAngle, fTauHadPerp, fTauHadPara, fTauFl, fTauFls,
-    fBTauAngle,
+    fTauHadAngle, fTauHadPerp, fTauHadPara,
+    fBTauAngle, fBMuKaAngle,
     f2HadMinMass,f2HadMaxMass,
     f2HadSSMass, f2HadOSminMass, f2HadOSmaxMass,
     fHad1Pt, fHad2Pt, fHad3Pt, fHad1Eta, fHad2Eta, fHad3Eta,
@@ -104,20 +92,12 @@ public:
     ;
 
 
+  // -- tracks of signal cand
+  int         fNTrk;
+  double      fDoca[NTRKMAX], fPt[NTRKMAX];
+  bool        fCorrect[NTRKMAX], fInRecoil[NTRKMAX];
 
-  TAnaCand    *fpBreco;
-  std::vector<int> fGenIndices;
-  int         fBrecoIdx;
 
-  int         fGenBrecoBTmi;
-  int         fGenBrecoM1Tmi, fGenBrecoM2Tmi, fNGenBrecoPhotons, fGenBrecoK1Tmi;
-  int         fMu1GenBrecoID, fMu2GenBrecoID, fK1GenBrecoID;
-  double      fGenBrecoLifeTime;
-
-  int         fRecBrecoM1Tmi, fRecBrecoM2Tmi, fRecBrecoK1Tmi;
-  int         fCandBrecoTmi;
-
-  TVector3    fGenPV, fGenBrecoPV;
 
 };
 

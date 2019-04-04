@@ -26,19 +26,16 @@ public:
   virtual ~candAnaBuToDmMuPi();
 
   void        candAnalysis();
+  void        candEvaluation();
+
+  void        bookHist();
   void        moreReducedTree(TTree *);
+  void        readCuts(string filename, int dump);
 
   void        genMatch();
   void        recoMatch();
   void        candMatch();
 
-  void        readCuts(string filename, int dump);
-  void        bookHist();
-  void        fillCandidateHistograms(int offset);
-
-
-
-  // -- effTree
 
 };
 
