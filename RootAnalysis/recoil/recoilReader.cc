@@ -7,7 +7,7 @@
 
 #include "candAna.hh"
 #include "candAnaBuToMuTauK.hh"
-
+#include "candAnaBuToDmMuPi.hh"
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -111,9 +111,16 @@ void recoilReader::eventProcessing() {
   unsigned int ilm = lCandAnalysis.size();
   if (ilm < 1) return;
 
+  int verbose(11);
+  if (verbose > 10) {
+    cout << "----- new event #" << fChainEvent
+	 << " fRun = " << fRun
+	 << " fEvt = " << fEvt
+	 << " with ncands = " <<  fpEvt->nCands()
+	 << endl;
+  }
+
   // -- call candidate analyses
-  // cout << "recoilReader: " << fChainEvent << endl;
-  // cout << "lCandAnalysis.size() = " << lCandAnalysis.size() << endl;
   for (unsigned int i = 0; i < ilm; ++i) {
     if (fCheckCandTypes) {
       if (fCandTypes.find(lCandAnalysis[i]->CANDTYPE) == fCandTypes.end()) {
@@ -171,7 +178,7 @@ void recoilReader::readCuts(TString filenames, int dump) {
   vector<string> cutfiles = split(string(filenames), ':');
   ifstream INS;
   for (unsigned int i = 0; i < cutfiles.size(); ++i) {
-    cout << "cutfile i = " << i << ": " << cutfiles[i] << endl;
+    cout << "cutfile i = " << i << "(" << cutfiles.size() << "): " << cutfiles[i] << endl;
     string sline("nada");
     INS.open(cutfiles[i]);
     while (getline(INS, sline)) {
@@ -185,6 +192,11 @@ void recoilReader::readCuts(TString filenames, int dump) {
 
     if (string::npos != sline.find("candAnaBuToMuTauK")) {
       candAna *a = new candAnaBuToMuTauK(this, sline, cutfiles[i]);
+      a->BLIND = BLIND;
+      lCandAnalysis.push_back(a);
+    }
+    if (string::npos != sline.find("candAnaBuToDmMuPi")) {
+      candAna *a = new candAnaBuToDmMuPi(this, sline, cutfiles[i]);
       a->BLIND = BLIND;
       lCandAnalysis.push_back(a);
     }
