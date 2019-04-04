@@ -1,0 +1,6 @@
+CLASSNAME    candAnaBuToMuTauKTruth
+CANDTYPE      4000032
+CANDTRUTH     4000032
+BRECOTYPE       10000
+# -- baseCuts
++input cutfiles/baseCuts.cuts
