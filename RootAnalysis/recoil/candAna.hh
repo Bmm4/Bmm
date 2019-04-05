@@ -79,6 +79,8 @@ public:
   std::pair<double, double>  nuRecoMom0(double compVisPar, double compVisPerp, double eVis, double mVis, double mTot = 1.777);
   double      minMassPair(std::vector<TLorentzVector> a);
   double      maxMassPair(std::vector<TLorentzVector> a);
+  // -- calculate opening angle between three vectors (in fact the sine of half opening angle)
+  double      oaTriplet(std::vector<TLorentzVector> a);
 
 
   // -- general setup

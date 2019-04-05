@@ -1245,6 +1245,36 @@ double candAna::maxMassPair(vector<TLorentzVector> v ) {
 
 
 // ----------------------------------------------------------------------
+double candAna::oaTriplet(std::vector<TLorentzVector> v) {
+
+  if (v.size() != 3) {
+    cout << "oaTriplet is to be calculated from three vectors, received " << v.size() << endl;
+    return 0.;
+  }
+
+  TVector3 p0 = v[0].Vect().Unit();
+  TVector3 p1 = v[1].Vect().Unit();
+  TVector3 p2 = v[2].Vect().Unit();
+
+  double a = (p1 - p0).Mag();
+  double b = (p2 - p1).Mag();
+  double c = (p0 - p2).Mag();
+
+  double a2 = a*a;
+  double b2 = b*b;
+  double c2 = c*c;
+
+  double radix = 2*a2*b2 + 2*b2*c2 + 2*c2*a2 - a2*a2 - b2*b2 - c2*c2;
+  if (radix > 0.) {
+    return (a*b*c)/TMath::Sqrt(radix);
+  }
+
+  return 0.;
+
+}
+
+
+// ----------------------------------------------------------------------
 TH1D* candAna::getHist(string name) {
   TH1D *h1 = (TH1D*)fHistDir->Get(name.c_str());
   if (!h1) {
