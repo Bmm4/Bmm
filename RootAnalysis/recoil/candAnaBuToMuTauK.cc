@@ -66,17 +66,17 @@ void candAnaBuToMuTauK::resetAllData() {
 
 
   // -- reco quantities
-  fBPt=
-    fBrMass= fBr0PosMass= fBr0NegMass=
+  fBrMass= fBr0PosMass= fBr0NegMass=
     fMuKaDoca3D= fMuKaLip= fMuKaDocaMax=fMuKaFl= fMuKaFls=
-    fHadPt= fHadMass= fHadDecTime= fHadFl= fHadFls= fHadDoca3D= fHadLip= fHadDocaMax=
+    fHadPt= fHadMass= fHadDecTime= fHadFl= fHadFls= fHadDoca3D= fHadLip= fHadDocaMax= fHadOa=
     fTaur0Pt= fTaur0PosPt= fTaur0NegPt=
     fTauHadAngle= fTauHadPerp= fTauHadPara=
     fBTauAngle= fBMuKaAngle=
     f2HadMinMass=f2HadMaxMass=
     f2HadSSMass= f2HadOSminMass= f2HadOSmaxMass=
     fHad1Pt= fHad2Pt= fHad3Pt= fHad1Eta= fHad2Eta= fHad3Eta=
-    fMuPt= fKaPt= fMuEta= fKaEta= fMuKaMass=
+    fMuPt= fKaPt= fMuEta= fKaEta=
+    fMuKaDecTime= fMuKaMass= fMuKaPt= fMuKaHadMass=
     fNur0PosPara= fNur0NegPara=-99.
     ;
 
@@ -514,15 +514,15 @@ void candAnaBuToMuTauK::candAnalysis() {
 
   fTm = (fpCand == fpCandTruth);
   fPvX = fPvY = fPvZ =
-    fBPt =
     fBr0PosMass = fBr0NegMass =
     fMuKaDoca3D= fMuKaLip= fMuKaDocaMax=fMuKaFl= fMuKaFls=
-    fHadPt = fHadDecTime = fHadMass = fHadFl = fHadFls = fHadDoca3D = fHadLip = fHadDocaMax=
+    fHadPt = fHadDecTime = fHadMass = fHadFl = fHadFls = fHadDoca3D = fHadLip = fHadDocaMax= fHadOa=
     fTauHadAngle = fTauHadPerp = fTauHadPara =
     f2HadMinMass = f2HadMaxMass =
     f2HadSSMass = f2HadOSminMass = f2HadOSmaxMass =
     fHad1Pt = fHad2Pt = fHad3Pt = fHad1Eta = fHad2Eta = fHad3Eta =
-    fMuPt = fKaPt = fMuEta = fKaEta = fMuKaMass =
+    fMuPt = fKaPt = fMuEta = fKaEta =
+    fMuKaDecTime = fMuKaMass = fMuKaPt = fMuKaHadMass =
     fNur0PosPara = fNur0NegPara =
     -99.;
   fPvN = -99;
@@ -559,6 +559,7 @@ void candAnaBuToMuTauK::candAnalysis() {
     pHad2 = pHad3;
     pHad3 = pHad;
   }
+  fSignalTracks.clear();
   fSignalTracks.push_back(pMuon);
   fSignalTracks.push_back(pKaon);
   fSignalTracks.push_back(pHad1);
@@ -569,7 +570,6 @@ void candAnaBuToMuTauK::candAnalysis() {
   if (fpRecoilCand) {
     bool foundTrack(false);
     fNTrk = fSignalTracks.size();
-    cout << "fpRecoilCand = " << fpRecoilCand << " for fName = " << fName << endl;
     fBrecoPvI = fpRecoilCand->fPvIdx;
     for (unsigned int is = 0; is < fSignalTracks.size(); ++is) {
       TAnaTrack *ps = fSignalTracks[is];
@@ -641,8 +641,7 @@ void candAnaBuToMuTauK::candAnalysis() {
   fHadDocaMax   = pTau->fMaxDoca;
   fHadLip       = pTau->fPvLip;
 
-  fHadDecTime   = fDirectionTau.Mag()*MTAU/f4Had.Rho()/TMath::Ccgs();
-  fTauHadAngle  = fDirectionTau.Angle(f4Had.Vect());
+  //??  fHadDecTime   = fDirectionTau.Mag()*MTAU/f4Had.Rho()/TMath::Ccgs();
   fBTauAngle    = fDirectionB.Angle(fDirectionTau);
   fBMuKaAngle   = fDirectionB.Angle(f4MuKa.Vect());
 
@@ -746,12 +745,12 @@ void candAnaBuToMuTauK::candAnalysis() {
   f4Br0Pos = f4Nur0Pos + f4Had + f4Muon + f4Kaon;
   f4Br0Neg = f4Nur0Neg + f4Had + f4Muon + f4Kaon;
 
-  fBPt = fpCand->fPlab.Perp();
-
   fBr0PosMass = f4Br0Pos.M();
   fBr0NegMass = f4Br0Neg.M();
 
   fHadDecTime = pTau->fTau3d;
+  fTauHadAngle  = fDirectionTau.Angle(f4Had.Vect());
+  fHadOa   = oaTriplet(vHad);
   fHadPt = pTau->fPlab.Perp();
   fHadMass = pTau->fMass;
   f2HadMinMass = minMassPair(vHad);
@@ -766,7 +765,12 @@ void candAnaBuToMuTauK::candAnalysis() {
   fMuEta   = pMuon->fPlab.Eta();
   fKaPt    = pKaon->fPlab.Perp();
   fKaEta   = pKaon->fPlab.Eta();
-  fMuKaMass = fpCand->fMass;
+
+  fMuKaDecTime = fpCand->fTau3d;
+  fMuKaMass    = fpCand->fMass;
+  fMuKaPt      = fpCand->fPlab.Perp();
+
+  fMuKaHadMass = (f4MuKa + f4Had).M();
 
   //  -- check whether this (TRUTHCAND) candidate is also a reco candidate
   if (CANDTYPE == CANDTRUTH) {
@@ -864,12 +868,17 @@ void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
   t->Branch("gpthad2",     &fGenHad2Pt,        "gpthad2/D");
   t->Branch("gpthad3",     &fGenHad3Pt,        "gpthad3/D");
 
-  t->Branch("ptb",         &fBPt,            "ptb/D");
   t->Branch("tm",          &fTm,             "tm/O");
   t->Branch("rm",          &fTruthRm,        "rm/O");
+
+  t->Branch("t0muka",      &fMuKaDecTime,    "t0muka/D");
+  t->Branch("mmukahad",    &fMuKaHadMass,    "mmukahad/D");
+
   t->Branch("doca3dmuka",  &fMuKaDoca3D,     "doca3dmuka/D");
   t->Branch("docamaxmuka", &fMuKaDocaMax,    "docamaxmuka/D");
   t->Branch("lipmuka",     &fMuKaLip,        "lipmuka/D");
+
+  t->Branch("ptmuka",      &fMuKaPt,         "ptmuka/D");
   t->Branch("mmuka",       &fMuKaMass,       "mmuka/D");
   t->Branch("flmuka",      &fMuKaFl,         "flmuka/D");
   t->Branch("flsmuka",     &fMuKaFls,        "flsmuka/D");
@@ -889,6 +898,7 @@ void candAnaBuToMuTauK::moreReducedTree(TTree *t) {
   t->Branch("pthad",       &fHadPt,          "pthad/D");
   t->Branch("doca3dhad",   &fHadDoca3D,      "doca3dhad/D");
   t->Branch("docamaxhad",  &fHadDocaMax,     "docamaxhad/D");
+  t->Branch("oahad",       &fHadOa,          "oahad/D");
   t->Branch("liphad",      &fHadLip,         "liphad/D");
   t->Branch("pthad",       &fHadPt,          "pthad/D");
   t->Branch("atauhad",     &fTauHadAngle,    "atauhad/D");

@@ -77,17 +77,18 @@ public:
 
 
   // -- reco quantities
-  double fBPt,
-    fBrMass, fBr0PosMass, fBr0NegMass,
+  double fBrMass, fBr0PosMass, fBr0NegMass,
     fMuKaDoca3D, fMuKaLip, fMuKaDocaMax, fMuKaFl, fMuKaFls,
-    fHadPt, fHadDecTime, fHadFl, fHadFls, fHadMass, fHadDoca3D, fHadLip, fHadDocaMax,
+    fHadPt, fHadDecTime, fHadFl, fHadFls, fHadMass, fHadDoca3D, fHadLip, fHadDocaMax, fHadOa,
+    fMuKaHadMass,
     fTaur0Pt, fTaur0PosPt, fTaur0NegPt,
     fTauHadAngle, fTauHadPerp, fTauHadPara,
     fBTauAngle, fBMuKaAngle,
     f2HadMinMass,f2HadMaxMass,
     f2HadSSMass, f2HadOSminMass, f2HadOSmaxMass,
     fHad1Pt, fHad2Pt, fHad3Pt, fHad1Eta, fHad2Eta, fHad3Eta,
-    fMuPt, fKaPt, fMuEta, fKaEta, fMuKaMass,
+    fMuKaDecTime, fMuKaMass, fMuKaPt,
+    fMuPt, fKaPt, fMuEta, fKaEta,
     fNur0PosPara, fNur0NegPara
     ;
 
