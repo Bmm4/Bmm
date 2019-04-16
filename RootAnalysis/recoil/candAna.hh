@@ -15,6 +15,8 @@
 
 #include "recoilReader.hh"
 #include "common/AnalysisCuts.hh"
+#include "common/util.hh"
+#include "common/ana.hh"
 
 #include "cuts.hh"
 

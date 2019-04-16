@@ -4,14 +4,8 @@
 #include <stdarg.h>
 
 #include "common/HFMasses.hh"
-#include "common/util.hh"
-#include "common/ana.hh"
 
 using namespace std;
-
-string streamTVector3(TVector3 v) {
-  return string(Form("(%+4.3f, %+4.3f, %+4.3f)", v.X(),  v.Y(),  v.Z()));
-}
 
 // ----------------------------------------------------------------------
 candAnaBuToMuTauK::candAnaBuToMuTauK(recoilReader *pReader, std::string name, std::string cutsFile) : candAna(pReader, name, cutsFile) {
