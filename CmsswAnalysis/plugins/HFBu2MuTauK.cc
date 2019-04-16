@@ -9,9 +9,7 @@
 #include "Bmm/RootAnalysis/rootio/TAnaCand.hh"
 
 #include "Bmm/CmsswAnalysis/interface/HFSequentialVertexFit.hh"
-#include "Bmm/CmsswAnalysis/interface/HFTwoParticleCombinatoricsNew.hh"
-#include "Bmm/CmsswAnalysis/interface/HFThreeParticleCombinatorics.hh"
-#include "Bmm/CmsswAnalysis/interface/HFTauCombinatorics.hh"
+#include "Bmm/CmsswAnalysis/interface/HFCombinatorics.hh"
 #include "Bmm/RootAnalysis/common/HFMasses.hh"
 #include "Bmm/CmsswAnalysis/interface/HFDecayTree.hh"
 #include "Bmm/CmsswAnalysis/interface/HFTrackListBuilder.hh"
@@ -56,11 +54,24 @@ HFBu2MuTauK::HFBu2MuTauK(const ParameterSet& iConfig) :
   fTauVtxProb(iConfig.getUntrackedParameter<double>("tauVtxProb", 0.01)),
   fTauMaxDoca(iConfig.getUntrackedParameter<double>("tauMaxDoca", 0.02)),
   fTauMaxIP(iConfig.getUntrackedParameter<double>("tauMaxIP", 0.02)) {
+
+  if (fType%100 == 32) {
+    fMode = B2MUKTAU;
+  } else if (fType%100 == 41) {
+    fMode = B2PIPID;
+  } else if (fType%100 == 51) {
+    fMode = B2MUPID;
+  }
   dumpConfiguration();
 }
 
 // ----------------------------------------------------------------------
 void HFBu2MuTauK::dumpConfiguration() {
+  string cMode("");
+  if (B2MUKTAU == fMode) cMode = "B2MUKTAU";
+  if (B2PIPID == fMode) cMode = "B2PIPID";
+  if (B2MUPID == fMode) cMode = "B2MUPID";
+
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HFBu2MuTauK configuration" << endl;
   HFVirtualDecay::dumpConfiguration();
@@ -69,13 +80,13 @@ void HFBu2MuTauK::dumpConfiguration() {
   cout << "---  tauVtxProb                  " << fTauVtxProb  << endl;
   cout << "---  tauMaxDoca                  " << fTauMaxDoca  << endl;
   cout << "---  tauMaxIP                    " << fTauMaxIP  << endl;
+  cout << "---  MODE                        " << cMode  << endl;
   cout << "----------------------------------------------------------------------" << endl;
 }
 
 
 // ----------------------------------------------------------------------
 void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
-  typedef HFTwoParticleCombinatoricsNew::HFTwoParticleCombinatoricsSet HFTwoParticleCombinatoricsSet;
   try {
     HFVirtualDecay::analyze(iEvent,iSetup);
   } catch(HFSetupException e) {
@@ -87,7 +98,15 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- build truth-identified candidate
   // -----------------------------------
   if (fMcType > 0) {
-    genMatch();
+    if (B2MUKTAU == fMode) {
+      genMatchB2MUKTAU();
+    }
+    if (B2MUPID == fMode) {
+      genMatchB2MUPID();
+    }
+    if (B2PIPID == fMode) {
+      genMatchB2PIPID();
+    }
     vector<int> truthTracks = truthIndices();
     bool foundTruthCand(false);
     if (truthTracks.size() > 0) {
@@ -100,6 +119,13 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
       }
     }
     if (foundTruthCand) {
+      if (fVerbose > 0) {
+	cout << "MC truth cand found! ";
+	for (unsigned int i = 0; i < truthTracks.size(); ++i) {
+	  cout << truthTracks[i] << " ";
+	}
+	cout << endl;
+      }
       bool filled = buildCandidate(truthTracks, fMcType, false);
       if (!filled) {
 	if (fVerbose > 0) {
@@ -121,51 +147,60 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- build reco candidates
   // ------------------------
   fListBuilder->setMinPt(fMuonPt);
-  vector<int> muonList = fListBuilder->getMuonList();
+  vector<int> muonList;
 
-  fListBuilder->setMinPt(0.2);
-  //  fListBuilder->setMaxDocaToTracks(fMaxDoca);
-  if (fVerbose > 0) cout << "==>HFBu2MuTauK> muonList  size: " << muonList.size() << endl;
-  fListBuilder->setCloseTracks(&muonList);
-  vector<int> trkList = fListBuilder->getTrackList();
-  if (fVerbose > 0) cout << "==>HFBu2MuTauK> trkList  size: " << trkList.size() << endl;
-  if (trkList.size() < 1) return;
-
-  TLorentzVector tlv;
-  vector<pair<int, TLorentzVector> > piList, kaList;
-  for (unsigned int i = 0; i < trkList.size(); ++i) {
-    TrackBaseRef trackView(fTracksHandle, trkList[i]);
-    Track trk(*trackView);
-    tlv.SetPtEtaPhiM(trk.pt(), trk.eta(), trk.phi(), MPION);
-    piList.push_back(make_pair(trkList[i], tlv));
-    tlv.SetPtEtaPhiM(trk.pt(), trk.eta(), trk.phi(), MKAON);
-    kaList.push_back(make_pair(trkList[i], tlv));
+  if (B2MUKTAU == fMode) {
+    muonList = fListBuilder->getMuonList();
   }
 
-  HFTauCombinatorics tau2(fTracksHandle, fTTB, fVerbose);
-  //  HFTwoParticleCombinatoricsNew a(fTracksHandle, fVerbose);
-  //  HFTwoParticleCombinatoricsSet promptList;
-  vector<pair<int, int> > promptList;
-  int remainder = fType%100;
-  if (32 == remainder) {
+  // -- for this mode we use the muonList variable but use getTrackList with the higher pT threshold
+  if (B2PIPID == fMode) {
+    muonList = fListBuilder->getTrackList();
+  }
+  if (fVerbose > 0) {
+    cout << "==>HFBu2MuTauK> muonList  size: " << muonList.size() << endl;
+
+    for (vector<int>::iterator it = muonList.begin(); it != muonList.end(); ++it) {
+      cout << *it << " ";
+    }
+    cout << endl;
+  }
+
+  if (muonList.size() < 1) return;
+  fListBuilder->setCloseTracks(&muonList);
+  fListBuilder->setMinPt(0.5);
+
+  vector<int> trkList = fListBuilder->getTrackList();
+  if (fVerbose > 0) {
+    cout << "==>HFBu2MuTauK> trkList  size: " << trkList.size() << endl;
+    for (vector<int>::iterator it = trkList.begin(); it != trkList.end(); ++it) {
+      cout << *it << " ";
+    }
+    cout << endl;
+  }
+  if (trkList.size() < 1) return;
+
+  HFCombinatorics tau2(fTracksHandle, fTTB, fVerbose);
+  vector<HFCombinatorics::doublet> promptList;
+  double docacut(fMuKaMaxDoca); // any security margin??
+  if (B2MUKTAU == fMode) {
     //    promptList = a.combine(muonList, MMUON, trkList, MKAON, 0.6, 3.6, 1);
-    tau2.combine2Tracks(promptList, muonList, MMUON, trkList, MKAON, 0.6, 3.6, 0.1);
-  } else if (33 == remainder) {
+    tau2.combine2Tracks(promptList, muonList, MMUON, trkList, MKAON, 0.6, 3.6, docacut, -1);
+  } else if (B2PIPID == fMode) {
     //    promptList = a.combine(muonList, MMUON, trkList, MPION, 0.2, 5.2, 1);
+    tau2.combine2Tracks(promptList, muonList, MPION, trkList, MPION, 0.2, 3.6, docacut, +1);
   }
   if (fVerbose > 0) cout << "==>HFBu2MuTauK> promptList  size: " << promptList.size() << endl;
   if (promptList.size() < 1) return;
 
   // -- build 3-prong
-  //  vector<triplet> tauList;
-  //  HFThreeParticleCombinatorics tau(fVerbose);
-  vector<HFTauCombinatorics::tauTriplet> tauList2;
-  tau2.combine3Tracks(tauList2, trkList, MPION, 0.3, 2.0, 0.1);
-  // if (32 == remainder) {
-  //   tau.combine(tauList, piList, 0.3, 2.0, 0.6, 1.1); // FIXME: Are the loresmass and hiresmass cuts good?!
-  // } else if (33 == remainder) {
-  //   tau.combine(tauList, piList, kaList, 0.3, 2.0); // FIXME: Are the mass cuts good?
-  // }
+  vector<HFCombinatorics::triplet> tauList2;
+  docacut = fTauMaxDoca; // any security margin??
+  if (B2MUKTAU == fMode) {
+    tau2.combine3Tracks(tauList2, trkList, MPION, 0.4, 1.8, docacut);
+  } else if (B2PIPID == fMode) {
+    tau2.combineDp2Km2Pip(tauList2, trkList, 1.75, 2.05, docacut);
+  }
 
   if (fVerbose > 0) cout << "==>HFBu2MuTauK> tripletList  size: " << tauList2.size() << endl;
   if (tauList2.size() < 1) return;
@@ -173,33 +208,44 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
   // -- Loop over (mu,K) pairs and all associated triplets
   vector<TransientTrack> vtt;
   vector<int> mkid;
-  for (vector<pair<int, int> >::iterator promptIt = promptList.begin(); promptIt != promptList.end(); ++promptIt) {
-    int iMuon = promptIt->first;
-    int iKaon = promptIt->second;
+  for (vector<HFCombinatorics::doublet>::iterator promptIt = promptList.begin(); promptIt != promptList.end(); ++promptIt) {
+    int iMuon = promptIt->p1();
+    int iKaon = promptIt->p2();
 
+    if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " muka indices " << endl;
     // -- check basic pT requirements for muon and kaon
     reco::TrackBaseRef muTrackView(fTracksHandle, iMuon);
     reco::Track tMuon(*muTrackView);
-    if (tMuon.pt() < fMuonPt) continue;
+    if (tMuon.pt() < fMuonPt) {
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " muon pT = " << tMuon.pt() << endl;
+      continue;
+    }
 
     TrackBaseRef kaTrackView(fTracksHandle, iKaon);
     Track tKaon(*kaTrackView);
-    if (tKaon.pt() < fTrackPt) continue;
+    if (tKaon.pt() < fTrackPt) {
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " kaon pT = " << tKaon.pt() << endl;
+      continue;
+    }
 
     TransientTrack mTT = fTTB->build(*muTrackView);
     TransientTrack kTT = fTTB->build(*kaTrackView);
     vtt.clear(); mkid.clear();
-    vtt.push_back(mTT); mkid.push_back(13);
-    vtt.push_back(kTT);
-    int remainder = fType%100;
-    if (32 == remainder) {
-      mkid.push_back(321);
-    } else if (33 == remainder) {
-      mkid.push_back(211);
+    if (B2MUKTAU == fMode) {
+      vtt.push_back(mTT); mkid.push_back(13);
+      vtt.push_back(kTT); mkid.push_back(321);
     }
+    if (B2PIPID == fMode) {
+      vtt.push_back(mTT); mkid.push_back(211);
+      vtt.push_back(kTT); mkid.push_back(211);
+    }
+
     // -- check that the (mu,Ka) vertex is (1) meaningful and (2) well separated from best PV
     RefCountedKinematicTree mukaTree = fitTree(vtt, mkid);
-    if (mukaTree->isEmpty()) continue;
+    if (mukaTree->isEmpty()) {
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " muka tree empty" << endl;
+      continue;
+    }
     RefCountedKinematicVertex mukaVtx = mukaTree->currentDecayVertex();
     double mkprob = 0.0;
 
@@ -208,6 +254,7 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
     }
 
     if (mkprob < fMuKaVtxProb) {
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " muka vtx probability = " << mkprob << endl;
       continue;
     }
     pair<int, double> mukaPV = findBestPV(vtt, mukaTree, fVertexCollection, fMagneticField);
@@ -216,7 +263,7 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
     Vertex mysVertex = mkVertex(mukaTree);
     pair<double, double> psSep = vtxSeparation(mypVertex, mysVertex);
     if (psSep.first/psSep.second < fFlsxy) {
-      if (fVerbose > 0) cout << "vtxsep(PV, muka) = " << psSep.first << " +/- " << psSep.second << endl;
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " vtxsep(PV, muka) = " << psSep.first << " +/- " << psSep.second << endl;
       continue;
     }
     TVector3 mkplab = TVector3(mukaTree->currentParticle()->currentState().globalMomentum().x(),
@@ -227,13 +274,13 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
     TVector3 pDiff10 = p1 - p0;
     double cosa   = TMath::Cos(pDiff10.Angle(mkplab));
     if (cosa < 0.) {
-      if (fVerbose > 0) cout << "p(muka) opposite to B flight direction, cosa = " << cosa << endl;
+      if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) <<  " p(muka) opposite to B flight direction, cosa = " << cosa << endl;
       continue;
     }
 
 
     double mkmass = mukaTree->currentParticle()->currentState().mass();
-    if (fVerbose > 0) cout << "muka mass(" << iMuon << "/" << iKaon << "):  mvtx = " << mkmass
+    if (fVerbose > 0) cout << Form("%d/%d", iMuon, iKaon) << " muka mass(" << iMuon << "/" << iKaon << "):  mvtx = " << mkmass
 			   << " and pT(mu) = " << tMuon.pt() << " pT(K) = " << tKaon.pt()
 			   << " vtx prob = " << mkprob
 			   << endl;
@@ -241,16 +288,16 @@ void HFBu2MuTauK::analyze(const Event& iEvent, const EventSetup& iSetup) {
     // -- now add 3-prongs!
     for (unsigned int it = 0; it < tauList2.size(); ++it) {
       // -- check against overlap with muons and/or other 3-hadron combinations already written to the tree
-      if (tauList2[it].pi1() == iMuon || tauList2[it].pi1() == iKaon) continue;
-      if (tauList2[it].pi2() == iMuon || tauList2[it].pi2() == iKaon) continue;
-      if (tauList2[it].pi3() == iMuon || tauList2[it].pi3() == iKaon) continue;
+      if (tauList2[it].p1() == iMuon || tauList2[it].p1() == iKaon) continue;
+      if (tauList2[it].p2() == iMuon || tauList2[it].p2() == iKaon) continue;
+      if (tauList2[it].p3() == iMuon || tauList2[it].p3() == iKaon) continue;
 
       vector<int> allTrks;
       allTrks.push_back(iMuon);
       allTrks.push_back(iKaon);
-      allTrks.push_back(tauList2[it].pi1());
-      allTrks.push_back(tauList2[it].pi2());
-      allTrks.push_back(tauList2[it].pi3());
+      allTrks.push_back(tauList2[it].p1());
+      allTrks.push_back(tauList2[it].p2());
+      allTrks.push_back(tauList2[it].p3());
 
       TAnaCand *filledCand = buildCandidate(allTrks, fType, true);
       if (filledCand) {
@@ -294,13 +341,13 @@ TAnaCand* HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cu
   TransientTrack mTT = fTTB->build(*muTrackView);
   TransientTrack kTT = fTTB->build(*kaTrackView);
   vtt.clear(); mkid.clear();
-  vtt.push_back(mTT); mkid.push_back(13);
-  vtt.push_back(kTT);
-  int remainder = fType%100;
-  if (32 == remainder) {
-    mkid.push_back(321);
-  } else if (33 == remainder) {
-    mkid.push_back(211);
+  if (B2MUKTAU == fMode) {
+    vtt.push_back(mTT); mkid.push_back(13);
+    vtt.push_back(kTT); mkid.push_back(321);
+  }
+  if (B2PIPID == fMode) {
+    vtt.push_back(mTT); mkid.push_back(211);
+    vtt.push_back(kTT); mkid.push_back(211);
   }
   RefCountedKinematicTree mukaTree = fitTree(vtt, mkid);
   if (mukaTree->isEmpty()) return 0;
@@ -381,26 +428,18 @@ TAnaCand* HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cu
   }
 
   vtt.clear();
-  if (32 == remainder) {
+  h3id.clear();
+  if (B2MUKTAU == fMode) {
     // -- For tau+ -> pi- pi+ pi+ decays, all hadrons are pions. Ignore those decays with kaons included!?
     vtt.push_back(pi1TT); h3id.push_back(211);
     vtt.push_back(pi2TT); h3id.push_back(211);
     vtt.push_back(pi3TT); h3id.push_back(211);
-  } else if (33 == remainder) {
+  }
+  if (B2PIPID == fMode) {
     // -- For D+ -> K- pi+ pi+ decays, the same-sign particles are the pions. DCS decays are ignored!
-    if (pi1T.charge() == pi2T.charge()) {
-      vtt.push_back(pi1TT); h3id.push_back(211);
-      vtt.push_back(pi2TT); h3id.push_back(211);
-      vtt.push_back(pi3TT); h3id.push_back(321);
-    } else if (pi1T.charge() == pi3T.charge()) {
-      vtt.push_back(pi1TT); h3id.push_back(211);
-      vtt.push_back(pi2TT); h3id.push_back(321);
-      vtt.push_back(pi3TT); h3id.push_back(321);
-    } else if (pi2T.charge() == pi3T.charge()) {
-      vtt.push_back(pi1TT); h3id.push_back(321);
-      vtt.push_back(pi2TT); h3id.push_back(211);
-      vtt.push_back(pi3TT); h3id.push_back(321);
-    }
+    vtt.push_back(pi1TT); h3id.push_back(321);
+    vtt.push_back(pi2TT); h3id.push_back(211);
+    vtt.push_back(pi3TT); h3id.push_back(211);
   }
 
   RefCountedKinematicTree tauTree = fitTree(vtt, h3id);
@@ -437,8 +476,12 @@ TAnaCand* HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cu
   }
 
   double taumass = tauTree->currentParticle()->currentState().mass();
-  if (cut && (taumass > 1.5)) {
-    if (fVerbose > 0) cout << "tau mass = " << taumass << " larger than " << 1.5 << endl;
+  double massCut(1.5);
+  if (B2PIPID == fMode) {
+    massCut = 2.1;
+  }
+  if (cut && (taumass > massCut)) {
+    if (fVerbose > 0) cout << "had mass = " << taumass << " larger than " << massCut << endl;
     return 0;
   }
 
@@ -459,25 +502,22 @@ TAnaCand* HFBu2MuTauK::buildCandidate(std::vector<int> trkIdx, int type, bool cu
     return 0;
   }
 
-
-  if (cut && (taumass > 1.5)) {
-    if (fVerbose > 0) cout << "tau mass = " << taumass << " larger than " << 1.5 << endl;
-    return 0;
-  }
-
-
   if (fVerbose > 0) {
     TLorentzVector tlv,  muka, mu, ka, bu, pi1, pi2, pi3;
-    mu.SetPtEtaPhiM(tMuon.pt(), tMuon.eta(), tMuon.phi(), MMUON);
-    if (32 == remainder) {
+    if (B2MUKTAU == fMode) {
+      mu.SetPtEtaPhiM(tMuon.pt(), tMuon.eta(), tMuon.phi(), MMUON);
       ka.SetPtEtaPhiM(tKaon.pt(), tKaon.eta(), tKaon.phi(), MKAON);
-    } else if (33 == remainder) {
+      pi1.SetPtEtaPhiM(pi1T.pt(), pi1T.eta(), pi1T.phi(), MPION);
+      pi2.SetPtEtaPhiM(pi2T.pt(), pi2T.eta(), pi2T.phi(), MPION);
+      pi3.SetPtEtaPhiM(pi3T.pt(), pi3T.eta(), pi3T.phi(), MPION);
+    } else if (B2PIPID == fMode) {
+      mu.SetPtEtaPhiM(tMuon.pt(), tMuon.eta(), tMuon.phi(), MPION);
       ka.SetPtEtaPhiM(tKaon.pt(), tKaon.eta(), tKaon.phi(), MPION);
+      pi1.SetPtEtaPhiM(pi1T.pt(), pi1T.eta(), pi1T.phi(), MKAON);
+      pi2.SetPtEtaPhiM(pi2T.pt(), pi2T.eta(), pi2T.phi(), MPION);
+      pi3.SetPtEtaPhiM(pi3T.pt(), pi3T.eta(), pi3T.phi(), MPION);
     }
     muka = mu + ka;
-    pi1.SetPtEtaPhiM(pi1T.pt(), pi1T.eta(), pi1T.phi(), MPION);
-    pi2.SetPtEtaPhiM(pi2T.pt(), pi2T.eta(), pi2T.phi(), MPION);
-    pi3.SetPtEtaPhiM(pi3T.pt(), pi3T.eta(), pi3T.phi(), MPION);
     tlv = pi1 + pi2 + pi3;
     cout << "indices(" << iMuon << "/" << iKaon << "/"
 	 << iPion1 << "/" << iPion2 << "/" << iPion3
@@ -644,7 +684,131 @@ vector<int>  HFBu2MuTauK::truthIndices() {
 }
 
 // ----------------------------------------------------------------------
-void HFBu2MuTauK::genMatch() {
+void HFBu2MuTauK::genMatchB2PIPID() {
+  // -- now try to find signal decay
+  bool goodMatch(false);
+  TGenCand *pCand, *pD, *pT;
+  for (int iC = 0; iC < gHFEvent->nGenCands(); ++iC) {
+    pCand = gHFEvent->getGenCand(iC);
+    if (521 == TMath::Abs(pCand->fID)) {
+      fpGenB = fpGenMu = fpGenKa = fpGenTau = fpGenHad1 = fpGenHad2 = fpGenHad3 = 0;
+      fpGenB = pCand;
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pD = gHFEvent->getGenCand(iD);
+	if ((211 == TMath::Abs(pD->fID)) && (iC == pD->fMom1)) {
+	  if (0 == fpGenMu) {
+	    fpGenMu = pD;
+	  } else if (0 == fpGenKa) {
+	    fpGenKa = pD;
+	  }
+	}
+	if (411 == TMath::Abs(pD->fID)) {
+	  fpGenTau = pD;
+	  for (int iT = pD->fDau1; iT <= pD->fDau2; ++iT) {
+	    pT = gHFEvent->getGenCand(iT);
+	    if (0 == pT->fQ) continue;
+	    if (321 == TMath::Abs(pT->fID)) {
+	      fpGenHad1 = pT;
+	    } else if (211 == TMath::Abs(pT->fID)) {
+	      if (0 == fpGenHad2) {
+		fpGenHad2 = pT;
+	      } else if (0 == fpGenHad3) {
+		fpGenHad3 = pT;
+	      } else {
+		cout << "XXXXXXXXXXXXXXXX what should I do here?????" << endl;
+	      }
+	    }
+	  }
+	}
+      }
+      if (fpGenB && fpGenMu && fpGenKa && fpGenTau && fpGenHad1 && fpGenHad2 && fpGenHad3) {
+	goodMatch = true;
+	break;
+      }
+    }
+  }
+
+  if (goodMatch) {
+    if (fVerbose > 0) {
+      cout << "==> HFBu2MuTauK::genMatchB2PIPID> successfully matched gen decay" << endl;
+    }
+    // -- sort pions ONLY according to pT of hadronic tracks
+    double pt2 = fpGenHad2->fP.Perp();
+    double pt3 = fpGenHad3->fP.Perp();
+    TGenCand *tgc1(0), *tgc2(0), *tgc3(0);
+    if (pt2 > pt3) {
+      tgc2 = fpGenHad2;
+      tgc3 = fpGenHad3;
+    } else {
+      tgc2 = fpGenHad3;
+      tgc3 = fpGenHad2;
+    }
+    fpGenHad2 = tgc2;
+    fpGenHad3 = tgc3;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void HFBu2MuTauK::genMatchB2MUPID() {
+  // -- now try to find signal decay
+  bool goodMatch(false);
+  TGenCand *pCand, *pD, *pT;
+  for (int iC = 0; iC < gHFEvent->nGenCands(); ++iC) {
+    pCand = gHFEvent->getGenCand(iC);
+    if (521 == TMath::Abs(pCand->fID)) {
+      fpGenB = fpGenMu = fpGenKa = fpGenTau = fpGenHad1 = fpGenHad2 = fpGenHad3 = 0;
+      fpGenB = pCand;
+      for (int iD = pCand->fDau1; iD <= pCand->fDau2; ++iD) {
+	pD = gHFEvent->getGenCand(iD);
+	if (211 == TMath::Abs(pD->fID)) fpGenKa = pD;
+	if (13 == TMath::Abs(pD->fID)) fpGenMu = pD;
+	if (411 == TMath::Abs(pD->fID)) {
+	  fpGenTau = pD;
+	  for (int iT = pD->fDau1; iT <= pD->fDau2; ++iT) {
+	    pT = gHFEvent->getGenCand(iT);
+	    if (0 != pT->fQ) {
+	      if (321 == TMath::Abs(pT->fID)) {
+		fpGenHad1 = pD;
+	      } else if (211 == TMath::Abs(pT->fID)) {
+		if (0 == fpGenHad2) {
+		  fpGenHad2 = pT;
+		} else if (0 == fpGenHad3) {
+		  fpGenHad3 = pT;
+		} else {
+		  cout << "XXXXXXXXXXXXXXXX what should I do here?????" << endl;
+		}
+	      }
+	    }
+	  }
+	}
+      }
+      if (fpGenB && fpGenMu && fpGenKa && fpGenTau && fpGenHad1 && fpGenHad2 && fpGenHad3) {
+	goodMatch = true;
+	break;
+      }
+    }
+  }
+  if (goodMatch) {
+    // -- sort pions ONLY according to pT of hadronic tracks
+    double pt2 = fpGenHad2->fP.Perp();
+    double pt3 = fpGenHad3->fP.Perp();
+    TGenCand *tgc1(0), *tgc2(0), *tgc3(0);
+    if (pt2 > pt3) {
+      tgc2 = fpGenHad2;
+      tgc3 = fpGenHad3;
+    } else {
+      tgc2 = fpGenHad3;
+      tgc3 = fpGenHad2;
+    }
+    fpGenHad2 = tgc2;
+    fpGenHad3 = tgc3;
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void HFBu2MuTauK::genMatchB2MUKTAU() {
   // -- now try to find signal decay
   bool goodMatch(false);
   TGenCand *pCand, *pD, *pT;

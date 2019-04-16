@@ -17,6 +17,8 @@
 
 class HFBu2MuTauK : public HFVirtualDecay {
 
+  enum MODE {B2MUKTAU, B2MUPID, B2PIPID};
+
  public:
   explicit HFBu2MuTauK(const edm::ParameterSet&);
 
@@ -24,7 +26,9 @@ class HFBu2MuTauK : public HFVirtualDecay {
   void analyze(const edm::Event&, const edm::EventSetup&);
   void dumpConfiguration();
   // -- find from gHFEvent the pointers to the charged stable final state particles
-  void genMatch();
+  void genMatchB2MUKTAU(); // 3-prong daugthers pT sorted
+  void genMatchB2MUPID();  // 3-prong daugthers: K, pi1, pi2 (only pions are pT sorted)
+  void genMatchB2PIPID();  // 3-prong daugthers: K, pi1, pi2 (only pions are pT sorted)
   // -- produce a vector of int that matches the list of truth-identified tracks
   std::vector<int> truthIndices();
   // -- starting from a vector of int (mu, ka, had1, had2, had3) build a candidate of type
@@ -35,7 +39,7 @@ class HFBu2MuTauK : public HFVirtualDecay {
   std::pair<bool, Measurement1D> doca2Vtx(reco::TransientTrack &, reco::Vertex &);
   std::pair<bool, Measurement1D> doca2Vtx(RefCountedKinematicTree &, reco::Vertex &);
   std::pair<bool, Measurement1D> doca2Vtx(TrajectoryStateOnSurface &, reco::Vertex &);
-  int    fMcType;
+  int    fMcType, fMode;
   double fMuKaVtxProb, fMuKaMaxDoca;
   double fTauVtxProb, fTauMaxDoca, fTauMaxIP;
 
