@@ -4,7 +4,7 @@
 #
 # ======================================================================
 
-BASE          = $(HOME)/macros/ana/Bmm/RootAnalysis
+ROOTBASE      = $(BASE)/RootAnalysis
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
@@ -88,9 +88,9 @@ lib: lib/libUtil.so
 
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
 #<<<<<<< HEAD
-#	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -L$(BASE)/rootio/lib -lAna00 -o lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -L$(ROOTBASE)/rootio/lib -lAna00 -o lib/libUtil.so
 #=======
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
+#	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
 #>>>>>>> 87d4b5d4a44ba4e2bb41e061f14d2a26b3ab6383
 
 # ======================================================================
