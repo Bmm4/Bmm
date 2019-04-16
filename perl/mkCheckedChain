@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 # ----------------------------------------------------------------------
-# mkCheckedChain [-c] [-t T1] chainfile1 [chainfile*]
+# mkCheckedChain [-c] [-r] [-t T1] chainfile1 [chainfile*]
 #
 # -c checks the checked chain
 #
@@ -10,13 +10,16 @@
 #
 # This will allow root to immediately open the chain, without first determining its size.
 # ----------------------------------------------------------------------
+#
+# 2019/04/15 added -r to allow pruning of broken (MC production) files
+#
 # Send all questions, wishes and complaints to the
 #
 # Author    Urs Langenegger <urslangenegger@gmail.com>
 # ----------------------------------------------------------------------
 
 use Getopt::Std;
-getopts('ct:');
+getopts('ct:r');
 
 if (!$opt_t) {
     $opt_t = "T1";
@@ -30,11 +33,24 @@ foreach $file (@ARGV) {
     print "$file\n";
     if ($opt_c) {
 
-
-
     } else {
 	system(" $ENV{ROOTSYS}/bin/root -n -l -b -q 'checkChain.C(\"$file\", \"$opt_t\")' ");
     }
+
+    # -- if requested, remove the bad files
+    if ($opt_r) {
+	my $srmprefix = 'srm://t3se01.psi.ch:8443/srm/managerv2?SFN=/pnfs/psi.ch/cms/trivcat/';
+	open(FH, "x$file") || die "cannot open x$file\n";
+	while (<FH>) {
+	    chop;
+	    ($prefix, $file) = split(/\/trivcat\//, $_);
+	    $file = $srmprefix . $file;
+	    print("srmrm $file\n");
+	    system("srmrm $file");
+	}
+	close(FH);
+   }
+
 }
 
 
@@ -52,6 +68,7 @@ void checkChain(const char *chain, const char *tree) {
   char meta[2000];
   sprintf(buffer, "c%s", chain);
   ofstream CHK(buffer);
+  ofstream FAIL(Form("x%s", chain));
 
   TFile *f;
   TTree *t;
@@ -75,15 +92,20 @@ void checkChain(const char *chain, const char *tree) {
           CHK << meta << "  " << nentries <<endl;
         } else {
           cout << meta << " contains " << nentries << " entries" << endl;
+          FAIL << meta <<endl;
         }
       } else {
         cout << "no tree found" << endl;
+        cout << meta << " contains " << nentries << " entries" << endl;
+        FAIL << meta <<endl;
       }
     } else {
       if (f->TestBit(TFile::kRecovered)) {
         cout << "Skipping recovered file " << meta << endl;
+        FAIL << meta <<endl;
       } else {
         cout << "Cannot open file " << meta << endl;
+        FAIL << meta << nentries <<endl;
       }
     }
     if (f) {
@@ -91,6 +113,7 @@ void checkChain(const char *chain, const char *tree) {
     }
   }
   CHK.close();
+  FAIL.close();
   cout << chain << ": " << total <<endl;
   cout << "----------------------------------------------------------------------" << endl;
   //   ofstream os(TString(chain)+TString(".cnt"));
