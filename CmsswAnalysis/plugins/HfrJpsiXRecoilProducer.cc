@@ -16,6 +16,7 @@
 #include "TrackingTools/TransientTrack/interface/TransientTrackBuilder.h"
 #include "TrackingTools/Records/interface/TransientTrackRecord.h"
 #include "TrackingTools/IPTools/interface/IPTools.h"
+#include "TrackingTools/PatternTools/interface/TwoTrackMinimumDistance.h"
 
 #include "RecoVertex/VertexTools/interface/VertexDistanceXY.h"
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
@@ -243,24 +244,28 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
       prob = TMath::Prob(psitVertex->chiSquared(), psitVertex->degreesOfFreedom());
     }
     if (0 && prob < psitProb) {
-      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob << " because J/psi vtx had prob = " << psitProb << endl;
+      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob
+	   << " because J/psi vtx had prob = " << psitProb << endl;
       vtt.pop_back();
       continue;
     }
     if (0 && prob < fVtxProb) {
-      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob << " because fVtxProb = " << fVtxProb << endl;
+      cout << "skipping track " << trkIdxDoca[ix].first << " vertex with probability " << prob
+	   << " because fVtxProb = " << fVtxProb << endl;
       vtt.pop_back();
       continue;
     }
 
     if (psitPV.first == psiPV.first && psitPV.second > psitlip) {
-      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " |lip| increased to " << psitPV.second << " compared to = " << psitlip << endl;
+      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " |lip| increased to " << psitPV.second
+		  << " compared to = " << psitlip << endl;
       vtt.pop_back();
       continue;
     }
 
     if (psitPV.first != psiPV.first) {
-      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " PV changed to " << psitPV.first << " compared to = " << psiPV.first << endl;
+      if (0) cout << "skipping track " << trkIdxDoca[ix].first << " PV changed to " << psitPV.first
+		  << " compared to = " << psiPV.first << endl;
       vtt.pop_back();
       continue;
     }
@@ -291,9 +296,9 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
   // -- create list of recoil tracks (cf. HfrSimpleRecoilProducer)
   // ----------------------------------------------------------------------
   vector<int> recoilList, missList;
-  bool skip(false);
+  bool take(true);
   for (unsigned int ix = 0; ix < fTracksHandle->size(); ix++) {
-    skip = false;
+    take = true;
     // -- skip tracks from J/psi X
     if (trkList.end() != find(trkList.begin(), trkList.end(), static_cast<int>(ix))) {
       continue;
@@ -301,31 +306,104 @@ void HfrJpsiXRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
     TrackBaseRef rTrackView(fTracksHandle, ix);
     const Track track(*rTrackView);
     TransientTrack transTrack = fTTB->build(*rTrackView);
+
+    // -- require 'highPurity' tracks
     if (!track.quality(reco::TrackBase::qualityByName(fTrackQualityString))) {
-      skip = true;
-    }
-    if (track.pt() < fTrackMinPt) {
-      skip = true;
+      if (fVerbose > 5) cout << "==>HfrJpsiXRecoilProducer> failed track quality for track idx = " << ix << endl;
+      take = false;
     }
 
-    tsos = extrapolator.extrapolate(transTrack.initialFreeState(), pVertex);
-    Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), mypVertex);
-    if (doca.value() > fDocaMaxPv) {
-      skip = true;
+    // -- require relatively high-pT tracks
+    if (take) {
+      if (track.pt() < fTrackMinPt) {
+	if (fVerbose > 5) cout << "==>HfrJpsiXRecoilProducer> failed track pT for track idx = " << ix
+			       << " (pT = " << track.pt() << ")" << endl;
+	take = false;
+      }
     }
 
-    if (false == skip) {
+    // -- cut on doca to psi-PV
+    Measurement1D doca;
+    if (take) {
+      tsos = extrapolator.extrapolate(transTrack.initialFreeState(), pVertex);
+      doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), mypVertex);
+      if (doca.value() > fDocaMaxPv) {
+	if (fVerbose > 5) cout << "==>HfrJpsiXRecoilProducer> failed track doca for track idx = " << ix
+			       << " (doca = " << doca.value() << ")" << endl;
+	take = false;
+      }
+    }
+
+    // -- reject tracks associated to other PV
+    int pvIdx(-99);
+    if (take) {
+      pvIdx = getPv(ix, &fVertexCollection);
+      if ((pvIdx > -1) && (pvIdx != psiPV.first)) {
+	if (fVerbose > 5) cout << "==>HfrJpsiXRecoilProducer> failed track pointing to PVIDX = " << pvIdx
+			       << " (psiPV = " << psiPV.first << ")" << endl;
+	take = false;
+      }
+    }
+
+    if (take) {
+      if (fVerbose > 0) {
+	cout << Form("keep track %4d ", ix)
+	     << Form("pT = %4.2f, doca = %5.4f, pvidx = %2d (psivtx = %2d)", track.pt(), doca.value(), pvIdx, psiPV.first)
+	     << endl;
+      }
       recoilList.push_back(ix);
-      trkIdxColl->push_back(ix);
     } else {
-      // NEEDED? int trkPvIdx = getPv(ix, &fVertexCollection);
-      // miss list contains high-purity tracks from nearby
-      if ((doca.value() < 1.0) && (track.quality(reco::TrackBase::qualityByName(fTrackQualityString)))
-	  ) {
-	missList.push_back(static_cast<int>(ix));
+      missList.push_back(static_cast<int>(ix));
+    }
+  }
+
+  // -- now rescue all missed tracks that come within docaMaxTk to any track of the recoilList
+  vector<FreeTrajectoryState> ftsM, ftsR;
+  for (unsigned int ir = 0; ir < recoilList.size(); ++ir) {
+    TrackBaseRef rTrack(fTracksHandle, recoilList[ir]);
+    TransientTrack rtt = fTTB->build(*rTrack);
+    ftsR.push_back(rtt.initialFreeState());
+  }
+  vector<int> missPvIdx;
+  for (unsigned int im = 0; im < missList.size(); ++im) {
+    missPvIdx.push_back(getPv(missList[im], &fVertexCollection));
+    TrackBaseRef mTrack(fTracksHandle, missList[im]);
+    TransientTrack mtt = fTTB->build(*mTrack);
+    ftsM.push_back(mtt.initialFreeState());
+  }
+  TwoTrackMinimumDistance md;
+  vector<int> addList;
+  for (unsigned int im = 0; im < missList.size(); ++im) {
+    // -- do this only for tracks NOT associated to another PV
+    if ((missPvIdx[im] > -1) && (missPvIdx[im] != psiPV.first)) continue;
+    for (unsigned int ir = 0; ir < recoilList.size(); ++ir) {
+      md.calculate(ftsR[ir], ftsM[im]);
+      double doca = md.distance();
+      if (doca < fDocaMaxTk) {
+	if (fVerbose > 5) cout << "rescue track " << missList[im] << " with doca = " << doca << " to track " << recoilList[ir] << endl;
+	addList.push_back(missList[im]);
+	break;
       }
     }
   }
+
+  if (fVerbose > 0) cout << "==>HfrJpsiXRecoilProducer> track list size = " << recoilList.size()
+			 << " rescued track list size = " << addList.size()
+			 << endl;
+
+  for (unsigned int ia = 0; ia < addList.size(); ++ia) {
+    recoilList.push_back(addList[ia]);
+    if (fVerbose > 5) cout << "added track " << addList[ia] << " to recoil list" << endl;
+    missList.erase(remove(missList.begin(), missList.end(), addList[ia]), missList.end());
+  }
+
+
+  for (unsigned int ir = 0; ir < recoilList.size(); ++ir) {
+    trkIdxColl->push_back(recoilList[ir]);
+  }
+
+  if (fVerbose > 0) cout << "==>HfrJpsiXRecoilProducer> recoil list size = " << recoilList.size()
+			 << " (trkIdxColl size = " << trkIdxColl->size() << ")" << endl;
 
   pCand = fillCand(recoilList, psiPV.first);
   pCand->fType  = fType+1; // override the value set fillCand (fType)
@@ -433,9 +511,10 @@ Vertex HfrJpsiXRecoilProducer::mkVertex(RefCountedKinematicTree &kinTree) {
 // ----------------------------------------------------------------------
 TAnaCand* HfrJpsiXRecoilProducer::fillCand(vector<int> trkList, int pvIdx) {
   TAnaCand *pCand = gHFEvent->addCand();
-  pCand->fType = fType;
-  pCand->fSig1 = gHFEvent->nSigTracks();
-  pCand->fSig2 = pCand->fSig1 + trkList.size() - 1;
+  pCand->fType  = fType;
+  pCand->fSig1  = gHFEvent->nSigTracks();
+  pCand->fSig2  = pCand->fSig1 + trkList.size() - 1;
+  pCand->fPvIdx = pvIdx;
   TAnaTrack *pTrack(0);
 
   AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);

@@ -35,7 +35,7 @@ void stampAndSave(TCanvas *fC, const char *s = "bla.eps");
 void shrinkPad(double b = 0.1, double l = 0.1, double r = 0.1, double t = 0.1);
 void babar(double x, double y, double scale = 1.0, int prel = 0);
 void zone(int x = 1, int y = 1, TCanvas *c = 0);
-int  wait();
+int  wait(void);
 void colors(int choice = 0);
 void replaceAll(std::string &s, const std::string &from, const std::string &to);
 std::vector<int> defVector(int n, ...);
@@ -45,6 +45,7 @@ std::string formatTex(double n, std::string name, std::string tag);
 std::string formatTex(double n, std::string name, int digits, int sgn = 0);
 // -- value with error in scientific notation
 std::string formatTexErrSci(double n, double nE, std::string name, int digits, int sgn = 0);
+
 
 void stamp(double x1, std::string text1, std::string text1a, double x2, std::string text2, int ipos = 11);
 
@@ -64,6 +65,7 @@ void zeroNegativeEntries(TH1D *);
 
 std::string formatTLV(const TLorentzVector &, int mode = 0);
 std::string formatTVector3(const TVector3 &, int mode = 0);
+
 
 
 // ======================================================================
@@ -135,6 +137,7 @@ double quadraticSum(int n, ...);
 // ======================================================================
 // -- gen utilities
 // ======================================================================
+int  quarkFlavor(int i);
 bool isBeautyMeson(int i);
 bool isBeautyMesonWeak(int i);
 bool isBeautyBaryon(int i);
@@ -145,7 +148,6 @@ bool isCharmBaryon(int i);
 bool isCharmBaryonWeak(int i);
 bool isLightMeson(int i);
 bool isStableCharged(int i);
-
 
 
 #endif

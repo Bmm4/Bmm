@@ -114,7 +114,7 @@ int main(int argc, char *argv[]) {
 
   // -- Prepare histfilename variation with (part of) cut file name
   TString fn(cutFile);
-  fn.ReplaceAll("cuts/", "");
+  fn.ReplaceAll("cutfiles/", "");
   fn.ReplaceAll(".cuts", "");
   fn.ReplaceAll("tree", "");
 

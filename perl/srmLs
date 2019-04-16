@@ -21,6 +21,7 @@
 #          2016/07/08 migrate to xrootd instead of dcap
 #          2016/07/08 migrate to xrdfs instead of gfal-ls
 #          2018/02/28 add even/odd options
+#          2019/04/15 add removal option -r
 # ----------------------------------------------------------------------
 # Send all questions, wishes and complaints to the
 #
@@ -32,7 +33,7 @@ $cprefix = "root://t3dcachedb.psi.ch:1094/pnfs/psi.ch/cms/trivcat";
 
 # -- Get arguments
 use Getopt::Std;
-getopts('b:cCen:op:x:s:');
+getopts('b:cCen:op:rx:s:');
 
 # -- shortcut for nfs-mounted multiple directories:
 if ($#ARGV > -1) {
@@ -132,6 +133,14 @@ foreach $f (@filelist) {
 	$lfn = substr($file, rindex($file, '/store')+1, length($file));
 	$ffn = $prefix."/".$lfn;
 	# print "lfn: $lfn -> $size\n";
+
+	# -- remove if desired
+	if ($opt_r) {
+	    print "xrdfs t3dcachedb03.psi.ch rm //pnfs/psi.ch/cms/trivcat/$lfn\n";
+	    system("xrdfs t3dcachedb03.psi.ch rm //pnfs/psi.ch/cms/trivcat/$lfn");
+	    next;
+	}
+
 	if ($opt_c) {
 	    print "$cprefix/$lfn\n";
 	# } elsif ($opt_p && !$opt_s) {

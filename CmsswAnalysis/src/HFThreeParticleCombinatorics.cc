@@ -76,8 +76,10 @@ void HFThreeParticleCombinatorics::combine(vector<triplet> &combList,
   }
 
   if (fVerbose > 0) {
-      for (vector<triplet>::iterator it=combList.begin(); it != combList.end(); it++) {
-	cout << "K pi pi List: " << it->ka() << " / " << it->pi1() << " / " << it->pi2()<< endl;
+    int cnt(0);
+    for (vector<triplet>::iterator it=combList.begin(); it != combList.end(); it++) {
+      cout << "K pi pi List: " << cnt << " - " << it->ka() << " / " << it->pi1() << " / " << it->pi2()<< endl;
+      ++cnt;
     }
   }
 
@@ -137,8 +139,10 @@ void HFThreeParticleCombinatorics::combine(vector<triplet> &combList,
   }
 
   if (fVerbose > 0) {
-      for (vector<triplet>::iterator it=combList.begin(); it != combList.end(); it++) {
-	cout << "Triple Pion List: " << it->pi1() << " /  " << it->pi2() << " / " << it->pi3()<< endl;
+    int cnt(0);
+    for (vector<triplet>::iterator it=combList.begin(); it != combList.end(); it++) {
+      cout << "Triple Pion List: " << cnt << " - " << it->pi1() << " /  " << it->pi2() << " / " << it->pi3()<< endl;
+      ++cnt;
     }
   }
 

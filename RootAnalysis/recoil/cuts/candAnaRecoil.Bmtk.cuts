@@ -1,6 +1,0 @@
-CANDTYPE        32000
-CANDTRUTH     3002000
-BRECOTYPE     3000069
-BRECOTRUTH        511
-# -- baseCuts
-+input cuts/baseCuts.cuts

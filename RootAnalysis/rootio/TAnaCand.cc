@@ -57,6 +57,8 @@ void TAnaCand::dump() {
 	       fIndex, fType, fMass, fMassC, fPlab.Perp(), fPlab.Phi(), fPlab.Eta(), fMaxDoca, (fPvIP3dE>0.?fPvIP3d/fPvIP3dE:-1.), fPvIdx)
        << endl;
 
-  cout << "mother cand: " << fMom << " daughter cands: " << fDau1 << " .. " << fDau2  << " sig tracks: " << fSig1 << " .. " << fSig2 << endl;
+  cout << "mother cand: " << fMom << " daughter cands: " << fDau1 << " .. " << fDau2
+       << " sig tracks: " << fSig2-fSig1+1 << " (" << fSig1 << " .. " << fSig2 << ")"
+       << endl;
   fVtx.dump();
 }

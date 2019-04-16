@@ -28,7 +28,8 @@ HfrBaseProducer::HfrBaseProducer(const ParameterSet& iConfig) :
   fMuonQualityString(iConfig.getUntrackedParameter<string>("muonQuality", string("AllGlobalMuons"))),
   fTrackMinPt(iConfig.getUntrackedParameter<double>("trackMinPt", 0.4)),
   fMuonMinPt(iConfig.getUntrackedParameter<double>("muonMinPt", 4.0)),
-  fDocaMaxPv(iConfig.getUntrackedParameter<double>("docaMaxPv", 0.2)) {
+  fDocaMaxPv(iConfig.getUntrackedParameter<double>("docaMaxPv", 0.1)),
+  fDocaMaxTk(iConfig.getUntrackedParameter<double>("docaMaxTk", 0.1)) {
 
   // produces<vector<int> >(); // vector of track indices
   // produces<int>();          // possibly a PV index
@@ -54,6 +55,7 @@ void HfrBaseProducer::dumpConfiguration() {
   cout << "---  trackMinPt                  " << fTrackMinPt << endl;
   cout << "---  muonMinPt                   " << fMuonMinPt << endl;
   cout << "---  docaMaxPv                   " << fDocaMaxPv << endl;
+  cout << "---  docaMaxTk                   " << fDocaMaxTk << endl;
 }
 
 
