@@ -38,7 +38,7 @@ EXTHEADERS    = -I..
 
 # -- Files
 READER = t1Reader.o recoilReader.o genAnalysis.o \
-         candAna.o candAnaBuToMuTauK.o candAnaBuToDmMuPi.o tmva1.o
+         candAna.o candAnaBuToMuTauK.o candAnaBuToDmPiPi.o candAnaBuToDmMuPi.o tmva1.o
 
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}

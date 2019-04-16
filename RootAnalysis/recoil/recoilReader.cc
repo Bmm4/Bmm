@@ -7,6 +7,7 @@
 
 #include "candAna.hh"
 #include "candAnaBuToMuTauK.hh"
+#include "candAnaBuToDmPiPi.hh"
 #include "candAnaBuToDmMuPi.hh"
 using namespace std;
 
@@ -197,6 +198,11 @@ void recoilReader::readCuts(TString filenames, int dump) {
     }
     if (string::npos != sline.find("candAnaBuToDmMuPi")) {
       candAna *a = new candAnaBuToDmMuPi(this, sline, cutfiles[i]);
+      a->BLIND = BLIND;
+      lCandAnalysis.push_back(a);
+    }
+    if (string::npos != sline.find("candAnaBuToDmPiPi")) {
+      candAna *a = new candAnaBuToDmPiPi(this, sline, cutfiles[i]);
       a->BLIND = BLIND;
       lCandAnalysis.push_back(a);
     }
