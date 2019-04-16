@@ -11,18 +11,18 @@ my %modes = ();
 tie %modes, "Tie::IxHash";
 
 # -- output directory
-$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+$SCRATCH = "/scratch/$ENV{'USER'}/recoil/t1";
 # -- grid SE prefix
 my $PSI = $ENV{'PSI'};
 $PSI =~ s/\?/\\\?/g;
 if ($PSI eq "") {
     die "PSI not defined, but required ...\n";
 }
-my $LFN = "/store/user/$USER/bmm4/runBmm/$version/";
+my $LFN = "/store/user/$USER/recoil/runT1Reader/$version/";
 my $SEDIR = "$LFN";
 
 # -- edit the following if you produced your own T1 trees with cmsRun:
-my $T1LOC = "/store/user/ursl/bmm4/cmsRun";
+my $T1LOC = "/store/user/ursl/recoil/cmsRun";
 
 # -- did not manage to do this with refs, so do it with functions:
 sub runCommand() {
@@ -66,53 +66,12 @@ my $NHA = 100000;
 # -----------------------------------------------
 # -- combinations
 # -----------------------------------------------
-$combine{"bmmCharmonium2016"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016-$version.root bmm-data-bmmCharmonium2016?-*.root; cd -  ";
-$combine{"bmmCharmonium2016BF"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016BF-$version.root bmm-data-bmmCharmonium2016B-$version.root bmm-data-bmmCharmonium2016C-$version.root bmm-data-bmmCharmonium2016D-$version.root bmm-data-bmmCharmonium2016E-$version.root bmm-data-bmmCharmonium2016F-$version.root; cd -  ";
 $combine{"bmmCharmonium2016GH"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016GH-$version.root bmm-data-bmmCharmonium2016G-$version.root bmm-data-bmmCharmonium2016H-$version.root; cd -  ";
 
-$combine{"bmmMuOnia2011"} = "cd $SCRATCH; hadd -f bmm-data-bmmMuOnia2011-$version.root bmm-data-bmmMuOnia2011A-$version.root bmm-data-bmmMuOnia2011B-$version.root; cd -  ";
-$combine{"bmmMuOnia2012"} = "cd $SCRATCH; hadd -f bmm-data-bmmMuOnia2012-$version.root bmm-data-bmmMuOnia2012A-$version.root bmm-data-bmmMuOnia2012B-$version.root bmm-data-bmmMuOnia2012C-$version.root bmm-data-bmmMuOnia2012D-$version.root; cd -  ";
-
-$combine{"bmmAnaselMuOnia2011"} = "cd $SCRATCH; hadd -f bmm-data-bmmAnaselMuOnia2011-$version.root bmm-data-bmmAnaselMuOnia2011A-$version.root bmm-data-bmmAnaselMuOnia2011B-$version.root; cd -  ";
-$combine{"bmmAnaselMuOnia2012"} = "cd $SCRATCH; hadd -f bmm-data-bmmAnaselMuOnia2012-$version.root bmm-data-bmmAnaselMuOnia2012A-$version.root bmm-data-bmmAnaselMuOnia2012B-$version.root bmm-data-bmmAnaselMuOnia2012C-$version.root bmm-data-bmmAnaselMuOnia2012D-$version.root; cd -  ";
-$combine{"bmmAnaselCharmonium2016BF"} = "cd $SCRATCH; hadd -f bmm-data-bmmAnaselCharmonium2016BF-$version.root bmm-data-bmmAnaselCharmonium2016B-$version.root bmm-data-bmmAnaselCharmonium2016C-$version.root bmm-data-bmmAnaselCharmonium2016D-$version.root bmm-data-bmmAnaselCharmonium2016E-$version.root bmm-data-bmmAnaselCharmonium2016F-$version.root; cd -  ";
-$combine{"bmmAnaselCharmonium2016GH"} = "cd $SCRATCH; hadd -f bmm-data-bmmAnaselCharmonium2016GH-$version.root bmm-data-bmmAnaselCharmonium2016G-$version.root bmm-data-bmmAnaselCharmonium2016H-$version.root ; cd -  ";
-
-
-$combine{"dstarMuOnia2011"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2011-$version.root dstar-data-dstarMuOnia2011A-$version.root dstar-data-dstarMuOnia2011B-$version.root; cd -  ";
-$combine{"dstarMuOnia2012"} = "cd $SCRATCH; hadd -f dstar-data-dstarMuOnia2012-$version.root dstar-data-dstarMuOnia2012A-$version.root dstar-data-dstarMuOnia2012B-$version.root dstar-data-dstarMuOnia2012C-$version.root dstar-data-dstarMuOnia2012D-$version.root; cd -  ";
-$combine{"dstarCharmonium2016"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016-$version.root dstar-data-dstarCharmonium2016B-$version.root dstar-data-dstarCharmonium2016C-$version.root dstar-data-dstarCharmonium2016D-$version.root dstar-data-dstarCharmonium2016E-$version.root dstar-data-dstarCharmonium2016F-$version.root dstar-data-dstarCharmonium2016G-$version.root dstar-data-dstarCharmonium2016H-$version.root; cd -  ";
-$combine{"dstarCharmonium2016BF"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016BF-$version.root dstar-data-dstarCharmonium2016B-$version.root dstar-data-dstarCharmonium2016C-$version.root dstar-data-dstarCharmonium2016D-$version.root dstar-data-dstarCharmonium2016E-$version.root dstar-data-dstarCharmonium2016F-$version.root; cd -  ";
-$combine{"dstarCharmonium2016GH"} = "cd $SCRATCH; hadd -f dstar-data-dstarCharmonium2016GH-$version.root dstar-data-dstarCharmonium2016G-$version.root dstar-data-dstarCharmonium2016H-$version.root; cd -  ";
-
-
-$combine{"combined"} = "cd $SCRATCH; cp bmm-mc-Summer16_private-BdToPiMuNu-2016BF-$version.root bmm-mc-combined-BdToPiMuNu-2016BF-$version.root; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; cp bmm-mc-Summer16_private-BdToPiMuNu-2016GH-$version.root bmm-mc-combined-BdToPiMuNu-2016GH-$version.root; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-LbToPMuNu-2016BF-$version.root bmm-mc-Summer16_private-LbToPMuNu-2016BF-$version.root bmm-mc-RunIISpring16DR80-LbToPMuNu_BMuonFilter-2016BF-$version.root; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-LbToPMuNu-2016GH-$version.root bmm-mc-Summer16_private-LbToPMuNu-2016GH-$version.root bmm-mc-RunIISpring16DR80-LbToPMuNu_BMuonFilter-2016GH-$version.root; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; cp bmm-mc-Summer16_private-BsToKMuNu-2016BF-$version.root bmm-mc-combined-BsToKMuNu-2016BF-$version.root; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; cp bmm-mc-Summer16_private-BsToKMuNu-2016GH-$version.root bmm-mc-combined-BsToKMuNu-2016GH-$version.root; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-2016BF-$version.root bmm-mc-Summer16_private-BsToMuMu-2016BF-$version.root bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-2016BF-$version.root; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToMuMu-2016GH-$version.root bmm-mc-Summer16_private-BsToMuMu-2016GH-$version.root bmm-mc-RunIISpring16DR80-BsToMuMu_BMuonFilter-2016GH-$version.root; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BdToMuMu-2016BF-$version.root bmm-mc-Summer16_private-BdToMuMu-2016BF-$version.root bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-2016BF-$version.root; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BdToMuMu-2016GH-$version.root bmm-mc-Summer16_private-BdToMuMu-2016GH-$version.root bmm-mc-RunIISpring16DR80-BdToMuMu_BMuonFilter-2016GH-$version.root; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-2016BF-$version.root bmm-mc-Summer16_private-BuToJpsiKp-2016BF-$version.root bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-2016BF-$version.root ; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BuToJpsiKp-2016GH-$version.root bmm-mc-Summer16_private-BuToJpsiKp-2016GH-$version.root bmm-mc-RunIISpring16DR80-BuToJpsiK_BMuonFilter-2016GH-$version.root ; cd - ; ";
-
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-2016BF-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-2016BF-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-2016BF-$version.root ; cd - ; ";
-$combine{"combined"} .= "cd $SCRATCH; hadd -f bmm-mc-combined-BsToJpsiPhi-2016GH-$version.root bmm-mc-Summer16_private-BsToJpsiPhi-2016GH-$version.root bmm-mc-RunIISpring16DR80-BsToJpsiPhi_BMuonFilter-2016GH-$version.root ; cd - ; ";
-
-
-
 # ----------------------------------------------------------------------
-# 2016
+# 2017
 # ----------------------------------------------------------------------
-my @list2016 = ("B", "C", "D", "E", "F", "G", "H");
+my @list2017 = ("B", "C", "D", "E", "F", "G", "H");
 # -- BMM
 foreach $let (@list2016) {
     $dataset = "bmmCharmonium2016$let";
@@ -120,7 +79,7 @@ foreach $let (@list2016) {
     $era = "BF$version";
     if ($let eq "G" || $let eq "H") {$era = "GH$version";}
     &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era $unblind -C cuts/bmmReader.2016 ' ");
-    $catalogs{$mode} = "$BASE/perl/srmLs -x $T1LOC/$vda/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} = "$BASE/perl/srmLs -x $T1LOC/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 }
@@ -129,26 +88,23 @@ foreach $let (@list2016) {
 $dataset = "mc-2017";
 # -----------------------------------------------
 $year = 2017;
-@mceras = ();
 %modes = ();
 %modes = (
-    "BuToMuTauK" => "candAnaRecoil.Bmtk.cuts"
-    "BuToDPiMu"  => "candAnaRecoil.BDpm.cuts"
+    "BuToMuTauK"  => "cutfiles/BuToMuTauKTruth.cuts:cutfiles/BuToMuTauK.cuts",
+    "BuToDmPiPi"  => "cutfiles/BuToDmPiPiTruth.cuts:cutfiles/BuToDmPiPi.cuts"
+    );
+%rmodes = (
+    "BuToMuTauK"  => "recoil18",
+    "BuToDmPiPi:0"  => "recoil16",
+    "BuToDmPiPi:1"  => "recoil17"
     );
 
-foreach $mds (keys %modes) {
-    my $odd = "-e";
-    foreach $era (@mceras) {
-	$mode = "bmm-mc-$dataset-$mds-$year$era-$version";  ($pattern = $mode) =~ s/$year$era-$version/$vmc/g;
-	#$jobs{$mode}   = "cd $mode && ".&runCommand." -x 'bin/runBmm -y 2016 -e $era$version -C cuts/$modes{$mds} -m' c$mode-*  && cd - ";
-	&addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era$version -C cuts/$modes{$mds} -m ' ");
-	if ($era eq "GH") {
-	    $odd = "-o";
-	} else {
-	    $odd = "-e";
-	}
-	$catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vmc/$dataset $odd -c -p $pattern | sort > $mode " . &mCC;
-	$catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
-	$merges{$mode} = "-x $SEDIR/$dataset -p $mode";
-    }
+foreach $rawmds (keys %rmodes) {
+    ($mds,$cnt) = split(/:/, $rawmds, 2);
+    $mode = "$mds-$dataset-$rmodes{$rawmds}-$year-$version";  ($pattern = $rmodes{$rawmds}) =~ s/$year-$version/$version/g;
+    print("$mode -> pattern = $pattern<-\n");
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $version -C $modes{$rawmds} -m ' ");
+    $catalogs{$mode} = "$BASE/perl/srmLs -x $T1LOC/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
 }
