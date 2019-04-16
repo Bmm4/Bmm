@@ -4,6 +4,7 @@
 #
 # ======================================================================
 
+ROOTBASE      = $(BASE)/RootAnalysis
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
@@ -86,7 +87,8 @@ all: vars prep lib
 lib: lib/libUtil.so
 
 lib/libUtil.so: $(addprefix obj/,$(UTILDICT) $(UTIL))
-	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
+	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -L$(ROOTBASE)/rootio/lib -lAna00 -o lib/libUtil.so
+##	$(CXX) $(SOFLAGS) $(addprefix obj/,$(UTIL) $(UTILDICT)) $(GLIBS) -o lib/libUtil.so
 
 # ======================================================================
 links:
