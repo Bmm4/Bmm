@@ -575,9 +575,24 @@ void replaceAll(string &str, const string &from, const string &to) {
   }
 }
 
+
+// ----------------------------------------------------------------------
+int quarkFlavor(int i) {
+  if (isBeautyMeson(i) || isBeautyBaryon(i)) {
+    return 5;
+  } else if (isCharmMeson(i) || isCharmBaryon(i)) {
+    return 4;
+  } else {
+    return 3;
+  }
+}
+
 // ----------------------------------------------------------------------
 bool isBeautyMesonWeak(int i) {
-  return (5 == TMath::Abs(i)/100);
+  if (511 == TMath::Abs(i)) return true;
+  if (521 == TMath::Abs(i)) return true;
+  if (531 == TMath::Abs(i)) return true;
+  return false;
 }
 
 // ----------------------------------------------------------------------
@@ -592,7 +607,10 @@ bool isBeautyBaryonWeak(int i) {
 
 // ----------------------------------------------------------------------
 bool isCharmMesonWeak(int i) {
-  return (4 == TMath::Abs(i)/100);
+  if (411 == TMath::Abs(i)) return true;
+  if (421 == TMath::Abs(i)) return true;
+  if (431 == TMath::Abs(i)) return true;
+  return false;
 }
 
 // ----------------------------------------------------------------------

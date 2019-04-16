@@ -46,6 +46,7 @@ std::string formatTex(double n, std::string name, int digits, int sgn = 0);
 // -- value with error in scientific notation
 std::string formatTexErrSci(double n, double nE, std::string name, int digits, int sgn = 0);
 
+
 void stamp(double x1, std::string text1, std::string text1a, double x2, std::string text2, int ipos = 11);
 
 void rmSubString(std::string &sinput, const std::string &remove);
@@ -64,6 +65,7 @@ void zeroNegativeEntries(TH1D *);
 
 std::string formatTLV(const TLorentzVector &, int mode = 0);
 std::string formatTVector3(const TVector3 &, int mode = 0);
+
 
 
 // ======================================================================
@@ -135,6 +137,7 @@ double quadraticSum(int n, ...);
 // ======================================================================
 // -- gen utilities
 // ======================================================================
+int  quarkFlavor(int i);
 bool isBeautyMeson(int i);
 bool isBeautyMesonWeak(int i);
 bool isBeautyBaryon(int i);
@@ -145,7 +148,6 @@ bool isCharmBaryon(int i);
 bool isCharmBaryonWeak(int i);
 bool isLightMeson(int i);
 bool isStableCharged(int i);
-
 
 
 #endif
