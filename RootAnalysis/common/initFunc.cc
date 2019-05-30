@@ -2594,7 +2594,7 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
     fHi = h->GetBinLowEdge(hbin+1);
   }
 
-  double dx = h->GetBinLowEdge(hbin+1) - h->GetBinLowEdge(lbin);
+  double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
   double ylo = h->Integral(lbin, lbin+EDG)/NB;
   double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
 
@@ -2621,6 +2621,20 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
     cout << "initFunc::initExpo dx: " << dx << endl;
     cout << "initFunc::initExpo fLo: " << fLo << " fHi: " << fHi << endl;
     cout << "initFunc::initExpo ylo: " << ylo << " yhi: " << yhi << endl;
+    cout << "initFunc::initExpo lo range " << h->GetBinLowEdge(lbin) << ".." << h->GetBinLowEdge(lbin+EDG) << ": "
+	 << h->GetBinContent(lbin+0) << " "
+	 << h->GetBinContent(lbin+1) << " "
+	 << h->GetBinContent(lbin+2) << " "
+	 << h->GetBinContent(lbin+3) << " "
+	 << h->GetBinContent(lbin+4) << " "
+	 << endl;
+    cout << "initFunc::initExpo hi range " << h->GetBinLowEdge(hbin-EDG-1) << ".." << h->GetBinLowEdge(hbin-1) << ": "
+	 << h->GetBinContent(hbin-EDG-1+0) << " "
+	 << h->GetBinContent(hbin-EDG-1+1) << " "
+	 << h->GetBinContent(hbin-EDG-1+2) << " "
+	 << h->GetBinContent(hbin-EDG-1+3) << " "
+	 << h->GetBinContent(hbin-EDG-1+4) << " "
+	 << endl;
     cout << "initFunc::initExpo  p0:  " << p0 <<  " p1:  " << p1 << endl;
     cout << "initFunc::initExpo integral: " <<  lbin << " .. " <<  lbin+EDG << endl;
     cout << "initFunc::initExpo integral: " <<	hbin-EDG-1 << " .. " << hbin-1 << endl;
@@ -2769,10 +2783,11 @@ TF1* initFunc::bupsik(TH1 *h, double sigma) {
   f->SetParameter(1, 5.28);
   f->SetParameter(2, sigma); limitPar(2, 0.5*sigma, 2.*sigma);
   f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.60);
-  f->SetParameter(4, 2.*sigma); limitPar(4, 2.*sigma, 4.*sigma);
+  f->SetParameter(4, 2.2*sigma); limitPar(4, 2.*sigma, 4.*sigma);
 
   double a(-1.), b(-1.);
-  fLo = 5.5; fHi = 5.8;
+  double eps(0.00001);
+  fLo = 5.5+eps; fHi = 5.8+eps;
   initExpo(a, b, h);
   f->SetParameter(5, a);
   f->SetParameter(6, b);

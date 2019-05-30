@@ -12,6 +12,8 @@
 #include "TMath.h"
 #include "TStyle.h"
 #include "TKey.h"
+#include "TRandom3.h"
+#include "TVirtualFitter.h"
 
 // ----------------------------------------------------------------------
 // -- debugging example for TH2D
@@ -254,29 +256,43 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   }
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  if (fVerbose < 0) {
+    h->GetXaxis()->CenterTitle(kTRUE);
+    h->GetYaxis()->CenterTitle(kTRUE);
+  }
   if (0 == fData.size()) return;
   fSummary.clear();
 
-  fpIF->fName = "fit";
+  fpIF->fName = "fit" + string(h->GetName());
   fpIF->fVerbose = true;
   TF1 *f1 = fpIF->bupsik(h, sigma);
   f1->SetNpx(1000);
+  if (fVerbose < 0) {
+    f1->SetLineWidth(4);
+    f1->SetLineColor(kBlack);
+    h->SetNdivisions(504, "XYZ");
+  }
+
   fpIF->fName = "comp";
   TF1 *fcnSig  = fpIF->gauss2c(h);
   fcnSig->SetLineColor(kBlue+1);
   fcnSig->SetNpx(1000);
   fpIF->fName = "expo";
   TF1 *fcnExpo = fpIF->expo(0., 100.);
+  fcnExpo->SetNpx(1000);
   fcnExpo->SetLineColor(kRed+1);
   fcnExpo->SetLineStyle(kSolid);
   fpIF->fName = "err2";
   TF1 *fcnErr2 = fpIF->err2(0., 100.);
+  fcnErr2->SetNpx(1000);
   fcnErr2->SetLineColor(kRed+2);
   fcnErr2->SetLineStyle(kSolid);
   fpIF->fName = "sat";
   TF1 *fcnSat = fpIF->pisat(1.);
+  fcnSat->SetNpx(1000);
   fcnSat->SetLineColor(kRed+3);
   fcnSat->SetLineStyle(kSolid);
+
 
   TCanvas *c0(0);
   c0 = (TCanvas*)gROOT->FindObject("fpy_c0");
@@ -341,12 +357,13 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   if (fVerbose > -1) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
+  TVirtualFitter::SetDefaultFitter("Minuit2");
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     } else {
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     }
   } else {
     h->Draw();
@@ -382,7 +399,15 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     fcnErr2->SetParError(ipar, f1->GetParameter(ipar+7));
   }
 
+  if (fVerbose > -1) {
 
+  } else {
+    fcnSig->SetLineColor(kGreen-2);  fcnSig->SetFillColor(kGreen-2); fcnSig->SetFillStyle(3354);  fcnSig->SetLineWidth(2);
+    fcnExpo->SetLineColor(kCyan+2);  fcnExpo->SetFillColor(kCyan+2);  fcnExpo->SetFillStyle(3359); fcnExpo->SetLineWidth(2);
+    fcnErr2->SetLineColor(kBlue+1);  fcnErr2->SetFillColor(kBlue+1); fcnErr2->SetFillStyle(3365); fcnErr2->SetLineWidth(2);
+    fcnSat->SetLineColor(kRed+2);   fcnSat->SetFillColor(kRed+2);  fcnSat->SetFillStyle(3344);  fcnSat->SetLineWidth(2);
+    h->Draw("axissame");
+  }
   double sqrt2pi = 2.506628275;
   double gintegral = sqrt2pi*f1->GetParameter(0)*(f1->GetParameter(2) + f1->GetParameter(3)*f1->GetParameter(4));
   gintegral = fcnSig->Integral(4.9, 6.0);
@@ -398,11 +423,48 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
 
   if (1) {
     fcnSig->Draw("same");
-    fcnExpo->Draw("same");
     fcnErr2->Draw("same");
+    fcnExpo->Draw("same");
     fcnSat->Draw("same");
+    h->Draw("esame");
   }
 
+  if (fVerbose > -1) {
+  } else {
+    TLegend *legg = new TLegend(0.5, 0.5, 0.85, 0.85);
+    legg->SetFillStyle(0);
+    legg->SetBorderSize(0);
+    legg->SetTextSize(0.04);
+    legg->SetFillColor(0);
+    legg->SetTextFont(42);
+    legg->AddEntry(h, "Data", "pe");
+    legg->AddEntry(f1, "Total fit", "l");
+    legg->AddEntry(fcnSig,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}", "f");
+    legg->AddEntry(fcnExpo, "comb. background", "f");
+    legg->AddEntry(fcnErr2, "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+} X}", "f");
+    legg->AddEntry(fcnSat,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#pi^{+}}", "f");
+    legg->Draw();
+
+    TLatex tl;
+    tl.SetTextAlign(11);
+    tl.SetTextSize(0.04);
+    tl.SetTextFont(62);
+    tl.DrawLatexNDC(0.2, 0.92, "CMS");
+    tl.SetTextFont(42);
+
+    string fname = h->GetName();
+    cout << "fname = " << fname << endl;
+    tl.SetTextAlign(31);
+    if (string::npos != fname.find("2011")) {
+      tl.DrawLatexNDC(0.9, 0.92, "5 fb^{-1} (7 TeV)");
+    } else if (string::npos != fname.find("2012")) {
+      tl.DrawLatexNDC(0.9, 0.92, "20 fb^{-1} (8 TeV)");
+    } else if (string::npos != fname.find("2016BF")) {
+      tl.DrawLatexNDC(0.9, 0.92, "20 fb^{-1} (13 TeV)");
+    } else if (string::npos != fname.find("2016GH")) {
+      tl.DrawLatexNDC(0.9, 0.92, "16 fb^{-1} (13 TeV)");
+    }
+  }
   // -- store for possible later usage
   if (limitpars < 0) {
     fPar.clear();
@@ -424,9 +486,18 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   res->fResults.fSgPeak = f1->GetParameter(1);
 
   TH1D *hbla = new TH1D("hbla", "", 100, 4.5, 7.0);
+  TRandom  *tr0 = gRandom;
+  TRandom3 *tr = new TRandom3(12345);
+  gRandom = tr;
   for (int i = 0; i < 10000; ++i) hbla->Fill(fcnSig->GetRandom());
-  res->fResults.fSgSigma = hbla->GetRMS();
+  double drms = 10000.*hbla->GetRMS();
+  int    irms = static_cast<int>(drms);
+  drms = irms/10000.;
+  res->fResults.fSgSigma = drms;
+  cout << "DBX: hbla->GetRMS() = " << hbla->GetRMS() << " -> drms = " << drms << endl;
   delete hbla;
+  gRandom = tr0;
+  delete tr;
 
   // -- double gaussian integral over 3 sigma region
   double sig   = fcnSig->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
@@ -439,8 +510,8 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   double bgE  = fcnExpo->GetParError(0)/fcnExpo->GetParameter(0)*bg;
 
   cout << "XXXXX sig = " << sig << " +/- " << sigE
-       << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " to "
-       << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma
+       << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " < " << res->fResults.fSgPeak << " < "
+       << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
        << " XXXXX " << endl;
 
   // -- create 'sensible' errors
@@ -464,19 +535,21 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   res->fResults.fBg  = bg;
   res->fResults.fBgE = bgE;
 
-  TLatex tl;
-  tl.SetTextSize(0.03);
-  if (-1 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else if (0 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  }
+  if (fVerbose > -1) {
+    TLatex tl;
+    tl.SetTextSize(0.03);
+    if (-1 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else if (0 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    }
 
-  tl.SetTextAngle(90.);
-  tl.DrawLatexNDC(0.93, 0.15, h->GetName());
-  tl.SetTextAngle(0.);
+    tl.SetTextAngle(90.);
+    tl.DrawLatexNDC(0.93, 0.15, h->GetName());
+    tl.SetTextAngle(0.);
+  }
 
   c0->Modified();
   c0->Update();
@@ -799,14 +872,16 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   res->fResults.fBg  = bg;
   res->fResults.fBgE = bgE;
 
-  TLatex tl;
-  tl.SetTextSize(0.03);
-  if (-1 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else if (0 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+  if (fVerbose > -1) {
+    TLatex tl;
+    tl.SetTextSize(0.03);
+    if (-1 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else if (0 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    }
   }
 
   c0->Modified();
@@ -999,6 +1074,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
     if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
   string fitopt = "lr";
+  TVirtualFitter::SetDefaultFitter("Minuit2");
   if (h->GetSumOfWeights() > 200) fitopt = "r";
   if (0 == fVerbose) fitopt += "q";
   if (0) {
@@ -1247,12 +1323,13 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   if (fVerbose > -1) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
+  TVirtualFitter::SetDefaultFitter("Minuit2");
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     } else {
-      h->Fit(f1, fitopt.c_str(), "", xmin, xmax);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     }
   } else {
     h->Draw();
@@ -1325,10 +1402,15 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   res->fProb = TMath::Prob(res->fChi2, res->fNdof);
   res->fResults.fSgPeak = f1->GetParameter(1);
 
+  TRandom  *tr0 = gRandom;
+  TRandom3 *tr = new TRandom3(12345);
+  gRandom = tr;
   TH1D *hbla = new TH1D("hbla", "", 100, 4.5, 7.0);
   for (int i = 0; i < 10000; ++i) hbla->Fill(fcnSig->GetRandom());
   res->fResults.fSgSigma = hbla->GetRMS();
   delete hbla;
+  gRandom = tr0;
+  delete tr;
 
   // -- double gaussian integral over 3 sigma region
   double sig   = fcnSig->Integral(res->fResults.fSgPeak - 3.*res->fResults.fSgSigma,
