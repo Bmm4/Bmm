@@ -1029,8 +1029,8 @@ void plotFake::overlay(string sample1, string sample2, string what) {
 // ----------------------------------------------------------------------
 void plotFake::fakeRate(string dataset1, string dataset2, string varF, string varA, double ymax) {
 
-  // -- AMS
-  //  ymax = 0.03;
+  // -- AMS FIXME
+  ymax = 0.03;
 
   c0->cd();
   c0->Clear();
@@ -1533,8 +1533,8 @@ void plotFake::loopFunction1() {
 
     fGood     = fGoodCand && fGoodPt;
     fGoodFake = fGood && fGlobalMuon;
-    // -- AMS    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] < fCuts[0]->muonbdt);
-    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > fCuts[0]->muonbdt);
+    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] < fCuts[0]->muonbdt);
+    // -- AMS FIXME    fGoodFake = fGood && fGlobalMuon && (fFakeBdt[i] > fCuts[0]->muonbdt);
 
     fGoodTIS         = fTIS       && fGood;
     fGoodTISFake     = fGoodTIS   && fGoodFake;

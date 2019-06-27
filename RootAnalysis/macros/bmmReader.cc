@@ -126,7 +126,9 @@ void bmmReader::eventProcessing() {
     hpi.v      = true;
     fHltPathInfo.insert(make_pair(sa, hpi));
     hpi.v      = false;
-    fHltPathInfo.insert(make_pair(sas, hpi));
+    if (string::npos != sa.find("_v")) {
+      fHltPathInfo.insert(make_pair(sas, hpi));
+    }
   }
 
   if (0) {

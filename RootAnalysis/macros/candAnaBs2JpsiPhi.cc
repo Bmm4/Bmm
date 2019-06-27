@@ -37,6 +37,8 @@ void candAnaBs2JpsiPhi::candAnalysis() {
   fGoodMKK        = false;
   fGoodDeltaR     = false;
 
+  fHelicity = -99.;
+
   if (0 == fpCand) return;
 
   // -- Check for J/psi mass
@@ -195,6 +197,42 @@ void candAnaBs2JpsiPhi::candAnalysis() {
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
+
+
+  // -- helicity
+  TLorentzVector p4B; p4B.SetVectM(fpCand->fPlab, MBPLUS);
+  TLorentzVector p4M1; p4M1.SetVectM(fpMuon1->fPlab, MMUON);
+  TLorentzVector p4M2; p4M2.SetVectM(fpMuon2->fPlab, MMUON);
+  TLorentzVector p4K = phiCand;
+  TLorentzVector p4Psi; p4Psi.SetVectM(pD->fPlab, MJPSI);
+
+  TLorentzVector p4Mneg = (fpMuon1->fQ < 0? p4M1: p4M2);
+  TVector3 boostToB = p4B.Vect();
+  boostToB.SetMag(boostToB.Mag()/p4B.E());
+
+  TLorentzVector p4PsiinB = p4Psi;
+  p4PsiinB.Boost(-boostToB);
+
+  TLorentzVector p4MneginB = p4Mneg;
+  p4MneginB.Boost(-boostToB);
+
+  TLorentzVector p4KinB = p4K;
+  p4KinB.Boost(-boostToB);
+
+  TVector3 boostToPsi = p4PsiinB.Vect();
+  boostToPsi.SetMag(boostToPsi.Mag()/p4PsiinB.E());
+
+  TLorentzVector p4KinPsi = p4KinB;
+  p4KinPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4MneginPsi = p4MneginB;
+  p4MneginPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4PsiinPsi = p4PsiinB;
+  p4PsiinPsi.Boost(-boostToPsi);
+
+  fHelicity = p4MneginPsi.Angle(p4KinPsi.Vect());
+
 }
 
 // ----------------------------------------------------------------------
@@ -572,8 +610,6 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("k2phi", &fKa2Phi,   "k2phi/D");
   t->Branch("k2gt",  &fKa2TkQuality,"k2gt/I");
 
-
-
   t->Branch("t3pt",  &fKa1PtNrf, "t3pt/D");
   t->Branch("t3eta", &fKa1EtaNrf,"t3eta/D");
 
@@ -587,6 +623,9 @@ void candAnaBs2JpsiPhi::moreReducedTree(TTree *t) {
   t->Branch("g4pt", &fKa2PtGen,  "g4pt/D");
   t->Branch("g4eta",&fKa2EtaGen, "g4eta/D");
   t->Branch("g4id", &fKa2GenID,  "g4id/I");
+
+  t->Branch("hel", &fHelicity, "hel/D");
+
 }
 
 

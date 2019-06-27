@@ -44,6 +44,10 @@ public:
   TF1* expo(TH1 *h);
   TF1* expo(TH1 *h, double lo, double hi);
 
+  TF1* expo2(double lo, double hi);
+  TF1* expo2(TH1 *h);
+  TF1* expo2(TH1 *h, double lo, double hi);
+
 
   TF1* argus(double lo, double hi);
   TF1* argus(TH1 *h);
@@ -132,6 +136,7 @@ public:
   void initPol0(double &p0, TH1 *h);
   void initPol1(double &p0, double &p1, TH1 *h);
   void initExpo(double &p0, double &p1, TH1 *h);
+  void initExpo2(double &p0, double &p1, TH1 *h);
   void initExpoHS(double &p0, double &p1, double &p2, TH1 *h);
 
   double fLo, fHi;

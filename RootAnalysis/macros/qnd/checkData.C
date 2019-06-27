@@ -1,3 +1,13 @@
+void drawLines(double ymax) {
+  pl->SetLineColor(kRed);
+  pl->DrawLine(5.2, 0., 5.2, ymax);
+  pl->SetLineColor(kBlue);
+  pl->DrawLine(5.3, 0., 5.3, ymax);
+  pl->DrawLine(5.45, 0., 5.45, ymax);
+}
+
+
+// ----------------------------------------------------------------------
 void checkData(string era = "2011") {
 
   if ("all" == era) {
@@ -107,4 +117,109 @@ void checkData(string era = "2011") {
 
   }
   c0->SaveAs(Form("s01/checkData-%s.pdf", era.c_str()));
+}
+
+// ----------------------------------------------------------------------
+void checkUnblinded(string era = "2011") {
+
+  if ("all" == era) {
+    checkData("2011");
+    checkData("2012");
+    return;
+  }
+
+  map<string, string> uFiles;
+  uFiles.insert(make_pair("2011",   "/scratch/ursl/bmm4/s01/bmm-data-bmmMuOnia2011-s01.root"));
+  uFiles.insert(make_pair("2012",   "/scratch/ursl/bmm4/s01/bmm-data-bmmMuOnia2012-s01.root"));
+  uFiles.insert(make_pair("2016BF", "/scratch/ursl/bmm4/s01/bmm-data-bmmCharmonium2016BF-s01.root"));
+  uFiles.insert(make_pair("2016GH", "/scratch/ursl/bmm4/s01/bmm-data-bmmCharmonium2016GH-s01.root"));
+
+  map<string, float> mmva;
+  mmva.insert(make_pair("2011", 0.55));
+  mmva.insert(make_pair("2012", 0.55));
+  mmva.insert(make_pair("2016BF", 0.58));
+  mmva.insert(make_pair("2016GH", 0.58));
+
+  map<string, pair<float, float> > bdtCuts;
+  bdtCuts.insert(make_pair("2011",   make_pair(0.28, 0.21)));
+  bdtCuts.insert(make_pair("2012",   make_pair(0.34, 0.32)));
+  bdtCuts.insert(make_pair("2016BF", make_pair(0.30, 0.30)));
+  bdtCuts.insert(make_pair("2016GH", make_pair(0.31, 0.38)));
+
+  map<string, pair<float, float> > expB0Window;
+  map<string, pair<float, float> > expBsWindow;
+  expB0Window.insert(make_pair("2011",   make_pair(1.24, 1.13)));
+  expBsWindow.insert(make_pair("2011",   make_pair(4.47, 2.79)));
+
+  expB0Window.insert(make_pair("2012",   make_pair(5.33, 3.89)));
+  expBsWindow.insert(make_pair("2012",   make_pair(15.28, 7.82)));
+
+  expB0Window.insert(make_pair("2016BF", make_pair(2.11, 8.37)));
+  expBsWindow.insert(make_pair("2016BF", make_pair(6.38, 17.64)));
+
+  expB0Window.insert(make_pair("2016GH", make_pair(1.43, 1.68)));
+  expBsWindow.insert(make_pair("2016GH", make_pair(4.86, 4.87)));
+
+  TFile *uf = TFile::Open(uFiles[era].c_str());
+  TTree *ut = (TTree*)uf->Get("candAnaMuMu/events");
+
+  string masscut = "(m > 4.9 && m < 5.9)";
+
+  c0->Clear();
+  c0->Divide(2, 2);
+
+  TH1D *hcb0 = new TH1D("hcb0", "cowboys/chan0", 40, 4.9, 5.9);
+  TH1D *hsg0 = new TH1D("hsg0", "seagulls/chan0", 40, 4.9, 5.9);
+  TH1D *hcb1 = new TH1D("hcb1", "cowboys/chan1", 40, 4.9, 5.9);
+  TH1D *hsg1 = new TH1D("hsg1", "seagulls/chan1", 40, 4.9, 5.9);
+  int ipad(1);
+
+  for (int ichan = 0; ichan < 2; ++ichan) {
+
+    string cuts = Form("hlt1 && tos && l1t && (m1rmvabdt>%f && m2rmvabdt > %f) && %s && (%d == chan) && (bdt > %f)",
+		       mmva[era], mmva[era], masscut.c_str(), ichan, (ichan==0?bdtCuts[era].first:bdtCuts[era].second));
+
+    cout << "cuts: " << cuts << endl;
+
+
+    c0->cd(ipad++);
+    ut->Draw(Form("m>>hcb%d", ichan), Form("cb  && %s", cuts.c_str()), "hist");
+    double ymax(2.);
+    if (0 == ichan) {
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.33, 0.92, Form("%.0f", hcb0->Integral(1, 12)));
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.6, 0.92, Form("%.0f", hcb0->Integral(23, 40)));
+
+      tl->SetTextColor(kRed); tl->DrawLatexNDC(0.4, 0.92, Form("%.0f", hcb0->Integral(13, 16)));
+      tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.5, 0.92, Form("%.0f", hcb0->Integral(17, 22)));
+      ymax = 1.05*hcb0->GetMaximum();
+    } else {
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.33, 0.92, Form("%.0f", hcb1->Integral(1, 12)));
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.6, 0.92, Form("%.0f", hcb1->Integral(23, 40)));
+
+      tl->SetTextColor(kRed); tl->DrawLatexNDC(0.4, 0.92, Form("%.0f", hcb1->Integral(13, 16)));
+      tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.5, 0.92, Form("%.0f", hcb1->Integral(17, 22)));
+      ymax = 1.05*hcb1->GetMaximum();
+    }
+    drawLines(ymax);
+
+    c0->cd(ipad++);
+    ut->Draw(Form("m>>hsg%d", ichan), Form("!cb && %s", cuts.c_str()), "hist");
+    if (0 == ichan) {
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.33, 0.92, Form("%.0f", hsg0->Integral(1, 12)));
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.6, 0.92, Form("%.0f", hsg0->Integral(23, 40)));
+      tl->SetTextColor(kRed); tl->DrawLatexNDC(0.4, 0.92, Form("%.0f", hsg0->Integral(13, 16)));
+      tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.5, 0.92, Form("%.0f", hsg0->Integral(17, 22)));
+      ymax = 1.05*hsg0->GetMaximum();
+    } else {
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.33, 0.92, Form("%.0f", hsg1->Integral(1, 12)));
+      tl->SetTextColor(kBlack); tl->DrawLatexNDC(0.6, 0.92, Form("%.0f", hsg1->Integral(23, 40)));
+
+      tl->SetTextColor(kRed); tl->DrawLatexNDC(0.4, 0.92, Form("%.0f", hsg1->Integral(13, 16)));
+      tl->SetTextColor(kBlue); tl->DrawLatexNDC(0.5, 0.92, Form("%.0f", hsg1->Integral(17, 22)));
+      ymax = 1.05*hsg1->GetMaximum();
+    }
+    drawLines(ymax);
+  }
+
+  c0->SaveAs(Form("s01/checkUnblinded-%s.pdf", era.c_str()));
 }

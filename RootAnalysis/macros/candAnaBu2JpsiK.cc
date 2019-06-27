@@ -37,6 +37,7 @@ void candAnaBu2JpsiK::candAnalysis() {
   fGoodJpsiMass   = false;
   fGoodJpsiCuts   = false;
 
+  fHelicity = -99.;
 
   if (0 == fpCand) return;
 
@@ -170,6 +171,37 @@ void candAnaBu2JpsiK::candAnalysis() {
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(3);
+
+
+
+  // -- helicity
+  TLorentzVector p4B; p4B.SetVectM(fpCand->fPlab, MBPLUS);
+  TLorentzVector p4M1; p4M1.SetVectM(fpMuon1->fPlab, MMUON);
+  TLorentzVector p4M2; p4M2.SetVectM(fpMuon2->fPlab, MMUON);
+  TLorentzVector p4K;  p4K.SetVectM(pk->fPlab, MKAON);
+  TLorentzVector p4Psi; p4Psi.SetVectM(pD->fPlab, MJPSI);
+
+  TLorentzVector p4Mneg = (fpMuon1->fQ < 0? p4M1: p4M2);
+  TVector3 boostToB = p4B.BoostVector();
+
+  TLorentzVector p4PsiinB = p4Psi;
+  p4PsiinB.Boost(-boostToB);
+
+  TLorentzVector p4MneginB = p4Mneg;
+  p4MneginB.Boost(-boostToB);
+
+  TLorentzVector p4KinB = p4K;
+  p4KinB.Boost(-boostToB);
+
+  TVector3 boostToPsi = p4PsiinB.BoostVector();
+
+  TLorentzVector p4KinPsi = p4KinB;
+  p4KinPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4MneginPsi = p4MneginB;
+  p4MneginPsi.Boost(-boostToPsi);
+
+  fHelicity = p4MneginPsi.Angle(p4KinPsi.Vect());
 
 }
 
@@ -482,6 +514,8 @@ void candAnaBu2JpsiK::bookHist() {
   fEffTree->Branch("g3eta",  &fETg3eta,           "g3eta/F");
   fEffTree->Branch("kq",     &fETk1q,             "kq/I");
   fEffTree->Branch("kgt",    &fETk1gt,            "kgt/O");
+  fEffTree->Branch("ghel",   &fETghel,            "ghel/D");
+  fEffTree->Branch("nga",    &fNGenPhotons,       "nga/I");
 
 }
 
@@ -540,6 +574,8 @@ void candAnaBu2JpsiK::moreReducedTree(TTree *t) {
   t->Branch("k1mumatchr",  &fKa1MuMatchR,    "k1mumatchr/F");
   t->Branch("k1mumatchr2", &fKa1MuMatchR2,    "k1mumatchr2/F");
 
+  t->Branch("hel", &fHelicity, "hel/D");
+
 }
 
 // ----------------------------------------------------------------------
@@ -561,6 +597,35 @@ void candAnaBu2JpsiK::efficiencyCalculation() {
   pM1 = fpEvt->getGenTWithIndex(fGenM1Tmi);
   pM2 = fpEvt->getGenTWithIndex(fGenM2Tmi);
   pK  = fpEvt->getGenTWithIndex(fGenK1Tmi);
+
+  // -- helicity
+  TLorentzVector p4B   = pB->fP;
+  TLorentzVector p4M1  = pM1->fP;
+  TLorentzVector p4M2  = pM2->fP;
+  TLorentzVector p4K   = pK->fP;
+  TLorentzVector p4Psi = pM1->fP + pM2->fP;
+
+  TLorentzVector p4Mneg = (pM1->fQ < 0? pM1->fP: pM2->fP);
+  TVector3 boostToB = p4B.BoostVector();
+
+  TLorentzVector p4PsiinB = p4Psi;
+  p4PsiinB.Boost(-boostToB);
+
+  TLorentzVector p4MneginB = p4Mneg;
+  p4MneginB.Boost(-boostToB);
+
+  TLorentzVector p4KinB = p4K;
+  p4KinB.Boost(-boostToB);
+
+  TVector3 boostToPsi = p4PsiinB.BoostVector();
+
+  TLorentzVector p4KinPsi = p4KinB;
+  p4KinPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4MneginPsi = p4MneginB;
+  p4MneginPsi.Boost(-boostToPsi);
+
+  fETghel = p4MneginPsi.Angle(p4KinPsi.Vect());
 
   // -- reco level
   TSimpleTrack *prM1(0), *prM2(0), *prK(0);

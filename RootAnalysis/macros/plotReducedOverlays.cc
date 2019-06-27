@@ -57,6 +57,7 @@ plotReducedOverlays::plotReducedOverlays(string dir, string files, string cuts, 
     fDoList.push_back("fls3d");
     fDoList.push_back("muon1pt");
     fDoList.push_back("muon2pt");
+    fDoList.push_back("muhelicity");
 
     fDoList.push_back("muonseta");
     fDoList.push_back("muonsphi");
@@ -270,13 +271,13 @@ void plotReducedOverlays::makeAll(string what) {
       fChannelList.push_back(Form("%d", i));
     }
     init();
-    // makeSample("bupsikData", 100000);
-    // makeSample("bupsikMcComb", 10000);
-    makeSample("bupsikData");
-    makeSample("bupsikMcComb");
+    makeSample("bmmData");
+    makeSample("bsmmMcComb");
+    // makeSample("bupsikData");
+    // makeSample("bupsikMcComb");
     fStampString = "nada";
-    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
-    makeOverlay("bupsikData", "bupsikMcComb", "cnc");
+    //    makeOverlay("bupsikData", "bupsikMcComb", "bdt");
+    makeOverlay("bmmData", "bsmmMcComb", "bdt");
     return;
   }
 
@@ -422,7 +423,7 @@ void plotReducedOverlays::makeAll(string what) {
   if (what == "2017") {
     init();
     // -- data vs combined MC
-    makeSampleOverlay("bmmData", "bdmmMcComb");
+    makeSampleOverlay("bmmData", "bsmmMcComb");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
   }
 
@@ -440,7 +441,7 @@ void plotReducedOverlays::makeAll(string what) {
     // -- data vs combined MC
     makeSampleOverlay("bspsiphiData", "bspsiphiMcComb");
     makeSampleOverlay("bupsikData", "bupsikMcComb");
-    makeSampleOverlay("bmmData", "bdmmMcComb");
+    makeSampleOverlay("bmmData", "bsmmMcComb");
     makeSampleOverlay("bdpsikstarData", "bdpsikstarMcComb");
 
     //    allSystematics();
@@ -890,17 +891,17 @@ void plotReducedOverlays::loopFunction1() {
     cmsswPresel = cmsswPresel && (fb.kpt > 0.6) && (fb.pipt > 0.6);
   }
 
-  // -- local redefinition
-  fGoodHLT = fb.hlt1 && fb.tos && fb.l1t
-    && fGoodAcceptance
-    && fGoodGlobalMuonsKin
-    && fGoodTracks && fGoodTracksPt && fGoodTracksEta
-    && cmsswPresel
-    && candanaPresel
-    && fGoodJpsiCuts
-    && fGoodDcand
-    && fGoodBdtPresel
-    ;
+  // // -- local redefinition
+  // fGoodHLT = fb.hlt1 && fb.tos && fb.l1t
+  //   && fGoodAcceptance
+  //   && fGoodGlobalMuonsKin
+  //   && fGoodTracks && fGoodTracksPt && fGoodTracksEta
+  //   && cmsswPresel
+  //   && candanaPresel
+  //   && fGoodJpsiCuts
+  //   && fGoodDcand
+  //   && fGoodBdtPresel
+  //   ;
 
   double bdtCut(0.1);
   if (-1 < fChan && fChan < fNchan) {
@@ -908,7 +909,26 @@ void plotReducedOverlays::loopFunction1() {
   }
   // -- remember: cmsswPresel (etc) is already part of fGoodHLT!
   fPreselection    = (fGoodHLT && (fb.alpha < 0.1) && (fb.fls3d > 5) && (fb.pvips < 4));
-  fPreselectionBDT = (fGoodHLT && (fBDT > bdtCut));
+  fPreselectionBDT = (fGoodHLT && (fBDT > -2.) );
+
+  // -- direct copy from plotResults
+  fPreselectionBDT =
+    fGoodQ
+    && fb.hlt1 && fb.tos && fb.l1t
+    && ((fChan > -1) && (fChan < fNchan))
+    && fGoodPvAveW8
+    && fGoodTracks
+    && fGoodTracksPt
+    && fGoodTracksEta
+    && fGoodMuonsPt  // PidTables do not really work below 4 GeV!!
+    && fGoodMuonsEta
+    && fGoodJpsiCuts
+    && fGoodCmssw
+    && fGoodCandAna
+    && fGoodBdtPresel
+    && fGoodMuonsID
+    && fGoodDcand;
+
 
   if (fGoodHLT
       && (fBDT > -1.) && (fb.alpha < 0.1) && (fb.fls3d > 7)
@@ -926,8 +946,7 @@ void plotReducedOverlays::loopFunction1() {
     fSel1 = false;
   }
 
-  if (fGoodHLT
-      && (fBDT > -1.) && (fb.alpha < 0.05) && (fb.fls3d > 12) && (fb.pvips < 2.)
+  if (fPreselectionBDT
       ) {
     fSel2 = true;
   } else {
@@ -1187,6 +1206,7 @@ void plotReducedOverlays::bookDistributions(std::string selmode) {
     a->fpMuon2Pt   = bookDistribution(Form("%smuon2pt", name.c_str()), "#it{p}_{T, #mu2} [GeV]", "fGoodMuonsPt", pCuts, 40, 0., 20., p);
     a->fpMuonsEta  = bookDistribution(Form("%smuonseta", name.c_str()), "#eta_{#mu}", "fGoodMuonsEta", pCuts, 40, -2.5, 2.5, p);
     a->fpMuonsPhi  = bookDistribution(Form("%smuonsphi", name.c_str()), "#phi_{#mu}", "fGoodMuonsEta", pCuts, 40, -3.15, 3.15, p);
+    a->fpMuonHel   = bookDistribution(Form("%smuhelicity", name.c_str()), "cos(#theta_{#mu^{-}})", "fGoodMuonsEta", pCuts, 40, -1.01, 1.01, p);
 
     a->fpMuon1Bdt   = bookDistribution(Form("%smuon1bdt", name.c_str()), "BDT_{T, #mu1} ", "fGoodGlobalMuonsKin", pCuts, 100, -1., 1., p);
     a->fpMuon2Bdt   = bookDistribution(Form("%smuon2bdt", name.c_str()), "BDT_{T, #mu2} ", "fGoodGlobalMuonsKin", pCuts, 100, -1., 1., p);
@@ -2111,6 +2131,9 @@ void plotReducedOverlays::fillDistributions(string selmode) {
   fAdMap[mapname]->fpMuonsEta->fill(fb.m2eta, mass, w8);
   fAdMap[mapname]->fpMuonsPhi->fill(fb.m1phi, mass, w8);
   fAdMap[mapname]->fpMuonsPhi->fill(fb.m2phi, mass, w8);
+  double coshel = TMath::Cos(fb.muhelicity);
+  fAdMap[mapname]->fpMuonHel->fill(coshel, mass, w8);
+  //  cout << "fb.muhelicity = " << fb.muhelicity << "TMath::Cos(fb.muhelicity) = " << TMath::Cos(fb.muhelicity) << " cos(hel) = " << coshel << endl;
 
   fAdMap[mapname]->fpMuon1Bdt->fill(fb.m1mvabdt, mass, w8);
   fAdMap[mapname]->fpMuon2Bdt->fill(fb.m2mvabdt, mass, w8);

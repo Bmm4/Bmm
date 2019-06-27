@@ -38,6 +38,11 @@ namespace {
   }
 
   // ----------------------------------------------------------------------
+  double iF_expo2(double *x, double *par) {
+    return TMath::Exp(par[0] + x[0]*par[1]);
+  }
+
+  // ----------------------------------------------------------------------
   double iF_expo_HS(double *x, double *par) {
     if (x[0] > par[2]) {
       return par[0]*TMath::Exp((x[0]-par[2])*par[1]);
@@ -1108,6 +1113,13 @@ TF1* initFunc::expo(double lo, double hi) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::expo2(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_expo2", fName.c_str()), iF_expo2, lo, hi, 2);
+  f->SetParNames("base", "expo");
+  return f;
+}
+
+// ----------------------------------------------------------------------
 TF1* initFunc::expoErr(double lo, double hi) {
   TF1 *f = new TF1(Form("%s_expoErr", fName.c_str()), iF_expo_err, lo, hi, 6);
   return f;
@@ -1377,10 +1389,45 @@ TF1* initFunc::expo(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+TF1* initFunc::expo2(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_expo2", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_expo2", fName.c_str()), iF_expo2, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 2);
+  f->SetParNames("base", "exp");
+  //  cout << "Created f1 from " << h->GetBinLowEdge(1) << " to " << h->GetBinLowEdge(h->GetNbinsX()+1) << endl;
+
+  double p1(0.), p0(0.);
+  initExpo2(p0, p1, h);
+  f->SetParameters(p0, p1);
+  f->Update();
+  if (1) {
+    cout << Form("  expo2 initialized to %f and %f", p0,  p1)
+	 << "  -> Integrals:  func = "
+	 << f->Integral(h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1))/h->GetBinWidth(1)
+	 << " histogram = "
+	 << h->GetSumOfWeights()
+	 << endl;
+  }
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
 TF1* initFunc::expo(TH1 *h, double lo, double hi) {
   fLo = lo;
   fHi = hi;
   return expo(h);
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::expo2(TH1 *h, double lo, double hi) {
+  fLo = lo;
+  fHi = hi;
+  return expo2(h);
 }
 
 
@@ -2643,6 +2690,67 @@ void initFunc::initExpo(double &p0, double &p1, TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+void initFunc::initExpo2(double &p0, double &p1, TH1 *h) {
+
+  int EDG(4), NB(EDG+1);
+  int lbin(1), hbin(h->GetNbinsX()+1);
+  if (fLo < fHi) {
+    lbin = h->FindBin(fLo);
+    hbin = h->FindBin(fHi);
+  } else {
+    fLo = h->GetBinLowEdge(lbin);
+    fHi = h->GetBinLowEdge(hbin+1);
+  }
+
+  double dx = h->GetBinLowEdge(hbin) - h->GetBinLowEdge(lbin);
+  double ylo = h->Integral(lbin, lbin+EDG)/NB;
+  double yhi = h->Integral(hbin-EDG-1, hbin-1)/NB;
+
+  if (ylo > 0 && yhi > 0) {
+    p1 = (TMath::Log(yhi) - TMath::Log(ylo))/dx;
+    p0 = TMath::Log(yhi) - p1*h->GetBinLowEdge(hbin);
+  } else {
+    if (yhi > ylo) {
+      p1 = 1.;
+    } else {
+      p1 = -1.;
+    }
+    p0 = 50.;
+  }
+
+  // if (p0 > 1.e10) {
+  //   p0 = 1.;
+  //   p1 = -10.;
+  // }
+
+  if (p0 > 1.e9) p0 = 1.e9;
+
+  if (fVerbose) {
+    cout << "initFunc::initExpo2 dx: " << dx << endl;
+    cout << "initFunc::initExpo2 fLo: " << fLo << " fHi: " << fHi << endl;
+    cout << "initFunc::initExpo2 ylo: " << ylo << " yhi: " << yhi << endl;
+    cout << "initFunc::initExpo2 lo range " << h->GetBinLowEdge(lbin) << ".." << h->GetBinLowEdge(lbin+EDG) << ": "
+	 << h->GetBinContent(lbin+0) << " "
+	 << h->GetBinContent(lbin+1) << " "
+	 << h->GetBinContent(lbin+2) << " "
+	 << h->GetBinContent(lbin+3) << " "
+	 << h->GetBinContent(lbin+4) << " "
+	 << endl;
+    cout << "initFunc::initExpo2 hi range " << h->GetBinLowEdge(hbin-EDG-1) << ".." << h->GetBinLowEdge(hbin-1) << ": "
+	 << h->GetBinContent(hbin-EDG-1+0) << " "
+	 << h->GetBinContent(hbin-EDG-1+1) << " "
+	 << h->GetBinContent(hbin-EDG-1+2) << " "
+	 << h->GetBinContent(hbin-EDG-1+3) << " "
+	 << h->GetBinContent(hbin-EDG-1+4) << " "
+	 << endl;
+    cout << "initFunc::initExpo2  p0:  " << p0 <<  " p1:  " << p1 << endl;
+    cout << "initFunc::initExpo2 integral: " <<  lbin << " .. " <<  lbin+EDG << endl;
+    cout << "initFunc::initExpo2 integral: " <<	hbin-EDG-1 << " .. " << hbin-1 << endl;
+  }
+}
+
+
+// ----------------------------------------------------------------------
 void initFunc::initExpoHS(double &p0, double &p1, double &p2, TH1 *h) {
 
   int EDG(4), NB(EDG+1);
@@ -2781,9 +2889,9 @@ TF1* initFunc::bupsik(TH1 *h, double sigma) {
 
   f->SetParameter(0, h->GetMaximum());
   f->SetParameter(1, 5.28);
-  f->SetParameter(2, sigma); limitPar(2, 0.5*sigma, 2.*sigma);
+  f->SetParameter(2, sigma); limitPar(2, 0.5*sigma, 1.99*sigma);
   f->SetParameter(3, 0.20); limitPar(3, 0.010, 0.60);
-  f->SetParameter(4, 2.2*sigma); limitPar(4, 2.*sigma, 4.*sigma);
+  f->SetParameter(4, 2.2*sigma); limitPar(4, 2.01*sigma, 5.*sigma);
 
   double a(-1.), b(-1.);
   double eps(0.00001);

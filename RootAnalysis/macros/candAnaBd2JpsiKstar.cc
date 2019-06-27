@@ -38,6 +38,8 @@ void candAnaBd2JpsiKstar::candAnalysis() {
   fGoodDeltaR     = false;
   fKstarFail      = true;
 
+  fHelicity = -99.;
+
   if (0 == fpCand) return;
 
   TAnaCand *pC(0), *pD(0);
@@ -147,7 +149,7 @@ void candAnaBd2JpsiKstar::candAnalysis() {
       fKstarPt   = pD->fPlab.Perp();
       fKstarEta  = pD->fPlab.Eta();
       fKstarPhi  = pD->fPlab.Phi();
-      }
+    }
 
   }
 
@@ -298,6 +300,43 @@ void candAnaBd2JpsiKstar::candAnalysis() {
 
   ((TH1D*)fHistDir->Get(Form("mon%s", fName.c_str())))->Fill(10);
   ((TH1D*)fHistDir->Get("../monEvents"))->Fill(4);
+
+
+  // -- helicity
+  TLorentzVector p4B; p4B.SetVectM(fpCand->fPlab, MBPLUS);
+  TLorentzVector p4M1; p4M1.SetVectM(fpMuon1->fPlab, MMUON);
+  TLorentzVector p4M2; p4M2.SetVectM(fpMuon2->fPlab, MMUON);
+  TLorentzVector p4K = kstarCand;
+  TLorentzVector p4Psi; p4Psi.SetVectM(pD->fPlab, MJPSI);
+
+  TLorentzVector p4Mneg = (fpMuon1->fQ < 0? p4M1: p4M2);
+  TVector3 boostToB = p4B.Vect();
+  boostToB.SetMag(boostToB.Mag()/p4B.E());
+
+  TLorentzVector p4PsiinB = p4Psi;
+  p4PsiinB.Boost(-boostToB);
+
+  TLorentzVector p4MneginB = p4Mneg;
+  p4MneginB.Boost(-boostToB);
+
+  TLorentzVector p4KinB = p4K;
+  p4KinB.Boost(-boostToB);
+
+  TVector3 boostToPsi = p4PsiinB.Vect();
+  boostToPsi.SetMag(boostToPsi.Mag()/p4PsiinB.E());
+
+  TLorentzVector p4KinPsi = p4KinB;
+  p4KinPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4MneginPsi = p4MneginB;
+  p4MneginPsi.Boost(-boostToPsi);
+
+  TLorentzVector p4PsiinPsi = p4PsiinB;
+  p4PsiinPsi.Boost(-boostToPsi);
+
+  fHelicity = p4MneginPsi.Angle(p4KinPsi.Vect());
+
+
 }
 
 // ----------------------------------------------------------------------
@@ -688,6 +727,9 @@ void candAnaBd2JpsiKstar::moreReducedTree(TTree *t) {
   t->Branch("pimissid",  &fPiMissid,    "pimissid/O");
   t->Branch("kmumatch", &fKaMuMatch,  "kmumatch/O");
   t->Branch("pimumatch", &fPiMuMatch,  "pimumatch/O");
+
+  t->Branch("hel", &fHelicity, "hel/D");
+
 
   if(0) { // for testing d.k.
 

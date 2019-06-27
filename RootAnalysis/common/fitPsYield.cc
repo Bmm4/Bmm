@@ -255,7 +255,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     return;
   }
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]{#it{K}}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (fVerbose < 0) {
     h->GetXaxis()->CenterTitle(kTRUE);
     h->GetYaxis()->CenterTitle(kTRUE);
@@ -315,6 +315,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     f1->SetParLimits(0, 0., 10.*h->GetMaximum());
     f1->SetParLimits(1, 5.25,  5.30); // it's a B+ fit!
     f1->SetParLimits(2, 0.010,  0.04);
+    f1->SetParLimits(4, 0.041,  0.10);
     //    f1->SetParLimits(5, 0.,  1.e15);
     f1->SetParLimits(9, 0.,  10.*h->GetMaximum());
   } else {
@@ -326,19 +327,81 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
       fCombMax = h->GetMaximum();
     }
     double scale = h->GetMaximum()/fCombMax;
-    if (fVerbose) cout << "==> limitpars = " << limitpars << " fPar[3] = " << fPar[3] << endl;
+    if (fVerbose) cout << "==> limitpars = " << limitpars << " fPar[3] = " << fPar[3] << " scale = " << scale << " from " << h->GetMaximum() << "/" << fCombMax << endl;
     if (limitpars > 0) {
-      f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0.,                           scale*(fPar[0] + limitpars*fParE[0]));
+      if (scale < 0.90) {
+	f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0, 0., scale*fPar[0] + limitpars*fParE[0]);
+      } else {
+	f1->SetParameter(0, fPar[0]);   f1->SetParLimits(0, 0., 1.e8);
+      }
       f1->SetParameter(1, fPar[1]);        f1->SetParLimits(1, fPar[1] - limitpars*fParE[1], fPar[1] + limitpars*fParE[1]);
-      f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
-      //f1->SetParameter(3, fPar[3]);        f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
-      f1->FixParameter(3, fPar[3]);
-      f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[4] - limitpars*fParE[4], fPar[4] + limitpars*fParE[4]);
-      f1->SetParameter(5, scale*fPar[5]);  f1->SetParLimits(5, 0.,                           scale*(fPar[5] + fParE[5]));
-      f1->SetParameter(6, fPar[6]);        f1->SetParLimits(6, fPar[6] - limitpars*fParE[6], fPar[6] + limitpars*fParE[6]);
-      f1->SetParameter(7, fPar[7]);        f1->SetParLimits(7, fPar[7] - limitpars*fParE[7], fPar[7] + limitpars*fParE[7]);
-      f1->SetParameter(8, fPar[8]);        f1->SetParLimits(8, fPar[8] - limitpars*fParE[8], fPar[8] + limitpars*fParE[8]);
-      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, 0.,                           scale*(fPar[9] + fParE[9]));
+      //f1->FixParameter(1, fPar[1]);
+      f1->SetParameter(3, fPar[3]);
+      if (fParE[3]/fPar[3] < 0.1) {
+	f1->SetParLimits(3, fPar[3] - limitpars*fParE[3], fPar[3] + limitpars*fParE[3]);
+      } else {
+	f1->SetParLimits(3, fPar[3] - 0.1*fPar[3], fPar[3] + 0.1*fPar[3]);
+      }
+      //      f1->FixParameter(3, fPar[3]);
+      // if (fPar[2] + limitpars*fParE[2] < fPar[4]) {
+      // 	f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[2] + limitpars*fParE[2]);
+      // } else {
+      // 	f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, fPar[2] - limitpars*fParE[2], fPar[4] - 0.001);
+      // }
+      // if (fPar[4] > fPar[2] + (limitpars+1.0)*fParE[2]) {
+      // 	f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[2] + (limitpars+1.0)*fParE[2], 0.10);
+      // } else {
+      // 	f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, fPar[2] + (limitpars+0.1)*fParE[2], 0.10);
+      // }
+
+      // if (fPar[2] + limitpars*fParE[2] < fPar[4]) {
+      // 	double middle = 0.5*(fPar[2] + fPar[4]);
+      // 	f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, 0.01, middle-0.001);
+      // 	f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, middle+0.001, 0.1);
+      // } else {
+      // 	// problematic case
+      // 	// double middle = 0.5*(fPar[2] + fPar[4]);
+      // 	// double low = fPar[2] - 0.02;
+      // 	// if (low < 0.) low  = 0.01;
+      // 	// f1->SetParameter(2, fPar[2]);        f1->SetParLimits(2, low, middle-0.005);
+      // 	// f1->SetParameter(4, fPar[4]);        f1->SetParLimits(4, middle-0.004, 0.1);
+      // 	f1->FixParameter(2, fPar[2]);
+      // 	f1->FixParameter(4, fPar[4]);
+      // }
+
+      double slo = fPar[2] - limitpars*fParE[2];
+      if (slo < 0.0)  slo = 0.02;
+      f1->SetParameter(2, fPar[2]);      f1->SetParLimits(2, slo, 1.19*fPar[2]);
+      f1->SetParameter(4, 1.4*fPar[2]);  f1->SetParLimits(4, 1.2*fPar[2], 2.*fPar[2]);
+
+      // -- expo
+      double hiCount = h->Integral(h->FindBin(5.4), h->FindBin(5.79));
+      if (hiCount < 10) {
+	f1->FixParameter(5, 24000.);
+	f1->FixParameter(6, -2.2);
+      } else if (hiCount < 20) {
+       	f1->FixParameter(5, 18000.);
+	f1->FixParameter(6, -1.9);
+      } else if (hiCount < 50) {
+       	f1->FixParameter(5, 11000.);
+	f1->FixParameter(6, -1.7);
+      } else if (hiCount < 20) {
+       	f1->FixParameter(5, 5000.);
+	f1->FixParameter(6, -1.5);
+      } else {
+	f1->SetParameter(5, fPar[5]); f1->SetParLimits(5, 0.,  1000.*fPar[5]);
+	if (fPar[6] > -10. && fPar[6] < 0.) {
+	  f1->SetParameter(6, fPar[6]); f1->SetParLimits(6, -10., 0.);
+	} else {
+	  f1->SetParameter(6, -2.); f1->SetParLimits(6, -10., 0.);
+	}
+      }
+      // -- err
+      f1->FixParameter(7, fPar[7]); //       f1->SetParLimits(7, 5.13, 5.15);
+      f1->FixParameter(8, fPar[8]); //       f1->SetParLimits(7, 5.13, 5.15);
+      double xlo(scale*(fPar[9] - limitpars*fParE[9]));
+      if (xlo < 0.) xlo = 0.;
+      f1->SetParameter(9, scale*fPar[9]);  f1->SetParLimits(9, xlo,   scale*(fPar[9] + limitpars*fParE[9]));
     } else if (limitpars == 0) {
       f1->SetParameter(0, scale*fPar[0]);  f1->SetParLimits(0,  0.,                           1.e15);
       f1->FixParameter(1, fPar[1]);
@@ -357,18 +420,83 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   if (fVerbose > -1) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
-  TVirtualFitter::SetDefaultFitter("Minuit2");
-  if (h->GetSumOfWeights() > 100) {
+  //  TVirtualFitter::SetDefaultFitter("Minuit2");
+  bool noFit(false), FAILED(false);
+  if ((h->GetSumOfWeights() > 200) && (h->Integral(h->FindBin(5.45), h->FindBin(5.80)) > 30)) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";
       h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     } else {
       h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
     }
+
+    // -- fix expo to found solution if error too large and refit:
+    for (int ipar = 0; ipar < fcnSig->GetNpar(); ++ipar) {
+      fcnSig->SetParameter(ipar, f1->GetParameter(ipar));
+      fcnSig->SetParError(ipar, f1->GetParError(ipar));
+    }
+    double p0 = f1->GetParameter(5);
+    double p1 = f1->GetParameter(6);
+
+    double nsg = fcnSig->Integral(5.1, 5.6)/h->GetBinWidth(1);
+    double esg = TMath::Sqrt(nsg);
+    double TOL(3.0);
+
+    if ((TMath::IsNaN(f1->GetParError(0)))
+	|| ((f1->GetParError(0)/f1->GetParameter(0) > 0.04) && (f1->GetParError(0)/f1->GetParameter(0) > TOL*esg/nsg))
+	|| (f1->GetChisquare() > 170.)
+	) {
+      c0->SaveAs(Form("%s_notabenefit0_%s.pdf", pdfprefix.c_str(), h->GetName()));
+
+      cout << "NOTABENE: " << Form("%s_fit0_%s.pdf", pdfprefix.c_str(), h->GetName())
+	   << " esg/nsg = " << esg << "/" << nsg << " = " << esg/nsg
+	   << " err(rel) = " << f1->GetParError(0)/f1->GetParameter(0)
+	   << " or f1->GetParError(0) = " << f1->GetParError(0)
+	   << " chi2 = " << f1->GetChisquare()
+	   << endl;
+
+      f1->FixParameter(1, f1->GetParameter(1));
+      f1->FixParameter(2, f1->GetParameter(2));
+      f1->FixParameter(3, f1->GetParameter(3));
+      f1->FixParameter(4, f1->GetParameter(4));
+      // f1->SetParameter(5, p0); f1->SetParLimits(5,  0., 1.e9);
+      // f1->SetParameter(6, p1); f1->SetParLimits(6, -10., 0.);
+      if (h->GetSumOfWeights() > 10000) {
+	f1->ReleaseParameter(5); f1->SetParameter(5, p0);
+	f1->ReleaseParameter(6); f1->SetParameter(6, p1);
+      } else {
+	f1->SetParameter(5, p0);  f1->SetParLimits(5, 0.001*p0, 1000.*p0);
+	f1->SetParameter(6, p1);  f1->SetParLimits(6, -5.0, -0.3); // p1 is negative!
+      }
+      f1->FixParameter(7, f1->GetParameter(7));
+      f1->FixParameter(8, f1->GetParameter(8));
+      if (fVerbose > -1) fpIF->dumpParameters(f1);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
+      c0->SaveAs(Form("%s_notabene2fit0_%s.pdf", pdfprefix.c_str(), h->GetName()));
+      f1->FixParameter(5, f1->GetParameter(5));
+      f1->FixParameter(6, f1->GetParameter(6));
+      if (fVerbose > -1) fpIF->dumpParameters(f1);
+      h->Fit(f1, fitopt.c_str(), "e", xmin, xmax);
+      if ((TMath::IsNaN(f1->GetParError(0)))
+	  || ((f1->GetParError(0)/f1->GetParameter(0) > 0.04) && (f1->GetParError(0)/f1->GetParameter(0) > TOL*esg/nsg))
+	  || (f1->GetChisquare() > 170.)
+	  ) {
+	cout << "FAILED: " << Form("%s_fit0_%s.pdf", pdfprefix.c_str(), h->GetName())
+	     << " esg/nsg = " << esg/nsg
+	     << " err(rel) = " << f1->GetParError(0)/f1->GetParameter(0)
+	     << " or f1->GetParError(0) = " << f1->GetParError(0)
+	     << " chi2 = " << f1->GetChisquare()
+	     << endl;
+	FAILED = true;
+      }
+    } else {
+      cout << "OK: esg/nsg = " << esg/nsg << " and relative error = " << f1->GetParError(0)/f1->GetParameter(0) << endl;
+    }
   } else {
+    noFit = true;
     h->Draw();
     if (limitpars < 0) {
-      cout << "XX> you are screwed: fitting the (un)weighted combined data and less than 100 entries" << endl;
+      cout << "XX> you are screwed: fitting the (un)weighted combined data and less than 200 entries" << endl;
     } else {
 
     }
@@ -380,7 +508,12 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     fParE.clear();
     for (int i = 0; i < f1->GetNpar(); ++i) {
       fPar.push_back(f1->GetParameter(i));
-      fParE.push_back(f1->GetParError(i));
+      if (!TMath::IsNaN(f1->GetParError(i))) {
+	fParE.push_back(f1->GetParError(i));
+      } else {
+	cout << "nan-reset ";
+	fParE.push_back(0.1*f1->GetParameter(i));
+      }
       cout << "fPar[" << i << "] = " << f1->GetParameter(i) << " +/- " << f1->GetParError(i) << endl;
     }
   }
@@ -402,10 +535,10 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   if (fVerbose > -1) {
 
   } else {
-    fcnSig->SetLineColor(kGreen-2);  fcnSig->SetFillColor(kGreen-2); fcnSig->SetFillStyle(3354);  fcnSig->SetLineWidth(2);
-    fcnExpo->SetLineColor(kCyan+2);  fcnExpo->SetFillColor(kCyan+2);  fcnExpo->SetFillStyle(3359); fcnExpo->SetLineWidth(2);
-    fcnErr2->SetLineColor(kBlue+1);  fcnErr2->SetFillColor(kBlue+1); fcnErr2->SetFillStyle(3365); fcnErr2->SetLineWidth(2);
-    fcnSat->SetLineColor(kRed+2);   fcnSat->SetFillColor(kRed+2);  fcnSat->SetFillStyle(3344);  fcnSat->SetLineWidth(2);
+    fcnSig->SetLineColor(kGreen-2);  fcnSig->SetFillColor(kGreen-2); fcnSig->SetFillStyle(3654);  fcnSig->SetLineWidth(2);
+    fcnExpo->SetLineColor(kCyan+2);  fcnExpo->SetFillColor(kCyan+2);  fcnExpo->SetFillStyle(3659); fcnExpo->SetLineWidth(2);
+    fcnErr2->SetLineColor(kBlue+1);  fcnErr2->SetFillColor(kBlue+1); fcnErr2->SetFillStyle(3665); fcnErr2->SetLineWidth(2);
+    fcnSat->SetLineColor(kRed+2);   fcnSat->SetFillColor(kRed+2);  fcnSat->SetFillStyle(3444);  fcnSat->SetLineWidth(2);
     h->Draw("axissame");
   }
   double sqrt2pi = 2.506628275;
@@ -441,7 +574,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     legg->AddEntry(f1, "Total fit", "l");
     legg->AddEntry(fcnSig,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}", "f");
     legg->AddEntry(fcnExpo, "comb. background", "f");
-    legg->AddEntry(fcnErr2, "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+} X}", "f");
+    legg->AddEntry(fcnErr2, "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}#kern[-0.1]{#it{X}}", "f");
     legg->AddEntry(fcnSat,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#pi^{+}}", "f");
     legg->Draw();
 
@@ -464,19 +597,6 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     } else if (string::npos != fname.find("2016GH")) {
       tl.DrawLatexNDC(0.9, 0.92, "16 fb^{-1} (13 TeV)");
     }
-  }
-  // -- store for possible later usage
-  if (limitpars < 0) {
-    fPar.clear();
-    fParE.clear();
-    for (int i = 0; i < f1->GetNpar(); ++i) {
-      fPar.push_back(f1->GetParameter(i));
-      fParE.push_back(f1->GetParError(i));
-    }
-    double NSG   = fcnSig->Integral(5.1, 5.6)/h->GetBinWidth(1);
-    double NTOT  = h->GetSumOfWeights();
-    fCombS2All   = NSG/NTOT;
-    fCombS2AllE  = TMath::Sqrt(1./NSG + 1./NTOT)*fCombS2All;
   }
 
   // -- other parameters of interest
@@ -512,7 +632,9 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   cout << "XXXXX sig = " << sig << " +/- " << sigE
        << ", integrating from " << res->fResults.fSgPeak - 3.*res->fResults.fSgSigma << " < " << res->fResults.fSgPeak << " < "
        << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
-       << " XXXXX " << endl;
+       << " XXXXX "
+       << "chi2dof = " <<  res->fChi2 << "/" << res->fNdof << " " << h->GetName()
+       << endl;
 
   // -- create 'sensible' errors
   sig  /= h->GetBinWidth(1);
@@ -529,6 +651,13 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
 	 << " .. " << res->fResults.fSgPeak + 3.*res->fResults.fSgSigma
 	 << ": " << sigE << " (sig = " << sig << ")"
 	 << endl;
+  }
+  if (noFit) {
+    cout << "NOFIT " <<  Form("%s_fit0_%s.pdf", pdfprefix.c_str(), h->GetName()) << endl;
+    sig  = h->Integral(h->FindBin(5.2), h->FindBin(5.35));
+    sigE = TMath::Sqrt(sig);
+    bg   = h->Integral(h->FindBin(5.4), h->FindBin(5.8))*(5.35-5.20)/(5.80-5.40);
+    bgE  = TMath::Sqrt(bg);
   }
   res->fResults.fSg  = sig;
   res->fResults.fSgE = sigE;
@@ -554,6 +683,9 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   c0->Modified();
   c0->Update();
   c0->SaveAs(Form("%s_fit0_%s.pdf", pdfprefix.c_str(), h->GetName()));
+  if (FAILED) {
+    c0->SaveAs(Form("%s_failedfit0_%s.pdf", pdfprefix.c_str(), h->GetName()));
+  }
   delete c0;
 
   if (keepFunctions) {
@@ -782,20 +914,6 @@ void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     fcnExpo->Draw("same");
     fcnErr2->Draw("same");
     fcnSat->Draw("same");
-  }
-
-  // -- store for possible later usage
-  if (limitpars < 0) {
-    fPar.clear();
-    fParE.clear();
-    for (int i = 0; i < f1->GetNpar(); ++i) {
-      fPar.push_back(f1->GetParameter(i));
-      fParE.push_back(f1->GetParError(i));
-    }
-    double NSG   = fcnSig->Integral(5.1, 5.6)/h->GetBinWidth(1);
-    double NTOT  = h->GetSumOfWeights();
-    fCombS2All   = NSG/NTOT;
-    fCombS2AllE  = TMath::Sqrt(1./NSG + 1./NTOT)*fCombS2All;
   }
 
   // -- other parameters of interest
@@ -1074,7 +1192,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
     if (fVerbose > 1) fpIF->dumpParameters(f1);
   }
   string fitopt = "lr";
-  TVirtualFitter::SetDefaultFitter("Minuit2");
+  //  TVirtualFitter::SetDefaultFitter("Minuit2");
   if (h->GetSumOfWeights() > 200) fitopt = "r";
   if (0 == fVerbose) fitopt += "q";
   if (0) {
@@ -1323,7 +1441,7 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   if (fVerbose > -1) fpIF->dumpParameters(f1);
   string fitopt = "lr";
   if (0 == fVerbose) fitopt += "q";
-  TVirtualFitter::SetDefaultFitter("Minuit2");
+  //  TVirtualFitter::SetDefaultFitter("Minuit2");
   if (h->GetSumOfWeights() > 100) {
     if (h->GetSumOfWeights() > h->GetEntries()) {
       fitopt += "w";

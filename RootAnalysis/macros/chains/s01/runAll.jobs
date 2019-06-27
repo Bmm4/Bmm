@@ -1,4 +1,5 @@
 my $version = "s01";
+my $vmod    = "bis";
 my $vda     = "v11";
 my $vmc     = "v11"; # also serves the 2011/2012 data
 
@@ -13,14 +14,14 @@ my %modes = ();
 tie %modes, "Tie::IxHash";
 
 # -- output directory
-$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version";
+$SCRATCH = "/scratch/$ENV{'USER'}/bmm4/$version$vmod";
 # -- grid SE prefix
 my $PSI = $ENV{'PSI'};
 $PSI =~ s/\?/\\\?/g;
 if ($PSI eq "") {
     die "PSI not defined, but required ...\n";
 }
-my $LFN = "/store/user/$USER/bmm4/runBmm/$version/";
+my $LFN = "/store/user/$USER/bmm4/runBmm/$version$vmod/";
 my $SEDIR = "$LFN";
 
 # -- edit the following if you produced your own T1 trees with cmsRun:
@@ -150,6 +151,23 @@ foreach $let (@list2016) {
     if ($let eq "G" || $let eq "H") {$era = "GH$version";}
     $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-legacy-Run2016";
     &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016.anasel ' ");
+    $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vda/$odataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
+
+
+# -- JetHT
+foreach $let (@list2016) {
+    # -- D is only on T1 and seems inaccessible
+    if (($let eq "D")) {next; }
+    $dataset = "bmm2JetHT2016$let";
+    $odataset = "bmmJetHT2016$let";
+    $era = "BF$version";
+    if ($let eq "G" || $let eq "H") {$era = "GH$version";}
+    $mode = "bmm2-data-$dataset-$version"; $pattern = "bmm2-legacy-Run2016";
+
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era -C cuts/bmmReader.2016 ' ");
     $catalogs{$mode} = "$BMMBASE/perl/srmLs -x $T1LOC/$vda/$odataset -c -p $pattern | sort > $mode " . &mCC;
     $catalogs{$mode} .= "$BMMBASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
     $merges{$mode} = "-x $SEDIR/$dataset -p $mode";

@@ -48,7 +48,7 @@ public:
   int          fKGenID;
   double       fKaonPtNrf, fKaonEtaNrf;
   int          fKaonTkQuality;
-  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi, fJpsiCosA, fJpsiMaxDoca, fJpsiFLSxy, fJpsiVtxProb;
+  double       fJpsiMass, fJpsiPt, fJpsiEta, fJpsiPhi, fJpsiCosA, fJpsiMaxDoca, fJpsiFLSxy, fJpsiVtxProb, fHelicity;
   double       fBdJpsiKstarMass;
 
   bool         fGoodJpsiMass;
@@ -73,7 +73,7 @@ public:
   float fETk1pt, fETk1eta, fETg3pt, fETg3eta;
   int   fETk1q;
   bool  fETk1gt;
-
+  double fETghel;
 };
 
 #endif

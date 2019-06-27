@@ -634,7 +634,7 @@ void plotResults::makeAll(string what) {
 
     fHistWithAllCuts = "hMassWithAllCuts";
     for (int i = 0; i < fNchan; ++i) {
-      if (1) {
+      if (0) {
 	fSuffixSel = "cnc" + fSuffix;
 	calculateNumbers("cnc" + fSuffix, i);
       }
@@ -740,7 +740,7 @@ void plotResults::makeAll(string what) {
   if (what == "dbx1") {
     fHistFile = TFile::Open(fHistFileName.c_str());
     fSuffixSel = "bdt" + fSuffix;
-    //    sysBsVsBu();
+    sysBsVsBu();
     //    scanBDTEffRatio(Form("%s/scanBDT-%s.tex", fDirectory.c_str(), fSuffix.c_str()), "EFF-TRIG-MC-bupsik", "EFF-TRIG-MC-bsmm");
 
 
@@ -1119,11 +1119,11 @@ void plotResults::sysBsVsBu() {
     while (is.getline(buffer, 2000, '\n')) allLines.push_back(string(buffer));
     is.close();
     for (int ichan = 0; ichan < fNchan; ++ichan) {
-      name = Form("%s:CSBF:chan%d", fSuffixSel.c_str(), ichan);
+      name = Form("bdt%s:CSBF:chan%d", it->first.c_str(), ichan);
       double val = findVarValue(name, allLines);
       double err = findVarEstat(name, allLines);
       name = Form("%s_chan%d", it->first.c_str(), ichan);
-      cout << name << ": " << val << " +/- " << err << endl;
+      cout << name << ": " << val << " +/- " << err <<  " from it->first = " << it->first << endl;
       bfbs.insert(make_pair(name, make_pair(val, err)));
     }
   }
@@ -1249,8 +1249,13 @@ void plotResults::sysNorm(std::string sample1, int ichan, int version) {
     wcSgErr = a.getSignalUnW8Error();
   }
 
-  double sysV = (ncSgVal-wcSgVal)/ncSgVal;
-  double sysE = dRatio(wcSgVal, wcSgErr, ncSgVal, ncSgErr);
+  double sysV = TMath::Abs(ncSgVal-wcSgVal)/ncSgVal;
+  double sysE(0.);
+  if (wcSgVal < ncSgVal) {
+    sysE = dRatio(wcSgVal, wcSgErr, ncSgVal, ncSgErr);
+  } else {
+    sysE = dRatio(ncSgVal, ncSgErr, wcSgVal, wcSgErr);
+  }
 
   replaceAll(sample1, "Data", "");
   string sysname = Form("%s:sysnorm_chan%d_%s", fSetup.c_str(), ichan, sample1.c_str());
@@ -3181,7 +3186,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   //  string name2 = Form("hW8Norm_%s_%s_chan%d", modifier.c_str(), fSample.c_str(), chan);
   string name2 = Form("hW8Norm_%s_%s_chan%d", fSuffixSel.c_str(), fSample.c_str(), chan);
   ok = fHistFile->cd(fSample.c_str());
-  cout << "cd to " << fSample << ": " << ok << ", W8 normalization fitting: " << name << endl;
+  cout << "cd to " << fSample << ": " << ok << ", W8 normalization fitting: " << name2 << endl;
   fitPsYield fpy2(name2, 0);
   if (string::npos != a.fName.find("bupsik")) {
     fpy2.fitBu2JpsiKp(5, fDirectory + "/norm", imode, 5.0, 5.8, 0.025);
@@ -3271,7 +3276,6 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   lamF2->SetLineStyle(kDashed);
   double binw = h1->GetBinWidth(1);
   TFitResultPtr r;
-  bool notFit(false),  notFitAm(false);
 
   double elo(0.), ehi(0.);
   double erel = poissonError(static_cast<int>(massInt), ehi, elo);
@@ -3288,12 +3292,9 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   double erelAmLo = elo/massIntam;
   double erelAmHi = ehi/massIntam;
 
-  //  erelAm = elo;
-
   if (massInt > 3) {
     h1->Fit(lF1, "rl", "", lo, hi);
   } else {
-    notFit = true;
     lF1->SetParameter(0, massInt*binw/(hi-lo));              // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
     //    lF1->SetParError(0, TMath::Sqrt(massInt)*binw/(hi-lo));  // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
     lF1->SetParError(0, erel*lF1->GetParameter(0));
@@ -3302,7 +3303,6 @@ void plotResults::calculateCombBgNumbers(anaNumbers &a, int mode, double lo, dou
   if (massIntam > 3) {
     h1am->Fit(lamF1, "rl", "", lo, hi);
   } else {
-    notFitAm = true;
     lamF1->SetParameter(0, massIntam*binw/(hi-lo));              // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
     lamF1->SetParError(0, TMath::Sqrt(massIntam)*binw/(hi-lo));  // A = p0 * (hi-lo), N = A/binw -> p0 = A/(hi-lo) = N*binw/(hi-lo)
     lamF1->SetParError(0, erelAm*lamF1->GetParameter(0));
@@ -3621,7 +3621,11 @@ void plotResults::calculateRareBgNumbers(int chan) {
   string u8name(""), w8name(""), amname(""), accname("bs");
   for (map<string, dataset*>::iterator it = fDS.begin(); it != fDS.end(); ++it) {
     if (skipThisBg(it->first)) continue;
-    cout << "calculateRareBgNumbers for " << it->first << " in chan = " << chan << endl;
+    int nprotons = ((string::npos != it->first.find("lb")) ? 1 : 0);
+    int nmuons = ((string::npos != it->first.find("mu")) ? 1 : 0);
+    if (string::npos != it->first.find("mumu")) nmuons = 2;
+    cout << "calculateRareBgNumbers for " << it->first << " in chan = " << chan << " with nmuons = " << nmuons << endl;
+
     anaNumbers *a = fRareNumbers[it->first][chan];
     string accname = rareAccName(it->first);
     cout << "rec: " << Form("%s/hGenAndAccNumbers_%s_%s_chan%d", it->first.c_str(), fSuffixSel.c_str(), it->first.c_str(), chan) << endl;
@@ -3645,7 +3649,11 @@ void plotResults::calculateRareBgNumbers(int chan) {
     double eTot     = eAccAna * (massIntegral(hw, ALL, chan) / utot) * fBsmmNumbers[chan].fEffTrigMC.val;
     double eTotAm   = eAccAna * (massIntegral(ha, ALL, chan) / utot) * fBsmmNumbers[chan].fEffTrigMCAm.val;
     // -- switch to background estimates:
-    eTot     = eAccAna * (massIntegral(hw, ALL, chan) / utot) * triggerEffAve;
+    if (0 == nmuons) {
+      eTot     = eAccAna * (massIntegral(hw, ALL, chan) / utot) * triggerEffAve;
+    } else {
+      eTot     = eAccAna * (massIntegral(hw, ALL, chan) / utot) * triggerEffSignal;
+    }
     eTotAm   = eAccAna * (massIntegral(ha, ALL, chan) / utot) * triggerEffAmsAve;
     if (1) cout << "acc = " << eAccAna << " integral = " << massIntegral(ha, ALL, chan) << " utot = " << utot << " eff = " << triggerEffAmsAve << endl;
 
@@ -3693,23 +3701,23 @@ void plotResults::calculateRareBgNumbers(int chan) {
     hw->Scale(a->fScaledYield.val/massIntegral(hw, ALL, chan));
     ha->Scale(a->fScaledYieldAm.val/massIntegral(ha, ALL, chan));
 
-    int nprotons = ((string::npos != it->first.find("lb")) ? 1 : 0);
-    int nmuons = ((string::npos != it->first.find("mu")) ? 1 : 0);
-    if (string::npos != it->first.find("mumu")) nmuons = 2;
-    double muonSys(0.), fsfuSys(0.);
+    double muonSys(0.), fsfuSys(0.), triggerSys(0.);
     if (0 == nmuons) {
+      triggerSys = triggerEffAveE/triggerEffAve;
       if (0 == nprotons) {
 	muonSys = 2.*fSystematics["fakemuid"][chan];
       } else {
 	muonSys = quadraticSum(2, fSystematics["fakemuid"][chan], fSystematics["fakemuidProtons"][chan]);
       }
     } else if (1 == nmuons) {
+      triggerSys = fSystematics["efftrig"][chan];
       if (0 == nprotons) {
 	muonSys = quadraticSum(2, fSystematics["fakemuid"][chan], fSystematics["effmuid"][chan]);
       } else {
 	muonSys = quadraticSum(2, fSystematics["fakemuidProtons"][chan], fSystematics["effmuid"][chan]);
       }
     } else {
+      triggerSys = fSystematics["efftrig"][chan],
       muonSys = 2.*fSystematics["effmuid"][chan];
     }
     if (pRatio < 0.9) {
@@ -3721,8 +3729,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
 				   fSystematics["effcandbsmm"][chan],
 				   //  fSystematics["effanabsmm"][chan],
 				   fSystematics["effana4r"][chan],
-				   //fSystematics["efftrig"][chan],
-				   triggerEffAveE/triggerEffAve, //FIXME: from trigger uncertainty above
+				   triggerSys,
 				   muonSys,
 				   fSystematics["normbupsik"][chan],
 				   it->second->fBfE/it->second->fBf
@@ -3958,7 +3965,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   setFilledHist(h1Hh, kMagenta-2, kMagenta-2, 1000);
   hCombBg.Add(h1Hh);
 
-  newLegend(0.4, 0.6, 0.86, 0.86, "Background");
+  newLegend(0.4, 0.6, 0.86, 0.86, "Data and MC");
   legg->AddEntry(h1e, "Data", "l");
   legg->AddEntry(h1Hh, "rare hadronic", "f");
   legg->AddEntry(h1Sl, "rare semileptonic", "f");
@@ -3980,7 +3987,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   double scale  = diffLo/massIntegral(h1Sl, LO, chan);
   if (scale < -1.) scale = -1.;
   setHist(h1e, kBlack);
-  h1e->SetMaximum(9.);
+  h1e->SetMaximum(12.);
   h1e->Draw("hist");
   THStack hCombScBg("hCombScBg", "comb + scaled rare decays");
   h1Sl->Add(h1Sl, scale);
@@ -3991,7 +3998,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
   setFilledHist(h1Hh, kMagenta-2, kMagenta-2, 1000);
   hCombScBg.Add(h1Hh);
 
-  newLegend(0.4, 0.6, 0.86, 0.86, "Background");
+  newLegend(0.4, 0.6, 0.86, 0.86, "Data and MC");
   legg->AddEntry(h1e, "Data", "l");
   legg->AddEntry(h1Hh, "rare hadronic", "f");
   legg->AddEntry(h1Sl, "scal. rare semileptonic", "f");
@@ -4010,6 +4017,51 @@ void plotResults::calculateRareBgNumbers(int chan) {
     savePad(Form("%s-data-scaled-background-chan%d.pdf", fSuffixSel.c_str(), chan));
   }
 
+  // -- add signal
+  string sgSample = fBsmmNumbers[chan].fNameMc;
+  name = Form("%s_%s_%s_chan%d", hname.c_str(), fSuffixSel.c_str(), sgSample.c_str(), chan);
+  cout << "getting  histogram ->" << Form("%s/%s", sgSample.c_str(), name.c_str()) << "<-" << endl;
+  TH1D *h1bsmm = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", sgSample.c_str(), name.c_str())))->Clone("h1bsmmrebin");
+  h1bsmm->Clear();
+  h1bsmm->Rebin(5);
+  h1bsmm->Scale(fBsmmNumbers[chan].fMcYield[4].val/h1bsmm->GetSumOfWeights());
+  cout << "====jeff: scaling to bsmm = " << fBsmmNumbers[chan].fMcYield[4].val << endl;
+  setFilledHist(h1bsmm, kRed, kRed, 3375);
+
+  sgSample = fBdmmNumbers[chan].fNameMc;
+  name = Form("%s_%s_%s_chan%d", hname.c_str(), fSuffixSel.c_str(), sgSample.c_str(), chan);
+  cout << "getting  histogram ->" << Form("%s/%s", sgSample.c_str(), name.c_str()) << "<-" << endl;
+  TH1D *h1bdmm = (TH1D*)((TH1D*)gDirectory->Get(Form("%s/%s", sgSample.c_str(), name.c_str())))->Clone("h1bdmmrebin");
+  h1bdmm->Clear();
+  h1bdmm->Rebin(5);
+  h1bdmm->Scale(fBdmmNumbers[chan].fMcYield[4].val/h1bdmm->GetSumOfWeights());
+  cout << "====jeff: scaling to bsmm = " << fBdmmNumbers[chan].fMcYield[4].val << endl;
+  setFilledHist(h1bdmm, kMagenta, kMagenta, 3244);
+
+  gPad->Clear();
+  h1e->Draw("hist");
+  hCombScBg.Add(h1bdmm);
+  hCombScBg.Add(h1bsmm);
+  hCombScBg.Draw("histsame");
+  h1e->Draw("histsame");
+  h1e->Draw("axissame");
+  newLegend(0.4, 0.6, 0.86, 0.86, "Data and MC");
+  legg->AddEntry(h1e, "Data", "l");
+  legg->AddEntry(h1bdmm, fDS[fBdmmNumbers[chan].fNameMc]->fName.c_str(), "f");
+  legg->AddEntry(h1bsmm, fDS[fBsmmNumbers[chan].fNameMc]->fName.c_str(), "f");
+  legg->AddEntry(h1Hh, "rare hadronic", "f");
+  legg->AddEntry(h1Sl, "scal. rare semileptonic", "f");
+  legg->AddEntry(h1c, "combinatorial", "f");
+  legg->Draw();
+
+  tl->SetTextSize(0.035);
+  tl->DrawLatexNDC(0.55, 0.92, Form("sl correction: = %+3.1f %%", 100*scale));
+  tl->DrawLatexNDC(0.15, 0.92, Form("%s/chan%d", fSuffixSel.c_str(), chan));
+  c0->Modified();
+  c0->Update();
+  if (1) {
+    savePad(Form("%s-data-scaled-background-signal-chan%d.pdf", fSuffixSel.c_str(), chan));
+  }
 
   // -- calculate scaled numbers
   fSlNumbers[chan].fScaleFactor = 1. + scale;

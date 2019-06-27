@@ -136,6 +136,22 @@ if (3 == $opt_s) {
     exit(0);
 }
 
+# -- run all years for the same in one directory: for s01bis (while still using the files "s01" in that directory!)
+if (4 == $opt_s) {
+    my @years = ("2011", "2012" , "2016BF", "2016GH");
+
+    foreach $year (@years) {
+	($dir = $opt_x) =~ s/bis//g;
+	$setup = $year;
+	$setup = $year.$dir; # if you need the directory as part of the identifier in the LaTeX files as well
+
+	$command = "bin/runPlot -y $year -d $opt_x -s $setup -c baseCuts.$year$dir.cuts -f plotResults.$year$dir.files $optp $optm  >& $opt_x/$opt_p-$opt_m-$year$dir.log &";
+	print "$command\n";
+	if (!$opt_d) {system($command);}
+    }
+    exit(0);
+}
+
 # -- for predefined list of jobs: do all the time-consuming stuff in one go
 if (6 == $opt_s) {
     foreach $idir (@years) {

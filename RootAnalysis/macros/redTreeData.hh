@@ -30,6 +30,7 @@ struct redTreeData {
   int m1q, m2q;
   double m1pt, m1eta, m1phi, m1ip, m1chi2;
   double m2pt, m2eta, m2phi, m2ip, m2chi2;
+  double muhelicity;
   double kpt, keta, kphi, kip, kchi2;
   double k1pt, k1eta, k1phi, k2pt, k2eta, k2phi;
   double pipt, pieta, piphi;

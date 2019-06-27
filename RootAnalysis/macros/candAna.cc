@@ -1333,7 +1333,7 @@ void candAna::candEvaluation() {
     && fGoodDocaTrk
     ;
 
-  if (0) {
+  if (fVerbose == -32) {
     cout << " CNC: " << fGoodCNC
 	 << " Acceptance: " << fGoodAcceptance
 	 << " Q: " << fGoodQ
@@ -1371,7 +1371,7 @@ void candAna::candEvaluation() {
 
   if (fPreselection) ((TH1D*)fHistDir->Get("test3"))->Fill(2.);
 
-  if (0) cout << "Chan = " << fChan
+  if (fVerbose == -32) cout << "Chan = " << fChan
 	      << " fPresel = " << fPreselection
 	      << " fGoodQ = " << fGoodQ
 	      << " fGoodMuGmID = " << fGoodMuonsGmID
@@ -1599,30 +1599,36 @@ void candAna::triggerHLT() {
     }
   }
 
-  string spath;
+  string spath, sas, goodsas;
   int rmin, rmax;
   bool good(false);
   for (map<string, pair<int, int> >::iterator imap = HLTRANGE.begin(); imap != HLTRANGE.end(); ++imap) {
     spath = imap->first;
+    if (0) cout << "checking spath  ->" << spath  << "<-" << endl;
     rmin = imap->second.first;
     rmax = imap->second.second;
     if (fRun < rmin) continue;
     if (fRun > rmax) continue;
     if (fpReader->fHltPathInfo[spath].result) {
-      sa = spath;
+      goodsas = spath;
       ps = fpReader->fHltPathInfo[spath].prescale;
       good = true;
+      if (0) cout << "versioned checked spath = " << spath << " ... good" << endl;
       break;
     }
-    string sas = spath.substr(0, sa.rfind("_v")+2);
+    // NOTE: bug fix on 2019/03/27 to do rfind on 'spath' instead of 'sa'!
+    sas = spath.substr(0, spath.rfind("_v")+2);
+    if (0) cout << "spath = " << spath << " sas = " << sas << " sa = " << sa << endl;
     if (fpReader->fHltPathInfo[sas].result) {
+      goodsas = sas;
       good = true;
-      break;
+      if (0) cout << "unversioned checked sas = " << sas << " ... good" << endl;
+      // break; // 2019/05/17 removed this break to allow for versioned match even if unversioned would pass first
     }
   }
   if (good) {
     fHltPrescale = ps;
-    fHLT1Path    = sa;
+    fHLT1Path    = goodsas;
     fGoodHLT1    = true;
 
     // PDTRIGGER mode - accept all triggers which fire and are on the DS list
@@ -1744,7 +1750,7 @@ void candAna::triggerL1T() {
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
-      } else if ("L1_ DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
+      } else if ("L1_DoubleMu3er_HighQ_WdEta22" == fpEvt->fL1TNames[i]) {
 	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
@@ -1760,7 +1766,7 @@ void candAna::triggerL1T() {
 	fL1SeedString += " ";
 	continue;
       } else if ("L1_DoubleMu0_Eta1p6_WdEta18" == fpEvt->fL1TNames[i]) { // 2012 MC seed?!
-	fL1Seeds |= (0x1<<1); //1
+	fL1Seeds |= (0x1<<1); //2
 	fL1SeedString += fpEvt->fL1TNames[i];
 	fL1SeedString += " ";
 	continue;
@@ -2781,6 +2787,7 @@ void candAna::readCuts(string fileName, int dump) {
   }
 
   printCuts(cout);
+
 }
 
 // ----------------------------------------------------------------------
@@ -4816,7 +4823,10 @@ bool candAna::tos(TAnaCand *pC) {
     if (pTO->fType.Contains("L1Filter")) continue;
     if (pTO->fType.Contains("L1T")) continue;
     if (pTO->fType.Contains("L2")) continue;
-    if (fHLT1Path == pTO->fHltPath) {
+    //    if (fHLT1Path == pTO->fHltPath) {
+    string stringPath = pTO->fHltPath.Data();
+    if (0) cout << "tos check " << stringPath << " for " << fHLT1Path << endl;
+    if (string::npos != stringPath.find(fHLT1Path)) {
       muonIndex.clear(); muonIndex = pTO->fIndex;
       muonID.clear();    muonID = pTO->fID;
       muonP.clear();     muonP = pTO->fP;

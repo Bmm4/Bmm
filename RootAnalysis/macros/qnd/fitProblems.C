@@ -9,6 +9,100 @@ void fitProblems(int bdtCut = 20) {
 }
 
 // ----------------------------------------------------------------------
+void fitProblems12() {
+  int imode(0);
+  TFile *f = TFile::Open(Form("s01/plotResults.2012s01.root"));
+  f->cd("bupsikData");
+  //  string hname(Form("hW8Norm_bdt_19_2016BFs01_bupsikData_chan1"));
+  string hname(Form("hW8Norm_bdt_41_2012s01_bupsikData_chan0"));
+  fitPsYield fpy(hname);
+  fpy.fitBu2JpsiKp(5, "qnd/norm", imode, 5.0, 5.8, 0.025);
+
+}
+
+// ----------------------------------------------------------------------
+void fitProblems11() {
+  int imode(0);
+  TFile *f = TFile::Open(Form("s01/plotResults.2016BFs01.root"));
+  f->cd("bupsikData");
+  //  string hname(Form("hW8Norm_bdt_19_2016BFs01_bupsikData_chan1"));
+  string hname(Form("hW8Norm_bdt_0_2016BFs01_bupsikData_chan1"));
+  fitPsYield fpy(hname);
+  fpy.fitBu2JpsiKp(5, "qnd/norm", imode, 5.0, 5.8, 0.025);
+
+}
+
+// ----------------------------------------------------------------------
+void fitProblems10() {
+  int imode(0);
+  TFile *f = TFile::Open(Form("s01/plotResults.2016GHs01.root"));
+  f->cd("bupsikData");
+  string hname(Form("hW8Norm_bdt_22_2016GHs01_bupsikData_chan1"));
+  fitPsYield fpy(hname);
+  fpy.fitBu2JpsiKp(5, "qnd/norm", imode, 5.0, 5.8, 0.025);
+
+}
+
+// ----------------------------------------------------------------------
+void fitProblems9() {
+  int imode(0);
+  TFile *f = TFile::Open(Form("s01/plotResults.2011s01.root"));
+  f->cd("bupsikData");
+  string hname(Form("hNorm_bdt2011s01_bupsikData_chan0"));
+  fitPsYield fpy(hname);
+  fpy.fitBu2JpsiKp(5, "qnd/norm", imode, 5.0, 5.8, 0.025);
+
+  string hname2(Form("hW8Norm_bdt2011s01_bupsikData_chan0"));
+  fitPsYield fpy2(hname2);
+  fpy2.fitBu2JpsiKp(5, "qnd/norm", imode, 5.0, 5.8, 0.025);
+
+  cout << "XXXXXXX fpy.getSignalYield() = " << fpy.getSignalYield() << endl;
+  cout << "XXXXXXX fpy.getSignalYield() = " << fpy2.getSignalYield() << endl;
+
+}
+
+// ----------------------------------------------------------------------
+void fitProblems8() {
+
+  vector<string> years;
+  years.push_back("2011s01");
+  years.push_back("2012s01");
+  years.push_back("2016BFs01");
+  years.push_back("2016GHs01");
+  fitPsYield *a(0);
+  for (unsigned int i = 0; i < years.size(); ++i) {
+    TFile *f = TFile::Open(Form("s01/plotResults.%s.root", years[i].c_str()));
+    f->cd("bupsikMcComb");
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      string hname(Form("hNorm_bdt%s_bupsikMcComb_chan%d", years[i].c_str(), ichan));
+      a = new fitPsYield(hname, 0);
+      a->fitBu2JpsiKp(5, years[i]);
+    }
+  }
+}
+
+
+// ----------------------------------------------------------------------
+void fitProblems7() {
+
+  vector<string> years;
+  years.push_back("2011s01");
+  years.push_back("2012s01");
+  years.push_back("2016BFs01");
+  years.push_back("2016GHs01");
+  fitPsYield *a(0);
+  for (unsigned int i = 0; i < years.size(); ++i) {
+    TFile *f = TFile::Open(Form("s01/plotResults.%s.root", years[i].c_str()));
+    f->cd("bspsiphiMcComb");
+    for (int ichan = 0; ichan < 2; ++ichan) {
+      string hname(Form("hNorm_bdt%s_bspsiphiMcComb_chan%d", years[i].c_str(), ichan));
+      a = new fitPsYield(hname, 0);
+      a->fitBs2JpsiPhi(5, years[i]);
+    }
+  }
+}
+
+// ----------------------------------------------------------------------
 void fitProblems6(int bdtCut = 20) {
 
   vector<string> years;
