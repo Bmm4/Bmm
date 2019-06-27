@@ -1,0 +1,36 @@
+my $version = "v01";
+my $dataset = "bla";
+
+# -- define jobs and catalog splitting into py files and jobs
+#%catalogs = ();
+tie %catalogs, "Tie::IxHash";
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+# -- did not manage to do this with refs, so do it with a function:
+sub runCommand() {
+    return "$BASE/perl/run -t $opt_t $opt_C $opt_q -c $BASE/CmsswAnalysis/test/recoil/prodNoComp.csh -r 'PFNS srm://t3se01.psi.ch:8443/srm/managerv2\\?SFN=/pnfs/psi.ch/cms/trivcat%STORAGE1 /store/user/$USER/recoil/cmsRun/$version/$dataset%SITE T3_CH_PSI' ";
+}
+
+# -- 2017 recoil data jobs
+$dataset = "Charmonium__Run2017B";
+&addToJobs($dataset); $catalogs{$dataset} = "$BASE/perl/mkPyFiles -t ../recoil-data-2017-XXXX.py -f ../../catalogs/Charmonium__Run2017B__17Nov2017-v1 -s $version -e 50000; ";
+$dataset = "Charmonium__Run2017C";
+&addToJobs($dataset); $catalogs{$dataset} = "$BASE/perl/mkPyFiles -t ../recoil-data-2017-XXXX.py -f ../../catalogs/Charmonium__Run2017C__17Nov2017-v1 -s $version -e 50000; ";
+$dataset = "Charmonium__Run2017D";
+&addToJobs($dataset); $catalogs{$dataset} = "$BASE/perl/mkPyFiles -t ../recoil-data-2017-XXXX.py -f ../../catalogs/Charmonium__Run2017D__17Nov2017-v1 -s $version -e 50000; ";
+$dataset = "Charmonium__Run2017E";
+&addToJobs($dataset); $catalogs{$dataset} = "$BASE/perl/mkPyFiles -t ../recoil-data-2017-XXXX.py -f ../../catalogs/Charmonium__Run2017E__17Nov2017-v1 -s $version -e 50000; ";
+$dataset = "Charmonium__Run2017F";
+&addToJobs($dataset); $catalogs{$dataset} = "$BASE/perl/mkPyFiles -t ../recoil-data-2017-XXXX.py -f ../../catalogs/Charmonium__Run2017F__17Nov2017-v1 -s $version -e 50000; ";
+
+# -- 2017 private MC
+$dataset = "mc-2017";
+&addToJobs($dataset);
+#$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil12 -s $version -n 10 -l;  \ \n";
+#$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil13 -s $version -n 10 -l;  \ \n";
+#$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil14 -s $version -n 10 -l;  \ \n";
+#$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../../recoil-$dataset-XXXX.py -f ../../catalogs/recoil15 -s $version -n 10 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../BuToDmPiPi-$dataset-XXXX.py -f ../../catalogs/recoil16 -s $version -n 10 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../BuToDmPiPi-$dataset-XXXX.py -f ../../catalogs/recoil17 -s $version -n 10 -l;  \ \n";
+$catalogs{$dataset} .= "$BASE/perl/mkPyFiles -t ../BuToMuTauK-$dataset-XXXX.py -f ../../catalogs/recoil18 -s $version -n 10 -l;  \ \n";

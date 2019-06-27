@@ -38,7 +38,7 @@ EXTHEADERS    = -I..
 
 # -- Files
 READER = t1Reader.o recoilReader.o genAnalysis.o \
-         candAna.o candAnaRecoil.o
+         candAna.o candAnaBuToMuTauK.o candAnaBuToDmPiPi.o candAnaBuToDmMuPi.o tmva1.o
 
 DICT = ${READER:.o=Dict.o}
 DICTHEADERS = ${READER:.o=Dict.h}
@@ -79,8 +79,9 @@ all: vars prep lib bin
 lib: $(addprefix obj/,$(CSTUFF) $(READER)  $(DICT))
 	$(CXX) $(SOFLAGS) $(addprefix obj/,$(CSTUFF) $(READER) $(DICT)) -o lib/libRecoilClasses.so $(GLIBS) -lMinuit lib/libAna00.so lib/libUtil.so
 
-bin: lib obj/runT1Reader.o
+bin: lib obj/runT1Reader.o obj/runPlot.o
 	$(LD) $(LDFLAGS) -o bin/runT1Reader $(GLIBS) obj/runT1Reader.o lib/libRecoilClasses.so lib/libAna00.so lib/libUtil.so
+	$(LD) $(LDFLAGS) -o bin/runPlot $(GLIBS) obj/runPlot.o  lib/libRecoilClasses.so lib/libAna00.so lib/libUtil.so
 
 # -- preparatory setup
 prep:
@@ -92,7 +93,7 @@ prep:
 
 # -- clean up
 clean:
-	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runT1Reader.o)
+	rm -f $(addprefix obj/,$(READER) $(DICT) $(CSTUFF) runT1Reader.o runPlot.o)
 	rm -f $(DICTHEADERS)  $(DICTSOURCES)
 	rm -f bin/*
 	rm -f lib/*

@@ -3,7 +3,7 @@ import FWCore.ParameterSet.Config as cms
 trackList = "generalTracks"
 
 # ######################################################################
-# Bs modes
+# Final states with/related to tau modes
 # ######################################################################
 
 # ----------------------------------------------------------------------
@@ -12,10 +12,37 @@ truthBuToKMuTauDump = cms.EDAnalyzer(
     verbose      = cms.untracked.int32(0),
     tracksLabel  = cms.untracked.InputTag(trackList),
     motherID     = cms.untracked.int32(521),
-    type         = cms.untracked.int32(200),
-    GenType      = cms.untracked.int32(-200),
+    type         = cms.untracked.int32(32),
+    GenType      = cms.untracked.int32(-32),
     daughtersID  = cms.untracked.vint32(321, -15, 211, 211, -211, -16, 13)
     )
+
+# ----------------------------------------------------------------------
+truthBu2DmPiMuNuDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    verbose      = cms.untracked.int32(0),
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(521),
+    type         = cms.untracked.int32(33),
+    GenType      = cms.untracked.int32(-33),
+    daughtersID  = cms.untracked.vint32(-411, -321, 211, 211, 211, -13, 14)
+    )
+
+# ----------------------------------------------------------------------
+truthBd2DstarPiDump = cms.EDAnalyzer(
+    "HFTruthCandidate",
+    verbose      = cms.untracked.int32(0),
+    tracksLabel  = cms.untracked.InputTag(trackList),
+    motherID     = cms.untracked.int32(511),
+    type         = cms.untracked.int32(30),
+    GenType      = cms.untracked.int32(-30),
+    daughtersID  = cms.untracked.vint32(-413, 211, -421, -211, 321, 211)
+    )
+
+
+# ######################################################################
+# Bs modes
+# ######################################################################
 
 # ----------------------------------------------------------------------
 truthBsToMuMuDump = cms.EDAnalyzer(
@@ -398,16 +425,6 @@ truthBd2JpsiKstarDump = cms.EDAnalyzer(
     )
 
 
-# ----------------------------------------------------------------------
-truthBd2DstarPiDump = cms.EDAnalyzer(
-    "HFTruthCandidate",
-    verbose      = cms.untracked.int32(0),
-    tracksLabel  = cms.untracked.InputTag(trackList),
-    motherID     = cms.untracked.int32(511),
-    type         = cms.untracked.int32(30),
-    GenType      = cms.untracked.int32(-30),
-    daughtersID  = cms.untracked.vint32(-413, 211, -421, -211, 321, 211)
-    )
 
 
 # ######################################################################

@@ -12,6 +12,10 @@
 
 using namespace std;
 
+bool highPurity(TAnaTrack *pt) {
+  if (pt->fTrackQuality & 4) return true;
+  return false;
+}
 
 // ----------------------------------------------------------------------
 int  numberOfBPixLayers(TAnaTrack *pTrack) {
@@ -271,6 +275,29 @@ bool tightMuon(TAnaMuon *pM, bool hadronsPass, int year) {
   } else {
     //cout<<" failed "<<endl;
     return false;
+  }
+
+}
+
+
+// ----------------------------------------------------------------------
+void dumpCand(TAnaCand *pCand, TAna01Event *pEvt) {
+  pCand->dump();
+  for (int ic = pCand->fDau1; ic <= pCand->fDau2; ++ic) {
+    if (ic < 0) break;
+    TAnaCand *pDau = pEvt->getCand(ic);
+    if (pDau) {
+      dumpCand(pDau, pEvt);
+    }
+  }
+  cout << "sig tracks for cand " << pCand->fType<< endl;
+  for (int it = pCand->fSig1; it <= pCand->fSig2; ++it) {
+    if (it < 0) break;
+    TAnaTrack *pTrack = pEvt->getSigTrack(it);
+    if (pTrack) {
+      cout << "sig idx: " << it << ": ";
+      pTrack->dump();
+    }
   }
 
 }

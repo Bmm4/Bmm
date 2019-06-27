@@ -20,6 +20,8 @@
 #include "RecoVertex/KalmanVertexFit/interface/KalmanVertexFitter.h"
 #include "RecoVertex/VertexPrimitives/interface/TransientVertex.h"
 
+#include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
+
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 
 #include <TLorentzVector.h>
@@ -36,7 +38,8 @@ extern TAna01Event *gHFEvent;
 HfrSimpleRecoilProducer::HfrSimpleRecoilProducer(const ParameterSet& iConfig) :
   HfrBaseProducer(iConfig),
   fVtxProb(iConfig.getUntrackedParameter<double>("vtxProb", 0.01)),
-  fCandType(iConfig.getUntrackedParameter<int>("candtype", 3000068)) {
+  fCandType(iConfig.getUntrackedParameter<int>("candtype", 0)) {
+  dumpConfiguration();
   produces<vector<int> >(); // vector of track indices
   produces<int>();          // possibly a PV index
 }
@@ -45,8 +48,9 @@ HfrSimpleRecoilProducer::HfrSimpleRecoilProducer(const ParameterSet& iConfig) :
 // ----------------------------------------------------------------------
 void HfrSimpleRecoilProducer::dumpConfiguration() {
   cout << "----------------------------------------------------------------------" << endl;
-  cout << "--- HfrBaseProducer::dumpConfiguration()" << endl;
+  cout << "--- HfrSimpleRecoilProducer::dumpConfiguration()" << endl;
   HfrBaseProducer::dumpConfiguration();
+  cout << "----------------------------------------------------------------------" << endl;
 }
 
 // ----------------------------------------------------------------------
@@ -70,14 +74,60 @@ void HfrSimpleRecoilProducer::produce(Event& iEvent, const EventSetup& iSetup) {
 			  << endl;
 
   HfrBaseProducer::analyze(iEvent, iSetup);
+
   // -- get candidate and PV from gHFEvent
   TAnaCand *pCand(0);
+  TAnaTrack *pS(0);
+  int ipv(-1);
+  vector<int> brecoIdx;
   for (int ic = 0; ic < gHFEvent->nCands(); ++ic) {
     pCand = gHFEvent->getCand(ic);
     if (fCandType == pCand->fType) {
-      cout << "found one" << endl;
+      ipv = pCand->fPvIdx;
+      cout << "found one " << pCand->fType << " with PV idx = " << ipv << endl;
+      for (int i = pCand->fSig1; i <= pCand->fSig2; ++i) {
+	pS = gHFEvent->getSigTrack(i);
+	pS->dump();
+	brecoIdx.push_back(pS->fIndex);
+      }
     }
   }
+  if (ipv < 0) {
+      put(iEvent, trkIdxColl, pvIdx);
+      return;
+  }
+  pvIdx = std::make_unique<int>(ipv);
+
+  Vertex myVertex = fVertexCollection[ipv];
+  GlobalPoint pVertex(myVertex.position().x(), myVertex.position().y(), myVertex.position().z());
+
+  // -- create and fill the track collections
+  TrajectoryStateOnSurface tsos;
+  AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
+  VertexDistance3D a3d;
+  int ntracks(0), cnt(0);
+  for (unsigned int ix = 0; ix < fTracksHandle->size(); ix++) {
+    // -- skip tracks from BRECO
+    for (unsigned int ib = 0; ib < brecoIdx.size(); ++ib) {
+      if (static_cast<int>(ix) == brecoIdx[ib]) continue;
+    }
+    reco::TrackBaseRef rTrackView(fTracksHandle, ix);
+    const reco::Track track(*rTrackView);
+    TransientTrack transTrack = fTTB->build(*rTrackView);
+    ++ntracks;
+    if (!track.quality(reco::TrackBase::qualityByName(fTrackQualityString))) continue;
+    if (track.pt() < fTrackMinPt) continue;
+
+    tsos = extrapolator.extrapolate(transTrack.initialFreeState(), pVertex);
+    Measurement1D doca = a3d.distance(VertexState(tsos.globalPosition(), tsos.cartesianError().position()), myVertex);
+    if (doca.value() > 0.1) continue;
+
+    trkIdxColl->push_back(ix);
+    ++cnt;
+  }
+  cout << "==>HfrSimpleRecoilProducer> put into event tracklist with " << trkIdxColl->size()
+       << " tracks, removed "  << ntracks - trkIdxColl->size()
+       << endl;
 
   // -- put into event
   put(iEvent, trkIdxColl, pvIdx);

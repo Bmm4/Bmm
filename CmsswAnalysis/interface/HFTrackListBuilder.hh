@@ -37,11 +37,9 @@ public:
   void setRecoilTrkIdx(std::vector<int> &v) {
     fRecoilTrkIdx = v;
     fDoFilter = true;
-    std::cout << "HFTrackListBuilder> recoil track list size = " << fRecoilTrkIdx.size() << std::endl;
   }
   void setRecoilPvIdx(int idx) {
     fRecoilPvIdx = idx;
-    std::cout << "HFTrackListBuilder> recoil PV idx = " << fRecoilPvIdx << std::endl;
   }
 
 public:

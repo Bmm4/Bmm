@@ -28,10 +28,17 @@
 #include "DataFormats/HepMCCandidate/interface/GenParticleFwd.h"
 #include "DataFormats/HepMCCandidate/interface/GenParticle.h"
 
+#include "RecoVertex/KinematicFit/interface/KinematicParticleVertexFitter.h"
+#include "RecoVertex/KinematicFitPrimitives/interface/KinematicParticleFactoryFromTransientTrack.h"
+#include "RecoVertex/VertexPrimitives/interface/ConvertToFromReco.h"
+
+#include "RecoVertex/VertexTools/interface/VertexDistance3D.h"
+
 #include "Bmm/CmsswAnalysis/interface/HFDumpUtilities.hh"
 
 #include "Bmm/RootAnalysis/rootio/TAna01Event.hh"
 #include "Bmm/RootAnalysis/rootio/TGenCand.hh"
+#include "Bmm/RootAnalysis/common/HFMasses.hh"
 
 using namespace std;
 using namespace edm;
@@ -39,6 +46,11 @@ using namespace reco;
 
 // -- Yikes!
 extern TAna01Event *gHFEvent;
+
+
+struct MassNotFoundException {
+  MassNotFoundException() {}
+};
 
 // ----------------------------------------------------------------------
 void fillSimpleTrack(TSimpleTrack *pTrack, const reco::Track &trackView,
@@ -78,6 +90,25 @@ void fillSimpleTrack(TSimpleTrack *pTrack, const reco::Track &trackView,
 
   //  cout << "/" << pTrack->getPvIndex() << "  (genIdx = " << gidx << ")" << endl;
 }
+
+// ----------------------------------------------------------------------
+TAnaTrack* fillSigTrack(int tidx,
+		  Handle<View<Track> > &hTracks, const reco::VertexCollection *vc, const reco::MuonCollection *mc, const reco::BeamSpot *bs) {
+
+  TAnaTrack *pTrack = gHFEvent->addSigTrack();
+  TrackBaseRef baseRef(hTracks, tidx);
+  Track trackView(*baseRef);
+  TSimpleTrack *sTrack = gHFEvent->getSimpleTrack(tidx);
+  int gidx = sTrack->getGenIndex();
+  if (0 == sTrack) {
+    cout << "fillSigTrack> did not find track index " << tidx << " in simple track collection, not filling sig track" << endl;
+    return 0;
+  }
+
+  fillAnaTrack(pTrack, trackView, tidx, gidx, vc, mc,bs);
+  return pTrack;
+}
+
 
 
 // ----------------------------------------------------------------------
@@ -383,4 +414,120 @@ void cleanupTruthMatching(Handle<View<Track> > &hTracks, const MagneticField *ma
     }
   }
 
+}
+
+
+// ----------------------------------------------------------------------
+pair<double, double> vtxSeparation(const Vertex &v0, const Vertex &v1) {
+  VertexDistance3D a3d;
+  double fl3d  = a3d.distance(v0, v1).value();
+  double fl3de = a3d.distance(v0, v1).error();
+  return make_pair(fl3d, fl3de);
+}
+
+
+// ----------------------------------------------------------------------
+pair<int, double> findBestPV(vector<TransientTrack> &vtt, RefCountedKinematicTree &kinTree, reco::VertexCollection&vc, const MagneticField *mf) {
+  // // -- fit vertex
+  // KinematicParticleFactoryFromTransientTrack factory;
+  // ParticleMass muon_mass = 0.1056583;
+  // float muon_sigma = 0.0000000001;
+  // float chi = 0.;
+  // float ndf = 0.;
+  // vector<RefCountedKinematicParticle> particles;
+  // for(vector<TransientTrack>::const_iterator i = vtt.begin();  i != vtt.end(); ++i) {
+  //   particles.push_back(factory.particle(*i, muon_mass, chi, ndf, muon_sigma));
+  // }
+  // KinematicParticleVertexFitter fitter;
+  // kinTree = fitter.fit(particles);
+  // kinTree->movePointerToTheTop();
+
+  // -- setup extrapolators
+  RefCountedKinematicParticle kinParticle = kinTree->currentParticle();
+  RefCountedKinematicVertex   kinVertex = kinTree->currentDecayVertex();
+  AnalyticalImpactPointExtrapolator extrapolator(mf);
+  int bestPV(-1);
+  double lip(999.), bestLip(9999.);
+  // -- loop over PVs and determine best one
+  for (unsigned int iv = 0; iv < vc.size(); ++iv) {
+    Vertex currentPV = vc[iv];
+
+    TrajectoryStateOnSurface tsos1 = extrapolator.extrapolate(kinParticle->currentState().freeTrajectoryState(),
+							      RecoVertex::convertPos(currentPV.position()));
+    std::pair<bool,Measurement1D> currentIp = IPTools::signedDecayLength3D(tsos1, GlobalVector(0,0,1), currentPV);
+    lip = currentIp.second.value();
+    //    cout << "pv " << iv << " lip: " << lip << endl;
+    if (TMath::Abs(lip) < bestLip) {
+      bestLip = TMath::Abs(lip);
+      bestPV = iv;
+    }
+  }
+  return make_pair(bestPV, bestLip);
+}
+
+
+
+// ----------------------------------------------------------------------
+RefCountedKinematicTree fitTree(vector<TransientTrack> &vtt, vector<int> &particleId) {
+  // -- fit vertex
+  KinematicParticleFactoryFromTransientTrack factory;
+  float sigma = 0.0000000001;
+  float chi = 0.;
+  float ndf = 0.;
+  vector<RefCountedKinematicParticle> particles;
+  for (unsigned int i = 0; i < vtt.size(); ++i) {
+    pair<float, float> ms = getParticleMassAndSigma(particleId[i]);
+    particles.push_back(factory.particle(vtt[i], ms.first, chi, ndf, ms.second));
+  }
+  KinematicParticleVertexFitter fitter;
+  RefCountedKinematicTree kinTree = fitter.fit(particles);
+  if (!kinTree->isEmpty()) kinTree->movePointerToTheTop();
+  return kinTree;
+}
+
+// ----------------------------------------------------------------------
+Vertex mkVertex(RefCountedKinematicTree &kinTree) {
+  RefCountedKinematicVertex kinVertex = kinTree->currentDecayVertex();
+  return Vertex(RecoVertex::convertPos(kinVertex->vertexState().position()),
+		kinVertex->vertexState().error().matrix(),
+		kinVertex->chiSquared(),
+		kinVertex->degreesOfFreedom(),
+		kinTree->daughterParticles().size());
+}
+
+
+// ----------------------------------------------------------------------
+pair<float, float> getParticleMassAndSigma(int particleID) {
+  float mass;
+  float sigma = 0.0;
+  particleID = TMath::Abs(particleID);
+
+  // sigma corresponds to standard uncertainty as can be found in the PDG
+  switch(particleID) {
+  case 11: // electron
+    mass = MELECTRON;
+    sigma = 0.013E-9f;
+    break;
+  case 13: // muon
+    mass = MMUON;
+    sigma = 4E-9f;
+    break;
+  case 211: // pion
+    mass = MPION;
+    sigma = 3.5E-7f;
+    break;
+  case 321: // kaon
+    mass = MKAON;
+    sigma = 1.6E-5f;
+    break;
+  case 2212: // proton
+    mass = MPROTON;
+    sigma = 8E-8f;
+    break;
+  default:
+    throw MassNotFoundException();
+    break;
+  }
+
+  return make_pair(mass, sigma);
 }

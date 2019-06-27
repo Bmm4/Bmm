@@ -575,9 +575,24 @@ void replaceAll(string &str, const string &from, const string &to) {
   }
 }
 
+
+// ----------------------------------------------------------------------
+int quarkFlavor(int i) {
+  if (isBeautyMeson(i) || isBeautyBaryon(i)) {
+    return 5;
+  } else if (isCharmMeson(i) || isCharmBaryon(i)) {
+    return 4;
+  } else {
+    return 3;
+  }
+}
+
 // ----------------------------------------------------------------------
 bool isBeautyMesonWeak(int i) {
-  return (5 == TMath::Abs(i)/100);
+  if (511 == TMath::Abs(i)) return true;
+  if (521 == TMath::Abs(i)) return true;
+  if (531 == TMath::Abs(i)) return true;
+  return false;
 }
 
 // ----------------------------------------------------------------------
@@ -592,7 +607,10 @@ bool isBeautyBaryonWeak(int i) {
 
 // ----------------------------------------------------------------------
 bool isCharmMesonWeak(int i) {
-  return (4 == TMath::Abs(i)/100);
+  if (411 == TMath::Abs(i)) return true;
+  if (421 == TMath::Abs(i)) return true;
+  if (431 == TMath::Abs(i)) return true;
+  return false;
 }
 
 // ----------------------------------------------------------------------
@@ -667,6 +685,24 @@ vector<int> defVector(int n, ...) {
   }
   va_end(vl);
   return vect;
+}
+
+//. ----------------------------------------------------------------------
+string formatTLV(const TLorentzVector &v, int mode) {
+  if (1 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f, E=%5.4f)", v.X(), v.Y(), v.Z(), v.E()));
+  } else if (2 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f, m=%5.4f)", v.X(), v.Y(), v.Z(), v.M()));
+  }
+  return string(Form("(%5.4f, %+3.2f, %+3.2f)", v.Perp(), v.Eta(), v.Phi()));
+}
+
+// ----------------------------------------------------------------------
+string formatTVector3(const TVector3 &v, int mode) {
+  if (1 == mode) {
+    return string(Form("(%5.4f, %5.4f, %5.4f)", v.X(), v.Y(), v.Z()));
+  }
+  return string(Form("(%5.4f, %+3.2f, %+3.2f)", v.Perp(), v.Eta(), v.Phi()));
 }
 
 

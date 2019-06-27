@@ -29,23 +29,8 @@ extern TAna01Event *gHFEvent;
 
 // ----------------------------------------------------------------------
 HfrTest::HfrTest(const edm::ParameterSet& iConfig) :
-  fVerbose(iConfig.getUntrackedParameter<int>("verbose", 1)),
-  fTracksLabel(iConfig.getUntrackedParameter<edm::InputTag>("tracksLabel", edm::InputTag("generalTracks"))),
-  fPVLabel(iConfig.getUntrackedParameter<edm::InputTag>("pvLabel", edm::InputTag("offlinePrimaryVertices"))),
-  fBeamSpotLabel(iConfig.getUntrackedParameter<edm::InputTag>("BeamSpotLabel", edm::InputTag("offlineBeamSpot"))),
-  fMuonsLabel(iConfig.getUntrackedParameter<edm::InputTag>("muonsLabel", edm::InputTag("muons"))),
-  fMuonQualityString(iConfig.getUntrackedParameter<std::string>("muonQualityString",std::string("AllGlobalMuons"))),
-  fTrkIdxLabel(iConfig.getUntrackedParameter<edm::InputTag>("trkIdxLabel", edm::InputTag("hfrtracks"))),
-  fPvIdxLabel(iConfig.getUntrackedParameter<edm::InputTag>("pvIdxLabel", edm::InputTag("hfrtracks"))),
-  fVertexLabel(iConfig.getUntrackedParameter<edm::InputTag>("vertexLabel", edm::InputTag("hfrtracks"))),
-  fLeadingTrackPt(iConfig.getUntrackedParameter<double>("leadingTrackPt", -1.0)) {
+  HFVirtualDecay(iConfig) {
   dumpConfiguration();
-  fTokenTrack       = consumes<edm::View<reco::Track> >(fTracksLabel) ;
-  fTokenPV          = consumes<VertexCollection>(fPVLabel);
-  fTokenBeamSpot    = consumes<BeamSpot>(fBeamSpotLabel);
-  fTokenMuon        = consumes<MuonCollection>(fMuonsLabel) ;
-  fTokenTrkIdx      = consumes<vector<int> >(fTrkIdxLabel);
-  fTokenPvIdx       = consumes<int>(fPvIdxLabel) ;
 }
 
 
@@ -53,6 +38,7 @@ HfrTest::HfrTest(const edm::ParameterSet& iConfig) :
 void HfrTest::dumpConfiguration() {
   cout << "----------------------------------------------------------------------" << endl;
   cout << "--- HfrTest constructor" << endl;
+  HFVirtualDecay::dumpConfiguration();
   cout << "---  muonsLabel                  " << fMuonsLabel << endl;
   cout << "---  muonQuality                 " << fMuonQualityString << endl;
   cout << "----------------------------------------------------------------------" << endl;
@@ -65,85 +51,26 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 			  << " evt = " << iEvent.id().event()
 			  << " ==================================================================="
 			  << endl;
-
-
-  // -- tracks
   try {
-    iEvent.getByToken(fTokenTrack, fTracksHandle);
-    fTracksHandle.isValid();
-  } catch(cms::Exception&){
-    throw HFSetupException(Form("No valid TrackCollection with label '%s' found, skipping", fTracksLabel.encode().c_str()));
-  }
-
-  // -- load the transient track builder
-  edm::ESHandle<TransientTrackBuilder> ttbHandle;
-  iSetup.get<TransientTrackRecord>().get("TransientTrackBuilder", ttbHandle);
-  if (!ttbHandle.isValid()) {
-    cout << "Error: no TransientTrackBuilder handle found" << endl;
+    HFVirtualDecay::analyze(iEvent,iSetup);
+  } catch(HFSetupException e) {
+    cout << "==>HFBu2JpsiKp> " << e.fMsg << endl;
     return;
   }
-  fTTB = ttbHandle.product();
+  fListBuilder->setCallerName("HfrTest");
+  fListBuilder->setMinPt(fTrackPt);
+  fListBuilder->setMaxDocaToTracks(fMaxDoca);
 
-  // -- magnetic field
-  edm::ESHandle<MagneticField> fieldHandle;
-  iSetup.get<IdealMagneticFieldRecord>().get(fieldHandle);
-  fMagneticField = fieldHandle.product();
-
-  // -- primary vertices
-  Handle<VertexCollection> hPVCollection;
-  try {
-    iEvent.getByToken(fTokenPV, hPVCollection);
-    hPVCollection.isValid();
-    fPVCollection = hPVCollection.product();
-    if (fPVCollection->size() == 0) throw HFSetupException("Primary vertex collection is empty, skipping");
-  } catch(cms::Exception&){
-    throw HFSetupException("No primary vertex collection found, skipping");
-  }
-
-  // -- beam spot
-  Handle<BeamSpot> hBeamSpot;
-  try {
-    iEvent.getByToken(fTokenBeamSpot, hBeamSpot);
-    hBeamSpot.isValid();
-    fBeamSpot = hBeamSpot.product();
-  } catch(cms::Exception&){
-    throw HFSetupException("No beam spot collection found, skipping");
-  }
-
-  // -- muons
-  Handle<MuonCollection> hMuonCollection;
-  try {
-    iEvent.getByToken(fTokenMuon, hMuonCollection);
-    hMuonCollection.isValid();
-    fMuonCollection = hMuonCollection.product();
-  } catch(cms::Exception&){
-    throw HFSetupException(Form("No valid MuonCollection with label '%s' found, skipping",fMuonsLabel.encode().c_str()));
-  }
-
-
-  // -- recoil track indices
-  try {
-    iEvent.getByToken(fTokenTrkIdx, fTrkIdxHandle);
-    fTrkIdxHandle.isValid();
-  } catch(cms::Exception&){
-    throw HFSetupException(Form("No valid TrkIdxCollection with label '%s' found, skipping", fTrkIdxLabel.encode().c_str()));
-  }
-
-  // -- recoil pv index
-  try {
-    iEvent.getByToken(fTokenPvIdx, fPvIdxHandle);
-    fPvIdxHandle.isValid();
-  } catch(cms::Exception&){
-    throw HFSetupException(Form("No valid PvIndex with label '%s' found, skipping", fTrkIdxLabel.encode().c_str()));
-  }
-
-  //  int pvidx = (*fPvIdxHandle);
-  vector<int> vidx = (*fTrkIdxHandle);
+  cout << "==>HfrTest> fListBuilder->getTrackList()" << endl;
+  vector<int> vidx = fListBuilder->getTrackList();
+  cout << "==>HfrTest> vidx.size() = " << vidx.size() << endl;
 
   // -- must have at least two muons (filled in first two places)
   if (vidx.size() < 2) return;
 
   // -- vertex the two muons once again
+  // NOTE: THIS IS WRONG. After getTrackList, the order is no longer as defined by the list producer!!!!!!!
+  // BUT THIS IS A PIECE OF TEST CODE, so why bother...
   vector<TransientTrack>vtt;
   TrackBaseRef rm1(fTracksHandle, vidx[0]); vtt.push_back(fTTB->build(*rm1));
   TrackBaseRef rm2(fTracksHandle, vidx[1]); vtt.push_back(fTTB->build(*rm2));
@@ -158,9 +85,9 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
 
   reco::Vertex::Error verr = secVertex.error();
   GlobalError err(verr.At(0,0), verr.At(1,0), verr.At(1,1), verr.At(2,0), verr.At(2,1), verr.At(2,2));
-  GlobalPoint displacementFromBeamspot( -1.*((fBeamSpot->x0() -  secVertex.x()) +  (secVertex.z() - fBeamSpot->z0()) * fBeamSpot->dxdz()),
-					-1.*((fBeamSpot->y0() - secVertex.y())+  (secVertex.z() - fBeamSpot->z0()) * fBeamSpot->dydz()),
-					0.);
+  GlobalPoint displacementFromBeamspot(-1.*((fBeamSpot.x0() - secVertex.x()) + (secVertex.z() - fBeamSpot.z0())*fBeamSpot.dxdz()),
+				       -1.*((fBeamSpot.y0() - secVertex.y()) + (secVertex.z() - fBeamSpot.z0())*fBeamSpot.dydz()),
+				       0.);
 
   float flxy  = displacementFromBeamspot.perp();
   float flxye = sqrt(err.rerr(displacementFromBeamspot));
@@ -172,7 +99,7 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   AnalyticalImpactPointExtrapolator extrapolator(fMagneticField);
   VertexDistance3D a3d;
   TAnaCand *pCand = gHFEvent->addCand();
-  pCand->fType = 1;
+  pCand->fType = fType;
   pCand->fVtx.fDxy = flxy;
   pCand->fVtx.fDxyE = flxye;
   pCand->fSig1 = gHFEvent->nSigTracks();
@@ -188,12 +115,12 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
   p4m1.SetXYZM(t1.px(), t1.py(), t1.pz(), MMUON);
   p4m2.SetXYZM(t2.px(), t2.py(), t2.pz(), MMUON);
   p4psi = p4m1 + p4m2;
-
   pCand->fMass = p4psi.M();
   pCand->fPlab = p4psi.Vect();
 
   // -- loop over track from produced list
-  TLorentzVector p4t, p4tot;
+  TLorentzVector p4t, p4psit, p4tot;
+  p4tot = p4m1 + p4m2;
   for (unsigned int ix = 0; ix < vidx.size(); ix++) {
     int idx = vidx[ix];
     //    cout << "idx = " << ix << " -> track idx = " << idx << " pv idx = " << pvidx << endl;
@@ -206,15 +133,17 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
     pTrack = gHFEvent->addSigTrack();
     int gidx = sTrack->getGenIndex();
     Track trackView(*baseRef);
-    fillAnaTrack(pTrack, trackView, idx, gidx, fPVCollection, fMuonCollection, fBeamSpot);
+    const reco::BeamSpot *pBeamSpot = &fBeamSpot;
+    fillAnaTrack(pTrack, trackView, idx, gidx, &fVertexCollection, fMuonCollection, pBeamSpot);
     pTrack->fDouble1 = doca.value();
 
-    p4t.SetXYZM(trackView.px(), trackView.py(), trackView.pz(), MKAON);
-    p4tot = p4m1 + p4m2 + p4t;
-    pTrack->fBsTip = p4tot.M();
+    p4t.SetXYZM(trackView.px(), trackView.py(), trackView.pz(), MPION);
+    p4psit = p4m1 + p4m2 + p4t;
+    pTrack->fBsTip = p4psit.M();
 
     // -- check compatibility in another vertex fit
     if (ix  > 1) {
+      p4tot += p4t;
       vtt.push_back(fTTB->build(*baseRef));
       TransientVertex tVertex = fitter.vertex(vtt);
       Vertex tmpVertex = tVertex;
@@ -235,19 +164,14 @@ void HfrTest::analyze(const edm::Event& iEvent, const edm::EventSetup& iSetup) {
       pTrack->fRefDof  = -1;
     }
   }
+
+  cout << "HfrTest cand dump: mtot = " << p4tot.M() << endl;
+  pCand->dump();
+  for (int is = pCand->fSig1; is <= pCand->fSig2; ++is) {
+    gHFEvent->getSigTrack(is)->dump();
+  }
 }
 
-
-// ----------------------------------------------------------------------
-int HfrTest::idFromMass(double mass) {
-  if (TMath::Abs(mass - MELECTRON) < 0.0001) return 11;
-  if (TMath::Abs(mass - MMUON) < 0.0001) return 13;
-  if (TMath::Abs(mass - MPION) < 0.0001) return 211;
-  if (TMath::Abs(mass - MKAON) < 0.0001) return 321;
-  if (TMath::Abs(mass - MPROTON) < 0.0001) return 2212;
-  cout << "%%%> HfrTest: mass " << mass << " not associated to any stable particle" << endl;
-  return 0;
-}
 
 //define this as a plug-in
 DEFINE_FWK_MODULE(HfrTest);

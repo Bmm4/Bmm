@@ -41,21 +41,28 @@ std::vector<int> HFTrackListBuilder::getMuonList() {
   vector<int> trackList;
   vector<int>::iterator trackIt;
 
-  if (fDoFilter) {
-    cout << "filter track list has " << fRecoilTrkIdx.size() << " entries" << endl;
+  if (fDoFilter && fVerbose > 0) {
+    cout << fCallerName
+	 << "::getMuonList() filter track list has " << fRecoilTrkIdx.size()
+	 << " entries" << endl;
   }
 
   trackList.reserve(50); // 50 muons should be enough
   int ix(0);
+
   for (muonIt = fMuons->begin(); muonIt != fMuons->end(); ++muonIt) {
     if (!muon::isGoodMuon(*muonIt, fMuonQuality)) continue;
     int ixMu = muonIt->track().index();
     if (ixMu < 0) continue;
     // -- recoil filtering
-    if (fDoFilter && (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ixMu))) {
-      cout << "found ixMu = " << ixMu << " in fRecoilTrkIdx" << endl;
-    } else {
-      continue;
+    if (fDoFilter) {
+      if (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ixMu)) {
+	if (fVerbose > 0) {
+	  cout << "found ixMu = " << ixMu << " in fRecoilTrkIdx" << endl;
+	}
+      } else {
+	continue;
+      }
     }
 
     if (!(*this)(ixMu)) {
@@ -85,22 +92,36 @@ std::vector<int> HFTrackListBuilder::getTrackList() {
   vector<int> trackList; // allocate capacity
   int ix;
 
-  if (fDoFilter) {
-    cout << "filter track list has " << fRecoilTrkIdx.size() << " entries" << endl;
+  if (fDoFilter && (fVerbose > 0)) {
+    cout << fCallerName
+	 << "::getTrackList() filter track list has " << fRecoilTrkIdx.size()
+	 << " entries, fCloseTracks->size() = " << (fCloseTracks? fCloseTracks->size(): 0)
+	 << endl;
   }
 
   trackList.reserve(300);
+  if (fVerbose > 0) {
+    cout << "==>" << fCallerName << "> nTracks = " << fhTracks->size() << " filter: " << fDoFilter << endl;
+  }
+
   for (ix = 0; (unsigned)ix < fhTracks->size(); ix++) {
     reco::TrackBaseRef rTrackView(fhTracks, ix);
     const reco::Track trackView(*rTrackView);
     if (!trackView.quality(reco::TrackBase::qualityByName(fTrackQuality))) continue;
     // -- recoil filtering
-    if (fDoFilter && fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ix)) {
-      //      cout << "found ix = " << ix << " in fRecoilTrkIdx" << endl;
-    } else {
-      continue;
+    if (fDoFilter) {
+      if (fRecoilTrkIdx.end() !=  find(fRecoilTrkIdx.begin(), fRecoilTrkIdx.end(), ix)) {
+	//cout << "found ix = " << ix << " in fRecoilTrkIdx" << endl;
+      } else {
+	continue;
+      }
     }
-    if (!(*this)(ix)) trackList.push_back(ix);
+    if (!(*this)(ix)) {
+      // cout << "added ix = " << ix << " to trackList" << endl;
+      trackList.push_back(ix);
+    } else {
+      // cout << "did NOT add ix = " << ix << " to trackList" << endl;
+    }
   }
 
   return trackList;
@@ -112,7 +133,6 @@ bool HFTrackListBuilder::operator()(int ix) {
   reco::TrackBaseRef rTrackView(fhTracks,ix);
   reco::Track tTrack(*rTrackView);
   bool skip = tTrack.d0() > fMaxD0 || tTrack.dz() > fMaxDz || tTrack.pt() < fMinPt;
-
   if (!skip && fCloseTracks) {
     // check wether this track is nearby anyone in the fCloseTracks vector
     reco::TransientTrack tTrkCur = fTTB->build(tTrack);
@@ -129,7 +149,6 @@ bool HFTrackListBuilder::operator()(int ix) {
       if (md.distance() < minDoca)
 	minDoca = md.distance();
     }
-
     skip = minDoca > fMaxDocaToTrks;
   }
 

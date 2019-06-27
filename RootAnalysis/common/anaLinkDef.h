@@ -1,6 +1,5 @@
 #include "TH1.h"
-#include "rootio/TAnaTrack.hh"
-#include "rootio/TAnaMuon.hh"
+#include "rootio/TAna01Event.hh"
 
 #ifdef __CINT__
 
@@ -18,5 +17,8 @@
 #pragma link C++ function numberOfTrackerLayers(TAnaTrack *);
 
 #pragma link C++ function tightMuon(TAnaMuon *, bool, int);
+#pragma link C++ function highPurity(TAnaTrack *);
+
+#pragma link C++ function dumpCand(TAnaCand *, TAna01Event*);
 
 #endif

@@ -6,10 +6,9 @@
 #include "common/util.hh"
 
 #include "candAna.hh"
-#include "candAnaRecoil.hh"
-// #include "candAnaMuDstar.hh"
-// #include "candAnaMuTau.hh"
-
+#include "candAnaBuToMuTauK.hh"
+#include "candAnaBuToDmPiPi.hh"
+#include "candAnaBuToDmMuPi.hh"
 using namespace std;
 
 // ----------------------------------------------------------------------
@@ -79,7 +78,7 @@ void recoilReader::eventProcessing() {
 
   if (fRun != oldRun) {
     oldRun = fRun;
-    if (!fIsMC && json) {
+    if (!fIsMC && json && !fIgnoreJson) {
       if (0 != fpLumi->contains(fRun)) {
 	rlumi = fpLumi->lumi(fRun);
       } else {
@@ -106,13 +105,24 @@ void recoilReader::eventProcessing() {
   for (int i = 0; i < fpEvt->nPV(); ++i) {
     double z = fpEvt->getPV(i)->fPoint.Z();
     if (0 == i) h0->Fill(fpEvt->getPV(i)->fPoint.Z());
-    h2->Fill(fpEvt->getPV(i)->fPoint.Z());
+    h2->Fill(z);
 
   }
 
+  unsigned int ilm = lCandAnalysis.size();
+  if (ilm < 1) return;
+
+  int verbose(11);
+  if (verbose > 10) {
+    cout << "----- new event #" << fChainEvent
+	 << " fRun = " << fRun
+	 << " fEvt = " << fEvt
+	 << " with ncands = " <<  fpEvt->nCands()
+	 << endl;
+  }
+
   // -- call candidate analyses
-  //  cout << "recoilReader: " << fChainEvent << endl;
-  for (unsigned int i = 0; i < lCandAnalysis.size(); ++i) {
+  for (unsigned int i = 0; i < ilm; ++i) {
     if (fCheckCandTypes) {
       if (fCandTypes.find(lCandAnalysis[i]->CANDTYPE) == fCandTypes.end()) {
 	continue;
@@ -158,42 +168,45 @@ void recoilReader::bookHist() {
 
 
 // ----------------------------------------------------------------------
-void recoilReader::readCuts(TString filename, int dump) {
-  if (dump) cout << "==> recoilReader: Reading " << filename << " for classes setup" << endl;
+// Changed setup compared to previous times:
+// directly pass all candAna* setups after -C, separated by :
+// The first line in the candAna* file should contain CLASSNAME for proper instantiation
+// This avoids duplicating all cut files for the reader and candAna*
+// ----------------------------------------------------------------------
+void recoilReader::readCuts(TString filenames, int dump) {
+  if (dump) cout << "==> recoilReader: Reading " << filenames << " for classes setup" << endl;
 
-  ifstream is(filename.Data());
-  char buffer[1000];
-  char className[200], cutFile[200];
-  while (is.getline(buffer, 1000, '\n')) {
-    sscanf(buffer, "%s %s", className, cutFile);
+  vector<string> cutfiles = split(string(filenames), ':');
+  ifstream INS;
+  for (unsigned int i = 0; i < cutfiles.size(); ++i) {
+    cout << "cutfile i = " << i << "(" << cutfiles.size() << "): " << cutfiles[i] << endl;
+    string sline("nada");
+    INS.open(cutfiles[i]);
+    while (getline(INS, sline)) {
+      if (string::npos != sline.find("CLASS")) {
+	replaceAll(sline, "CLASSNAME", "");
+	cleanupString(sline);
+	break;
+      }
+    }
+    INS.close();
 
-    // -- set up candidate analyzer classes
-    if (!strcmp(className, "candAnaRecoil")) {
-      candAna *a = new candAnaRecoil(this, "candAnaRecoil", cutFile);
+    if (string::npos != sline.find("candAnaBuToMuTauK")) {
+      candAna *a = new candAnaBuToMuTauK(this, sline, cutfiles[i]);
       a->BLIND = BLIND;
       lCandAnalysis.push_back(a);
     }
-    if (!strcmp(className, "candAnaMuDstar")) {
-      candAna *a = new candAna(this, "candAna", cutFile);
+    if (string::npos != sline.find("candAnaBuToDmMuPi")) {
+      candAna *a = new candAnaBuToDmMuPi(this, sline, cutfiles[i]);
       a->BLIND = BLIND;
       lCandAnalysis.push_back(a);
     }
-
-    // -- all the rest ...
-    if (!strcmp(className, "JSON")) {
-      char json[1000];
-      sscanf(buffer, "%s %s", className, json);
-      JSONFILE = string(json);
-      if (dump) cout << "JSON FILE:           " << JSONFILE << endl;
+    if (string::npos != sline.find("candAnaBuToDmPiPi")) {
+      candAna *a = new candAnaBuToDmPiPi(this, sline, cutfiles[i]);
+      a->BLIND = BLIND;
+      lCandAnalysis.push_back(a);
     }
-
-    if (!strcmp(className, "LUMI")) {
-      char lumi[1000];
-      sscanf(buffer, "%s %s", className, lumi);
-      LUMIFILE = string(lumi);
-      if (dump) cout << "LUMI FILE:           " << LUMIFILE << endl;
-    }
-
   }
 
+  cout << "Added " << lCandAnalysis.size() << " candidate analysis modules to lCandAnalysis" << endl;
 }

@@ -52,10 +52,11 @@ void genAnalysis::eventProcessing() {
   if (0) fpEvt->dumpGenBlock();
 
   if (1) printBdecays();
+  if (0) plotBdecays(531);
   if (0) printB2JpsiXdecays();
   if (0) recoilValidation();
 
-  fTree->Fill();
+  //  fTree->Fill();
 }
 
 
@@ -64,6 +65,73 @@ void genAnalysis::endAnalysis() {
 
 }
 
+
+
+// ----------------------------------------------------------------------
+void genAnalysis::plotBdecays(int btype) {
+
+  TGenCand *pCand(0), *pB(0), *pPsi(0), *pPhi(0), *pMu1(0), *pMu2(0), *pKa1(0), *pKa2(0);
+  for (int iC = 0; iC < fpEvt->nGenCands(); ++iC) {
+    pCand = fpEvt->getGenCand(iC);
+    if ((btype == TMath::Abs(pCand->fID)) && ((pCand->fDau2 - pCand->fDau1) > 0)) {
+      pB = pCand;
+      for (int iD = pB->fDau1; iD <= pB->fDau2; ++iD) {
+	pCand = fpEvt->getGenCand(iD);
+	if (443 == TMath::Abs(pCand->fID)) {
+	  cout << iD << ": psi" << endl;
+	  pPsi = pCand;
+	}
+	if (13 == pCand->fID) {
+	  pMu1 = pCand;
+	  cout << iD << ": mu-" << endl;
+	}
+	if (-13 == pCand->fID) {
+	  pMu2 = pCand;
+	  cout << iD << ": mu+" << endl;
+	}
+	if (333 == TMath::Abs(pCand->fID)) {
+	  pPhi = pCand;
+	  cout << iD << ": phi" << endl;
+	}
+      }
+      if (pB && pPsi && pMu1 && pMu2 && pPhi) {
+	cout << "found all" << endl;
+	break;
+      }
+    }
+  }
+  cout << "pB: " << pB << " pPsi: " << pPsi << " pPhi: " << pPhi << endl;
+  for (int iD = pPhi->fDau1; iD <= pPhi->fDau2; ++iD) {
+    pCand = fpEvt->getGenCand(iD);
+    if (321 == pCand->fID) {
+      pKa1 = pCand;
+    }
+    if (-321 == pCand->fID) {
+      pKa2 = pCand;
+    }
+  }
+
+  fCanPt  = pB->fP.Perp();
+  fCanEta = pB->fP.Eta();
+  fCanPhi = pB->fP.Phi();
+
+  fMu1Pt = pMu1->fP.Perp();
+  fMu1Eta = pMu1->fP.Eta();
+  fMu1Phi = pMu1->fP.Phi();
+
+  fMu2Pt = pMu2->fP.Perp();
+  fMu2Eta = pMu2->fP.Eta();
+  fMu2Phi = pMu2->fP.Phi();
+
+  fKa1Pt = pKa1->fP.Perp();
+  fKa1Eta = pKa1->fP.Eta();
+  fKa1Phi = pKa1->fP.Phi();
+
+  fKa2Pt = pKa2->fP.Perp();
+  fKa2Eta = pKa2->fP.Eta();
+  fKa2Phi = pKa2->fP.Phi();
+
+}
 
 // ----------------------------------------------------------------------
 void genAnalysis::recoilValidation() {
@@ -253,6 +321,18 @@ void genAnalysis::bookHist() {
   fTree->Branch("canpt",   &fCanPt,  "canpt/D");
   fTree->Branch("caneta",  &fCanEta, "caneta/D");
   fTree->Branch("canphi",  &fCanPhi, "canphi/D");
+  fTree->Branch("m1pt",    &fMu1Pt,  "m1pt/D");
+  fTree->Branch("m1eta",   &fMu1Eta, "m1eta/D");
+  fTree->Branch("m1phi",   &fMu1Phi, "m1phi/D");
+  fTree->Branch("m2pt",    &fMu2Pt,  "m2pt/D");
+  fTree->Branch("m2eta",   &fMu2Eta, "m2eta/D");
+  fTree->Branch("m2phi",   &fMu2Phi, "m2phi/D");
+  fTree->Branch("k1pt",    &fKa1Pt,  "k1pt/D");
+  fTree->Branch("k1eta",   &fKa1Eta, "k1eta/D");
+  fTree->Branch("k1phi",   &fKa1Phi, "k1phi/D");
+  fTree->Branch("k2pt",    &fKa2Pt,  "k2pt/D");
+  fTree->Branch("k2eta",   &fKa2Eta, "k2eta/D");
+  fTree->Branch("k2phi",   &fKa2Phi, "k2phi/D");
 
 }
 
@@ -326,4 +406,15 @@ void genAnalysis::readCuts(TString filename, int dump) {
 
   if (dump)  cout << "------------------------------------" << endl;
 
+}
+
+
+// ----------------------------------------------------------------------
+bool genAnalysis::isAncestor(TGenCand *pAnc, TGenCand *pCand) {
+  TGenCand *pMom = pCand;
+  while ((pMom->fMom1 > -1) && (pMom->fMom1 < 99999)) {
+    pMom = fpEvt->getGenCand(pMom->fMom1);
+    if (pMom == pAnc) return true;
+  }
+  return false;
 }

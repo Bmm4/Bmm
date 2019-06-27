@@ -1,0 +1,110 @@
+my $version = "v01";
+
+my $dataset = "bla";
+my $mode    = "bla";
+my $pattern = "bla";
+
+
+my $year = 0;
+my @mceras = ();
+my %modes = ();
+tie %modes, "Tie::IxHash";
+
+# -- output directory
+$SCRATCH = "/scratch/$ENV{'USER'}/recoil/t1";
+# -- grid SE prefix
+my $PSI = $ENV{'PSI'};
+$PSI =~ s/\?/\\\?/g;
+if ($PSI eq "") {
+    die "PSI not defined, but required ...\n";
+}
+my $LFN = "/store/user/$USER/recoil/runT1Reader/$version/";
+my $SEDIR = "$LFN";
+
+# -- edit the following if you produced your own T1 trees with cmsRun:
+my $T1LOC = "/store/user/ursl/recoil/cmsRun";
+
+# -- did not manage to do this with refs, so do it with functions:
+sub runCommand() {
+    $runCmd  = "$BASE/perl/run $opt_C $opt_q -t $opt_t -c $BASE/RootAnalysis/macros/runBmmNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+sub runPlotCommand() {
+    $runCmd  = "$BASE/perl/run -t $opt_t -c $BASE/RootAnalysis/macros/runPlotNoComp.csh ";
+    $runCmd .= "-r 'PFNS $PSI%STORAGE1 $LFN".$dataset."%SITE T3_CH_PSI' ";
+    return $runCmd;
+}
+
+sub mCC() {
+    return " && $BASE/perl/mkCheckedChain $mode ; ";
+}
+
+sub srmHadd() {
+    ($lmode) = @_;
+    if ($opt_w) {
+	return "$BASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode-$opt_w.root";
+    } else {
+	return "$BASE/perl/srmHadd $merges{$lmode} -o $SCRATCH/$lmode.root";
+    }
+}
+
+# ######################
+# -- define all the jobs
+# ######################
+%jobs = ();
+tie %jobs, "Tie::IxHash";
+
+%catalogs = ();
+tie %catalogs, "Tie::IxHash";
+
+my $NDA = 800000;
+my $NMC = 200000;
+my $NHA = 100000;
+
+# -----------------------------------------------
+# -- combinations
+# -----------------------------------------------
+$combine{"bmmCharmonium2016GH"} = "cd $SCRATCH; hadd -f bmm-data-bmmCharmonium2016GH-$version.root bmm-data-bmmCharmonium2016G-$version.root bmm-data-bmmCharmonium2016H-$version.root; cd -  ";
+
+# ----------------------------------------------------------------------
+# 2017
+# ----------------------------------------------------------------------
+my @list2017 = ("B", "C", "D", "E", "F", "G", "H");
+# -- BMM
+foreach $let (@list2016) {
+    $dataset = "bmmCharmonium2016$let";
+    $mode = "bmm-data-$dataset-$version"; $pattern = "bmm-legacy-Run2016";
+    $era = "BF$version";
+    if ($let eq "G" || $let eq "H") {$era = "GH$version";}
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $era $unblind -C cuts/bmmReader.2016 ' ");
+    $catalogs{$mode} = "$BASE/perl/srmLs -x $T1LOC/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}
+
+# -----------------------------------------------
+$dataset = "mc-2017";
+# -----------------------------------------------
+$year = 2017;
+%modes = ();
+%modes = (
+    "BuToMuTauK"  => "cutfiles/BuToMuTauKTruth.cuts:cutfiles/BuToMuTauK.cuts",
+    "BuToDmPiPi"  => "cutfiles/BuToDmPiPiTruth.cuts:cutfiles/BuToDmPiPi.cuts"
+    );
+%rmodes = (
+    "BuToMuTauK"  => "recoil18",
+    "BuToDmPiPi:0"  => "recoil16",
+    "BuToDmPiPi:1"  => "recoil17"
+    );
+
+foreach $rawmds (keys %rmodes) {
+    ($mds,$cnt) = split(/:/, $rawmds, 2);
+    $mode = "$mds-$dataset-$rmodes{$rawmds}-$year-$version";  ($pattern = $rmodes{$rawmds}) =~ s/$year-$version/$version/g;
+    print("$mode -> pattern = $pattern<-\n");
+    &addModeToJobs($mode, " -x 'bin/runBmm -y 2016 -e $version -C $modes{$rawmds} -m ' ");
+    $catalogs{$mode} = "$BASE/perl/srmLs -x $T1LOC/$version/$dataset -c -p $pattern | sort > $mode " . &mCC;
+    $catalogs{$mode} .= "$BASE/perl/splitCheckedChain -n $NMC c$mode && rm checkChain.C";
+    $merges{$mode} = "-x $SEDIR/$dataset -p $mode";
+}

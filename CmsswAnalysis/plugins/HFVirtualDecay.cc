@@ -185,6 +185,9 @@ void HFVirtualDecay::analyze(const edm::Event &iEvent, const edm::EventSetup &iS
   if (fDoFilter) {
     fListBuilder->setRecoilTrkIdx(vidx);
     fListBuilder->setRecoilPvIdx(pvidx);
+    if (fVerbose > 0) {
+      cout << "HFVirtualDecay: recoil trk list size = " << vidx.size() << " pv idx = " << pvidx << endl;
+    }
   }
 
   muon::SelectionType muonType = muon::selectionTypeFromString(fMuonQualityString);

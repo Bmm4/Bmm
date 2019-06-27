@@ -28,6 +28,12 @@
 #include <memory>
 #include <vector>
 
+// ----------------------------------------------------------------------
+// Base class for all my producers
+// - its analyze() function is called by derived classes to set up data members
+// - it does NOT know about filtering (this is relevant downstream!)
+// ----------------------------------------------------------------------
+
 class HfrBaseProducer : public edm::stream::EDProducer<> {
 public:
 
@@ -41,8 +47,7 @@ protected:
   void analyze(edm::Event&, const edm::EventSetup&) ;
   void produce(edm::Event&, const edm::EventSetup&) ;
 
-  int fVerbose;
-
+  int fVerbose, fType;
   edm::InputTag fTracksLabel;
   std::string   fTrackQualityString;
   edm::InputTag fPrimaryVertexLabel;
@@ -52,6 +57,8 @@ protected:
 
   double fTrackMinPt;
   double fMuonMinPt;
+  double fDocaMaxPv;
+  double fDocaMaxTk;
 
   const MagneticField                 *fMagneticField;
   const reco::MuonCollection          *fMuonCollection;
