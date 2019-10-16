@@ -1,6 +1,0 @@
-CLASSNAME    candAnaBuToDmPiPiTruth
-CANDTYPE      4000041
-CANDTRUTH     4000041
-BRECOTYPE       10000
-# -- baseCuts
-+input cutfiles/baseCuts.cuts

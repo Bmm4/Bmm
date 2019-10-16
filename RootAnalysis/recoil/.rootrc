@@ -1,3 +1,0 @@
-Rint.Logon:              ./rootlogon.C
-Unix.*.Root.DynamicPath:  .:$(ROOTSYS)/lib:./lib
-

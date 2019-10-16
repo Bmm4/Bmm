@@ -1,6 +1,0 @@
-CLASSNAME    candAnaBuToDmMuPi
-CANDTYPE      10033
-CANDTRUTH   4000033
-BRECOTYPE     10000
-# -- baseCuts
-+input cutfiles/baseCuts.cuts
