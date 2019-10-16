@@ -4,7 +4,7 @@
 #
 # ======================================================================
 
-ROOTBASE      = $(BASE)/RootAnalysis
+ROOTBASE      = $(BMMBASE)/RootAnalysis
 
 ROOTCINT      = $(ROOTSYS)/bin/rootcint
 ROOTCFLAGS    = $(shell $(ROOTSYS)/bin/root-config --cflags)
