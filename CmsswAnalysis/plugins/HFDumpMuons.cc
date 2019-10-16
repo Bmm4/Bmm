@@ -608,7 +608,9 @@ void HFDumpMuons::fillMuonDetHits(TAnaMuon* pM, TrackRef gTrack) {
   pM->fvRPChits = {0,0,0,0};
   pM->fvCSChits = {0,0,0,0};
 
-  for (int i=0;i<gTrack->hitPattern().numberOfAllHits(HitPattern::TRACK_HITS);i++)
+  // FIXME The following does not compile for 927
+  //  for (int i=0;i<gTrack->hitPattern().numberOfAllHits(HitPattern::TRACK_HITS);i++)
+  for (int i=0;i<0;i++)
     {
       uint32_t hit = GMpattern.getHitPattern(HitPattern::TRACK_HITS, i);
       if ( !GMpattern.validHitFilter(hit) )

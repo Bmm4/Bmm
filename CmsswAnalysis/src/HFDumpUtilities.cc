@@ -233,12 +233,13 @@ void fillAnaTrack(TAnaTrack *pTrack, const reco::Track &trackView, int tidx, int
   // -- hits of the track
   const reco::HitPattern& p = trackView.hitPattern();
   //for (int i=0; i<p.numberOfHits(); i++) {
-  for (int i=0; i<p.numberOfAllHits(HitPattern::TRACK_HITS); i++) {
-    // assuming HitCategory=TRACK_HITS=0
-    //uint32_t hit = p.getHitPattern(i);
-    uint32_t hit = p.getHitPattern(HitPattern::TRACK_HITS,i);
-    if (i < 20) pTrack->fHitPattern[i] = hit;
-  }
+  // FIXME THIS does not compile in 927
+  // for (int i=0; i<p.numberOfAllHits(HitPattern::TRACK_HITS); i++) {
+  //   // assuming HitCategory=TRACK_HITS=0
+  //   //uint32_t hit = p.getHitPattern(i);
+  //   uint32_t hit = p.getHitPattern(HitPattern::TRACK_HITS,i);
+  //   if (i < 20) pTrack->fHitPattern[i] = hit;
+  // }
 
   // -- truth-matching information
   pTrack->fGenIndex = gidx;

@@ -38,7 +38,7 @@ HFBDT::HFBDT(edm::FileInPath weightFile, bool verbose = false): verbose_(verbose
 }
 
 HFBDT::~HFBDT(){
-  //delete can lead to segfault: is the muon being deleted before this 
+  //delete can lead to segfault: is the muon being deleted before this
   //destructor is called?
 
   //delete muon;
@@ -50,7 +50,7 @@ void HFBDT::addVarToReader(TMVA::Reader* reader,string str) {
     {cout << "HFBDT> ERROR: The reader is already set up." << endl;return;}
 
   cout << " Adding variable " << str << " to the reader." << endl;
-  // cout << "value: " << muon->getVar(str) 
+  // cout << "value: " << muon->getVar(str)
   //      << "(" << *(muon->getPtr(str)) << ")" << endl;
   //float *variable = muon->getPtr(str);
   reader->AddVariable(str,muon->getPtr(str));
@@ -62,7 +62,7 @@ void HFBDT::addSpecToReader(TMVA::Reader* reader,string str) {
     {cout << "HFBDT> ERROR: The reader is already set up." << endl;return;}
 
   cout << " Adding spectator " << str << " to the reader (dummy value)." << endl;
-  // cout << "value: " << muon->getVar(str) 
+  // cout << "value: " << muon->getVar(str)
   //      << "(" << *(muon->getPtr(str)) << ")" << endl;
   //float *variable = muon->getPtr(str);
   reader->AddSpectator(str,muon->getSpecDummy());
@@ -71,7 +71,7 @@ void HFBDT::addSpecToReader(TMVA::Reader* reader,string str) {
 void HFBDT::setupReader() {
   //reads the first MAX_CHARS characters of a line until line MAX_LINE of the
   //weight file and adds the found variables to the reader.
- 
+
   if (verbose_) {cout << "Setting up the TMVAreader." << endl;}
   //Reader needs to be replaced. Overwriting can lead to bad states.
   TMVA::Reader *reader = new TMVA::Reader("!Color:!Silent");
@@ -89,12 +89,12 @@ void HFBDT::setupReader() {
   const unsigned int MAX_CHARS = 100;
   //the lineCounter is a backup/debugging tool
   const unsigned int MAX_LINES = 20000;
-  unsigned int lineCounter=0; 
+  unsigned int lineCounter=0;
   char buffer[MAX_CHARS];
 
   while (!fileContent.getline(buffer,MAX_CHARS,'\n').eof())
     {
-      //if getline does not find the delimiter it sets a fail bit stopping 
+      //if getline does not find the delimiter it sets a fail bit stopping
       //all input. -->Clear the failbit and continue to parse
       fileContent.clear();
       string line = string(buffer);
@@ -352,7 +352,9 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   unsigned int csc1(0),csc2(0),csc3(0),csc4(0);
   float comb(0);
   const reco::HitPattern &pattern = gTrack->hitPattern();
-  for (int i=0;i<pattern.numberOfAllHits(reco::HitPattern::TRACK_HITS);i++)
+  // FIXME This does not compile in 927
+  //  for (int i=0;i<pattern.numberOfAllHits(reco::HitPattern::TRACK_HITS);i++)
+  for (int i=0;i<0;i++)
     {
       uint32_t hit = pattern.getHitPattern(reco::HitPattern::TRACK_HITS,i);
       if (pattern.validHitFilter(hit) != 1) {continue;}
@@ -379,7 +381,7 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
 	  if (pattern.muonDTHitFilter(hit)) {dt4++;}
 	  if (pattern.muonRPCHitFilter(hit)) {rpc4++;}
 	  if (pattern.muonCSCHitFilter(hit)) {csc4++;}
-	}      
+	}
     }//for
   comb = (dt1+dt2+dt3+dt4)/2. + (rpc1+rpc2+rpc3+rpc4);
   csc1>6 ? comb+=6 : comb+=csc1;
@@ -401,9 +403,9 @@ void BDTmuon::getMuonHitsPerStation(const reco::TrackRef gTrack) {
   vCSChits_4 = csc4;
   vMuonHitComb = comb;
 
-//   cout << "HFBDT> dt_tot: " 
+//   cout << "HFBDT> dt_tot: "
 //        << " dt1(" << dt1 << ")"
-//        << " dt2(" << dt2 << ")" 
+//        << " dt2(" << dt2 << ")"
 //        << " dt3(" << dt3 << ")"
 //        << " dt4(" << dt4 << ")"
 //        << " csc1(" << csc1 << ")"
@@ -464,6 +466,3 @@ double getDeltaR(reco::Track track1,reco::Track track2) {
   double DR = DR_init(track1,track2);
   return DR;
 }
-
-
-
