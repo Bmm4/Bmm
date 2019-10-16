@@ -497,6 +497,13 @@ void plotResults::init() {
 
 // ----------------------------------------------------------------------
 void plotResults::makeAll(string what) {
+  cout << Form("XXXXXXXXXXXXXXX /bin/rm -f %s/stacks-*%s.root", fDirectory.c_str(), fSuffix.c_str()) << endl;
+  system(Form("/bin/rm -f %s/stacks-*%s.root", fDirectory.c_str(), fSuffix.c_str()));
+  TFile *fout = TFile::Open(Form("%s/stacks-%s.root", fDirectory.c_str(), fSuffix.c_str()), "RECREATE");
+  if (fout) {
+    fout->Write();
+    fout->Close();
+  }
   if (what == "display") {
     int istart = 20;
     for (int ichan = 0; ichan < 2; ++ichan) {
@@ -3155,7 +3162,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   }
 
   // -- need some finetuning for Bs2JpsiPhi
-  double xmin = 5.2;
+  double xmin = 4.99;
   double sigma = 0.030;
   if (1 == chan) {
     if (fYear < 2015) {
@@ -3171,7 +3178,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   string  name = Form("hNorm_%s_%s_chan%d", fSuffixSel.c_str(), fSample.c_str(), chan);
   bool ok = fHistFile->cd(fSample.c_str());
   cout << "cd to " << fSample << ": " << ok << ", normalization fitting: " << name << endl;
-  fitPsYield fpy(name);
+  fitPsYield fpy(name, 0, 1);
   if (string::npos != a.fName.find("bupsik")) {
     fpy.fitBu2JpsiKp(5, fDirectory + "/norm", imode, 5.0, 5.8, 0.025);
   } else if (string::npos != a.fName.find("bspsiphi")) {
@@ -3187,7 +3194,7 @@ void plotResults::calculateB2JpsiNumbers(anaNumbers &a) {
   string name2 = Form("hW8Norm_%s_%s_chan%d", fSuffixSel.c_str(), fSample.c_str(), chan);
   ok = fHistFile->cd(fSample.c_str());
   cout << "cd to " << fSample << ": " << ok << ", W8 normalization fitting: " << name2 << endl;
-  fitPsYield fpy2(name2, 0);
+  fitPsYield fpy2(name2, 0, 1);
   if (string::npos != a.fName.find("bupsik")) {
     fpy2.fitBu2JpsiKp(5, fDirectory + "/norm", imode, 5.0, 5.8, 0.025);
   } else if (string::npos != a.fName.find("bspsiphi")) {
@@ -3560,15 +3567,15 @@ void plotResults::calculateRareBgNumbers(int chan) {
   // fSuffixSel = modifier;
   char mode[200];
   // -- book summed histograms
-  THStack hSl("hSl", "rare semileptonic decays");
+  THStack hSl(Form("hSl_%s_chan%d", fSuffixSel.c_str(), chan), "rare semileptonic decays");
   TH1D *h1Sl = new TH1D("h1Sl", "h1Sl", NBINS/5, fMassLo, fMassHi); h1Sl->Sumw2();
   vector<TH1*> vSl;
   vector<string> vSlnames, vSloptions;
-  THStack hHh("hHh", "rare peaking decays");
+  THStack hHh(Form("hHh_%s_chan%d", fSuffixSel.c_str(), chan), "rare peaking decays");
   TH1D *h1Hh = new TH1D("h1Hh", "h1Hh", NBINS/5, fMassLo, fMassHi); h1Hh->Sumw2();
   vector<TH1*> vHh;
   vector<string> vHhnames, vHhoptions;
-  THStack hBg("hBg", "rare decays");
+  THStack hBg(Form("hBg_%s_chan%d", fSuffixSel.c_str(), chan), "rare decays");
   vector<TH1*> vBg;
   vector<string> vBgnames, vBgoptions;
 
@@ -3796,7 +3803,7 @@ void plotResults::calculateRareBgNumbers(int chan) {
     int rebin(5);
     hwrb->Rebin(rebin);
     hwrb->SetNdivisions(510, "XYZ");
-    setTitles(hwrb, "m_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", rebin*hwrb->GetBinWidth(1)));
+    setTitles(hwrb, "m_{#it{#mu #mu}} [GeV]", Form("Candidates / %4.3f GeV", hwrb->GetBinWidth(1)));
     if (0 == nmuons) {
       for (unsigned im = 0; im < a->fMcYield.size(); ++im) {
 	fHhNumbers[chan].fMcYield[im].val += a->fMcYield[im].val;
@@ -3899,10 +3906,20 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
   c0->Clear();
   hSl.Draw("hist");
-  hSl.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
-  hSl.GetYaxis()->SetTitle("Candidates / Bin");
-  TLegend *lSl = ::newLegend("semileptonic decays", 0.50, 0.6, 0.85, 0.85, vSl, vSlnames, vSloptions);
+  hSl.GetXaxis()->SetLimits(5.0, 5.8);
+  hSl.GetXaxis()->CenterTitle(kTRUE);
+  hSl.GetYaxis()->CenterTitle(kTRUE);
+  hSl.GetXaxis()->SetNdivisions(504);
+  hSl.GetYaxis()->SetNdivisions(510);
+  hSl.GetXaxis()->SetTitle("#it{m}_{#it{#mu^{+}#mu^{-}}} [GeV]");
+  hSl.GetYaxis()->SetTitle(Form("Candidates / %4.3f GeV", hSl.GetXaxis()->GetBinWidth(1)));
+  TLegend *lSl = ::newLegend("semileptonic decays", 0.50, 0.55, 0.85, 0.85, vSl, vSlnames, vSloptions);
+  lSl->SetName(Form("lSl_%s_chan%d", fSuffixSel.c_str(), chan));
+  lSl->SetTextFont(42); // this restores italics
   lSl->Draw();
+  tl->SetTextFont(62); tl->SetTextSize(0.05);
+  tl->DrawLatexNDC(0.15, 0.91, "CMS simulation");
+  tl->SetTextFont(42);
   c0->Modified();
   c0->Update();
   if (1) {
@@ -3911,11 +3928,23 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
 
   c0->Clear();
+  shrinkPad(0.12, 0.20, 0.05);
   hHh.Draw("hist");
-  hHh.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
-  hHh.GetYaxis()->SetTitle("Candidates / Bin");
+  hHh.GetXaxis()->SetLimits(5.0, 5.8);
+  hHh.GetXaxis()->CenterTitle(kTRUE);
+  hHh.GetYaxis()->CenterTitle(kTRUE);
+  hHh.GetXaxis()->SetNdivisions(504);
+  hHh.GetYaxis()->SetNdivisions(510);
+  hHh.GetXaxis()->SetTitle("#it{m}_{#it{#mu^{+}#mu^{-}}} [GeV]");
+  hHh.GetYaxis()->SetTitle(Form("Candidates / %4.3f GeV", hHh.GetXaxis()->GetBinWidth(1)));
+  hHh.GetYaxis()->SetTitleOffset(1.7);
   TLegend *lHh = ::newLegend("hadronic decays", 0.56, 0.4, 0.85, 0.85, vHh, vHhnames, vHhoptions);
+  lHh->SetTextFont(42); // this restores italics
+  lHh->SetName(Form("lHh_%s_chan%d", fSuffixSel.c_str(), chan));
   lHh->Draw();
+  tl->SetTextFont(62); tl->SetTextSize(0.05);
+  tl->DrawLatexNDC(0.20, 0.91, "CMS simulation");
+  tl->SetTextFont(42);
   c0->Modified();
   c0->Update();
   if (1) {
@@ -3924,16 +3953,42 @@ void plotResults::calculateRareBgNumbers(int chan) {
 
 
   c0->Clear();
+  shrinkPad(0.12, 0.15, 0.10);
   hBg.Draw("hist");
-  hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu #mu}} [GeV]");
+  hBg.GetXaxis()->SetLimits(5.0, 5.8);
+  hBg.GetXaxis()->CenterTitle(kTRUE);
+  hBg.GetYaxis()->CenterTitle(kTRUE);
+  hBg.GetXaxis()->SetNdivisions(504);
+  hBg.GetYaxis()->SetNdivisions(510);
+  hBg.GetXaxis()->SetTitle("#it{m}_{#it{#mu^{+}#mu^{-}}} [GeV]");
   hBg.GetYaxis()->SetTitle("Candidates / Bin");
+  hBg.GetYaxis()->SetTitle(Form("Candidates / %4.3f GeV", hBg.GetXaxis()->GetBinWidth(1)));
   TLegend *lBg = ::newLegend("rare decays", 0.50, 0.2, 0.85, 0.85, vBg, vBgnames, vBgoptions);
+  lBg->SetTextFont(42); // this restores italics
+  lBg->SetName(Form("lBg_%s_chan%d", fSuffixSel.c_str(), chan));
   lBg->Draw();
+  tl->SetTextFont(62); tl->SetTextSize(0.05);
+  tl->DrawLatexNDC(0.15, 0.91, "CMS simulation");
+  tl->SetTextFont(42);
   c0->Modified();
   c0->Update();
   if (1) {
     savePad(Form("%s-rare-bg-chan%d.pdf", fSuffixSel.c_str(), chan));
   }
+
+  TDirectory *pwd = gDirectory;
+
+  TFile *fout = TFile::Open(Form("%s/stacks-%s.root", fDirectory.c_str(), fSuffixSel.c_str()), "UPDATE");
+  hHh.Write();
+  lHh->Write();
+  hSl.Write();
+  lSl->Write();
+  hBg.Write();
+  lBg->Write();
+  fout->Write();
+  fout->Close();
+
+  pwd->cd();
 
   // -- create overlay of data and the stacked (and scaled) backgrounds
   fSample = fCombNumbers[chan].fNameDa;

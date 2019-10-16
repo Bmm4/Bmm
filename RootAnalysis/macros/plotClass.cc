@@ -2439,7 +2439,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("Run1")) sname += "Run1";
-        sdecay = "#it{B^{0}_{s}} #rightarrow #it{#mu^{+}#mu^{-}}";
+        sdecay = "#it{B^{0}_{s}} #rightarrow #it{#mu^{+}#mu^{#minus}}";
         ldecay = "\\bsmm";
 	ds->fColor = kRed;
 	ds->fSymbol = 24;
@@ -2816,7 +2816,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcOff")) sname += "Off";
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
-        sdecay = "#it{B^{0}} #rightarrow #it{#mu^{+}#mu^{-}}";
+        sdecay = "#it{B^{0}} #rightarrow #it{#mu^{+}#mu^{#minus}}";
         ldecay = "\\bdmm";
 	ds->fColor = kBlue;
 	ds->fSymbol = 24;
@@ -2838,7 +2838,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B^{0}} #rightarrow #it{K^{+}}#it{#pi^{-}}";
+        sdecay = "#it{B^{0}} #rightarrow #it{K^{+}}#it{#pi^{#minus}}";
         ldecay = "\\bdkpi";
 	ds->fColor = kBlue-2;
 	ds->fSymbol = 24;
@@ -2860,7 +2860,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B^{0}} #rightarrow #it{K^{+}K^{-}}";
+        sdecay = "#it{B^{0}} #rightarrow #it{K^{+}K^{#minus}}";
         ldecay = "\\bdkk";
 	ds->fColor = kBlue-10;
 	ds->fSymbol = 24;
@@ -2882,7 +2882,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{+}#pi^{-}}";
+        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{+}#pi^{#minus}}";
         ldecay = "\\bdpipi";
 	ds->fColor = kBlue-7;
 	ds->fSymbol = 24;
@@ -2904,7 +2904,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{-}#mu^{+}#nu}";
+        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{#minus}#mu^{+}#nu}";
         ldecay = "\\bdpimunu";
 	ds->fColor = kBlue-9;
 	ds->fSymbol = 24;
@@ -2926,7 +2926,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{0}#mu^{+}#mu^{-}}";
+        sdecay = "#it{B^{0}} #rightarrow #it{#pi^{0}#mu^{+}#mu^{#minus}}";
         ldecay = "\\bdpimumu";
 	ds->fColor = kBlue-8;
 	ds->fSymbol = 24;
@@ -2950,7 +2950,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B_{s}} #rightarrow #it{#pi^{+}#pi^{-}}";
+        sdecay = "#it{B^{0}_{s}} #rightarrow #it{#pi^{+}#pi^{#minus}}";
         ldecay = "\\bspipi";
 	ds->fColor = kRed-10;
 	ds->fSymbol = 24;
@@ -2972,7 +2972,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B_{s}} #rightarrow #it{K^{-}}#it{#pi^{+}}";
+        sdecay = "#it{B^{0}_{s}} #rightarrow #it{K^{#minus}}#it{#pi^{+}}";
         ldecay = "\\bskpi";
 	ds->fColor = kRed-7;
 	ds->fSymbol = 24;
@@ -2994,7 +2994,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B_{s}} #rightarrow #it{K^{+}K^{-}}";
+        sdecay = "#it{B^{0}_{s}} #rightarrow #it{K^{+}K^{#minus}}";
         ldecay = "\\bskk";
 	ds->fColor = kRed-2;
 	ds->fSymbol = 24;
@@ -3016,7 +3016,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{B_{s}} #rightarrow #it{K^{-}}#it{#mu^{+}}#it{#nu}";
+        sdecay = "#it{B^{0}_{s}} #rightarrow #it{K^{#minus}}#it{#mu^{+}}#it{#nu}";
         ldecay = "\\bskmunu";
 	ds->fColor = kRed-9;
 	ds->fSymbol = 24;
@@ -3038,7 +3038,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{#Lambda_{b}} #rightarrow #it{p}#it{#pi^{-}}";
+        sdecay = "#it{#Lambda_{b}} #rightarrow #it{p}#it{#pi^{#minus}}";
         ldecay = "\\lbppi";
 	ds->fColor = kGreen-7;
 	ds->fSymbol = 24;
@@ -3060,7 +3060,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{#Lambda_{b}} #rightarrow #it{pK^{-}}";
+        sdecay = "#it{#Lambda_{b}} #rightarrow #it{pK^{#minus}}";
         ldecay = "\\lbpk";
 	ds->fColor = kGreen-2;
 	ds->fSymbol = 24;
@@ -3082,7 +3082,7 @@ void plotClass::loadFiles(string afiles) {
 	if (string::npos != stype.find("mcComb")) sname += "Comb";
 	if (string::npos != stype.find("acc")) sname += "Acc";
 	if (string::npos != stype.find("bg")) sname += "Bg";
-        sdecay = "#it{#Lambda_{b}} #rightarrow #it{p}#it{#mu^{-}}#it{#nu}";
+        sdecay = "#it{#Lambda_{b}} #rightarrow #it{p}#it{#mu^{#minus}}#it{#nu}";
         ldecay = "\\lbpmunu";
 	ds->fColor = kGreen-9;
 	ds->fSymbol = 24;
