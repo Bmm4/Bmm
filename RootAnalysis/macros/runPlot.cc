@@ -34,6 +34,8 @@ using namespace std;
 
 int TMVAClassification( TString myMethodList);
 
+// example: bin/runPlot -y 2016GH -f 101 -p tmva1 -m :NTrees=1000:nCuts=25:MaxDepth=3:MinNodeSize=0.500000:BoostType=AdaBoost:AdaBoostBeta=0.40 -s fls3d:alpha:pvips:iso:chi2dof:docatrk:closetrk:m1iso:m2iso:eta -r /scratch/ursl/bmm4/bdt/tmva-trees-41-2016.root > & ! TMVA-101.log
+
 // ----------------------------------------------------------------------
 int main(int argc, char *argv[]) {
 
