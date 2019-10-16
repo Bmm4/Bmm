@@ -255,7 +255,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     return;
   }
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]{#it{K}}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]{#it{K}}} [GeV]", Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (fVerbose < 0) {
     h->GetXaxis()->CenterTitle(kTRUE);
     h->GetYaxis()->CenterTitle(kTRUE);
@@ -574,16 +574,17 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     legg->AddEntry(f1, "Total fit", "l");
     legg->AddEntry(fcnSig,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}", "f");
     legg->AddEntry(fcnExpo, "comb. background", "f");
-    legg->AddEntry(fcnErr2, "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}#kern[-0.1]{#it{X}}", "f");
+    legg->AddEntry(fcnErr2, "#it{B^{  }} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}#kern[-0.1]{#it{X}}", "f");
     legg->AddEntry(fcnSat,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#pi^{+}}", "f");
     legg->Draw();
 
     TLatex tl;
     tl.SetTextAlign(11);
-    tl.SetTextSize(0.04);
+    tl.SetTextSize(0.05);
     tl.SetTextFont(62);
     tl.DrawLatexNDC(0.2, 0.92, "CMS");
     tl.SetTextFont(42);
+    //    tl.DrawLatexNDC(0.33, 0.92, "#it{Preliminary}");
 
     string fname = h->GetName();
     cout << "fname = " << fname << endl;
@@ -731,7 +732,7 @@ void fitPsYield::fit1_Bu2JpsiKp(TH1D *h1, int limitpars, string pdfprefix, doubl
 void fitPsYield::fit1_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu K}} [GeV]",
-	    Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+	    Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -1090,7 +1091,7 @@ void fitPsYield::fit0_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   }
   TH1D *h = res->fH1;
   setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]",
-	    Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+	    Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -1360,7 +1361,11 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
     return;
   }
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu K K}} [GeV]", Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  if (fVerbose < 0) {
+    h->GetXaxis()->CenterTitle(kTRUE);
+    h->GetYaxis()->CenterTitle(kTRUE);
+  }
   if (0 == fData.size()) return;
   fSummary.clear();
 
@@ -1369,12 +1374,19 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   TF1 *f1 = fpIF->bspsiphi(h, lo, hi, sigma);
   f1->SetParameter(2, sigma);
   f1->SetNpx(1000);
+  if (fVerbose < 0) {
+    f1->SetLineWidth(4);
+    f1->SetLineColor(kBlack);
+    h->SetNdivisions(504, "XYZ");
+  }
+
+
   fpIF->fName = "comp";
   TF1 *fcnSig  = fpIF->gauss2c(h);
   fcnSig->SetLineColor(kBlue+1);
   fcnSig->SetNpx(1000);
   fpIF->fName = "expo";
-  TF1 *fcnExpo = fpIF->expo(0., 100.);
+  TF1 *fcnExpo = fpIF->expoHS(0., 100.);
   fcnExpo->SetLineColor(kRed+1);
   fcnExpo->SetLineStyle(kSolid);
   fpIF->fName = "sat";
@@ -1393,11 +1405,14 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   fpIF->fHi = hi;
 
   cout << "==> fitPsYield::fit1_Bs2JpsiPhi> FITTING " << h->GetName() << " with limitpars = " << limitpars << endl;
-  double xmin(lo), xmax(hi), expoLo(5.15), expoHi(6.0);
+  double xmin(lo), xmax(hi), expoLo(5.0), expoHi(6.0);
+  if (fVerbose > -1) {
+    expoLo = 5.15;
+  }
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
   h->SetMinimum(0.);
-  h->SetAxisRange(fpIF->fLo, fpIF->fHi);
+  h->SetAxisRange(5.0, fpIF->fHi);
   //  h->SetAxisRange(5.0, 5.9);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
@@ -1481,9 +1496,11 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   }
   for (int ipar = 0; ipar < fcnExpo->GetNpar(); ++ipar) {
     if (h->GetSumOfWeights() > 100) {
+      cout << "XXX setting fcnexpo parameter " << ipar << " to " << f1->GetParameter(ipar+6) << "+/-" << f1->GetParError(ipar+6) << endl;
       fcnExpo->SetParameter(ipar, f1->GetParameter(ipar+6));
       fcnExpo->SetParError(ipar, f1->GetParError(ipar+6));
     } else {
+      cout << "XXX NOT setting fcnexpo parameter" << endl;
       fcnExpo->SetParameter(ipar, 0.);
       fcnExpo->SetParError(ipar, 0.);
     }
@@ -1498,10 +1515,21 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
     }
   }
 
-  if (1 && (h->GetSumOfWeights() > 100)) {
+  if (fVerbose > -1) {
+
+  } else {
+    fcnSig->SetLineColor(kRed+1);   fcnSig->SetFillColor(kRed+1); fcnSig->SetFillStyle(3654);  fcnSig->SetLineWidth(2);
+    fcnExpo->SetLineColor(kCyan+2); fcnExpo->SetFillColor(kCyan+2);  fcnExpo->SetFillStyle(3659); fcnExpo->SetLineWidth(2);
+    fcnSat->SetLineColor(kGreen+3); fcnSat->SetFillColor(kGreen+3);  fcnSat->SetFillStyle(3444);  fcnSat->SetLineWidth(2);
+    h->Draw("axissame");
+  }
+
+
+  if (1) {
     fcnSig->Draw("same");
     fcnExpo->Draw("same");
     fcnSat->Draw("same");
+    f1->Draw("same");
   }
 
   // -- store for possible later usage
@@ -1513,6 +1541,44 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
       fParE.push_back(f1->GetParError(i));
     }
   }
+
+  if (fVerbose > -1) {
+  } else {
+    TLegend *legg = new TLegend(0.56, 0.6, 0.85, 0.85);
+    legg->SetFillStyle(0);
+    legg->SetBorderSize(0);
+    legg->SetTextSize(0.035);
+    legg->SetFillColor(0);
+    legg->SetTextFont(42);
+    legg->AddEntry(h, "Data", "pe");
+    legg->AddEntry(f1, "Total fit", "l");
+    legg->AddEntry(fcnSig,  "#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#phi}", "f");
+    legg->AddEntry(fcnExpo, "comb. background", "f");
+    legg->AddEntry(fcnSat,  "#it{B^{0}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{*0}}", "f");
+    legg->Draw();
+
+    TLatex tl;
+    tl.SetTextAlign(11);
+    tl.SetTextSize(0.05);
+    tl.SetTextFont(62);
+    tl.DrawLatexNDC(0.2, 0.92, "CMS");
+    tl.SetTextFont(42);
+    tl.DrawLatexNDC(0.33, 0.92, "#it{Preliminary}");
+
+    string fname = h->GetName();
+    cout << "fname = " << fname << endl;
+    tl.SetTextAlign(31);
+    if (string::npos != fname.find("2011")) {
+      tl.DrawLatexNDC(0.9, 0.92, "5 fb^{-1} (7 TeV)");
+    } else if (string::npos != fname.find("2012")) {
+      tl.DrawLatexNDC(0.9, 0.92, "20 fb^{-1} (8 TeV)");
+    } else if (string::npos != fname.find("2016BF")) {
+      tl.DrawLatexNDC(0.9, 0.92, "20 fb^{-1} (13 TeV)");
+    } else if (string::npos != fname.find("2016GH")) {
+      tl.DrawLatexNDC(0.9, 0.92, "16 fb^{-1} (13 TeV)");
+    }
+  }
+
 
   // -- other parameters of interest
   res->fChi2 = f1->GetChisquare();
@@ -1581,19 +1647,21 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
   res->fResults.fBg  = bg;
   res->fResults.fBgE = bgE;
 
-  TLatex tl;
-  tl.SetTextSize(0.03);
-  if (-1 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else if (0 == res->fPs) {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  } else {
-    tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
-  }
+  if (fVerbose > -1) {
+    TLatex tl;
+    tl.SetTextSize(0.03);
+    if (-1 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, weighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else if (0 == res->fPs) {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d, unweighted)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    } else {
+      tl.DrawLatexNDC(0.2, 0.91, Form("Sg: %.1f #pm %.1f (PS = %d)", res->fResults.fSg, res->fResults.fSgE, res->fPs));
+    }
 
-  tl.SetTextAngle(90.);
-  tl.DrawLatexNDC(0.93, 0.15, h->GetName());
-  tl.SetTextAngle(0.);
+    tl.SetTextAngle(90.);
+    tl.DrawLatexNDC(0.93, 0.15, h->GetName());
+    tl.SetTextAngle(0.);
+  }
 
   c0->Modified();
   c0->Update();
@@ -1668,7 +1736,7 @@ void fitPsYield::fit0_Bd2JpsiKstar(TH1D *h1, int limitpars, string pdfprefix) {
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bd2JpsiKstar(psd *res, int limitpars, string pdfprefix, bool keepFunctions) {
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu K#pi}} [GeV]", Form("Candidates/(%4.3f GeV)", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  setTitles(h, "#it{m}_{#it{#mu#mu K#pi}} [GeV]", Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
   if (0 == fData.size()) return;
   fSummary.clear();
 

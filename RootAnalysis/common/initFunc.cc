@@ -1120,6 +1120,13 @@ TF1* initFunc::expo2(double lo, double hi) {
 }
 
 // ----------------------------------------------------------------------
+TF1* initFunc::expoHS(double lo, double hi) {
+  TF1 *f = new TF1(Form("%s_expoHS", fName.c_str()), iF_expo_HS, lo, hi, 3);
+  f->SetParNames("base", "expo", "cutoff");
+  return f;
+}
+
+// ----------------------------------------------------------------------
 TF1* initFunc::expoErr(double lo, double hi) {
   TF1 *f = new TF1(Form("%s_expoErr", fName.c_str()), iF_expo_err, lo, hi, 6);
   return f;
@@ -1417,6 +1424,34 @@ TF1* initFunc::expo2(TH1 *h) {
 
 
 // ----------------------------------------------------------------------
+TF1* initFunc::expoHS(TH1 *h) {
+  if (0 == h) {
+    cout << "empty histogram pointer" << endl;
+    return 0;
+  }
+  TF1 *f(0);
+  while ((f = (TF1*)gROOT->FindObject(Form("%s_expoHS", fName.c_str())))) if (f) delete f;
+  f = new TF1(Form("%s_expoHS", fName.c_str()), iF_expo_HS, h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1), 3);
+  f->SetParNames("base", "exp", "cutoff");
+  //  cout << "Created f1 from " << h->GetBinLowEdge(1) << " to " << h->GetBinLowEdge(h->GetNbinsX()+1) << endl;
+
+  double p2(0.), p1(0.), p0(0.);
+  initExpoHS(p0, p1, p2, h);
+  f->SetParameters(p0, p1, p2);
+  f->Update();
+  if (1) {
+    cout << Form("  expoHS initialized to %f and %f and %f", p0,  p1, p2)
+	 << "  -> Integrals:  func = "
+	 << f->Integral(h->GetBinLowEdge(1), h->GetBinLowEdge(h->GetNbinsX()+1))/h->GetBinWidth(1)
+	 << " histogram = "
+	 << h->GetSumOfWeights()
+	 << endl;
+  }
+  return f;
+}
+
+
+// ----------------------------------------------------------------------
 TF1* initFunc::expo(TH1 *h, double lo, double hi) {
   fLo = lo;
   fHi = hi;
@@ -1428,6 +1463,13 @@ TF1* initFunc::expo2(TH1 *h, double lo, double hi) {
   fLo = lo;
   fHi = hi;
   return expo2(h);
+}
+
+// ----------------------------------------------------------------------
+TF1* initFunc::expoHS(TH1 *h, double lo, double hi) {
+  fLo = lo;
+  fHi = hi;
+  return expoHS(h);
 }
 
 

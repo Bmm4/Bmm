@@ -48,6 +48,9 @@ public:
   TF1* expo2(TH1 *h);
   TF1* expo2(TH1 *h, double lo, double hi);
 
+  TF1 *expoHS(double lo, double hi);
+  TF1 *expoHS(TH1 *h);
+  TF1 *expoHS(TH1 *h, double lo, double hi);
 
   TF1* argus(double lo, double hi);
   TF1* argus(TH1 *h);
