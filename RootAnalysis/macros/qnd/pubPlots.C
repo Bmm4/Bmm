@@ -1,4 +1,4 @@
-#include "../common/util.hh"
+#include "/Users/ursl/macros/ana/Bmm/RootAnalysis/common/util.hh"
 
 // ----------------------------------------------------------------------
 TLegend* newLegend(string title, double x1, double y1, double x2, double y2,
@@ -102,7 +102,7 @@ void controlsample(string fname, int chan = 0) {
 
 // ----------------------------------------------------------------------
 void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
-  bool drawGrid(true), preliminary(true);
+  bool drawGrid(true), preliminary(false), cmsstyle(true);
   string sname = string(h1->GetName());
   bool isBmmData = (string::npos != sname.find("bmmData"));
 
@@ -115,8 +115,8 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
     pad1 = new TPad("pad1", "pad1", 0.0, splity, 1.0, 1.0);
     pad1->SetTopMargin(0.1);
     pad1->SetBottomMargin(0.);
-    pad1->SetRightMargin(0.05);
-    pad1->SetLeftMargin(0.22);
+    pad1->SetRightMargin(0.04);
+    pad1->SetLeftMargin(0.24);
     //    if (drawGrid) pad1->SetGridx();
     pad1->Draw();
     pad1->cd();
@@ -144,7 +144,7 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   }
   h1->Draw("esame");
 
-  h1->SetMaximum(1.2*ymax);
+  h1->SetMaximum(1.3*ymax);
   h1->SetMinimum(-0.01*ymax);
   h1->SetMinimum(0.001*ymax);
   if (1 == log) {
@@ -158,8 +158,8 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
     TPad *pad2 = new TPad("pad2", "pad2", 0, 0., 1.0, splity);
     pad2->SetTopMargin(0.);
     pad2->SetBottomMargin(0.4);
-    pad2->SetRightMargin(0.05);
-    pad2->SetLeftMargin(0.22);
+    pad2->SetRightMargin(0.04);
+    pad2->SetLeftMargin(0.24);
     pad2->Draw();
     if (drawGrid) pad2->SetGridy();
     if (drawGrid) pad2->SetGridx();
@@ -215,11 +215,11 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   string xtitle(h1->GetXaxis()->GetTitle()), ytitle("");
   bool doLegend(false);
   if (preliminary) doLegend = true;
-  double shift(1.75);
+  double shift(1.72);
   if (string::npos != hname.find("pt")) {
     h1->GetYaxis()->SetTitleOffset(shift);
-    xtitle = Form("#it{p_{T}} [GeV]");
-    ytitle = Form("Candidates / %3.2f GeV", h1->GetBinWidth(1));
+    xtitle = Form("#it{p}_{T} [GeV]");
+    ytitle = Form("Candidates / %2.1f GeV", h1->GetBinWidth(1));
     doLegend = true;
   }  else if (string::npos != hname.find("m1iso")) {
     h1->GetYaxis()->SetTitleOffset(shift);
@@ -234,8 +234,9 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
     ytitle = Form("Candidates / %3.2f", h1->GetBinWidth(1));
     xtitle = Form("isolation");
   }  else if (string::npos != hname.find("alpha")) {
-    h1->GetYaxis()->SetTitleOffset(shift);
+    h1->GetYaxis()->SetTitleOffset(1.85);
     ytitle = Form("Candidates / %4.3f", h1->GetBinWidth(1));
+    xtitle = Form("#it{#alpha}_{3D}");
   }  else if (string::npos != hname.find("maxdoca")) {
     h1->GetYaxis()->SetTitleOffset(shift);
     ytitle = Form("Candidates / %4.3f cm", h1->GetBinWidth(1));
@@ -249,6 +250,7 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
     if (doLegend) h1->SetMaximum(1.2*h1->GetMaximum());
     h1->GetYaxis()->SetTitleOffset(shift);
     ytitle = Form("Candidates / %3.2f", h1->GetBinWidth(1));
+    xtitle = Form("cos(#it{#theta_{#mu^{ #minus}}})");
   }  else if (string::npos != hname.find("ips")) {
     h1->GetYaxis()->SetTitleOffset(shift);
     xtitle = Form("#delta_{3D} / #sigma(#delta_{3D})");
@@ -262,19 +264,21 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   }  else if (string::npos != hname.find("fls3d")) {
     doLegend = true;
     h1->GetYaxis()->SetTitleOffset(shift);
-    xtitle = Form("l_{3D}/#sigma(l_{3D})");
-    ytitle = Form("Candidates/Bin");
-    ytitle = Form("Candidates / %3.2f", h1->GetBinWidth(1));
-  }  else if (string::npos != hname.find("closetrk")) {
-    h1->GetYaxis()->SetTitleOffset(shift);
+    xtitle = Form("#it{l}_{3D} / #it{#sigma}(#it{l}_{3D})");
     ytitle = Form("Candidates / Bin");
+    //    ytitle = Form("Candidates / %1.0f", h1->GetBinWidth(1));
+  }  else if (string::npos != hname.find("closetrk")) {
+    h1->GetYaxis()->SetTitleOffset(1.85);
+    ytitle = Form("Candidates / Bin");
+    xtitle = Form("#it{N}_{ trk}^{ close}");
   }  else if (string::npos != hname.find("tau")) {
     h1->GetYaxis()->SetTitleOffset(shift);
-    xtitle = Form("t [ps]");
-    ytitle = Form("Candidates / %3.2f ps", h1->GetBinWidth(1));
+    xtitle = Form("#it{t} [ps]");
+    ytitle = Form("Candidates / %2.1f ps", h1->GetBinWidth(1));
   }  else if (string::npos != hname.find("bdtsel")) {
     xtitle = Form("BDT discriminator");
     ytitle = Form("Candidates / %3.2f", h1->GetBinWidth(1));
+    h1->GetYaxis()->SetTitleOffset(shift);
     if ("2011" == year) {
       doLegend = true;
     }
@@ -306,19 +310,20 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   // hr settings
   hr->SetTitle("");
   hr->GetXaxis()->SetTitle(xtitle.c_str());
-  hr->GetXaxis()->SetTitleOffset(1.0);
+  hr->GetXaxis()->SetTitleOffset(1.15);
   hr->GetXaxis()->CenterTitle();
 
-  hr->GetYaxis()->SetTitle("ratio");
-  hr->GetYaxis()->SetTitleOffset(0.4);
+  hr->GetYaxis()->SetTitle("Data / MC");
+  hr->GetYaxis()->SetTitleOffset(0.5);
   hr->GetYaxis()->CenterTitle();
 
   hr->GetYaxis()->SetTitleFont(42);
   hr->GetXaxis()->SetTitleFont(42);
-  hr->GetYaxis()->SetTitleSize(pratio*psize);
+  hr->GetYaxis()->SetTitleSize(0.14);
   hr->GetXaxis()->SetTitleSize(pratio*psize);
   hr->GetYaxis()->SetLabelSize(pratio*psize);
   hr->GetXaxis()->SetLabelSize(pratio*psize);
+  hr->GetXaxis()->SetLabelOffset(0.02);
   hr->GetXaxis()->CenterTitle();
 
   if (!isBmmData) pad1->cd();
@@ -327,31 +332,54 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
     TLegend *legg(0);
     if (!isBmmData && (string::npos == hname.find("bdtsel"))) {
       legg = new TLegend(0.6, 0.65, 0.85, 0.85);
+      legg->SetTextFont(42);
       if (string::npos != hname.find("bupsik")) {
-	legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{K^{+}}");
+	if (cmsstyle) {
+	  legg->SetHeader("B^{+} #rightarrow J/#kern[-0.0]{#it{#psi}}K^{+}");
+	} else {
+	  legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{K^{+}}");
+	}
       } else if (string::npos != hname.find("bspsiphi")) {
-	legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	if (cmsstyle) {
+	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	} else {
+	  legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{#phi}");
+	}
       }
       legg->AddEntry(h1, "Data", "pe");
-      legg->AddEntry(h2, "MC simulation", "f");
-      legg->SetTextSize(0.055);
+      legg->AddEntry(h2, "Simulation", "f");
+      legg->SetTextSize(0.06);
     }
     if (!isBmmData && (string::npos != hname.find("bdtsel"))) {
       legg = new TLegend(0.26, 0.70, 0.50, 0.87);
+      legg->SetTextFont(42);
       if (string::npos != hname.find("bupsik")) {
-	legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{K^{+}}");
+      if (cmsstyle) {
+	legg->SetHeader("B^{+} #rightarrow J/#kern[-0.0]{#it{#psi}}K^{+}");
+      } else {
+	legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{K^{+}}");
+      }
       } else if (string::npos != hname.find("bspsiphi")) {
-	legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	if (cmsstyle) {
+	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	} else {
+	  legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	}
       }
       legg->AddEntry(h1, "Data", "pe");
-      legg->AddEntry(h2, "MC simulation", "f");
-      legg->SetTextSize(0.055);
+      legg->AddEntry(h2, "Simulation", "f");
+      legg->SetTextSize(0.064);
     }
     if (isBmmData && (string::npos != hname.find("bdtsel"))) {
-      legg = new TLegend(0.26, 0.80, 0.50, 0.87);
-      legg->AddEntry(h1, "Background (Data)", "pe");
-      legg->AddEntry(h2, "Signal (MC simulation)", "f");
-      legg->SetTextSize(0.035);
+      legg = new TLegend(0.26, 0.75, 0.60, 0.87);
+      legg->SetTextFont(42);
+      legg->AddEntry(h1, "Background (Data sideband)", "pe");
+      if (cmsstyle) {
+	legg->AddEntry(h2, "B^{0}_{s} #rightarrow #it{#mu^{+}#mu^{#minus}} (Simulation)", "f");
+      } else {
+	legg->AddEntry(h2, "#it{B^{0}_{s}} #rightarrow #it{#mu^{+}#mu^{#minus}} (Simulation)", "f");
+      }
+      legg->SetTextSize(0.05);
     }
     legg->SetFillStyle(0);
     legg->SetBorderSize(0);
@@ -363,9 +391,9 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   TLatex tl;
   tl.SetTextAlign(11);
   if (isBmmData) {
-    tl.SetTextSize(0.05);
+    tl.SetTextSize(0.056);
   } else {
-    tl.SetTextSize(0.06);
+    tl.SetTextSize(0.07);
   }
   tl.SetTextFont(62);
   // if (string::npos != hname.find("chi2dof")) {
@@ -373,7 +401,7 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   // } else {
   //   tl.DrawLatexNDC(0.20, 0.91, "CMS");
   // }
-  tl.DrawLatexNDC(0.22, 0.91, "CMS");
+  tl.DrawLatexNDC(0.22, 0.92, "CMS");
   if (preliminary) {
     tl.SetTextFont(42);
     tl.DrawLatexNDC(0.33, 0.91, "#it{Preliminary}");
@@ -396,6 +424,7 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   string slog("");
   if (1 == log) slog = "_log";
   c->SaveAs(Form("qnd/pub_overlay_%s_%s%s.pdf", year.c_str(), h1->GetName(), slog.c_str()));
+  c->SaveAs(Form("qnd/pub_overlay_%s_%s%s.C", year.c_str(), h1->GetName(), slog.c_str()));
 
 }
 
@@ -550,7 +579,7 @@ void rareBgStack(string type = "Hh") {
   hstack->GetYaxis()->ChangeLabel(1, -1, -1, -1, -1, -1, " ");
   TLegend *lSl(0);
   if (type == "Sl") {
-    lSl = newLegend("semileptonic decays", 0.50, 0.55, 0.85, 0.85, vh, vnames, voptions);
+    lSl = newLegend("Semileptonic decays", 0.50, 0.55, 0.85, 0.85, vh, vnames, voptions);
     lSl->SetTextFont(42);
     lSl->Draw();
 
@@ -565,7 +594,7 @@ void rareBgStack(string type = "Hh") {
   }
   if (type == "Hh") {
     shrinkPad(0.12, 0.20, 0.05);
-    lSl = newLegend("hadronic decays", 0.56, 0.4, 0.85, 0.85, vh, vnames, voptions);
+    lSl = newLegend("Hadronic decays", 0.56, 0.4, 0.85, 0.85, vh, vnames, voptions);
     lSl->SetTextFont(42);
     lSl->Draw();
 
@@ -579,7 +608,7 @@ void rareBgStack(string type = "Hh") {
     tl->SetTextFont(42);
   }
   if (type == "Bg") {
-    lSl = newLegend("rare decays", 0.50, 0.2, 0.85, 0.85, vh, vnames, voptions);
+    lSl = newLegend("Rare decays", 0.50, 0.2, 0.85, 0.85, vh, vnames, voptions);
     lSl->SetTextFont(42);
     lSl->Draw();
 
