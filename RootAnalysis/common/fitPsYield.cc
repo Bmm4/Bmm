@@ -250,12 +250,17 @@ void fitPsYield::fit0_Bu2JpsiKp(TH1D *h1, int limitpars, string pdfprefix, doubl
 //           = 0: only allow normalizations to float
 //           > 0: constrain parameters within limitpars*sigma of prior (limitpars < 0) call
 void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, double lo, double hi, double sigma, bool keepFunctions) {
+  bool cmsstyle(true);
   if (0 == res) {
     cout << "ERROR: calling for empty psd (prescale data), returning." << endl;
     return;
   }
   TH1D *h = res->fH1;
-  setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]{#it{K}}} [GeV]", Form("Candidates / %4.3f GeV", h->GetBinWidth(1)), 0.05, 1.1, 1.9);
+  if (cmsstyle) {
+    setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]{K}} [GeV]", Form("Candidates / %3.2f GeV", h->GetBinWidth(1)), 0.05, 1.1, 2.0);
+  } else {
+    setTitles(h, "#it{m}_{#it{#mu#mu}#kern[-0.]#it{K}} [GeV]", Form("Candidates / %3.2f GeV", h->GetBinWidth(1)), 0.05, 1.1, 2.0);
+  }
   if (fVerbose < 0) {
     h->GetXaxis()->CenterTitle(kTRUE);
     h->GetYaxis()->CenterTitle(kTRUE);
@@ -308,7 +313,7 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
   double xmin(5.0), xmax(5.8), expoLo(5.15), expoHi(fpIF->fHi);
   if (fVerbose) cout << "h->GetSumOfWeights() = " << h->GetSumOfWeights() << " h->GetEntries() = " << h->GetEntries() << endl;
   //  if (fVerbose) fpIF->dumpParameters(f1);
-  h->SetMinimum(0.);
+  h->SetMinimum(0.001);
   h->SetAxisRange(fpIF->fLo, fpIF->fHi);
   if (limitpars < 0) {
     fCombMax = h->GetMaximum();
@@ -572,10 +577,22 @@ void fitPsYield::fit0_Bu2JpsiKp(psd *res, int limitpars, string pdfprefix, doubl
     legg->SetTextFont(42);
     legg->AddEntry(h, "Data", "pe");
     legg->AddEntry(f1, "Total fit", "l");
-    legg->AddEntry(fcnSig,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}", "f");
-    legg->AddEntry(fcnExpo, "comb. background", "f");
-    legg->AddEntry(fcnErr2, "#it{B^{  }} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}#kern[-0.1]{#it{X}}", "f");
-    legg->AddEntry(fcnSat,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#pi^{+}}", "f");
+    if (cmsstyle) {
+      legg->AddEntry(fcnSig,  "B^{+} #rightarrow J/#kern[-0.1]{#it{#psi}}K^{+}", "f");
+    } else {
+      legg->AddEntry(fcnSig,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}", "f");
+    }
+    legg->AddEntry(fcnExpo, "Comb. background", "f");
+    if (cmsstyle) {
+      legg->AddEntry(fcnErr2, "B^{  } #rightarrow J/#kern[-0.1]{#it{#psi}}K^{+}#kern[-0.1]{X}", "f");
+    } else {
+      legg->AddEntry(fcnErr2, "#it{B^{  }} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{+}}#kern[-0.]{#it{X}}", "f");
+    }
+    if (cmsstyle) {
+      legg->AddEntry(fcnSat,  "B^{+} #rightarrow J/#kern[-0.1]{#it{#psi}}#it{#pi^{+}}", "f");
+    } else {
+      legg->AddEntry(fcnSat,  "#it{B^{+}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#pi^{+}}", "f");
+    }
     legg->Draw();
 
     TLatex tl;
@@ -1553,7 +1570,7 @@ void fitPsYield::fit1_Bs2JpsiPhi(psd *res, int limitpars, string pdfprefix, doub
     legg->AddEntry(h, "Data", "pe");
     legg->AddEntry(f1, "Total fit", "l");
     legg->AddEntry(fcnSig,  "#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{#phi}", "f");
-    legg->AddEntry(fcnExpo, "comb. background", "f");
+    legg->AddEntry(fcnExpo, "Comb. background", "f");
     legg->AddEntry(fcnSat,  "#it{B^{0}} #rightarrow #it{J}/#kern[-0.2]{#it{#psi}}#it{K^{*0}}", "f");
     legg->Draw();
 
