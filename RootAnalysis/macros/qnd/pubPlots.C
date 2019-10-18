@@ -335,13 +335,13 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
       legg->SetTextFont(42);
       if (string::npos != hname.find("bupsik")) {
 	if (cmsstyle) {
-	  legg->SetHeader("B^{+} #rightarrow J/#kern[-0.0]{#it{#psi}}K^{+}");
+	  legg->SetHeader("B^{+} #rightarrow J/#kern[-0.1]{#it{#psi}}K^{+}");
 	} else {
 	  legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{K^{+}}");
 	}
       } else if (string::npos != hname.find("bspsiphi")) {
 	if (cmsstyle) {
-	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.1]{#it{#psi}}#it{#phi}");
 	} else {
 	  legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{#phi}");
 	}
@@ -355,13 +355,13 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
       legg->SetTextFont(42);
       if (string::npos != hname.find("bupsik")) {
       if (cmsstyle) {
-	legg->SetHeader("B^{+} #rightarrow J/#kern[-0.0]{#it{#psi}}K^{+}");
+	legg->SetHeader("B^{+} #rightarrow J/#kern[-0.1]{#it{#psi}}K^{+}");
       } else {
 	legg->SetHeader("#it{B^{+}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}} #it{K^{+}}");
       }
       } else if (string::npos != hname.find("bspsiphi")) {
 	if (cmsstyle) {
-	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.0]{#it{#psi}}#it{#phi}");
+	  legg->SetHeader("B^{0}_{s} #rightarrow J/#kern[-0.1]{#it{#psi}}#it{#phi}");
 	} else {
 	  legg->SetHeader("#it{B^{0}_{s}} #rightarrow #it{J}/#kern[-0.0]{#it{#psi}}#it{#phi}");
 	}
@@ -371,15 +371,15 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
       legg->SetTextSize(0.064);
     }
     if (isBmmData && (string::npos != hname.find("bdtsel"))) {
-      legg = new TLegend(0.26, 0.75, 0.60, 0.87);
+      legg = new TLegend(0.24, 0.77, 0.60, 0.87);
       legg->SetTextFont(42);
-      legg->AddEntry(h1, "Background (Data sideband)", "pe");
+      legg->AddEntry(h1, "Background (data sideband)", "pe");
       if (cmsstyle) {
-	legg->AddEntry(h2, "B^{0}_{s} #rightarrow #it{#mu^{+}#mu^{#minus}} (Simulation)", "f");
+	legg->AddEntry(h2, "B^{0}_{s} #rightarrow #it{#mu^{+}#mu^{#minus}} (simulation)", "f");
       } else {
-	legg->AddEntry(h2, "#it{B^{0}_{s}} #rightarrow #it{#mu^{+}#mu^{#minus}} (Simulation)", "f");
+	legg->AddEntry(h2, "#it{B^{0}_{s}} #rightarrow #it{#mu^{+}#mu^{#minus}} (simulation)", "f");
       }
-      legg->SetTextSize(0.05);
+      legg->SetTextSize(0.047);
     }
     legg->SetFillStyle(0);
     legg->SetBorderSize(0);
