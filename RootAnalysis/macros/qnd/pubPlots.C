@@ -424,7 +424,6 @@ void overlayAndRatio(TH1D *h1, TH1D *h2, string year, int log = 0) {
   string slog("");
   if (1 == log) slog = "_log";
   c->SaveAs(Form("qnd/pub_overlay_%s_%s%s.pdf", year.c_str(), h1->GetName(), slog.c_str()));
-  c->SaveAs(Form("qnd/pub_overlay_%s_%s%s.C", year.c_str(), h1->GetName(), slog.c_str()));
 
 }
 
